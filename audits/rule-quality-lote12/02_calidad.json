@@ -1,0 +1,1390 @@
+{
+  "lote": 12,
+  "status": "UNVERIFIED",
+  "mode": "SUPABASE_RO",
+  "digest_spec": "SHA256 UTF8, SQL+semicolon+LF / JSON.stringify(rows)",
+  "results": {
+    "LF09": {
+      "sql_sha256": "65fa94c58ed652960e7fcac36202e529bad4add19ffb7c46cd0a6b688b4076e1",
+      "result_sha256": "83ad166891fdc212fd749495b30891dfd3d0bb651662d24457e963bb9b74915b",
+      "n": 4,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": [
+        {
+          "codigo": "REG_CHK_001",
+          "categoria": "checkout",
+          "estado": "VIGENTE",
+          "descripcion": "El checkout consolida las ofertas y modalidades seleccionadas en un único resumen.",
+          "valor_config": null
+        },
+        {
+          "codigo": "REG_OFR_001",
+          "categoria": "oferta",
+          "estado": "VIGENTE",
+          "descripcion": "Una oferta representa una deuda negociada independiente.",
+          "valor_config": null
+        },
+        {
+          "codigo": "REG_OFR_002",
+          "categoria": "oferta",
+          "estado": "VIGENTE",
+          "descripcion": "Pago único y cuotas son modalidades de la misma oferta, no ofertas distintas.",
+          "valor_config": null
+        },
+        {
+          "codigo": "REG_OFR_008",
+          "categoria": "oferta",
+          "estado": "VIGENTE",
+          "descripcion": "En multi oferta, el usuario puede seleccionar una o varias ofertas.",
+          "valor_config": null
+        }
+      ]
+    },
+    "LF10": {
+      "sql_sha256": "762e508ae52caa4698c55240d6492f8032f307a1dec948dfaa16155ad55ec311",
+      "result_sha256": "0170b4ac65800a3536465312d46e7190ffd38467640553fa5b462140b4be2e3a",
+      "n": 20,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": [
+        {
+          "regla_a": "REG_ALR_001",
+          "regla_b": "REG_RATE_002",
+          "parametro": "ventana_minutos",
+          "valor_a": 30,
+          "valor_b": 10,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_ALR_001",
+          "regla_b": "REG_RATE_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 30,
+          "valor_b": 60,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_ALR_001",
+          "regla_b": "REG_SES_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 30,
+          "valor_b": 5,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_ALR_002",
+          "regla_b": "REG_ALR_004",
+          "parametro": "umbral_maximo",
+          "valor_a": 0.8,
+          "valor_b": 0.05,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_ALR_004",
+          "regla_b": "REG_RATE_001",
+          "parametro": "ventana_minutos",
+          "valor_a": 15,
+          "valor_b": 10,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_ALR_004",
+          "regla_b": "REG_SES_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 15,
+          "valor_b": 5,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_RATE_001",
+          "regla_b": "REG_SES_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 10,
+          "valor_b": 5,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_RATE_002",
+          "regla_b": "REG_RATE_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 10,
+          "valor_b": 60,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_RATE_002",
+          "regla_b": "REG_SES_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 10,
+          "valor_b": 5,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_RATE_003",
+          "regla_b": "REG_SES_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 60,
+          "valor_b": 5,
+          "pantallas_comunes": 23
+        },
+        {
+          "regla_a": "REG_ALR_001",
+          "regla_b": "REG_ALR_004",
+          "parametro": "ventana_minutos",
+          "valor_a": 30,
+          "valor_b": 15,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_001",
+          "regla_b": "REG_RATE_001",
+          "parametro": "ventana_minutos",
+          "valor_a": 30,
+          "valor_b": 10,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_002",
+          "regla_b": "REG_ATQ_017",
+          "parametro": "ventana_horas",
+          "valor_a": 1,
+          "valor_b": 24,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_002",
+          "regla_b": "REG_RATE_004",
+          "parametro": "ventana_horas",
+          "valor_a": 1,
+          "valor_b": 24,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_004",
+          "regla_b": "REG_RATE_002",
+          "parametro": "ventana_minutos",
+          "valor_a": 15,
+          "valor_b": 10,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_004",
+          "regla_b": "REG_RATE_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 15,
+          "valor_b": 60,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_005",
+          "regla_b": "REG_ATQ_017",
+          "parametro": "ventana_horas",
+          "valor_a": 1,
+          "valor_b": 24,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_ALR_005",
+          "regla_b": "REG_RATE_004",
+          "parametro": "ventana_horas",
+          "valor_a": 1,
+          "valor_b": 24,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_RATE_001",
+          "regla_b": "REG_RATE_003",
+          "parametro": "ventana_minutos",
+          "valor_a": 10,
+          "valor_b": 60,
+          "pantallas_comunes": 22
+        },
+        {
+          "regla_a": "REG_RATE_002",
+          "regla_b": "REG_RATE_004",
+          "parametro": "max_intentos",
+          "valor_a": 10,
+          "valor_b": 3,
+          "pantallas_comunes": 22
+        }
+      ]
+    },
+    "LF11": {
+      "sql_sha256": "fa148679724feefed26de9dddbe07e88eb15074588ab225e74a197d123613b5c",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": []
+    },
+    "LF12": {
+      "sql_sha256": "22a71c1eafa8ec371e82274978a30278b11877b2524660b0fd6caf198cd2dae4",
+      "result_sha256": "827c18e1fdd1ffb912ea5e86d32018463746b6be9a84b12ee7f971523454f208",
+      "n": 1,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "total": 578,
+          "dep_por_codigos_presentes": 0,
+          "dependency_status_config": 1,
+          "dependency_missing_explicito": 1
+        }
+      ]
+    },
+    "LF13": {
+      "sql_sha256": "f959bed3398b469a56bcb23bf59dc27491721ff3943b657f8a85e7c2dfe6e67f",
+      "result_sha256": "45879a04035687fbc6ee043192d768a5ac22b4e5f873d0a0101b7e71ab04b779",
+      "n": 34,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "codigo": "B2B-RULE-AUTH-014",
+          "estado": "CANDIDATO",
+          "campo": "email_otp_challenge_rule_id",
+          "target_id": "453",
+          "target_codigo": "B2B-RULE-AUTH-034",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-014",
+          "estado": "CANDIDATO",
+          "campo": "mfa_gate_rule_id",
+          "target_id": "437",
+          "target_codigo": "B2B-RULE-AUTH-018",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-014",
+          "estado": "CANDIDATO",
+          "campo": "mfa_routing_rule_id",
+          "target_id": "452",
+          "target_codigo": "B2B-RULE-AUTH-033",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-016",
+          "estado": "VIGENTE",
+          "campo": "duplicate_submit_rule_id",
+          "target_id": "431",
+          "target_codigo": "B2B-RULE-AUTH-012",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-018",
+          "estado": "CANDIDATO",
+          "campo": "aal_routing_rule_id",
+          "target_id": "452",
+          "target_codigo": "B2B-RULE-AUTH-033",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-018",
+          "estado": "CANDIDATO",
+          "campo": "email_otp_challenge_rule_id",
+          "target_id": "453",
+          "target_codigo": "B2B-RULE-AUTH-034",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-018",
+          "estado": "CANDIDATO",
+          "campo": "factor_rule_id",
+          "target_id": "438",
+          "target_codigo": "B2B-RULE-AUTH-019",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-018",
+          "estado": "CANDIDATO",
+          "campo": "legacy_totp_enrollment_rule_id",
+          "target_id": "454",
+          "target_codigo": "B2B-RULE-AUTH-035",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-022",
+          "estado": "VIGENTE",
+          "campo": "mfa_gate_rule_id",
+          "target_id": "437",
+          "target_codigo": "B2B-RULE-AUTH-018",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-025",
+          "estado": "CANDIDATO",
+          "campo": "error_mapping_rule_id",
+          "target_id": "433",
+          "target_codigo": "B2B-RULE-AUTH-014",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-026",
+          "estado": "CANDIDATO",
+          "campo": "auth_gateway_rule_id",
+          "target_id": "432",
+          "target_codigo": "B2B-RULE-AUTH-013",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-027",
+          "estado": "CANDIDATO",
+          "campo": "rate_limit_subject_rule_id",
+          "target_id": "501",
+          "target_codigo": "B2B-RULE-AUTH-042",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-028",
+          "estado": "CANDIDATO",
+          "campo": "anti_enumeration_rule_id",
+          "target_id": "446",
+          "target_codigo": "B2B-RULE-AUTH-027",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-028",
+          "estado": "CANDIDATO",
+          "campo": "recovery_rate_limit_rule_id",
+          "target_id": "501",
+          "target_codigo": "B2B-RULE-AUTH-042",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-030",
+          "estado": "CANDIDATO",
+          "campo": "recovery_context_rule_id",
+          "target_id": "448",
+          "target_codigo": "B2B-RULE-AUTH-029",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-031",
+          "estado": "CANDIDATO",
+          "campo": "recovery_context_rule_id",
+          "target_id": "448",
+          "target_codigo": "B2B-RULE-AUTH-029",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-033",
+          "estado": "CANDIDATO",
+          "campo": "legacy_totp_enrollment_rule_id",
+          "target_id": "454",
+          "target_codigo": "B2B-RULE-AUTH-035",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-033",
+          "estado": "CANDIDATO",
+          "campo": "mfa_route_challenge_context_source_rule_id",
+          "target_id": "437",
+          "target_codigo": "B2B-RULE-AUTH-018",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-034",
+          "estado": "CANDIDATO",
+          "campo": "delivery_contract_rule_id",
+          "target_id": "505",
+          "target_codigo": "B2B-RULE-AUTH-044",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-034",
+          "estado": "CANDIDATO",
+          "campo": "delivery_state_contract_rule_id",
+          "target_id": "505",
+          "target_codigo": "B2B-RULE-AUTH-044",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-034",
+          "estado": "CANDIDATO",
+          "campo": "new_device_rate_limit_rule_id",
+          "target_id": "503",
+          "target_codigo": "B2B-RULE-AUTH-043",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-034",
+          "estado": "CANDIDATO",
+          "campo": "routing_rule_id",
+          "target_id": "452",
+          "target_codigo": "B2B-RULE-AUTH-033",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-035",
+          "estado": "CANDIDATO",
+          "campo": "routing_rule_id",
+          "target_id": "452",
+          "target_codigo": "B2B-RULE-AUTH-033",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-037",
+          "estado": "CANDIDATO",
+          "campo": "anti_enumeration_rule_id",
+          "target_id": "446",
+          "target_codigo": "B2B-RULE-AUTH-027",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-037",
+          "estado": "CANDIDATO",
+          "campo": "delivery_contract_rule_id",
+          "target_id": "505",
+          "target_codigo": "B2B-RULE-AUTH-044",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-037",
+          "estado": "CANDIDATO",
+          "campo": "delivery_state_contract_rule_id",
+          "target_id": "505",
+          "target_codigo": "B2B-RULE-AUTH-044",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-044",
+          "estado": "CANDIDATO",
+          "campo": "webhook_auth_rule_id",
+          "target_id": "506",
+          "target_codigo": "B2B-RULE-AUTH-045",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-045",
+          "estado": "CANDIDATO",
+          "campo": "webhook_contract_rule_id",
+          "target_id": "505",
+          "target_codigo": "B2B-RULE-AUTH-044",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-INSTALLMENT-PLAN-001",
+          "estado": "CANDIDATO",
+          "campo": "currency_precision_source_rule_id",
+          "target_id": "422",
+          "target_codigo": "B2B-RULE-INSTALLMENT-001",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-THEME-003",
+          "estado": "VIGENTE",
+          "campo": "dark_promotion_gate_rule_id",
+          "target_id": "390",
+          "target_codigo": "B2B-RULE-THEME-002",
+          "target_estado": "CANDIDATO",
+          "vinculo": "NO_VIGENTE"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-024",
+          "estado": "CANDIDATO",
+          "campo": "correlation_rule_id",
+          "target_id": "412",
+          "target_codigo": "B2B-RULE-OBS-001",
+          "target_estado": "VIGENTE",
+          "vinculo": "OK"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-024",
+          "estado": "CANDIDATO",
+          "campo": "immutable_audit_rule_id",
+          "target_id": "416",
+          "target_codigo": "B2B-RULE-AUDIT-001",
+          "target_estado": "VIGENTE",
+          "vinculo": "OK"
+        },
+        {
+          "codigo": "B2B-RULE-AUTH-024",
+          "estado": "CANDIDATO",
+          "campo": "pii_redaction_rule_id",
+          "target_id": "37",
+          "target_codigo": "REG_AUD_002",
+          "target_estado": "VIGENTE",
+          "vinculo": "OK"
+        },
+        {
+          "codigo": "B2B-RULE-USER-LIFECYCLE-001",
+          "estado": "CANDIDATO",
+          "campo": "disable_security_rule_id",
+          "target_id": "496",
+          "target_codigo": "B2B-RULE-AUTH-039",
+          "target_estado": "VIGENTE",
+          "vinculo": "OK"
+        }
+      ]
+    },
+    "LF14": {
+      "sql_sha256": "74d247dfff3a56eeda64fd39619924895b16f7a92ec1924ec1c14aae4e586847",
+      "result_sha256": "efe2eb83b78f4b3596b36d867cb1d21deea3f32adbbba09fec5256f9ce01fd9a",
+      "n": 57,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "codigo": "REG_ONB003_DNI_RESOLUTION_ATOMIC_001",
+          "id": 495,
+          "categoria": "seguridad",
+          "titulo": "Resolución DNI atómica e idempotente por sesión OTP",
+          "dias_sin_editar": "85.6",
+          "updated_at": "2026-08-19 03:15:57.583892+00",
+          "pendiente_detalle": "Contrato cerrado; sigue pendiente identificar/reutilizar almacenamiento canónico para enforcement atómico e idempotencia. No se crea una tabla nueva sin verificar estructura equivalente."
+        },
+        {
+          "codigo": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+          "id": 502,
+          "categoria": "contenido",
+          "titulo": "Documentos DEMO permitidos solo fuera de producción y con versionado pendiente",
+          "dias_sin_editar": "85.3",
+          "updated_at": "2026-08-19 11:12:34.139903+00",
+          "pendiente_detalle": "Pendiente diseñar o identificar el registro canónico Cliente para documento maestro, versiones, archivo/contenido subido, estado de publicación y trazabilidad. No reutilizar lf_ops.cargas_archivos por pertenecer al modelo operativo Empresa/B2B."
+        },
+        {
+          "codigo": "REG_CLIENT_RECOVERY_IDV_OUTCOME_001",
+          "id": 511,
+          "categoria": "flujo",
+          "titulo": "Resultados normalizados del step-up de recuperación Cliente",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:26:34.127488+00",
+          "pendiente_detalle": "Pendiente catalogar mensajes/errores Cliente y mapearlos a la futura pantalla de recuperación; no reutilizar errores B2B por código aunque sus patrones sean equivalentes."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001",
+          "id": 516,
+          "categoria": "flujo",
+          "titulo": "Falla al resolver ofertas no equivale a Home sin oferta",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:33:42.729993+00",
+          "pendiente_detalle": "Funcionalidad cerrada. Pendiente registrar copy/error Cliente y mapear estado OFFER_DATA_UNAVAILABLE a la futura pantalla Home canónica. Las reglas legacy candidatas no se borran; quedan señaladas como conflicto para este contexto Cliente."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_NO_OFFER_001",
+          "id": 518,
+          "categoria": "flujo",
+          "titulo": "Home Cliente sin oferta activa y Ruta de Claridad",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:37:47.344143+00",
+          "pendiente_detalle": "Funcionalidad del estado sin oferta cerrada. Pendiente reconciliar HOME_003/PASO3_SIN_OFERTA con la referencia visual del owner y definir el registro/acción canónica para “avisarme si aparece una oferta”. El aviso comercial no puede activarse sin acción explícita y consentimiento de marketing."
+        },
+        {
+          "codigo": "REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001",
+          "id": 527,
+          "categoria": "negocio",
+          "titulo": "Gestión segura del cobro recurrente desde Mis operaciones",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:50:17.891878+00",
+          "pendiente_detalle": "Control funcional seguro cerrado; falta decisión Negocio/Legal/Operaciones sobre terminación del acuerdo, obligaciones remanentes y penalidades/costos. No mostrar el claim heredado en producción mientras la deuda permanezca ABIERTA."
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+          "id": 528,
+          "categoria": "pago",
+          "titulo": "Snapshot contractual del plan de cuotas activado",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:51:33.510204+00",
+          "pendiente_detalle": "Contrato cerrado. Falta implementar el snapshot dentro del ledger de pago/plan Cliente canónico; no crear tabla paralela antes de resolver PEND-CLIENT-PAYMENT-LEDGER-001."
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "id": 532,
+          "categoria": "pago",
+          "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:52:30.739642+00",
+          "pendiente_detalle": "Outcomes técnicos cerrados. Pendiente política Negocio/Legal de vencimiento, gracia, mora y consecuencias; no mostrar “atrasado/mora” hasta que esa política exista."
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+          "id": 531,
+          "categoria": "notificacion",
+          "titulo": "Recordatorios operativos de cuotas pendientes",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:52:30.739642+00",
+          "pendiente_detalle": "Funcionalidad de recordatorio cerrada; pendiente definir política de anticipación/frecuencia, canales productivos y contenido exacto. No reutilizar “oferta vence en 24h” como regla de cuota."
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+          "id": 530,
+          "categoria": "pago",
+          "titulo": "Comportamiento de próxima cuota según modalidad de cobro",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:52:30.739642+00",
+          "pendiente_detalle": "Contrato funcional cerrado. Pendiente política de ventana de pago manual, recordatorios, proveedor recurrente y ledger de cuotas. No asumir frecuencia ni anticipación de recordatorios sin configuración gobernada."
+        },
+        {
+          "codigo": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+          "id": 533,
+          "categoria": "negocio",
+          "titulo": "Estado de cancelación total por deuda Cliente",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:53:27.893234+00",
+          "pendiente_detalle": "Estado funcional cerrado. Implementación depende del ledger Cliente y de la definición de cuándo el aliado exige confirmación adicional de settlement."
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+          "id": 524,
+          "categoria": "pago",
+          "titulo": "Acciones post-pago confirmado por deuda y modalidad",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 17:53:27.893234+00",
+          "pendiente_detalle": "Funcionalidad post-pago cerrada. Pendiente ledger de pago/plan/deuda canónico, workflow técnico con el aliado y registro documental Cliente. El contenido/archivo de Carta puede usar DEMO fuera de producción según REG_CLIENT_DOC_DEMO_VERSIONING_001."
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_VIEW_001",
+          "id": 529,
+          "categoria": "flujo",
+          "titulo": "Detalle funcional de plan activo en Mis operaciones",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:03:59.312114+00",
+          "pendiente_detalle": "Funcionalidad cerrada. Implementación depende del ledger/snapshot de plan y de la futura pantalla Mis operaciones."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_PUBLIC_ENTRY_001",
+          "id": 546,
+          "categoria": "flujo",
+          "titulo": "HOME_001 inicia el acceso Cliente únicamente mediante ONB_001",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:19:21.332732+00",
+          "pendiente_detalle": "Funcionalidad cerrada. Pendiente registrar ruta/shell Cliente; el CTA visual actual puede mantenerse y no requiere un login paralelo."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_PUBLIC_LETTER_CLAIM_001",
+          "id": 548,
+          "categoria": "contenido",
+          "titulo": "Interpretación funcional condicionada del claim Carta de No Adeudo en HOME_001",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:19:21.332732+00",
+          "pendiente_detalle": "Funcionalidad y límite del claim cerrados; pendiente reconciliar el texto visual bloqueado con su condición real sin alterar la decisión visual por inferencia."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_CLARITY_CTA_001",
+          "id": 551,
+          "categoria": "flujo",
+          "titulo": "CTA comercial de Ruta de Claridad entra al onboarding celular-first",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:26:28.928781+00",
+          "pendiente_detalle": "Destino funcional cerrado. Ruta Cliente/route_pattern continúa pendiente por ausencia de shell/rutas Cliente; copy exacto de cierres puede revisarse después sin cambiar la navegación."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_LEARN_DECIDE_001",
+          "id": 552,
+          "categoria": "contenido",
+          "titulo": "Aprenda antes de decidir reutiliza fuentes gobernadas y no mantiene copy paralelo",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:28:30.810422+00",
+          "pendiente_detalle": "Estructura funcional cerrada. Card 1 queda con popup legal condicionado a que EDU-NODO-02-EXPLORA sea publicable. Copy/layout exactos siguen pendientes por ausencia de visual canónico."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_FAQ_001",
+          "id": 554,
+          "categoria": "contenido",
+          "titulo": "FAQ público derivado de contratos Cliente vigentes",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:30:12.828733+00",
+          "pendiente_detalle": "Funcionalidad y fuentes cerradas. Copy exacto final pendiente de revisión visual/legal; FAQ 4 debe limitarse a datos autoritativos mientras EDU-NODO-02 siga CANDIDATO y FAQ 5 no debe cerrar la ubicación legal del consentimiento aún pendiente."
+        },
+        {
+          "codigo": "UX-HOME-CAPABILITY-03",
+          "id": 357,
+          "categoria": "copy",
+          "titulo": "Claim \"sin compromiso\" pendiente de validación legal",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:30:12.828733+00",
+          "pendiente_detalle": "Semántica funcional corregida. Falta validación Legal del copy visible “sin compromiso” y su uso por superficie; no usar la regla histórica “hasta que se emita la Carta”."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_FOOTER_001",
+          "id": 555,
+          "categoria": "navegacion",
+          "titulo": "Footer público Cliente compuesto por capacidades publicables",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:32:50.896218+00",
+          "pendiente_detalle": "Funcionalidad cerrada. Pendientes rutas públicas Cliente, configuración corporativa de contacto y visual canónico; partners/prensa quedan sujetos a fuentes verificadas."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_TRUST_SOURCE_GATING_001",
+          "id": 557,
+          "categoria": "contenido",
+          "titulo": "Respaldo y confianza solo renderiza fuentes reales publicables",
+          "dias_sin_editar": "85.0",
+          "updated_at": "2026-08-19 18:35:21.300454+00",
+          "pendiente_detalle": "Contrato funcional cerrado. Pendiente poblar aliados autorizados, diseñar/identificar registry de prensa y contar con visual canónico. Hoy producción debe ocultar el bloque."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_SINGLE_OFFER_BOTH_001",
+          "id": 563,
+          "categoria": "flujo",
+          "titulo": "Oferta única Cliente con pago único y cuotas exige elección explícita de modalidad",
+          "dias_sin_editar": "84.9",
+          "updated_at": "2026-08-19 21:22:38.164165+00",
+          "pendiente_detalle": "Contrato funcional cerrado. Pendientes: pricing/config productiva, capacidades del header, corrección visual y canonicalización pantalla/ruta."
+        },
+        {
+          "codigo": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001",
+          "id": 507,
+          "categoria": "flujo",
+          "titulo": "Recuperación Cliente reutiliza el celular actual ya verificado",
+          "dias_sin_editar": "84.8",
+          "updated_at": "2026-08-19 22:50:44.357266+00",
+          "pendiente_detalle": "Pantalla funcional y ruta ya canónicas: REC_001 / CLIENT_RECOVERY. Persiste el gap del mecanismo/proveedor IDV step-up y su referencia visual final cuando el celular anterior no está disponible."
+        },
+        {
+          "codigo": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
+          "id": 510,
+          "categoria": "seguridad",
+          "titulo": "Step-up de identidad para recuperación Cliente sin factor anterior",
+          "dias_sin_editar": "84.8",
+          "updated_at": "2026-08-19 22:50:51.257327+00",
+          "pendiente_detalle": "La pantalla/route de recuperación ya existen (REC_001 / CLIENT_RECOVERY). Persiste exclusivamente la selección y validación del proveedor/mecanismo canónico de IDV step-up, sus límites operativos/costo y evidencia visual antes de producción."
+        },
+        {
+          "codigo": "REG_ONB001_PHONE_PREFIX_001",
+          "id": 484,
+          "categoria": "ux",
+          "titulo": "Prefijo visible +51 en ONB_001",
+          "dias_sin_editar": "83.9",
+          "updated_at": "2026-08-20 20:29:34.275606+00",
+          "pendiente_detalle": "Definir catálogo canónico de países y comportamiento del selector antes de habilitar interacción en producción. Mientras tanto se renderiza el chevron gris aprobado sin inventar opciones."
+        },
+        {
+          "codigo": "REG_ONB003_CONSENT_DATA_001",
+          "id": 573,
+          "categoria": "legal",
+          "titulo": "Consentimiento de datos obligatorio antes de resolver documento",
+          "dias_sin_editar": "83.8",
+          "updated_at": "2026-08-20 23:55:18.688488+00",
+          "pendiente_detalle": "Ubicación y comportamiento aprobados. Antes de producción falta Legal sobre copy/modal final y arquitectura sobre registro canónico/versionado de evidencia; no crear tabla ad hoc."
+        },
+        {
+          "codigo": "REG_ONB003_STEPPER_4_001",
+          "id": 575,
+          "categoria": "ux",
+          "titulo": "ONB_003 muestra Paso 3 de 4",
+          "dias_sin_editar": "83.8",
+          "updated_at": "2026-08-20 23:55:18.688488+00",
+          "pendiente_detalle": "Pendiente reconciliar por delta las referencias visuales ONB_001/ONB_002 si el owner decide que también deben mostrar el total 4; no re-renderizar automáticamente."
+        },
+        {
+          "codigo": "REG_NEW_CLIENT_DATA_COMPLETION_001",
+          "id": 500,
+          "categoria": "flujo",
+          "titulo": "Datos obligatorios para alta de cliente nuevo post-DNI",
+          "dias_sin_editar": "83.0",
+          "updated_at": "2026-08-21 17:26:14.725103+00",
+          "pendiente_detalle": "CAMPO_CONSENT_DATA fue trasladado a ONB_003 por decisión 108. ONB_004 no lo repite. Sigue pendiente Legal para texto definitivo de Términos/privacidad y referencia visual final."
+        },
+        {
+          "codigo": "REG_ONB004_MARKETING_INFO_MODAL_001",
+          "id": 588,
+          "categoria": "UX",
+          "titulo": "Modal informativo de comunicaciones comerciales en ONB_004",
+          "dias_sin_editar": "83.0",
+          "updated_at": "2026-08-21 17:26:14.725103+00",
+          "pendiente_detalle": "Pendiente reemplazar los párrafos placeholder del modal por copy final validado por Legal/Contenido antes de producción. La estructura, acción y navegación del modal están aprobadas."
+        },
+        {
+          "codigo": "REG_CLIENT_MY_OPERATIONS_SCOPE_001",
+          "id": 526,
+          "categoria": "flujo",
+          "titulo": "Alcance funcional de Mis operaciones Cliente",
+          "dias_sin_editar": "82.8",
+          "updated_at": "2026-08-21 22:24:48.785339+00",
+          "pendiente_detalle": "Funcionalidad base cerrada. Implementación bloqueada por ledger financiero Cliente inexistente y pantalla/módulo/ruta pendientes. Las secciones se renderizan solo cuando existan datos autoritativos; no usar fixtures/demo como estado financiero real."
+        },
+        {
+          "codigo": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+          "id": 534,
+          "categoria": "documento",
+          "titulo": "Estados normalizados de Carta de No Adeudo por deuda",
+          "dias_sin_editar": "79.9",
+          "updated_at": "2026-08-24 19:28:01.886636+00",
+          "pendiente_detalle": "Estados funcionales cerrados. Pendiente workflow/API del aliado, SLA contractual, registro documental Cliente y copy exacto. La regla educativa de solicitar carta manualmente aplica como orientación externa; no obliga a duplicar la solicitud en una operación LF que pueda automatizarla. | Pendiente binding de configuración documental por aliado/oferta y evento técnico autoritativo para AFTER_PARTNER_FUNDS_CONFIRMATION. Copy HOME máximo 100 caracteres, sin truncado UI. | HOME_002 visual final: sin preview inline; Ver formato de carta abre ejemplo marcado EJEMPLO / COPIA NO VÁLIDA. Binding técnico por aliado/oferta sigue pendiente."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_SINGLE_OFFER_PAY_ONLY_001",
+          "id": 560,
+          "categoria": "flujo",
+          "titulo": "Home Cliente de oferta única con solo pago único no infiere modalidades ni pricing desde el visual",
+          "dias_sin_editar": "79.7",
+          "updated_at": "2026-08-25 02:20:53.433049+00",
+          "pendiente_detalle": "Visual, shell, pricing transparency y pantalla canónica reconciliados a HOME_002. Pendiente runtime real: pricing con configuración APROBADO/VIGENTE. La Carta mantiene pendiente su binding/workflow por aliado-oferta. Los valores del PNG son DEMO y no autoridad."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "id": 522,
+          "categoria": "precio",
+          "titulo": "Quote de checkout Cliente versionado y fail-closed",
+          "dias_sin_editar": "79.6",
+          "updated_at": "2026-08-25 03:25:08.235796+00",
+          "pendiente_detalle": "Contrato de quote cerrado para pricing base y extendido para ajustes comerciales en selection_snapshot. Implementación Cliente sigue bloqueada hasta identidad Cliente↔auth.uid(), pricing config APROBADO/VIGENTE y soporte canónico del generador para bonuses/coupons. Fixtures DEMO sí pueden probar el contrato; no promover la plantilla CANDIDATO actual."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_BENEFIT_OFFER_PRESENTATION_001",
+          "id": 598,
+          "categoria": "beneficios",
+          "titulo": "HOME_002 presenta beneficios solo cuando afectan o explican la oferta vigente",
+          "dias_sin_editar": "79.6",
+          "updated_at": "2026-08-25 03:25:08.235796+00",
+          "pendiente_detalle": "B4 AVANZA no se vincula funcionalmente hasta definir el estado canónico de premio aplicado a deuda. B2 permanece sin ruta/capacidad canónica productiva y no se habilita por esta regla."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_PRICE_DETAIL_MODAL_001",
+          "id": 558,
+          "categoria": "precio",
+          "titulo": "Detalle de precio del Home renderiza únicamente componentes backend versionados",
+          "dias_sin_editar": "79.6",
+          "updated_at": "2026-08-25 03:25:08.235796+00",
+          "pendiente_detalle": "Visual y contrato de transparencia cerrados. Runtime de valores reales permanece bloqueado hasta existir pricing config APROBADO/VIGENTE y binding canónico de proveedor; copy/labels exactos provienen de configuración gobernada. Los valores Drive son DEMO reconciliado y no autoridad."
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "id": 523,
+          "categoria": "pago",
+          "titulo": "Resultados normalizados y manejo seguro de estado ambiguo de pago",
+          "dias_sin_editar": "79.6",
+          "updated_at": "2026-08-25 03:25:08.235796+00",
+          "pendiente_detalle": "Contrato de outcomes cerrado. Implementación bloqueada por ausencia de ledger/callback/reconciliación canónicos y proveedor productivo validado. Copy/error exactos deben diferenciar rechazo confirmado de estado pendiente/ambiguo."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_DETAIL_001",
+          "id": 562,
+          "categoria": "flujo",
+          "titulo": "Detalle Cliente de plan en cuotas usa fecha y valores gobernados antes de checkout",
+          "dias_sin_editar": "79.5",
+          "updated_at": "2026-08-25 06:50:23.826728+00",
+          "pendiente_detalle": "Contrato funcional y visual B-/C cerrados para el panel pre-checkout. Pendientes runtime: configuración canónica de fechas, pricing APROBADO/VIGENTE, valores server-side y cobro/autodébito en checkout cuando aplique."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001",
+          "id": 561,
+          "categoria": "flujo",
+          "titulo": "Selección Cliente de plan en cuotas usa planes elegibles server-side y una sola elección explícita",
+          "dias_sin_editar": "79.5",
+          "updated_at": "2026-08-25 06:50:23.826728+00",
+          "pendiente_detalle": "Selección visual base y estado seleccionado B-/C cerrados. El título del plan refleja pago inicial + cuotas cuando initial_payment>0; acciones usan lenguaje simple. Pendiente runtime real: pricing APROBADO/VIGENTE y valores de planes autoritativos server-side."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+          "id": 540,
+          "categoria": "pago",
+          "titulo": "Preparación segura del handoff al proveedor de pago",
+          "dias_sin_editar": "78.1",
+          "updated_at": "2026-08-26 14:59:21.670134+00",
+          "pendiente_detalle": "Funcionalidad cerrada. Pendiente proveedor productivo y contrato técnico exacto de hosted fields/SDK/redirección; el visual Drive puede conservar un estado de espera, pero el nombre Niubiz y el mecanismo de navegación no son autoridad hasta binding."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_CONFIRMING_STATE_001",
+          "id": 535,
+          "categoria": "flujo",
+          "titulo": "Estado de confirmación de pago desacoplado de la ventana del navegador",
+          "dias_sin_editar": "78.1",
+          "updated_at": "2026-08-26 16:23:28.708183+00",
+          "pendiente_detalle": "Funcionalidad y visual cerrados. Implementación productiva sigue bloqueada por ausencia de ledger/reconciliación técnica canónicos y proveedor productivo validado."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_CARD_DATA_BOUNDARY_001",
+          "id": 538,
+          "categoria": "seguridad",
+          "titulo": "Datos sensibles de tarjeta permanecen en la frontera segura del proveedor de pago",
+          "dias_sin_editar": "78.1",
+          "updated_at": "2026-08-26 16:42:30.026251+00",
+          "pendiente_detalle": "Contrato visual y frontera de seguridad cerrados. Pendientes runtime: binding del proveedor productivo, contrato técnico/PCI aplicable y autorización productiva de branding/logos. Niubiz en la evidencia actual es DEMO no autoritativo."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_ERROR_STATE_001",
+          "id": 536,
+          "categoria": "flujo",
+          "titulo": "Error de pago solo para resultados que permiten acción segura",
+          "dias_sin_editar": "78.0",
+          "updated_at": "2026-08-26 18:11:25.79975+00",
+          "pendiente_detalle": "Contrato funcional y visual de error recuperable cerrado para rechazo confirmado y falla previa al envío. PAYMENT_PENDING_CONFIRMATION permanece excluido. Pendientes externos: ledger/reconciliación técnica y provider binding."
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_SUCCESS_INSTALLMENTS_001",
+          "id": 541,
+          "categoria": "flujo",
+          "titulo": "CHECKOUT_PAGO_EXITOSO como variante de pago inicial de cuotas confirmado",
+          "dias_sin_editar": "78.0",
+          "updated_at": "2026-08-26 18:13:43.342688+00",
+          "pendiente_detalle": "Contrato funcional y visual de éxito para pago inicial de cuotas cerrado. Existe además variante visual separada de pago único liquidado bajo REG_CLIENT_PAYMENT_SUCCESS_VIEW_001; no reutilizar copy de cuotas. Pendientes externos: ledger/plan snapshot técnico, documentos productivos, ruta Mis operaciones y binding de proveedor."
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001",
+          "id": 525,
+          "categoria": "flujo",
+          "titulo": "Contenido funcional mínimo de confirmación de pago Cliente",
+          "dias_sin_editar": "78.0",
+          "updated_at": "2026-08-26 18:13:43.342688+00",
+          "pendiente_detalle": "Funcionalidad mínima de éxito cerrada. El destino Mis operaciones ya tiene contrato funcional, pero su pantalla/módulo/ruta siguen pendientes; no usar el path hardcodeado /mis-operaciones hasta registrarlo canónicamente."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001",
+          "id": 539,
+          "categoria": "pago",
+          "titulo": "CTA de QR consulta el estado; nunca confirma el pago por sí mismo",
+          "dias_sin_editar": "78.0",
+          "updated_at": "2026-08-26 18:21:32.588413+00",
+          "pendiente_detalle": "Contrato funcional cerrado. Pendiente proveedor QR productivo, API/callback de consulta y ledger/reconciliación. El visual puede conservar el CTA, pero su semántica es “consultar estado”, no “confirmar pago”."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+          "id": 542,
+          "categoria": "flujo",
+          "titulo": "Cronograma de cuotas distingue propuesta pre-pago de contrato activado",
+          "dias_sin_editar": "78.0",
+          "updated_at": "2026-08-26 18:21:32.588413+00",
+          "pendiente_detalle": "Funcionalidad de contextos cerrada. Pendiente fuente/configuración canónica de fechas permitidas por plan/aliado, copy exacto del cronograma pre-pago y registro documental para descargas productivas."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+          "id": 521,
+          "categoria": "legal",
+          "titulo": "Autorización de débito automático solo cuando el cobro recurrente automático aplica",
+          "dias_sin_editar": "77.9",
+          "updated_at": "2026-08-26 20:35:15.783979+00",
+          "pendiente_detalle": "Owner cerró política de producto: en CUOTAS la autorización de cobro automático es obligatoria antes del pago inicial y bloquea continuar si falta. Pendientes únicamente copy legal exacto, evidencia/mandato técnico y binding real del proveedor/medio recurrente."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_INSTALLMENTS_VIEW_001",
+          "id": 543,
+          "categoria": "flujo",
+          "titulo": "Contrato funcional de CHECKOUT_CUOTAS_MEDIO_PAGO",
+          "dias_sin_editar": "77.8",
+          "updated_at": "2026-08-26 22:15:57.614129+00",
+          "pendiente_detalle": "Contrato funcional y visual cerrado para CUOTAS=CARD_ONLY. Estados aprobados: autorización vacía con CTA bloqueado y autorización explícita con CTA habilitado. Pendientes runtime: provider/pricing/copy legal/mandato técnico; production_authorized=false."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_PAY_ONLY_VIEW_001",
+          "id": 627,
+          "categoria": "CLIENT_CHECKOUT",
+          "titulo": "Checkout Cliente de pago único usa medios elegibles server-side sin autorización recurrente",
+          "dias_sin_editar": "77.8",
+          "updated_at": "2026-08-26 22:15:57.614129+00",
+          "pendiente_detalle": "Estructura funcional aprobada. Pendiente evidencia visual, provider/config reales y pricing runtime APROBADO/VIGENTE."
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001",
+          "id": 520,
+          "categoria": "flujo",
+          "titulo": "Elegibilidad server-side de medios de pago Cliente",
+          "dias_sin_editar": "77.8",
+          "updated_at": "2026-08-26 22:15:57.614129+00",
+          "pendiente_detalle": "Política cerrada: CUOTAS admite únicamente CARD. Yape queda exclusivamente para PAGO_UNICO/pago directo. Pendientes provider/config reales."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001",
+          "id": 550,
+          "categoria": "contenido",
+          "titulo": "Claims externos de Ruta de Claridad requieren fuente, vigencia y fallback",
+          "dias_sin_editar": "41.0",
+          "updated_at": "2026-10-02 17:43:14.180839+00",
+          "pendiente_detalle": "Mecanismo de vigencia cerrado. Falta construir/identificar el registro canónico de contenido versionado para publicación; hasta entonces las cifras variables se mantienen candidatas o se reemplazan por copy descriptivo."
+        },
+        {
+          "codigo": "REG_CLIENT_HOME_PRIMARY_ACTION_PRIORITY_001",
+          "id": 600,
+          "categoria": "flujo",
+          "titulo": "Prioridad de la siguiente acción principal del Home autenticado",
+          "dias_sin_editar": "41.0",
+          "updated_at": "2026-10-02 17:43:14.180839+00",
+          "pendiente_detalle": "Prioridad macro aprobada por estructura visual. Falta cerrar reglas de desempate y umbrales de proximidad/vencimiento usando estados y fechas canónicas al implementar el resolver integral."
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_REFUND_POLICY_001",
+          "id": 625,
+          "categoria": "pago",
+          "titulo": "Devoluciones Cliente retornan dinero y no crean saldo LF",
+          "dias_sin_editar": "41.0",
+          "updated_at": "2026-10-02 17:43:14.180839+00",
+          "pendiente_detalle": "Principio funcional cerrado. Pendiente implementación técnica de refund: proveedor, ledger, estados, tiempos, conciliación, excepciones y copy exacto. No habilitar wallet ni store credit por inferencia."
+        },
+        {
+          "codigo": "REG_CLIENT_PUBLIC_LEGAL_NAV_001",
+          "id": 556,
+          "categoria": "legal",
+          "titulo": "Destinos legales públicos Cliente no requieren autenticación ni rutas B2B",
+          "dias_sin_editar": "41.0",
+          "updated_at": "2026-10-02 17:43:14.180839+00",
+          "pendiente_detalle": "Pendiente crear/registrar rutas Cliente. La obligación funcional pública está cerrada; no inventar route_pattern."
+        },
+        {
+          "codigo": "REG_LF_BENEFITS_B2B_CAMPAIGN_001",
+          "id": 597,
+          "categoria": "COMMERCIAL_CAMPAIGN",
+          "titulo": "Campañas especiales de descuento aportadas por empresa B2B",
+          "dias_sin_editar": "41.0",
+          "updated_at": "2026-10-02 17:43:14.180839+00",
+          "pendiente_detalle": "Pendiente definir/reutilizar estructura canónica de campaña al formalizar el módulo. No crear tabla ni pantalla específica por esta regla. También queda pendiente definir bindings de administración/B2B y Cliente al revisar cada pantalla."
+        },
+        {
+          "codigo": "REG_RISK_PHONE_MULTI_DNI_001",
+          "id": 509,
+          "categoria": "seguridad",
+          "titulo": "Múltiples DNI o cuentas exploradas desde un mismo celular verificado",
+          "dias_sin_editar": "41.0",
+          "updated_at": "2026-10-02 17:43:14.180839+00",
+          "pendiente_detalle": "Pendiente calibrar ventanas y umbrales numéricos con telemetría real/baseline antes de convertir esta señal en una política cuantitativa de rate limit. No crear números por inferencia."
+        },
+        {
+          "codigo": "REG_CLIENT_LIBRO_SUBMIT_001",
+          "id": 545,
+          "categoria": "legal",
+          "titulo": "Submit público, atómico e idempotente del Libro de Reclamaciones Cliente",
+          "dias_sin_editar": "38.9",
+          "updated_at": "2026-10-04 20:20:01.407106+00",
+          "pendiente_detalle": "Contrato de submit cerrado. Implementación bloqueada hasta reconciliar/confirmar con Legal el Anexo I final y diseñar/identificar el registro legal canónico. Catálogo inicial de errores de validación, submit idempotente y falla de entrega de constancia ya reconciliado. Pendientes: analytics específicos, canal final de respuesta/constancia y mecanismo definitivo para consumidor menor de edad y conformidad virtual."
+        }
+      ]
+    },
+    "LF15": {
+      "sql_sha256": "119889e9bdc8e9e50e4af9979a9a2c90e4c6fa6a304c8e00a7155bfa0a256a95",
+      "result_sha256": "462c8e801ad505f74881d49dc48802c5611e049471ded45b5f11fe605cbd4577",
+      "n": 43,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": [
+        {
+          "codigo": "B2B-RULE-CAMPAIGN-ARCHITECTURE-001",
+          "estado": "CANDIDATO",
+          "categoria": "COMMERCIAL_CAMPAIGN",
+          "titulo": "Arquitectura B2B de campañas comerciales separada de la carga de cartera",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-CONFIG-001",
+          "estado": "CANDIDATO",
+          "categoria": "AUTHORIZATION",
+          "titulo": "Frontera de Configuración del Portal Empresa",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-IMPORT-SOURCE-MAPPING-001",
+          "estado": "CANDIDATO",
+          "categoria": "B2B_CARGAS",
+          "titulo": "Distribución de fuentes para datos de oferta y plan",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-NEGOTIATION-BANDS-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Negociación B2B por bandas delegadas por la empresa",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PAGE-HEADER-001",
+          "estado": "CANDIDATO",
+          "categoria": "NAVIGATION",
+          "titulo": "Contrato reutilizable de cabecera de página",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PAYMENT-FLOW-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Flujo financiero B2B por pago confirmado",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PAYMENT-LEDGER-001",
+          "estado": "CANDIDATO",
+          "categoria": "INTEGRITY",
+          "titulo": "Ledger financiero canónico requerido para pagos B2B",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PORTAL-BOUNDARY-001",
+          "estado": "CANDIDATO",
+          "categoria": "AUTHORIZATION",
+          "titulo": "Frontera entre Portal Empresa y Administración LF",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PORTAL-TREE-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Árbol funcional maestro del Portal Empresa",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PORTFOLIO-BAJAS-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Bajas como capacidad candidata de Cartera",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-PORTFOLIO-MAINTENANCE-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Mantenimiento individual de cartera independiente del canal masivo",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-RECONCILIATION-001",
+          "estado": "CANDIDATO",
+          "categoria": "INTEGRITY",
+          "titulo": "Conciliación financiera independiente de pagos y liquidaciones",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-REPORTS-EXTRACTION-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Reportes como centro de extracción histórica sin sustituir Inicio",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SCOPE-003",
+          "estado": "CANDIDATO",
+          "categoria": "SECURITY",
+          "titulo": "Scope corporativo no autoritativo desde URL o cliente",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SETTLEMENT-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Liquidación B2B trazable a pagos y ajustes",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SHELL-BODY-STATES-001",
+          "estado": "CANDIDATO",
+          "categoria": "SHELL",
+          "titulo": "Presentación común de estados del cuerpo del B2B_APP_SHELL",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SHELL-NAV-001",
+          "estado": "CANDIDATO",
+          "categoria": "SHELL",
+          "titulo": "Mapa funcional del B2B_APP_SHELL para Empresa",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SHELL-OVERLAY-001",
+          "estado": "CANDIDATO",
+          "categoria": "SHELL",
+          "titulo": "Overlay root global del B2B_APP_SHELL",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SHELL-SCROLL-001",
+          "estado": "CANDIDATO",
+          "categoria": "SHELL",
+          "titulo": "Contrato de scroll del B2B_APP_SHELL",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SHELL-STATE-001",
+          "estado": "CANDIDATO",
+          "categoria": "UX",
+          "titulo": "Estados globales del B2B_APP_SHELL",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SIMULA-AGE-BASIS-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "LF Simula conserva fechas disponibles y deriva subgrupos temporales dentro de una misma carga",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SIMULA-INTELLIGENCE-BOUNDARY-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Frontera entre cálculo determinístico, modelos, capa cognitiva y decisión humana",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SIMULA-LEARNING-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Aprendizaje posterior compara recomendación, decisión y resultado real",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SIMULA-PLUS-MOTORS-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Plus separa Motor de Potencial y Motor de Precio/Oferta",
+          "es_transversal": false
+        },
+        {
+          "codigo": "B2B-RULE-SIMULA-PLUS-NEGOTIATION-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Plus recomienda y optimiza bandas de negociación con evidencia",
+          "es_transversal": false
+        },
+        {
+          "codigo": "LF-RULE-SUPPORT-CONTACTS-001",
+          "estado": "CANDIDATO",
+          "categoria": "BUSINESS",
+          "titulo": "Canales de soporte LF centralizados por área",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_ONB003_DNI_ONLY_001",
+          "estado": "CANDIDATO",
+          "categoria": "flujo",
+          "titulo": "ONB_003 usa CAMPO_NRO_DOC en contexto DNI-only",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_REC_PHONE_001",
+          "estado": "CANDIDATO",
+          "categoria": "flujo",
+          "titulo": "Recuperación de cuenta cuando el cliente cambió de celular",
+          "es_transversal": false
+        },
+        {
+          "codigo": "BUG-ASSET-LOGO-NORMAL-SIN-ALPHA-01",
+          "estado": "VIGENTE",
+          "categoria": "legal",
+          "titulo": "Defecto de archivo: Logo_Normal.png en Drive no tiene canal alfa real",
+          "es_transversal": false
+        },
+        {
+          "codigo": "BUG-HOME-JUANDIGITAL-FOTO-REAL-01",
+          "estado": "VIGENTE",
+          "categoria": "legal",
+          "titulo": "Regresion: panel de Ruta de Claridad muestra foto real de Juan Digital en vez de la ilustracion locked",
+          "es_transversal": false
+        },
+        {
+          "codigo": "BUG-HOME-PRENSA-REAPARICION-01",
+          "estado": "VIGENTE",
+          "categoria": "legal",
+          "titulo": "Regresion: bloque \"Prensa y menciones publicas\" reaparecio en Respaldo y confianza describiendo un slot futuro/vacio",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "estado": "VIGENTE",
+          "categoria": "precio",
+          "titulo": "Quote de checkout Cliente versionado y fail-closed",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+          "estado": "VIGENTE",
+          "categoria": "negocio",
+          "titulo": "Estado de cancelación total por deuda Cliente",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+          "estado": "VIGENTE",
+          "categoria": "contenido",
+          "titulo": "Documentos DEMO permitidos solo fuera de producción y con versionado pendiente",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "estado": "VIGENTE",
+          "categoria": "pago",
+          "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+          "estado": "VIGENTE",
+          "categoria": "notificacion",
+          "titulo": "Recordatorios operativos de cuotas pendientes",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+          "estado": "VIGENTE",
+          "categoria": "pago",
+          "titulo": "Comportamiento de próxima cuota según modalidad de cobro",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+          "estado": "VIGENTE",
+          "categoria": "pago",
+          "titulo": "Snapshot contractual del plan de cuotas activado",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_VIEW_001",
+          "estado": "VIGENTE",
+          "categoria": "flujo",
+          "titulo": "Detalle funcional de plan activo en Mis operaciones",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_MY_OPERATIONS_SCOPE_001",
+          "estado": "VIGENTE",
+          "categoria": "flujo",
+          "titulo": "Alcance funcional de Mis operaciones Cliente",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+          "estado": "VIGENTE",
+          "categoria": "pago",
+          "titulo": "Acciones post-pago confirmado por deuda y modalidad",
+          "es_transversal": false
+        },
+        {
+          "codigo": "REG_CLIENT_PHONE_PASSWORDLESS_ACCESS_001",
+          "estado": "VIGENTE",
+          "categoria": "autenticacion",
+          "titulo": "Acceso passwordless Cliente por celular previamente asociado y OTP válido",
+          "es_transversal": false
+        },
+        {
+          "codigo": "UX-HOME-CAPABILITY-04",
+          "estado": "VIGENTE",
+          "categoria": "ux",
+          "titulo": "Tarjeta 2 corregida: ya no dice \"simulación referencial\"",
+          "es_transversal": false
+        }
+      ]
+    },
+    "LF16": {
+      "sql_sha256": "f186be138378f1cc96dec9353fe4b159b75c5b721b8496780e520c9ae437f09b",
+      "result_sha256": "9aa837245abba9dd12db04457c3415b3197aa4b9c1ab32958e608540e7c7b33d",
+      "n": 1,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "no_transversal_sin_pantalla": 43,
+          "transversales": 151,
+          "transversales_con_mapeo": 130
+        }
+      ]
+    }
+  }
+}
