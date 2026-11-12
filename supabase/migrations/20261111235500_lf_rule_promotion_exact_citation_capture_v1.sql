@@ -393,4 +393,108 @@ BEGIN
    'exact_citation_capture_binding_sha256',l7->>'binding_sha256',
    'independence_attested',false);
 END $real_verify$;
+-- L7 fail-closed apply guard: always re-read original capture, source and Step70.
+CREATE OR REPLACE FUNCTION public.lf_rule_promotion_apply_v1(p_promotion_id text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','extensions'
+AS $apply$
+DECLARE p public.lf_rule_promotion_v1%ROWTYPE; gate jsonb; owner_gate jsonb;
+   real_gate jsonb; rb jsonb; v_expected text; v_after text; v_error text; l7 jsonb;
+BEGIN
+ SELECT * INTO p FROM public.lf_rule_promotion_v1 WHERE promotion_id=p_promotion_id FOR UPDATE;
+ IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_NOT_FOUND'); END IF;
+ -- L7 citation hash/Step70/source currentness before any status gate or write.
+ l7:=public.lf_rule_promotion_citation_verify_v1(p_promotion_id);
+ IF l7->>'status' IS DISTINCT FROM 'VERIFIED_CAPTURE_BINDING' THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','L7_EXACT_CITATION_NOT_CURRENT',
+     'citation_gate',l7,'apply_authorized',false); END IF;
+ IF p.status<>'APPROVED' THEN RETURN jsonb_build_object('status','BLOCKED',
+   'blocking_code','PROMOTION_NOT_APPROVED','estado',p.status); END IF;
+ gate:=public.lf_rule_promotion_ig_semantic_verify_v1(p_promotion_id);
+ IF gate->>'status' IS DISTINCT FROM 'READY_FOR_PROFILE_APPROVAL' THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+    'blocking_code','PROMOTION_IG_SEMANTIC_RECEIPT_NOT_CURRENT','semantic_gate',gate); END IF;
+ real_gate:=public.lf_rule_promotion_blind_verdict_verify_v1(p_promotion_id);
+ IF real_gate->>'status' IS DISTINCT FROM 'REAL_VERDICT_ALLOW_VERIFIED' THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+     'blocking_code','PROMOTION_REAL_BLIND_VERDICT_NOT_CURRENT','real_gate',real_gate); END IF;
+ owner_gate:=public.lf_rule_promotion_profile_owner_verify_v1(p_promotion_id);
+ IF owner_gate->>'status' IS DISTINCT FROM 'VERIFIED_PROFILE_OWNER' THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+    'blocking_code','PROMOTION_OWNER_APPROVAL_RECEIPT_NOT_CURRENT',
+    'owner_gate',owner_gate); END IF;
+ IF p.decided_by IS DISTINCT FROM 'PROFILE:'||p.owner_approval_profile_code
+    OR p.decision_route IS DISTINCT FROM 'PROFILE_OWNER_APPROVED'
+    OR p.judge_receipt IS NULL
+    OR p.judge_receipt_sha256 IS DISTINCT FROM encode(
+         extensions.digest(convert_to(p.judge_receipt::text,'UTF8'),'sha256'),'hex')
+    OR p.judge_receipt IS DISTINCT FROM public.lf_rule_promotion_quality_judge_v1(p_promotion_id)
+    OR p.judge_receipt->>'classification' IS DISTINCT FROM 'AUTO_APPROVABLE'
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+   'blocking_code','PROMOTION_JUDGE_RECEIPT_NOT_CURRENT'); END IF;
+ IF public.lf_asset_snapshot_sha_v1('REGLA',p.rule_code) IS DISTINCT FROM p.request_snapshot_sha256 THEN
+   UPDATE public.lf_rule_promotion_v1 SET status='STALE' WHERE promotion_id=p_promotion_id;
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_STALE'); END IF;
+ -- Compute canonical expected post-transition snapshot from the same row
+ -- BEFORE any write. Readback can only succeed if exactly this state lands.
+ SELECT encode(extensions.digest(convert_to(
+    (to_jsonb(r) || jsonb_build_object('estado','VIGENTE'))::text,'UTF8'),'sha256'),'hex')
+ INTO v_expected FROM lf_ops.reglas r WHERE r.codigo=p.rule_code AND r.estado='CANDIDATO';
+ IF v_expected IS NULL THEN RETURN jsonb_build_object('status','BLOCKED',
+    'blocking_code','PROMOTION_RULE_ROW_NOT_CANDIDATE'); END IF;
+
+ -- Subtransaction ensures rollback of the VIGENTE update when readback fails.
+ -- The retry marker is stored OUTSIDE that subtransaction.
+ v_error:=NULL;
+ BEGIN
+   UPDATE lf_ops.reglas SET estado='VIGENTE'
+     WHERE codigo=p.rule_code AND estado='CANDIDATO';
+   IF NOT FOUND THEN RAISE EXCEPTION 'L5_NO_CANDIDATE_ROW'; END IF;
+   rb:=public.lf_rule_promotion_rule_readback_v1(p.rule_code);
+   IF rb->>'estado' IS DISTINCT FROM 'VIGENTE'
+      OR rb->>'snapshot_sha256' IS DISTINCT FROM v_expected THEN
+      RAISE EXCEPTION 'L5_READBACK_MISMATCH';
+   END IF;
+ EXCEPTION WHEN OTHERS THEN
+   v_error:=SQLSTATE||':'||SQLERRM;
+ END;
+ IF v_error IS NOT NULL THEN
+   UPDATE public.lf_rule_promotion_v1 SET
+     rule_return_status='RETRY_REQUIRED',
+     rule_return_error='RULE_READBACK_FAILED',
+     rule_return_payload=jsonb_build_object(
+       'status','RETRY_REQUIRED','rule_code',p.rule_code,
+       'owner_execution_id',p.owner_approval_execution_id,
+       'expected_sha256',v_expected,
+       'reason','READBACK_MISMATCH_OR_WRITE_FAILURE',
+       'no_vigente_accredited',true)
+     WHERE promotion_id=p_promotion_id;
+   RETURN jsonb_build_object('status','RETRY_REQUIRED',
+     'blocking_code','RULE_READBACK_FAILED_NO_VIGENTE',
+     'promotion_id',p_promotion_id,'rule_code',p.rule_code,
+     'readback_error',v_error,'apply_authorized',false);
+ END IF;
+ v_after:=rb->>'snapshot_sha256';
+ UPDATE public.lf_rule_promotion_v1 SET
+   status='APPLIED',applied_at=now(),
+   rule_return_status='READY',rule_return_error=NULL,
+   rule_return_payload=jsonb_build_object(
+     'status','READY','promotion_id',p_promotion_id,
+     'rule_code',p.rule_code,
+     'owner_profile_code',p.owner_approval_profile_code,
+     'owner_execution_id',p.owner_approval_execution_id,
+     'estado','VIGENTE','readback_snapshot_sha256',v_after,
+     'owner_approval_binding_sha256',p.owner_approval_binding_sha256,
+     'ig_external_receipt_sha256',p.ig_semantic_external_receipt_sha256,
+     'blind_case_binding_sha256',p.l5_blind_case_binding_sha256)
+   WHERE promotion_id=p_promotion_id;
+ UPDATE public.lf_rule_promotion_v1 SET
+   rule_return_sha256=encode(extensions.digest(convert_to(
+      rule_return_payload::text,'UTF8'),'sha256'),'hex')
+   WHERE promotion_id=p_promotion_id;
+ RETURN jsonb_build_object('status','APPLIED','rule_code',p.rule_code,
+   'readback_status','VERIFIED','readback_snapshot_sha256',v_after,
+   'profile_return_status','READY',
+   'independence_attested',false);
+END $apply$;
 COMMIT;
