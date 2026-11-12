@@ -59,7 +59,7 @@ jobs:
             'capture_record':'89cbfac4162dbc9f8ecca59f2c3ab4c3',
             'citation_verify':'773a62783baa5edbe967200cac66b8c3',
             'l8_guard':'522d12f0843be1da3c785cef3c0bf3fc'}
-          expected={'N1_MISSING_VERDICT_BLOCKS_WRAPPER','N2_EXACT_DUPLICATE',
+          expected={'N1_MISSING_VERDICT_BLOCKS_WRAPPER','N1B_LF_FROZEN_GATE_NEEDS_CURATOR','N2_EXACT_DUPLICATE',
             'N3_CONFLICTING_CONFIG','N4_FAMILY_NOT_FOUND','N5_WRONG_FAMILY_OWNER',
             'N6_TAMPERED_VERDICT_SEAL','N7_DIRECT_VERDICT_DML_DENIED',
             'N8_ACCEPTED_VERDICT_STALE_CANDIDATE'}
