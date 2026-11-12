@@ -1,0 +1,167 @@
+{
+  "lote": 13,
+  "global_status": "NO_GO_UNVERIFIED",
+  "sandbox_status": "VERIFIED_28_OF_28",
+  "base_commit_l12": "e5b1a9eea5e4536624eb12b7a277795b3ad0e05f",
+  "branch": "lf/issue-3779-lote13-family-lifecycle-v1",
+  "branch_head_pre_manifest": "441efbb15bc3b0283f40df8b5743c969718cc4a4",
+  "github_action": {
+    "run_id": 43284490129,
+    "job_id": 131414140727,
+    "commit": "a12a5171d32870e6a1201f56abdee3be4dfa1e4a",
+    "conclusion": "success",
+    "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43284490129",
+    "postgres_version": "18.6 (Debian 18.6-1.pgdg13+2)",
+    "actual_cases": 28,
+    "pass_count": 28
+  },
+  "tested_sql_sha256": [
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/01_schema.sql",
+      "sha256": "3c955e96a3995716a9509ce1020ee75f6743527e6165eff8e8f92ec218f96cbf"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/02_seed_synthetic.sql",
+      "sha256": "9378a6ee4d00751a00c2189edb8293bd887b4ebfb7c1ed5deb8d7607f73031ca"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/03_test_cases.sql",
+      "sha256": "add2dff455df2bf37efae49833735a5d0dec63b5512883ac0f23b70468048370"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/04_birth_expiry_tests.sql",
+      "sha256": "01f791b28a7701c004da9132e00d881b59eef707d5a56abd2fbdff20fd660bef"
+    }
+  ],
+  "tests_result_sha256_compact": "fc26aaa665974af2f7674664f24d682220869bda69532b6b77c6b2664a7c5eff",
+  "source_readback": {
+    "match_git_blobs_at_test_commit": true,
+    "by_file": [
+      {
+        "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/01_schema.sql",
+        "source": "53d26715b40d4596464936a9a55d22bc38ba49bf",
+        "target": "53d26715b40d4596464936a9a55d22bc38ba49bf"
+      },
+      {
+        "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/02_seed_synthetic.sql",
+        "source": "52cbec6d11b66709b03bcf9e2c0ef2eebe005d38",
+        "target": "52cbec6d11b66709b03bcf9e2c0ef2eebe005d38"
+      },
+      {
+        "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/03_test_cases.sql",
+        "source": "8e31e6e6eb552231fd113e0d9163be01e9389874",
+        "target": "8e31e6e6eb552231fd113e0d9163be01e9389874"
+      },
+      {
+        "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/04_birth_expiry_tests.sql",
+        "source": "2363d0b3cf23d42dbbeb959d45ada03049d9e5a8",
+        "target": "2363d0b3cf23d42dbbeb959d45ada03049d9e5a8"
+      }
+    ]
+  },
+  "files_readback": [
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/01_schema.sql",
+      "git_blob_sha": "53d26715b40d4596464936a9a55d22bc38ba49bf",
+      "characters": 13437
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/02_seed_synthetic.sql",
+      "git_blob_sha": "52cbec6d11b66709b03bcf9e2c0ef2eebe005d38",
+      "characters": 13456
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/03_test_cases.sql",
+      "git_blob_sha": "8e31e6e6eb552231fd113e0d9163be01e9389874",
+      "characters": 15225
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/04_birth_expiry_tests.sql",
+      "git_blob_sha": "2363d0b3cf23d42dbbeb959d45ada03049d9e5a8",
+      "characters": 4237
+    },
+    {
+      "path": ".github/workflows/l13-rule-quality-pg18-sandbox.yml",
+      "git_blob_sha": "a2404bc05ded97fd0c8f1a9bbd939a3dde4fc07f",
+      "characters": 3055
+    },
+    {
+      "path": "docs/rule-quality-lote13/01_pg18_real_results.json",
+      "git_blob_sha": "e576ba356acde80bdb3e65485f1c7e6445dae432",
+      "characters": 9333
+    },
+    {
+      "path": "docs/rule-quality-lote13/02_pg18_real_results_final.json",
+      "git_blob_sha": "a3554ea90d0bd9a3ca048dfbec3a9f793a4cc8ac",
+      "characters": 11410
+    },
+    {
+      "path": "docs/rule-quality-lote13/03_design_generic.md",
+      "git_blob_sha": "26a06c7c64ab40368f4da22d478298676bdcbfcd",
+      "characters": 7469
+    },
+    {
+      "path": "docs/rule-quality-lote13/04_gate_readback.json",
+      "git_blob_sha": "e730bc02388cb7a87c78413ef5fb556787047703",
+      "characters": 2008
+    }
+  ],
+  "source_scope_compare": {
+    "ahead": 13,
+    "behind": 0,
+    "only_allowed_paths": true,
+    "paths": [
+      ".github/workflows/l13-rule-quality-pg18-sandbox.yml",
+      "docs/rule-quality-lote13/01_pg18_real_results.json",
+      "docs/rule-quality-lote13/02_pg18_real_results_final.json",
+      "docs/rule-quality-lote13/03_design_generic.md",
+      "docs/rule-quality-lote13/04_gate_readback.json",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/01_schema.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/02_seed_synthetic.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/03_test_cases.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/04_birth_expiry_tests.sql"
+    ]
+  },
+  "md5_gate_unchanged": [
+    {
+      "path": "supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql",
+      "md5_before": "7d475fc6057839953d152ca08359e31c",
+      "md5_after": "7d475fc6057839953d152ca08359e31c",
+      "git_sha_same": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/promotion_pg18_sandbox_fixture.sql",
+      "md5_before": "d58299c54b76432eee030189dd72e8ae",
+      "md5_after": "d58299c54b76432eee030189dd72e8ae",
+      "git_sha_same": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py",
+      "md5_before": "b88c0c856cf4891745828ba783c36d93",
+      "md5_after": "b88c0c856cf4891745828ba783c36d93",
+      "git_sha_same": true
+    },
+    {
+      "path": ".github/workflows/pase-merge-gate.yml",
+      "md5_before": "5278a2d3284e17e4ddd3c7bcbfccfdee",
+      "md5_after": "5278a2d3284e17e4ddd3c7bcbfccfdee",
+      "git_sha_same": true
+    }
+  ],
+  "live_supabase_writes": 0,
+  "production_deployment": false,
+  "merge": false,
+  "profile_run": false,
+  "identity_of_claude_attested": false,
+  "external_semantic_judge_attested": false,
+  "blockers": [
+    "Server-attested actor and privilege binding absent from sandbox",
+    "Need production RLS/grants, threat model and governance",
+    "Family mapping is semantic proposal, not approved",
+    "No production or live Supabase testing"
+  ],
+  "progress": {
+    "sandbox_design_tested_percent": 100,
+    "production_authorization_percent": 0
+  }
+}
