@@ -134,33 +134,45 @@ def run(case_id="K00E813F0",quote=None,verdict="ALLOW",mode="valid"):
     return sql(script)
 
 def reuse_quote():
-    # Two actual blind proposals share this exact substring. This is NOT a
-    # quote from the five real reviewer chats; PG18 construction only.
-    a,b=CASES["K00FC0700"],CASES["K014E51A2"]
-    assert a["base_rule"]["code"]==b["base_rule"]["code"]
+    # Synthetic PROPOSAL-only collision: two original blind MODIFY case IDs
+    # on the SAME rule; the second proposal text is extended ONLY in this
+    # PG18 fixture to repeat a literal phrase of the first proposal. There
+    # is NO such recorded shared quote from the five reviewer chats.
+    first,second="K00FC0700","K00C02DD0"
+    a,orig=CASES[first],CASES[second]
+    assert a["base_rule"]["code"]==orig["base_rule"]["code"]=="REG_RATE_002"
+    assert a["proposal"]["rule_code"]==orig["proposal"]["rule_code"]=="REG_RATE_002"
     quote="de diez minutos, sin depender de la sesión."
-    assert quote in a["proposal"]["description"] and quote in b["proposal"]["description"]
-    assert quote not in a["base_rule"]["description"] and quote not in b["base_rule"]["description"]
-    line1="K00FC0700|ALLOW|"+quote
-    line2="K014E51A2|BLOCK|"+quote
-    script=f"""BEGIN;
-      {seed("K00FC0700","PROM-L7","ALLOW",quote)}
-      SET LOCAL ROLE lf_rule_citation_step70_bridge;
-      SELECT 'FIRST|'||public.lf_rule_promotion_citation_record_v1(
-        'PROM-L7',{lit(line1)},'EXEC-PARENT-TEST-001')::text;
-      RESET ROLE;
-      {seed("K014E51A2","PROM-L7-SECOND","BLOCK",quote)}
-      SET LOCAL ROLE lf_rule_citation_step70_bridge;
-      SELECT 'SECOND|'||public.lf_rule_promotion_citation_record_v1(
-        'PROM-L7-SECOND',{lit(line2)},'EXEC-PARENT-TEST-001')::text;
-      RESET ROLE;
-      SELECT 'WITHIN|'||jsonb_build_object('captures',
-       (SELECT count(*) FROM public.lf_rule_promotion_citation_capture_v1))::text;
-      ROLLBACK;
-      SELECT 'ROLLBACK|'||jsonb_build_object('captures',
-       (SELECT count(*) FROM public.lf_rule_promotion_citation_capture_v1))::text;
-    """
-    return sql(script)
+    assert quote in a["proposal"]["description"]
+    assert quote not in a["base_rule"]["description"]
+    import copy
+    synthetic=copy.deepcopy(orig)
+    assert quote not in synthetic["proposal"]["description"]
+    synthetic["proposal"]["description"] += " " + quote
+    CASES[second]=synthetic
+    try:
+        line1=first+"|ALLOW|"+quote
+        line2=second+"|BLOCK|"+quote
+        script=f"""BEGIN;
+          {seed(first,"PROM-L7","ALLOW",quote)}
+          SET LOCAL ROLE lf_rule_citation_step70_bridge;
+          SELECT 'FIRST|'||public.lf_rule_promotion_citation_record_v1(
+            'PROM-L7',{lit(line1)},'EXEC-PARENT-TEST-001')::text;
+          RESET ROLE;
+          {seed(second,"PROM-L7-SECOND","BLOCK",quote)}
+          SET LOCAL ROLE lf_rule_citation_step70_bridge;
+          SELECT 'SECOND|'||public.lf_rule_promotion_citation_record_v1(
+            'PROM-L7-SECOND',{lit(line2)},'EXEC-PARENT-TEST-001')::text;
+          RESET ROLE;
+          SELECT 'WITHIN|'||jsonb_build_object('captures',
+           (SELECT count(*) FROM public.lf_rule_promotion_citation_capture_v1))::text;
+          ROLLBACK;
+          SELECT 'ROLLBACK|'||jsonb_build_object('captures',
+           (SELECT count(*) FROM public.lf_rule_promotion_citation_capture_v1))::text;
+        """
+        return sql(script)
+    finally:
+        CASES[second]=orig
 
 def other_rule_quote():
     a=CASES["K00E813F0"]
