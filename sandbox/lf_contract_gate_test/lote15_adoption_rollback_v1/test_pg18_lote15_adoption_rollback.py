@@ -128,7 +128,7 @@ SELECT 'CAT|'||jsonb_build_object(
        WHERE n.nspname IN ('public','lf_ops','programacion','rule_quality_l13')
          AND a.attnum>0 AND a.attacl IS NOT NULL
      UNION ALL
-     SELECT 'DEFAULT',n.nspname||':'||d.defaclrole::text||':'||d.defaclobjtype,
+     SELECT 'DEFAULT',n.nspname||':'||d.defaclrole::text||':'||d.defaclobjtype::text,
           d.defaclacl::text FROM pg_default_acl d JOIN pg_namespace n
           ON n.oid=d.defaclnamespace
        WHERE n.nspname IN ('public','lf_ops','programacion','rule_quality_l13')
