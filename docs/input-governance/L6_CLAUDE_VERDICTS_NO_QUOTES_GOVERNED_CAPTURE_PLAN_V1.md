@@ -3,7 +3,7 @@
 
 ## Medición aportada por auditor
 - **Fixture:** `lote6_claude_blind_5pass_verdicts_not_native_ig_receipt_v1.json`
-- Etiqueta **obligatoria:** `CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT`.
+- Etiqueta **obligatoria:** `REVIEW_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT_MODEL_UNATTESTED`.
 - Fuente: 3 bloques literales aportados por auditor, 154 resultados individuales de 5 pasadas declaradas idénticas. **CI no reproduce de nuevo las 5 pasadas ni sus citas**. N=5 es una declaración del auditor, no cinco transcriptos en el fixture.
 - 130 BLOCK, 24 ALLOW; 154 IDs coinciden con el paquete ciego; cotejo clave/reportes coincide sin filtrarlos al reviewer.
 - En los 154 casos: `citation_status=UNVERIFIED_NOT_CAPTURED`, `exact_excerpt=null`. **NO corresponde transformar ALLOW en cita válida**.
@@ -29,3 +29,5 @@
 - Las funciones L5 de producción candidatas **no cambian** en L6: MD5 antes/después idénticos.
 - El routing que permite al propietario **capturar la cita** existe exclusivamente como prueba de fixture en PG18; no es un nuevo RPC autorizado en runtime ni un permiso de aprobación.
 - Sin citas ni recibo #3682, **no existe evidencia que habilite promoción automática**. La aprobación real por perfil y retorno efectivo del mismo RUN siguen `UNVERIFIED`.
+
+**Corrección de procedencia L9:** la palabra histórica «Claude» en el nombre del archivo L6 no acredita modelo ni autor; etiqueta operativa neutral `REVIEW_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT_MODEL_UNATTESTED`. No se cambia ningún veredicto ni se atribuye revisión a un proveedor. La etiqueta es una corrección de metadatos, no independencia.
