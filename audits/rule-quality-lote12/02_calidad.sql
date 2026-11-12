@@ -1,0 +1,23 @@
+-- LF09 SQL_SHA256 65fa94c58ed652960e7fcac36202e529bad4add19ffb7c46cd0a6b688b4076e1
+WITH flags AS (SELECT codigo,categoria,estado,descripcion,valor_config,(coalesce(descripcion,'') ~* '(debe|deber[aá]|obligator|prohib|no puede|no se|solo|solamente|únicamente|unicamente|requiere|requerid|permitid|deneg|bloque|valid|mínim|minim|máxim|maxim|si |cuando|antes de|despu[eé]s|hasta|al menos|cada |expir|l[ií]mit|[0-9]+)') AS control_texto,exists(SELECT 1 FROM jsonb_object_keys(coalesce(valor_config,'{}'::jsonb)) k(key) WHERE k.key !~* '^(source_|owner_|decision|version|reconciled|implementation_status|screen_id$|pantalla_id$|relation_key$|reference|evidence|registry)') AS config_operativa FROM lf_ops.reglas) SELECT codigo,categoria,estado,descripcion,valor_config FROM flags WHERE NOT control_texto AND NOT config_operativa ORDER BY codigo;
+
+-- LF10 SQL_SHA256 762e508ae52caa4698c55240d6492f8032f307a1dec948dfaa16155ad55ec311
+WITH p AS (SELECT r.id,r.codigo,r.estado,k.key,k.value FROM lf_ops.reglas r CROSS JOIN LATERAL jsonb_each(coalesce(r.valor_config,'{}'::jsonb)) k WHERE jsonb_typeof(k.value) IN ('number','boolean','string') AND k.key ~* '(max|min|limite|limit|timeout|expir|sesion|session|reenv|intento|ventana|cooldown|retry|threshold|ttl|duracion|duraci|ratio|pct|percent|monto|amount)' AND k.key !~* '(_id$|^source_|decision|version|policy_id|rule_id|message_id|screen_id|error_id)') SELECT a.codigo AS regla_a,b.codigo AS regla_b,a.key AS parametro,a.value AS valor_a,b.value AS valor_b,count(DISTINCT ra.pantalla_id) AS pantallas_comunes FROM p a JOIN p b ON a.codigo<b.codigo AND a.key=b.key AND a.value<>b.value JOIN lf_ops.reglas_pantallas ra ON ra.regla_id=a.id JOIN lf_ops.reglas_pantallas rb ON rb.regla_id=b.id AND ra.pantalla_id=rb.pantalla_id WHERE a.estado='VIGENTE' AND b.estado='VIGENTE' GROUP BY 1,2,3,4,5 ORDER BY pantallas_comunes DESC,regla_a,regla_b;
+
+-- LF11 SQL_SHA256 fa148679724feefed26de9dddbe07e88eb15074588ab225e74a197d123613b5c
+WITH k AS (SELECT r.codigo,r.categoria,r.descripcion,k.key AS parametro,k.value AS valor_config,regexp_match(lower(r.descripcion),replace(lower(k.key),'_','[_[:space:]]+') || '[[:space:]]*(?:=|:|de|es)[[:space:]]*([0-9]+([.,][0-9]+)?)') AS texto_match FROM lf_ops.reglas r CROSS JOIN LATERAL jsonb_each(coalesce(r.valor_config,'{}'::jsonb)) k WHERE jsonb_typeof(k.value)='number' AND k.key !~* '(_id$|decision|version|source_)') SELECT codigo,categoria,parametro,valor_config,texto_match[1] AS valor_descripcion FROM k WHERE texto_match IS NOT NULL AND replace(texto_match[1],',','.')::numeric <> (valor_config #>> '{}')::numeric ORDER BY codigo,parametro;
+
+-- LF12 SQL_SHA256 22a71c1eafa8ec371e82274978a30278b11877b2524660b0fd6caf198cd2dae4
+SELECT count(*) AS total,count(*) FILTER(WHERE valor_config::text ~* '"depends_on_rules"[[:space:]]*:') AS dep_por_codigos_presentes,count(*) FILTER(WHERE valor_config ? 'dependency_status') AS dependency_status_config,count(*) FILTER(WHERE valor_config->>'dependency_status'='MISSING') AS dependency_missing_explicito FROM lf_ops.reglas;
+
+-- LF13 SQL_SHA256 f959bed3398b469a56bcb23bf59dc27491721ff3943b657f8a85e7c2dfe6e67f
+WITH refs AS (SELECT r.codigo,r.estado,k.key AS campo,k.value::text AS target_id FROM lf_ops.reglas r CROSS JOIN LATERAL jsonb_each(coalesce(r.valor_config,'{}'::jsonb)) k WHERE k.key ~* '(^|_)rule_id$' AND jsonb_typeof(k.value)='number') SELECT refs.*,t.codigo AS target_codigo,t.estado AS target_estado,CASE WHEN t.id IS NULL THEN 'INEXISTENTE' WHEN t.estado<>'VIGENTE' THEN 'NO_VIGENTE' ELSE 'OK' END AS vinculo FROM refs LEFT JOIN lf_ops.reglas t ON t.id::text=refs.target_id ORDER BY vinculo,refs.codigo,campo;
+
+-- LF14 SQL_SHA256 74d247dfff3a56eeda64fd39619924895b16f7a92ec1924ec1c14aae4e586847
+SELECT codigo,id,categoria,titulo,round((extract(epoch FROM(now()-updated_at))/86400)::numeric,1) AS dias_sin_editar,updated_at,pendiente_detalle FROM lf_ops.reglas WHERE estado='VIGENTE' AND pendiente_decision IS TRUE ORDER BY updated_at,codigo;
+
+-- LF15 SQL_SHA256 119889e9bdc8e9e50e4af9979a9a2c90e4c6fa6a304c8e00a7155bfa0a256a95
+SELECT r.codigo,r.estado,r.categoria,r.titulo,r.es_transversal FROM lf_ops.reglas r WHERE NOT r.es_transversal AND NOT EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas rp WHERE rp.regla_id=r.id) ORDER BY r.estado,r.codigo;
+
+-- LF16 SQL_SHA256 f186be138378f1cc96dec9353fe4b159b75c5b721b8496780e520c9ae437f09b
+SELECT count(*) FILTER(WHERE NOT es_transversal AND NOT EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas rp WHERE rp.regla_id=r.id)) AS no_transversal_sin_pantalla,count(*) FILTER(WHERE es_transversal) AS transversales,count(*) FILTER(WHERE es_transversal AND EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas rp WHERE rp.regla_id=r.id)) AS transversales_con_mapeo FROM lf_ops.reglas r;
