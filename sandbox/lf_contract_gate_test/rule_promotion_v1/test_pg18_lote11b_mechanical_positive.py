@@ -95,6 +95,33 @@ $mock_l11b$;
 
 def setup(variant):
     actor=IG_ACTOR if variant=="OWNER_EQ_IG" else "PERFIL-OWNER-RULE-LF"
+    owner_registry_sql=f"""
+{owner_registry_sql}
+"""
+    if variant=="OWNER_EQ_IG":
+        # Existing CHECK constraint rejects IG actors as owners before approval.
+        # Capture the real PG18 schema failure without disabling the constraint.
+        owner_registry_sql=f"""
+CREATE TEMP TABLE l11b_owner_probe(status text) ON COMMIT DROP;
+DO $owner_check$
+BEGIN
+ BEGIN
+  INSERT INTO public.lf_rule_promotion_profile_owner_v1(
+   rule_code,owner_profile_code,source_decision_sha256,status)
+  SELECT p.rule_code,{lit(actor)},
+   public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'source_decision_sha256',
+   'ACTIVE' FROM public.lf_rule_promotion_v1 p WHERE p.promotion_id='PROM-TEST';
+  INSERT INTO l11b_owner_probe VALUES('UNEXPECTED_IG_OWNER_ACCEPTED');
+ EXCEPTION WHEN check_violation THEN
+  INSERT INTO l11b_owner_probe VALUES('REJECTED_IG_OWNER_BY_CANONICAL_CHECK');
+ END;
+END
+$owner_check$;
+SELECT 'OWNER_REGISTRY_DENIAL|'||jsonb_build_object(
+ 'status',(SELECT status FROM l11b_owner_probe LIMIT 1),
+ 'persisted_owner_rows',(SELECT count(*) FROM public.lf_rule_promotion_profile_owner_v1
+   WHERE rule_code={lit(RULE)}))::text;
+"""
     b=CASE["base_rule"]
     line=CASE_ID+"|ALLOW|"+QUOTE
     return f"""
@@ -323,7 +350,10 @@ def main():
              and x["IN_TX"]["rule"]=="CANDIDATO")
         elif variant=="OWNER_EQ_IG":
             ok=(x["CAPTURE_VERIFY"]["status"]=="VERIFIED_CAPTURE_BINDING"
+             and x["OWNER_REGISTRY_DENIAL"]=={
+               "status":"REJECTED_IG_OWNER_BY_CANONICAL_CHECK","persisted_owner_rows":0}
              and x["OWNER_APPROVAL"]["status"]!="APPROVED"
+             and x["OWNER_VERIFY"]["blocking_code"]=="PROFILE_OWNER_RULE_AUTHORITY_NOT_ATTESTED"
              and x["APPLY"]["status"]=="BLOCKED"
              and x["IN_TX"]["rule"]=="CANDIDATO")
         else:
