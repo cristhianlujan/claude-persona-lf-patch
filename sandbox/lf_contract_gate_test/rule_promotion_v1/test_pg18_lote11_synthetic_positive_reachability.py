@@ -56,10 +56,10 @@ def read_gate_contract():
 
 def explicitly_synthetic_step70():
     case=l7.CASES[CASE]
-    quote=l10.raw_lines.__globals__["QUOTES"][CASE][1] if "QUOTES" in l10.raw_lines.__globals__ else None
-    if quote is None:
-        quotes={x.split("|",2)[0]:x.split("|",2)[2] for x in (DATA/"lote9_real_review_pass1_chat_export_model_unattested.txt").read_text(encoding="utf-8").splitlines()}
-        quote=quotes[CASE]
+    quotes={x.split("|",2)[0]:x.split("|",2)[2] for x in
+            (DATA/"lote9_real_review_pass1_chat_export_model_unattested.txt")
+            .read_text(encoding="utf-8").splitlines()}
+    quote=quotes[CASE]
     line=CASE+"|ALLOW|"+quote
     return sql(f"""BEGIN;
     {l7.seed(CASE,verdict="ALLOW",quote=quote)}
@@ -97,6 +97,14 @@ def owner_equals_ig_guard():
        'cannot_overcome_unverified_L7','NOT_REACHABLE')::text;""")["O"]
 
 def main():
+    owner_meta=json.loads((DATA/"lote9_real_review_pass1_chat_export_model_unattested.json").read_text(encoding="utf-8"))
+    check("OWNER_DECLARED_MODEL_NOT_SYSTEM_ATTESTED",
+      owner_meta.get("reviewer_model")=="ChatGPT"
+      and owner_meta.get("reviewer_model_source")=="OWNER_DECLARED_NOT_SYSTEM_ATTESTED"
+      and owner_meta.get("reviewer_model_system_attestation") is False,
+      {"reviewer_model":owner_meta.get("reviewer_model"),
+       "source":owner_meta.get("reviewer_model_source"),
+       "system_attested":owner_meta.get("reviewer_model_system_attestation")})
     l10.DB=DB
     l7.DB=DB
     l7.l5.DB=DB
