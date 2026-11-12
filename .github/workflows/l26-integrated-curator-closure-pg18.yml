@@ -261,7 +261,7 @@ jobs:
           assert l23["gate_md5_before"]==l23["gate_md5_after"]==gates
           assert d["gate_md5_before"]==d["gate_md5_after"]==gates
           assert d["status"]=="SANDBOX_VERIFIED" and d["production"]=="NO_GO_UNVERIFIED"
-          assert d["case_count"]==34 and all(x["status"]=="PASS" for x in d["cases"])
+          assert d["case_count"]==36 and all(x["status"]=="PASS" for x in d["cases"])
           assert len(d["scenarios"])==3 and all(x["status"]=="PASS" for x in d["scenarios"])
           expected=["Router","Perfil","RUN","IG","Curator","Validator",
             "Retorno perfil","Ejecucion","Promocion","VIGENTE","Readback","Cierre"]
