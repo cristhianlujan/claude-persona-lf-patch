@@ -1,0 +1,61 @@
+{
+  "lote": 20,
+  "observed_at_date": "2026-11-12",
+  "connection_role": "supabase_read_only_user",
+  "database": "postgres",
+  "server_version": "17.6",
+  "inspection_mode": "SELECT_ONLY",
+  "table_counts": [
+    {
+      "project": "lf",
+      "table": "lf_ops.reglas",
+      "total": 578,
+      "estado_vigente": 412,
+      "estado_candidato": 166,
+      "estado_sucedida": 0,
+      "estado_caducada": 0
+    },
+    {
+      "project": "saly",
+      "table": "saly.reglas",
+      "total": 14,
+      "vigente_true": 14,
+      "vigente_false": 0,
+      "estado_validado": 14
+    }
+  ],
+  "required_missing_columns": {
+    "lf_ops.reglas": [
+      "reviewed_at",
+      "next_review_at",
+      "successor_rule_code",
+      "effective_to"
+    ],
+    "saly.reglas": [
+      "reviewed_at",
+      "next_review_at",
+      "successor_rule_code",
+      "effective_to",
+      "lifecycle_state"
+    ]
+  },
+  "schema_notes": [
+    "LF.estado is text, real catalog inspection returned no CHECK constraint on estado (PG18 historical fixture has a narrower CHECK).",
+    "SALY.estado is VALIDADO for all 14 observed rows; SALY.vigente is boolean, and the existing estado should NOT be overwritten with lifecycle states.",
+    "SALY has a metadata JSONB column; L20 PG18 sandbox records terminal lifecycle marker there only; official solution needs explicit schema design."
+  ],
+  "actual_divergent_count": "NOT_DETERMINABLE_WITH_CURRENT_LIVE_SCHEMA_AND_NO_AUTHORITATIVE_L13_REGISTRY",
+  "potential_active_population": 426,
+  "warning": "The 426 active rules are the scope to reconcile, NOT 426 proven divergences, and NOT automatically expired.",
+  "read_only_queries": [
+    "SELECT current_database(),current_user,current_setting('server_version',true)",
+    "SELECT table_schema,table_name,column_name,data_type,is_nullable,column_default FROM information_schema.columns WHERE (table_schema,table_name) IN (('lf_ops','reglas'),('saly','reglas'))",
+    "SELECT estado,count(*) FROM lf_ops.reglas GROUP BY estado",
+    "SELECT estado,count(*),count(*) FILTER (WHERE vigente=true) FROM saly.reglas GROUP BY estado",
+    "SELECT ns.nspname,cl.relname,co.conname,co.contype,pg_get_constraintdef(co.oid) FROM pg_constraint co JOIN pg_class cl ON cl.oid=co.conrelid JOIN pg_namespace ns ON ns.oid=cl.relnamespace WHERE (ns.nspname,cl.relname) IN (('lf_ops','reglas'),('saly','reglas'))",
+    "SELECT table_schema,table_name,column_name FROM information_schema.columns WHERE required columns"
+  ],
+  "no_prod_writes": true,
+  "pending_owner_approval": "Column additions + authority model + backfill/migration plan + rollback after nonempty data",
+  "confidence": "HIGH for observed table shape and counts at query time; NONE for actual cross-registry divergence count"
+}
