@@ -1,0 +1,253 @@
+{
+  "schema_version": "LF_L15_ADOPTION_AND_ROLLBACK_V1",
+  "scope": "SANDBOX_DRAFT_NO_GO",
+  "branch": "lf/issue-3779-lote15-adoption-rollback-v1",
+  "source_head_base": "5f768b56964f8566195500a08c833f422678b023",
+  "live_read_only_snapshot": "2026-11-12",
+  "live_functions": [
+    {
+      "name": "lf_rule_promotion_apply_v1",
+      "behavior": "REPLACE",
+      "live_md5_read_only": "d7fe763c999db6f6259b6b1e2bd69644"
+    },
+    {
+      "name": "lf_rule_promotion_decide_v1",
+      "behavior": "REPLACE",
+      "live_md5_read_only": "16e45f40dad5cecc215a2f978be47728"
+    },
+    {
+      "name": "lf_rule_promotion_request_v1",
+      "behavior": "REPLACE",
+      "live_md5_read_only": "2fcac9f18b1581985af93639e475cd1a"
+    },
+    {
+      "name": "lf_rule_promotion_guard_v1",
+      "behavior": "COEXIST",
+      "live_md5_read_only": "ee782e4bd0128c80ee13881899c0d74e"
+    },
+    {
+      "name": "lf_rule_promotion_apply_batch_v1",
+      "behavior": "COEXIST_CALLS_REPLACED_APPLY",
+      "live_md5_read_only": "4e98f486f5ff65b596e5999f22cc8dde"
+    },
+    {
+      "name": "lf_rule_promotion_decide_batch_v1",
+      "behavior": "COEXIST_CALLS_REPLACED_DECIDE",
+      "live_md5_read_only": "6cdf2aa9a03c6abc7315b7ebc9d2f3ce"
+    },
+    {
+      "name": "lf_rule_promotion_report_v1",
+      "behavior": "COEXIST_REPORT_LEGACY",
+      "live_md5_read_only": "e3e521aaa933604de88d697196f54564"
+    }
+  ],
+  "live_table": "public.lf_rule_promotion_v1, 11 columns, no rows by status",
+  "live_new_lote_tables": 0,
+  "l14": "OUT_OF_SCOPE_DO_NOT_TOUCH",
+  "immutability": [
+    "public.lf_rule_promotion_citation_source_v1",
+    "public.lf_rule_promotion_citation_capture_v1"
+  ],
+  "roles_nologin": [
+    "lf_rule_citation_source_custodian",
+    "lf_rule_citation_step70_bridge"
+  ],
+  "stages": [
+    {
+      "id": "A01",
+      "label": "PRE_L4_JUDGE_L3_DEPENDENCY",
+      "path": "supabase/migrations/20261111182000_lf_rule_promotion_deterministic_judge_governed_v1.sql",
+      "git_blob_sha1": "5e1c59927f905e020a58e5c61cacc7bf156c248b",
+      "depends_on": [
+        "LEGACY_LIVE_7_FUNCTIONS",
+        "PROMOTION_TABLE",
+        "PROFILE_RUN_TABLES",
+        "IG_RECEIPT_API"
+      ],
+      "creates_functions": [
+        "public.lf_rule_promotion_quality_judge_v1",
+        "public.lf_rule_promotion_governed_decide_v1"
+      ],
+      "replaces_functions": [
+        "public.lf_rule_promotion_request_v1",
+        "public.lf_rule_promotion_decide_v1",
+        "public.lf_rule_promotion_apply_v1"
+      ],
+      "creates_tables": [],
+      "adds_roles_nologin": [],
+      "modifies_existing_tables": [
+        "public.lf_rule_promotion_v1"
+      ],
+      "transaction_wrappers": "BEGIN_COMMIT",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN_BLOCKS_PRODUCTION"
+    },
+    {
+      "id": "A02",
+      "label": "L4B_IG_NATIVE_REUSE",
+      "path": "supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql",
+      "git_blob_sha1": "b9b1beac377ccef3b493e450cad59201ab26a0c9",
+      "depends_on": [
+        "A01"
+      ],
+      "creates_functions": [
+        "public.lf_rule_promotion_ig_citation_verify_v1",
+        "public.lf_rule_promotion_bind_ig_semantic_v1",
+        "public.lf_rule_promotion_ig_semantic_verify_v1"
+      ],
+      "replaces_functions": [
+        "public.lf_rule_promotion_governed_decide_v1",
+        "public.lf_rule_promotion_apply_v1"
+      ],
+      "creates_tables": [],
+      "adds_roles_nologin": [],
+      "modifies_existing_tables": [
+        "public.lf_rule_promotion_v1"
+      ],
+      "transaction_wrappers": "BEGIN_COMMIT",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN_BLOCKS_PRODUCTION"
+    },
+    {
+      "id": "A03",
+      "label": "L4D_OWNER_APPROVAL",
+      "path": "supabase/migrations/20261111212500_lf_rule_promotion_profile_owner_authority_v1.sql",
+      "git_blob_sha1": "1e20f63df6c3e0dacb3d7ae4a83f8df48dbd9784",
+      "depends_on": [
+        "A02"
+      ],
+      "creates_functions": [
+        "public.lf_rule_promotion_profile_owner_verify_v1",
+        "public.lf_rule_promotion_profile_approve_v1"
+      ],
+      "replaces_functions": [
+        "public.lf_rule_promotion_bind_ig_semantic_v1",
+        "public.lf_rule_promotion_ig_semantic_verify_v1",
+        "public.lf_rule_promotion_governed_decide_v1",
+        "public.lf_rule_promotion_apply_v1"
+      ],
+      "creates_tables": [
+        "public.lf_rule_promotion_profile_owner_v1"
+      ],
+      "adds_roles_nologin": [],
+      "modifies_existing_tables": [
+        "public.lf_rule_promotion_v1"
+      ],
+      "transaction_wrappers": "BEGIN_COMMIT",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN_BLOCKS_PRODUCTION"
+    },
+    {
+      "id": "A04",
+      "label": "L5_VERDICT_RETURN",
+      "path": "supabase/migrations/20261111224500_lf_rule_promotion_real_verdict_profile_return_v1.sql",
+      "git_blob_sha1": "c15e115c90c02f83c4da0f293bf5735b7f777dce",
+      "depends_on": [
+        "A03"
+      ],
+      "creates_functions": [
+        "public.lf_rule_promotion_blind_verdict_verify_v1",
+        "public.lf_rule_promotion_blind_verdict_pin_v1",
+        "public.lf_rule_promotion_rule_readback_v1",
+        "public.lf_rule_promotion_profile_return_readback_v1"
+      ],
+      "replaces_functions": [
+        "public.lf_rule_promotion_profile_owner_verify_v1",
+        "public.lf_rule_promotion_profile_approve_v1",
+        "public.lf_rule_promotion_governed_decide_v1",
+        "public.lf_rule_promotion_apply_v1"
+      ],
+      "creates_tables": [],
+      "adds_roles_nologin": [],
+      "modifies_existing_tables": [
+        "public.lf_rule_promotion_v1"
+      ],
+      "transaction_wrappers": "BEGIN_COMMIT",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN_BLOCKS_PRODUCTION"
+    },
+    {
+      "id": "A05",
+      "label": "L7_EXACT_CITATION",
+      "path": "supabase/migrations/20261111235500_lf_rule_promotion_exact_citation_capture_v1.sql",
+      "git_blob_sha1": "e7bb8e68fe9efd6a254e39bb9ef394f62fb1506a",
+      "depends_on": [
+        "A04"
+      ],
+      "creates_functions": [
+        "public.lf_rule_citation_immutable_v1",
+        "public.lf_rule_promotion_citation_source_publish_v1",
+        "public.lf_rule_promotion_citation_line_check_v1",
+        "public.lf_rule_promotion_citation_record_v1",
+        "public.lf_rule_promotion_citation_verify_v1"
+      ],
+      "replaces_functions": [
+        "public.lf_rule_promotion_blind_verdict_verify_v1",
+        "public.lf_rule_promotion_apply_v1",
+        "public.lf_rule_promotion_ig_citation_verify_v1"
+      ],
+      "creates_tables": [
+        "public.lf_rule_promotion_citation_source_v1",
+        "public.lf_rule_promotion_citation_capture_v1"
+      ],
+      "adds_roles_nologin": [
+        "lf_rule_citation_source_custodian",
+        "lf_rule_citation_step70_bridge"
+      ],
+      "modifies_existing_tables": [],
+      "transaction_wrappers": "BEGIN_COMMIT",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN_BLOCKS_PRODUCTION"
+    },
+    {
+      "id": "A06",
+      "label": "L8_SCOPE_REUSE",
+      "path": "supabase/migrations/20261112004000_lf_rule_promotion_citation_reuse_scoped_v2.sql",
+      "git_blob_sha1": "ad0a6ec911aed961cf74258d4d5117a33571a45c",
+      "depends_on": [
+        "A05"
+      ],
+      "creates_functions": [
+        "public.lf_rule_promotion_citation_scope_guard_v2"
+      ],
+      "replaces_functions": [],
+      "creates_tables": [],
+      "adds_roles_nologin": [],
+      "modifies_existing_tables": [
+        "public.lf_rule_promotion_citation_capture_v1"
+      ],
+      "transaction_wrappers": "BEGIN_COMMIT",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN_BLOCKS_PRODUCTION"
+    },
+    {
+      "id": "A07",
+      "label": "L13_SANDBOX_GENERIC_LIFECYCLE",
+      "path": "sandbox/lf_contract_gate_test/lote15_adoption_rollback_v1/pinned_l13/01_schema.sql",
+      "depends_on": [],
+      "status": "NOT_OFFICIAL_MIGRATION",
+      "created_schema": "rule_quality_l13",
+      "verification": "28/28 L13 synthetic tests",
+      "rollback_proven_mode": "PRECOMMIT_SAVEPOINT_ROLLBACK",
+      "rollback_after_commit": "NOT_PROVEN"
+    }
+  ],
+  "no_migration_lotes": [
+    "L6 - user verdict fixture",
+    "L9 - chat export",
+    "L10 - sandbox proof",
+    "L11 - mechanical proof",
+    "L12 - audit files",
+    "L13 - sandbox-only lifecycle"
+  ],
+  "critical": "Post-commit inverse DDL cannot prove identical pg_catalog (DROP COLUMN leaves attisdropped); restore backup/PITR to clean clone, not in-place inverse. CI tests transactional rollback before COMMIT only.",
+  "owner_blockers": [
+    "authentic OIDC and NOLOGIN bridge binding",
+    "owner-approved review intervals per project",
+    "32 stuck RUNs disposition and evidence",
+    "global PASE red",
+    "legacy batch/report compatibility",
+    "owner signed GO/NO-GO"
+  ],
+  "production_go": false
+}
