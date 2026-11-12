@@ -102,6 +102,11 @@ def run(case_id="K00E813F0",quote=None,verdict="ALLOW",mode="valid"):
         sql_after=f"UPDATE lf_ops.reglas SET descripcion=descripcion||' CHANGED_AFTER_CAPTURE' WHERE codigo={lit(c['base_rule']['code'])};"
     if mode=="hash":
         sql_after="UPDATE public.lf_rule_promotion_v1 SET ig_semantic_external_receipt_sha256=repeat('f',64) WHERE promotion_id='PROM-L7';"
+    if mode=="step70_case":
+        sql_after="""UPDATE public.lf_operation_execution_steps
+           SET evidence_payload=jsonb_set(evidence_payload,
+             '{rule_promotion_citation_case_id}',to_jsonb('K00A10207'::text),true)
+           WHERE execution_id='EXEC-PARENT-TEST-001' AND step_id='semantic_judge';"""
     script=f"""BEGIN;
       {source_sql}
       SELECT 'LINE|'||public.lf_rule_promotion_citation_line_check_v1(
@@ -282,6 +287,13 @@ def main():
        hash_drift["GATE_AFTER"]["status"]=="HUMAN_DECISION_REQUIRED"
        and hash_drift["APPLY"]["status"]=="BLOCKED"
        and hash_drift["APPLY"]["blocking_code"]=="L7_EXACT_CITATION_NOT_CURRENT",hash_drift)
+    step70=run(mode="step70_case")
+    check("STEP70_CASE_ID_CHANGED_AFTER_CAPTURE_BLOCKS_APPLY",
+       step70["GATE_BEFORE"]["status"]=="PROFILE_OWNER_REVIEW_ONLY"
+       and step70["GATE_AFTER"]["blocking_code"]=="L7_STEP70_READBACK_OR_HASH_DRIFT"
+       and step70["APPLY"]["blocking_code"]=="L7_EXACT_CITATION_NOT_CURRENT"
+       and step70["WITHIN_TX"]["rule_state"]=="CANDIDATO",
+       step70)
     block=run(case_id="K00A10207",verdict="BLOCK")
     check("BLOCK_WITH_VALID_LITERAL_ESCALATES_HUMAN_NEVER_PROMOTES",
        block["LINE"]["status"]=="LITERAL_STRUCTURE_VERIFIED_FOR_CAPTURE"
