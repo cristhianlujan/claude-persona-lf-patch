@@ -344,6 +344,9 @@ jobs:
       - name: "L8 PG18: case-scoped BASE quote repetition, proposal collision and cross-rule guard"
         if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
         run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote8_quote_reuse_scoped.py
+      - name: "L9 PG18: 154 actual chat-export citations, SHA and neutral L6, unmodified L7-L8"
+        if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
+        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py
       - name: Preserve reproducible native gate spec and blind datasets
         uses: actions/upload-artifact@v4
         if: always()
@@ -360,4 +363,7 @@ jobs:
             docs/input-governance/L6_CLAUDE_VERDICTS_NO_QUOTES_GOVERNED_CAPTURE_PLAN_V1.md
             docs/input-governance/L7_EXACT_CITATION_CAPTURE_GOVERNED_CONTRACT_V1.md
             sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote7_exact_citation_capture.py
+            sandbox/lf_contract_gate_test/rule_promotion_v1/lote9_real_review_pass1_chat_export_model_unattested.txt
+            sandbox/lf_contract_gate_test/rule_promotion_v1/lote9_real_review_pass1_chat_export_model_unattested.json
+            sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py
           if-no-files-found: error
