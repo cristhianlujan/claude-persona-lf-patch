@@ -56,7 +56,7 @@ SELECT 'G25_02'::text AS probe, jsonb_array_length(rows) AS n,
 -- G25_03 | SOLELY SELECT; hash over ALL ordered jsonb rows, no DML/DDL.
 WITH source_rows AS MATERIALIZED (
 SELECT codigo,categoria,estado,titulo,
- left(descripcion,160) AS excerpt_for_triage_only,
+ array_to_string((string_to_array(descripcion,' '))[1:12],' ') AS source_quote_max_12_words,
  encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') AS live_row_sha256,
  jsonb_strip_nulls(jsonb_build_object(
    'overdue_authority',valor_config->'overdue_authority',
