@@ -1,0 +1,253 @@
+{
+  "lote": 12,
+  "status": "UNVERIFIED",
+  "progress_artifacts_pct": 100,
+  "progress_bank_reproduction_pct": 0,
+  "auditor": "GPT-6; CLAUDE_IDENTITY_NOT_ATTESTED",
+  "repo": "cristhianlujan/claude-persona-lf-patch",
+  "branch": "lf/issue-3779-lote12-rule-quality-audit-v1",
+  "base": "lf/issue-3779-lote4b-validator-reuse-audit-v1",
+  "base_head_at_creation": "de0021609c543a78b416e6c3e92475797dcae3bd",
+  "sql_count": 27,
+  "queries": [
+    {
+      "id": "LF01",
+      "sql_sha256": "2b59f7f36438ab5b074cbeef9da5618618def09ea75e7c63f084968cff33e380",
+      "result_sha256": "55312a41f05471142e6be731fd6956be8a8107503e1554daba3bfe7a93d483b0",
+      "rows": 1,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF02",
+      "sql_sha256": "38c9f089a45f3fb0f97c494290b45f5df1613a023b641d94df211e06027e3dec",
+      "result_sha256": "28670d5cd1a83b67c46380714223ad4ad7f89c19ec48a5e516f9c115831ba6d0",
+      "rows": 76,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF03",
+      "sql_sha256": "c1b2cb771430baf3c9624ec0d9e41d4d7d814cda7bfe48e3fa4a8692284b7cc4",
+      "result_sha256": "bd701488a9352cc83225bf7458fff3cd5746707cb9393f21339bef90a32903fd",
+      "rows": 19,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF04",
+      "sql_sha256": "6f6d4b0c4501e815e52502c88eaf0185396bdd62ca69c218ed831327d3dd9ca1",
+      "result_sha256": "6afc9151aa16079947cc3cfb8942621e717090f0996a568d06f9e793bf7ca227",
+      "rows": 3,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF05",
+      "sql_sha256": "ef555391a78763c3ab159ad7253db3f311856fee08cb02959f723e9c0c1ec762",
+      "result_sha256": "67a45862b7292fe23acfc6316721723913dc37528c5e00f9ded9380b3336f3bb",
+      "rows": 4,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF06",
+      "sql_sha256": "ee0c0c3c10218e335f4d958f0bc66358a7d46db4752cb136a20075be2fa0fcc1",
+      "result_sha256": "e235eccad2501e79413fb174b656e8482f6e09fc02cf334d0fd7f278b7d9aadd",
+      "rows": 10,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF07",
+      "sql_sha256": "efcd3fc9ae1d59c094156b4b56f6b93f02c43bd1081b811a00b8bd0ed6bde4bb",
+      "result_sha256": "16ec64cba7d459d55ff17005caedbc54ab9c66baa046ab1f028723c772f4830b",
+      "rows": 3,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF08",
+      "sql_sha256": "bbf8e02ee917efc4e3f26a0392b34cf6c7260418652e00edb20daf1aa025de1a",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF09",
+      "sql_sha256": "65fa94c58ed652960e7fcac36202e529bad4add19ffb7c46cd0a6b688b4076e1",
+      "result_sha256": "83ad166891fdc212fd749495b30891dfd3d0bb651662d24457e963bb9b74915b",
+      "rows": 4,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "LF10",
+      "sql_sha256": "762e508ae52caa4698c55240d6492f8032f307a1dec948dfaa16155ad55ec311",
+      "result_sha256": "0170b4ac65800a3536465312d46e7190ffd38467640553fa5b462140b4be2e3a",
+      "rows": 20,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "LF11",
+      "sql_sha256": "fa148679724feefed26de9dddbe07e88eb15074588ab225e74a197d123613b5c",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "LF12",
+      "sql_sha256": "22a71c1eafa8ec371e82274978a30278b11877b2524660b0fd6caf198cd2dae4",
+      "result_sha256": "827c18e1fdd1ffb912ea5e86d32018463746b6be9a84b12ee7f971523454f208",
+      "rows": 1,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF13",
+      "sql_sha256": "f959bed3398b469a56bcb23bf59dc27491721ff3943b657f8a85e7c2dfe6e67f",
+      "result_sha256": "45879a04035687fbc6ee043192d768a5ac22b4e5f873d0a0101b7e71ab04b779",
+      "rows": 34,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF14",
+      "sql_sha256": "74d247dfff3a56eeda64fd39619924895b16f7a92ec1924ec1c14aae4e586847",
+      "result_sha256": "efe2eb83b78f4b3596b36d867cb1d21deea3f32adbbba09fec5256f9ce01fd9a",
+      "rows": 57,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "LF15",
+      "sql_sha256": "119889e9bdc8e9e50e4af9979a9a2c90e4c6fa6a304c8e00a7155bfa0a256a95",
+      "result_sha256": "462c8e801ad505f74881d49dc48802c5611e049471ded45b5f11fe605cbd4577",
+      "rows": 43,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "LF16",
+      "sql_sha256": "f186be138378f1cc96dec9353fe4b159b75c5b721b8496780e520c9ae437f09b",
+      "result_sha256": "9aa837245abba9dd12db04457c3415b3197aa4b9c1ab32958e608540e7c7b33d",
+      "rows": 1,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY01",
+      "sql_sha256": "5edfa5f4b9b0fe0d7cf3f4b09a1da3e6db1d05483548f257fa44366a40f08893",
+      "result_sha256": "f3554aaf88061e130d3a0af6f518d170b3deda0b4b00457fa700c7d3c81de113",
+      "rows": 1,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY02",
+      "sql_sha256": "0bf30f1025a79adebc67953c418a068a642af6b815231b3d8ffc44aba2f47613",
+      "result_sha256": "b313444be6c11702d13376419f8da1da5d08854824d02d5b3aa39cac4089bbd5",
+      "rows": 3,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY03",
+      "sql_sha256": "a04bc286f2cabd861b774820c26b70fa06b56f91906aa47b0317cba98ccce080",
+      "result_sha256": "dcc4c0df9271326603d37cc0eb05bd387790ad56b56490b7b74f7e7bce2785f5",
+      "rows": 1,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY04",
+      "sql_sha256": "a68d6ac12109b038bc3d85455d06d4a0748bad2194dc4637e2dcb0cc6cc0a986",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "SALY05",
+      "sql_sha256": "4e4d0a6f23b82b949bbccbe57e7bb5161dfc890f9f99bdb38a139a331bd16c68",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "SALY06",
+      "sql_sha256": "4f3b40c5887aad44dbca14f0f40ec8cbb9cd660997a09394c39624bae852ad88",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "SALY07",
+      "sql_sha256": "b9af3e8aec30a25d6a8383c8dd622158e58fcda19d2daf25aa7b40625abff35c",
+      "result_sha256": "bb45bc510e559d98c5e5b5a330f268ca042bccbe34e6b363b615dbf731467808",
+      "rows": 1,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY08",
+      "sql_sha256": "f5bffa65597d0439223c265ab9f8e579611e915e21362dc7c4c2a8e75367285e",
+      "result_sha256": "63e002403dc318692de8e138b01f71b1540af7908490169c8ddad50542097bf9",
+      "rows": 2,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY09",
+      "sql_sha256": "80d5da13ac4fec011b5dbb3a4a8368813e3063babc845e50ac44ecd2d856c681",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SALY10",
+      "sql_sha256": "f79e20bc0813f94e9357a486721aa2786431cde04304adfad3f8de8326d2eedf",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": 0,
+      "classification": "OBJETIVO"
+    },
+    {
+      "id": "SCHEMA01",
+      "sql_sha256": "68211062c06ba680b5ba36c8e5dd7e566171de3d16f514a68614644eb3afc580",
+      "result_sha256": "cd5a3d2a806ec98a5e45a890770f55297b7a83330a9b543ef55a9d02c0fd001e",
+      "rows": 33,
+      "classification": "OBJETIVO"
+    }
+  ],
+  "files": [
+    {
+      "path": "audits/rule-quality-lote12/01_inventario.sql",
+      "git_utf8_chars": 3046
+    },
+    {
+      "path": "audits/rule-quality-lote12/01_inventario.json",
+      "git_utf8_chars": 14361
+    },
+    {
+      "path": "audits/rule-quality-lote12/02_calidad.sql",
+      "git_utf8_chars": 4749
+    },
+    {
+      "path": "audits/rule-quality-lote12/02_calidad.json",
+      "git_utf8_chars": 61394
+    },
+    {
+      "path": "audits/rule-quality-lote12/03_saly.sql",
+      "git_utf8_chars": 4931
+    },
+    {
+      "path": "audits/rule-quality-lote12/03_saly.json",
+      "git_utf8_chars": 9668
+    },
+    {
+      "path": "audits/rule-quality-lote12/04_familias_lf.csv",
+      "git_utf8_chars": 6999
+    },
+    {
+      "path": "audits/rule-quality-lote12/04_familias_saly.csv",
+      "git_utf8_chars": 259
+    },
+    {
+      "path": "audits/rule-quality-lote12/05_informe.md",
+      "git_utf8_chars": 21916
+    }
+  ],
+  "limitations": [
+    "No fecha de revisión: 90d sólo updated_at",
+    "No depends_on_rules estructurado por códigos",
+    "Reglas que comparten nombre de campo no prueban contradicción",
+    "SalY sin created_by ni pendiente_decision",
+    "Identidad Claude no acreditada",
+    "Banco independiente no ejecutado"
+  ],
+  "writes_to_database": 0,
+  "production_run": false,
+  "merge": false,
+  "gate_changed": false
+}
