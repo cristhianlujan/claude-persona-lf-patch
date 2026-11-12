@@ -4,14 +4,15 @@
   "global": "NO_GO_UNVERIFIED",
   "base": "d1e62d0ca8f1b45273cf1c4827a700f83a1c0761",
   "branch": "lf/issue-3779-lote14-promotion-quality-wrapper-v1",
-  "head": "b21493863f9c0eb977473d6a410d242d7b53836f",
+  "head": "7d68e50b644544a05b50939ecfb39b548adde3f1",
   "comparison": {
-    "ahead": 8,
+    "ahead": 11,
     "behind": 0,
     "merge_base": "d1e62d0ca8f1b45273cf1c4827a700f83a1c0761",
     "paths": [
       ".github/workflows/l14-quality-wrapper-pg18.yml",
       "docs/rule-quality-lote14/01_execution_evidence.json",
+      "docs/rule-quality-lote14/02_source_sha_readback.json",
       "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11b_mechanical_positive.py",
       "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
       "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/05_quality_wrapper_identity_and_prepare.sql",
@@ -23,15 +24,15 @@
   "files": [
     {
       "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/05_quality_wrapper_identity_and_prepare.sql",
-      "sha256_utf8": "58c5642bbbb1b021f965e4cc6c8d7bbd764626302b1482da3be054b3b7300abf",
-      "blob_sha": "29ef9cfba987889fca52953ba518745158afb14a",
-      "bytes": 6709
+      "sha256_utf8": "92826651d8ab696868aa2197d6368cd789a8d8a22435d856d6bf5239eff64934",
+      "blob_sha": "7cac8d4de155057196915eb10de486d582cd7c20",
+      "bytes": 6843
     },
     {
       "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/06_quality_wrapper_correction_guard.sql",
-      "sha256_utf8": "9620cbb3817ed3ee6d0c24945cd4e1840ba69de3a3703c0a3952dbc73519748a",
-      "blob_sha": "2932b1557b7e8893a741e583064afe7aa0dca14f",
-      "bytes": 3848
+      "sha256_utf8": "2dcc488f14d18508d9d1fbd35a87a85a4c9063bd191240f3ee5d5257c6db476c",
+      "blob_sha": "20a93b45c482e0bb2f332e2762129006d9f0876d",
+      "bytes": 5008
     },
     {
       "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/07_quality_wrapper_apply_and_acl.sql",
@@ -47,9 +48,9 @@
     },
     {
       "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
-      "sha256_utf8": "6e925b915221db3be31cf8a0c17be9bcd488334c94adbfd2787c408bd455c958",
-      "blob_sha": "a02789349c101d8a86f9167ffdc27d44367d86d7",
-      "bytes": 15944
+      "sha256_utf8": "d7ca69ae2ed6c6e91b439681f058fa88a0630fbeef7f74e6339f8819f72b9519",
+      "blob_sha": "510a2d870a877473934ca028229a78fb357c2391",
+      "bytes": 16477
     },
     {
       "path": ".github/workflows/l14-quality-wrapper-pg18.yml",
@@ -59,12 +60,14 @@
     },
     {
       "path": "docs/rule-quality-lote14/01_execution_evidence.json",
-      "sha256_utf8": "08d8ea788f281a6fffb8cf8610bcf3e17a1a6553ea4beb697c855b241a309c81",
-      "blob_sha": "12bee30a3405f26fafd19d135676f39d5147b22f",
-      "bytes": 24827
+      "sha256_utf8": "fdc1dd7240ddba2600ceb751fc40a6d1369005f83c40732dcd20daa8def91ed2",
+      "blob_sha": "bcd611dbd702ffbffa7ba1447322610347858995",
+      "bytes": 26117
     }
   ],
   "legacy_fixture_identical": true,
   "sha_method": "SHA256 UTF8 bytes from GitHub file readback; selftest abc",
-  "supabase_live_writes": 0
+  "supabase_live_writes": 0,
+  "ci_run_id": 43291127976,
+  "ci_commit": "91c0ae3988083cb1f397d0997c79889c77af760b"
 }
