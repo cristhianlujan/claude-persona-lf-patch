@@ -246,13 +246,13 @@ CREATE VIEW adapter_saly AS
 INSERT INTO rules(project_code,rule_code,family_code,category_raw,entity_code,definition_text,
                   config,state,created_at,reviewed_at,next_review_at,effective_from)
 SELECT project_code,rule_code,family_code,category_raw,'GENERAL',definition_text,
-       config,state,'2026-09-01T00:00:00Z','2026-10-15T00:00:00Z',
-       '2027-02-01T00:00:00Z','2026-10-01T00:00:00Z'
+       config,state,'2026-09-01T00:00:00Z'::timestamptz,'2026-10-15T00:00:00Z'::timestamptz,
+       '2027-02-01T00:00:00Z'::timestamptz,'2026-10-01T00:00:00Z'::timestamptz
 FROM adapter_lf
 UNION ALL
 SELECT project_code,rule_code,family_code,category_raw,'GENERAL',definition_text,
-       config,state,'2026-09-01T00:00:00Z','2026-10-15T00:00:00Z',
-       '2027-02-01T00:00:00Z','2026-10-01T00:00:00Z'
+       config,state,'2026-09-01T00:00:00Z'::timestamptz,'2026-10-15T00:00:00Z'::timestamptz,
+       '2027-02-01T00:00:00Z'::timestamptz,'2026-10-01T00:00:00Z'::timestamptz
 FROM adapter_saly;
 -- Controlled positive/negative detector fixtures. These values are NOT copied from live.
 UPDATE rules SET entity_code='OTP_SEND',config='{"ventana_minutos":10}'::jsonb
