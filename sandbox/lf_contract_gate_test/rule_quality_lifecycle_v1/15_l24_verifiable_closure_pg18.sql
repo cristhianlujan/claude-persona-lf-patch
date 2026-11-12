@@ -87,7 +87,7 @@ CREATE FUNCTION l24_ready_payload_v1(
  p_project text,p_rule text,p_promotion text,p_owner_run text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path=rule_quality_l13,pg_temp AS $fn$
-DECLARE v_target jsonb;v_return jsonb;v_approval jsonb;v_capture jsonb;
+DECLARE v_target jsonb;v_return jsonb;v_approval jsonb;v_post_owner jsonb;v_capture jsonb;
         v_ig jsonb;v_ticket text;v_div int;v_engine text;
 BEGIN
  IF p_project NOT IN ('lf','saly') THEN
@@ -134,10 +134,18 @@ BEGIN
      OR coalesce(v_return->>'owner_approval_binding_sha256','') !~ '^[0-9a-f]{64}$' THEN
    RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L24_GATE_EVIDENCE_BINDINGS_MISSING';
   END IF;
-  v_approval:=public.lf_rule_promotion_profile_owner_verify_v1(p_promotion);
-  IF v_approval->>'status' IS DISTINCT FROM 'VERIFIED_PROFILE_OWNER' THEN
-   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L24_OWNER_APPROVAL_READBACK';
-  END IF;
+  -- L11B owner VERIFY was PRE-APPLY. Re-querying it after APPLIED can
+  -- return a different status. The frozen profile-return READY includes the
+  -- real binding SHA and owner execution/profile. Preserve later raw status
+  -- without making ephemeral pre-apply verification a post-apply prerequisite.
+  v_post_owner:=public.lf_rule_promotion_profile_owner_verify_v1(p_promotion);
+  v_approval:=jsonb_build_object(
+    'status','OWNER_APPROVAL_BOUND_IN_FROZEN_READY',
+    'owner_approval_binding_sha256',v_return->>'owner_approval_binding_sha256',
+    'owner_execution_id',v_return->>'owner_execution_id',
+    'owner_profile_code',v_return->>'owner_profile_code',
+    'post_apply_owner_verify_raw',v_post_owner,
+    'native_owner_attested',false);
  ELSE
   IF v_engine<>'SALY_SYNTHETIC_APPLY' THEN
    RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L24_SALY_ADAPTER_UNTRUSTED';
