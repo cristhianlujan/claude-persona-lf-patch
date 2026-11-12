@@ -104,3 +104,15 @@ SELECT codigo,estado,categoria,
 SELECT 'G25_05'::text AS probe, jsonb_array_length(rows) AS n,
  encode(sha256(convert_to(rows::text,'UTF8')),'hex') AS sha256_result,
  rows AS result_rows FROM packed;
+
+-- G25_06 | busqueda adicional acotada, solo SELECT
+WITH source_rows AS MATERIALIZED (
+SELECT codigo,categoria,estado,titulo,
+ CASE WHEN descripcion ~* 'gracia' THEN 'GRACIA'
+ WHEN descripcion ~* 'cancelar.{0,35}(plan|cobro)' OR descripcion ~* '(plan|cobro).{0,45}en cualquier momento' THEN 'CANCELACION'
+ WHEN descripcion ~* '(cuota.{0,50}vencida|vencida.{0,40}cuota)' THEN 'VENCIMIENTO'
+ ELSE 'OTRO' END AS motivo_busqueda
+FROM lf_ops.reglas WHERE estado='VIGENTE' AND (descripcion ~* '(gracia|cancelar.{0,35}(plan|cobro)|cobro.{0,45}en cualquier momento|cuota.{0,50}vencida|vencida.{0,40}cuota)' OR titulo ~* 'cancelaci[oó]n del plan')
+ORDER BY codigo
+), packed AS (SELECT coalesce(jsonb_agg(to_jsonb(source_rows) ORDER BY to_jsonb(source_rows)::text),'[]'::jsonb) rows FROM source_rows)
+SELECT 'G25_06'::text probe,jsonb_array_length(rows) n,encode(sha256(convert_to(rows::text,'UTF8')),'hex') sha256_result,rows result_rows FROM packed;
