@@ -1,0 +1,2055 @@
+{
+  "schema": "LF_L26_MEASURED_PG18_EVIDENCE_V1",
+  "production_status": "NO_GO_UNVERIFIED",
+  "source_base": "48f1e316d81c83ca2f880372a3a050b456c6b3ab",
+  "source_origins": {
+    "L23": "686cc39a7b8a9178ccf004423ba3c87131047a29",
+    "L24": "64764c58109345b1f086f9ebc7cc0c1040fdd656"
+  },
+  "verified_ci": {
+    "run_id": 43328149868,
+    "job_id": 131565766208,
+    "tested_sha": "a16bf36dcb8032f077eb5dd9be7a2a4164956fd2",
+    "conclusion": "success",
+    "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43328149868"
+  },
+  "l26_original_runtime_json_sha256": "a03177a4a4711de4fb2e4d62387b5ea0f823fb925cfc87b5d4bf352b83e34135",
+  "actual_runner": {
+    "case_count": 36,
+    "cases": [
+      {
+        "expected": "L13/L14/L17/L18/L20 and exact L23/L24 SQL + L26 bridge; no active source edits after immutable guard",
+        "id": "BOOTSTRAP_ALL_LAYERS_A",
+        "observed": {
+          "a_initial_fixture_nonconflicting": true,
+          "database": "lf_3779_l26_integrated_pg18_a"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "FROZEN_MD5_BEFORE_A",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "same BEGIN contains L17 owner -> L23 ACEPTAR -> LF frozen apply -> READY -> L20 -> L26 promotion receipt -> L24 closure; ROLLBACK",
+        "id": "POS_A_LF_NEW_SINGLE_MEASURED_SEQUENCE",
+        "observed": {
+          "actual": {
+            "close": {
+              "actor": "lf_owner_role",
+              "actor_sub": "lf-sub-owner-001",
+              "closed_at": "2026-11-12T23:22:37.663859+00:00",
+              "closure_verification": {
+                "independent_semantic_judge_attested": false,
+                "native_receiver_attested": false,
+                "native_supabase_auth_attested": false,
+                "proposal_sha256": "bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb",
+                "readback_sha256": "3deb3144834588e3f4b004e0300f1f30d091737a3568f36914c1b6c85684ce7c",
+                "receipt_id": 1,
+                "receipt_sha256": "0792a6b79e0c25f642e7effd5b7282a77d7e0ded49d6ede4f7182da7eda91823",
+                "rule_code": "REG_SEG_004",
+                "state_at_closure": "VIGENTE",
+                "status": "VERIFIED_CLOSURE_HASH",
+                "version": "sha256:bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb"
+              },
+              "curator_seal_hmac_sha256": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+              "final_state": "VIGENTE",
+              "official_receiver_attested": false,
+              "production_attested": false,
+              "project": "lf",
+              "promotion_receipt_sha256": "7640da6071c813aa2c1930134201cd3f12e36ad2f12a4a1ed2e042fda2caaf80",
+              "proposal_sha256": "bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb",
+              "readback_sha256": "3deb3144834588e3f4b004e0300f1f30d091737a3568f36914c1b6c85684ce7c",
+              "receipt_id": 1,
+              "receipt_sha256": "0792a6b79e0c25f642e7effd5b7282a77d7e0ded49d6ede4f7182da7eda91823",
+              "rows_written": 1,
+              "rule_code": "REG_SEG_004",
+              "status": "INTEGRATED_CLOSED_VERIFIED_PG18",
+              "version": "sha256:bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb"
+            },
+            "curator": {
+              "actor_code": "lf_owner_role",
+              "evidence": {
+                "active_quality_count": 412,
+                "active_source_count": 1,
+                "candidate_fingerprint_sha256": "47016f055a3568af36c44b22ba1f7a598e3196a2fb5641e49cd727a733f448cd",
+                "candidate_rule": "REG_SEG_004",
+                "category": "SECURITY",
+                "conflict_rule": null,
+                "curator_mode": "DETERMINISTIC_SQL_SAME_GPT_AUTHOR_NOT_INDEPENDENT",
+                "duplicate_rule": null,
+                "family": "IDENTIDAD_SEGURIDAD",
+                "identity_mode": "L17_HMAC_SIGNED_PG18_SANDBOX_NOT_SUPABASE",
+                "project": "lf"
+              },
+              "fingerprint_sha256": "47016f055a3568af36c44b22ba1f7a598e3196a2fb5641e49cd727a733f448cd",
+              "gate_precondition": true,
+              "independent_curator_attested": false,
+              "production_attested": false,
+              "reason_code": "NO_BLOCKING_DUPLICATE_OR_CONFLICT",
+              "reason_text": "No se encontro duplicado exacto ni conflicto de claves en las fuentes activas inspeccionadas",
+              "seal_hmac_sha256": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+              "verdict": "ACEPTAR"
+            },
+            "measured": {
+              "actor": "lf_owner_role",
+              "closure_receipts": 1,
+              "curator": "ACEPTAR",
+              "curator_seal": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+              "divergences": 0,
+              "previous_source": null,
+              "previous_state": null,
+              "project": "lf",
+              "promotion_receipts": 1,
+              "quality": "VIGENTE",
+              "readback_l20": {
+                "decision_count": 0,
+                "effective_to": null,
+                "next_review_at": "2027-02-10T23:22:37.50663+00:00",
+                "owner_actor": "lf_owner_role",
+                "project": "lf",
+                "receipt_count": 0,
+                "registry": "VIGENTE",
+                "registry_successor": null,
+                "rule_code": "REG_SEG_004",
+                "source": "VIGENTE",
+                "source_terminal": null,
+                "source_vigente": null,
+                "successor_registry": null,
+                "successor_source": null,
+                "target_divergence": 0
+              },
+              "rule_code": "REG_SEG_004",
+              "run_fixture_attested": "false",
+              "run_status": "COMPLETED",
+              "same_authenticated_session": true,
+              "source": "VIGENTE",
+              "ticket": "CONSUMED"
+            },
+            "promote": {
+              "actor_code": "lf_owner_role",
+              "curator_seal_hmac_sha256": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+              "native_receiver_attested": false,
+              "project": "lf",
+              "promotion_id": "PROM-TEST",
+              "readback_core_sha256": "676fe286ac764acaaf197d4c53ff2d6ecd51397b52e5a26e3ae5efd71c010234",
+              "readback_sha256": "3deb3144834588e3f4b004e0300f1f30d091737a3568f36914c1b6c85684ce7c",
+              "readback_status": "READY",
+              "receipt_sha256": "7640da6071c813aa2c1930134201cd3f12e36ad2f12a4a1ed2e042fda2caaf80",
+              "rule_code": "REG_SEG_004",
+              "status": "PROMOTION_RECEIPT_RECORDED"
+            },
+            "sync": null,
+            "wrap": "READY"
+          },
+          "after": {
+            "closure": 0,
+            "curator": 0,
+            "promotion": 0,
+            "quality": 0,
+            "source_count_or_active": 0
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "L13/L14/L17/L18/L20 and exact L23/L24 SQL + L26 bridge; no active source edits after immutable guard",
+        "id": "BOOTSTRAP_ALL_LAYERS_BC",
+        "observed": {
+          "a_initial_fixture_nonconflicting": false,
+          "database": "lf_3779_l26_integrated_pg18_bc"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "FROZEN_MD5_BEFORE_BC",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "same BEGIN contains L17 owner -> L23 ACEPTAR -> LF frozen apply -> READY -> L20 -> L26 promotion receipt -> L24 closure; ROLLBACK",
+        "id": "POS_B_LF_CORRECTED_SINGLE_MEASURED_SEQUENCE",
+        "observed": {
+          "actual": {
+            "close": {
+              "actor": "lf_owner_role",
+              "actor_sub": "lf-sub-owner-001",
+              "closed_at": "2026-11-12T23:22:39.614352+00:00",
+              "closure_verification": {
+                "independent_semantic_judge_attested": false,
+                "native_receiver_attested": false,
+                "native_supabase_auth_attested": false,
+                "proposal_sha256": "6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2",
+                "readback_sha256": "9a44a32a27c508c01a291645416b3bb5b17d81d1a315a888c4e2de0294b07df7",
+                "receipt_id": 1,
+                "receipt_sha256": "df62af2bf4fed1de2f645405be2a25de1b33f6833163042fc4540a3ec5e6f4cc",
+                "rule_code": "REG_SEG_004",
+                "state_at_closure": "VIGENTE",
+                "status": "VERIFIED_CLOSURE_HASH",
+                "version": "sha256:6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2"
+              },
+              "curator_seal_hmac_sha256": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+              "final_state": "VIGENTE",
+              "official_receiver_attested": false,
+              "production_attested": false,
+              "project": "lf",
+              "promotion_receipt_sha256": "c95462ba8a67c336893bb90dc990ca35f970a57372a70d43592440effd5bf113",
+              "proposal_sha256": "6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2",
+              "readback_sha256": "9a44a32a27c508c01a291645416b3bb5b17d81d1a315a888c4e2de0294b07df7",
+              "receipt_id": 1,
+              "receipt_sha256": "df62af2bf4fed1de2f645405be2a25de1b33f6833163042fc4540a3ec5e6f4cc",
+              "rows_written": 1,
+              "rule_code": "REG_SEG_004",
+              "status": "INTEGRATED_CLOSED_VERIFIED_PG18",
+              "version": "sha256:6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2"
+            },
+            "curator": {
+              "actor_code": "lf_owner_role",
+              "evidence": {
+                "active_quality_count": 413,
+                "active_source_count": 1,
+                "candidate_fingerprint_sha256": "36150e9ce48da72e9d2b4bef0caeb14a8c7dacd40658251bd1b01c6653250a4b",
+                "candidate_rule": "REG_SEG_004",
+                "category": "SECURITY",
+                "conflict_rule": "RULE-DEPENDENCY-001",
+                "curator_mode": "DETERMINISTIC_SQL_SAME_GPT_AUTHOR_NOT_INDEPENDENT",
+                "duplicate_rule": null,
+                "family": "IDENTIDAD_SEGURIDAD",
+                "identity_mode": "L17_HMAC_SIGNED_PG18_SANDBOX_NOT_SUPABASE",
+                "project": "lf"
+              },
+              "fingerprint_sha256": "36150e9ce48da72e9d2b4bef0caeb14a8c7dacd40658251bd1b01c6653250a4b",
+              "gate_precondition": true,
+              "independent_curator_attested": false,
+              "production_attested": false,
+              "reason_code": "SIGNED_EXPLICIT_CORRECTION_LINEAGE",
+              "reason_text": "Cambio explicito de valor_config ligado a regla anterior y owner HMAC del ensayo; NO firma de produccion",
+              "seal_hmac_sha256": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+              "verdict": "ACEPTAR"
+            },
+            "measured": {
+              "actor": "lf_owner_role",
+              "closure_receipts": 1,
+              "curator": "ACEPTAR",
+              "curator_seal": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+              "divergences": 0,
+              "previous_source": "SUCEDIDA",
+              "previous_state": "SUCEDIDA",
+              "project": "lf",
+              "promotion_receipts": 1,
+              "quality": "VIGENTE",
+              "readback_l20": {
+                "decision_count": 0,
+                "effective_to": null,
+                "next_review_at": "2027-02-10T23:22:39.422953+00:00",
+                "owner_actor": "lf_owner_role",
+                "project": "lf",
+                "receipt_count": 0,
+                "registry": "VIGENTE",
+                "registry_successor": null,
+                "rule_code": "REG_SEG_004",
+                "source": "VIGENTE",
+                "source_terminal": null,
+                "source_vigente": null,
+                "successor_registry": "SUCEDIDA",
+                "successor_source": "SUCEDIDA",
+                "target_divergence": 0
+              },
+              "rule_code": "REG_SEG_004",
+              "run_fixture_attested": "false",
+              "run_status": "COMPLETED",
+              "same_authenticated_session": true,
+              "source": "VIGENTE",
+              "ticket": "CONSUMED"
+            },
+            "promote": {
+              "actor_code": "lf_owner_role",
+              "curator_seal_hmac_sha256": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+              "native_receiver_attested": false,
+              "project": "lf",
+              "promotion_id": "PROM-TEST",
+              "readback_core_sha256": "676fe286ac764acaaf197d4c53ff2d6ecd51397b52e5a26e3ae5efd71c010234",
+              "readback_sha256": "9a44a32a27c508c01a291645416b3bb5b17d81d1a315a888c4e2de0294b07df7",
+              "readback_status": "READY",
+              "receipt_sha256": "c95462ba8a67c336893bb90dc990ca35f970a57372a70d43592440effd5bf113",
+              "rule_code": "REG_SEG_004",
+              "status": "PROMOTION_RECEIPT_RECORDED"
+            },
+            "sync": {
+              "decision": "SUPERSEDE",
+              "decision_id": 1,
+              "effective_to": "2026-11-12T23:22:39.490064+00:00",
+              "next_review_at": null,
+              "owner_actor": "lf_owner_role",
+              "owner_sub": "lf-sub-owner-001",
+              "production_attested": false,
+              "project": "lf",
+              "registry_state": "SUCEDIDA",
+              "rule_code": "RULE-DEPENDENCY-001",
+              "source_rows_updated": 1,
+              "source_state": "SUCEDIDA",
+              "status": "SYNCED_ATOMIC_PG18",
+              "successor_rule_code": "REG_SEG_004",
+              "target_divergences_after_sync": 0,
+              "target_divergences_before_sync": 1,
+              "verified_owner_jwt": "HMAC_SANDBOX_ONLY"
+            },
+            "wrap": "READY"
+          },
+          "after": {
+            "closure": 0,
+            "curator": 0,
+            "promotion": 0,
+            "quality": 0,
+            "source_count_or_active": 0
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "same transaction SALY owner -> Curator -> synthetic apply -> READY -> L20 0 -> 2 receipts; rollback",
+        "id": "POS_C_SALY_NEW_SINGLE_MEASURED_SEQUENCE",
+        "observed": {
+          "AFTER_ROLLBACK": {
+            "closure": 0,
+            "curator": 0,
+            "promotion": 0,
+            "quality": 0,
+            "source_count_or_active": 0
+          },
+          "CLOSE": {
+            "actor": "saly_owner_role",
+            "actor_sub": "saly-sub-owner-001",
+            "closed_at": "2026-11-12T23:22:39.706114+00:00",
+            "closure_verification": {
+              "independent_semantic_judge_attested": false,
+              "native_receiver_attested": false,
+              "native_supabase_auth_attested": false,
+              "proposal_sha256": "491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a",
+              "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+              "receipt_id": 2,
+              "receipt_sha256": "3e3f8e7818b2de3f5c0240f574d3672ea65bafccbdffa93fcc11955ad864ffad",
+              "rule_code": "SALY-L14-NEW",
+              "state_at_closure": "VIGENTE",
+              "status": "VERIFIED_CLOSURE_HASH",
+              "version": "sha256:491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a"
+            },
+            "curator_seal_hmac_sha256": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+            "final_state": "VIGENTE",
+            "official_receiver_attested": false,
+            "production_attested": false,
+            "project": "saly",
+            "promotion_receipt_sha256": "d4427a6117a4423c85a89739345fed78ca5d7a40cc8b0dc1064e8f5cc1ba136d",
+            "proposal_sha256": "491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a",
+            "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+            "receipt_id": 2,
+            "receipt_sha256": "3e3f8e7818b2de3f5c0240f574d3672ea65bafccbdffa93fcc11955ad864ffad",
+            "rows_written": 1,
+            "rule_code": "SALY-L14-NEW",
+            "status": "INTEGRATED_CLOSED_VERIFIED_PG18",
+            "version": "sha256:491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a"
+          },
+          "CURATOR": {
+            "actor_code": "saly_owner_role",
+            "evidence": {
+              "active_quality_count": 14,
+              "active_source_count": 14,
+              "candidate_fingerprint_sha256": "e067c6a376f9b0232192d6da3aa1f485acd59fe182df3350acc9e5aa480a21b5",
+              "candidate_rule": "SALY-L14-NEW",
+              "category": "MOTOR_DISPONIBLE",
+              "conflict_rule": null,
+              "curator_mode": "DETERMINISTIC_SQL_SAME_GPT_AUTHOR_NOT_INDEPENDENT",
+              "duplicate_rule": null,
+              "family": "MOTOR_DISPONIBLE",
+              "identity_mode": "L17_HMAC_SIGNED_PG18_SANDBOX_NOT_SUPABASE",
+              "project": "saly"
+            },
+            "fingerprint_sha256": "e067c6a376f9b0232192d6da3aa1f485acd59fe182df3350acc9e5aa480a21b5",
+            "gate_precondition": true,
+            "independent_curator_attested": false,
+            "production_attested": false,
+            "reason_code": "NO_BLOCKING_DUPLICATE_OR_CONFLICT",
+            "reason_text": "No se encontro duplicado exacto ni conflicto de claves en las fuentes activas inspeccionadas",
+            "seal_hmac_sha256": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+            "verdict": "ACEPTAR"
+          },
+          "MEASURED": {
+            "actor": "saly_owner_role",
+            "closure_receipts": 1,
+            "curator": "ACEPTAR",
+            "curator_seal": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+            "divergences": 0,
+            "previous_source": null,
+            "previous_state": null,
+            "project": "saly",
+            "promotion_receipts": 1,
+            "quality": "VIGENTE",
+            "readback_l20": {
+              "decision_count": 0,
+              "effective_to": null,
+              "next_review_at": "2027-01-11T23:22:39.684749+00:00",
+              "owner_actor": "saly_owner_role",
+              "project": "saly",
+              "receipt_count": 0,
+              "registry": "VIGENTE",
+              "registry_successor": null,
+              "rule_code": "SALY-L14-NEW",
+              "source": "VIGENTE",
+              "source_terminal": null,
+              "source_vigente": true,
+              "successor_registry": null,
+              "successor_source": null,
+              "target_divergence": 0
+            },
+            "rule_code": "SALY-L14-NEW",
+            "run_fixture_attested": null,
+            "run_status": null,
+            "same_authenticated_session": true,
+            "source": "VIGENTE",
+            "ticket": "CONSUMED"
+          },
+          "OWNER_INTENT": {
+            "official_step70_attested": false,
+            "owner_actor": "saly_owner_role",
+            "owner_sub": "saly-sub-owner-001",
+            "project": "saly",
+            "promotion_id": "SALY-L26-PROM-A",
+            "rule": "SALY-L14-NEW",
+            "status": "OWNER_JWT_SANDBOX_APPROVED",
+            "supabase_auth_attested": false
+          },
+          "PREP": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "identity_v2": {
+              "project_code": "saly",
+              "role": "saly_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "saly-sub-owner-001"
+            },
+            "next_review_at": "2027-01-11T23:22:39.684749+00:00",
+            "owner_role": "saly_owner_role",
+            "project_code": "saly",
+            "reviewed_at": "2026-11-12T23:22:39.684749+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "QUALITY_PREPARED"
+          },
+          "PROMOTION_RECEIPT": {
+            "actor_code": "saly_owner_role",
+            "curator_seal_hmac_sha256": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+            "native_receiver_attested": false,
+            "project": "saly",
+            "promotion_id": "SALY-L26-PROM-A",
+            "readback_core_sha256": "a2dd6c771ec6b8646251ce8cd4f299cb66559fac6835f0485a95efea63c936e0",
+            "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+            "readback_status": "READY",
+            "receipt_sha256": "d4427a6117a4423c85a89739345fed78ca5d7a40cc8b0dc1064e8f5cc1ba136d",
+            "rule_code": "SALY-L14-NEW",
+            "status": "PROMOTION_RECEIPT_RECORDED"
+          },
+          "READBACK_READY": {
+            "decision_count": 0,
+            "effective_to": null,
+            "next_review_at": "2027-01-11T23:22:39.684749+00:00",
+            "owner_actor": "saly_owner_role",
+            "project": "saly",
+            "receipt_count": 0,
+            "registry": "VIGENTE",
+            "registry_successor": null,
+            "rule_code": "SALY-L14-NEW",
+            "source": "VIGENTE",
+            "source_terminal": null,
+            "source_vigente": true,
+            "successor_registry": null,
+            "successor_source": null,
+            "target_divergence": 0
+          },
+          "VERIFY_CLOSURE": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a",
+            "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+            "receipt_id": 2,
+            "receipt_sha256": "3e3f8e7818b2de3f5c0240f574d3672ea65bafccbdffa93fcc11955ad864ffad",
+            "rule_code": "SALY-L14-NEW",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a"
+          },
+          "WRAP": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "gate": {
+              "fixture_only": true,
+              "rule_code": "SALY-L14-NEW",
+              "status": "APPLIED"
+            },
+            "identity_v2": {
+              "project_code": "saly",
+              "role": "saly_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "saly-sub-owner-001"
+            },
+            "next_review_at": "2027-01-11T23:22:39.684749+00:00",
+            "owner_role": "saly_owner_role",
+            "profile_return": {
+              "readback_verified": true,
+              "sandbox_fixture": true,
+              "status": "READY"
+            },
+            "project_code": "saly",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T23:22:39.684749+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L23_CURATOR_NOT_ACCEPTED",
+        "id": "N1_PROMOTION_WITHOUT_CURATOR_BLOCKED",
+        "observed": {
+          "exit": 3,
+          "last_stderr_lines": [
+            " ON CONFLICT(project_code,rule_code) DO UPDATE SET",
+            "    actor_role=EXCLUDED.actor_role,status='ARMED',created_at=clock_timestamp()\"",
+            "PL/pgSQL function quality_apply_envelope(text,text,text,text) line 20 at SQL statement",
+            "PL/pgSQL function quality_apply_envelope_v2(text,text,text,text) line 5 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L26_PROMOTION_RECEIPT_REQUIRED",
+        "id": "N2_CLOSURE_WITHOUT_PROMOTION_RECEIPT",
+        "observed": {
+          "exit": 3,
+          "last_stderr_lines": [
+            "  v_prop,v_prop_hash,v_rb,v_rb_hash,v_owner,v_judge,v_actor,",
+            "  identity->>'sub',v_closed,v_receipt_hash)",
+            " RETURNING receipt_id\"",
+            "PL/pgSQL function l24_emit_closure_v1(text,text,text,text,boolean) line 62 at SQL statement",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L26_CURATOR_SEAL_TAMPERED",
+        "id": "N3_TAMPERED_CURATOR_BLOCKS_CLOSURE",
+        "observed": {
+          "exit": 3,
+          "last_stderr_lines": [
+            "ERROR:  42501: BLOCK_L26_CURATOR_SEAL_TAMPERED",
+            "CONTEXT:  PL/pgSQL function l26_validate_curator_seal_v1(text,text,text) line 19 at RAISE",
+            "PL/pgSQL function l26_close_integrated_v1(text,text,text,text) line 6 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L24_DIVERGENCE_REGISTER_SOURCE",
+        "id": "N4_DIVERGENCE_BLOCKS_INTEGRATED_CLOSE",
+        "observed": {
+          "exit": 3,
+          "last_stderr_lines": [
+            "ERROR:  23514: BLOCK_L24_DIVERGENCE_REGISTER_SOURCE",
+            "CONTEXT:  PL/pgSQL function l24_ready_payload_v1(text,text,text,text) line 18 at RAISE",
+            "PL/pgSQL function l26_close_integrated_v1(text,text,text,text) line 7 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L23_CURATOR_SEAL_INVALID",
+        "id": "N5_ACCEPT_REPLAY_ANOTHER_RULE_BLOCKED",
+        "observed": {
+          "exit": 3,
+          "last_stderr_lines": [
+            " ON CONFLICT(project_code,rule_code) DO UPDATE SET",
+            "    actor_role=EXCLUDED.actor_role,status='ARMED',created_at=clock_timestamp()\"",
+            "PL/pgSQL function quality_apply_envelope(text,text,text,text) line 20 at SQL statement",
+            "PL/pgSQL function quality_apply_envelope_v2(text,text,text,text) line 5 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "L26_INJECTED_AFTER_PROMOTION_BEFORE_CLOSURE",
+        "id": "N6_MID_SEQUENCE_ROLLBACK_TRIGGERED",
+        "observed": {
+          "exit": 3,
+          "last_stderr_lines": [
+            "ERROR:  23514: L26_INJECTED_AFTER_PROMOTION_BEFORE_CLOSURE",
+            "CONTEXT:  PL/pgSQL function l26_injected_fail_between_promotion_and_closure_v1() line 3 at RAISE",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3925"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "injected fault after frozen promotion and L26 promotion receipt leaves zero persisted source, verdict, receipts",
+        "id": "N6B_ROLLBACK_TOTAL_READBACK",
+        "observed": {
+          "candidate": 0,
+          "closure": 0,
+          "curator": 0,
+          "owner_intents": 0,
+          "promotion": 0,
+          "quality": 0
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_owner_role / l23_curator_verdicts",
+        "id": "PERMISSIONS_lf_owner_role_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_owner_role / l26_promotion_receipts",
+        "id": "PERMISSIONS_lf_owner_role_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_owner_role / l24_closure_receipts",
+        "id": "PERMISSIONS_lf_owner_role_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_super_role / l23_curator_verdicts",
+        "id": "PERMISSIONS_lf_super_role_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_super_role / l26_promotion_receipts",
+        "id": "PERMISSIONS_lf_super_role_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_super_role / l24_closure_receipts",
+        "id": "PERMISSIONS_lf_super_role_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_reader_role / l23_curator_verdicts",
+        "id": "PERMISSIONS_lf_reader_role_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_reader_role / l26_promotion_receipts",
+        "id": "PERMISSIONS_lf_reader_role_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_reader_role / l24_closure_receipts",
+        "id": "PERMISSIONS_lf_reader_role_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_no_grant_role / l23_curator_verdicts",
+        "id": "PERMISSIONS_lf_no_grant_role_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_no_grant_role / l26_promotion_receipts",
+        "id": "PERMISSIONS_lf_no_grant_role_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for lf_no_grant_role / l24_closure_receipts",
+        "id": "PERMISSIONS_lf_no_grant_role_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for saly_owner_role / l23_curator_verdicts",
+        "id": "PERMISSIONS_saly_owner_role_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for saly_owner_role / l26_promotion_receipts",
+        "id": "PERMISSIONS_saly_owner_role_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for saly_owner_role / l24_closure_receipts",
+        "id": "PERMISSIONS_saly_owner_role_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for saly_super_role / l23_curator_verdicts",
+        "id": "PERMISSIONS_saly_super_role_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for saly_super_role / l26_promotion_receipts",
+        "id": "PERMISSIONS_saly_super_role_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for saly_super_role / l24_closure_receipts",
+        "id": "PERMISSIONS_saly_super_role_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for l17_authenticator / l23_curator_verdicts",
+        "id": "PERMISSIONS_l17_authenticator_l23_curator_verdicts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l23_curator_verdicts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for l17_authenticator / l26_promotion_receipts",
+        "id": "PERMISSIONS_l17_authenticator_l26_promotion_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l26_promotion_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for l17_authenticator / l24_closure_receipts",
+        "id": "PERMISSIONS_l17_authenticator_l24_closure_receipts",
+        "observed": {
+          "DELETE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "DISABLE_TRIGGER": {
+            "denied": true,
+            "error": "ERROR:  42501: must be owner of table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "INSERT": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "TRUNCATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          },
+          "UPDATE": {
+            "denied": true,
+            "error": "ERROR:  42501: permission denied for table l24_closure_receipts",
+            "sqlstate_error": 3
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "FROZEN_MD5_AFTER",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      }
+    ],
+    "curator": "DETERMINISTIC_SQL_SAME_GPT_MODEL_NOT_INDEPENDENT",
+    "frozen_gates_modified": false,
+    "gate_md5_after": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "gate_md5_before": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "jwt": "L17_HMAC_FIXTURE_NOT_SUPABASE_AUTH",
+    "l23_l24_original_sql_modified": false,
+    "measured_board": {
+      "formula": "real/(12*3)*100",
+      "no_probado": 4,
+      "real": 21,
+      "real_percent": 58.33,
+      "synthetic": 11,
+      "total": 36
+    },
+    "native_receiver": false,
+    "native_router_profile_run": false,
+    "native_step70": false,
+    "permission_matrix": {
+      "individual_denials_verified": 105,
+      "operations": [
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE",
+        "DISABLE_TRIGGER"
+      ],
+      "roles": [
+        "lf_owner_role",
+        "lf_super_role",
+        "lf_reader_role",
+        "lf_no_grant_role",
+        "saly_owner_role",
+        "saly_super_role",
+        "l17_authenticator"
+      ],
+      "tables": [
+        "l23_curator_verdicts",
+        "l26_promotion_receipts",
+        "l24_closure_receipts"
+      ]
+    },
+    "production": "NO_GO_UNVERIFIED",
+    "production_write_count": 0,
+    "same_transaction_sequence_verified": true,
+    "scenario_count": 3,
+    "scenarios": [
+      {
+        "board": [
+          {
+            "evidence": "L11B parent fixture, ACT-0001 no se invoco",
+            "stage": "Router",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B fake owner profile; no ejecucion nativa",
+            "stage": "Perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B system_attestation=false, no 11/11 real",
+            "stage": "RUN",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B stub + IG gate status READY_FOR_PROFILE_APPROVAL",
+            "stage": "IG",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Misma transaccion: L23 ACEPTAR, sello HMAC 15e1e336820f1f03",
+            "stage": "Curator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L7 exact capture VERIFY=VERIFIED_CAPTURE_BINDING e IG=READY_FOR_PROFILE_APPROVAL",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Gate LF profile_return READY from frozen function",
+            "stage": "Retorno perfil",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L11B owner RUN fixture with system_attestation=false",
+            "stage": "Ejecucion",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L14 SQL gate LF APPLIED + L26 promotion receipt 7640da6071c813aa",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L13/source source=VIGENTE registry=VIGENTE",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L20 detector target=0, L26 promotion record READY",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L26 closure insert + L24 VERIFY_CLOSURE_HASH=VERIFIED_CLOSURE_HASH",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "closure": {
+          "actor": "lf_owner_role",
+          "actor_sub": "lf-sub-owner-001",
+          "closed_at": "2026-11-12T23:22:37.663859+00:00",
+          "closure_verification": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb",
+            "readback_sha256": "3deb3144834588e3f4b004e0300f1f30d091737a3568f36914c1b6c85684ce7c",
+            "receipt_id": 1,
+            "receipt_sha256": "0792a6b79e0c25f642e7effd5b7282a77d7e0ded49d6ede4f7182da7eda91823",
+            "rule_code": "REG_SEG_004",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb"
+          },
+          "curator_seal_hmac_sha256": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+          "final_state": "VIGENTE",
+          "official_receiver_attested": false,
+          "production_attested": false,
+          "project": "lf",
+          "promotion_receipt_sha256": "7640da6071c813aa2c1930134201cd3f12e36ad2f12a4a1ed2e042fda2caaf80",
+          "proposal_sha256": "bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb",
+          "readback_sha256": "3deb3144834588e3f4b004e0300f1f30d091737a3568f36914c1b6c85684ce7c",
+          "receipt_id": 1,
+          "receipt_sha256": "0792a6b79e0c25f642e7effd5b7282a77d7e0ded49d6ede4f7182da7eda91823",
+          "rows_written": 1,
+          "rule_code": "REG_SEG_004",
+          "status": "INTEGRATED_CLOSED_VERIFIED_PG18",
+          "version": "sha256:bc207151fa509b79ab10b3ff041eb3353d35310752568121f9a27a54b22ec8cb"
+        },
+        "curator": {
+          "actor_code": "lf_owner_role",
+          "evidence": {
+            "active_quality_count": 412,
+            "active_source_count": 1,
+            "candidate_fingerprint_sha256": "47016f055a3568af36c44b22ba1f7a598e3196a2fb5641e49cd727a733f448cd",
+            "candidate_rule": "REG_SEG_004",
+            "category": "SECURITY",
+            "conflict_rule": null,
+            "curator_mode": "DETERMINISTIC_SQL_SAME_GPT_AUTHOR_NOT_INDEPENDENT",
+            "duplicate_rule": null,
+            "family": "IDENTIDAD_SEGURIDAD",
+            "identity_mode": "L17_HMAC_SIGNED_PG18_SANDBOX_NOT_SUPABASE",
+            "project": "lf"
+          },
+          "fingerprint_sha256": "47016f055a3568af36c44b22ba1f7a598e3196a2fb5641e49cd727a733f448cd",
+          "gate_precondition": true,
+          "independent_curator_attested": false,
+          "production_attested": false,
+          "reason_code": "NO_BLOCKING_DUPLICATE_OR_CONFLICT",
+          "reason_text": "No se encontro duplicado exacto ni conflicto de claves en las fuentes activas inspeccionadas",
+          "seal_hmac_sha256": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+          "verdict": "ACEPTAR"
+        },
+        "measurement": {
+          "actor": "lf_owner_role",
+          "closure_receipts": 1,
+          "curator": "ACEPTAR",
+          "curator_seal": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+          "divergences": 0,
+          "previous_source": null,
+          "previous_state": null,
+          "project": "lf",
+          "promotion_receipts": 1,
+          "quality": "VIGENTE",
+          "readback_l20": {
+            "decision_count": 0,
+            "effective_to": null,
+            "next_review_at": "2027-02-10T23:22:37.50663+00:00",
+            "owner_actor": "lf_owner_role",
+            "project": "lf",
+            "receipt_count": 0,
+            "registry": "VIGENTE",
+            "registry_successor": null,
+            "rule_code": "REG_SEG_004",
+            "source": "VIGENTE",
+            "source_terminal": null,
+            "source_vigente": null,
+            "successor_registry": null,
+            "successor_source": null,
+            "target_divergence": 0
+          },
+          "rule_code": "REG_SEG_004",
+          "run_fixture_attested": "false",
+          "run_status": "COMPLETED",
+          "same_authenticated_session": true,
+          "source": "VIGENTE",
+          "ticket": "CONSUMED"
+        },
+        "promotion": {
+          "actor_code": "lf_owner_role",
+          "curator_seal_hmac_sha256": "15e1e336820f1f038ef1aabd793f56f141e0b4d8ff626c97586454dd1b9873ff",
+          "native_receiver_attested": false,
+          "project": "lf",
+          "promotion_id": "PROM-TEST",
+          "readback_core_sha256": "676fe286ac764acaaf197d4c53ff2d6ecd51397b52e5a26e3ae5efd71c010234",
+          "readback_sha256": "3deb3144834588e3f4b004e0300f1f30d091737a3568f36914c1b6c85684ce7c",
+          "readback_status": "READY",
+          "receipt_sha256": "7640da6071c813aa2c1930134201cd3f12e36ad2f12a4a1ed2e042fda2caaf80",
+          "rule_code": "REG_SEG_004",
+          "status": "PROMOTION_RECEIPT_RECORDED"
+        },
+        "rollback": {
+          "closure": 0,
+          "curator": 0,
+          "promotion": 0,
+          "quality": 0,
+          "source_count_or_active": 0
+        },
+        "scenario": "A_LF_NEW",
+        "sequence": "ONE_BEGIN_ONE_SQL_CONNECTION_ONE_ROLLBACK",
+        "status": "PASS"
+      },
+      {
+        "board": [
+          {
+            "evidence": "L11B parent fixture, ACT-0001 no se invoco",
+            "stage": "Router",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B fake owner profile; no ejecucion nativa",
+            "stage": "Perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B system_attestation=false, no 11/11 real",
+            "stage": "RUN",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B stub + IG gate status READY_FOR_PROFILE_APPROVAL",
+            "stage": "IG",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Misma transaccion: L23 ACEPTAR, sello HMAC 1efa6375cb19605b",
+            "stage": "Curator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L7 exact capture VERIFY=VERIFIED_CAPTURE_BINDING e IG=READY_FOR_PROFILE_APPROVAL",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Gate LF profile_return READY from frozen function",
+            "stage": "Retorno perfil",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L11B owner RUN fixture with system_attestation=false",
+            "stage": "Ejecucion",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L14 SQL gate LF APPLIED + L26 promotion receipt c95462ba8a67c336",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L13/source source=VIGENTE registry=VIGENTE",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L20 detector target=0, L26 promotion record READY",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L26 closure insert + L24 VERIFY_CLOSURE_HASH=VERIFIED_CLOSURE_HASH",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "closure": {
+          "actor": "lf_owner_role",
+          "actor_sub": "lf-sub-owner-001",
+          "closed_at": "2026-11-12T23:22:39.614352+00:00",
+          "closure_verification": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2",
+            "readback_sha256": "9a44a32a27c508c01a291645416b3bb5b17d81d1a315a888c4e2de0294b07df7",
+            "receipt_id": 1,
+            "receipt_sha256": "df62af2bf4fed1de2f645405be2a25de1b33f6833163042fc4540a3ec5e6f4cc",
+            "rule_code": "REG_SEG_004",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2"
+          },
+          "curator_seal_hmac_sha256": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+          "final_state": "VIGENTE",
+          "official_receiver_attested": false,
+          "production_attested": false,
+          "project": "lf",
+          "promotion_receipt_sha256": "c95462ba8a67c336893bb90dc990ca35f970a57372a70d43592440effd5bf113",
+          "proposal_sha256": "6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2",
+          "readback_sha256": "9a44a32a27c508c01a291645416b3bb5b17d81d1a315a888c4e2de0294b07df7",
+          "receipt_id": 1,
+          "receipt_sha256": "df62af2bf4fed1de2f645405be2a25de1b33f6833163042fc4540a3ec5e6f4cc",
+          "rows_written": 1,
+          "rule_code": "REG_SEG_004",
+          "status": "INTEGRATED_CLOSED_VERIFIED_PG18",
+          "version": "sha256:6f2a729cd548ee179a54f0be71e6719c55eb3a7bb62e255c89e91bdb8437bcf2"
+        },
+        "curator": {
+          "actor_code": "lf_owner_role",
+          "evidence": {
+            "active_quality_count": 413,
+            "active_source_count": 1,
+            "candidate_fingerprint_sha256": "36150e9ce48da72e9d2b4bef0caeb14a8c7dacd40658251bd1b01c6653250a4b",
+            "candidate_rule": "REG_SEG_004",
+            "category": "SECURITY",
+            "conflict_rule": "RULE-DEPENDENCY-001",
+            "curator_mode": "DETERMINISTIC_SQL_SAME_GPT_AUTHOR_NOT_INDEPENDENT",
+            "duplicate_rule": null,
+            "family": "IDENTIDAD_SEGURIDAD",
+            "identity_mode": "L17_HMAC_SIGNED_PG18_SANDBOX_NOT_SUPABASE",
+            "project": "lf"
+          },
+          "fingerprint_sha256": "36150e9ce48da72e9d2b4bef0caeb14a8c7dacd40658251bd1b01c6653250a4b",
+          "gate_precondition": true,
+          "independent_curator_attested": false,
+          "production_attested": false,
+          "reason_code": "SIGNED_EXPLICIT_CORRECTION_LINEAGE",
+          "reason_text": "Cambio explicito de valor_config ligado a regla anterior y owner HMAC del ensayo; NO firma de produccion",
+          "seal_hmac_sha256": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+          "verdict": "ACEPTAR"
+        },
+        "measurement": {
+          "actor": "lf_owner_role",
+          "closure_receipts": 1,
+          "curator": "ACEPTAR",
+          "curator_seal": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+          "divergences": 0,
+          "previous_source": "SUCEDIDA",
+          "previous_state": "SUCEDIDA",
+          "project": "lf",
+          "promotion_receipts": 1,
+          "quality": "VIGENTE",
+          "readback_l20": {
+            "decision_count": 0,
+            "effective_to": null,
+            "next_review_at": "2027-02-10T23:22:39.422953+00:00",
+            "owner_actor": "lf_owner_role",
+            "project": "lf",
+            "receipt_count": 0,
+            "registry": "VIGENTE",
+            "registry_successor": null,
+            "rule_code": "REG_SEG_004",
+            "source": "VIGENTE",
+            "source_terminal": null,
+            "source_vigente": null,
+            "successor_registry": "SUCEDIDA",
+            "successor_source": "SUCEDIDA",
+            "target_divergence": 0
+          },
+          "rule_code": "REG_SEG_004",
+          "run_fixture_attested": "false",
+          "run_status": "COMPLETED",
+          "same_authenticated_session": true,
+          "source": "VIGENTE",
+          "ticket": "CONSUMED"
+        },
+        "promotion": {
+          "actor_code": "lf_owner_role",
+          "curator_seal_hmac_sha256": "1efa6375cb19605ba8c10fec3f964a8d07fa316d28b5d2590ce46fba3595c652",
+          "native_receiver_attested": false,
+          "project": "lf",
+          "promotion_id": "PROM-TEST",
+          "readback_core_sha256": "676fe286ac764acaaf197d4c53ff2d6ecd51397b52e5a26e3ae5efd71c010234",
+          "readback_sha256": "9a44a32a27c508c01a291645416b3bb5b17d81d1a315a888c4e2de0294b07df7",
+          "readback_status": "READY",
+          "receipt_sha256": "c95462ba8a67c336893bb90dc990ca35f970a57372a70d43592440effd5bf113",
+          "rule_code": "REG_SEG_004",
+          "status": "PROMOTION_RECEIPT_RECORDED"
+        },
+        "rollback": {
+          "closure": 0,
+          "curator": 0,
+          "promotion": 0,
+          "quality": 0,
+          "source_count_or_active": 0
+        },
+        "scenario": "B_LF_CORRECTED",
+        "sequence": "ONE_BEGIN_ONE_SQL_CONNECTION_ONE_ROLLBACK",
+        "status": "PASS"
+      },
+      {
+        "board": [
+          {
+            "evidence": "No router SALY invocado",
+            "stage": "Router",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No perfil SALY nativo",
+            "stage": "Perfil",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No RUN SALY nativo",
+            "stage": "RUN",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No IG nativo SALY",
+            "stage": "IG",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "Misma transaccion: L23 ACEPTAR, sello HMAC 137828dd273f4394",
+            "stage": "Curator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L13 familia preparada + L17 signed HMAC + L23 guard",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L14 SALY fixture READY (no transporte real)",
+            "stage": "Retorno perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "SQL SALY L14 adapter actually ran, not product execution",
+            "stage": "Ejecucion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SALY synthetic L14 SQL applied + L26 separate promotion receipt d4427a6117a4423c",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L13/source source=VIGENTE registry=VIGENTE",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L20 detector target=0, L26 promotion record READY",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L26 closure insert + L24 VERIFY_CLOSURE_HASH=VERIFIED_CLOSURE_HASH",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "closure": {
+          "actor": "saly_owner_role",
+          "actor_sub": "saly-sub-owner-001",
+          "closed_at": "2026-11-12T23:22:39.706114+00:00",
+          "closure_verification": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a",
+            "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+            "receipt_id": 2,
+            "receipt_sha256": "3e3f8e7818b2de3f5c0240f574d3672ea65bafccbdffa93fcc11955ad864ffad",
+            "rule_code": "SALY-L14-NEW",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a"
+          },
+          "curator_seal_hmac_sha256": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+          "final_state": "VIGENTE",
+          "official_receiver_attested": false,
+          "production_attested": false,
+          "project": "saly",
+          "promotion_receipt_sha256": "d4427a6117a4423c85a89739345fed78ca5d7a40cc8b0dc1064e8f5cc1ba136d",
+          "proposal_sha256": "491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a",
+          "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+          "receipt_id": 2,
+          "receipt_sha256": "3e3f8e7818b2de3f5c0240f574d3672ea65bafccbdffa93fcc11955ad864ffad",
+          "rows_written": 1,
+          "rule_code": "SALY-L14-NEW",
+          "status": "INTEGRATED_CLOSED_VERIFIED_PG18",
+          "version": "sha256:491d9e8ebc60bdec929e989bae9c35ae65061e6396d23b8bf7ab05186957f19a"
+        },
+        "curator": {
+          "actor_code": "saly_owner_role",
+          "evidence": {
+            "active_quality_count": 14,
+            "active_source_count": 14,
+            "candidate_fingerprint_sha256": "e067c6a376f9b0232192d6da3aa1f485acd59fe182df3350acc9e5aa480a21b5",
+            "candidate_rule": "SALY-L14-NEW",
+            "category": "MOTOR_DISPONIBLE",
+            "conflict_rule": null,
+            "curator_mode": "DETERMINISTIC_SQL_SAME_GPT_AUTHOR_NOT_INDEPENDENT",
+            "duplicate_rule": null,
+            "family": "MOTOR_DISPONIBLE",
+            "identity_mode": "L17_HMAC_SIGNED_PG18_SANDBOX_NOT_SUPABASE",
+            "project": "saly"
+          },
+          "fingerprint_sha256": "e067c6a376f9b0232192d6da3aa1f485acd59fe182df3350acc9e5aa480a21b5",
+          "gate_precondition": true,
+          "independent_curator_attested": false,
+          "production_attested": false,
+          "reason_code": "NO_BLOCKING_DUPLICATE_OR_CONFLICT",
+          "reason_text": "No se encontro duplicado exacto ni conflicto de claves en las fuentes activas inspeccionadas",
+          "seal_hmac_sha256": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+          "verdict": "ACEPTAR"
+        },
+        "measurement": {
+          "actor": "saly_owner_role",
+          "closure_receipts": 1,
+          "curator": "ACEPTAR",
+          "curator_seal": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+          "divergences": 0,
+          "previous_source": null,
+          "previous_state": null,
+          "project": "saly",
+          "promotion_receipts": 1,
+          "quality": "VIGENTE",
+          "readback_l20": {
+            "decision_count": 0,
+            "effective_to": null,
+            "next_review_at": "2027-01-11T23:22:39.684749+00:00",
+            "owner_actor": "saly_owner_role",
+            "project": "saly",
+            "receipt_count": 0,
+            "registry": "VIGENTE",
+            "registry_successor": null,
+            "rule_code": "SALY-L14-NEW",
+            "source": "VIGENTE",
+            "source_terminal": null,
+            "source_vigente": true,
+            "successor_registry": null,
+            "successor_source": null,
+            "target_divergence": 0
+          },
+          "rule_code": "SALY-L14-NEW",
+          "run_fixture_attested": null,
+          "run_status": null,
+          "same_authenticated_session": true,
+          "source": "VIGENTE",
+          "ticket": "CONSUMED"
+        },
+        "promotion": {
+          "actor_code": "saly_owner_role",
+          "curator_seal_hmac_sha256": "137828dd273f439477ae5bca22579cae47b6cac2737423715199a806e4354295",
+          "native_receiver_attested": false,
+          "project": "saly",
+          "promotion_id": "SALY-L26-PROM-A",
+          "readback_core_sha256": "a2dd6c771ec6b8646251ce8cd4f299cb66559fac6835f0485a95efea63c936e0",
+          "readback_sha256": "f4191452b1088b4944b1dd4da9d0dc08c17f3783194f0dd33374ee36cb976360",
+          "readback_status": "READY",
+          "receipt_sha256": "d4427a6117a4423c85a89739345fed78ca5d7a40cc8b0dc1064e8f5cc1ba136d",
+          "rule_code": "SALY-L14-NEW",
+          "status": "PROMOTION_RECEIPT_RECORDED"
+        },
+        "rollback": {
+          "closure": 0,
+          "curator": 0,
+          "promotion": 0,
+          "quality": 0,
+          "source_count_or_active": 0
+        },
+        "scenario": "C_SALY_NEW",
+        "sequence": "ONE_BEGIN_ONE_SQL_CONNECTION_ONE_ROLLBACK",
+        "status": "PASS"
+      }
+    ],
+    "schema_version": "LF_LOTE26_MEASURED_INTEGRATION_PG18_V1",
+    "status": "SANDBOX_VERIFIED"
+  },
+  "individual_pg18_script_logs": {
+    "failed": 0,
+    "passed": 21,
+    "scripts": [
+      {
+        "log_sha256": "38acafe8ad6b986933cf3a8c09d31795d5d938275e39ca38b016df66ffe11cc1",
+        "log_size": 16615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "7e1adbf2ba08aba771f1217aba2ec44449d093f6730ebe71f48fd3a7e6d64112",
+        "log_size": 9709,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "1838ae8506f82d66accee399dbd8471b96e7ccebb57a3c652713af699a1110f3",
+        "log_size": 42186,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11b_mechanical_positive.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0b01dc019bea9342d9fe19d854a4b2adefa17ed9ab10f2db5c5dbde559719cc0",
+        "log_size": 29265,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f11ca2d3a384e98f8f1099a9c1e65f1555ae5ece58f8a15559ad31fe9c416e9a",
+        "log_size": 17429,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote17_actor_identity_adapter.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "38a74fd7898c016658b535b25148a320cffbc69e0bca6602b2e8a27ea4919a1b",
+        "log_size": 87076,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote18_integrated_cycle.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "d04b8ec9271f1ab918c299636de663980ee2a483f9f0ed19619f2319daeeecd1",
+        "log_size": 32256,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote20_source_sync.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "3acc84bc248a371a78b8ce382e65044a47ee4777a8b0f94dd951323fcf86d7ff",
+        "log_size": 18618,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote23_curator_stage.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "5e6bbae3e9e7a0c3ccd3b1fa9d3456def9ed82cbda93b3561f452ba9222686f6",
+        "log_size": 48674,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote24_closure_receipt.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "c7602a332375554dab794e30cbce3a88bba92ac9156392524243a5c9e455ba54",
+        "log_size": 91266,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote26_integrated_curator_closure.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "37145e146930f0ac78357b8d1c298c51db852dccf48491604fa377bc4b6241b6",
+        "log_size": 21622,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_mutation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4b_validator_reuse.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "32a38d6c68d16cfffc39509d60af3090374a6fb3d5d01a258031b66b5caf1a7a",
+        "log_size": 22740,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4d_profile_owner_approval.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0455e266085b6579c5ca09c97b618c4e9b0f1abaf6c9e61883c31ced930ab8e0",
+        "log_size": 17103,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote5_real_verdict_profile_return.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f04e7b0f2d50c21395f11dff95029297b6a0fbc87b60f7f23bb0fdcb0a777680",
+        "log_size": 4175,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote6_claude_blind_5pass_uncited.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f33594571d0f411a1bf9eda5adcbe32b36a66bb35727c9ea7759888d1981e2b9",
+        "log_size": 20355,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote7_exact_citation_capture.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "15f076c5623ea208dae9422d3c8efed0256a86c180aad904ee21762e176fce0b",
+        "log_size": 8250,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote8_quote_reuse_scoped.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "bd58aeefa9374a829b3e6f785b02318309a555cf07db3dab9789d8ff1341f4b5",
+        "log_size": 68615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9690f17cc5a1bbc3b37f8a9865023d2c3408ce6610b8079d2da6f078bc5d01f1",
+        "log_size": 42541,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0d6abe0e13835bec20df46bb41ba832d4b4e58644ea1a1f4037274c6dae533d5",
+        "log_size": 14681,
+        "path": "sandbox/lf_contract_gate_test/rule_scope_v1/test_pg18_step40_rule_scope.py",
+        "status": "PASS"
+      }
+    ],
+    "tested": 21
+  },
+  "live_readonly_observation": {
+    "role": "supabase_read_only_user",
+    "db": "postgres",
+    "lf_rule_count": 578,
+    "official_receipt_function": "public.lf_profile_execution_terminal_authority_receipt_v1(text)",
+    "official_apply": "public.lf_rule_promotion_apply_v1(text)",
+    "live_writes": 0
+  },
+  "note": "L26 A initial fixture changes conflicting active rule category BEFORE L17 immutable guard setup; A candidate/gates unchanged. B/C separate original clean PG18 fixture. Each scenario has single BEGIN and ROLLBACK. All 105 SQL privilege attempts deny. Native model, OIDC, owner auth, official receiver not proven."
+}
