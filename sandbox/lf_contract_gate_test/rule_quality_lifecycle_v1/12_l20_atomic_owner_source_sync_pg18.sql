@@ -49,7 +49,7 @@ DECLARE v_actor text; r rules%ROWTYPE; a project_source_adapters%ROWTYPE;
         s jsonb; active text; mark text; disagree boolean;
 BEGIN
  v_actor:=trusted_actor_role_v2(p_project);
- SELECT * INTO a FROM project_source_adapters WHERE a.project_code=p_project;
+ SELECT * INTO a FROM project_source_adapters pad WHERE pad.project_code=p_project;
  IF NOT FOUND THEN
   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L20_UNKNOWN_ADAPTER';
  END IF;
