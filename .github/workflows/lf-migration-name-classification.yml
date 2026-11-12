@@ -366,4 +366,6 @@ jobs:
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote9_real_review_pass1_chat_export_model_unattested.txt
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote9_real_review_pass1_chat_export_model_unattested.json
             sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py
+            sandbox/lf_contract_gate_test/rule_promotion_v1/lote9_pass1_citation_measurement_runtime.json
+            docs/input-governance/L9_REVIEW_PASS1_CHAT_EXPORT_LITERAL_CAPTURE_MEASUREMENT_V1.md
           if-no-files-found: error
