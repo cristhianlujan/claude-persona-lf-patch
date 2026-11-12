@@ -355,4 +355,6 @@ jobs:
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote6_claude_blind_5pass_verdicts_not_native_ig_receipt_v1.json
             docs/input-governance/L6_RUNTIME_ORPHANS_21_AND_PROFILE3_READONLY_TRIAGE_V1.json
             docs/input-governance/L6_CLAUDE_VERDICTS_NO_QUOTES_GOVERNED_CAPTURE_PLAN_V1.md
+            docs/input-governance/L7_EXACT_CITATION_CAPTURE_GOVERNED_CONTRACT_V1.md
+            sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote7_exact_citation_capture.py
           if-no-files-found: error
