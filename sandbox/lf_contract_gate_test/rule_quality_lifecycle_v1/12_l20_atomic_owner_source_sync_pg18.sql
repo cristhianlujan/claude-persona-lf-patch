@@ -2,6 +2,15 @@
 -- Source/registry transition = one function invocation = one SQL statement transaction.
 SET search_path=rule_quality_l13,public;
 
+-- SANDBOX FIXTURE ONLY: historical L4 source CHECK only admits CANDIDATO/VIGENTE.
+-- In the actual live LF read-only schema inspection no such CHECK exists.
+-- Widen the PG18 *fixture* source to exercise SUCEDIDA/CADUCADA without
+-- editing any frozen gate, deployed constraint, or production migration.
+ALTER TABLE lf_ops.reglas DROP CONSTRAINT reglas_estado_check;
+ALTER TABLE lf_ops.reglas ADD CONSTRAINT reglas_estado_check
+ CHECK (estado IN ('CANDIDATO','VIGENTE','CADUCADA','SUCEDIDA'));
+
+
 CREATE TABLE l20_sync_receipts (
  project_code text NOT NULL, rule_code text NOT NULL,
  decision_id bigint NOT NULL UNIQUE REFERENCES review_decisions(decision_id),
