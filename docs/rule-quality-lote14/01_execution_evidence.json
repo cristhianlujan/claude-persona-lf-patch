@@ -2,11 +2,11 @@
   "schema_version": "LF_L14_PG18_EVIDENCE_V1",
   "status": "SANDBOX_VERIFIED",
   "global_status": "NO_GO_UNVERIFIED",
-  "run_id": 43289911377,
-  "job_id": 131433088484,
-  "commit_under_test": "d0ea4c428f4f3aadd3bd29188e178604987059af",
-  "runner_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43289911377",
-  "source": "Github Actions job stdout, actual PG18.6 run",
+  "run_id": 43291127976,
+  "job_id": 131437336425,
+  "commit_under_test": "91c0ae3988083cb1f397d0997c79889c77af760b",
+  "runner_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43291127976",
+  "source": "Final successful PG18.6 GitHub Actions job, actual SQLSTATE output and all test logs",
   "l13_regression": {
     "tests": 28,
     "passed": 28,
@@ -35,8 +35,8 @@
         "status": "PASS"
       },
       {
-        "log_sha256": "1a5eea30da3e7eca909a4a984b80e4c91eae2585172c0115168c0681efc1564e",
-        "log_size": 27720,
+        "log_sha256": "5dc1cf7d24970cd5339d9f8eedde770ef521bd95e32049d08a424660665d49a8",
+        "log_size": 29265,
         "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
         "status": "PASS"
       },
@@ -95,8 +95,8 @@
         "status": "PASS"
       },
       {
-        "log_sha256": "cfbdbe8565f3c7908b4f7732274b07f40354df6212a4551121bffe3590c6d30e",
-        "log_size": 42544,
+        "log_sha256": "b8719398fa7b15bfcf04bac8c6c3c116866fde473ab9a827660a162a090b5b9d",
+        "log_size": 42543,
         "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py",
         "status": "PASS"
       },
@@ -111,7 +111,7 @@
   },
   "l14_wrapper": {
     "actor_auth": "POSTGRES_SESSION_USER_SANDBOX_ONLY",
-    "case_count": 16,
+    "case_count": 18,
     "cases": [
       {
         "expected": {
@@ -206,10 +206,10 @@
         "id": "P1_VALID_FAMILY_REVIEW_SCHEDULED",
         "observed": {
           "family_code": "IDENTIDAD_SEGURIDAD",
-          "next_review_at": "2027-02-10T00:00:00+00:00",
+          "next_review_at": "2027-02-10T19:32:46.315499+00:00",
           "owner_role": "lf_owner_role",
           "project_code": "lf",
-          "reviewed_at": "2026-11-12T00:00:00+00:00",
+          "reviewed_at": "2026-11-12T19:32:46.315499+00:00",
           "rule_code": "LF-L14-NEW-OK",
           "status": "QUALITY_PREPARED"
         },
@@ -224,6 +224,30 @@
         "observed": {
           "exit_code": 3,
           "stderr": "ERROR:  23514: BLOCK_QUALITY_ACTIVE_METADATA_MISSING\nCONTEXT:  PL/pgSQL function source_quality_activation_guard() line 19 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_CALLER_REVIEW_TIME_FORBIDDEN",
+          "sqlstate": "23514"
+        },
+        "id": "N10_REVIEW_TIME_CANNOT_BE_SPOOFED",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_CALLER_REVIEW_TIME_FORBIDDEN\nCONTEXT:  PL/pgSQL function quality_prepare_new(text,text,text,timestamp with time zone) line 35 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_ACTIVE_RULE_IN_PLACE_MUTATION",
+          "sqlstate": "23514"
+        },
+        "id": "N11_VIGENTE_CONTENT_IS_IMMUTABLE",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_ACTIVE_RULE_IN_PLACE_MUTATION\nCONTEXT:  PL/pgSQL function source_quality_no_active_in_place_edit() line 7 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
         },
         "status": "PASS"
       },
@@ -279,17 +303,17 @@
         "observed": {
           "PREPARED": {
             "family_code": "MOTOR_DISPONIBLE",
-            "next_review_at": "2027-01-11T00:00:00+00:00",
+            "next_review_at": "2027-01-11T19:32:46.637729+00:00",
             "owner_role": "saly_owner_role",
             "project_code": "saly",
-            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "reviewed_at": "2026-11-12T19:32:46.637729+00:00",
             "rule_code": "SALY-L14-NEW",
             "status": "QUALITY_PREPARED"
           },
           "READBACK": {
-            "next_review_at": "2027-01-11T00:00:00+00:00",
+            "next_review_at": "2027-01-11T19:32:46.637729+00:00",
             "quality_state": "VIGENTE",
-            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "reviewed_at": "2026-11-12T19:32:46.637729+00:00",
             "source_vigente": true
           },
           "WRAPPED": {
@@ -299,7 +323,7 @@
               "rule_code": "SALY-L14-NEW",
               "status": "APPLIED"
             },
-            "next_review_at": "2027-01-11T00:00:00+00:00",
+            "next_review_at": "2027-01-11T19:32:46.637729+00:00",
             "owner_role": "saly_owner_role",
             "profile_return": {
               "readback_verified": true,
@@ -308,7 +332,7 @@
             },
             "project_code": "saly",
             "quality_readback": "VIGENTE",
-            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "reviewed_at": "2026-11-12T19:32:46.637729+00:00",
             "rule_code": "SALY-L14-NEW",
             "status": "READY"
           }
@@ -386,10 +410,10 @@
           },
           "L14_PREPARE": {
             "family_code": "IDENTIDAD_SEGURIDAD",
-            "next_review_at": "2027-02-10T00:00:00+00:00",
+            "next_review_at": "2027-02-10T19:32:46.739651+00:00",
             "owner_role": "lf_owner_role",
             "project_code": "lf",
-            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "reviewed_at": "2026-11-12T19:32:46.739651+00:00",
             "rule_code": "REG_SEG_004",
             "status": "QUALITY_PREPARED"
           },
@@ -455,9 +479,9 @@
           },
           "QUALITY_READBACK": {
             "family": "IDENTIDAD_SEGURIDAD",
-            "next_review_at": "2027-02-10T00:00:00+00:00",
+            "next_review_at": "2027-02-10T19:32:46.739651+00:00",
             "quality": "VIGENTE",
-            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "reviewed_at": "2026-11-12T19:32:46.739651+00:00",
             "source": "VIGENTE",
             "ticket": "CONSUMED"
           },
@@ -493,7 +517,7 @@
               "rule_code": "REG_SEG_004",
               "status": "APPLIED"
             },
-            "next_review_at": "2027-02-10T00:00:00+00:00",
+            "next_review_at": "2027-02-10T19:32:46.739651+00:00",
             "owner_role": "lf_owner_role",
             "profile_return": {
               "blind_case_binding_sha256": "888757f89f0abdd1e967aebf60cea201b0f68de3ecdb494b1f6163291c2d6c8c",
@@ -512,7 +536,7 @@
             },
             "project_code": "lf",
             "quality_readback": "VIGENTE",
-            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "reviewed_at": "2026-11-12T19:32:46.739651+00:00",
             "rule_code": "REG_SEG_004",
             "status": "READY"
           }
@@ -556,11 +580,15 @@
     "schema_version": "LF_L14_SANDBOX_QUALITY_WRAPPER_PG18_V1",
     "supabase_live_mutations": 0
   },
-  "original_runtime_file_sha256": "71919fdb72ac63801ed7ed398cca116285166315c7fdd3e3e1f4115da5ebf11b",
+  "original_runtime_file_sha256": "17ad9957f0647f12e0fac8143adebe5ebaab4659014fe3484cd39cfcbe6ad7d3",
   "limitations": [
     "L11B uses synthetic positive authority-like evidence; it is NOT official native IG/owner attestation",
     "Role identity based on PostgreSQL session_user in sandbox only",
     "Product authentication binding pending",
     "Production test and DDL/DML not authorized"
+  ],
+  "security_extra": [
+    "caller-supplied reviewed_at rejected (23514)",
+    "VIGENTE direct content mutation rejected (23514)"
   ]
 }
