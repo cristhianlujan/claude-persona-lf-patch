@@ -347,6 +347,9 @@ jobs:
       - name: "L9 PG18: 154 actual chat-export citations, SHA and neutral L6, unmodified L7-L8"
         if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
         run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py
+      - name: "L10 PG18: owner-declared ChatGPT, four real-quote negative paths and honest 12-stage E2E"
+        if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
+        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py
       - name: Preserve reproducible native gate spec and blind datasets
         uses: actions/upload-artifact@v4
         if: always()
@@ -368,4 +371,6 @@ jobs:
             sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote9_pass1_citation_measurement_runtime.json
             docs/input-governance/L9_REVIEW_PASS1_CHAT_EXPORT_LITERAL_CAPTURE_MEASUREMENT_V1.md
+            sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py
+            sandbox/lf_contract_gate_test/rule_promotion_v1/lote10_e2e_truthful_12_stage_runtime.json
           if-no-files-found: error
