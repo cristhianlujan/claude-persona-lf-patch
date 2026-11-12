@@ -82,27 +82,14 @@ def command_verify(project,rule,token,promotion):
  fn=owner if project=="lf" else saly
  return fn(token,"SELECT 'VERIFY_CLOSURE|'||rule_quality_l13.l24_verify_closure_v1("+
   lit(project)+","+lit(rule)+","+lit(promotion)+")::text;")
-def measure_sql(project,rule,promotion,corrected=False):
- old=("'previous_state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'),"
- "'previous_source',(SELECT estado FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001'),") if corrected else ""
- source=("(SELECT estado FROM lf_ops.reglas WHERE codigo="+lit(rule)+")" if project=="lf"
-         else "(SELECT CASE WHEN vigente THEN 'VIGENTE' ELSE 'INACTIVE' END FROM rule_quality_l13.saly_source_synthetic WHERE codigo="+lit(rule)+")")
- run=("'run_status',(SELECT status FROM public.lf_operation_execution WHERE execution_id="+lit(RUN)+"),"+
-      "'run_fixture_attested',(SELECT manifest->>'system_attestation' FROM public.lf_operation_execution WHERE execution_id="+lit(RUN)+"),"
-      if project=="lf" else "'run_status',null,'run_fixture_attested',null,")
- return (
- "SELECT 'MEASURED|'||jsonb_build_object("
- "'project',"+lit(project)+",'rule_code',"+lit(rule)+","
- "'curator',(SELECT verdict FROM rule_quality_l13.l23_curator_verdicts WHERE project_code="+lit(project)+" AND rule_code="+lit(rule)+"),"
- "'curator_seal',(SELECT seal_hmac_sha256 FROM rule_quality_l13.l23_curator_verdicts WHERE project_code="+lit(project)+" AND rule_code="+lit(rule)+"),"
- "'quality',(SELECT state FROM rule_quality_l13.rules WHERE project_code="+lit(project)+" AND rule_code="+lit(rule)+"),"
- "'source',"+source+","
- "'promotion_receipts',(SELECT count(*) FROM rule_quality_l13.l26_promotion_receipts WHERE project_code="+lit(project)+" AND rule_code="+lit(rule)+"),"
- "'closure_receipts',(SELECT count(*) FROM rule_quality_l13.l24_closure_receipts WHERE project_code="+lit(project)+" AND rule_code="+lit(rule)+"),"
- "'ticket',(SELECT status FROM rule_quality_l13.activation_tickets WHERE project_code="+lit(project)+" AND rule_code="+lit(rule)+"),"
- +old+run+
- "'divergences',(SELECT count(*) FROM rule_quality_l13.l20_list_divergences_v1("+lit(project)+") d WHERE d.rule_code="+lit(rule)+")"
- ")::text;")
+def measure_sql(project,rule,promotion,token,corrected=False):
+ # ONLY owner-scoped SECURITY DEFINER readback via signed L17 JWT. No direct
+ # tenant SELECT on L23/L24/L26 receipt tables or superuser L20 bypass.
+ who=owner if project=="lf" else saly
+ prev=lit("RULE-DEPENDENCY-001") if corrected else "NULL"
+ return who(token,
+  "SELECT 'MEASURED|'||rule_quality_l13.l26_measured_readback_v1("+
+  lit(project)+","+lit(rule)+","+lit(promotion)+","+prev+")::text;")
 def after_sql(project,rule):
  src=("(SELECT count(*) FROM lf_ops.reglas WHERE codigo="+lit(rule)+")" if project=="lf"
  else "(SELECT CASE WHEN vigente THEN 1 ELSE 0 END FROM rule_quality_l13.saly_source_synthetic WHERE codigo="+lit(rule)+")")
@@ -183,7 +170,7 @@ def positive_lf(label,token,corrected):
   command_promote("lf",CODE,token,"PROM-TEST",RUN)+
   command_close("lf",CODE,token,"PROM-TEST",RUN)+
   command_verify("lf",CODE,token,"PROM-TEST")+
-  measure_sql("lf",CODE,"PROM-TEST",corrected)+"\nROLLBACK;\n"+after_sql("lf",CODE))
+  measure_sql("lf",CODE,"PROM-TEST",token,corrected)+"\nROLLBACK;\n"+after_sql("lf",CODE))
  out=sql(script)
  board=board_measured("lf",out)
  rb=out["READBACK_READY"]
@@ -220,7 +207,7 @@ def positive_saly(token):
   command_promote("saly","SALY-L14-NEW",token,"SALY-L26-PROM-A")+
   command_close("saly","SALY-L14-NEW",token,"SALY-L26-PROM-A")+
   command_verify("saly","SALY-L14-NEW",token,"SALY-L26-PROM-A")+
-  measure_sql("saly","SALY-L14-NEW","SALY-L26-PROM-A")+
+  measure_sql("saly","SALY-L14-NEW","SALY-L26-PROM-A",token)+
   "\nROLLBACK;\n"+after_sql("saly","SALY-L14-NEW"))
  out=sql(script);board=board_measured("saly",out)
  ok=(out["CURATOR"]["verdict"]=="ACEPTAR" and out["WRAP"]["status"]=="READY"
