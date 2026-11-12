@@ -1,0 +1,1176 @@
+{
+  "lote": 24,
+  "status": "SANDBOX_VERIFIED",
+  "production": "NO_GO_UNVERIFIED",
+  "base_commit": "48f1e316d81c83ca2f880372a3a050b456c6b3ab",
+  "test_run": {
+    "run_id": 43313871802,
+    "job_id": 131516674312,
+    "tested_commit": "cd8f7d4fc1cd1340edcdf82772a88d258e8f51b6",
+    "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43313871802",
+    "conclusion": "success"
+  },
+  "proof": {
+    "l13_test_count": 28,
+    "l14_case_count": 18,
+    "l17_case_count": 25,
+    "l18_case_count": 16,
+    "l20_case_count": 17,
+    "l24_case_count": 23,
+    "pg18_script_count": 19,
+    "verified_from_ci_log": true
+  },
+  "exact_l24_results": {
+    "case_count": 23,
+    "cases": [
+      {
+        "expected": "L11B/L13/L14/L17/L18/L20/L24 PG18 only",
+        "id": "BOOTSTRAP_ALL_LAYERS",
+        "observed": {
+          "db": "lf_3779_l24_closure_receipt_pg18",
+          "issuer": "L17_TEST_ISSUER_NOT_SUPABASE",
+          "native_profile": false
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "GATES_MD5_BEFORE",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "source+L13 VIGENTE, readback READY, hash verified, old SUCEDIDA if corrected, rollback",
+        "id": "A_LF_NEW_CLOSURE_RECEIPT_VERIFIED",
+        "observed": {
+          "CLOSE": {
+            "actor": "lf_owner_role",
+            "actor_sub": "lf-sub-owner-001",
+            "closed_at": "2026-11-12T21:49:25.361016+00:00",
+            "final_state": "VIGENTE",
+            "official_receiver_attested": false,
+            "project": "lf",
+            "proposal_sha256": "873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc",
+            "readback_sha256": "404083e48ff84cae0c8fc8f58a39dc8d3fefacd5f9ae17b106721285f1bbece0",
+            "receipt_id": 1,
+            "receipt_sha256": "59e42279d6e06ba5fb1cefb9872b3032a39ae05566fd22179365335e999acfe6",
+            "rows_written": 1,
+            "rule_code": "REG_SEG_004",
+            "status": "CLOSED_VERIFIABLE_SANDBOX",
+            "version": "sha256:873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc"
+          },
+          "PREDECESSOR_SYNC": null,
+          "RECEIPT_ROWS": {
+            "n": 0,
+            "total": 0
+          },
+          "VERIFY_CLOSURE": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc",
+            "readback_sha256": "404083e48ff84cae0c8fc8f58a39dc8d3fefacd5f9ae17b106721285f1bbece0",
+            "receipt_id": 1,
+            "receipt_sha256": "59e42279d6e06ba5fb1cefb9872b3032a39ae05566fd22179365335e999acfe6",
+            "rule_code": "REG_SEG_004",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc"
+          },
+          "WRAP": {
+            "family_code": "IDENTIDAD_SEGURIDAD",
+            "gate": {
+              "independence_attested": false,
+              "profile_return_status": "READY",
+              "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+              "readback_status": "VERIFIED",
+              "rule_code": "REG_SEG_004",
+              "status": "APPLIED"
+            },
+            "identity_v2": {
+              "project_code": "lf",
+              "role": "lf_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "lf-sub-owner-001"
+            },
+            "next_review_at": "2027-02-10T21:49:25.264099+00:00",
+            "owner_role": "lf_owner_role",
+            "profile_return": {
+              "blind_case_binding_sha256": "888757f89f0abdd1e967aebf60cea201b0f68de3ecdb494b1f6163291c2d6c8c",
+              "estado": "VIGENTE",
+              "ig_external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+              "owner_approval_binding_sha256": "85061056df0b2557c0bcc3f117043b7e01956687c40856bcfcca0cc8141de50c",
+              "owner_execution_id": "EXEC-OWNER-L11B-001",
+              "owner_profile_code": "PERFIL-OWNER-RULE-LF",
+              "profile_return_contract": "EXISTING_PROFILE_CONTINUATION_NO_NEW_TRANSPORT",
+              "promotion_id": "PROM-TEST",
+              "readback_receipt_sha256": "8ff383d92ab7f339a5053982a8c6fb037e1c9225287a9254e58ff8f77daf2ab4",
+              "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+              "readback_verified": true,
+              "rule_code": "REG_SEG_004",
+              "status": "READY"
+            },
+            "project_code": "lf",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T21:49:25.264099+00:00",
+            "rule_code": "REG_SEG_004",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "mechanical closure real only in PG18, Router/Perfil/RUN synthetic",
+        "id": "A_LF_NEW_BOARD_12_STAGES",
+        "observed": [
+          {
+            "evidence": "Synthetic parent manifest and handoff; ACT-0001 NOT run",
+            "stage": "Router",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic source/owner profile; not a native profile execution",
+            "stage": "Perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic PG18 execution rows; no native RUN",
+            "stage": "RUN",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B stub + simulated Step70 field, not native IG",
+            "stage": "IG",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "No authentic Curator invocation",
+            "stage": "Curator",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "Frozen L7/L8 SQL capture/verification executed; verdict has synthetic provenance",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Frozen profile_return_readback SQL returned READY; no real transport",
+            "stage": "Retorno perfil",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL stub parent + owner execution, not complete 11-step execution",
+            "stage": "Ejecucion",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Frozen apply returned APPLIED in PG18 transaction",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 source and quality row activated within transaction",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL readback and quality metadata checked before ROLLBACK",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L24 PG18 row INSERT, deterministic SHA256 proposal/readback/receipt, L17 HMAC identity, verification function and append-only trigger; official RUN terminal receiver NOT_PROBADO",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "status": "PASS"
+      },
+      {
+        "expected": "source+L13 VIGENTE, readback READY, hash verified, old SUCEDIDA if corrected, rollback",
+        "id": "B_LF_CORRECTED_CLOSURE_RECEIPT_VERIFIED",
+        "observed": {
+          "CLOSE": {
+            "actor": "lf_owner_role",
+            "actor_sub": "lf-sub-owner-001",
+            "closed_at": "2026-11-12T21:49:25.585974+00:00",
+            "final_state": "VIGENTE",
+            "official_receiver_attested": false,
+            "project": "lf",
+            "proposal_sha256": "2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845",
+            "readback_sha256": "5bf1e6be3ed87d23356524e545259bab6162047bd4cc95ba929c5518d1aee9c9",
+            "receipt_id": 2,
+            "receipt_sha256": "6598b97fa8ae2bccf17d1fa74313ca831ba2361cdd365dda2096f7f2ab26b3f8",
+            "rows_written": 1,
+            "rule_code": "REG_SEG_004",
+            "status": "CLOSED_VERIFIABLE_SANDBOX",
+            "version": "sha256:2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845"
+          },
+          "PREDECESSOR_SYNC": {
+            "decision": "SUPERSEDE",
+            "decision_id": 1,
+            "effective_to": "2026-11-12T21:49:25.463617+00:00",
+            "next_review_at": null,
+            "owner_actor": "lf_owner_role",
+            "owner_sub": "lf-sub-owner-001",
+            "production_attested": false,
+            "project": "lf",
+            "registry_state": "SUCEDIDA",
+            "rule_code": "RULE-DEPENDENCY-001",
+            "source_rows_updated": 1,
+            "source_state": "SUCEDIDA",
+            "status": "SYNCED_ATOMIC_PG18",
+            "successor_rule_code": "REG_SEG_004",
+            "target_divergences_after_sync": 0,
+            "target_divergences_before_sync": 1,
+            "verified_owner_jwt": "HMAC_SANDBOX_ONLY"
+          },
+          "RECEIPT_ROWS": {
+            "n": 0,
+            "total": 0
+          },
+          "VERIFY_CLOSURE": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845",
+            "readback_sha256": "5bf1e6be3ed87d23356524e545259bab6162047bd4cc95ba929c5518d1aee9c9",
+            "receipt_id": 2,
+            "receipt_sha256": "6598b97fa8ae2bccf17d1fa74313ca831ba2361cdd365dda2096f7f2ab26b3f8",
+            "rule_code": "REG_SEG_004",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845"
+          },
+          "WRAP": {
+            "family_code": "IDENTIDAD_SEGURIDAD",
+            "gate": {
+              "independence_attested": false,
+              "profile_return_status": "READY",
+              "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+              "readback_status": "VERIFIED",
+              "rule_code": "REG_SEG_004",
+              "status": "APPLIED"
+            },
+            "identity_v2": {
+              "project_code": "lf",
+              "role": "lf_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "lf-sub-owner-001"
+            },
+            "next_review_at": "2027-02-10T21:49:25.428313+00:00",
+            "owner_role": "lf_owner_role",
+            "profile_return": {
+              "blind_case_binding_sha256": "888757f89f0abdd1e967aebf60cea201b0f68de3ecdb494b1f6163291c2d6c8c",
+              "estado": "VIGENTE",
+              "ig_external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+              "owner_approval_binding_sha256": "85061056df0b2557c0bcc3f117043b7e01956687c40856bcfcca0cc8141de50c",
+              "owner_execution_id": "EXEC-OWNER-L11B-001",
+              "owner_profile_code": "PERFIL-OWNER-RULE-LF",
+              "profile_return_contract": "EXISTING_PROFILE_CONTINUATION_NO_NEW_TRANSPORT",
+              "promotion_id": "PROM-TEST",
+              "readback_receipt_sha256": "8ff383d92ab7f339a5053982a8c6fb037e1c9225287a9254e58ff8f77daf2ab4",
+              "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+              "readback_verified": true,
+              "rule_code": "REG_SEG_004",
+              "status": "READY"
+            },
+            "project_code": "lf",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T21:49:25.428313+00:00",
+            "rule_code": "REG_SEG_004",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "mechanical closure real only in PG18, Router/Perfil/RUN synthetic",
+        "id": "B_LF_CORRECTED_BOARD_12_STAGES",
+        "observed": [
+          {
+            "evidence": "Synthetic parent manifest and handoff; ACT-0001 NOT run",
+            "stage": "Router",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic source/owner profile; not a native profile execution",
+            "stage": "Perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic PG18 execution rows; no native RUN",
+            "stage": "RUN",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B stub + simulated Step70 field, not native IG",
+            "stage": "IG",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "No authentic Curator invocation",
+            "stage": "Curator",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "Frozen L7/L8 SQL capture/verification executed; verdict has synthetic provenance",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Frozen profile_return_readback SQL returned READY; no real transport",
+            "stage": "Retorno perfil",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL stub parent + owner execution, not complete 11-step execution",
+            "stage": "Ejecucion",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Frozen apply returned APPLIED in PG18 transaction",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 source and quality row activated within transaction",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL readback and quality metadata checked before ROLLBACK",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L24 PG18 row INSERT, deterministic SHA256 proposal/readback/receipt, L17 HMAC identity, verification function and append-only trigger; official RUN terminal receiver NOT_PROBADO",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "status": "PASS"
+      },
+      {
+        "expected": "SALY synthesized L14 READY, same L24 receipt hash verification, no native return",
+        "id": "C_SALY_NEW_SAME_RECEIPT_API",
+        "observed": {
+          "CLOSE": {
+            "actor": "saly_owner_role",
+            "actor_sub": "saly-sub-owner-001",
+            "closed_at": "2026-11-12T21:49:25.644802+00:00",
+            "final_state": "VIGENTE",
+            "official_receiver_attested": false,
+            "project": "saly",
+            "proposal_sha256": "850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0",
+            "readback_sha256": "3340be04a028cdaa1573f71a64025292ccb7c5b0edbef5aaf1292b837b970862",
+            "receipt_id": 3,
+            "receipt_sha256": "cabc310e0944530c44570ce8b31c56a40d7fd1b735e10adf5ae6d8c772d15ccc",
+            "rows_written": 1,
+            "rule_code": "SALY-L14-NEW",
+            "status": "CLOSED_VERIFIABLE_SANDBOX",
+            "version": "sha256:850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0"
+          },
+          "JWT_OWNER": {
+            "official_step70_attested": false,
+            "owner_actor": "saly_owner_role",
+            "owner_sub": "saly-sub-owner-001",
+            "project": "saly",
+            "promotion_id": "SALY-L24-SBX-A",
+            "rule": "SALY-L14-NEW",
+            "status": "OWNER_JWT_SANDBOX_APPROVED",
+            "supabase_auth_attested": false
+          },
+          "PREP": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "identity_v2": {
+              "project_code": "saly",
+              "role": "saly_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "saly-sub-owner-001"
+            },
+            "next_review_at": "2027-01-11T21:49:25.632147+00:00",
+            "owner_role": "saly_owner_role",
+            "project_code": "saly",
+            "reviewed_at": "2026-11-12T21:49:25.632147+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "QUALITY_PREPARED"
+          },
+          "RECEIPT_ROWS": {
+            "n": 0,
+            "total": 0
+          },
+          "VERIFY_CLOSURE": {
+            "independent_semantic_judge_attested": false,
+            "native_receiver_attested": false,
+            "native_supabase_auth_attested": false,
+            "proposal_sha256": "850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0",
+            "readback_sha256": "3340be04a028cdaa1573f71a64025292ccb7c5b0edbef5aaf1292b837b970862",
+            "receipt_id": 3,
+            "receipt_sha256": "cabc310e0944530c44570ce8b31c56a40d7fd1b735e10adf5ae6d8c772d15ccc",
+            "rule_code": "SALY-L14-NEW",
+            "state_at_closure": "VIGENTE",
+            "status": "VERIFIED_CLOSURE_HASH",
+            "version": "sha256:850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0"
+          },
+          "WRAP": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "gate": {
+              "fixture_only": true,
+              "rule_code": "SALY-L14-NEW",
+              "status": "APPLIED"
+            },
+            "identity_v2": {
+              "project_code": "saly",
+              "role": "saly_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "saly-sub-owner-001"
+            },
+            "next_review_at": "2027-01-11T21:49:25.632147+00:00",
+            "owner_role": "saly_owner_role",
+            "profile_return": {
+              "readback_verified": true,
+              "sandbox_fixture": true,
+              "status": "READY"
+            },
+            "project_code": "saly",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T21:49:25.632147+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "SALY no real IG or profile return",
+        "id": "C_SALY_12_STAGE_BOARD",
+        "observed": [
+          {
+            "evidence": "No SALY native Router path",
+            "stage": "Router",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No native SALY profile",
+            "stage": "Perfil",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No SALY RUN",
+            "stage": "RUN",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "LF frozen L7/L8 not a SALY adapter; no SALY IG receipt",
+            "stage": "IG",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No SALY Curator",
+            "stage": "Curator",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "L17 signed identity and L13 family review mechanically verified",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Synthetic SALY fixture READY; no real return",
+            "stage": "Retorno perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "SALY SQL fixture executed via same quality_apply_envelope_v2",
+            "stage": "Ejecucion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SALY fixture apply executed, NOT native production apply",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 synthetic SALY source and quality activated",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 state, family and next_review_at checked",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L24 PG18 row INSERT, deterministic SHA256 proposal/readback/receipt, L17 HMAC identity, verification function and append-only trigger; official RUN terminal receiver NOT_PROBADO",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L24_READBACK_NOT_READY",
+        "id": "N1_NO_READBACK_READY",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  23514: BLOCK_L24_READBACK_NOT_READY",
+            "CONTEXT:  PL/pgSQL function l24_ready_payload_v1(text,text,text,text) line 23 at RAISE",
+            "PL/pgSQL function l24_emit_closure_v1(text,text,text,text,boolean) line 37 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L24_DIVERGENCE_REGISTER_SOURCE",
+        "id": "N2_L13_SOURCE_DIVERGENCE",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  23514: BLOCK_L24_DIVERGENCE_REGISTER_SOURCE",
+            "CONTEXT:  PL/pgSQL function l24_ready_payload_v1(text,text,text,text) line 18 at RAISE",
+            "PL/pgSQL function l24_emit_closure_v1(text,text,text,text,boolean) line 37 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "1 real PG18 closure receipt for attack tests, never live",
+        "id": "NEGATIVE_FIXTURE_PERSISTED_PG18",
+        "observed": {
+          "n": 1,
+          "total": 1
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_SIGNATURE_INVALID",
+        "id": "N3_BAD_JWT_SIGNATURE",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  42501: BLOCK_L17_JWT_SIGNATURE_INVALID",
+            "CONTEXT:  PL/pgSQL function l17_verify_signed_claim_v2(text) line 42 at RAISE",
+            "PL/pgSQL function l24_verify_closure_v1(text,text,text) line 5 at assignment",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "42501 no signed request.jwt.claims",
+        "id": "N3B_MISSING_JWT",
+        "observed": [
+          "ERROR:  42501: BLOCK_L17_JWT_MISSING",
+          "CONTEXT:  PL/pgSQL function l17_verify_signed_claim_v2(text) line 22 at RAISE",
+          "PL/pgSQL function l24_verify_closure_v1(text,text,text) line 5 at assignment",
+          "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        ],
+        "status": "PASS"
+      },
+      {
+        "expected": "L17 forbids signed SUPER_ADMIN closure",
+        "id": "N4_SUPER_ADMIN_CANNOT_CLOSE",
+        "observed": [
+          "ERROR:  42501: BLOCK_SUPER_ADMIN_APPROVAL",
+          "CONTEXT:  PL/pgSQL function l17_verify_signed_claim_v2(text) line 81 at RAISE",
+          "PL/pgSQL function l24_emit_closure_v1(text,text,text,text,boolean) line 9 at assignment",
+          "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        ],
+        "status": "PASS"
+      },
+      {
+        "expected": "app actor has no UPDATE permission on receipt",
+        "id": "N5_APP_ROLE_DIRECT_DML_DENIED",
+        "observed": [
+          "ERROR:  42501: permission denied for table l24_closure_receipts",
+          "LOCATION:  aclcheck_error, aclchk.c:2793"
+        ],
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L24_APPEND_ONLY_RECEIPT",
+        "id": "N6_APPEND_ONLY_UPDATE",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  23514: BLOCK_L24_APPEND_ONLY_RECEIPT",
+            "CONTEXT:  PL/pgSQL function l24_no_modify_receipt_v1() line 3 at RAISE",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L24_APPEND_ONLY_RECEIPT",
+        "id": "N6_APPEND_ONLY_DELETE",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  23514: BLOCK_L24_APPEND_ONLY_RECEIPT",
+            "CONTEXT:  PL/pgSQL function l24_no_modify_receipt_v1() line 3 at RAISE",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "no duplicate receipt and identical receipt id",
+        "id": "N7_IDEMPOTENT_DUPLICATE_NOOP",
+        "observed": {
+          "retry": {
+            "official_receiver_attested": false,
+            "project": "lf",
+            "receipt_id": 4,
+            "receipt_sha256": "fab948a9d82ed3714d2184c207d27775716c171a857da06a59557a164b44e4f3",
+            "rows_written": 0,
+            "rule_code": "REG_SEG_004",
+            "status": "ALREADY_CLOSED_NOOP"
+          },
+          "rows": {
+            "n": 1,
+            "total": 1
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L24_HASH_OR_RECEIPT_TAMPER",
+        "id": "N8_HASH_TAMPER_DETECTED",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  23514: BLOCK_L24_HASH_OR_RECEIPT_TAMPER",
+            "CONTEXT:  PL/pgSQL function l24_verify_closure_v1(text,text,text) line 35 at RAISE",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "original persisted receipt remains valid after forensic test rolled back",
+        "id": "N8B_TAMPER_ROLLBACK_RESTORES",
+        "observed": {
+          "independent_semantic_judge_attested": false,
+          "native_receiver_attested": false,
+          "native_supabase_auth_attested": false,
+          "proposal_sha256": "4088221297d4f3b8dfac1cd490642f2bc6858e8bb68375e5b4ec326072720148",
+          "readback_sha256": "5af22bd1a597940e77908a2d46afec3f609278f9956ae07fb576ded730771dc1",
+          "receipt_id": 4,
+          "receipt_sha256": "fab948a9d82ed3714d2184c207d27775716c171a857da06a59557a164b44e4f3",
+          "rule_code": "REG_SEG_004",
+          "state_at_closure": "VIGENTE",
+          "status": "VERIFIED_CLOSURE_HASH",
+          "version": "sha256:4088221297d4f3b8dfac1cd490642f2bc6858e8bb68375e5b4ec326072720148"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "L24_INJECTED_AFTER_INSERT_ROLLBACK_ALL",
+        "id": "N9_FAIL_MIDWAY_ROLLBACK",
+        "observed": {
+          "exit_code": 3,
+          "stderr_tail": [
+            "ERROR:  23514: L24_INJECTED_AFTER_INSERT_ROLLBACK_ALL",
+            "CONTEXT:  PL/pgSQL function l24_emit_closure_v1(text,text,text,text,boolean) line 71 at RAISE",
+            "LOCATION:  exec_stmt_raise, pl_exec.c:3909"
+          ]
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "no partial receipt; no SALY activation or owner intent, one LF fixture unchanged",
+        "id": "N9B_ATOMIC_POST_FAILURE_READBACK",
+        "observed": {
+          "receipts": 1,
+          "saly_active": false,
+          "saly_approvals": 0,
+          "saly_quality": 0
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "GATES_MD5_AFTER",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      }
+    ],
+    "frozen_gate_edits": 0,
+    "gate_md5_after": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "gate_md5_before": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "identity": "L17_HMAC_TEST_JWT",
+    "independent_judge": false,
+    "live_supabase_writes": 0,
+    "native_receiver": false,
+    "native_step70": false,
+    "native_supabase_auth": false,
+    "new_receipt_count_test_fixture": 1,
+    "production": "NO_GO_UNVERIFIED",
+    "scenarios": [
+      {
+        "board": [
+          {
+            "evidence": "Synthetic parent manifest and handoff; ACT-0001 NOT run",
+            "stage": "Router",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic source/owner profile; not a native profile execution",
+            "stage": "Perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic PG18 execution rows; no native RUN",
+            "stage": "RUN",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B stub + simulated Step70 field, not native IG",
+            "stage": "IG",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "No authentic Curator invocation",
+            "stage": "Curator",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "Frozen L7/L8 SQL capture/verification executed; verdict has synthetic provenance",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Frozen profile_return_readback SQL returned READY; no real transport",
+            "stage": "Retorno perfil",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL stub parent + owner execution, not complete 11-step execution",
+            "stage": "Ejecucion",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Frozen apply returned APPLIED in PG18 transaction",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 source and quality row activated within transaction",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL readback and quality metadata checked before ROLLBACK",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L24 PG18 row INSERT, deterministic SHA256 proposal/readback/receipt, L17 HMAC identity, verification function and append-only trigger; official RUN terminal receiver NOT_PROBADO",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "receipt": {
+          "actor": "lf_owner_role",
+          "actor_sub": "lf-sub-owner-001",
+          "closed_at": "2026-11-12T21:49:25.361016+00:00",
+          "final_state": "VIGENTE",
+          "official_receiver_attested": false,
+          "project": "lf",
+          "proposal_sha256": "873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc",
+          "readback_sha256": "404083e48ff84cae0c8fc8f58a39dc8d3fefacd5f9ae17b106721285f1bbece0",
+          "receipt_id": 1,
+          "receipt_sha256": "59e42279d6e06ba5fb1cefb9872b3032a39ae05566fd22179365335e999acfe6",
+          "rows_written": 1,
+          "rule_code": "REG_SEG_004",
+          "status": "CLOSED_VERIFIABLE_SANDBOX",
+          "version": "sha256:873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc"
+        },
+        "scenario": "A_LF_NEW",
+        "status": "PASS",
+        "synthetic_origin": true,
+        "verification": {
+          "independent_semantic_judge_attested": false,
+          "native_receiver_attested": false,
+          "native_supabase_auth_attested": false,
+          "proposal_sha256": "873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc",
+          "readback_sha256": "404083e48ff84cae0c8fc8f58a39dc8d3fefacd5f9ae17b106721285f1bbece0",
+          "receipt_id": 1,
+          "receipt_sha256": "59e42279d6e06ba5fb1cefb9872b3032a39ae05566fd22179365335e999acfe6",
+          "rule_code": "REG_SEG_004",
+          "state_at_closure": "VIGENTE",
+          "status": "VERIFIED_CLOSURE_HASH",
+          "version": "sha256:873c24af64c7ccad1277fb004ef3b48729cb9e8b2543305de98dedc2eee628dc"
+        }
+      },
+      {
+        "board": [
+          {
+            "evidence": "Synthetic parent manifest and handoff; ACT-0001 NOT run",
+            "stage": "Router",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic source/owner profile; not a native profile execution",
+            "stage": "Perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Synthetic PG18 execution rows; no native RUN",
+            "stage": "RUN",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "L11B stub + simulated Step70 field, not native IG",
+            "stage": "IG",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "No authentic Curator invocation",
+            "stage": "Curator",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "Frozen L7/L8 SQL capture/verification executed; verdict has synthetic provenance",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Frozen profile_return_readback SQL returned READY; no real transport",
+            "stage": "Retorno perfil",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL stub parent + owner execution, not complete 11-step execution",
+            "stage": "Ejecucion",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "Frozen apply returned APPLIED in PG18 transaction",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 source and quality row activated within transaction",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SQL readback and quality metadata checked before ROLLBACK",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L24 PG18 row INSERT, deterministic SHA256 proposal/readback/receipt, L17 HMAC identity, verification function and append-only trigger; official RUN terminal receiver NOT_PROBADO",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "receipt": {
+          "actor": "lf_owner_role",
+          "actor_sub": "lf-sub-owner-001",
+          "closed_at": "2026-11-12T21:49:25.585974+00:00",
+          "final_state": "VIGENTE",
+          "official_receiver_attested": false,
+          "project": "lf",
+          "proposal_sha256": "2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845",
+          "readback_sha256": "5bf1e6be3ed87d23356524e545259bab6162047bd4cc95ba929c5518d1aee9c9",
+          "receipt_id": 2,
+          "receipt_sha256": "6598b97fa8ae2bccf17d1fa74313ca831ba2361cdd365dda2096f7f2ab26b3f8",
+          "rows_written": 1,
+          "rule_code": "REG_SEG_004",
+          "status": "CLOSED_VERIFIABLE_SANDBOX",
+          "version": "sha256:2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845"
+        },
+        "scenario": "B_LF_CORRECTED",
+        "status": "PASS",
+        "synthetic_origin": true,
+        "verification": {
+          "independent_semantic_judge_attested": false,
+          "native_receiver_attested": false,
+          "native_supabase_auth_attested": false,
+          "proposal_sha256": "2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845",
+          "readback_sha256": "5bf1e6be3ed87d23356524e545259bab6162047bd4cc95ba929c5518d1aee9c9",
+          "receipt_id": 2,
+          "receipt_sha256": "6598b97fa8ae2bccf17d1fa74313ca831ba2361cdd365dda2096f7f2ab26b3f8",
+          "rule_code": "REG_SEG_004",
+          "state_at_closure": "VIGENTE",
+          "status": "VERIFIED_CLOSURE_HASH",
+          "version": "sha256:2afb1ca592bdd6b10a378157efbbec08a35d3a3864f4241732bbf9aa6ef08845"
+        }
+      },
+      {
+        "board": [
+          {
+            "evidence": "No SALY native Router path",
+            "stage": "Router",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No native SALY profile",
+            "stage": "Perfil",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No SALY RUN",
+            "stage": "RUN",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "LF frozen L7/L8 not a SALY adapter; no SALY IG receipt",
+            "stage": "IG",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "No SALY Curator",
+            "stage": "Curator",
+            "status": "NO_PROBADO"
+          },
+          {
+            "evidence": "L17 signed identity and L13 family review mechanically verified",
+            "stage": "Validator",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "Synthetic SALY fixture READY; no real return",
+            "stage": "Retorno perfil",
+            "status": "SINTETICO"
+          },
+          {
+            "evidence": "SALY SQL fixture executed via same quality_apply_envelope_v2",
+            "stage": "Ejecucion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "SALY fixture apply executed, NOT native production apply",
+            "stage": "Promocion",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 synthetic SALY source and quality activated",
+            "stage": "VIGENTE",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "PG18 state, family and next_review_at checked",
+            "stage": "Readback",
+            "status": "REAL_EN_SANDBOX"
+          },
+          {
+            "evidence": "L24 PG18 row INSERT, deterministic SHA256 proposal/readback/receipt, L17 HMAC identity, verification function and append-only trigger; official RUN terminal receiver NOT_PROBADO",
+            "stage": "Cierre",
+            "status": "REAL_EN_SANDBOX"
+          }
+        ],
+        "receipt": {
+          "actor": "saly_owner_role",
+          "actor_sub": "saly-sub-owner-001",
+          "closed_at": "2026-11-12T21:49:25.644802+00:00",
+          "final_state": "VIGENTE",
+          "official_receiver_attested": false,
+          "project": "saly",
+          "proposal_sha256": "850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0",
+          "readback_sha256": "3340be04a028cdaa1573f71a64025292ccb7c5b0edbef5aaf1292b837b970862",
+          "receipt_id": 3,
+          "receipt_sha256": "cabc310e0944530c44570ce8b31c56a40d7fd1b735e10adf5ae6d8c772d15ccc",
+          "rows_written": 1,
+          "rule_code": "SALY-L14-NEW",
+          "status": "CLOSED_VERIFIABLE_SANDBOX",
+          "version": "sha256:850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0"
+        },
+        "scenario": "C_SALY_NEW",
+        "status": "PASS",
+        "synthetic_origin": true,
+        "verification": {
+          "independent_semantic_judge_attested": false,
+          "native_receiver_attested": false,
+          "native_supabase_auth_attested": false,
+          "proposal_sha256": "850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0",
+          "readback_sha256": "3340be04a028cdaa1573f71a64025292ccb7c5b0edbef5aaf1292b837b970862",
+          "receipt_id": 3,
+          "receipt_sha256": "cabc310e0944530c44570ce8b31c56a40d7fd1b735e10adf5ae6d8c772d15ccc",
+          "rule_code": "SALY-L14-NEW",
+          "state_at_closure": "VIGENTE",
+          "status": "VERIFIED_CLOSURE_HASH",
+          "version": "sha256:850dabf164765596f1b289d7977c42562d411f3c70ca9be2841fb4210cd8f4a0"
+        }
+      }
+    ],
+    "schema_version": "LF_LOTE24_VERIFIABLE_CLOSURE_PG18_V1",
+    "source_commit": "L22_48f1e316",
+    "source_evidence": "MECHANICAL_ONLY_SYNTHETIC_PROVENANCE_NOT_E2E",
+    "status": "SANDBOX_VERIFIED"
+  },
+  "all_pg18_test_scripts": {
+    "failed": 0,
+    "passed": 19,
+    "scripts": [
+      {
+        "log_sha256": "38acafe8ad6b986933cf3a8c09d31795d5d938275e39ca38b016df66ffe11cc1",
+        "log_size": 16615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "7e1adbf2ba08aba771f1217aba2ec44449d093f6730ebe71f48fd3a7e6d64112",
+        "log_size": 9709,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "1838ae8506f82d66accee399dbd8471b96e7ccebb57a3c652713af699a1110f3",
+        "log_size": 42186,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11b_mechanical_positive.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "fac5762220a401ab781a0303d30f4cf1ff90fac7665f18ca3161367a74f8e586",
+        "log_size": 29261,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "4f540e9f5d86c35f6fa310244c304af04b82d52f600451049fbdd85860aeaee4",
+        "log_size": 17429,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote17_actor_identity_adapter.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "72f6ad41865a1210f76b84c607b984ae31ff0840dc919ab66038778e8dd058e2",
+        "log_size": 87076,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote18_integrated_cycle.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0513e0f26d006d5121d26f46c528c936cf0438307e9a8cc59eb03885bd9fe3d6",
+        "log_size": 32265,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote20_source_sync.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "1795a8bba7da0fc86c9e7c25045ccfa0909d68c0689e1d5e3cab1532a75aa443",
+        "log_size": 48678,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote24_closure_receipt.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "37145e146930f0ac78357b8d1c298c51db852dccf48491604fa377bc4b6241b6",
+        "log_size": 21622,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_mutation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4b_validator_reuse.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "32a38d6c68d16cfffc39509d60af3090374a6fb3d5d01a258031b66b5caf1a7a",
+        "log_size": 22740,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4d_profile_owner_approval.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0455e266085b6579c5ca09c97b618c4e9b0f1abaf6c9e61883c31ced930ab8e0",
+        "log_size": 17103,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote5_real_verdict_profile_return.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f04e7b0f2d50c21395f11dff95029297b6a0fbc87b60f7f23bb0fdcb0a777680",
+        "log_size": 4175,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote6_claude_blind_5pass_uncited.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f33594571d0f411a1bf9eda5adcbe32b36a66bb35727c9ea7759888d1981e2b9",
+        "log_size": 20355,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote7_exact_citation_capture.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "15f076c5623ea208dae9422d3c8efed0256a86c180aad904ee21762e176fce0b",
+        "log_size": 8250,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote8_quote_reuse_scoped.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "bd58aeefa9374a829b3e6f785b02318309a555cf07db3dab9789d8ff1341f4b5",
+        "log_size": 68615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "d26536606b84c74c716d98c7534ae74938576b7806d0cf7655a55d94a7fe4054",
+        "log_size": 42543,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0d6abe0e13835bec20df46bb41ba832d4b4e58644ea1a1f4037274c6dae533d5",
+        "log_size": 14681,
+        "path": "sandbox/lf_contract_gate_test/rule_scope_v1/test_pg18_step40_rule_scope.py",
+        "status": "PASS"
+      }
+    ],
+    "tested": 19
+  },
+  "runner_original_raw_json_sha256": "6885e4b2d025788378a256bc72a98d0a5094bd5ca3432b30ee01a51f792031e6",
+  "frozen_gate_md5_before_after": {
+    "apply": "86b0494984edf95cf0f9c0a0df67000b",
+    "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+    "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+    "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+  },
+  "current_live_db_select_only": {
+    "inspect_role": "supabase_read_only_user",
+    "live_terminal_receipt_function_exists": true,
+    "readback": "public.lf_profile_execution_terminal_authority_receipt_v1(text) listed; NOT INVOKED",
+    "supabase_writes": 0
+  },
+  "provenance": "L17 HMAC signed test, L11B synthetic upstream model/judge, no official external receiver",
+  "no_native_supabase_auth": true,
+  "no_native_run_terminal_receipt": true,
+  "not_Claude_attested": true
+}
