@@ -287,7 +287,7 @@
     {
       "id": "G25_03",
       "n": 16,
-      "sha256": "a0aebc613bd8a8358bec8d9a3ee9801ee3a22301cd8ffa75ac73129784a80107",
+      "sha256": "f4b5c23c1e0087b398a4439ecfb413f6789d1597d02d94a2a4789b0e2fe8bb06",
       "rows": [
         {
           "codigo": "REG_CHK_010",
@@ -296,7 +296,7 @@
           "categoria": "checkout",
           "config_relevant": {},
           "live_row_sha256": "d58d59201e4638e44290fb85086a0ad7e832d6c494dbefa712ea24f9542d033c",
-          "excerpt_for_triage_only": "La tarjeta de débito o crédito es el medio recomendado para planes en cuotas porque habilita el débito automático mensual. Yape está disponible solo para el mon"
+          "source_quote_max_12_words": "La tarjeta de débito o crédito es el medio recomendado para planes"
         },
         {
           "codigo": "REG_CHK_011",
@@ -307,7 +307,7 @@
             "cuotas_siguientes": "PENDIENTE_DEFINICION"
           },
           "live_row_sha256": "1e6e75c23beda9de4525fb3ce2dd4caf2e4a58760896f6e746ecd9bbcf8de6b3",
-          "excerpt_for_triage_only": "Yape está disponible para pagar el monto inicial del plan en cuotas. El mecanismo para cobrar las cuotas siguientes cuando el usuario pagó con Yape está pendien"
+          "source_quote_max_12_words": "Yape está disponible para pagar el monto inicial del plan en cuotas."
         },
         {
           "codigo": "REG_CHK_014",
@@ -318,7 +318,7 @@
             "cancelacion_permitida": true
           },
           "live_row_sha256": "26fa7d1b227da5e2f897aaf5023f26505acb45724c753fe3f70cfb9e1da81459",
-          "excerpt_for_triage_only": "El usuario puede cancelar el cobro recurrente de su plan en cualquier momento desde \"Mis operaciones\". La cancelación no genera penalidades. La carta de no adeu"
+          "source_quote_max_12_words": "El usuario puede cancelar el cobro recurrente de su plan en cualquier"
         },
         {
           "codigo": "REG_CHK_CUO_002",
@@ -327,7 +327,7 @@
           "categoria": "checkout",
           "config_relevant": {},
           "live_row_sha256": "f7ba7e31a7f84895e8a05f4e172653f4dddcfe12bdf1d13642fe484e1149eb3d",
-          "excerpt_for_triage_only": "La tarjeta de débito o crédito es el medio recomendado porque permite programar el débito automático de las cuotas siguientes. El badge \"Recomendada\" aparece so"
+          "source_quote_max_12_words": "La tarjeta de débito o crédito es el medio recomendado porque permite"
         },
         {
           "codigo": "REG_CHK_CUO_003",
@@ -336,7 +336,7 @@
           "categoria": "checkout",
           "config_relevant": {},
           "live_row_sha256": "483bb657d94cd07b624ccc033c6a3843c8df82f364442e9579832c2b1d5dc3df",
-          "excerpt_for_triage_only": "Yape está habilitado para pagar el monto inicial únicamente. Las cuotas siguientes no pueden cobrarse por Yape. La configuración del cobro recurrente de cuotas "
+          "source_quote_max_12_words": "Yape está habilitado para pagar el monto inicial únicamente. Las cuotas siguientes"
         },
         {
           "codigo": "REG_CHK_CUO_005",
@@ -345,7 +345,7 @@
           "categoria": "checkout",
           "config_relevant": {},
           "live_row_sha256": "3b04552f29da632717d1644d7381bc00f7f7e668eecebbc16b930085bcb2bdb9",
-          "excerpt_for_triage_only": "El checkbox \"Autorizo el cobro automático de las cuotas según el cronograma del plan.\" es obligatorio antes de pagar. Sin esta autorización el botón de pago per"
+          "source_quote_max_12_words": "El checkbox \"Autorizo el cobro automático de las cuotas según el cronograma"
         },
         {
           "codigo": "REG_CHK_CUO_006",
@@ -356,7 +356,7 @@
             "cancelacion_permitida": true
           },
           "live_row_sha256": "cd54ae85954be1a2736336ef6152057cfbc48606aa8b3c7c899b6ab730af99d5",
-          "excerpt_for_triage_only": "El usuario puede cancelar el cobro recurrente del plan en cuotas en cualquier momento. No hay penalidades por cancelación anticipada. Esta condición debe estar "
+          "source_quote_max_12_words": "El usuario puede cancelar el cobro recurrente del plan en cuotas en"
         },
         {
           "codigo": "REG_CHK_CUO_009",
@@ -365,7 +365,7 @@
           "categoria": "checkout",
           "config_relevant": {},
           "live_row_sha256": "76d9b53bffc198ff868f1c1b3ff916cfa0e164225c646cf269dd7b2980cb9d9e",
-          "excerpt_for_triage_only": "En el contexto de cuotas, la carta de no adeudo se emite cuando el usuario completa el pago total del plan (última cuota). No se emite al pagar el monto inicial"
+          "source_quote_max_12_words": "En el contexto de cuotas, la carta de no adeudo se emite"
         },
         {
           "codigo": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001",
@@ -376,7 +376,7 @@
             "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER"
           },
           "live_row_sha256": "04dbd0b13a8f76ded4118db45763b1f45a0e9678a3b42bd6844d5272182a29b5",
-          "excerpt_for_triage_only": "El checkout Cliente muestra únicamente medios de pago que el backend determine elegibles para la combinación vigente de aliado, oferta, modalidad, plan, monto y"
+          "source_quote_max_12_words": "El checkout Cliente muestra únicamente medios de pago que el backend determine"
         },
         {
           "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
@@ -388,7 +388,7 @@
             "grace_or_delinquency_policy": "PENDING_BUSINESS_LEGAL_POLICY"
           },
           "live_row_sha256": "bf4a7fcad3282227d164e92107dc6970e1238a08b60bafcee6e06d1ddf99b96b",
-          "excerpt_for_triage_only": "Un intento de cobro de una cuota reutiliza los outcomes normalizados de pago. PAYMENT_CONFIRMED marca esa cuota como pagada. PAYMENT_DECLINED_CONFIRMED mantiene"
+          "source_quote_max_12_words": "Un intento de cobro de una cuota reutiliza los outcomes normalizados de"
         },
         {
           "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
@@ -399,7 +399,7 @@
             "channel_policy": "PENDING_CANONICAL_NOTIFICATION_CHANNEL_POLICY"
           },
           "live_row_sha256": "7e88a217176aa486daea2675cad57eb9d4a3fa9633a3fb1a25f87be8ba391c25",
-          "excerpt_for_triage_only": "Los recordatorios de una cuota pendiente se generan únicamente desde un plan activo y su cronograma contractual. Son comunicaciones operativas del plan, no mark"
+          "source_quote_max_12_words": "Los recordatorios de una cuota pendiente se generan únicamente desde un plan"
         },
         {
           "codigo": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
@@ -408,7 +408,7 @@
           "categoria": "pago",
           "config_relevant": {},
           "live_row_sha256": "f6909438e10f2d21475363bab2963f9bd2c35f92a0795c89f3c6c632503c67ce",
-          "excerpt_for_triage_only": "La acción sobre una cuota pendiente depende del collection_mode guardado en el snapshot del plan, no del nombre del medio de pago mostrado en UI. Para AUTOMATIC"
+          "source_quote_max_12_words": "La acción sobre una cuota pendiente depende del collection_mode guardado en el"
         },
         {
           "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
@@ -417,7 +417,7 @@
           "categoria": "pago",
           "config_relevant": {},
           "live_row_sha256": "753265ddccdba94faa9a23e4b03705f254fffd3355a9131e7633401c2040c35e",
-          "excerpt_for_triage_only": "Cuando un pago inicial confirmado activa un plan de cuotas, el backend debe consolidar un snapshot inmutable de las condiciones aceptadas para ese plan. Las cuo"
+          "source_quote_max_12_words": "Cuando un pago inicial confirmado activa un plan de cuotas, el backend"
         },
         {
           "codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
@@ -428,7 +428,7 @@
             "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER"
           },
           "live_row_sha256": "010f662ba1dbf8237e056e10001526bbbb9c8ba2f6802d7ea06ba6a54c1aa789",
-          "excerpt_for_triage_only": "Todo resultado del proveedor de pago se normaliza server-side antes de afectar el Sistema Cliente. Un pago solo se considera confirmado cuando existe evidencia "
+          "source_quote_max_12_words": "Todo resultado del proveedor de pago se normaliza server-side antes de afectar"
         },
         {
           "codigo": "REG_NIU_001",
@@ -437,7 +437,7 @@
           "categoria": "niubiz",
           "config_relevant": {},
           "live_row_sha256": "77d6dfa00fe4e65e8a10ffbf61cc63f3201713a5fc123ca350b4a06c9f5b23c7",
-          "excerpt_for_triage_only": "Niubiz es el gateway de pago principal del producto para el mercado peruano. Toda transacción de pago pasa por Niubiz. No se implementan otros gateways en el MV"
+          "source_quote_max_12_words": "Niubiz es el gateway de pago principal del producto para el mercado"
         },
         {
           "codigo": "REG_NIU_003",
@@ -446,7 +446,7 @@
           "categoria": "niubiz",
           "config_relevant": {},
           "live_row_sha256": "28b8046874b07f88ac83a662ff5b275c8d133650bf69df3581075b017df56c4a",
-          "excerpt_for_triage_only": "La integración con Niubiz usa el SDK oficial, no llamadas directas a la API. El SDK maneja el formulario de tarjeta en un iframe seguro. Los datos de tarjeta nu"
+          "source_quote_max_12_words": "La integración con Niubiz usa el SDK oficial, no llamadas directas a"
         }
       ]
     },
