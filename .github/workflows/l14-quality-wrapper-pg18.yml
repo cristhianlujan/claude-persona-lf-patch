@@ -1,0 +1,132 @@
+name: L14 isolated PG18 quality wrapper and legacy regressions
+on:
+  push:
+    branches:
+      - lf/issue-3779-lote14-promotion-quality-wrapper-v1
+    paths:
+      - sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/**
+      - sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11b_mechanical_positive.py
+      - sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py
+      - .github/workflows/l14-quality-wrapper-pg18.yml
+permissions:
+  contents: read
+concurrency:
+  group: l14-pg18-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  sandbox:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres18:
+        image: postgres:18
+        env:
+          POSTGRES_DB: rule_quality_sbx
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rule_quality_sbx"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PG client for test_pg18 scripts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          psql --version
+      - name: L13 28 regression tests in separate PG18 database
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1'
+          for src in 01_schema.sql 02_seed_synthetic.sql 03_test_cases.sql 04_birth_expiry_tests.sql; do
+            psql -X -v ON_ERROR_STOP=1 -d rule_quality_sbx -f "$ROOT/$src" > "$RUNNER_TEMP/l13_$src.log"
+          done
+          psql -X -At -v ON_ERROR_STOP=1 -d rule_quality_sbx -c \
+            "SELECT jsonb_build_object('tests',count(*),'passes',count(*) FILTER(WHERE status='PASS'),'result',CASE WHEN count(*)=28 AND bool_and(status='PASS') THEN 'SANDBOX_VERIFIED' ELSE 'UNVERIFIED' END)::text FROM rule_quality_l13.sandbox_test_results;" \
+            | tee "$RUNNER_TEMP/l13_28_summary.json"
+          python3 -c 'import json,sys; x=json.load(open(sys.argv[1])); assert x["tests"]==28 and x["passes"]==28 and x["result"]=="SANDBOX_VERIFIED"' "$RUNNER_TEMP/l13_28_summary.json"
+      - name: All existing and new test_pg18_* scripts against isolated PG18
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/l14_test_logs"
+          find sandbox/lf_contract_gate_test -type f -name 'test_pg18_*.py' | sort > "$RUNNER_TEMP/l14_test_inventory.txt"
+          : > "$RUNNER_TEMP/l14_test_results.jsonl"
+          while IFS= read -r script; do
+            log="$RUNNER_TEMP/l14_test_logs/$(basename "$script").log"
+            printf 'L14_TEST_START %s\n' "$script"
+            if timeout 300s python3 "$script" > "$log" 2>&1; then
+              status=PASS
+            else
+              status=FAIL
+            fi
+            python3 - "$script" "$status" "$log" >> "$RUNNER_TEMP/l14_test_results.jsonl" <<'PY'
+          import json,sys,hashlib
+          path,status,log=sys.argv[1:]
+          raw=open(log,'rb').read()
+          print(json.dumps({"path":path,"status":status,"log_sha256":hashlib.sha256(raw).hexdigest(),"log_size":len(raw)}))
+          PY
+            printf 'L14_TEST_RESULT %s %s\n' "$status" "$script"
+            tail -n 4 "$log" || true
+          done < "$RUNNER_TEMP/l14_test_inventory.txt"
+          python3 - "$RUNNER_TEMP/l14_test_results.jsonl" <<'PY'
+          import json,sys
+          rows=[json.loads(x) for x in open(sys.argv[1]) if x.strip()]
+          fail=[r for r in rows if r["status"]!="PASS"]
+          summary={"tested":len(rows),"passed":len(rows)-len(fail),"failed":len(fail),"scripts":rows}
+          print("RAW_L14_LEGACY_SUITE_SUMMARY "+json.dumps(summary,sort_keys=True))
+          open(sys.argv[1]+".summary.json","w").write(json.dumps(summary,indent=2,sort_keys=True)+"\n")
+          assert len(rows)>=14 and not fail, "NOT_ALL_PREVIOUS_PG18_TESTS_PASSED"
+          PY
+      - name: Verify four exact gate MD5 from L14 executable report
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPORT=sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/lote14_runtime.json
+          cp "$REPORT" "$RUNNER_TEMP/l14_wrapper_runtime.json"
+          python3 - "$REPORT" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          frozen={"apply":"86b0494984edf95cf0f9c0a0df67000b",
+            "capture_record":"89cbfac4162dbc9f8ecca59f2c3ab4c3",
+            "citation_verify":"773a62783baa5edbe967200cac66b8c3",
+            "l8_guard":"522d12f0843be1da3c785cef3c0bf3fc"}
+          assert data["gate_md5_before"]==frozen==data["gate_md5_after"]
+          assert data["case_count"]>=15 and all(x["status"]=="PASS" for x in data["cases"])
+          print("L14_MD5_GATE_FROZEN_CONFIRMED")
+          print("L14_RUNTIME_CASES",data["case_count"])
+          PY
+      - name: SHA256 sources and scope
+        if: always()
+        shell: bash
+        run: |
+          sha256sum sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/0{5,6,7}_quality_wrapper_*.sql sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py > "$RUNNER_TEMP/l14_source_sha256.txt" || true
+          git status --short > "$RUNNER_TEMP/l14_worktree_status.txt"
+      - name: Publish actual logs and source hashes including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l14-pg18-evidence
+          path: |
+            ${{ runner.temp }}/l14_test_logs
+            ${{ runner.temp }}/l14_test_inventory.txt
+            ${{ runner.temp }}/l14_test_results.jsonl
+            ${{ runner.temp }}/l14_test_results.jsonl.summary.json
+            ${{ runner.temp }}/l14_wrapper_runtime.json
+            ${{ runner.temp }}/l14_source_sha256.txt
+            ${{ runner.temp }}/l13_28_summary.json
+            ${{ runner.temp }}/l13_*.log
+          if-no-files-found: warn
+          retention-days: 14
