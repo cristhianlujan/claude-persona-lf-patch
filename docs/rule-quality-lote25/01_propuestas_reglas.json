@@ -13,19 +13,21 @@
   "base_ref": "48f1e316d81c83ca2f880372a3a050b456c6b3ab",
   "source": "lf_ops.reglas SELECT live + owner literal decisions L25",
   "count": {
-    "new": 4,
+    "new": 5,
     "changes": 4,
-    "no_change_reviewed": 4
+    "no_change_reviewed": 4,
+    "parameter_proposals": 1
   },
   "governance": "NO_GO_UNVERIFIED",
-  "field_semantics": "NUEVA estado=CANDIDATO; CAMBIO registro_propuesto.estado=CANDIDATO conceptual sin insertar/actualizar VIGENTE; REVISADA_SIN_CAMBIO conserva estado VIGENTE y texto/config intactos.",
+  "field_semantics": "NUEVA estado=CANDIDATO; CAMBIO registro_propuesto.estado=CANDIDATO conceptual sin editar VIGENTE; SIN_CAMBIO conserva estado/origen. Parametro inicial 12 meses calendario en config versionada, NO hardcode runtime.",
   "owner_pending": [
-    "CONFIRMACION_BLOQUEO_CANCELACION_EN_PROCESO",
-    "LEGAL_CANCELAR_VENCIDA",
     "FORMATO_ARCHIVO_NIUBIZ",
     "LEDGER_Q02",
     "CONTRATO_PROVEEDOR_NIUBIZ",
-    "REINTENTOS_MORA_RECORDATORIOS"
+    "REINTENTOS_MORA_RECORDATORIOS",
+    "RANGO_VALIDO_DEL_PARAMETRO_PENDIENTE",
+    "ESTADO_INCOBRABLE_Y_DESTINO_CONTABLE_PENDIENTE_NEGOCIO_LEGAL_FINANZAS",
+    "BORDES_MESES_CALENDARIO_REQUIEREN_ESPECIFICACION_TECNICA"
   ],
   "rules": [
     {
@@ -139,13 +141,13 @@
     {
       "id": "L25-04",
       "tipo": "NUEVA_PROPUESTA",
-      "origen_decision": "D",
+      "origen_decision": "D_E",
       "codigo_objetivo": null,
       "registro_propuesto": {
         "codigo": "REG_CLIENT_INSTALLMENT_CANCELLATION_025",
         "categoria": "pago",
         "titulo": "Cancelación de cuota o plan con estados finales y pendientes",
-        "descripcion": "La cancelación puede solicitarse para una cuota o para el plan completo. Los estados PAGADA y CANCELADA son finales y no cambian. Para EN_PROCESO se propone bloquear la cancelación hasta reconciliar el intento, pero esta restricción es un SUPUESTO PENDIENTE DE CONFIRMACIÓN DEL DUEÑO. La posibilidad de cancelar una cuota VENCIDA permanece PENDIENTE_DE_LEGAL y no se resuelve aquí. No se definen políticas de mora, reintentos ni recordatorios.",
+        "descripcion": "La cancelación puede solicitarse para una cuota o el plan completo. PAGADA y CANCELADA no cambian. Por decisión confirmada del dueño, una cuota EN_PROCESO no puede cancelarse hasta reconciliarse, y una cuota VENCIDA sí puede cancelarse. La cancelación automática por antigüedad se gobierna en una regla y parámetro separados. No define mora, reintentos ni recordatorios.",
         "valor_config": {
           "alcances": [
             "CUOTA",
@@ -155,16 +157,18 @@
             "PAGADA",
             "CANCELADA"
           ],
-          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO_NO_HASTA_RECONCILIAR",
-          "cancelacion_vencida": "PENDIENTE_DE_LEGAL",
+          "cancelacion_en_proceso": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER",
+          "cancelacion_vencida": "ALLOW_CONFIRMED_BY_OWNER",
           "mora": "NO_DEFINIDA",
           "reintentos": "NO_DEFINIDOS",
-          "recordatorios": "NO_DEFINIDOS"
+          "recordatorios": "NO_DEFINIDOS",
+          "estado_decision_en_proceso": "CONFIRMADA_E",
+          "estado_decision_vencida": "CONFIRMADA_E"
         },
         "estado": "CANDIDATO"
       },
       "familia_propuesta": "CHECKOUT_PAGOS",
-      "estado_gobierno": "PENDIENTE_APROBACION_DUENO",
+      "estado_gobierno": "PENDIENTE_FORMALIZACION_REGLA_APROBACION_DUENO_DECISION_E_CONFIRMADA",
       "clasificacion": "REQUIERE_REVISION_SEMANTICA"
     },
     {
@@ -261,7 +265,7 @@
     {
       "id": "L25-07",
       "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
-      "origen_decision": "D",
+      "origen_decision": "D_E",
       "codigo_objetivo": "REG_CHK_CUO_006",
       "registro_base": {
         "codigo": "REG_CHK_CUO_006",
@@ -280,26 +284,26 @@
         "codigo": "REG_CHK_CUO_006",
         "categoria": "checkout",
         "titulo": "Cancelación del plan sin penalidades",
-        "descripcion": "Se mantiene la cancelación del plan en cuotas sin penalidades y su visibilidad antes del pago. El texto actual «en cualquier momento» requiere conciliarse con una restricción PROPUESTA, NO APROBADA: si una cuota está EN_PROCESO, no cancelar hasta reconciliar. La cancelación de VENCIDA permanece PENDIENTE_DE_LEGAL. El copy final requiere revisión y aprobación del dueño; no se publica esta redacción.",
+        "descripcion": "El cobro recurrente del plan se puede cancelar sin penalidades, con información visible en checkout. El alcance histórico «en cualquier momento» se reemplaza por la restricción confirmada: mientras exista cuota EN_PROCESO no se puede cancelar hasta reconciliar el intento. Una cuota VENCIDA sí puede cancelarse. El copy propuesto necesita revisión visual antes de publicar.",
         "valor_config": {
           "posicion": "bajo_checkbox_autorizacion",
           "penalidad": false,
-          "texto_visible": "Podrás cancelar tu plan cuando lo necesites. Sin penalidades.",
+          "texto_visible": "Puedes cancelar tu plan sin penalidades. Si hay un cobro en proceso, primero debe reconciliarse.",
           "cancelacion_permitida": true,
-          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO",
-          "cancelacion_cuota_vencida": "PENDIENTE_DE_LEGAL",
-          "texto_visible_estado": "PENDIENTE_REVISION_NO_PUBLICAR"
+          "cancelacion_en_proceso": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER",
+          "cancelacion_cuota_vencida": "ALLOW_CONFIRMED_BY_OWNER",
+          "texto_visible_estado": "PROPUESTA_REQUIERE_REVISION_UX_ANTES_PUBLICACION"
         },
         "estado": "CANDIDATO"
       },
       "familia_propuesta": "CHECKOUT_PAGOS",
-      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_SUCEDE_RV",
+      "estado_gobierno": "PENDIENTE_APROBACION_CAMBIO_DE_REGLA_Y_COPY_DUENO",
       "clasificacion": "REQUIERE_REVISION_SEMANTICA"
     },
     {
       "id": "L25-08",
       "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
-      "origen_decision": "D",
+      "origen_decision": "D_E",
       "codigo_objetivo": "REG_CHK_014",
       "registro_base": {
         "codigo": "REG_CHK_014",
@@ -318,19 +322,19 @@
         "codigo": "REG_CHK_014",
         "categoria": "checkout",
         "titulo": "Cancelación del plan sin penalidades",
-        "descripcion": "La cancelación del cobro recurrente del plan se solicita desde Mis operaciones y no genera penalidades. El alcance «en cualquier momento» necesita validación del dueño cuando haya cuota EN_PROCESO: se propone esperar su reconciliación, aún no aprobado. Cancelar una cuota VENCIDA sigue PENDIENTE_DE_LEGAL. La carta de no adeudo solo corresponde a deuda totalmente cancelada.",
+        "descripcion": "El usuario puede solicitar cancelación del cobro recurrente desde Mis operaciones, sin penalidades. Si una cuota está EN_PROCESO, no puede cancelarse hasta reconciliar; VENCIDA sí puede cancelarse, conforme a decisión del dueño. La carta de no adeudo solo procede tras la cancelación total real de deuda, no por cancelar el plan.",
         "valor_config": {
           "desde": "Mis operaciones",
           "penalidades": false,
           "carta_no_adeudo": "al_cancelar_totalmente",
           "cancelacion_permitida": true,
-          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO",
-          "cancelacion_cuota_vencida": "PENDIENTE_DE_LEGAL"
+          "cancelacion_en_proceso": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER",
+          "cancelacion_cuota_vencida": "ALLOW_CONFIRMED_BY_OWNER"
         },
         "estado": "CANDIDATO"
       },
       "familia_propuesta": "CHECKOUT_PAGOS",
-      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_SUCEDE_RV",
+      "estado_gobierno": "PENDIENTE_APROBACION_CAMBIO_DE_REGLA_Y_COPY_DUENO",
       "clasificacion": "REQUIERE_REVISION_SEMANTICA"
     },
     {
@@ -504,6 +508,76 @@
       "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
       "clasificacion": "REQUIERE_REVISION_SEMANTICA",
       "motivo_sin_cambio": "Niubiz único proveedor no decide cobro recurrente Yape ni recordatorios; contratos actuales siguen pendientes de aclaración."
+    },
+    {
+      "id": "L25-13",
+      "tipo": "NUEVA_PROPUESTA",
+      "origen_decision": "F",
+      "codigo_objetivo": null,
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_AUTO_CANCELLATION_025",
+        "categoria": "pago",
+        "titulo": "Cancelación automática por antigüedad de cuota vencida y arrastre del plan",
+        "descripcion": "Si una cuota VENCIDA alcanza el umbral configurable ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES, medido en meses calendario desde la fecha de esa cuota, se cancelan automáticamente las cuotas PENDIENTE y VENCIDA del mismo plan. La cuota disparadora registra causa AUTO_ANTIGUEDAD; las demás canceladas registran ARRASTRE_PLAN_AUTO. PAGADA y CANCELADA mantienen su estado; las PAGADA conservan su importe pagado. Si hay una cuota EN_PROCESO, no se cancela ninguna cuota por este proceso: se reconcilia primero y se reevalúa el plan en la siguiente corrida. Se registran causa y fecha, y el proceso es idempotente. El importe cancelado (nunca lo ya pagado) constituye la deuda cancelada propuesta INCOBRABLE; el significado del estado y destino contable quedan REQUIERE_REVISION_SEMANTICA por Negocio/Legal/Finanzas. Si falta el parámetro o es inválido, no se cancela nada y se alerta. No crea políticas de mora, reintentos ni recordatorios.",
+        "valor_config": {
+          "trigger_state": "VENCIDA",
+          "parameter_code": "ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES",
+          "parameter_value_source": "CONFIG_VERSIONADA_NO_HARDCODE",
+          "parameter_unit": "MESES_CALENDARIO",
+          "threshold_reference": "FECHA_CUOTA",
+          "clock_timezone": "America/Lima",
+          "trigger_condition": "VENCIDA_CUMPLE_UMBRAL_CONFIGURADO",
+          "auto_cancel_scope": "TODAS_CUOTAS_NO_PAGADAS_DEL_PLAN_CON_ESTADO_PENDIENTE_O_VENCIDA",
+          "trigger_cause": "AUTO_ANTIGUEDAD",
+          "plan_carry_cause": "ARRASTRE_PLAN_AUTO",
+          "preserve_states": [
+            "PAGADA",
+            "CANCELADA"
+          ],
+          "when_any_installment_en_proceso": "NO_CANCELAR_NINGUNA_RECONCILIAR_PRIMERO_REEVALUAR_PLAN_CORRIDA_SIGUIENTE",
+          "amount_uncobrable": "SUMA_IMPORTES_DE_CUOTAS_CANCELADAS_NO_INCLUIR_PAGADAS",
+          "debt_status_proposed": "INCOBRABLE_REQUIERE_REVISION_SEMANTICA_NEGOCIO_LEGAL_FINANZAS",
+          "accounting_destination": "PENDIENTE_DE_NEGOCIO_LEGAL_FINANZAS",
+          "missing_or_invalid_parameter": "FAIL_CLOSED_CANCEL_NONE_AND_ALERT",
+          "idempotent": true,
+          "audit_fields_required": [
+            "causa_cancelacion",
+            "fecha_cancelacion"
+          ],
+          "mora": "NO_DEFINIDA",
+          "reintentos": "NO_DEFINIDOS",
+          "recordatorios": "NO_DEFINIDOS"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_REVISION_NEGOCIO_LEGAL_FINANZAS",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    }
+  ],
+  "total_records": 13,
+  "addendum": "OWNER_CONFIRMATIONS_E_F_2026_11_12",
+  "parameter_proposals": [
+    {
+      "codigo": "ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES",
+      "valor_inicial": 12,
+      "unidad": "MESES_CALENDARIO",
+      "fecha_base": "FECHA_CUOTA",
+      "reloj_referencia": "America/Lima",
+      "almacenamiento": "VARIABLE_CONFIGURABLE_VERSIONADA_PENDIENTE_IMPLEMENTACION_PRODUCTO",
+      "hardcode_en_proceso": "DENY",
+      "rango_valido": "PENDIENTE_DE_DEFINICION_Y_VALIDACION",
+      "mantenimiento": {
+        "responsable": "PRODUCTO",
+        "pantalla": "PENDIENTE_CONSTRUIR_FUERA_DE_INPUT_GOVERNANCE",
+        "requisitos_IG": [
+          "HISTORIAL_DE_CAMBIOS",
+          "ROL_AUTORIZADO",
+          "RANGO_VALIDO"
+        ]
+      },
+      "sin_valor_o_invalido": "FALLA_CERRADA_NO_CANCELAR_NADA_Y_ALERTAR",
+      "estado": "PROPUESTA_NO_REGISTRADA"
     }
   ]
 }
