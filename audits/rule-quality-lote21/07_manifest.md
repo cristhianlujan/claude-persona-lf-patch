@@ -1,3 +1,17 @@
+# L27 — Prefacio de actualización documental del manifiesto L21
+
+**ESTADO ACTUAL DEL REGISTRO:** 32 decisiones; **3 DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA** (L16-Q03/Q04/Q05), **1 RECOMENDADA_SIN_CONFIRMAR** (L16-Q01), **28 PENDIENTE**. **0/32 FIRMADAS**. Q04 retiene cuatro temas abiertos: reintentos automáticos, recordatorios, mora y destino contable de INCOBRABLE. Q02 ledger PENDIENTE, construcción asignada a Producto/QA fuera de IG.
+
+**AVISO DE PROVENANCE:** el texto del manifiesto L21 reproducido debajo describe exclusivamente el corte histórico L21. Sus referencias a "firma 0/32" siguen correctas; las 32 "PENDIENTE" son estado histórico, **no el estado actual L27**. Su afirmación sobre recomendación MFA "C=dejar" NO significa confirmación del dueño; en L27 es **RECOMENDADA_SIN_CONFIRMAR**.
+
+**SIN SUPABASE NI PG18 EN L27:** todas las consultas S21_01..S21_06 del SQL reproducido son evidencia histórica, no ejecutadas en este lote. L19/L21 acreditan 45 permisos y cero asignaciones en cuatro tablas; "16 resource_type y sin permiso pricing" es dato comunicado por el dueño, pendiente de readback SQL independiente, no un SELECT nuevo. Ver `audits/rule-quality-lote27/`.
+
+**Tablero y criterio GO/NO-GO L21 permanecen byte por byte:** 15/36 REAL_EN_SANDBOX, 0/36 E2E productivo en el marco L21, 15 gates sin verificar, NO-GO. Este lote sólo registra decisiones, no adopta L25 ni elige responsable de deuda contable.
+
+**JUEZ:** GPT-6, mismo modelo, sin independencia; **FIRMA**: ninguna acreditada. **PRODUCCIÓN NO-GO / UNVERIFIED**.
+
+---
+
 # Lote 21 — Manifiesto de evidencia, alcance y NO-GO
 
 ## Identidad de la ejecución
