@@ -93,11 +93,13 @@ SELECT 'lf','RULE-DEPENDENCY-001','IDENTIDAD_SEGURIDAD','SECURITY',
 FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001';
 """
     if is_correction:
+        evidence=json.dumps({"source_ref":"SBX-L18-CORRECTION",
+                             "rationale":"explicit successor for existing source rule"})
         prepare=(
-         "SELECT 'CORRECTION|'||rule_quality_l13.quality_propose_correction_v2("
-         "'lf','RULE-DEPENDENCY-001',"+lit(code)+","
-         +lit(b["description"])+",'{"source_ref":"SBX-L18-CORRECTION","rationale":"explicit successor for existing source rule"}'::jsonb)::text;\n"
-         "SELECT 'PREP|'||rule_quality_l13.l18_prepare_explicit_successor_v1("
+         "SELECT 'CORRECTION|'||rule_quality_l13.quality_propose_correction_v2("+
+         "'lf','RULE-DEPENDENCY-001',"+lit(code)+","+
+         lit(b["description"])+","+lit(evidence)+"::jsonb)::text;\n"+
+         "SELECT 'PREP|'||rule_quality_l13.l18_prepare_explicit_successor_v1("+
          "'lf','RULE-DEPENDENCY-001',"+lit(code)+")::text;"
         )
     else:
