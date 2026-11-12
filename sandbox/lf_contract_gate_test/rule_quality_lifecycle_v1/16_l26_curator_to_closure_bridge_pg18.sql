@@ -249,3 +249,43 @@ REVOKE ALL ON FUNCTION l26_record_promotion_v1(text,text,text,text),
 GRANT EXECUTE ON FUNCTION l26_record_promotion_v1(text,text,text,text),
  l26_close_integrated_v1(text,text,text,text)
  TO lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
+
+
+-- Read-only board measurement through L17-authenticated SECURITY DEFINER.
+-- Never grant direct SELECT on L23/L24/L26 internal tables to app roles.
+CREATE FUNCTION l26_measured_readback_v1(
+ p_project text,p_rule text,p_promotion text,p_previous text DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=rule_quality_l13,pg_temp AS $f$
+DECLARE v_id jsonb;v_target jsonb;v_prev jsonb;v_cur l23_curator_verdicts%ROWTYPE;
+        v_ticket text;v_npromo int;v_nclose int;v_status text;v_attestation text;
+BEGIN
+ v_id:=l17_verify_signed_claim_v2(p_project);
+ v_target:=l20_target_readback_v1(p_project,p_rule,p_previous);
+ SELECT * INTO v_cur FROM l23_curator_verdicts WHERE project_code=p_project AND rule_code=p_rule;
+ SELECT status INTO v_ticket FROM activation_tickets WHERE project_code=p_project AND rule_code=p_rule;
+ SELECT count(*) INTO v_npromo FROM l26_promotion_receipts
+ WHERE project_code=p_project AND rule_code=p_rule AND promotion_id=p_promotion;
+ SELECT count(*) INTO v_nclose FROM l24_closure_receipts
+ WHERE project_code=p_project AND rule_code=p_rule AND promotion_id=p_promotion;
+ IF p_previous IS NOT NULL THEN
+  v_prev:=l20_target_readback_v1(p_project,p_previous);
+ END IF;
+ IF p_project='lf' THEN
+  SELECT status,manifest->>'system_attestation' INTO v_status,v_attestation
+  FROM public.lf_operation_execution WHERE execution_id='EXEC-OWNER-L11B-001';
+ END IF;
+ RETURN jsonb_build_object(
+  'project',p_project,'rule_code',p_rule,'actor',v_id->>'actor_code',
+  'curator',v_cur.verdict,'curator_seal',v_cur.seal_hmac_sha256,
+  'quality',v_target->>'registry','source',v_target->>'source',
+  'promotion_receipts',v_npromo,'closure_receipts',v_nclose,
+  'ticket',v_ticket,'divergences',(v_target->>'target_divergence')::int,
+  'run_status',v_status,'run_fixture_attested',v_attestation,
+  'previous_state',v_prev->>'registry','previous_source',v_prev->>'source',
+  'readback_l20',v_target,'same_authenticated_session',true);
+END $f$;
+
+REVOKE ALL ON FUNCTION l26_measured_readback_v1(text,text,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION l26_measured_readback_v1(text,text,text,text)
+ TO lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
