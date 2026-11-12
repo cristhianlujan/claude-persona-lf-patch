@@ -1,0 +1,646 @@
+{
+  "lote": 12,
+  "mode": "SUPABASE_RO",
+  "status": "UNVERIFIED",
+  "digest_spec": "query: SQL+semicolon+LF, result: JSON.stringify(rows), UTF8/SHA256",
+  "results": {
+    "LF01": {
+      "sql_sha256": "2b59f7f36438ab5b074cbeef9da5618618def09ea75e7c63f084968cff33e380",
+      "result_sha256": "55312a41f05471142e6be731fd6956be8a8107503e1554daba3bfe7a93d483b0",
+      "n": 1,
+      "rows": [
+        {
+          "corte_utc": "2026-11-12 18:11:32.298595+00",
+          "total": 578,
+          "vigentes": 412,
+          "candidatos": 166,
+          "categorias_exactas": 76,
+          "categorias_casefold": 73,
+          "config_vacia": 32,
+          "razon_vacia": 12,
+          "origen_vacio": 6,
+          "created_by_nulo": 274,
+          "vigentes_pendientes": 57,
+          "candidatos_sin_editar_30d": 161,
+          "vigentes_sin_editar_90d": 256
+        }
+      ]
+    },
+    "LF02": {
+      "sql_sha256": "38c9f089a45f3fb0f97c494290b45f5df1613a023b641d94df211e06027e3dec",
+      "result_sha256": "28670d5cd1a83b67c46380714223ad4ad7f89c19ec48a5e516f9c115831ba6d0",
+      "n": 76,
+      "rows": [
+        {
+          "categoria": "ab_testing",
+          "reglas": 5,
+          "vigentes": 4
+        },
+        {
+          "categoria": "accesibilidad",
+          "reglas": 6,
+          "vigentes": 6
+        },
+        {
+          "categoria": "ACCESSIBILITY",
+          "reglas": 4,
+          "vigentes": 4
+        },
+        {
+          "categoria": "alertas",
+          "reglas": 6,
+          "vigentes": 6
+        },
+        {
+          "categoria": "analytics",
+          "reglas": 9,
+          "vigentes": 7
+        },
+        {
+          "categoria": "ANALYTICS",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "api",
+          "reglas": 6,
+          "vigentes": 6
+        },
+        {
+          "categoria": "APPROVAL",
+          "reglas": 3,
+          "vigentes": 1
+        },
+        {
+          "categoria": "ataques",
+          "reglas": 20,
+          "vigentes": 19
+        },
+        {
+          "categoria": "AUDIT",
+          "reglas": 2,
+          "vigentes": 1
+        },
+        {
+          "categoria": "auditoria",
+          "reglas": 5,
+          "vigentes": 5
+        },
+        {
+          "categoria": "autenticacion",
+          "reglas": 3,
+          "vigentes": 3
+        },
+        {
+          "categoria": "AUTHORIZATION",
+          "reglas": 3,
+          "vigentes": 0
+        },
+        {
+          "categoria": "b2b",
+          "reglas": 7,
+          "vigentes": 6
+        },
+        {
+          "categoria": "B2B_CARGAS",
+          "reglas": 5,
+          "vigentes": 0
+        },
+        {
+          "categoria": "beneficios",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "BRAND",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "BUSINESS",
+          "reglas": 27,
+          "vigentes": 0
+        },
+        {
+          "categoria": "CARGAS",
+          "reglas": 2,
+          "vigentes": 0
+        },
+        {
+          "categoria": "checkout",
+          "reglas": 39,
+          "vigentes": 28
+        },
+        {
+          "categoria": "CLIENT_CHECKOUT",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "COMMERCIAL_CAMPAIGN",
+          "reglas": 2,
+          "vigentes": 1
+        },
+        {
+          "categoria": "COMPATIBILITY",
+          "reglas": 1,
+          "vigentes": 0
+        },
+        {
+          "categoria": "CONFIGURATION",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "contenido",
+          "reglas": 6,
+          "vigentes": 6
+        },
+        {
+          "categoria": "copy",
+          "reglas": 15,
+          "vigentes": 15
+        },
+        {
+          "categoria": "datos",
+          "reglas": 11,
+          "vigentes": 11
+        },
+        {
+          "categoria": "DESIGN",
+          "reglas": 2,
+          "vigentes": 2
+        },
+        {
+          "categoria": "documento",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "ERROR",
+          "reglas": 3,
+          "vigentes": 3
+        },
+        {
+          "categoria": "ERROR_HANDLING",
+          "reglas": 1,
+          "vigentes": 0
+        },
+        {
+          "categoria": "error_states",
+          "reglas": 16,
+          "vigentes": 10
+        },
+        {
+          "categoria": "estados_ui",
+          "reglas": 9,
+          "vigentes": 8
+        },
+        {
+          "categoria": "flujo",
+          "reglas": 53,
+          "vigentes": 49
+        },
+        {
+          "categoria": "GOVERNANCE",
+          "reglas": 13,
+          "vigentes": 8
+        },
+        {
+          "categoria": "heatmap",
+          "reglas": 4,
+          "vigentes": 4
+        },
+        {
+          "categoria": "home_variante",
+          "reglas": 5,
+          "vigentes": 5
+        },
+        {
+          "categoria": "INTEGRITY",
+          "reglas": 3,
+          "vigentes": 0
+        },
+        {
+          "categoria": "legal",
+          "reglas": 24,
+          "vigentes": 13
+        },
+        {
+          "categoria": "LEGAL",
+          "reglas": 2,
+          "vigentes": 0
+        },
+        {
+          "categoria": "navegacion",
+          "reglas": 3,
+          "vigentes": 3
+        },
+        {
+          "categoria": "NAVIGATION",
+          "reglas": 1,
+          "vigentes": 0
+        },
+        {
+          "categoria": "negocio",
+          "reglas": 18,
+          "vigentes": 16
+        },
+        {
+          "categoria": "niubiz",
+          "reglas": 6,
+          "vigentes": 6
+        },
+        {
+          "categoria": "notificacion",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "notificaciones",
+          "reglas": 7,
+          "vigentes": 6
+        },
+        {
+          "categoria": "observabilidad",
+          "reglas": 6,
+          "vigentes": 6
+        },
+        {
+          "categoria": "OBSERVABILITY",
+          "reglas": 3,
+          "vigentes": 3
+        },
+        {
+          "categoria": "oferta",
+          "reglas": 10,
+          "vigentes": 9
+        },
+        {
+          "categoria": "OFERTAS_CUOTAS",
+          "reglas": 1,
+          "vigentes": 0
+        },
+        {
+          "categoria": "pago",
+          "reglas": 8,
+          "vigentes": 8
+        },
+        {
+          "categoria": "PERFORMANCE",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "precio",
+          "reglas": 2,
+          "vigentes": 2
+        },
+        {
+          "categoria": "PRIVACY",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "PRODUCT_GOVERNANCE",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "rate_limiting",
+          "reglas": 8,
+          "vigentes": 8
+        },
+        {
+          "categoria": "RESILIENCE",
+          "reglas": 2,
+          "vigentes": 2
+        },
+        {
+          "categoria": "RESPONSIVE",
+          "reglas": 3,
+          "vigentes": 3
+        },
+        {
+          "categoria": "RETENTION",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "SECURITY",
+          "reglas": 38,
+          "vigentes": 9
+        },
+        {
+          "categoria": "seguridad",
+          "reglas": 21,
+          "vigentes": 20
+        },
+        {
+          "categoria": "sesion",
+          "reglas": 5,
+          "vigentes": 5
+        },
+        {
+          "categoria": "SESSION",
+          "reglas": 2,
+          "vigentes": 2
+        },
+        {
+          "categoria": "SHELL",
+          "reglas": 4,
+          "vigentes": 0
+        },
+        {
+          "categoria": "STORAGE",
+          "reglas": 2,
+          "vigentes": 0
+        },
+        {
+          "categoria": "tageo",
+          "reglas": 6,
+          "vigentes": 5
+        },
+        {
+          "categoria": "tecnico",
+          "reglas": 16,
+          "vigentes": 15
+        },
+        {
+          "categoria": "TESTING",
+          "reglas": 1,
+          "vigentes": 0
+        },
+        {
+          "categoria": "THEME",
+          "reglas": 3,
+          "vigentes": 2
+        },
+        {
+          "categoria": "UI",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "unicidad",
+          "reglas": 4,
+          "vigentes": 4
+        },
+        {
+          "categoria": "ux",
+          "reglas": 38,
+          "vigentes": 29
+        },
+        {
+          "categoria": "UX",
+          "reglas": 15,
+          "vigentes": 4
+        },
+        {
+          "categoria": "UX_RUNTIME",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "VALIDATION",
+          "reglas": 1,
+          "vigentes": 0
+        },
+        {
+          "categoria": "WORKFLOW",
+          "reglas": 9,
+          "vigentes": 1
+        }
+      ]
+    },
+    "LF03": {
+      "sql_sha256": "c1b2cb771430baf3c9624ec0d9e41d4d7d814cda7bfe48e3fa4a8692284b7cc4",
+      "result_sha256": "bd701488a9352cc83225bf7458fff3cd5746707cb9393f21339bef90a32903fd",
+      "n": 19,
+      "rows": [
+        {
+          "categoria": "ANALYTICS",
+          "reglas": 1
+        },
+        {
+          "categoria": "beneficios",
+          "reglas": 1
+        },
+        {
+          "categoria": "BRAND",
+          "reglas": 1
+        },
+        {
+          "categoria": "CLIENT_CHECKOUT",
+          "reglas": 1
+        },
+        {
+          "categoria": "COMPATIBILITY",
+          "reglas": 1
+        },
+        {
+          "categoria": "CONFIGURATION",
+          "reglas": 1
+        },
+        {
+          "categoria": "documento",
+          "reglas": 1
+        },
+        {
+          "categoria": "ERROR_HANDLING",
+          "reglas": 1
+        },
+        {
+          "categoria": "NAVIGATION",
+          "reglas": 1
+        },
+        {
+          "categoria": "notificacion",
+          "reglas": 1
+        },
+        {
+          "categoria": "OFERTAS_CUOTAS",
+          "reglas": 1
+        },
+        {
+          "categoria": "PERFORMANCE",
+          "reglas": 1
+        },
+        {
+          "categoria": "PRIVACY",
+          "reglas": 1
+        },
+        {
+          "categoria": "PRODUCT_GOVERNANCE",
+          "reglas": 1
+        },
+        {
+          "categoria": "RETENTION",
+          "reglas": 1
+        },
+        {
+          "categoria": "TESTING",
+          "reglas": 1
+        },
+        {
+          "categoria": "UI",
+          "reglas": 1
+        },
+        {
+          "categoria": "UX_RUNTIME",
+          "reglas": 1
+        },
+        {
+          "categoria": "VALIDATION",
+          "reglas": 1
+        }
+      ]
+    },
+    "LF04": {
+      "sql_sha256": "6f6d4b0c4501e815e52502c88eaf0185396bdd62ca69c218ed831327d3dd9ca1",
+      "result_sha256": "6afc9151aa16079947cc3cfb8942621e717090f0996a568d06f9e793bf7ca227",
+      "n": 3,
+      "rows": [
+        {
+          "normalizada": "ANALYTICS",
+          "variantes": [
+            "analytics",
+            "ANALYTICS"
+          ],
+          "total": "10"
+        },
+        {
+          "normalizada": "LEGAL",
+          "variantes": [
+            "legal",
+            "LEGAL"
+          ],
+          "total": "26"
+        },
+        {
+          "normalizada": "UX",
+          "variantes": [
+            "ux",
+            "UX"
+          ],
+          "total": "53"
+        }
+      ]
+    },
+    "LF05": {
+      "sql_sha256": "ef555391a78763c3ab159ad7253db3f311856fee08cb02959f723e9c0c1ec762",
+      "result_sha256": "67a45862b7292fe23acfc6316721723913dc37528c5e00f9ded9380b3336f3bb",
+      "n": 4,
+      "rows": [
+        {
+          "es": "accesibilidad",
+          "en": "ACCESSIBILITY",
+          "reglas_es": 6,
+          "reglas_en": 4
+        },
+        {
+          "es": "observabilidad",
+          "en": "OBSERVABILITY",
+          "reglas_es": 6,
+          "reglas_en": 3
+        },
+        {
+          "es": "seguridad",
+          "en": "SECURITY",
+          "reglas_es": 21,
+          "reglas_en": 38
+        },
+        {
+          "es": "sesion",
+          "en": "SESSION",
+          "reglas_es": 5,
+          "reglas_en": 2
+        }
+      ]
+    },
+    "LF06": {
+      "sql_sha256": "ee0c0c3c10218e335f4d958f0bc66358a7d46db4752cb136a20075be2fa0fcc1",
+      "result_sha256": "e235eccad2501e79413fb174b656e8482f6e09fc02cf334d0fd7f278b7d9aadd",
+      "n": 10,
+      "rows": [
+        {
+          "categoria": "SECURITY",
+          "reglas": 38
+        },
+        {
+          "categoria": "seguridad",
+          "reglas": 21
+        },
+        {
+          "categoria": "ataques",
+          "reglas": 20
+        },
+        {
+          "categoria": "rate_limiting",
+          "reglas": 8
+        },
+        {
+          "categoria": "sesion",
+          "reglas": 5
+        },
+        {
+          "categoria": "unicidad",
+          "reglas": 4
+        },
+        {
+          "categoria": "autenticacion",
+          "reglas": 3
+        },
+        {
+          "categoria": "AUTHORIZATION",
+          "reglas": 3
+        },
+        {
+          "categoria": "SESSION",
+          "reglas": 2
+        },
+        {
+          "categoria": "PRIVACY",
+          "reglas": 1
+        }
+      ]
+    },
+    "LF07": {
+      "sql_sha256": "efcd3fc9ae1d59c094156b4b56f6b93f02c43bd1081b811a00b8bd0ed6bde4bb",
+      "result_sha256": "16ec64cba7d459d55ff17005caedbc54ab9c66baa046ab1f028723c772f4830b",
+      "n": 3,
+      "rows": [
+        {
+          "titulo": "Cancelación del plan sin penalidades",
+          "cantidad": 2,
+          "codigos": [
+            "REG_CHK_014",
+            "REG_CHK_CUO_006"
+          ]
+        },
+        {
+          "titulo": "Cooldown entre reenvíos OTP",
+          "cantidad": 2,
+          "codigos": [
+            "REG_RATE_005",
+            "REG_RL_001"
+          ]
+        },
+        {
+          "titulo": "Pago inicial activa el plan en cuotas",
+          "cantidad": 2,
+          "codigos": [
+            "REG_CHK_009",
+            "REG_CHK_CUO_001"
+          ]
+        }
+      ]
+    },
+    "LF08": {
+      "sql_sha256": "bbf8e02ee917efc4e3f26a0392b34cf6c7260418652e00edb20daf1aa025de1a",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "rows": []
+    }
+  }
+}
