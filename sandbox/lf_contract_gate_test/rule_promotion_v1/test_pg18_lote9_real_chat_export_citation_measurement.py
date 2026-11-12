@@ -259,7 +259,7 @@ def main():
       "rows":details}
     artifact=HERE/"lote9_pass1_citation_measurement_runtime.json"
     artifact.write_text(json.dumps(runtime_report,ensure_ascii=False,
-                                   indent=2,sort_keys=True)+"\\n",encoding="utf-8")
+                                   indent=2,sort_keys=True)+"\n",encoding="utf-8")
     print("RAW_L9_REPORT_FILE "+json.dumps({
       "path":str(artifact.relative_to(HERE.parent.parent.parent)),
       "rows":len(details),
