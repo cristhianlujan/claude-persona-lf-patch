@@ -133,18 +133,22 @@ def run(case_id="K00E813F0",quote=None,verdict="ALLOW",mode="valid"):
     return sql(script)
 
 def reuse_quote():
-    a,b=CASES["K00E813F0"],CASES["K00A5FECB"]
+    # Two actual blind proposals share this exact substring. This is NOT a
+    # quote from the five real reviewer chats; PG18 construction only.
+    a,b=CASES["K00FC0700"],CASES["K014E51A2"]
     assert a["base_rule"]["code"]==b["base_rule"]["code"]
-    quote=a["base_rule"]["description"]
-    line1="K00E813F0|ALLOW|"+quote
-    line2="K00A5FECB|BLOCK|"+quote
+    quote="de diez minutos, sin depender de la sesión."
+    assert quote in a["proposal"]["description"] and quote in b["proposal"]["description"]
+    assert quote not in a["base_rule"]["description"] and quote not in b["base_rule"]["description"]
+    line1="K00FC0700|ALLOW|"+quote
+    line2="K014E51A2|BLOCK|"+quote
     script=f"""BEGIN;
-      {seed("K00E813F0","PROM-L7","ALLOW",quote)}
+      {seed("K00FC0700","PROM-L7","ALLOW",quote)}
       SET LOCAL ROLE lf_rule_citation_step70_bridge;
       SELECT 'FIRST|'||public.lf_rule_promotion_citation_record_v1(
         'PROM-L7',{lit(line1)},'EXEC-PARENT-TEST-001')::text;
       RESET ROLE;
-      {seed("K00A5FECB","PROM-L7-SECOND","BLOCK",quote)}
+      {seed("K014E51A2","PROM-L7-SECOND","BLOCK",quote)}
       SET LOCAL ROLE lf_rule_citation_step70_bridge;
       SELECT 'SECOND|'||public.lf_rule_promotion_citation_record_v1(
         'PROM-L7-SECOND',{lit(line2)},'EXEC-PARENT-TEST-001')::text;
