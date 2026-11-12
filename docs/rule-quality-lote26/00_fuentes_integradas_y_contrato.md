@@ -23,7 +23,7 @@
 
 ### Precisión sobre el caso LF nueva
 
-El Curator L23 detectó una contradicción de `valor_config` al tratar `REG_SEG_004` como nueva junto a `RULE-DEPENDENCY-001` VIGENTE. L26 **no cambia la detección**. El fixture A_NEW utiliza `REG_SEG_004` como CANDIDATO sin las claves conflictivas, **antes de crear la solicitud y su hash de origen**, solo en PG18. B_CORRECTED mantiene el conflicto real y exige el vínculo de sucesión explícito aprobado por el owner HMAC. Este preacondicionamiento no constituye una política de producción ni un cambio a una regla VIGENTE.
+El Curator L23 detectó una contradicción de `valor_config` al tratar `REG_SEG_004` como nueva junto a `RULE-DEPENDENCY-001` VIGENTE. L26 **no cambia la detección**. A_NEW usa un **banco PG18 inicializado de forma aislada**: antes de instalar los guards L17 se clasifica `RULE-DEPENDENCY-001` en una categoría de fixture no comparable con la futura candidata. La regla candidata `REG_SEG_004`, su `valor_config` y los inputs del gate L11B permanecen inalterados. No se desactiva ningún trigger. La preparación del banco ocurre **antes del BEGIN medido**; posteriormente solo se ejecuta la secuencia gobernada A y se descarta ese banco. B_CORRECTED y C_SALY_NEW usan un **segundo banco PG18 limpio con datos originales**, por lo que B mantiene el conflicto real y exige sucesión explícita del owner HMAC. Este preacondicionamiento se limita a la construcción de un fixture de laboratorio y no es una política ni mutación productiva.
 
 ## Secuencia que debe quedar demostrada
 
