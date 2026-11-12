@@ -1,0 +1,566 @@
+{
+  "schema_version": "LF_L14_PG18_EVIDENCE_V1",
+  "status": "SANDBOX_VERIFIED",
+  "global_status": "NO_GO_UNVERIFIED",
+  "run_id": 43289911377,
+  "job_id": 131433088484,
+  "commit_under_test": "d0ea4c428f4f3aadd3bd29188e178604987059af",
+  "runner_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43289911377",
+  "source": "Github Actions job stdout, actual PG18.6 run",
+  "l13_regression": {
+    "tests": 28,
+    "passed": 28,
+    "status": "SANDBOX_VERIFIED"
+  },
+  "script_inventory_suite": {
+    "failed": 0,
+    "passed": 15,
+    "scripts": [
+      {
+        "log_sha256": "38acafe8ad6b986933cf3a8c09d31795d5d938275e39ca38b016df66ffe11cc1",
+        "log_size": 16615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "7e1adbf2ba08aba771f1217aba2ec44449d093f6730ebe71f48fd3a7e6d64112",
+        "log_size": 9709,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "1838ae8506f82d66accee399dbd8471b96e7ccebb57a3c652713af699a1110f3",
+        "log_size": 42186,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11b_mechanical_positive.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "1a5eea30da3e7eca909a4a984b80e4c91eae2585172c0115168c0681efc1564e",
+        "log_size": 27720,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "37145e146930f0ac78357b8d1c298c51db852dccf48491604fa377bc4b6241b6",
+        "log_size": 21622,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_mutation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4b_validator_reuse.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "32a38d6c68d16cfffc39509d60af3090374a6fb3d5d01a258031b66b5caf1a7a",
+        "log_size": 22740,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4d_profile_owner_approval.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0455e266085b6579c5ca09c97b618c4e9b0f1abaf6c9e61883c31ced930ab8e0",
+        "log_size": 17103,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote5_real_verdict_profile_return.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f04e7b0f2d50c21395f11dff95029297b6a0fbc87b60f7f23bb0fdcb0a777680",
+        "log_size": 4175,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote6_claude_blind_5pass_uncited.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f33594571d0f411a1bf9eda5adcbe32b36a66bb35727c9ea7759888d1981e2b9",
+        "log_size": 20355,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote7_exact_citation_capture.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "15f076c5623ea208dae9422d3c8efed0256a86c180aad904ee21762e176fce0b",
+        "log_size": 8250,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote8_quote_reuse_scoped.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "bd58aeefa9374a829b3e6f785b02318309a555cf07db3dab9789d8ff1341f4b5",
+        "log_size": 68615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "cfbdbe8565f3c7908b4f7732274b07f40354df6212a4551121bffe3590c6d30e",
+        "log_size": 42544,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0d6abe0e13835bec20df46bb41ba832d4b4e58644ea1a1f4037274c6dae533d5",
+        "log_size": 14681,
+        "path": "sandbox/lf_contract_gate_test/rule_scope_v1/test_pg18_step40_rule_scope.py",
+        "status": "PASS"
+      }
+    ],
+    "tested": 15
+  },
+  "l14_wrapper": {
+    "actor_auth": "POSTGRES_SESSION_USER_SANDBOX_ONLY",
+    "case_count": 16,
+    "cases": [
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "GATE_MD5_INITIAL",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_FAMILY_REQUIRED",
+          "sqlstate": "23514"
+        },
+        "id": "N1_NO_FAMILY",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_FAMILY_REQUIRED\nCONTEXT:  PL/pgSQL function quality_prepare_new(text,text,text,timestamp with time zone) line 7 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_FAMILY_PROJECT_MISMATCH",
+          "sqlstate": "23514"
+        },
+        "id": "N2_CROSS_PROJECT_FAMILY",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_FAMILY_PROJECT_MISMATCH\nCONTEXT:  PL/pgSQL function quality_prepare_new(text,text,text,timestamp with time zone) line 10 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_GUC_IDENTITY_MISMATCH",
+          "sqlstate": "42501"
+        },
+        "id": "N3_FORGED_GUC",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  42501: BLOCK_QUALITY_GUC_IDENTITY_MISMATCH\nCONTEXT:  PL/pgSQL function trusted_actor_role(text) line 7 at RAISE\nPL/pgSQL function quality_prepare_new(text,text,text,timestamp with time zone) line 5 at assignment\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "permission denied for table rules",
+          "sqlstate": "42501"
+        },
+        "id": "N4_DIRECT_DML_NO_GRANT",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  42501: permission denied for table rules\nLOCATION:  aclcheck_error, aclchk.c:2793"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_SUPER_ADMIN_APPROVAL",
+          "sqlstate": "42501"
+        },
+        "id": "N5_SUPER_ADMIN_FORBIDDEN",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  42501: BLOCK_SUPER_ADMIN_APPROVAL\nCONTEXT:  PL/pgSQL function trusted_actor_role(text) line 14 at RAISE\nPL/pgSQL function quality_prepare_new(text,text,text,timestamp with time zone) line 5 at assignment\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_ACTIVE_METADATA_MISSING",
+          "sqlstate": "23514"
+        },
+        "id": "N6_NO_QUALITY_METADATA_DIRECT_SOURCE",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_ACTIVE_METADATA_MISSING\nCONTEXT:  PL/pgSQL function source_quality_activation_guard() line 19 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "correct LF family and 90-day review scheduled, no source activation",
+        "id": "P1_VALID_FAMILY_REVIEW_SCHEDULED",
+        "observed": {
+          "family_code": "IDENTIDAD_SEGURIDAD",
+          "next_review_at": "2027-02-10T00:00:00+00:00",
+          "owner_role": "lf_owner_role",
+          "project_code": "lf",
+          "reviewed_at": "2026-11-12T00:00:00+00:00",
+          "rule_code": "LF-L14-NEW-OK",
+          "status": "QUALITY_PREPARED"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_ACTIVE_METADATA_MISSING",
+          "sqlstate": "23514"
+        },
+        "id": "N7_NO_TICKET_CANNOT_BYPASS_WRAP",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_ACTIVE_METADATA_MISSING\nCONTEXT:  PL/pgSQL function source_quality_activation_guard() line 19 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_NO_ACTIVATION_TICKET",
+          "sqlstate": "42501"
+        },
+        "id": "N8_NO_TICKET_EVEN_WITH_METADATA",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  42501: BLOCK_QUALITY_NO_ACTIVATION_TICKET\nCONTEXT:  PL/pgSQL function source_quality_activation_guard() line 24 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "old VIGENTE unchanged, successor EN_REVISION, distinct code",
+        "id": "P2_EXPLICIT_SUCCESSOR_NOT_EDIT_IN_PLACE",
+        "observed": {
+          "CORRECTION": {
+            "original_rule_code": "LF-SYN-0009",
+            "owner_role": "lf_owner_role",
+            "project_code": "lf",
+            "status": "EN_REVISION",
+            "successor_rule_code": "LF-SYN-0009-V2"
+          },
+          "NEW": {
+            "definition_text": "L14 corrected synthetic statement",
+            "state": "EN_REVISION"
+          },
+          "OLD": {
+            "definition_text": "Regla sintetica basada en categoria accesibilidad / orden 4",
+            "state": "VIGENTE"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "blocking_code": "BLOCK_QUALITY_EXPLICIT_SUCCESSOR_REQUIRED",
+          "sqlstate": "23514"
+        },
+        "id": "N9_CORRECTION_NO_SUCCESSOR",
+        "observed": {
+          "exit_code": 3,
+          "stderr": "ERROR:  23514: BLOCK_QUALITY_EXPLICIT_SUCCESSOR_REQUIRED\nCONTEXT:  PL/pgSQL function quality_propose_correction(text,text,text,text,jsonb) line 6 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "SALY fixture: same quality_prepare_new + quality_apply_envelope, no edits to functions",
+        "id": "P3_SALY_SAME_WRAPPER_ADAPTER",
+        "observed": {
+          "PREPARED": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "next_review_at": "2027-01-11T00:00:00+00:00",
+            "owner_role": "saly_owner_role",
+            "project_code": "saly",
+            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "QUALITY_PREPARED"
+          },
+          "READBACK": {
+            "next_review_at": "2027-01-11T00:00:00+00:00",
+            "quality_state": "VIGENTE",
+            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "source_vigente": true
+          },
+          "WRAPPED": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "gate": {
+              "fixture_only": true,
+              "rule_code": "SALY-L14-NEW",
+              "status": "APPLIED"
+            },
+            "next_review_at": "2027-01-11T00:00:00+00:00",
+            "owner_role": "saly_owner_role",
+            "profile_return": {
+              "readback_verified": true,
+              "sandbox_fixture": true,
+              "status": "READY"
+            },
+            "project_code": "saly",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "read-only due proposal leaves VIGENTE and timestamp unchanged",
+        "id": "P4_DUE_IS_PROPOSAL_NEVER_AUTO_MUTATION",
+        "observed": {
+          "AFTER": {
+            "next_review_at": "2026-10-01T00:00:00+00:00",
+            "state": "VIGENTE"
+          },
+          "BEFORE": {
+            "next_review_at": "2026-10-01T00:00:00+00:00",
+            "state": "VIGENTE"
+          },
+          "DUE": {
+            "proposal": "PROPONER_REVISION",
+            "rule_code": "LF-SYN-0003"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "frozen apply APPLIED, profile READY, source + quality VIGENTE, family+review date, ROLLBACK",
+        "id": "P5_L11B_FROZEN_APPLY_WRAPPER_READY",
+        "observed": {
+          "BIND": {
+            "binding_sha256": "309e61f4a0c0e3478859d114b0fa4b5f17259c2b94903e07d82731d1e57a8193",
+            "external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+            "external_receipt_status": "SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE",
+            "ig_run_id": 9001,
+            "independent_semantic_judge_attested": false,
+            "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "packet_status": "READY_FOR_MODEL_CANDIDATE",
+            "promotion_authorized": false,
+            "promotion_id": "PROM-TEST",
+            "rule_snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d",
+            "semantic_verdict": "PERMITIR",
+            "status": "BOUND_EXISTING_IG_SEMANTIC_EVIDENCE"
+          },
+          "CAPTURE": {
+            "capture_binding_sha256": "667c1de7d365c6ef1aeff23ca02f6550ba1feafe567fb72ac285b515a1b3910f",
+            "case_id": "K00E813F0",
+            "source_provenance": "OFFICIAL_STEP70_VERIFIED_NATIVE_IG",
+            "status": "CAPTURED_FOR_GATE_VERIFICATION",
+            "verdict": "ALLOW"
+          },
+          "CAPTURE_VERIFY": {
+            "binding_sha256": "667c1de7d365c6ef1aeff23ca02f6550ba1feafe567fb72ac285b515a1b3910f",
+            "case_id": "K00E813F0",
+            "independence_attested": false,
+            "literal_origin": "PROPOSAL",
+            "next_actor": "PROFILE_OWNER",
+            "promotable": false,
+            "status": "VERIFIED_CAPTURE_BINDING",
+            "verdict": "ALLOW"
+          },
+          "GATE_MD5": {
+            "apply": "86b0494984edf95cf0f9c0a0df67000b",
+            "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+            "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+            "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+          },
+          "IG_VERIFY": {
+            "blocking_code": "IG_EVIDENCE_VERIFIED_PROFILE_AUTHORITY_REQUIRED",
+            "cited_evidence_sha256": "c727c0cd1bb7ca07a79f066db02af05a6a7897dccb3acfcae93d74ddadca456a",
+            "promotion_authorized": false,
+            "rule_snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d",
+            "semantic_independence_credited": false,
+            "semantic_verdict": "PERMITIR",
+            "status": "READY_FOR_PROFILE_APPROVAL"
+          },
+          "L14_PREPARE": {
+            "family_code": "IDENTIDAD_SEGURIDAD",
+            "next_review_at": "2027-02-10T00:00:00+00:00",
+            "owner_role": "lf_owner_role",
+            "project_code": "lf",
+            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "rule_code": "REG_SEG_004",
+            "status": "QUALITY_PREPARED"
+          },
+          "LINE": {
+            "capture_line_sha256": "3e808c9a94661acd857d7b137ea9f7925a9dc7a0015b6aaa4f1d8778c890eb04",
+            "case_id": "K00E813F0",
+            "case_sha256": "8772a68a51c376236e20c31e60c0db8d11f9bc71297ccf5d56adc9fa2bd24508",
+            "exact_excerpt": "En producción, otp_code solo puede persistirse como hash",
+            "ig_external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+            "literal_origin": "PROPOSAL",
+            "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "quote_sha256": "ee155137d9b210a6253702df5da46bee6dcf9e926db64ae6d6938cc11eb36112",
+            "source_snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d",
+            "status": "LITERAL_STRUCTURE_VERIFIED_FOR_CAPTURE",
+            "verdict": "ALLOW"
+          },
+          "OWNER_APPROVAL": {
+            "decided_by": "PROFILE:PERFIL-OWNER-RULE-LF",
+            "independence_attested": false,
+            "owner_approval_binding_sha256": "85061056df0b2557c0bcc3f117043b7e01956687c40856bcfcca0cc8141de50c",
+            "promotion_id": "PROM-TEST",
+            "status": "APPROVED"
+          },
+          "OWNER_VERIFY": {
+            "independence_attested": false,
+            "owner_approval_binding_sha256": "85061056df0b2557c0bcc3f117043b7e01956687c40856bcfcca0cc8141de50c",
+            "owner_approval_receipt_sha256": "d80ad2f2602d742441d0c5a3d17483b2d3dc39d7010d7fea1387ff0484384b1a",
+            "owner_execution_id": "EXEC-OWNER-L11B-001",
+            "owner_profile_code": "PERFIL-OWNER-RULE-LF",
+            "status": "VERIFIED_PROFILE_OWNER"
+          },
+          "PIN": {
+            "case_binding_sha256": "888757f89f0abdd1e967aebf60cea201b0f68de3ecdb494b1f6163291c2d6c8c",
+            "case_id": "K00E813F0",
+            "exact_citation_capture_binding_sha256": "667c1de7d365c6ef1aeff23ca02f6550ba1feafe567fb72ac285b515a1b3910f",
+            "ig_external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+            "independence_attested": false,
+            "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "rule_snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d",
+            "status": "REAL_VERDICT_ALLOW_VERIFIED",
+            "verdict": "ALLOW"
+          },
+          "QUALITY": {
+            "authenticated_human_authority_attested": false,
+            "blocking_codes": [],
+            "classification": "AUTO_APPROVABLE",
+            "dependency_sha256": "dfead5ca2af9e20ef76cf4d2b9fd991939e66d01cac70e0cc234ee1fd3f2e914",
+            "deterministic_receipt_generated": true,
+            "independent_semantic_judge_attested": false,
+            "judge_actor": "LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1",
+            "owner_name": "LF_GOVERNANCE",
+            "promotion_id": "PROM-TEST",
+            "request_execution_id": "EXEC-PARENT-TEST-001",
+            "request_snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d",
+            "requester_profile": "PERFIL-PRODUCT-DIRECTOR-LF",
+            "rule_code": "REG_SEG_004",
+            "schema_version": "LF_RULE_PROMOTION_QUALITY_JUDGE_V1",
+            "scope_verified": true,
+            "security_policy_set_sha256": "1d5b665180e4f210d1b9433c4c430effb764b33de466e0769c136c91870e7723",
+            "source_current": true,
+            "source_decision_sha256": "79c43e478f2aafb991ff28851746e563c53528b6d16c20b21e6b97dd63734ce7",
+            "source_snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d"
+          },
+          "QUALITY_READBACK": {
+            "family": "IDENTIDAD_SEGURIDAD",
+            "next_review_at": "2027-02-10T00:00:00+00:00",
+            "quality": "VIGENTE",
+            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "source": "VIGENTE",
+            "ticket": "CONSUMED"
+          },
+          "READBACK": {
+            "estado": "VIGENTE",
+            "rule_code": "REG_SEG_004",
+            "snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654"
+          },
+          "REQUEST": {
+            "next_action": "Requiere lf_rule_promotion_governed_decide_v1 y evidencia determinista; HUMAN solo ante autoridad real",
+            "promotion_id": "PROM-TEST",
+            "snapshot_sha256": "1f40b7497ef123e243bf89f1d3ba3aebc2f95abc023b164e398f6256c110f16d",
+            "status": "PENDING_GOVERNED_DECISION"
+          },
+          "ROLLED_BACK": {
+            "activation_tickets": 0,
+            "lf_quality_rows": 0,
+            "lf_source_rows": 0
+          },
+          "SOURCE": {
+            "case_id": "K00E813F0",
+            "case_sha256": "8772a68a51c376236e20c31e60c0db8d11f9bc71297ccf5d56adc9fa2bd24508",
+            "source_artifact_sha256": "8c68c29651fa363183ab7063dd3366e21a2ada395c6e37ffdca7a8f9804169fa",
+            "status": "SOURCE_FROZEN"
+          },
+          "WRAPPED": {
+            "family_code": "IDENTIDAD_SEGURIDAD",
+            "gate": {
+              "independence_attested": false,
+              "profile_return_status": "READY",
+              "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+              "readback_status": "VERIFIED",
+              "rule_code": "REG_SEG_004",
+              "status": "APPLIED"
+            },
+            "next_review_at": "2027-02-10T00:00:00+00:00",
+            "owner_role": "lf_owner_role",
+            "profile_return": {
+              "blind_case_binding_sha256": "888757f89f0abdd1e967aebf60cea201b0f68de3ecdb494b1f6163291c2d6c8c",
+              "estado": "VIGENTE",
+              "ig_external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+              "owner_approval_binding_sha256": "85061056df0b2557c0bcc3f117043b7e01956687c40856bcfcca0cc8141de50c",
+              "owner_execution_id": "EXEC-OWNER-L11B-001",
+              "owner_profile_code": "PERFIL-OWNER-RULE-LF",
+              "profile_return_contract": "EXISTING_PROFILE_CONTINUATION_NO_NEW_TRANSPORT",
+              "promotion_id": "PROM-TEST",
+              "readback_receipt_sha256": "8ff383d92ab7f339a5053982a8c6fb037e1c9225287a9254e58ff8f77daf2ab4",
+              "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+              "readback_verified": true,
+              "rule_code": "REG_SEG_004",
+              "status": "READY"
+            },
+            "project_code": "lf",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T00:00:00+00:00",
+            "rule_code": "REG_SEG_004",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "GATE_MD5_UNCHANGED",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      }
+    ],
+    "environment": "CLEAN_ISOLATED_POSTGRES18",
+    "gate_md5_after": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "gate_md5_before": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "global_authority": "UNVERIFIED_NO_GO",
+    "provenance": "MECHANICAL_ONLY_SYNTHETIC_L11B_NOT_OFFICIAL",
+    "rollback_mechanical": true,
+    "saly_same_functions": true,
+    "schema_version": "LF_L14_SANDBOX_QUALITY_WRAPPER_PG18_V1",
+    "supabase_live_mutations": 0
+  },
+  "original_runtime_file_sha256": "71919fdb72ac63801ed7ed398cca116285166315c7fdd3e3e1f4115da5ebf11b",
+  "limitations": [
+    "L11B uses synthetic positive authority-like evidence; it is NOT official native IG/owner attestation",
+    "Role identity based on PostgreSQL session_user in sandbox only",
+    "Product authentication binding pending",
+    "Production test and DDL/DML not authorized"
+  ]
+}
