@@ -202,7 +202,7 @@ jobs:
           print("L20_MIGRATION_REVERSAL_PASS_AND_LIVE_NO_GO")
           print("L20_FROZEN_GATE_MD5_PASS",json.dumps(md5,sort_keys=True))
           PY
-      - name: Verify L24 closure receipts: 3 scenarios, forged identity, append-only and hash tamper
+      - name: Verify L24 closure receipts with 3 scenarios and adversarial hash tests
         shell: bash
         run: |
           set -euo pipefail
