@@ -18,7 +18,7 @@
     "no_change_reviewed": 4
   },
   "governance": "NO_GO_UNVERIFIED",
-  "field_semantics": "registro_propuesto.estado=CANDIDATO conceptual; for change same codigo must not be inserted or replace VIGENTE without governed successor",
+  "field_semantics": "NUEVA estado=CANDIDATO; CAMBIO registro_propuesto.estado=CANDIDATO conceptual sin insertar/actualizar VIGENTE; REVISADA_SIN_CAMBIO conserva estado VIGENTE y texto/config intactos.",
   "owner_pending": [
     "CONFIRMACION_BLOQUEO_CANCELACION_EN_PROCESO",
     "LEGAL_CANCELAR_VENCIDA",
@@ -392,7 +392,7 @@
           "raw_dni_or_full_account_data_in_notification": "DENY",
           "sensitive_financial_detail_in_unauthenticated_preview": "DENY_BY_DEFAULT"
         },
-        "estado": "CANDIDATO"
+        "estado": "VIGENTE"
       },
       "familia_propuesta": "CONTENIDO_COMUNICACIONES",
       "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
@@ -458,7 +458,7 @@
           "no_emitir_en": "monto_inicial",
           "momento_emision": "ultima_cuota_pagada"
         },
-        "estado": "CANDIDATO"
+        "estado": "VIGENTE"
       },
       "familia_propuesta": "CHECKOUT_PAGOS",
       "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
