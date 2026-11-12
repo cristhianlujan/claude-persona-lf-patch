@@ -320,7 +320,7 @@ def main():
  synthetic=sum(r["status"]=="SINTETICO" for s in SCENARIOS for r in s["board"])
  untested=sum(r["status"]=="NO_PROBADO" for s in SCENARIOS for r in s["board"])
  assert len(SCENARIOS)==3 and real+synthetic+untested==36
- assert len(CASES)==2+1+3+8+len(ROLES)*len(TABLES), len(CASES)
+ assert len(CASES)==3+3+7+len(ROLES)*len(TABLES), len(CASES)
  report={"schema_version":"LF_LOTE26_MEASURED_INTEGRATION_PG18_V1",
   "status":"SANDBOX_VERIFIED","production":"NO_GO_UNVERIFIED",
   "scenario_count":3,"cases":CASES,"case_count":len(CASES),"scenarios":SCENARIOS,
