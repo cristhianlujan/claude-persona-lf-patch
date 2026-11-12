@@ -92,3 +92,12 @@ GRANT EXECUTE ON FUNCTION quality_propose_correction(text,text,text,text,jsonb) 
  lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
 GRANT EXECUTE ON FUNCTION quality_apply_envelope(text,text,text,text) TO
  lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
+
+-- Explicit schema search_path for L13 STABLE selectors when invoked outside L13.
+-- These are quality read-only functions, NOT frozen promotion gates.
+ALTER FUNCTION list_review_due(text,timestamptz)
+ SET search_path=rule_quality_l13,pg_temp;
+ALTER FUNCTION find_noncurrent_references(text)
+ SET search_path=rule_quality_l13,pg_temp;
+ALTER FUNCTION find_parameter_differences(text)
+ SET search_path=rule_quality_l13,pg_temp;
