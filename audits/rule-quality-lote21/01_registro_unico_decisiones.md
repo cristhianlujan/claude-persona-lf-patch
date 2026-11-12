@@ -1,17 +1,18 @@
 # LOTE 21 — Registro único de decisiones del dueño
 
-**32 decisiones, 32 PENDIENTE; 12 L16 + 8 L19 + 12 L21.** Cada sugerencia es no vinculante. La firma documental NO ejecuta ni autoriza DML/DDL, activación ni RUN.
+**32 decisiones, 3 DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA, 1 RECOMENDADA_SIN_CONFIRMAR, 28 PENDIENTE; 0 FIRMADAS; 12 L16 + 8 L19 + 12 L21.** Cada sugerencia es no vinculante. La firma documental NO ejecuta ni autoriza DML/DDL, activación ni RUN.
 
 ## Nota de trazabilidad Q01
-L16 original: A=promover, B=mantener y C=quitar referencia. El dueño cambió expresamente la convención **C=dejar**, por lo que L21 remapea B=quitar, C=dejar. No se reescribe ni falsifica el original.
+L16 original: A=promover, B=mantener y C=quitar referencia. El dossier L21 registró la convención **C=dejar**, pero **el dueño no confirmó la recomendación C**. L27 registra RECOMENDADA_SIN_CONFIRMAR. Se conserva el origen L16 sin reescribirlo. No se reescribe ni falsifica el original.
 
 ### L16-Q01 — ¿Se puede operar MFA mientras AUTH-018 continúa CANDIDATO?
-- Prioridad **P1** · bloqueo `B01_MFA` · **PENDIENTE**.
+- Prioridad **P1** · bloqueo `B01_MFA` · **RECOMENDADA_SIN_CONFIRMAR**.
 - **Opciones:** A=promover AUTH-018 tras prueba completa; B=quitar referencia solo con sustituto equivalente aprobado; C=dejar AUTH-022→AUTH-018 como dependencia identificada, fail-closed, sin promoción.
-- **SUGERENCIA:** C (instrucción actual del dueño): dejar referencia y gate identificado, sin promover. Para promover AUTH-018: SAML/IdP administradores probado, Brevo OTP correo probado incluyendo entrega y validación servidor, ADR-003 spike M1 decidido, política de factor ID 19 VIGENTE, y prueba de que ningún AUTHENTICATED ni permiso precede a MFA. Se informó 11 reglas MFA CANDIDATO; este lote no certifica conteo exacto..
+- **REGISTRO L27:** **RECOMENDACIÓN C NO CONFIRMADA.** Dejar AUTH-022→AUTH-018 identificada sin promoción; ninguna firma ni elección del dueño. Mantener fail-closed, candidata MFA y pruebas pendientes.
+- **SUGERENCIA:** C (RECOMENDADA_SIN_CONFIRMAR): dejar referencia y gate identificado, sin promover. Para promover AUTH-018: SAML/IdP administradores probado, Brevo OTP correo probado incluyendo entrega y validación servidor, ADR-003 spike M1 decidido, política de factor ID 19 VIGENTE, y prueba de que ningún AUTHENTICATED ni permiso precede a MFA. Se informó 11 reglas MFA CANDIDATO; este lote no certifica conteo exacto.
 - **Firmante:** DUEÑO LF + Seguridad/Owner (identidad no acreditada aún).
 - **Evidencia:** L16 S03 SHA256 8b70da4a3d3b381620473202de4a569d4b09fcfda6b3973e81661c3d2631b46a; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a; L21 S21_03 SHA256 3cff7e13769ed846a69c274f88e4f89cabea989a13c2c6488a6e7acc0ca371ee; 11 candidatas MFA = declaración verificada por dueño, no retesteada.
-- **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
+- **Calificación:** DECLARACION_DUENO_EN_CONVERSACION / REQUIERE_REVISION_SEMANTICA; ver L25 y CSV; **FIRMA FORMAL: NO_ACREDITADA**. Evidencia histórica permanece referenciada.
 
 ### L19-Q01 — ¿Qué RUN integran exactamente la cohorte 32 frente a los 232 vivos en SQL?
 - Prioridad **P1** · bloqueo `B02_RUN_SCOPE` · **PENDIENTE**.
@@ -208,34 +209,38 @@ L16 original: A=promover, B=mantener y C=quitar referencia. El dueño cambió ex
 ### L16-Q02 — ¿Cuál es el ledger/snapshot canónico para pagos, cuotas y conciliación?
 - Prioridad **P6** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
 - **Opciones:** A=reutilizar estructura acreditada; B=diseñar canónico gobernado; C=usar DEMO.
+- **REGISTRO L27:** **ALCANCE DETERMINADO POR DUEÑO, OPCIÓN DE LEDGER PENDIENTE:** construcción de ledger asignada a Producto/QA, fuera de Input Governance. No hay selección A/B ni implementación acreditada. L22 únicamente documentó requisitos.
 - **SUGERENCIA:** A si existe; B si se prueba que falta; nunca C.
 - **Firmante:** DUEÑO LF + Arquitectura/Finanzas (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
-- **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
+- **Calificación:** DECLARACION_DUENO_EN_CONVERSACION / REQUIERE_REVISION_SEMANTICA; ver L25 y CSV; **FIRMA FORMAL: NO_ACREDITADA**. Evidencia histórica permanece referenciada.
 
 ### L16-Q03 — ¿Qué proveedor de pago y frontera PCI están habilitados en producción?
-- Prioridad **P6** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
+- Prioridad **P6** · bloqueo `B10_BUSINESS` · **DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA**.
 - **Opciones:** A=aprobar binding con QA; B=mantener pago bloqueado; C=usar credenciales/branding DEMO.
-- **SUGERENCIA:** B hasta contratos, callbacks y evidencia.
+- **REGISTRO L27:** **DECISIÓN DEL DUEÑO EN CONVERSACIÓN — OPCIÓN A:** Niubiz es el proveedor unico de recaudo, tarjeta y Yape (opcion A). Para pasar a produccion exige: contrato, callbacks probados, captura de tarjeta solo en componente del proveedor, ledger de Q02, sin credenciales DEMO. **GATE:** esto no habilita producción ni aprueba reglas. Referencia documental L25 13 propuestas CANDIDATO, no promovidas.
+- **SUGERENCIA HISTORICA L21 (no es decisión):** B hasta contratos, callbacks y evidencia.
 - **Firmante:** DUEÑO LF + Pagos/Integraciones/Seguridad (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
-- **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
+- **Calificación:** DECLARACION_DUENO_EN_CONVERSACION / REQUIERE_REVISION_SEMANTICA; ver L25 y CSV; **FIRMA FORMAL: NO_ACREDITADA**. Evidencia histórica permanece referenciada.
 
 ### L16-Q05 — ¿Qué configuración de pricing/quote y elegibilidad es autoridad?
-- Prioridad **P6** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
+- Prioridad **P6** · bloqueo `B10_BUSINESS` · **DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA**.
 - **Opciones:** A=config canónica APROBADO/VIGENTE; B=continuar solo DEMO; C=hardcodear valores.
-- **SUGERENCIA:** B hasta tener A; nunca C.
+- **REGISTRO L27:** **DECISIÓN DEL DUEÑO EN CONVERSACIÓN — OPCIÓN A:** Opcion A: tabla de pricing con historial y vigencias; valor aplicable segun la vigencia; una sola version vigente por fecha, sin solapes ni huecos; si no hay version vigente no se cotiza y no se hace fallback a la anterior; historial inmutable (cerrar y abrir version); plan ya activado conserva snapshot; montos actualizados desde el sistema por actor cuyo perfil tenga permiso de actualizacion. Dependencia: permiso de pricing no existe segun declaracion del dueño; 45 permisos y 0 asignaciones usuario-perfil constan en evidencias historicas L19/L21, 16 resource_type y ausencia de pricing declarados por el dueño (SIN SELECT NUEVO L27). El permiso de actualizar precios será una dependencia de Producto + registro operativo de owners. **No se ejecutó SELECT en L27:** las 16 tipologías de recurso y ausencia de pricing constan por declaración del dueño y requieren readback externo para acreditación independiente.
+- **SUGERENCIA HISTORICA L21 (no es decisión):** B hasta tener A; nunca C.
 - **Firmante:** DUEÑO LF + Producto/Arquitectura (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
-- **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
+- **Calificación:** DECLARACION_DUENO_EN_CONVERSACION / REQUIERE_REVISION_SEMANTICA; ver L25 y CSV; **FIRMA FORMAL: NO_ACREDITADA**. Evidencia histórica permanece referenciada.
 
 ### L16-Q04 — ¿Quién aprueba gracia, vencimiento, mora y terminación recurrente?
-- Prioridad **P7** · bloqueo `B11_LEGAL` · **PENDIENTE**.
+- Prioridad **P7** · bloqueo `B11_LEGAL` · **DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA**.
 - **Opciones:** A=Legal+Negocio formalizan política; B=ocultar claims de mora; C=inferir plazos.
-- **SUGERENCIA:** B mientras se obtiene A; no inventar consecuencias.
+- **REGISTRO L27:** **DECISIÓN DEL DUEÑO EN CONVERSACIÓN (SUBDECISIONES, NO OPCIÓN L16 COMPLETA):** Estados de cuota: PENDIENTE, EN_PROCESO, PAGADA, VENCIDA, CANCELADA; sin gracia: el dia siguiente a la fecha sin pago es VENCIDA; el rechazo por si solo no marca vencida. Corte a medianoche America/Lima. Reconciliar EN_PROCESO con Niubiz en medianoche; si NO_DETERMINADO se conserva EN_PROCESO, se registra excepcion, se escala a humano y se envia alerta por correo con destinatario configurable y sin datos de tarjeta ni nombre del cliente. Cancelacion por cuota o plan completo; EN_PROCESO no se cancela hasta reconciliar; VENCIDA si se puede cancelar. Cancelacion automatica por antiguedad: parametro ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES, valor inicial 12 meses calendario desde fecha cuota; cancela todas las cuotas no pagadas del plan; PAGADA conserva estado; EN_PROCESO espera reconciliacion y reevalua en corrida siguiente. Deuda cancelada = INCOBRABLE, falla cerrada si falta parametro; pantalla de mantenimiento de parametros por Producto, fuera de IG. Siguen ABIERTOS SOLO: reintentos de cobro automatico, recordatorios, mora, destino contable de deuda INCOBRABLE (Negocio/Legal/Finanzas, REQUIERE_REVISION_SEMANTICA). **RESTAN SOLO ESTOS SUBTEMAS:** REINTENTOS_COBRO_AUTOMATICO | RECORDATORIOS | MORA | DESTINO_CONTABLE_DEUDA_INCOBRABLE. No se elige unilateralmente A de la taxonomía original L16 ni se certifican firmas.
+- **SUGERENCIA HISTORICA L21 (no es decisión):** B mientras se obtiene A; no inventar consecuencias.
 - **Firmante:** DUEÑO LF + Legal/Negocio/Operaciones (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
-- **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
+- **Calificación:** DECLARACION_DUENO_EN_CONVERSACION / REQUIERE_REVISION_SEMANTICA; ver L25 y CSV; **FIRMA FORMAL: NO_ACREDITADA**. Evidencia histórica permanece referenciada.
 
 ### L16-Q08 — ¿Qué textos legales, consentimientos y Anexo I pueden publicarse?
 - Prioridad **P7** · bloqueo `B11_LEGAL` · **PENDIENTE**.
@@ -262,3 +267,13 @@ L16 original: A=promover, B=mantener y C=quitar referencia. El dueño cambió ex
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 Las respuestas son campos vacíos del CSV 05. Las decisiones L21 no representan instrucciones de producción sino elección sobre una futura fase autorizable.
+
+## Adenda L27 — Estado de captura y alcance
+
+- Decididas en conversación: **L16-Q03, L16-Q04 (subdecisiones), L16-Q05**. No son firmas, aprobaciones de reglas, operaciones gobernadas ni GO productivo.
+- Recomendación no confirmada: **L16-Q01 MFA C**.
+- Ledger: **L16-Q02 PENDIENTE de alternativa**, construcción Producto/QA fuera de IG.
+- **L16-Q04 conserva exclusivamente 4 subtemas abiertos:** reintentos de cobro automático, recordatorios, mora, destino contable de deuda INCOBRABLE por Negocio/Legal/Finanzas. El tratamiento técnico previo a producción (Niubiz/ledger) es dependencia, no subdecisión nueva del dueño.
+- Restantes: **28 PENDIENTE**; **0 firmas** verificadas. Otras decisiones L19/L21 intactas.
+- Evidencia histórica L21/L19 y L25; este lote **NO EJECUTÓ SELECT** ni PG18. Los 45 permisos y 0 asignaciones provienen de lecturas anteriores; 16 `resource_type` y ausencia de permiso pricing son **afirmación del dueño sin readback SQL en L27**. Consulta reproducible documental en `audits/rule-quality-lote27/02_pricing_permission_select_no_ejecutado.sql`.
+- Juez/autor: **GPT-6, mismo modelo, no independiente**; firma formal del dueño inexistente. **NO-GO / UNVERIFIED.**
