@@ -44,6 +44,8 @@ def run_lf(variant,claim):
     code=l14.l11b.RULE
     curator=owner(claim,"SELECT 'CURATOR|'||rule_quality_l13.l23_curator_evaluate_v1('lf',"+lit(code)+")::text;")
     body=body[:pos]+curator+"\n"+body[pos:]
+    preview=sql("BEGIN;\n"+body[:body.rfind("SET SESSION AUTHORIZATION l17_authenticator;")]+"\nROLLBACK;")
+    print("L23_CURATOR_PREVIEW "+json.dumps({"variant":variant,"verdict":preview.get("CURATOR"),"preparation":preview.get("PREP")},ensure_ascii=False,default=str),flush=True)
     observation="SELECT 'BEFORE_ROLLBACK|'||jsonb_build_object(" + (
       "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo="+lit(code)+"),"+
       "'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(code)+"),"+
