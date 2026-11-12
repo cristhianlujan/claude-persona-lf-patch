@@ -379,4 +379,5 @@ jobs:
             docs/input-governance/L10_REAL_QUOTE_E2E_SANDBOX_TRUST_BOUNDARY_V1.md
             sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote11_honest_synthetic_reachability_runtime.json
+            docs/input-governance/L11_POSITIVE_REACHABILITY_PROVENANCE_LIMIT_V1.md
           if-no-files-found: error
