@@ -241,7 +241,7 @@ def six_negatives(owner_jwt,super_jwt):
    "source + L13 + decisions + tickets all unchanged after exception, no divergent state",after)
  negative("N5_DIRECT_SOURCE_DML_DENIED","lf_owner_role",owner_jwt,
    "UPDATE lf_ops.reglas SET estado='CADUCADA' WHERE codigo='RULE-DEPENDENCY-001';",
-   "permission denied for table reglas")
+   "permission denied for schema lf_ops")
  negative("N5B_SALY_DIRECT_SOURCE_DML_DENIED","saly_owner_role",l17.token("saly","saly-sub-owner-001","saly_owner_role"),
    "UPDATE rule_quality_l13.saly_source_synthetic SET vigente=false WHERE codigo='SALY-L14-NEW';",
    "permission denied for table saly_source_synthetic")
