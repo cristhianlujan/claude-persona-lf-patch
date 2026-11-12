@@ -4,14 +4,14 @@
   "scope_status": "SANDBOX_VERIFIED",
   "production_status": "UNVERIFIED_NO_GO",
   "postgres_version": "18.6 (Debian 18.6-1.pgdg13+2)",
-  "run_id": 43284078200,
-  "job_id": 131412696674,
-  "source_commit": "f2874821669ad352fb00ced0f2334028103d251a",
-  "run_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43284078200",
+  "run_id": 43284490129,
+  "job_id": 131414140727,
+  "source_commit": "a12a5171d32870e6a1201f56abdee3be4dfa1e4a",
+  "run_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43284490129",
   "input_sql_sha256": [
     {
       "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/01_schema.sql",
-      "sha256": "4e36d7297e9cbe85a0d63d8bf2a7919e23cd91f4b96e9860a596b9a636dd05f6"
+      "sha256": "3c955e96a3995716a9509ce1020ee75f6743527e6165eff8e8f92ec218f96cbf"
     },
     {
       "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/02_seed_synthetic.sql",
@@ -23,7 +23,7 @@
     },
     {
       "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/04_birth_expiry_tests.sql",
-      "sha256": "f87a86dc86f845a703e316cd21c132d938ef4c214dc137f6b1e52298e21ef6ff"
+      "sha256": "01f791b28a7701c004da9132e00d881b59eef707d5a56abd2fbdff20fd660bef"
     }
   ],
   "results_sha256_compact": "fc26aaa665974af2f7674664f24d682220869bda69532b6b77c6b2664a7c5eff",
@@ -343,5 +343,6 @@
     "Valores sintéticos de 578 LF y 14 SALY, no datos productivos",
     "Actor passed as sandbox argument; production must bind to authenticated server context and restrict direct DML",
     "No migration, no Supabase live DDL/DML, no merge, no gate changes"
-  ]
+  ],
+  "result_revision_note": "After model refactor: family_birth_requests and propose_family_birth now belong in 01_schema.sql; 04 file holds tests only; PG18 rerun 28/28."
 }
