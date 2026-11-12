@@ -35,3 +35,17 @@ AS $stub$
   'page',p_page,'size',p_size,'pending',
   (SELECT count(*) FROM public.lf_rule_promotion_v1 WHERE status='PENDING'));
 $stub$;
+
+-- Existing native IG Validator API signatures required by L4B preflight.
+-- Test-only stubs. Their existence does NOT attest a native #3682 receipt.
+CREATE OR REPLACE FUNCTION public.fn_input_governance_semantic_packet_v1(
+ p_run_id bigint,p_identity text,p_handoff bigint,p_ticket uuid)
+RETURNS jsonb LANGUAGE sql STABLE AS $stub$
+ SELECT jsonb_build_object('status','L15_PG18_STUB_NOT_NATIVE_IG');
+$stub$;
+CREATE OR REPLACE FUNCTION public.fn_input_governance_semantic_external_receipt_readback_v1(
+ p_run_id bigint,p_identity text,p_handoff bigint,p_ticket uuid,p_candidate text DEFAULT NULL)
+RETURNS jsonb LANGUAGE sql STABLE AS $stub$
+ SELECT jsonb_build_object('status','L15_PG18_STUB_NOT_NATIVE_IG',
+  'official_write_authorized',false,'promotion_authorized',false);
+$stub$;
