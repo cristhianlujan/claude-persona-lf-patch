@@ -577,7 +577,10 @@
         ]
       },
       "sin_valor_o_invalido": "FALLA_CERRADA_NO_CANCELAR_NADA_Y_ALERTAR",
-      "estado": "PROPUESTA_NO_REGISTRADA"
+      "estado": "CANDIDATO",
+      "registro_operativo": "NO_EXISTE_EN_LF_OPS_REGLAS_G25_07",
+      "campo_de_parametro": "CONFIGURACION_DE_PRODUCTO_PENDIENTE_DE_IMPLEMENTAR",
+      "validacion_rango": "OBLIGATORIA_PERO_LIMITES_NO_DECIDIDOS"
     }
   ]
 }
