@@ -24,5 +24,11 @@
   "native_ig_receipt": false,
   "owner_profile_authority_attested": false,
   "allowed_test_mode": "PG18_ROLLBACK_ONLY",
-  "comparator": "L4C frozen case base_rule.description/proposal.description; L7 ≥40 Unicode chars and ≥6 whitespace-separated words, no Unicode normalization"
+  "comparator": "L4C frozen case base_rule.description/proposal.description; L7 ≥40 Unicode chars and ≥6 whitespace-separated words, no Unicode normalization",
+  "reviewer_model": "ChatGPT",
+  "reviewer_model_source": "OWNER_DECLARED_NOT_SYSTEM_ATTESTED",
+  "reviewer_model_system_attestation": false,
+  "reviewer_model_same_as_ig_and_owner": true,
+  "review_independence": "CONSISTENCY_NOT_INDEPENDENCE",
+  "reviewer_owner_declaration_note": "User declares ChatGPT processed IG, owner profile, and five blind reviews; owner statement only, not an authenticated model/provider receipt."
 }
