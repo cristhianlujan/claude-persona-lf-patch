@@ -66,7 +66,7 @@ READBACK y ROLLBACK de escenarios PG18
 | N7 | Negativo | DML directo a dictámenes desde rol owner → 42501 |
 | N8 | Negativo | Candidato cambiado después de aceptación → stale SHA, bloqueo |
 
-**Estado de las pruebas:** se determinará mediante GitHub Actions real; este documento describe contrato, no afirma PASS.
+**Resultado real de la última CI:** 17/17 controles PASS en PostgreSQL 18 aislado; GitHub Actions #43313398467, commit probado 612014b0d91d3082becad3c9ae6a134b319f4f54. A_NEW acredita solo Curator y preparación (sin apply posterior en esa secuencia); B_CORRECTED prueba Curator seguido del gate LF, y SALY usa apply sintético. Dictamen independiente/productivo NO_PROBADO. Evidencia detallada en 02_resultados_pg18.md.
 
 ## Invariantes / riesgos
 - **Gates congelados PG18** (MD5 a comparar antes/después): apply `86b0494984edf95cf0f9c0a0df67000b`, capture_record `89cbfac4162dbc9f8ecca59f2c3ab4c3`, citation_verify `773a62783baa5edbe967200cac66b8c3`, L8 `522d12f0843be1da3c785cef3c0bf3fc`.
