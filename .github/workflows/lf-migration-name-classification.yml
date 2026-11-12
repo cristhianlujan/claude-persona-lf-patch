@@ -373,4 +373,5 @@ jobs:
             docs/input-governance/L9_REVIEW_PASS1_CHAT_EXPORT_LITERAL_CAPTURE_MEASUREMENT_V1.md
             sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote10_e2e_truthful_12_stage_runtime.json
+            docs/input-governance/L10_REAL_QUOTE_E2E_SANDBOX_TRUST_BOUNDARY_V1.md
           if-no-files-found: error
