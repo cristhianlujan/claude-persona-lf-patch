@@ -284,6 +284,20 @@ SELECT 'AFTER_ROLLBACK|'||jsonb_build_object(
       "SALY no real L7/L8, no false IG attestation",board)
     return {"scenario":"C_SALY_NEW","board":board,"readback":out,
             "reality":"SALY_SYNTHETIC_ADAPTER_NOT_NATIVE"}
+def test_owner_intent_requires_prior_capture(lf_owner):
+    # Fail-closed proof: JWT owner cannot approve a rule merely because a
+    # promotion record and family exist; L7 exact citation must be verified.
+    code=l14.l11b.RULE
+    prepare=("SELECT 'PREP|'||rule_quality_l13.quality_prepare_new_v2('lf',"
+      +lit(code)+",'IDENTIDAD_SEGURIDAD')::text;\n"
+      "SELECT rule_quality_l13.l18_owner_intent_v1('lf',"+lit(code)+",'PROM-TEST');")
+    script="BEGIN;\n"+l14.l11b.setup("POSITIVE")+"\n"+owner_session(lf_owner,prepare)+"\nROLLBACK;"
+    result=sql(script,fail=True)
+    check("G1_OWNER_INTENT_REQUIRES_VERIFIED_L7_FIRST",
+      "BLOCK_L18_OWNER_WITHOUT_VERIFIED_CAPTURE" in result["stderr"],
+      "JWT owner intent without frozen L7 verified capture must be blocked",
+      {"error":result["stderr"].splitlines()[0],"exit":result["exit_code"]})
+
 def negatives(lf_owner,lf_super):
     # All six are in the same PG18 runner and reference L18 source/role contracts.
     negs=[
@@ -337,6 +351,7 @@ def main():
     outputB=integrated_lf("B_CORRECTED",lf)
     outputS=saly_new_cycle(saly)
     negatives(lf,lf_super)
+    test_owner_intent_requires_prior_capture(lf)
     after=l14.l11b.md5s()
     check("MD5_FROZEN_AFTER",before==after==EXPECTED,EXPECTED,after)
     report={
