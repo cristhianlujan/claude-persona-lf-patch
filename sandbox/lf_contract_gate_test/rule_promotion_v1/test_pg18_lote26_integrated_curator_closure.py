@@ -44,6 +44,11 @@ def bootstrap():
   "L13/L14/L17/L18/L20 and exact L23/L24 imported SQL + L26 bridge in clean PG18",{"database":DB})
 def prelude_lf(token,corrected=False,with_curator=True):
  p=l20.prelude_lf(token,corrected)
+ if not corrected:
+  # ONLY disposable A_NEW fixture: neutralize a different active rule's
+  # conflicting keys BEFORE creating request/gate snapshot. No L23 logic
+  # weakened. B_CORRECTED retains real conflict and signed owner lineage.
+  p="UPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo='RULE-DEPENDENCY-001';\n"+p
  if with_curator:
   position=p.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
   if position<0 or "SELECT 'WRAP|'" not in p[position:]:
