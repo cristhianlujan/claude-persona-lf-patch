@@ -1,0 +1,509 @@
+{
+  "schema_version": "LF_L25_INSTALLMENT_RULE_PROPOSALS_V1",
+  "type": "DOCUMENTARY_PROPOSALS_ONLY",
+  "not_authorized": [
+    "INSERT",
+    "UPDATE",
+    "DELETE",
+    "DDL",
+    "PRODUCTION",
+    "PROMOTION",
+    "GATE_EDITS"
+  ],
+  "base_ref": "48f1e316d81c83ca2f880372a3a050b456c6b3ab",
+  "source": "lf_ops.reglas SELECT live + owner literal decisions L25",
+  "count": {
+    "new": 4,
+    "changes": 4,
+    "no_change_reviewed": 4
+  },
+  "governance": "NO_GO_UNVERIFIED",
+  "field_semantics": "registro_propuesto.estado=CANDIDATO conceptual; for change same codigo must not be inserted or replace VIGENTE without governed successor",
+  "owner_pending": [
+    "CONFIRMACION_BLOQUEO_CANCELACION_EN_PROCESO",
+    "LEGAL_CANCELAR_VENCIDA",
+    "FORMATO_ARCHIVO_NIUBIZ",
+    "LEDGER_Q02",
+    "CONTRATO_PROVEEDOR_NIUBIZ",
+    "REINTENTOS_MORA_RECORDATORIOS"
+  ],
+  "rules": [
+    {
+      "id": "L25-01",
+      "tipo": "NUEVA_PROPUESTA",
+      "origen_decision": "B",
+      "codigo_objetivo": null,
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_STATUS_025",
+        "categoria": "pago",
+        "titulo": "Estados de cuota y vencimiento sin gracia a medianoche Lima",
+        "descripcion": "Cada cuota nace PENDIENTE. EN_PROCESO identifica un intento de cobro abierto; PAGADA exige pago confirmado y es final; CANCELADA es final. VENCIDA se determina por la fecha contractual: sin pago confirmado, pasa a VENCIDA al comenzar el día siguiente al vencimiento, a las 00:00 hora America/Lima; un rechazo de cobro por sí solo no produce VENCIDA. Durante la reconciliación de medianoche, un resultado NO_DETERMINADO constituye la excepción explícita: permanece EN_PROCESO con registro, alerta y escalamiento según su regla específica.",
+        "valor_config": {
+          "estados": [
+            "PENDIENTE",
+            "EN_PROCESO",
+            "PAGADA",
+            "VENCIDA",
+            "CANCELADA"
+          ],
+          "estado_inicial": "PENDIENTE",
+          "en_proceso_si": "INTENTO_COBRO_ABIERTO",
+          "pagada_si": "PAGO_CONFIRMADO",
+          "estados_finales": [
+            "PAGADA",
+            "CANCELADA"
+          ],
+          "vencida_si": "FECHA_LOCAL_ACTUAL_MAYOR_QUE_FECHA_CUOTA_Y_SIN_PAGO_CONFIRMADO",
+          "gracia": false,
+          "corte_local": "00:00",
+          "timezone": "America/Lima",
+          "rechazo_solo_no_vencida": true,
+          "excepcion_reconciliacion": "NO_DETERMINADO_CONSERVA_EN_PROCESO"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-02",
+      "tipo": "NUEVA_PROPUESTA",
+      "origen_decision": "C",
+      "codigo_objetivo": null,
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_MIDNIGHT_RECON_025",
+        "categoria": "pago",
+        "titulo": "Conciliación de cuotas EN_PROCESO al corte 00:00 Lima",
+        "descripcion": "A las 00:00 de America/Lima el proceso revisa todas las cuotas EN_PROCESO y concilia cada intento con información o archivo Niubiz. CONFIRMADO actualiza a PAGADA. RECHAZADO actualiza a VENCIDA únicamente si ya pasó su fecha contractual, o PENDIENTE si no pasó. NO_DETERMINADO por proveedor sin respuesta, referencia ausente, referencia duplicada en el archivo o monto que no coincide conserva EN_PROCESO; se registra como excepción, se escala a un humano y se envía la alerta de excepción. La conciliación es idempotente. El formato real del archivo Niubiz no está identificado y exige revisión semántica antes de implementación.",
+        "valor_config": {
+          "proveedor": "NIUBIZ",
+          "fuente_conciliacion": "DATA_O_ARCHIVO_NIUBIZ",
+          "formato_fuente": "DESCONOCIDO_REQUIERE_REVISION_SEMANTICA",
+          "corte_local": "00:00",
+          "timezone": "America/Lima",
+          "cuotas_objetivo_estado": "EN_PROCESO",
+          "resultado_confirmado": "PAGADA",
+          "resultado_rechazado_con_fecha_pasada": "VENCIDA",
+          "resultado_rechazado_con_fecha_no_pasada": "PENDIENTE",
+          "resultado_no_determinado": "EN_PROCESO_CON_EXCEPCION_ALERTA_Y_ESCALAMIENTO",
+          "no_determinado_motivos": [
+            "PROVEEDOR_NO_RESPONDE",
+            "REFERENCIA_AUSENTE",
+            "REFERENCIA_DUPLICADA_EN_ARCHIVO",
+            "MONTO_NO_COINCIDE"
+          ],
+          "idempotente": true
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-03",
+      "tipo": "NUEVA_PROPUESTA",
+      "origen_decision": "C",
+      "codigo_objetivo": null,
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_RECON_ALERT_025",
+        "categoria": "notificacion",
+        "titulo": "Alerta por correo para excepción NO_DETERMINADO de cuotas",
+        "descripcion": "Cuando la conciliación de medianoche no determina el resultado de una cuota EN_PROCESO, debe registrar la excepción, escalarla a una persona y enviar correo con detalle de cuota, referencia, monto, fecha y motivo. El destinatario se obtiene de un parámetro configurable, nunca de una dirección fija en la regla. El correo no incluye datos de tarjeta ni nombre del cliente. Esta alerta operativa de excepción no define recordatorios de vencimiento.",
+        "valor_config": {
+          "evento": "RECONCILIACION_NO_DETERMINADA",
+          "canal": "CORREO",
+          "destinatario": "PARAMETRO_CONFIGURABLE_SIN_VALOR",
+          "campos_detalle": [
+            "cuota",
+            "referencia",
+            "monto",
+            "fecha",
+            "motivo"
+          ],
+          "datos_prohibidos": [
+            "datos_tarjeta",
+            "nombre_cliente"
+          ],
+          "escalamiento": "HUMANO",
+          "registra_excepcion": true,
+          "no_equivale_recordatorio": true
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CONTENIDO_COMUNICACIONES",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-04",
+      "tipo": "NUEVA_PROPUESTA",
+      "origen_decision": "D",
+      "codigo_objetivo": null,
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_CANCELLATION_025",
+        "categoria": "pago",
+        "titulo": "Cancelación de cuota o plan con estados finales y pendientes",
+        "descripcion": "La cancelación puede solicitarse para una cuota o para el plan completo. Los estados PAGADA y CANCELADA son finales y no cambian. Para EN_PROCESO se propone bloquear la cancelación hasta reconciliar el intento, pero esta restricción es un SUPUESTO PENDIENTE DE CONFIRMACIÓN DEL DUEÑO. La posibilidad de cancelar una cuota VENCIDA permanece PENDIENTE_DE_LEGAL y no se resuelve aquí. No se definen políticas de mora, reintentos ni recordatorios.",
+        "valor_config": {
+          "alcances": [
+            "CUOTA",
+            "PLAN_COMPLETO"
+          ],
+          "estados_que_no_cambian": [
+            "PAGADA",
+            "CANCELADA"
+          ],
+          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO_NO_HASTA_RECONCILIAR",
+          "cancelacion_vencida": "PENDIENTE_DE_LEGAL",
+          "mora": "NO_DEFINIDA",
+          "reintentos": "NO_DEFINIDOS",
+          "recordatorios": "NO_DEFINIDOS"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-05",
+      "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+      "origen_decision": "A",
+      "codigo_objetivo": "REG_NIU_001",
+      "registro_base": {
+        "codigo": "REG_NIU_001",
+        "categoria": "niubiz",
+        "titulo": "Niubiz como gateway de pago principal",
+        "descripcion": "Niubiz es el gateway de pago principal del producto para el mercado peruano. Toda transacción de pago pasa por Niubiz. No se implementan otros gateways en el MVP.",
+        "valor_config": {
+          "gateway": "Niubiz",
+          "mercado": "Peru",
+          "otros_gateways_mvp": false
+        },
+        "estado": "VIGENTE"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_NIU_001",
+        "categoria": "niubiz",
+        "titulo": "Niubiz como gateway de pago principal",
+        "descripcion": "Niubiz es el proveedor único de recaudo del producto para el mercado peruano, incluyendo cobros con tarjeta y con Yape. Toda transacción de recaudo se procesa por Niubiz; no se implementan otros gateways en el MVP. Esta regla no define si Yape permite cobros recurrentes ni su modalidad para cuotas futuras.",
+        "valor_config": {
+          "gateway": "Niubiz",
+          "mercado": "Peru",
+          "otros_gateways_mvp": false,
+          "alcance_proveedor_unico": [
+            "RECAUDO",
+            "TARJETA",
+            "YAPE"
+          ],
+          "exclusividad_recaudo": "NIUBIZ_UNICO_PROVEEDOR"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_SUCEDE_RV",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-06",
+      "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+      "origen_decision": "B_C",
+      "codigo_objetivo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+      "registro_base": {
+        "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+        "categoria": "pago",
+        "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+        "descripcion": "Un intento de cobro de una cuota reutiliza los outcomes normalizados de pago. PAYMENT_CONFIRMED marca esa cuota como pagada. PAYMENT_DECLINED_CONFIRMED mantiene la cuota sin pagar y puede habilitar una acción de recuperación/manual solo si backend lo permite. PAYMENT_PENDING_CONFIRMATION mantiene la cuota en estado de confirmación y bloquea nuevos intentos hasta reconciliar. PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT no constituye rechazo del cliente ni pago fallido confirmado. Ninguno de estos estados técnicos, por sí solo, marca la cuota como vencida o en mora: esa clasificación depende exclusivamente de la fecha contractual y de una política de gracia/mora gobernada.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "payment_ledger": "PENDING_CANONICAL_PAYMENT_PLAN_LEDGER",
+          "source_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "PAYMENT_CONFIRMED": "MARK_TARGET_INSTALLMENT_PAID",
+          "overdue_authority": "CONTRACTUAL_SCHEDULE_PLUS_CANONICAL_GRACE_POLICY",
+          "decline_marks_overdue": "DENY_WITHOUT_CONTRACTUAL_DUE_POLICY",
+          "PAYMENT_DECLINED_CONFIRMED": "KEEP_UNPAID_ALLOW_RECOVERY_ACTION_ONLY_IF_SERVER_ENABLED",
+          "grace_or_delinquency_policy": "PENDING_BUSINESS_LEGAL_POLICY",
+          "PAYMENT_PENDING_CONFIRMATION": "KEEP_CONFIRMING_BLOCK_ALL_NEW_ATTEMPTS",
+          "technical_failure_marks_overdue": "DENY",
+          "manual_recovery_payment_rule_code": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT": "KEEP_UNPAID_ALLOW_CONTROLLED_RETRY_LATER"
+        },
+        "estado": "VIGENTE"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+        "categoria": "pago",
+        "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+        "descripcion": "Un intento de cobro de una cuota reutiliza los outcomes normalizados de pago. PAYMENT_CONFIRMED marca esa cuota como pagada. PAYMENT_DECLINED_CONFIRMED mantiene la cuota sin pagar y puede habilitar una acción de recuperación/manual solo si backend lo permite. PAYMENT_PENDING_CONFIRMATION mantiene la cuota en estado de confirmación y bloquea nuevos intentos hasta reconciliar. PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT no constituye rechazo del cliente ni pago fallido confirmado. Ninguno de estos estados técnicos, por sí solo, marca la cuota como vencida o en mora: el estado VENCIDA depende de la fecha contractual sin gracia: al día siguiente a las 00:00 de America/Lima si no existe pago confirmado. La política de mora sigue pendiente y no se define aquí. Si la reconciliación es NO_DETERMINADO, la excepción permanece EN_PROCESO hasta resolverla.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "payment_ledger": "PENDING_CANONICAL_PAYMENT_PLAN_LEDGER",
+          "source_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "PAYMENT_CONFIRMED": "MARK_TARGET_INSTALLMENT_PAID",
+          "overdue_authority": "CONTRACTUAL_DUE_DATE_NO_GRACE_AMERICA_LIMA",
+          "decline_marks_overdue": "DENY_REJECTION_ALONE_ONLY_DUE_DATE",
+          "PAYMENT_DECLINED_CONFIRMED": "KEEP_UNPAID_ALLOW_RECOVERY_ACTION_ONLY_IF_SERVER_ENABLED",
+          "grace_or_delinquency_policy": "NO_GRACE_FOR_VENCIDA_MORA_PENDING",
+          "PAYMENT_PENDING_CONFIRMATION": "KEEP_CONFIRMING_BLOCK_ALL_NEW_ATTEMPTS",
+          "technical_failure_marks_overdue": "DENY",
+          "manual_recovery_payment_rule_code": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT": "KEEP_UNPAID_ALLOW_CONTROLLED_RETRY_LATER",
+          "undetermined_midnight_exception": "KEEP_EN_PROCESO_ESCALATE_AND_ALERT"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_SUCEDE_RV",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-07",
+      "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+      "origen_decision": "D",
+      "codigo_objetivo": "REG_CHK_CUO_006",
+      "registro_base": {
+        "codigo": "REG_CHK_CUO_006",
+        "categoria": "checkout",
+        "titulo": "Cancelación del plan sin penalidades",
+        "descripcion": "El usuario puede cancelar el cobro recurrente del plan en cuotas en cualquier momento. No hay penalidades por cancelación anticipada. Esta condición debe estar visible en la pantalla de checkout antes del pago.",
+        "valor_config": {
+          "posicion": "bajo_checkbox_autorizacion",
+          "penalidad": false,
+          "texto_visible": "Podrás cancelar tu plan cuando lo necesites. Sin penalidades.",
+          "cancelacion_permitida": true
+        },
+        "estado": "VIGENTE"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CHK_CUO_006",
+        "categoria": "checkout",
+        "titulo": "Cancelación del plan sin penalidades",
+        "descripcion": "Se mantiene la cancelación del plan en cuotas sin penalidades y su visibilidad antes del pago. El texto actual «en cualquier momento» requiere conciliarse con una restricción PROPUESTA, NO APROBADA: si una cuota está EN_PROCESO, no cancelar hasta reconciliar. La cancelación de VENCIDA permanece PENDIENTE_DE_LEGAL. El copy final requiere revisión y aprobación del dueño; no se publica esta redacción.",
+        "valor_config": {
+          "posicion": "bajo_checkbox_autorizacion",
+          "penalidad": false,
+          "texto_visible": "Podrás cancelar tu plan cuando lo necesites. Sin penalidades.",
+          "cancelacion_permitida": true,
+          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO",
+          "cancelacion_cuota_vencida": "PENDIENTE_DE_LEGAL",
+          "texto_visible_estado": "PENDIENTE_REVISION_NO_PUBLICAR"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_SUCEDE_RV",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-08",
+      "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+      "origen_decision": "D",
+      "codigo_objetivo": "REG_CHK_014",
+      "registro_base": {
+        "codigo": "REG_CHK_014",
+        "categoria": "checkout",
+        "titulo": "Cancelación del plan sin penalidades",
+        "descripcion": "El usuario puede cancelar el cobro recurrente de su plan en cualquier momento desde \"Mis operaciones\". La cancelación no genera penalidades. La carta de no adeudo se emite solo cuando la deuda está totalmente cancelada.",
+        "valor_config": {
+          "desde": "Mis operaciones",
+          "penalidades": false,
+          "carta_no_adeudo": "al_cancelar_totalmente",
+          "cancelacion_permitida": true
+        },
+        "estado": "VIGENTE"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CHK_014",
+        "categoria": "checkout",
+        "titulo": "Cancelación del plan sin penalidades",
+        "descripcion": "La cancelación del cobro recurrente del plan se solicita desde Mis operaciones y no genera penalidades. El alcance «en cualquier momento» necesita validación del dueño cuando haya cuota EN_PROCESO: se propone esperar su reconciliación, aún no aprobado. Cancelar una cuota VENCIDA sigue PENDIENTE_DE_LEGAL. La carta de no adeudo solo corresponde a deuda totalmente cancelada.",
+        "valor_config": {
+          "desde": "Mis operaciones",
+          "penalidades": false,
+          "carta_no_adeudo": "al_cancelar_totalmente",
+          "cancelacion_permitida": true,
+          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO",
+          "cancelacion_cuota_vencida": "PENDIENTE_DE_LEGAL"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "PENDIENTE_APROBACION_DUENO_Y_SUCEDE_RV",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA"
+    },
+    {
+      "id": "L25-09",
+      "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+      "origen_decision": "C",
+      "codigo_objetivo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+      "registro_base": {
+        "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+        "categoria": "notificacion",
+        "titulo": "Recordatorios operativos de cuotas pendientes",
+        "descripcion": "Los recordatorios de una cuota pendiente se generan únicamente desde un plan activo y su cronograma contractual. Son comunicaciones operativas del plan, no marketing, y no requieren consent_marketing. La política exacta de anticipación, frecuencia y canales debe ser configurable y no se infiere de reglas antiguas de vencimiento de ofertas. El mensaje no puede inventar montos o fechas y debe evitar exponer detalles financieros sensibles en superficies no autenticadas más allá de lo autorizado por la futura política de comunicación.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "channel_policy": "PENDING_CANONICAL_NOTIFICATION_CHANNEL_POLICY",
+          "trigger_source": "ACTIVATED_PLAN_SNAPSHOT_PLUS_PAYMENT_LEDGER",
+          "schedule_policy": "PENDING_CANONICAL_DUE_REMINDER_POLICY",
+          "notification_type": "OPERATIONAL",
+          "hardcoded_24h_before": "DENY",
+          "requires_active_plan": true,
+          "authenticated_destination": "MY_OPERATIONS_PENDING_CANONICAL_ROUTE",
+          "existing_candidate_limits": [
+            "REG_NOT_005",
+            "REG_NOT_006"
+          ],
+          "amount_and_due_date_source": "ACTIVATED_PLAN_SNAPSHOT",
+          "marketing_consent_required": false,
+          "requires_pending_installment": true,
+          "existing_candidate_channel_rule": "REG_NOT_001",
+          "existing_candidate_template_rule": "REG_NOT_004",
+          "raw_dni_or_full_account_data_in_notification": "DENY",
+          "sensitive_financial_detail_in_unauthenticated_preview": "DENY_BY_DEFAULT"
+        },
+        "estado": "VIGENTE"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+        "categoria": "notificacion",
+        "titulo": "Recordatorios operativos de cuotas pendientes",
+        "descripcion": "Los recordatorios de una cuota pendiente se generan únicamente desde un plan activo y su cronograma contractual. Son comunicaciones operativas del plan, no marketing, y no requieren consent_marketing. La política exacta de anticipación, frecuencia y canales debe ser configurable y no se infiere de reglas antiguas de vencimiento de ofertas. El mensaje no puede inventar montos o fechas y debe evitar exponer detalles financieros sensibles en superficies no autenticadas más allá de lo autorizado por la futura política de comunicación.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "channel_policy": "PENDING_CANONICAL_NOTIFICATION_CHANNEL_POLICY",
+          "trigger_source": "ACTIVATED_PLAN_SNAPSHOT_PLUS_PAYMENT_LEDGER",
+          "schedule_policy": "PENDING_CANONICAL_DUE_REMINDER_POLICY",
+          "notification_type": "OPERATIONAL",
+          "hardcoded_24h_before": "DENY",
+          "requires_active_plan": true,
+          "authenticated_destination": "MY_OPERATIONS_PENDING_CANONICAL_ROUTE",
+          "existing_candidate_limits": [
+            "REG_NOT_005",
+            "REG_NOT_006"
+          ],
+          "amount_and_due_date_source": "ACTIVATED_PLAN_SNAPSHOT",
+          "marketing_consent_required": false,
+          "requires_pending_installment": true,
+          "existing_candidate_channel_rule": "REG_NOT_001",
+          "existing_candidate_template_rule": "REG_NOT_004",
+          "raw_dni_or_full_account_data_in_notification": "DENY",
+          "sensitive_financial_detail_in_unauthenticated_preview": "DENY_BY_DEFAULT"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CONTENIDO_COMUNICACIONES",
+      "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA",
+      "motivo_sin_cambio": "Recordatorios y su frecuencia/canal quedan sin definir; alerta de excepción es una regla separada."
+    },
+    {
+      "id": "L25-10",
+      "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+      "origen_decision": "A",
+      "codigo_objetivo": "REG_CHK_CUO_003",
+      "registro_base": {
+        "codigo": "REG_CHK_CUO_003",
+        "categoria": "checkout",
+        "titulo": "Yape disponible solo para monto inicial",
+        "descripcion": "Yape está habilitado para pagar el monto inicial únicamente. Las cuotas siguientes no pueden cobrarse por Yape. La configuración del cobro recurrente de cuotas para usuarios que pagaron con Yape está pendiente de definición. RESUELTO 2026-07-12 con investigacion externa (Niubiz/pasarelasdepagos.com): Yape/QR NO soporta debito automatico real -- solo tarjeta con token guardado (Niubiz Wallet) permite cobro recurrente sin accion del usuario. Yape SI puede usarse para cuotas pero el pago es MANUAL cada mes (usuario debe volver a pagar, con recordatorio WhatsApp antes del vencimiento). SOLUCION: campo configurable por aliado B2B \"acepta_yape_en_cuotas\" (boolean) -- si false, cuotas 2+ solo aceptan tarjeta; si true, se ofrece Yape con flujo de pago manual mensual + recordatorio.",
+        "valor_config": {
+          "yape_habilitado_para": "monto_inicial_unicamente",
+          "cuotas_recurrentes_yape": "pendiente_definicion"
+        },
+        "estado": "CANDIDATO"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CHK_CUO_003",
+        "categoria": "checkout",
+        "titulo": "Yape disponible solo para monto inicial",
+        "descripcion": "Yape está habilitado para pagar el monto inicial únicamente. Las cuotas siguientes no pueden cobrarse por Yape. La configuración del cobro recurrente de cuotas para usuarios que pagaron con Yape está pendiente de definición. RESUELTO 2026-07-12 con investigacion externa (Niubiz/pasarelasdepagos.com): Yape/QR NO soporta debito automatico real -- solo tarjeta con token guardado (Niubiz Wallet) permite cobro recurrente sin accion del usuario. Yape SI puede usarse para cuotas pero el pago es MANUAL cada mes (usuario debe volver a pagar, con recordatorio WhatsApp antes del vencimiento). SOLUCION: campo configurable por aliado B2B \"acepta_yape_en_cuotas\" (boolean) -- si false, cuotas 2+ solo aceptan tarjeta; si true, se ofrece Yape con flujo de pago manual mensual + recordatorio.",
+        "valor_config": {
+          "yape_habilitado_para": "monto_inicial_unicamente",
+          "cuotas_recurrentes_yape": "pendiente_definicion"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA",
+      "motivo_sin_cambio": "Niubiz único proveedor no decide cobro recurrente Yape ni recordatorios; contratos actuales siguen pendientes de aclaración."
+    },
+    {
+      "id": "L25-11",
+      "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+      "origen_decision": "D",
+      "codigo_objetivo": "REG_CHK_CUO_009",
+      "registro_base": {
+        "codigo": "REG_CHK_CUO_009",
+        "categoria": "checkout",
+        "titulo": "Carta de no adeudo se emite al cancelar la deuda total",
+        "descripcion": "En el contexto de cuotas, la carta de no adeudo se emite cuando el usuario completa el pago total del plan (última cuota). No se emite al pagar el monto inicial. El texto dice: \"Se emitirá al confirmar la cancelación total de tu deuda.\"",
+        "valor_config": {
+          "texto_ui": "Se emitirá al confirmar la cancelación total de tu deuda.",
+          "no_emitir_en": "monto_inicial",
+          "momento_emision": "ultima_cuota_pagada"
+        },
+        "estado": "VIGENTE"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CHK_CUO_009",
+        "categoria": "checkout",
+        "titulo": "Carta de no adeudo se emite al cancelar la deuda total",
+        "descripcion": "En el contexto de cuotas, la carta de no adeudo se emite cuando el usuario completa el pago total del plan (última cuota). No se emite al pagar el monto inicial. El texto dice: \"Se emitirá al confirmar la cancelación total de tu deuda.\"",
+        "valor_config": {
+          "texto_ui": "Se emitirá al confirmar la cancelación total de tu deuda.",
+          "no_emitir_en": "monto_inicial",
+          "momento_emision": "ultima_cuota_pagada"
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA",
+      "motivo_sin_cambio": "La Carta de No Adeudo tras pago total no se equipara a cancelación de cuota/plan."
+    },
+    {
+      "id": "L25-12",
+      "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+      "origen_decision": "A",
+      "codigo_objetivo": "REG_CHK_011",
+      "registro_base": {
+        "codigo": "REG_CHK_011",
+        "categoria": "checkout",
+        "titulo": "Yape en cuotas — cobros recurrentes pendiente de definir",
+        "descripcion": "Yape está disponible para pagar el monto inicial del plan en cuotas. El mecanismo para cobrar las cuotas siguientes cuando el usuario pagó con Yape está pendiente de confirmación con el aliado y la plataforma. RESUELTO 2026-07-12 con investigacion externa (Niubiz/pasarelasdepagos.com): Yape/QR NO soporta debito automatico real -- solo tarjeta con token guardado (Niubiz Wallet) permite cobro recurrente sin accion del usuario. Yape SI puede usarse para cuotas pero el pago es MANUAL cada mes (usuario debe volver a pagar, con recordatorio WhatsApp antes del vencimiento). SOLUCION: campo configurable por aliado B2B \"acepta_yape_en_cuotas\" (boolean) -- si false, cuotas 2+ solo aceptan tarjeta; si true, se ofrece Yape con flujo de pago manual mensual + recordatorio.",
+        "valor_config": {
+          "monto_inicial": "disponible",
+          "cuotas_siguientes": "PENDIENTE_DEFINICION",
+          "opciones_posibles": [
+            "recordatorio_whatsapp_con_link_pago",
+            "solicitar_tarjeta_adicional_para_recurrencia"
+          ]
+        },
+        "estado": "CANDIDATO"
+      },
+      "registro_propuesto": {
+        "codigo": "REG_CHK_011",
+        "categoria": "checkout",
+        "titulo": "Yape en cuotas — cobros recurrentes pendiente de definir",
+        "descripcion": "Yape está disponible para pagar el monto inicial del plan en cuotas. El mecanismo para cobrar las cuotas siguientes cuando el usuario pagó con Yape está pendiente de confirmación con el aliado y la plataforma. RESUELTO 2026-07-12 con investigacion externa (Niubiz/pasarelasdepagos.com): Yape/QR NO soporta debito automatico real -- solo tarjeta con token guardado (Niubiz Wallet) permite cobro recurrente sin accion del usuario. Yape SI puede usarse para cuotas pero el pago es MANUAL cada mes (usuario debe volver a pagar, con recordatorio WhatsApp antes del vencimiento). SOLUCION: campo configurable por aliado B2B \"acepta_yape_en_cuotas\" (boolean) -- si false, cuotas 2+ solo aceptan tarjeta; si true, se ofrece Yape con flujo de pago manual mensual + recordatorio.",
+        "valor_config": {
+          "monto_inicial": "disponible",
+          "cuotas_siguientes": "PENDIENTE_DEFINICION",
+          "opciones_posibles": [
+            "recordatorio_whatsapp_con_link_pago",
+            "solicitar_tarjeta_adicional_para_recurrencia"
+          ]
+        },
+        "estado": "CANDIDATO"
+      },
+      "familia_propuesta": "CHECKOUT_PAGOS",
+      "estado_gobierno": "SIN_CAMBIO_EN_ESTE_LOTE",
+      "clasificacion": "REQUIERE_REVISION_SEMANTICA",
+      "motivo_sin_cambio": "Niubiz único proveedor no decide cobro recurrente Yape ni recordatorios; contratos actuales siguen pendientes de aclaración."
+    }
+  ]
+}
