@@ -37,7 +37,7 @@ def main():
     ids_match=set(ids)=={c["id"] for c in blind["cases"]}
     labels_match=all(expected.get(c["id"])==c["verdict"] for c in entries)
     exact_quotes_captured=sum(c["exact_excerpt"] is not None for c in entries)
-    fixture_is_user_supplied=fixture["fixture_label"]=="CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT"
+    fixture_is_user_supplied=fixture["fixture_label"]=="REVIEW_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT_MODEL_UNATTESTED"
     assert_case("REAL_USER_VERDICTS_MATCH_BLIND_SET_NOT_INDEPENDENCE",
       len(entries)==154 and len(set(ids))==154 and ids_match and labels_match
       and counts=={"ALLOW":24,"BLOCK":130}
@@ -74,7 +74,7 @@ def main():
       IF x.observed_hash IS DISTINCT FROM v OR v IS DISTINCT FROM p_expected_hash THEN
         RETURN jsonb_build_object('status','BLOCKED','code','CLAUDE_AUDITOR_FIXTURE_HASH_DRIFT',
           'promotable',false); END IF;
-      IF x.provenance IS DISTINCT FROM 'CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT'
+      IF x.provenance IS DISTINCT FROM 'REVIEW_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT_MODEL_UNATTESTED'
        OR x.exact_excerpt IS NOT NULL OR x.citation_status IS DISTINCT FROM 'UNVERIFIED_NOT_CAPTURED' THEN
         RETURN jsonb_build_object('status','BLOCKED','code','L6_FIXTURE_PROVENANCE_INVALID',
           'promotable',false); END IF;
@@ -195,7 +195,7 @@ def main():
         "step40_causality":"UNVERIFIED_NO_STEP40_INVOCATION"})
 
     print("LF_L6_UNCITED_USER_VERDICT_FIXTURE_PG18_PASS checks="+str(N),flush=True)
-    print("CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT=true REAL_CITATIONS=UNVERIFIED_NOT_CAPTURED",flush=True)
+    print("REVIEW_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT_MODEL_UNATTESTED=true REAL_CITATIONS=UNVERIFIED_NOT_CAPTURED",flush=True)
     print("USER_FIXTURE_AUTO_PROMOTIONS=0 NATIVE_MODEL_CALLS=0 JUDGE_ADDED=0 READONLY_HISTORIC_RUNS=true",flush=True)
 
 if __name__=="__main__":
