@@ -137,6 +137,8 @@
 | `REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001` | `schedule_policy=PENDING_CANONICAL_DUE_REMINDER_POLICY` | No contradice alerta humana por excepción: recordatorios de cliente son otra función. | NO CAMBIO / mantener pendientes canales y plazos. |
 | `REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001` | outcomes autoritativos y bloqueo mientras confirmación pendiente | Compatible en principio con reconciliación, pero necesita mapping Niubiz real. | Sin cambio; contrato del proveedor y ledger pendientes. |
 
+**Búsqueda adicional G25_06:** encontró exactamente `REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001`, `REG_CHK_CUO_006` y `REG_CHK_014` en VIGENTE con los patrones de gracia/cancelación elegidos. Es un SELECT dirigido, NO prueba exhaustiva de ausencia de otros conflictos.
+
 **Señales estructurales G25_02:** `REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001` frente L25-06, `REG_CHK_020` y `REG_CHK_CUO_008` frente L25-07, y `REG_CHK_017` frente L25-11. Los dos del checkout provienen de claves compartidas con **significados distintos** (p. ej. `posicion`); no elevar a conflicto semántico sin justificar.
 
 ## Dependencias de adopción / gates de gobierno
@@ -158,9 +160,10 @@
 |---|---:|---|---|
 | `G25_01` | 5 | `e062cf7af6d929a44d5ea5d07e85e8da7fe37905fa24bd559734ae83c490aa68` | Conteos por categoría/estado |
 | `G25_02` | 12 | `596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39` | 12 comparaciones Curator (código/duplicados/keys/L13) |
-| `G25_03` | 16 | `a0aebc613bd8a8358bec8d9a3ee9801ee3a22301cd8ffa75ac73129784a80107` | 16 reglas relacionadas para detectar contradicciones |
+| `G25_03` | 16 | `f4b5c23c1e0087b398a4439ecfb413f6789d1597d02d94a2a4789b0e2fe8bb06` | 16 reglas relacionadas para detectar contradicciones |
 | `G25_04` | 5 | `615577b24d8da32f8e8a6118ab859427fda83eaefc42e5b79bbaa266d8a2f48c` | MD5 de funciones legadas que están en vivo |
 | `G25_05` | 8 | `69562194551fcc4776e191ad35ea533d170869f3314a0cfac1dd0286a705cfb6` | 8 SHA-256 por preimagen literal |
+| `G25_06` | 3 | `ccde80ceaafe4aa2568e204e33220fbad2d0cfc76a9f83a6eadae7508d61660f` | Búsqueda acotada de 3 contradicciones VIGENTE por patrones de gracia/cancelación |
 
 **MD5 de gates:** en Supabase vivo G25_04 se ve `public.lf_rule_promotion_apply_v1` LEGADA md5 `d7fe763c999db6f6259b6b1e2bd69644`; no es el gate PG18 nuevo. Los cuatro MD5 PG18 inalterados fueron verificados en L23 (ejecución anterior; **NO se reejecutaron en L25**): apply `86b0494984edf95cf0f9c0a0df67000b`, capture `89cbfac4162dbc9f8ecca59f2c3ab4c3`, citation `773a62783baa5edbe967200cac66b8c3`, L8 `522d12f0843be1da3c785cef3c0bf3fc`. Ningún SQL de gates se edita desde esta rama.
 
