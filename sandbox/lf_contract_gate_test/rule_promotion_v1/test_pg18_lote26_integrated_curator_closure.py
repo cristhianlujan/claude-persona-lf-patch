@@ -45,10 +45,12 @@ def bootstrap():
 def prelude_lf(token,corrected=False,with_curator=True):
  p=l20.prelude_lf(token,corrected)
  if not corrected:
-  # ONLY disposable A_NEW fixture: neutralize a different active rule's
-  # conflicting keys BEFORE creating request/gate snapshot. No L23 logic
-  # weakened. B_CORRECTED retains real conflict and signed owner lineage.
-  p="UPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo='RULE-DEPENDENCY-001';\n"+p
+  # ONLY disposable A_NEW fixture: change the *CANDIDATO* configuration
+  # before frozen request/snapshot creation; never mutate a VIGENTE rule.
+  # The L17 source immutability trigger remains fully enabled.
+  marker="FROM lf_ops.reglas WHERE codigo='RULE-TEST-001';"
+  if marker not in p:raise AssertionError("A_NEW_SQL_SEED_MARKER_MISSING")
+  p=p.replace(marker,marker+"\nUPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo="+lit(CODE)+";",1)
  if with_curator:
   position=p.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
   if position<0 or "SELECT 'WRAP|'" not in p[position:]:
