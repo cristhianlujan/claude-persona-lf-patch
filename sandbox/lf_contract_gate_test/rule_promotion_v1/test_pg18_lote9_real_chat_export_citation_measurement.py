@@ -242,6 +242,29 @@ def main():
        "details_allow_short": [d for d in details if d["id"] in ("K00C8E827","K00CF241C","K0113B7A3")],
        "details_create": [d for d in details if d["id"] in ("K00D56011","K01216EBE")],
        "details_last":details[-3:]})
+    runtime_report={
+      "schema_version":"LF_L9_PG18_CHAT_EXPORT_MEASUREMENT_V1",
+      "fixture_label":meta["fixture_label"],
+      "model_attestation":meta["reviewer_provenance"],
+      "export_sha256":meta["expected_sha256"],
+      "case_results_sha256":hashlib.sha256(json.dumps(
+         details,ensure_ascii=False,sort_keys=True).encode("utf-8")).hexdigest(),
+      "pg18_rollback":True,
+      "mock_step70_not_native_receipt":True,
+      "owner_profile_approval_attested":False,
+      "automatic_promotion_count":0,
+      "diagnostic":dict(diag),
+      "actual_gate":dict(stats),
+      "md5_l7_l8":fn,
+      "rows":details}
+    artifact=HERE/"lote9_pass1_citation_measurement_runtime.json"
+    artifact.write_text(json.dumps(runtime_report,ensure_ascii=False,
+                                   indent=2,sort_keys=True)+"\\n",encoding="utf-8")
+    print("RAW_L9_REPORT_FILE "+json.dumps({
+      "path":str(artifact.relative_to(HERE.parent.parent.parent)),
+      "rows":len(details),
+      "sha256":hashlib.sha256(artifact.read_bytes()).hexdigest(),
+      "uploaded_as_ci_artifact":True},sort_keys=True),flush=True)
     print("RAW_L9_ALL_154_CASE_RESULTS "+json.dumps(details,ensure_ascii=False,sort_keys=True),flush=True)
     print("LF_L9_CHAT_EXPORT_PG18_PASS checks=4 cases=154",flush=True)
     print("REVIEWER_CHAT_EXPORT_MODEL_UNATTESTED=true REAL_REVIEW_PASS1_CHAT_EXPORT_NOT_NATIVE_IG_RECEIPT=true",flush=True)
