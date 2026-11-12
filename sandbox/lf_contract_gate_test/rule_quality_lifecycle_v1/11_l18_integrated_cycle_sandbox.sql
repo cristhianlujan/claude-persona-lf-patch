@@ -75,7 +75,7 @@ END $f$;
 CREATE FUNCTION l18_owner_intent_v1(p_project text,p_rule text,p_promotion text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path=rule_quality_l13,pg_temp AS $f$
-DECLARE v_actor text;v_identity jsonb;v_state text;
+DECLARE v_actor text;v_identity jsonb;v_state text;v_capture jsonb;v_ig jsonb;
 BEGIN
  v_identity:=l17_verify_signed_claim_v2(p_project);
  v_actor:=v_identity->>'actor_code';
@@ -86,6 +86,16 @@ BEGIN
  IF p_project='lf' AND NOT EXISTS (SELECT 1 FROM public.lf_rule_promotion_v1
     WHERE promotion_id=p_promotion AND rule_code=p_rule) THEN
    RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L18_OWNER_INTENT_PROMOTION_MISMATCH';
+ END IF;
+ IF p_project='lf' THEN
+   v_capture:=public.lf_rule_promotion_citation_verify_v1(p_promotion);
+   IF v_capture->>'status' IS DISTINCT FROM 'VERIFIED_CAPTURE_BINDING' THEN
+     RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='BLOCK_L18_OWNER_WITHOUT_VERIFIED_CAPTURE';
+   END IF;
+   v_ig:=public.lf_rule_promotion_ig_semantic_verify_v1(p_promotion);
+   IF v_ig->>'status' IS DISTINCT FROM 'READY_FOR_PROFILE_APPROVAL' THEN
+     RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='BLOCK_L18_OWNER_WITHOUT_READY_IG';
+   END IF;
  END IF;
  INSERT INTO l18_owner_intents(project_code,rule_code,promotion_id,owner_actor,owner_sub,decision)
  VALUES(p_project,p_rule,p_promotion,v_actor,v_identity->>'sub','APPROVE_SANDBOX_PROPOSAL');
