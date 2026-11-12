@@ -1,0 +1,70 @@
+{
+  "lote": 22,
+  "mode": "INPUT_GOVERNANCE_READONLY_REQUIREMENTS",
+  "state": "DOCS_VERIFIED_PRODUCT_UNVERIFIED",
+  "branch": "lf/issue-3779-lote22-ledger-requirements-v1",
+  "base": "c8863e93700bc776a2a49d1b0953a219ee4571ae",
+  "head_before_manifest": "bbab7b9de4f338c09872f8b03ec7b2085120733b",
+  "paths_changed_at_readback": [
+    "docs/rule-quality-lote22/01_reglas_y_requisitos_trazados.json",
+    "docs/rule-quality-lote22/02_checklist_aceptacion_producto_qa.md",
+    "docs/rule-quality-lote22/03_dictamen_gobernanza_y_readback.md"
+  ],
+  "scope_only_docs": true,
+  "new_sql_files": 0,
+  "new_pg18_tests": 0,
+  "ledger_tables_or_triggers_created": 0,
+  "supabase_mutations": 0,
+  "CI_run_l22": "NOT_RUN_BY_SCOPE",
+  "inventory": {
+    "reg_client_all_vigente": 65,
+    "vigente_pending_decision": 57,
+    "relevant_rules": 36,
+    "tech_group_L16": 21,
+    "tech_direct_ledger": 9,
+    "tech_shared_dependencies": 5,
+    "tech_non_ledger": 7,
+    "unique_acceptance_capabilities": 22,
+    "unchecked_qa_items": 75
+  },
+  "rule_quote_checks": {
+    "all_exact_from_description": true,
+    "every_quote_max_15_words": true,
+    "count": 36
+  },
+  "source_state_changes": 0,
+  "rule_governance_decision": "PROPOSAL_MANTENER_VIGENTE_CON_DEPENDENCIA; Q02_OPTION_B_Q03_Q04_OWNER_PENDING",
+  "files": [
+    {
+      "path": "docs/rule-quality-lote22/01_reglas_y_requisitos_trazados.json",
+      "git_blob_sha": "993bb89e24e282fb6421cc6554e97eb6740bf512",
+      "sha256_utf8": "0b91e03bcc1fd6d6c52e74b0de133a8fbb339b981dbe0cc823ecbd5587c28741",
+      "utf8_bytes": 37774
+    },
+    {
+      "path": "docs/rule-quality-lote22/02_checklist_aceptacion_producto_qa.md",
+      "git_blob_sha": "e9e8ad30b428e3a432f7dd68d71aa7cbd883e000",
+      "sha256_utf8": "60042ea417513572ac29cde6d9a92bf28f3a11c9da8c63b18262973626b74015",
+      "utf8_bytes": 14840
+    },
+    {
+      "path": "docs/rule-quality-lote22/03_dictamen_gobernanza_y_readback.md",
+      "git_blob_sha": "522f98fa6af610656e53373955d8daddc55f94da",
+      "sha256_utf8": "f6f73b27d277fde0ba86e890aabbb4d9e68da5696ddaf71e6997665cd7856c2e",
+      "utf8_bytes": 17924
+    }
+  ],
+  "gate_md5_pg18_L20_baseline_not_reexecuted": {
+    "apply": "86b0494984edf95cf0f9c0a0df67000b",
+    "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+    "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+    "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+  },
+  "live_supabase_read_only_observation": {
+    "public_lf_rule_promotion_apply_v1_md5": "d7fe763c999db6f6259b6b1e2bd69644",
+    "other_exact_baseline_gate_signatures_found_in_public": false,
+    "interpretation": "DIFFERENT_ENVIRONMENT_NOT_IN_SCOPE_TO_RECONCILE"
+  },
+  "sha256_method": "UTF-8 SHA-256, known-answer abc self-tested",
+  "conclusion": "NO_GO_UNVERIFIED; ONLY_PRODUCT_CAN_BUILD_LEDGER"
+}
