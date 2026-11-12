@@ -1,0 +1,78 @@
+name: LF L15 admission and rollback sandbox PostgreSQL 18
+on:
+  push:
+    branches:
+      - lf/issue-3779-lote15-adoption-rollback-v1
+    paths:
+      - "sandbox/lf_contract_gate_test/lote15_adoption_rollback_v1/**"
+      - ".github/workflows/l15-rule-adoption-rollback-pg18.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lf-l15-sandbox-pg18
+  cancel-in-progress: false
+jobs:
+  precommit-rollback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: "127.0.0.1"
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PG client only if absent
+        shell: bash
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y postgresql-client
+          fi
+          psql -X -At -d postgres -c 'SHOW server_version;' | tee pg18_version.txt
+      - name: PG18 isolated 7-stage catalog identity (NOT live undo)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/lote15_adoption_rollback_v1/test_pg18_lote15_adoption_rollback.py | tee l15_pg18_raw.log
+      - name: Preserve exact source checksums
+        if: always()
+        shell: bash
+        run: |
+          sha256sum supabase/migrations/20261111182000_lf_rule_promotion_deterministic_judge_governed_v1.sql \
+          supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql \
+          supabase/migrations/20261111212500_lf_rule_promotion_profile_owner_authority_v1.sql \
+          supabase/migrations/20261111224500_lf_rule_promotion_real_verdict_profile_return_v1.sql \
+          supabase/migrations/20261111235500_lf_rule_promotion_exact_citation_capture_v1.sql \
+          supabase/migrations/20261112004000_lf_rule_promotion_citation_reuse_scoped_v2.sql \
+          sandbox/lf_contract_gate_test/lote15_adoption_rollback_v1/pinned_l13/*.sql \
+          > l15_source_sha256.txt
+      - name: Archive PG18 RAW + catalog hashes even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-l15-adoption-rollback-pg18-raw
+          path: |
+            pg18_version.txt
+            l15_pg18_raw.log
+            l15_source_sha256.txt
+            sandbox/lf_contract_gate_test/lote15_adoption_rollback_v1/01_inventory.json
+            sandbox/lf_contract_gate_test/lote15_adoption_rollback_v1/l15_adoption_rollback_runtime.json
+          if-no-files-found: warn
+          retention-days: 14
