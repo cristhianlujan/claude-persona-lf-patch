@@ -4,7 +4,7 @@
   "mode": "SELECT_ONLY",
   "only_pg18_fixture_family_map": true,
   "family_registry_verified_live": false,
-  "source_rule_proposal_file_blob": "f51ac5fa39b9c066b03a15e3ec684eacd7079430",
+  "source_rule_proposal_file_blob": "d3d1fb7e537e74b17c2d5ba0e993ea7e77e3eac7",
   "probes": [
     {
       "id": "G25_01",
@@ -728,5 +728,7 @@
   "G25_06_scope": "keyword pattern search only; not exhaustive proof of absent contradictions",
   "addendum": "E_F_INCLUDED_13_PROPOSALS_1_PARAMETER",
   "parameter_registration_state": "PROPOSED_NOT_PERSISTED",
-  "addendum_g25_07_09": "G25_07 confirms only literal code references in lf_ops.reglas; other parameter storage not certified. G25_08 scans 8 implicated rules; G25_09 scans explicit INCOBRABLE text/config."
+  "addendum_g25_07_09": "G25_07 confirms only literal code references in lf_ops.reglas; other parameter storage not certified. G25_08 scans 8 implicated rules; G25_09 scans explicit INCOBRABLE text/config.",
+  "parameter_document_file": "06_parametro_antiguedad_candidato.json",
+  "result_scope": "13 candidate rule propositions + 1 separate candidate configuration parameter, no writes"
 }
