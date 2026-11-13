@@ -1,0 +1,132 @@
+{
+  "as_of_utc": "2026-11-13T08:21:46.706817Z",
+  "closure": "BASELINE_ONLY_NOT_G08_CLOSURE",
+  "functions": [
+    {
+      "acl_raw": "{postgres=X/postgres,service_role=X/postgres}",
+      "attributes": {
+        "leakproof": false,
+        "owner_role": "postgres",
+        "parallel": "UNSAFE",
+        "proconfig": [
+          "search_path=pg_catalog, public, extensions"
+        ],
+        "returns_set": false,
+        "security_definer": true,
+        "strict": false,
+        "volatility": "VOLATILE"
+      },
+      "effective_execute": {
+        "anon": false,
+        "authenticated": false,
+        "service_role": true
+      },
+      "identity_arguments": "p_ids text[]",
+      "md5_pg_get_functiondef": "4e98f486f5ff65b596e5999f22cc8dde",
+      "name": "lf_rule_promotion_apply_batch_v1",
+      "return_type": "jsonb",
+      "schema": "public",
+      "sha256_pg_get_functiondef": "84c0305efa32ec1a65a46a97f38dd26ec6200b971bc137b8794807d18c328123",
+      "signature": "lf_rule_promotion_apply_batch_v1(text[])"
+    },
+    {
+      "acl_raw": "{postgres=X/postgres,service_role=X/postgres}",
+      "attributes": {
+        "leakproof": false,
+        "owner_role": "postgres",
+        "parallel": "UNSAFE",
+        "proconfig": [
+          "search_path=pg_catalog, public, extensions"
+        ],
+        "returns_set": false,
+        "security_definer": true,
+        "strict": false,
+        "volatility": "VOLATILE"
+      },
+      "effective_execute": {
+        "anon": false,
+        "authenticated": false,
+        "service_role": true
+      },
+      "identity_arguments": "p_ids text[], p_decision text, p_decided_by text, p_note text",
+      "md5_pg_get_functiondef": "6cdf2aa9a03c6abc7315b7ebc9d2f3ce",
+      "name": "lf_rule_promotion_decide_batch_v1",
+      "return_type": "jsonb",
+      "schema": "public",
+      "sha256_pg_get_functiondef": "088c3ba50683b50c301b3e3879f7163ca318bd8fae755275df0ef4ec4c56e4d5",
+      "signature": "lf_rule_promotion_decide_batch_v1(text[],text,text,text)"
+    },
+    {
+      "acl_raw": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "attributes": {
+        "leakproof": false,
+        "owner_role": "postgres",
+        "parallel": "UNSAFE",
+        "proconfig": [
+          "search_path=pg_catalog, public, extensions"
+        ],
+        "returns_set": false,
+        "security_definer": true,
+        "strict": false,
+        "volatility": "VOLATILE"
+      },
+      "effective_execute": {
+        "anon": true,
+        "authenticated": true,
+        "service_role": true
+      },
+      "identity_arguments": "",
+      "md5_pg_get_functiondef": "ee782e4bd0128c80ee13881899c0d74e",
+      "name": "lf_rule_promotion_guard_v1",
+      "return_type": "trigger",
+      "schema": "public",
+      "sha256_pg_get_functiondef": "0b3d4115865aa768b1d4e1facccbbbf8befd3c0ab42d841b9989be7bfebeb14f",
+      "signature": "lf_rule_promotion_guard_v1()"
+    },
+    {
+      "acl_raw": "{postgres=X/postgres,service_role=X/postgres}",
+      "attributes": {
+        "leakproof": false,
+        "owner_role": "postgres",
+        "parallel": "UNSAFE",
+        "proconfig": [
+          "search_path=pg_catalog, public, extensions"
+        ],
+        "returns_set": false,
+        "security_definer": true,
+        "strict": false,
+        "volatility": "VOLATILE"
+      },
+      "effective_execute": {
+        "anon": false,
+        "authenticated": false,
+        "service_role": true
+      },
+      "identity_arguments": "p_page integer, p_size integer",
+      "md5_pg_get_functiondef": "e3e521aaa933604de88d697196f54564",
+      "name": "lf_rule_promotion_report_v1",
+      "return_type": "jsonb",
+      "schema": "public",
+      "sha256_pg_get_functiondef": "6cf239e765685027762a8ddd094bb03d8354555cb53edee423b135c674c0966a",
+      "signature": "lf_rule_promotion_report_v1(integer,integer)"
+    }
+  ],
+  "method": {
+    "acl": "pg_proc.proacl::text; effective has_function_privilege(role,oid,EXECUTE)",
+    "attrs": "pg_proc,pg_get_function_identity_arguments,pg_get_function_result",
+    "caveat": "Frozen at observation; not a historical pre-#3803 or pre-#3804 definition. Compare same expressions and PostgreSQL version differences explicitly.",
+    "function_md5": "md5(pg_get_functiondef(p.oid))",
+    "function_sha256": "encode(sha256(convert_to(pg_get_functiondef(p.oid),'UTF8')),'hex')"
+  },
+  "schema_version": "LF_B12_LEGACY_S21_04_PREIMAGE_V1",
+  "source": {
+    "database": "postgres",
+    "operation": "SELECT only",
+    "postgres_version": "17.6",
+    "project": "mhwmirqcgxxukpctffuv",
+    "reference_branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+    "reference_commit": "5e2c418c1ad5c43a4fc5b71ecc44e4382d5e06d3",
+    "role": "supabase_read_only_user",
+    "s21_04_sha256": "344c5611f98c1933f8e6337e53e24b74e3cdda4af7e045ba96335878e7e97016"
+  }
+}
