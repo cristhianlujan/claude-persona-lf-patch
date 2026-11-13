@@ -1,3 +1,30 @@
+# Adenda operativa L29 — 49 reglas reales de Inicio de sesión B2B
+
+**Esta sección es el corte vigente del lote ajustado.** El texto de matriz B09 que sigue conserva la arquitectura L26 como contexto histórico de brechas, pero el E2E anterior de tres reglas de muestra **no es la prueba objetivo**. La CI actual es [#43340333844](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43340333844), PG18 `SUCCESS`, 49/49 reglas reales copiadas, 53 evaluaciones, 23 aceptación preliminar, 26 escaladas, 2 códigos ausentes, firmas y promociones **cero**.
+
+## Brechas concretas observadas en el catálogo real
+
+| Componente | Evidencia fuente (solo lectura) | Acción de IG propuesta | Bloqueo externo / decisión dueño |
+|---|---|---|---|
+| AUTH-003 y política central 3 | Regla **VIGENTE** delega a política; política 3 **VIGENTE** tiene perfil MFA 1..6 pero no 30d/3m | Preservar AUTH-003; proponer versión candidata de política 3 con umbrales configurables sin insertar parámetros en regla | Gobernanza B07, firma dueño, otros disparadores no decididos |
+| AUTH-018 | CANDIDATO actualmente exige MFA a seis perfiles | Diff documental corrige condición MFA en Login; no abrir sesión cuando aplica MFA | Política 3, QA MFA, otros disparadores; B08/B09 |
+| AUTH-019 | CANDIDATO Google Workspace SAML perfiles 1–2; correo/Brevo 3–6 | Mantener separación, añadir solo SMS como contingencia no habilitada | **Proveedor SMS NO CONFIRMADO**, alcance admins SAML, contratos/callbacks |
+| AUTH-020 + política 20 | CANDIDATO recupera correo sin procedimiento asistido final | Propuesta soporte con documento, dos personas, plazo central 48h y aviso al contacto anterior; bloqueo de bypass preservado | QA soporte, identidad, permisos; alcance Google administradores pendiente |
+| AUTH-033 y política 25 | CANDIDATO dispositivo no reconocido como único trigger OTP | Proponer re-chequeo central antes de confiar en dispositivo; sin desactivar protección anterior | Otros casos MFA, disparador dispositivo nuevo/revocado pendientes del dueño |
+| AUTH-039 | **VIGENTE** exige OTP tras revocación | Mantener fuente; documentar contradicción y necesidad de sucesora sólo tras decisión explícita | Alcance de otros disparadores MFA pendiente del dueño |
+| AUTH-034/043/044/045 | CANDIDATO vinculadas a MFA OTP/operación/rate limit/Brevo webhook | No inventar ruta, credenciales ni contadores; conservar límites y vínculos existentes | Integración real Brevo, QA y definición de contador para nuevos triggers |
+| AUTH-026 | CANDIDATO con binding M1 no resuelto | Fail-closed y trazabilidad de dependencia | Plataforma/IAM: ADR-003 M1, SAML/IdP, B08 |
+| AUTH-047 | CANDIDATO y `pendiente_decision=true` | NO corregir automáticamente por capricho | Dueño decide el pendiente real |
+| AUTH-009/010 | **No encontradas** en SELECT exacto | No generar reglas inventadas ni correr fake E2E | Dueño/Producto confirma si son huecos intencionales o activos por registrar |
+
+**Curator de laboratorio:** mini-revisor determinista del mismo GPT-6, **NO INDEPENDIENTE**. 23 `ACEPTAR_PRELIMINAR_SANDBOX` no son reglas aprobadas. 4 diff en clones pasaron a `ESCALAR_A_HUMANO` después de 2.ª vuelta, no a lista oficial de promoción.
+
+**Reparto de responsabilidad:** IG puede cerrar propuestas, diff, verificación de políticas heredadas, reglas/citas, negativos y contrato de retorno. No puede aprovisionar IdP, Brevo, permisos, firmas, ni modificar B07 schema/legacy B12, ni reabrir RUN B02/B03. Los escritores de producción y los 14 bloqueos requieren autorización y pruebas independientes.
+
+**Evidencia:** source SHA-256 `4959cfd6d9319ea26b60f9a21a1751c674e06c4417fb4d589f3665424d539bd3`, runtime RAW SHA-256 `a898a38cb6f8cedaf1271e7390df7517ef8bd3cfce63c60997ae097edd05b08f`. Tablero de este corte: **147/588 REAL_EN_SANDBOX**, 53 sintéticas, 388 NO_PROBADO; 0/14 bloqueos cerrados.
+
+---
+
 # Lote 29 — BRECHAS E2E para producción | B09_E2E
 
 **Dictamen inicial:** `NO-GO / UNVERIFIED`. Base L26 `21/36 REAL_EN_SANDBOX`, 11 sintéticas y 4 no probadas. L29 usa tres variantes **LF** y agrega una entrada SQL segregada de creador/owner, pero ningún ACT-0001 ni servicio oficial. **No inferir avance productivo por una prueba fixture.** La cifra del runner L29 se acreditará solo tras CI.
