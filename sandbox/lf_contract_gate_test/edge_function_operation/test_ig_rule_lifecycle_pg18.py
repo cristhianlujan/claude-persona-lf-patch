@@ -206,6 +206,28 @@ class PG18RealSQL(unittest.TestCase):
                     "VIGENTE_FINALIZE_REPLAY_FAIL "+str(fin))
         desc=self.sql(f"SELECT descripcion FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
         fail_assert(desc=="Corrección aprobada y validada PG18.","VIGENTE_PATCH_NOT_APPLIED")
+        n_promos=self.sql("SELECT count(*) FROM public.lf_rule_promotion_v1 WHERE rule_code="+quote(RULE)+" AND status='APPLIED';")
+        fail_assert(n_promos=="1","VIGENTE_CORRECTION_FORGED_PROMOTION_RECEIPT")
+        # Functional security mutation is intentionally fail-closed without an
+        # independently authenticated impact/QA receipt. PostgreSQL must roll
+        # back the owner decision, child and mutable rule atomically.
+        parent3="EXEC-PROFILE-GATE2-IGPG18FUNCT0003"
+        sha_before=self.sql(f"SELECT public.lf_asset_snapshot_sha_v1('REGLA',{quote(RULE)});")
+        badpatch={"rule_code":RULE,"change_kind":"FUNCTIONAL",
+                  "changes":{"valor_config":{"deny_by_default":False}}}
+        self.parent(parent3,badpatch)
+        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
+          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
+          SET LOCAL request.jwt.claim.role='authenticated';
+          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
+          SELECT public.lf_ig_rule_owner_decide_v2({quote(parent3)},{quote(RULE)},
+            {quote(sha_before)},'APPROVE'); ROLLBACK;""",
+          expect_fail="LF_IG_VIGENTE_FUNCTIONAL_IMPACT_RECEIPT_MISSING")
+        sha_after=self.sql(f"SELECT public.lf_asset_snapshot_sha_v1('REGLA',{quote(RULE)});")
+        fail_assert(sha_after==sha_before,"FUNCTIONAL_NEGATIVE_MUTATED_ACTIVE_RULE")
+        pending=self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id="+quote(parent3)+";")
+        fail_assert(pending=="0","FAILED_FUNCTIONAL_APPROVAL_PERSISTED")
+        print("PASS_PG18_FUNCTIONAL_CHANGE_ROLLBACK_AND_NO_FALSE_PROMOTION",flush=True)
         print("PASS_PG18_SQL_RULE_CREATE_PROMOTE_VIGENTE_CORRECT",flush=True)
 
         # Asset-owner backfill authority on a disposable ACTUALIZACION_DB_LF RUN.
