@@ -1,13 +1,12 @@
 {
-  "solution_ref": "LF-IG-B07-LF-ONLY-CANDIDATE-V2",
-  "scope": "LF_ONLY",
-  "hold": "DRAFT_NO_READY_TO_MERGE_NO_TRAIN",
+  "solution_ref": "LF-IG-B07-PARENT-CHILD-CANDIDATE-V1",
   "paths": {
     "supabase/migrations/20261113180000_lf_ig_b07_parent_child_atomic_v1.sql": "INPUT_GOVERNANCE",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_official_atomic_migration_pg17_pg18.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/LF-IG-B07-PARENT-CHILD-CANDIDATE-V1.json": "CHANGESET_MANIFEST",
     "docs/input-governance/b07_parent_child_candidate/07_lf_only_scope_and_controls_v1.md": "INPUT_GOVERNANCE",
     "docs/input-governance/b07_parent_child_candidate/08_train_hold_backup_restore_readback_v1.md": "INPUT_GOVERNANCE",
-    "docs/input-governance/b07_parent_child_candidate/09_atomic_migration_package_v1.md": "INPUT_GOVERNANCE"
+    "docs/input-governance/b07_parent_child_candidate/09_atomic_migration_package_v1.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py": "MIGRATION_SOURCE_PARITY_TOOLING"
   }
 }
