@@ -1,0 +1,16 @@
+{
+  "solution_ref": "LF-POLICY19-ACT0001-SCOPE-DESIGN-V1",
+  "paths": {
+    "audits/login-policy19-act0001/01_positive_negative_scope_v1.json": "INPUT_GOVERNANCE",
+    "audits/login-policy19-act0001/00_scope_design_and_train_dependency.md": "INPUT_GOVERNANCE",
+    "audits/login-policy19-act0001/02_live_source_audit_SELECT_only.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_act0001_scope_design_contract_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-POLICY19-ACT0001-SCOPE-DESIGN-V1.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261113143800_lf_policy19_act0001_scoped_writer_v1.sql": "MIGRATION",
+    "audits/login-policy19-act0001/03_scope_rollback_exact_v1.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/policy19_act0001_live_issuer_consumer_fixture_v1.sql": "RUNTIME_TESTING",
+    "audits/login-policy19-act0001/04_live_provenance_pg17_pg18_fixture.sql": "RUNTIME_TESTING",
+    "audits/login-policy19-act0001/05_policy19_exact_row_pg17_pg18_fixture.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_act0001_scope_real_pgdual_v1.py": "RUNTIME_TESTING"
+  }
+}

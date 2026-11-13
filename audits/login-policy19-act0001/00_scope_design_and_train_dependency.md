@@ -1,0 +1,20 @@
+# POLICY19 / ACT-0001 — DISEÑO GOBERNADO DEL ALCANCE (NO MIGRACIÓN DESPLEGABLE)
+
+**Objeto:** preparar la admisión semántica positiva/negativa para actualizar *solo* política central 19 LF, por Merge Train. Autoridad documental del dueño L36 ya decidida: OTP correo/Brevo admin 1/2 sin passkey, no solicitar otra decisión.
+
+**Lectura ACTUAL (SELECT en Supabase):** catálogo `public.lf_router_scope_policy_v1` contiene SOLO `LF_ACTIVOS_OWNER_NAME_WRITE_V1`, `allowed_table='public.lf_activos'`. Emisor `public.lf_router_scope_bind_v1(text)` y consumidor `public.lf_router_scope_receipt_consume_v2(text,text)` (#3807) están restringidos a `owner_name`. No hay recibo válido para `lf_ops.politicas_seguridad`. No simular `LF_ROUTER_POSITIVE_NEGATIVE_SCOPE_RECEIPT_V1` como si fuera generado.
+
+**Propuesta de contrato exacto**: [01_positive_negative_scope_v1.json](01_positive_negative_scope_v1.json). Permitir `lf_ops.politicas_seguridad` ID 19 con código exacto y estado `CANDIDATO`, solo `description`, `policy_config` (8 subclaves existentes), `parameter_provenance` (las mismas 8 subclaves) y `updated_at` por trigger. Denegar `status`, IDs, `source_decision`, demás columnas, subclaves y tablas, RUN históricos, SALY y promoción.
+
+**Contrato de transporte:** emisor existente `lf_router_scope_bind_v1` y consumidor #3807 deben recibir una extensión gobernada por migración separada con preimagen de sus funciones y regresión del carril owner_name. El recibo debe persistirse en `public.lf_router_scope_receipt_v1` y verificarse por SHA del RUN/manifest, política de alcance, catálogo de columnas, SQL oficial, decisión L36 y ruta exacta del PR Train. El recibo permanece **route-only**, `effect_authority=false` y `downstream_execution_allowed=false`, no suplanta la autorización de efecto.
+
+**Integración obligatoria:** incorporar en la migración de política 19 #3819 la validación y consumo del recibo ACT-0001 real del RUN actual antes del UPDATE. Ni SELECT de inspección ni ID inventado deben autorizarlo. Se hará cuando exista el emisor/consumidor de política 19 y las pruebas negativas. El draft actual #3819 contiene SQL atómico con SHA, pero **no incorpora aún ese binding: NO-GO**.
+
+**Riesgo de semántica:** `programacion.fn_input_governance_semantic_probe_v3_ctx` y wrappers exigen literalmente `factor_selection_status='CLOSED_POLICY_DEFINED'`; la decisión L36 cambia a `OWNER_DECIDED_IN_CONVERSATION_PENDING_SIGNATURE_IMPLEMENTATION`. Antes de Train policy19, una corrección gobernada y prueba de regresión de estos consumidores debe preservar `factor_ok` sin afirmar IdP/Brevo provisionados. También los lectores dinámicos `lf_ops.fn_screen_contract_v1` y `lf_ops.fn_b2b_backoffice_login_contract` muestran la política. Sin esta regresión: NO-GO.
+
+**Pendiente técnico en este PR:** el esquema heredado `writer_source_md5` ancla el writer `lf_ig_asset_owner_apply_v2` en el scope de owners; para policy19 el escritor es **la migración exacta del Train**, no una RPC de owner. Se debe definir y probar cómo se fija el SHA del SQL de esa migración al manifiesto/recibo con un verificador server-side real, sin rebautizar el hash del trigger como "writer" ni construir otro transporte. Hasta entonces no es seguro aplicar una migración de scope. Esta entrega es DISEÑO + test estático, no implementación de los RPC.
+
+**Train cuando esté listo:** (1) PR de scope ACT-0001 convertido a una sola migración gobernada, probado PG17/18 con política/consumidor + negativa de bypass, desplegado por Train; (2) resolver/regresar semántica de `factor_selection_status` de modo gobernado si el scope no la incluye; (3) #3819 migración policy19 rebasada, consumidora del recibo real, PASE y PG dual → Train con readback. **No se activa Train ni se marca `ready-to-merge` por este diseño.**
+
+## Verificación sin escritura a Supabase
+La consulta `02_live_source_audit_SELECT_only.sql` muestra catálogo y fuentes de funciones; no invoca escritor. `test_policy19_act0001_scope_design_contract_v1.py` valida subclaves allow/deny de esta propuesta, sin certificados de autorización. Solo declarar PASS para el test ejecutado en CI.
