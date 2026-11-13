@@ -1,0 +1,20 @@
+name: LF IG rule lifecycle — candidate unit tests
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/input_governance_lifecycle/**'
+      - '.github/workflows/lf-ig-rule-lifecycle-plan-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deterministic-no-effect-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Positive, negative and simulated E2E (no SQL)
+        run: node --test sandbox/lf_contract_gate_test/input_governance_lifecycle/test_lifecycle_gate.mjs
