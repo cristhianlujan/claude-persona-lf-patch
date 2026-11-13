@@ -171,7 +171,7 @@ def negatives(owner_jwt,reader_jwt):
   as_role("lf_owner_role",owner_jwt,
    "SELECT rule_quality_l13.l29_submit_request_v1('REQ-SELF','lf',"+lit(CODE)+
     ",'NEW','{\"source_ref\":\"fixture\",\"rationale\":\"self approval\"}'::jsonb);")+
-  "\nROLLBACK;","BLOCK_L29_CREATOR_ROLE_NOT_ALLOWED")
+  "\nROLLBACK;","permission denied for function l29_submit_request_v1")
  base=l26.prelude_lf(owner_jwt,True)
  head=fixture+"\n"
  if not base.startswith(head):raise AssertionError("negative correction prelude malformed")
