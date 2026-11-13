@@ -204,6 +204,25 @@ class PG18RealSQL(unittest.TestCase):
           "razon":"Prueba PG18 integrada","es_transversal":False,"valor_config":{},"origen":"PG18_ONLY"}}
         pre=self.sql("SELECT encode(extensions.digest(convert_to('LF_RULE_ABSENT:'||"+quote(RULE)+",'UTF8'),'sha256'),'hex');")
         self.parent(PARENT,patch)
+        # Self-approval is rejected using ORIGINAL profile RAW proposer, not
+        # a caller-supplied proposer field in the decision JSON.
+        self_parent="EXEC-PROFILE-GATE2-IGPG18SELF0006"
+        self.parent(self_parent,patch,proposed_by="Cristhian Luján")
+        self.owner_decide(self_parent,pre,
+          expect_fail="LF_IG_OWNER_SELF_APPROVAL_FORBIDDEN")
+        missing_parent="EXEC-PROFILE-GATE2-IGPG18NOPROP007"
+        self.parent(missing_parent,patch,proposed_by="")
+        self.owner_decide(missing_parent,pre,
+          expect_fail="LF_IG_OWNER_SELF_APPROVAL_FORBIDDEN")
+        no_date=self.rule_record(PARENT)
+        del no_date["fecha"]
+        self.owner_decide(PARENT,pre,record=no_date,
+          expect_fail="LF_IG_OWNER_DECISION_RECORD_REQUIRED")
+        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
+           SELECT public.lf_ig_rule_owner_decide_v2(
+             {quote(PARENT)},{quote(RULE)},{quote(pre)},{jq(self.rule_record(PARENT))});
+           ROLLBACK;""",expect_fail="permission denied for function")
+        print("PASS_PG18_NO_SELF_APPROVAL_AND_NO_UNAUTHORIZED_CALL",flush=True)
         # A fake receipt must not create a candidate or invoke the official writer.
         fake=self.invoke(PARENT,"RULE_CREATE_APPLY",patch,pre,
                          "00000000-0000-4000-8000-000000000999")
@@ -251,6 +270,8 @@ class PG18RealSQL(unittest.TestCase):
         fail_assert(row=="VIGENTE|false","CREATE_NOT_VIGENTE "+row)
         promoc=self.sql("SELECT count(*) FROM public.lf_rule_promotion_v1 WHERE status='APPLIED' AND rule_code="+quote(RULE)+";")
         fail_assert(promoc=="1","PROMOTION_RECEIPT_MISSING")
+        decider=self.sql("SELECT decided_by FROM public.lf_rule_promotion_v1 WHERE status='APPLIED' AND rule_code="+quote(RULE)+";")
+        fail_assert(decider=="Cristhian Luján","PROMOTION_LITERAL_DECISOR_MISMATCH")
         pre2=self.sql(f"SELECT public.lf_asset_snapshot_sha_v1('REGLA',{quote(RULE)});")
         patch2={"rule_code":RULE,"change_kind":"DOCUMENTARY_ONLY",
           "changes":{"descripcion":"Corrección aprobada y validada PG18."}}
