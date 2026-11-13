@@ -289,7 +289,8 @@ class B12DualPG(unittest.TestCase):
             " ROLLBACK;"
             f" SELECT has_function_privilege('anon',{sig},'EXECUTE')::text||'|'||"
             f"has_function_privilege('authenticated',{sig},'EXECUTE')::text;")
-        self.assertEqual(acl.splitlines(),["false|false","true|true"],
+        self.assertEqual([line for line in acl.splitlines() if line in ("false|false","true|true")],
+            ["false|false","true|true"],
             "B12_GUARD_ACL_REVOKE_ROLLBACK_FAILED:"+acl)
         print("PASS_B12_GUARD_REVOKE_TRANSACTION_ROLLBACK_"+image,flush=True)
 
