@@ -1,0 +1,200 @@
+{
+  "schema": "LF_L38_B08_IDENTITY_G04_PRE_DECISION_PACKAGE_READONLY_V1",
+  "scope": "UNIVERSO_LF_TEMPORAL_NOT_AUTHENTICATED_HUMAN",
+  "source_criteria": "L28 document 12 B08 G04 temporal",
+  "identity_verified": false,
+  "owner_sub": "00000000-0000-4000-8000-000000000001 (placeholder, NO autenticado)",
+  "owner_mode": "UNVERIFIED_CHAT_DECLARATION",
+  "parent_run": {
+    "eligible_run_count": 0,
+    "eligible_execution_id": null,
+    "profile_required": "PERFIL-PRODUCT-DIRECTOR-LF",
+    "status_required": "IN_PROGRESS",
+    "manifest_required": [
+      "read_only=true",
+      "no_write=true",
+      "no_promotion=true",
+      "router_profile_handoff.router_authorization_receipt.profile_execution_allowed=true",
+      "screen_selection_result.selected_screen_code bound"
+    ],
+    "step_required": [
+      "input_validate=STEP_PASS_WITH_EVIDENCE",
+      "output_validate=STEP_PASS_WITH_EVIDENCE + output_contract_result PASS",
+      "semantic_judge=STEP_PASS_WITH_EVIDENCE + empty blocking_codes + verdict PASS_INDEPENDENT_SEMANTIC",
+      "execute_profile=STEP_PASS_WITH_EVIDENCE with RAW governed_rule_patch"
+    ],
+    "sample_observed": [
+      {
+        "run": "EXEC-PROFILE-GATE2-40471E6F661A53D7CE7A4A1B",
+        "status": "IN_PROGRESS",
+        "profile": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "screen": "B2B-AUTH-001",
+        "steps_passed": 7,
+        "judge": null,
+        "patch": null,
+        "eligible": false
+      },
+      {
+        "run": "EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968",
+        "status": "IN_PROGRESS",
+        "profile": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "screen": "B2B-AUTH-001",
+        "steps_passed": 9,
+        "judge": null,
+        "patch": null,
+        "eligible": false
+      }
+    ],
+    "counts": {
+      "active_profile_runs": 12,
+      "product_director_in_progress": 5,
+      "eligible": 0
+    }
+  },
+  "chosen_rule": {
+    "codigo_regla": "B2B-RULE-AUTH-033",
+    "current_status": "CANDIDATO",
+    "required_screen": "B2B-AUTH-004",
+    "other_linked_screen": "B2B-AUTH-005",
+    "preimage_fullrow_sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b",
+    "canonical_snapshot_sha256_formula_equivalent": "40db98f0c26b104b53484988377c5ca8c5fb8cac8075d25580878fb60297e721",
+    "canonical_snapshot_function": "lf_asset_snapshot_sha_v1('REGLA','B2B-RULE-AUTH-033')",
+    "canonical_function_select_result": "42501_PERMISSION_DENIED_READONLY_ROLE",
+    "propuesta_sha256_documental_verificado_en_pg": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+    "sha_status": "EXACT_FOR_GIT_L32_PATCH_NOT_YET_EXACT_RAW_PROFILE_PATCH",
+    "source": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote32-login-b2b-decision-cards-v1/docs/rule-quality-lote32/01_tarjetas_3_y_registros_v2.json"
+  },
+  "six_field_proposed_record_NOT_ISSUED": {
+    "codigo_regla": "B2B-RULE-AUTH-033",
+    "propuesta_sha256": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+    "veredicto": "RECHAZAR",
+    "decisor": "Cristhian Luján",
+    "fecha": "<ISO8601_REAL_DENTRO_VENTANA_DEL_RUN>",
+    "frase_literal": "Yo, Cristhian Luján, RECHAZO la propuesta documental de B2B-RULE-AUTH-033, SHA-256 6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769, como prueba del recibo B08. No autorizo modificar ni promover esta regla."
+  },
+  "writer": {
+    "signature": "public.lf_ig_rule_owner_decide_v2(p_parent text,p_rule text,p_source_sha256 text,p_decision jsonb)",
+    "sample_parameters_NOT_EXECUTABLE": {
+      "p_parent": null,
+      "p_rule": "B2B-RULE-AUTH-033",
+      "p_source_sha256": "40db98f0c26b104b53484988377c5ca8c5fb8cac8075d25580878fb60297e721",
+      "p_decision": {
+        "codigo_regla": "B2B-RULE-AUTH-033",
+        "propuesta_sha256": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+        "veredicto": "RECHAZAR",
+        "decisor": "Cristhian Luján",
+        "fecha": "<ISO8601_REAL_DENTRO_VENTANA_DEL_RUN>",
+        "frase_literal": "Yo, Cristhian Luján, RECHAZO la propuesta documental de B2B-RULE-AUTH-033, SHA-256 6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769, como prueba del recibo B08. No autorizo modificar ni promover esta regla."
+      }
+    },
+    "readback_table": "public.lf_ig_owner_decision_v2",
+    "existing_decision_count": 0,
+    "real_call_count": 0
+  },
+  "tests": {
+    "pg_readonly_8_shape_test": "8/8 PASS (predicate mirror ONLY)",
+    "ci_historical_lab_run": 43385755925,
+    "ci_job": 131753702972,
+    "ci_pg18_reject_no_child_no_rule": "PASS",
+    "ci_pg18_owner_self_approval": "PASS NEGATIVE",
+    "negative_live_writer_tests": "NOT_EXECUTED",
+    "independent_current_semantic_judge": "NOT_EXECUTED"
+  },
+  "risk_options": [
+    {
+      "option": "DOCUMENT_ONLY",
+      "effect": "No mutaciones",
+      "risk": "No satisface B08 real registrado; sin recibo en DB",
+      "recommendation": "USAR MIENTRAS FALTAN GATES"
+    },
+    {
+      "option": "RECHAZAR_FIRST",
+      "effect": "Inserta un registro permanente en lf_ig_owner_decision_v2 pero NO hijo ni promoción",
+      "risk": "Irreversible para la misma combinación parent_execution_id+rule_code+kind (unique); si después se desea aprobar debe existir otro RUN elegible. La frase debe ser realmente declarada por dueño, sin inventar su identidad.",
+      "recommendation": "PREFERIDA SOLO DESPUES DE UN RUN ELEGIBLE Y CONFIRMACION DE DISPARO"
+    },
+    {
+      "option": "APROBAR",
+      "effect": "Registra decisión, invoca RULE_UPDATE_APPLY, ejecuta 7 pasos y puede promover VIGENTE en una transacción",
+      "risk": "Riesgo alto de cambio real en regla B2B, política de MFA/device aún sin reconciliar; no usar como primera prueba.",
+      "recommendation": "NO_USAR_B08_PRIMERA_PRUEBA"
+    }
+  ],
+  "rollback": {
+    "RECHAZAR": "No hay mutación de regla que revertir. El recibo queda como auditoría y no debe borrarse informalmente; aprobación futura requiere un RUN nuevo, no reescribir mismo receipt.",
+    "APROBAR": "RAISE EXCEPTION dentro de función revierte transacción si falla antes de COMMIT. Tras éxito no hay rollback automático; usar operación gobernada de corrección/compensación con nueva preimagen y readback, no UPDATE o DELETE manual."
+  },
+  "checks": [
+    {
+      "id": "B08-01",
+      "label": "Writer V2 instalado, seis campos y ramas RECHAZAR/APROBAR auditadas",
+      "status": "PASS",
+      "evidence": "pg_get_functiondef public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb), read-only. RECHAZAR sale antes de skill; APROBAR invoca skill/finalize y VIGENTE."
+    },
+    {
+      "id": "B08-02",
+      "label": "Owner documental temporal LF y identity_verified=false",
+      "status": "PASS",
+      "evidence": "1 project owner TEMP_DOCUMENTARY_ACTIVE, identity_mode UNVERIFIED_CHAT_DECLARATION; owner_sub UUID placeholder, no Supabase Auth."
+    },
+    {
+      "id": "B08-03",
+      "label": "Regla CANDIDATO con pantalla real y patch SHA exacto documentado",
+      "status": "PASS",
+      "evidence": "AUTH-033 CANDIDATO vinculado B2B-AUTH-004/005, patch de L32 sha256 6a398f..., PostgreSQL recomputó match exacto."
+    },
+    {
+      "id": "B08-04",
+      "label": "Laboratorio de rama RECHAZAR y validaciones negativas",
+      "status": "PASS",
+      "evidence": "GitHub CI run 43385755925 job 131753702972 PG18 PASS_PG18_OWNER_REJECT_NO_CHILD_NO_RULE y PASS_PG18_NO_SELF_APPROVAL_AND_NO_UNAUTHORIZED_CALL; SQL read-only de ocho casos de formato 8/8 PASS (NO writer live)."
+    },
+    {
+      "id": "B08-05",
+      "label": "RUN actual de Product Director admisible con Gate2/IN_PROGRESS/manifest/screen",
+      "status": "BLOCKED",
+      "owner": "Producto, operador del perfil y Router/EKB",
+      "evidence": "12 RUN IN_PROGRESS total, 5 Product Director; ninguno con conjunto completo. RUN más reciente 40471E6F... 7/11 y sin output/judge."
+    },
+    {
+      "id": "B08-06",
+      "label": "Juez independiente Step70 PASS_INDEPENDENT_SEMANTIC y output_validate PASS",
+      "status": "BLOCKED",
+      "owner": "Juez independiente y perfil nativo",
+      "evidence": "0/12 in-progress con juez y salida exigidos."
+    },
+    {
+      "id": "B08-07",
+      "label": "RAW governed_rule_patch idéntico al SHA suministrado y proponente distinto",
+      "status": "BLOCKED",
+      "owner": "Product Director / IG/Curator",
+      "evidence": "0 RUN elegible con governed_rule_patch; el SHA L32 es candidato documental, no vínculo de ejecución."
+    },
+    {
+      "id": "B08-08",
+      "label": "Firma de decisión concreta y seis campos reales dentro de ventana temporal",
+      "status": "BLOCKED",
+      "owner": "Dueño",
+      "evidence": "Frase solo propuesta, decisor aún NO la emitió; timestamp NO inventado; el RUN debe preceder o abarcar la fecha según función."
+    },
+    {
+      "id": "B08-09",
+      "label": "Escritor oficial registra decisión y readback (negativo/replay/idempotencia real)",
+      "status": "NOT_EXECUTED_BY_SCOPE",
+      "owner": "Operaciones / actor delegado de writer",
+      "evidence": "public.lf_ig_owner_decision_v2 tiene 0 filas; no se llamó writer vivo; sin reintento de decisión ni preimagen vigente de RUN."
+    },
+    {
+      "id": "B08-10",
+      "label": "Recibo de firma/identidad humana real de producción",
+      "status": "BLOCKED_PERMANENT_IN_TEMP_MODE",
+      "owner": "IAM, Seguridad, Dueño",
+      "evidence": "identity_verified=false por diseño temporal, no autentica persona; no cerrar IAM productivo aunque pase un rechazo documental."
+    }
+  ],
+  "passed": 4,
+  "total": 10,
+  "preparation_progress_pct": 40,
+  "b08_closed": false,
+  "production_ready": false
+}
