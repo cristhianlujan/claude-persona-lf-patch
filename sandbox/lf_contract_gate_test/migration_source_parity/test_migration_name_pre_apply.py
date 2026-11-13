@@ -65,8 +65,8 @@ class MigrationNamePreApplyTest(unittest.TestCase):
                          "B07_NON_OFFICIAL_WRITER_NOT_REMOVED")
         self.assertNotIn("ADD COLUMN lifecycle_", source,
                          "B07_OWNER_REJECTED_LIFECYCLE_COLUMNS")
-        self.assertEqual(source.count("\\nBEGIN;\\n"), 1)
-        self.assertEqual(source.count("\\nCOMMIT;"), 1)
+        self.assertEqual(source.count("\nBEGIN;\n"), 1)
+        self.assertEqual(source.count("\nCOMMIT;"), 1)
         for legacy in (
             "b07_saly_official_writer_candidate_v1.sql",
             "b07_saly_14_rows_fixture.sql",
