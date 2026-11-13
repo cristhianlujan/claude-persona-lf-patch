@@ -5,7 +5,7 @@
 ## Fuente obligatoria y criterio de cierre
 
 - EKB: `INPUT GOVERNANCE LF — INSTRUCCIONES OPERATIVAS V1.4`, CANDIDATO VERIFICADO PARCIALMENTE; no usar RUN históricos para acreditar nuevas ejecuciones ni writers desde inspección.
-- **Plan solicitado:** [L28 documento 12](https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote28-blocker-closure-plan-v1/audits/rule-quality-lote28/12_criterios_cierre_motor_7.md), blob `7541d3844523728096f1da34be8303b1b22662db`. Recibos vacíos B02/B03 se dejaron sin marcar.
+- **Plan solicitado:** [L28 documento 12](https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote28-blocker-closure-plan-v1/audits/rule-quality-lote28/12_criterios_cierre_motor_7.md). Al iniciar: blob `7541d3844523728096f1da34be8303b1b22662db`; **relectura posterior de L28 vigente: blob `130d474921e0ad010e94a645a8f350f3ca86e611`**, con los textos de B02/G01 y B03/G02 **idénticos**. La rama origen recibió un commit concurrente sobre B07 y otros documentos; no se mezcló ni se rebasó el alcance. Recibos B02/B03 siguen vacíos.
 - **SQL original R01 exacto:** `audits/rule-quality-lote19/02_runs_diagnostic_select.sql` blob `d0885393fe987c723f39f464b007d4c489029540`. Historias L19 `01_runs_232_readback.csv`, `03_32_prioritarios.md` y L21 S21_01/H2.
 - **Base temporal Supabase:** proyecto `mhwmirqcgxxukpctffuv`, DB `postgres`, rol `supabase_read_only_user` (verificado por SELECT). **SOLO SELECT**. PostgreSQL real de origen 17.6; destino de ensayo PG18.7.
 
