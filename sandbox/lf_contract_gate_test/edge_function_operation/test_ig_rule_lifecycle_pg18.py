@@ -126,8 +126,8 @@ class PG18RealSQL(unittest.TestCase):
         provenance=cls.sql("""SELECT r.operation_code||'|'||r.status||'|'||
              r.created_by_execution_id||'|'||e.operation_code||'|'||e.status||'|'||
              e.created_by_execution_id||'|'||
-             e.manifest->>'bootstrap_operation_code'||'|'||
-             e.manifest->>'bootstrap_status_ceiling'
+             (e.manifest->>'bootstrap_operation_code')||'|'||
+             (e.manifest->>'bootstrap_status_ceiling')
            FROM public.lf_operation_registry r
            JOIN public.lf_operation_execution e
              ON e.execution_id=r.created_by_execution_id
