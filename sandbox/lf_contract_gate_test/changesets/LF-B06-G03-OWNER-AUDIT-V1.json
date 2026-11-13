@@ -1,0 +1,25 @@
+{
+  "solution_ref": "LF-B06-G03-OWNER-AUDIT-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_asset_owner_one_name_pg18.py": "RUNTIME_TESTING",
+    "audits/b06-g03/00_historical_run_sha256_freeze.md": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_00.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_01.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_02.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_03.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_04.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_05.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_06.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_07.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_08.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_09.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_10.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_11.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/frozen_historical_run_hashes_12.csv": "INPUT_GOVERNANCE",
+    "audits/b06-g03/01_hash_readback_2456_runs_8244_steps.md": "INPUT_GOVERNANCE",
+    "audits/b06-g03/02_self_approval_negative_pg17_pg18.md": "INPUT_GOVERNANCE",
+    "audits/b06-g03/03_b06_literal_criterion_map.md": "INPUT_GOVERNANCE",
+    "audits/b06-g03/04_readback_run_history_SELECT_only.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-B06-G03-OWNER-AUDIT-V1.json": "CHANGESET_MANIFEST"
+  }
+}
