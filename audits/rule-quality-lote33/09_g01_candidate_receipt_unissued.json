@@ -1,0 +1,112 @@
+{
+  "schema_version": "L33_G01_DOCUMENTARY_DRAFT_V1",
+  "receipt_type": "G01_SCOPE_FREEZE_RECEIPT",
+  "emission_status": "NOT_ISSUED",
+  "blocker": "B02_RUN_SCOPE",
+  "gate": "G01",
+  "verdict": "PENDING",
+  "accepted": false,
+  "source": {
+    "project": "LF",
+    "environment": "SUPABASE_TEMPORAL",
+    "supabase_project_ref": "mhwmirqcgxxukpctffuv",
+    "database": "postgres",
+    "pg_version": "17.6",
+    "read_only_role": "supabase_read_only_user",
+    "query_ref": "audits/rule-quality-lote32/05_freeze_cohorte_asof_readonly.sql",
+    "query_ref_blob_sha1": "9a015ed8b6c18c52bd642f91de32796d8c305afc",
+    "actual_execution_method": "equivalent F0-F2 one SELECT within explicit REPEATABLE READ READ ONLY; R1-R3 readback adapted to stored literal"
+  },
+  "freeze": {
+    "as_of_utc": "2026-11-13 08:36:22.461152+00",
+    "mvcc_snapshot": "619221:619221:",
+    "capture_read_only": true,
+    "isolation": "repeatable read",
+    "selection_predicate_literal": "status = 'IN_PROGRESS'",
+    "frozen_count": 235,
+    "distinct_count": 235,
+    "ids_csv": "audits/rule-quality-lote33/02_cohorte_frozen_ids.csv",
+    "ids_csv_sha256_utf8": "02007addfbb1bb5858eec98a4f065f14a6125ec9dd0d3efdedc6d1ded67bab16",
+    "membership_jsonb_sha256": "92655adfadaa16478f3fcd14daae78a7b614907444d176ae26c04fbc431dbdb3",
+    "preimage_manifest_jsonb_sha256": "04ef6f1448e18a39ef5754b284e802bae265a0a54832feb11f1e5700a3b9b9f2",
+    "raw_snapshot_path": "audits/rule-quality-lote33/01_supabase_freeze_snapshot_raw.json",
+    "raw_snapshot_git_blob_sha1": "3b64b8eea966b7f5a625572bc5603300fb1e3f15"
+  },
+  "authority": {
+    "decision_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+    "decisor": "Cristhian Luján",
+    "decision_literal": "SÍ se congela el universo completo de RUN IN_PROGRESS, usando los 32 solo para ordenar. Alcance: solo inventario y conciliación; sin escrituras, reintentos ni cierres de RUN.",
+    "identity_verified": false,
+    "identity_mode": "UNVERIFIED_CHAT_DECLARATION",
+    "decision_exact_utc": null,
+    "owner_formal_signed_receipt_ref": null,
+    "operations_custodian": null,
+    "operations_signed_receipt_ref": null,
+    "independent_auditor_receipt_ref": null
+  },
+  "reconciliation": {
+    "historical232_present": 232,
+    "historical232_missing": 0,
+    "l31_234_present": 234,
+    "l31_234_missing": 0,
+    "priority32_present": 32,
+    "new_vs232_count": 3,
+    "new_vs_l31_234_count": 1,
+    "new_vs232_ids": [
+      "EXEC-BOOTSTRAP-PROMOCION-REGLA-LF-R43378647210",
+      "EXEC-DB-TRAIN-PR3807-20261113083527-R43394317535",
+      "EXEC-PROFILE-GATE2-40471E6F661A53D7CE7A4A1B"
+    ],
+    "new_vs_l31_234_ids": [
+      "EXEC-DB-TRAIN-PR3807-20261113083527-R43394317535"
+    ],
+    "pr3803_reconstructed": {
+      "original_pr_literal_list_available": false,
+      "candidate_filter": "operation_code='EJECUCION_PERFIL_LF' (all statuses)",
+      "candidate_count": 61,
+      "inside_frozen": 12,
+      "outside_frozen": 49,
+      "source_fingerprint_sha256": "cf7fd94311ab62d7250f81aa0161b72a818c10f7ff2947a49ff9615985a205d4",
+      "candidate_csv": "audits/rule-quality-lote33/03_pr3803_61_candidate_runs.csv",
+      "requires_dba_original_61_confirmation": true
+    }
+  },
+  "readback": {
+    "readback_at_utc": "2026-11-13 08:43:03.858075+00",
+    "expected_count": 235,
+    "present_count": 235,
+    "missing_ids": [],
+    "outside_current_in_progress_ids": [],
+    "changed_preimage_ids": [
+      "EXEC-DB-TRAIN-PR3807-20261113083527-R43394317535"
+    ],
+    "changed_status_ids": [
+      "EXEC-DB-TRAIN-PR3807-20261113083527-R43394317535"
+    ],
+    "changed_run_new_status": "COMPLETED",
+    "changed_run_updated_at_utc": "2026-11-13 08:36:51.996201+00",
+    "changed_run_resolution_by_operations": "PENDING",
+    "readback_file": "audits/rule-quality-lote33/07_live_readback_vs_freeze.json"
+  },
+  "pg18_copy": {
+    "engine": "PostgreSQL 18.7",
+    "ci_run_id": 43395172974,
+    "ci_job_id": 131784235763,
+    "ci_artifact_id": 14021798813,
+    "passes": 13,
+    "test_count": 13,
+    "script": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_l33_freeze_cohort.py",
+    "runtime_result_sha256": "d3fd303e753711daec4f73f1f0e7cbfc2af4d961557e5f512dc6b3529cf485a7",
+    "scope": "record-hash manifest copy only, not full original table or external sinks",
+    "b02_gate_closed": false,
+    "b03_gate_closed": false
+  },
+  "missing_requirements": [
+    "Operations signed G01 custody/asof/scope/sha receipt and owner formal signature/authority",
+    "DBA Merge Train original 61 literal list/filter/asof/version to compare with 61 reconstructed",
+    "Operations explanation and custodian attestation for PR3807 status drift after 235 freeze",
+    "Independent auditor and official readback validating negative tests, authority, actual source bytes",
+    "G02 per-run EFFECT_RECON_RECEIPT and LIVENESS_RECEIPT for entire owner-scoped cohort, especially 8 expired leases"
+  ],
+  "run_write_count": 0
+}
