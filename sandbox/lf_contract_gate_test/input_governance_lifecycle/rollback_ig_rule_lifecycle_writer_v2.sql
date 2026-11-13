@@ -42,7 +42,18 @@ BEGIN
  IF (SELECT count(*) FROM public.lf_operation_registry
      WHERE operation_code='PROMOCION_REGLA_LF' AND version='v0.2'
        AND status='SANDBOX_ACTIVE'
-       AND created_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V2')<>1
+       AND EXISTS(SELECT 1 FROM public.lf_operation_execution e
+         WHERE e.execution_id=public.lf_operation_registry.created_by_execution_id
+           AND e.operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+           AND e.target_type='OPERATION_PROTOCOL_REPAIR'
+           AND e.target_code='PROMOCION_REGLA_LF'
+           AND e.manifest->>'governance_bootstrap'='true'
+           AND e.manifest->>'bootstrap_operation_code'='PROMOCION_REGLA_LF'
+           AND e.manifest->>'bootstrap_status_ceiling'='SANDBOX_ACTIVE'
+           AND EXISTS(SELECT 1 FROM public.lf_operation_execution t
+             WHERE t.execution_id=e.created_by_execution_id
+             AND t.operation_code='ACTUALIZACION_DB_LF'
+             AND t.target_code='20261113030000_lf_ig_rule_lifecycle_writer_v2')))<>1
     OR (SELECT count(*) FROM public.lf_operation_registry
         WHERE operation_code='PROMOCION_REGLA_LF')<>1
  THEN RAISE EXCEPTION 'IG_ROLLBACK_REGISTRY_DRIFT'; END IF;
