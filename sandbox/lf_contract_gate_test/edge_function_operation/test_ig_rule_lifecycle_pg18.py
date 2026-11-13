@@ -237,6 +237,45 @@ class PG18RealSQL(unittest.TestCase):
         print("PASS_PG18_G15_MOTOR_7_BLOCKERS_FAIL_CLOSED_IG_CONTRACT_HASHED",flush=True)
         print("PASS_PG18_SINGLE_ENTRYPOINT_REFUSES_NONCANONICAL_STEP80",flush=True)
 
+        # A synthetic 10/11 source in this isolated DB is NOT native provenance.
+        # One-shot must refuse even a complete-looking parent/Judge, and the
+        # atomic transaction must leave the rule and owner decision untouched.
+        candidate_code="LF-IG-PG18-G15-SINGLE"
+        chain_parent="EXEC-PROFILE-GATE2-IGPG18CHAIN010"
+        chain_patch={"rule_code":candidate_code,"change_kind":"CREATE",
+                     "changes":{"categoria":"TEST","titulo":"Do not write",
+                       "descripcion":"No real native provider receipt",
+                       "es_transversal":False}}
+        self.parent(chain_parent,chain_patch)
+        native_manifest={"executor_mode":"GPT_NATIVE",
+          "executor_provider":"OPENAI_CHATGPT_NATIVE"}
+        self.sql("UPDATE public.lf_operation_execution SET manifest=manifest||"+
+          jq(native_manifest)+" WHERE execution_id="+quote(chain_parent)+";")
+        preceding=["init_execution","router","profile_resolve",
+                   "profile_source_read","context_admission","research_baseline_freeze"]
+        for i,step in enumerate(preceding):
+            self.sql(f"""INSERT INTO public.lf_operation_execution_steps(
+              execution_id,step_order,step_id,status,evidence_payload,
+              created_by_execution_id)
+              VALUES({quote(chain_parent)},{i+1},{quote(step)},
+              'STEP_PASS_WITH_EVIDENCE','{{"pg18_fixture_only":true}}'::jsonb,
+              {quote(chain_parent)});""")
+        sha_absent=self.sql("SELECT encode(extensions.digest(convert_to("+
+          quote("LF_RULE_ABSENT:"+candidate_code)+",'UTF8'),'sha256'),'hex');")
+        chain_record=self.rule_record(chain_parent,rule=candidate_code)
+        self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+          SELECT public.lf_ig_rule_cycle_once_v3(
+          {quote(chain_parent)},{quote(candidate_code)},{quote(sha_absent)},
+          {jq(chain_record)},'pg18://real-bridge-but-no-real-provider');
+          ROLLBACK;""",
+          expect_fail="LF_IG_ONCE_VERIFIED_NATIVE_PROVIDER_BINDING_REQUIRED")
+        fail_assert(self.sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(candidate_code)+";")=="0",
+          "MISSING_PROVIDER_WROTE_RULE")
+        fail_assert(self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id="+quote(chain_parent)+";")=="0",
+          "MISSING_PROVIDER_CREATED_APPROVAL")
+        print("PASS_PG18_ONE_SHOT_WITH_10_FIXTURE_STEPS_STILL_REJECTS_UNSIGNED_STEP70",flush=True)
+
+
     def test_integrated_create_vigente_asset(self):
         # Temporary owner declaration is seeded by the migration, without Auth.
         self.assertEqual(self.sql("""SELECT count(*) FROM public.lf_ig_project_owner_v2
