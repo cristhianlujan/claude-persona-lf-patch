@@ -7,7 +7,7 @@ import json, re, subprocess, time, unittest, uuid
 from pathlib import Path
 from test_ig_asset_owner_one_name_pg18 import ROOT, BASE, UPSTREAM, MIGRATION as OWNER_GUARD, quote
 
-DELTA=ROOT/"supabase/migrations/20261113143800_lf_policy19_act0001_scoped_writer_v1.sql"
+DELTA=ROOT/"supabase/migrations/20261113171832_lf_policy19_act0001_scoped_writer_v1.sql"
 ROLLBACK=ROOT/"audits/login-policy19-act0001/03_scope_rollback_exact_v1.sql"
 CURRENT=Path(__file__).with_name("policy19_act0001_live_issuer_consumer_fixture_v1.sql")
 PROVENANCE=ROOT/"audits/login-policy19-act0001/04_live_provenance_pg17_pg18_fixture.sql"
@@ -90,7 +90,7 @@ class _ScopeLab:
             cls.sql(POLICY.read_text(encoding="utf-8"))
             cls.sql(PROVENANCE.read_text(encoding="utf-8"))
             cls.add_train("EXEC-DB-TRAIN-LAB-SCOPE-001",
-                "20261113143800_lf_policy19_act0001_scoped_writer_v1",3820)
+                "20261113171832_lf_policy19_act0001_scoped_writer_v1",3820)
             cls.sql(DELTA.read_text(encoding="utf-8"),timeout=300)
             cls.add_train(OWNER,
                 "20261113071927_lf_asset_owner_one_name_backfill_v1",3806)
