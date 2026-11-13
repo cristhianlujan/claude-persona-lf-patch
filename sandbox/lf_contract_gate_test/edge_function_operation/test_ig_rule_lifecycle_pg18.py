@@ -124,6 +124,14 @@ class PG18RealSQL(unittest.TestCase):
         return json.loads(cls.sql(f"SELECT public.lf_skill_invoke_v1({quote(skill)},{quote(parent)},{jq(inp)})::text;"))
 
     def test_integrated_create_vigente_asset(self):
+        # An unbound LF owner cannot approve, even when the test JWT claims AAL2.
+        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
+          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
+          SET LOCAL request.jwt.claim.role='authenticated';
+          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
+          SELECT public.lf_ig_rule_owner_decide_v2('EXEC-UNBOUND-OWNER',
+            {quote(RULE)},{quote('a'*64)},'APPROVE'); ROLLBACK;""",
+          expect_fail="LF_IG_OWNER_BINDING_B06_MISSING")
         # Positive: schema real (scoped) with existing official rule writer/step core.
         self.sql(f"""INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,
             owner_profile_code,authority_receipt_sha256,status,source_execution_id)
@@ -247,6 +255,12 @@ class PG18RealSQL(unittest.TestCase):
           "ASSET_READBACK_HASH_FAILED "+str(applied))
         owner=self.sql("SELECT owner_name FROM public.lf_activos WHERE codigo_activo="+quote(asset)+";")
         fail_assert(owner=="LF_OWNER_PG18","ASSET_OWNER_NOT_APPLIED")
+        self.sql(f"BEGIN; SET LOCAL ROLE service_role; SELECT public.lf_ig_asset_owner_apply_v2({quote(receipt['receipt_id'])}::uuid); ROLLBACK;",
+          expect_fail="LF_IG_ASSET_OWNER_RECEIPT_NOT_APPROVED")
+        actualsha=self.sql(f"""SELECT encode(extensions.digest(
+            convert_to((to_jsonb(a)-'updated_at')::text,'UTF8'),'sha256'),'hex')
+            FROM public.lf_activos a WHERE codigo_activo={quote(asset)};""")
+        fail_assert(actualsha==applied["new_sha256"],"ASSET_CANONICAL_HASH_READBACK_MISMATCH")
         print("PASS_PG18_SQL_ASSET_OWNER_PREIMAGE_AUTH_AND_READBACK",flush=True)
 
 
