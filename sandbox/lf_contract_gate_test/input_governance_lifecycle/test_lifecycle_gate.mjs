@@ -59,8 +59,8 @@ neg("missing owner authentication",x=>x.trusted.owner.authenticated=false,"BLOCK
 neg("SUPER_ADMIN is not LF owner",x=>x.trusted.owner.role="SUPER_ADMIN_FALLBACK","BLOCK_OWNER_IDENTITY_B06_B08");
 neg("owner subject spoof",x=>x.s.decision.subject="other","BLOCK_OWNER_DECISION_BINDING");
 neg("proposal digest mismatch",x=>x.s.decision.proposal_sha256=h("0"),"BLOCK_OWNER_DECISION_BINDING");
-neg("current rule drift",x=>x.trusted.rule.sha256=h("0"),"BLOCK_CREATE_PREIMAGE");
-neg("unverified child",x=>x.trusted.child.official_writer_verified=false,"BLOCK_CHILD_READBACK");
+neg("current rule drift",x=>x.trusted.rule.absent_sha256=h("0"),"BLOCK_CREATE_PREIMAGE");
+neg("unverified child",x=>x.trusted.child.official_writer_verified=false,"BLOCK_CHILD_RECEIPT_UNVERIFIED");
 neg("no VIGENTE readback",x=>x.trusted.final.source_state="CANDIDATO","BLOCK_FINAL_READBACK");
 neg("no exact owner preimage in lf_activos",x=>{
   x.s.asset_owner_change={code:"A1",preimage_sha256:h("2"),new_owner:"LF_OWNER"};
