@@ -25,6 +25,21 @@ class _B08Lab:
             "-X","-q","-A","-t","-v","ON_ERROR_STOP=1",
             "-U","postgres","-d","postgres"],input=sql,text=True,
             capture_output=True,timeout=timeout)
+        # Docker's temporary init postgres can become ready before its final
+        # restart. Retry ONLY when psql says no connection was established;
+        # never replay a SQL error or a statement that may have run.
+        if not error:
+            for _ in range(24):
+                if p.returncode == 0 or (
+                    "connection to server on socket" not in p.stderr
+                    or "No such file or directory" not in p.stderr
+                ):
+                    break
+                time.sleep(1)
+                p = subprocess.run(["docker","exec","-i",cls.container,"psql",
+                    "-X","-q","-A","-t","-v","ON_ERROR_STOP=1",
+                    "-U","postgres","-d","postgres"],input=sql,text=True,
+                    capture_output=True,timeout=timeout)
         if error:
             m = re.search(r"ERROR:\s*([A-Z][A-Z0-9_]+)",p.stderr)
             if p.returncode == 0 or m is None or m.group(1) != error:
