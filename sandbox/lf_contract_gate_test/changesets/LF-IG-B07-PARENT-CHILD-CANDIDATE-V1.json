@@ -1,7 +1,7 @@
 {
   "solution_ref": "LF-IG-B07-PARENT-CHILD-CANDIDATE-V1",
   "paths": {
-    "supabase/migrations/20261113180000_lf_ig_b07_parent_child_atomic_v1.sql": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261113180000_lf_ig_b07_parent_child_atomic_v1.sql": "MIGRATION",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_official_atomic_migration_pg17_pg18.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/LF-IG-B07-PARENT-CHILD-CANDIDATE-V1.json": "CHANGESET_MANIFEST",
     "docs/input-governance/b07_parent_child_candidate/07_lf_only_scope_and_controls_v1.md": "INPUT_GOVERNANCE",
