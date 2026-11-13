@@ -1,22 +1,24 @@
-name: L29 E2E IG gaps 3 variants PG18 isolated
+name: L29 Real Login B2B 49-rule Curator PG18 read-only-origin experiment
 on:
   push:
     branches: [lf/issue-3779-lote29-e2e-gap-report-v1]
     paths:
-      - sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/17_l29_e2e_request_sod_retry_pg18.sql
-      - sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_e2e_ig_gap.py
+      - sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_actual_login_b2b_49.py
+      - docs/rule-quality-lote29/05_login_b2b_reglas_origen_49.json
+      - docs/rule-quality-lote29/06_politicas_centrales_mfa_origen.json
+      - docs/rule-quality-lote29/07_login_b2b_matriz_diffs_51.json
       - .github/workflows/l29-ig-e2e-gaps-pg18.yml
 permissions:
   contents: read
 concurrency:
-  group: l29-e2e-gaps-${{ github.ref }}
+  group: l29-actual-login-b2b-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  one-e2e:
+  rules-review:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     services:
-      postgres18:
+      pg18:
         image: postgres:18
         env:
           POSTGRES_DB: postgres
@@ -37,52 +39,46 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: PostgreSQL 18 client
+      - name: Install PostgreSQL 18 client
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-client
-          psql -X -At -v ON_ERROR_STOP=1 -d postgres -c "SHOW server_version;"
-      - name: Run ONE PG18 e2e runner, 3 scenarios and negative cases
+          psql -X -A -t -v ON_ERROR_STOP=1 -d postgres -c "SELECT current_setting('server_version');"
+      - name: Review ONLY 49 actual B2B rules in sandbox copies
         shell: bash
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_e2e_ig_gap.py | tee "$RUNNER_TEMP/l29_console.log"
+          python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_actual_login_b2b_49.py | tee "$RUNNER_TEMP/l29_actual_console.log"
           python3 - <<'PY'
           import json
-          p="sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/lote29_e2e_runtime.json"
-          d=json.load(open(p))
-          md5={"apply":"86b0494984edf95cf0f9c0a0df67000b",
-           "capture_record":"89cbfac4162dbc9f8ecca59f2c3ab4c3",
-           "citation_verify":"773a62783baa5edbe967200cac66b8c3",
-           "l8_guard":"522d12f0843be1da3c785cef3c0bf3fc"}
-          assert d["gates_md5"]==md5 and not d["gate_sql_modified"]
-          assert d["outcome"]=="SANDBOX_VERIFIED" and d["production"]=="NO_GO_UNVERIFIED"
-          assert d["blockers_closed"]==0 and d["blockers_total"]==14
-          assert [x["kind"] for x in d["scenarios"]]==["NEW","MODIFY_CANDIDATE","CORRECT_VIGENTE"]
-          assert all(x["status"]=="PASS" for x in d["cases"])
-          required={"NO_EVIDENCE","NO_PERMISSION_APPROVE","SUPER_ADMIN_DENIED",
-          "OWNER_CANNOT_CREATE_REQUEST","SAME_ACTOR_CREATOR_APPROVER_BLOCKED",
-          "REQUEST_MISSING_BLOCKS_OWNER","REQUEST_IDEMPOTENCY_CONFLICT",
-          "DIRECT_REQUEST_DML_DENIED","POST_PROMOTION_FAULT_ROLLBACK",
-          "NO_PARTIAL_ROWS_AFTER_FAILURE"}
-          assert required <= {x["id"] for x in d["cases"]}
-          assert len(d["scenarios"])==3
-          assert d["status_counts"]=={"REAL_EN_SANDBOX":21,"SINTETICO":15,"NO_PROBADO":0},d["status_counts"]
-          assert all(s["rollback"]=={"request":0,"curator":0,"owner_intent":0,"promotion":0,"closure":0,"candidate":0} for s in d["scenarios"])
-          assert not d["routing_profile_run_native"] and not d["ig_native"] and not d["step70_oidc_native"] and d["production_writes"]==0
-          print("L29_CI_ASSERT_PASS",d["case_count"],d["status_counts"])
+          p="docs/rule-quality-lote29/l29_login_b2b_actual_runtime.json"
+          x=json.load(open(p))
+          assert x["source_server_sha256"]=="4959cfd6d9319ea26b60f9a21a1751c674e06c4417fb4d589f3665424d539bd3"
+          assert x["rules_requested"]==51 and x["rules_read"]==49
+          assert x["metrics"]["missing"]==2 and x["policy_read"]==4
+          assert len(x["results"])==51
+          assert x["metrics"]["formal_approvals"]==x["metrics"]["promoted"]==0
+          assert x["owner_signatures"]==0 and x["production_writes"]==0 and x["run_modifications"]==0
+          assert x["production"]=="NO_GO_UNVERIFIED" and x["blockers_closed"]==0 and x["blockers_total"]==14
+          assert len(x["board"])==49*12
+          assert sum(x["board_counts"].values())==49*12
+          assert x["frozen_gates"]["source_files_untouched"]
+          assert x["frozen_gates"]["md5_reexecuted_in_actual_rules_review"] is False
+          assert x["scope"]=="CURATOR_AND_DIFF_COPY_PG18_NOT_NATIVE_IG_E2E"
+          print("L29_ACTUAL_CI_ASSERT_PASS",json.dumps(x["metrics"],sort_keys=True))
           PY
-      - name: Preserve original runner, console and source SHA256
+      - name: Preserve original PG18 evidence
         if: always()
         run: |
-          mkdir -p "$RUNNER_TEMP/l29_evidence"
-          cp sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/lote29_e2e_runtime.json "$RUNNER_TEMP/l29_evidence/" 2>/dev/null || true
-          cp "$RUNNER_TEMP/l29_console.log" "$RUNNER_TEMP/l29_evidence/" 2>/dev/null || true
-          sha256sum sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/17_l29_e2e_request_sod_retry_pg18.sql sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_e2e_ig_gap.py > "$RUNNER_TEMP/l29_evidence/sources.sha256"
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/l29_actual"
+          cp docs/rule-quality-lote29/l29_login_b2b_actual_runtime.json "$RUNNER_TEMP/l29_actual/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/l29_actual_console.log" "$RUNNER_TEMP/l29_actual/" 2>/dev/null || true
+          sha256sum docs/rule-quality-lote29/05_login_b2b_reglas_origen_49.json docs/rule-quality-lote29/06_politicas_centrales_mfa_origen.json docs/rule-quality-lote29/07_login_b2b_matriz_diffs_51.json sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_actual_login_b2b_49.py > "$RUNNER_TEMP/l29_actual/sources.sha256"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: l29-e2e-pg18-raw
-          path: ${{ runner.temp }}/l29_evidence/
+          name: l29-login-b2b-real-source-pg18-review
+          path: ${{ runner.temp }}/l29_actual/
           retention-days: 14
           if-no-files-found: warn
