@@ -786,14 +786,14 @@ UPDATE public.lf_skill_catalog_v1
  SET opener_fn='lf_skill_o_rule_create_v2',
  input_required=ARRAY['regla_codigo','analysis_snapshot_sha256','decision_id',
    'candidate_patch','owner_decision_id'],
- description='Creates official CANDIDATO child only after authenticated LF owner approval and 7-step readback'
+ description='Creates official CANDIDATO child after LF temporary documentary decision and 7-step readback'
  WHERE skill_code='RULE_CREATE_APPLY' AND opener_fn IS NULL;
 -- Row cardinality is checked in the final readback DO.
 UPDATE public.lf_skill_catalog_v1
  SET opener_fn='lf_skill_o_rule_update_v2',
  input_required=ARRAY['regla_codigo','analysis_snapshot_sha256','decision_id',
    'candidate_patch','owner_decision_id'],
- description='Candidate-only legacy writer plus staged VIGENTE correction; exact owner-bound preimage required'
+ description='Candidate-only legacy writer plus staged VIGENTE correction; exact documentary owner decision and preimage required'
  WHERE skill_code='RULE_UPDATE_APPLY' AND opener_fn='lf_skill_o_rule_update_v1';
 
 -- The public PostgREST caller cannot assert a fake HUMAN:... label.
