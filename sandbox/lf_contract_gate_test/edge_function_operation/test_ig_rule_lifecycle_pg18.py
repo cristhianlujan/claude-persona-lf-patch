@@ -236,12 +236,7 @@ class PG18RealSQL(unittest.TestCase):
         badpatch={"rule_code":RULE,"change_kind":"FUNCTIONAL",
                   "changes":{"valor_config":{"deny_by_default":False}}}
         self.parent(parent3,badpatch)
-        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-          SET LOCAL request.jwt.claim.role='authenticated';
-          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
-          SELECT public.lf_ig_rule_owner_decide_v2({quote(parent3)},{quote(RULE)},
-            {quote(sha_before)},'APPROVE'); ROLLBACK;""",
+        self.owner_decide(parent3,sha_before,
           expect_fail="LF_IG_VIGENTE_FUNCTIONAL_IMPACT_RECEIPT_MISSING")
         sha_after=self.sql(f"SELECT public.lf_asset_snapshot_sha_v1('REGLA',{quote(RULE)});")
         fail_assert(sha_after==sha_before,"FUNCTIONAL_NEGATIVE_MUTATED_ACTIVE_RULE")
@@ -281,8 +276,8 @@ class PG18RealSQL(unittest.TestCase):
         reject_sha=self.sql("SELECT encode(extensions.digest(convert_to('LF_RULE_ABSENT:'||"+
             quote(reject_code)+",'UTF8'),'sha256'),'hex');")
         self.parent(reject_parent,reject_patch)
-        denied=json.loads(self.owner_decide(reject_parent,reject_sha,verdict="REJECT",rule=reject_code).splitlines()[-1])
-        fail_assert(denied.get("status")=="REJECT" and denied.get("write_performed") is False,
+        denied=json.loads(self.owner_decide(reject_parent,reject_sha,verdict="RECHAZAR",rule=reject_code).splitlines()[-1])
+        fail_assert(denied.get("status")=="RECHAZADO" and denied.get("write_performed") is False,
                     "OWNER_REJECT_WRITE_FLOW_WRONG "+str(denied))
         fail_assert(self.sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(reject_code)+";")=="0",
                     "REJECT_CREATED_RULE")
@@ -295,9 +290,10 @@ class PG18RealSQL(unittest.TestCase):
         asset="LF-IG-PG18-ACTIVO"
         self.sql(f"""INSERT INTO public.lf_operation_execution(
             execution_id,operation_code,target_type,target_code,request_sha256,
-            idempotency_key,created_by_execution_id)
+            idempotency_key,created_by_execution_id,manifest)
           VALUES({quote(train)},'ACTUALIZACION_DB_LF','DB','lf_activos',
-            {quote('c'*64)},{quote('ig-pg18-train:'+train)},{quote(train)});
+            {quote('c'*64)},{quote('ig-pg18-train:'+train)},{quote(train)},
+            {jq({"proposer_actor":"LF_IG_ASSET_BACKFILL_PLANNER"})});
           INSERT INTO public.lf_operation_execution_steps(
             execution_id,step_order,step_id,status,evidence_payload,created_by_execution_id)
           VALUES({quote(train)},10,'preflight','PASS_CLEAN',
@@ -312,22 +308,27 @@ class PG18RealSQL(unittest.TestCase):
         assetsha=self.sql(f"""SELECT encode(extensions.digest(
             convert_to((to_jsonb(a)-'updated_at')::text,'UTF8'),'sha256'),'hex')
             FROM public.lf_activos a WHERE codigo_activo={quote(asset)};""")
-        # A fake preimage cannot gain a backfill receipt.
-        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-          SET LOCAL request.jwt.claim.role='authenticated';
-          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
-          SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
-            {quote('0'*64)},'LF_OWNER_PG18'); ROLLBACK;""",
+        # Missing decision, non-matching row preimage and direct anon role.
+        self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+           SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
+             {quote(assetsha)},'LF_OWNER_PG18','{{}}'::jsonb); ROLLBACK;""",
+          expect_fail="LF_IG_ASSET_DECISION_RECORD_REQUIRED")
+        bad=self.asset_record(asset,"0"*64)
+        self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+           SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
+             {quote('0'*64)},'LF_OWNER_PG18',{jq(bad)}); ROLLBACK;""",
           expect_fail="LF_IG_ASSET_PREIMAGE_STALE")
-        signed=self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-          SET LOCAL request.jwt.claim.role='authenticated';
-          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
-          SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
-            {quote(assetsha)},'LF_OWNER_PG18')::text; COMMIT;""")
+        verified=self.asset_record(asset,assetsha)
+        signed=self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+           SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
+             {quote(assetsha)},'LF_OWNER_PG18',{jq(verified)})::text; COMMIT;""")
         receipt=json.loads(signed.splitlines()[-1])
-        fail_assert(receipt["status"]=="APPROVED","ASSET_APPROVAL_MISSING")
+        fail_assert(receipt["status"]=="APPROVED" and
+                    receipt["decision_record"]==verified and
+                    receipt["decisor"]=="Cristhian Luján","ASSET_APPROVAL_MISSING")
+        raw=self.sql("SELECT decision_record::text FROM public.lf_ig_asset_owner_receipt_v2 WHERE receipt_id="+
+            quote(receipt["receipt_id"])+"::uuid;")
+        fail_assert(json.loads(raw)==verified,"ASSET_DECISION_EVIDENCE_READBACK_FAILED")
         # Direct anon invocation must fail; apply is service_role-only.
         self.sql(f"BEGIN; SET LOCAL ROLE anon; SELECT public.lf_ig_asset_owner_apply_v2({quote(receipt['receipt_id'])}::uuid); ROLLBACK;",
           expect_fail="permission denied")
@@ -343,7 +344,7 @@ class PG18RealSQL(unittest.TestCase):
             convert_to((to_jsonb(a)-'updated_at')::text,'UTF8'),'sha256'),'hex')
             FROM public.lf_activos a WHERE codigo_activo={quote(asset)};""")
         fail_assert(actualsha==applied["new_sha256"],"ASSET_CANONICAL_HASH_READBACK_MISMATCH")
-        print("PASS_PG18_SQL_ASSET_OWNER_PREIMAGE_AUTH_AND_READBACK",flush=True)
+        print("PASS_PG18_SQL_ASSET_OWNER_DOCUMENTARY_DECISION_AND_READBACK",flush=True)
 
 
 if __name__=="__main__":
