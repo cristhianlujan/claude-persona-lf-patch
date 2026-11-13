@@ -1,0 +1,10 @@
+{
+  "solution_ref": "LF-B09-NATIVE-CHAT-SHA-DESIGN-V1",
+  "paths": {
+    "docs/input-governance/b09-native-chat/01_design_and_proposed_b09_g15_criteria.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/b09-native-chat/02_new_chat_exact_instruction.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b09_native_chat_sha_receiver_candidate_v1.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/rollback_b09_native_chat_sha_receiver_candidate_v1.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-B09-NATIVE-CHAT-SHA-DESIGN-V1.json": "CHANGESET_MANIFEST"
+  }
+}
