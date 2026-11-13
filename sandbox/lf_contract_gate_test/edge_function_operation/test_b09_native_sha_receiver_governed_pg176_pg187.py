@@ -109,9 +109,9 @@ class B09NativeShaGoverned(unittest.TestCase):
                 sql("""CREATE FUNCTION public.lf_record_profile_execution_step_v1(
                     p_execution_id text,p_step_id text,p_evidence_ref text,
                     p_evidence_payload jsonb,p_actor_execution_id text)
-                    RETURNS jsonb LANGUAGE sql AS $
+                    RETURNS jsonb LANGUAGE sql AS $b09stub$
                     SELECT jsonb_build_object('status','BLOCKED',
-                        'blocking_code','B09_TEST_STUB_NO_WRITER_EFFECTS') $;""")
+                        'blocking_code','B09_TEST_STUB_NO_WRITER_EFFECTS') $b09stub$;""")
                 print("B09_TEST_FIXTURE_CANONICAL_WRITER_SIGNATURE_ONLY_NO_EFFECTS",flush=True)
             step70_before=sql("SELECT md5(pg_get_functiondef('public."
                 "lf_profile_native_bridge_record_semantic_v1(text,jsonb,text,text)'::regprocedure));")
