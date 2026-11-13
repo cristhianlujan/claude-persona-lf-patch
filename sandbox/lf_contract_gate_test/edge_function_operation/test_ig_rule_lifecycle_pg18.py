@@ -535,15 +535,31 @@ class PG18RealSQL(unittest.TestCase):
         print("PASS_PG18_FUNCTIONAL_CHANGE_ROLLBACK_AND_NO_FALSE_PROMOTION",flush=True)
         print("PASS_PG18_SQL_RULE_CREATE_PROMOTE_VIGENTE_CORRECT",flush=True)
 
-        # Asset-owner backfill authority on a disposable ACTUALIZACION_DB_LF RUN.
+        # Isolated scoped owner writer: real SQL, synthetic Migration Train OIDC
+        # fixture, NOT an actual GitHub OIDC signature or Supabase deployment.
         train="EXEC-IG-PG18-TRAIN-0001"
         asset="LF-IG-PG18-ACTIVO"
+        train_code="20261113030000_lf_ig_rule_lifecycle_writer_v2"
+        train_repo="cristhianlujan/claude-persona-lf-patch"
+        train_path="supabase/migrations/"+train_code+".sql"
+        train_manifest={
+          "proposer_actor":"LF_IG_ASSET_BACKFILL_PLANNER",
+          "producer":"lf-migration-merge-train",
+          "head_sha":"e"*40,"train_run_id":"43370424814","pr":"3803",
+          "router_authority_receipt":{
+            "schema_version":"LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+            "router":"ACT-0001","operation_code":"ACTUALIZACION_DB_LF",
+            "action_code":"UPDATE","target_repo":train_repo,
+            "target_code":train_code,"target_path":train_path,
+            "route_eligibility_only":True,"scope_attested":False}}
         self.sql(f"""INSERT INTO public.lf_operation_execution(
-            execution_id,operation_code,target_type,target_code,request_sha256,
-            idempotency_key,created_by_execution_id,manifest)
-          VALUES({quote(train)},'ACTUALIZACION_DB_LF','DB','lf_activos',
+            execution_id,operation_code,target_type,target_code,target_repo,
+            target_path,request_sha256,idempotency_key,created_by_execution_id,
+            manifest)
+          VALUES({quote(train)},'ACTUALIZACION_DB_LF','MIGRATION',
+            {quote(train_code)},{quote(train_repo)},{quote(train_path)},
             {quote('c'*64)},{quote('ig-pg18-train:'+train)},{quote(train)},
-            {jq({"proposer_actor":"LF_IG_ASSET_BACKFILL_PLANNER"})});
+            {jq(train_manifest)});
           INSERT INTO public.lf_operation_execution_steps(
             execution_id,step_order,step_id,status,evidence_payload,created_by_execution_id)
           VALUES({quote(train)},10,'preflight','PASS_CLEAN',
@@ -579,6 +595,22 @@ class PG18RealSQL(unittest.TestCase):
         raw=self.sql("SELECT decision_record::text FROM public.lf_ig_asset_owner_receipt_v2 WHERE receipt_id="+
             quote(receipt["receipt_id"])+"::uuid;")
         fail_assert(json.loads(raw)==verified,"ASSET_DECISION_EVIDENCE_READBACK_FAILED")
+        # Scope receipt issued by the official approval writer automatically.
+        bound=json.loads(self.sql("""SELECT receipt::text
+          FROM public.lf_router_scope_receipt_v1 WHERE execution_id="""+
+          quote(train)+";"))
+        fail_assert(bound["status"]=="SCOPE_ATTESTED_ROUTE_ONLY" and
+          bound["effect_authority"] is False and
+          bound["negative_scope"]["project_SALY"]=="DENY",
+          "OWNER_WRITER_NOT_ROUTER_SCOPE_BOUND")
+        # A tampered receipt can never authorize the official apply.
+        self.sql(f"""BEGIN;
+          UPDATE public.lf_router_scope_receipt_v1
+          SET receipt_sha256={quote('f'*64)}
+          WHERE execution_id={quote(train)};
+          SET LOCAL ROLE service_role;
+          SELECT public.lf_ig_asset_owner_apply_v2({quote(receipt['receipt_id'])}::uuid);
+          ROLLBACK;""",expect_fail="LF_SCOPE_STORED_RECEIPT_DRIFT")
         # Direct anon invocation must fail; apply is service_role-only.
         self.sql(f"BEGIN; SET LOCAL ROLE anon; SELECT public.lf_ig_asset_owner_apply_v2({quote(receipt['receipt_id'])}::uuid); ROLLBACK;",
           expect_fail="permission denied")
