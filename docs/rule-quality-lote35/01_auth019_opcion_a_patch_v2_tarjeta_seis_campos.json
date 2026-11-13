@@ -1,0 +1,100 @@
+{
+  "schema": "LF_L35_AUTH019_OPTION_A_DOC_PATCH_V2_AND_SIX_FIELDS_V1",
+  "previous_l34_candidate_sha": "d2b77023da5920dc6a5fad9fad7a213b4e3a89b9b9d3bdf653c3c1d3fcca3093",
+  "supersedes_option_c_document_only": true,
+  "owner_decision_ref": "00_decision_dueno_auth019_opcion_a_corrige_l34.json",
+  "status": "PROPUESTA_DOCUMENTAL_NO_APROBADA",
+  "source_preimage": {
+    "codigo": "B2B-RULE-AUTH-019",
+    "estado": "CANDIDATO",
+    "titulo": "Factor de segundo control gobernado por política central",
+    "descripcion": "El Login no selecciona dinámicamente un canal de segundo factor fuera de la política central. Para profile_id 1 y 2 se mantiene Google Workspace mediante SAML 2.0 con requisito resistente a phishing. Para profile_id 3, 4, 5 y 6, el control aprobado es OTP por correo gestionado por LF y entregado mediante Brevo. La pantalla no conoce credenciales del proveedor y no debe declarar este correo OTP como Supabase native AAL2.",
+    "valor_config": {
+      "admin_method": "GOOGLE_WORKSPACE_SAML_SSO_WITH_PHISHING_RESISTANT_POLICY",
+      "non_admin_method": "LF_EMAIL_OTP",
+      "admin_profile_ids": [
+        1,
+        2
+      ],
+      "admin_sso_protocol": "SAML_2_0",
+      "email_otp_screen_id": 54,
+      "legacy_otp_policy_id": 1,
+      "admin_provider_status": "PLANNED_NOT_PROVISIONED",
+      "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+      "non_admin_profile_ids": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "phone_otp_default_use": "DENY",
+      "legacy_otp_default_use": "DENY",
+      "password_only_fallback": "DENY",
+      "admin_identity_provider": "GOOGLE_WORKSPACE",
+      "factor_selection_source": "lf_ops.politicas_seguridad",
+      "factor_security_policy_id": 19,
+      "non_admin_delivery_channel": "EMAIL",
+      "numeric_thresholds_in_rule": "DENY",
+      "mfa_applicability_policy_id": 3,
+      "non_admin_delivery_provider": "BREVO",
+      "totp_enrollment_normal_flow": "DENY",
+      "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+      "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+      "admin_phishing_resistant_requirement": "PASSKEY_OR_SECURITY_KEY",
+      "supabase_native_aal2_claim_for_email_otp": "DENY"
+    },
+    "sha256_full_row": "7802a694fd4d29dab489974760babc984950ef6c06d90981c81e88530bf4882e"
+  },
+  "candidate_patch": {
+    "changes": {
+      "descripcion": "El Login B2B consulta la política central para determinar cuándo se exige MFA y cuál es el segundo factor de cada perfil. Para Admin Empresa (profile_id 2), el ingreso comienza con usuario y contraseña. LF_AUTH_BOUNDARY valida ambas credenciales del lado servidor; si la política central exige MFA para ese acceso, el servidor genera un desafío de código de un solo uso (OTP), lo envía al correo registrado mediante Brevo y debe validar el código recibido antes de completar AUTHENTICATED, crear sesión operativa o conceder permisos. El segundo factor elegido por el dueño para ese perfil es únicamente OTP por correo/Brevo: no se requieren FIDO2/WebAuthn, passkeys ni llaves de seguridad. El OTP por correo no es resistente a phishing ni acredita por sí mismo Supabase native AAL2. Un código inválido, vencido o no confirmado nunca habilita acceso; tampoco se permite entrar con contraseña sola cuando MFA resulte exigible. Para Admin LF (profile_id 1), el método de segundo factor sigue pendiente de decisión del dueño y no se da por confirmado Google Workspace SAML ni otro método. Para los perfiles 3, 4, 5 y 6 se conserva OTP por correo gestionado por LF y entregado por Brevo, conforme a las políticas centrales. SMS sigue siendo solo contingencia sin proveedor confirmado ni habilitación automática. La pantalla no elige factor, no valida el OTP por cuenta propia y no expone credenciales de Brevo. El servidor verifica identidad, factor y autorización. La política central 19 y la configuración antigua de esta regla requieren reconciliación gobernada antes de cualquier promoción."
+    },
+    "rule_code": "B2B-RULE-AUTH-019",
+    "change_kind": "DOCUMENTARY_ONLY"
+  },
+  "patch_sha256": "58826a2760f593eb9e85f8eedc44aef90b2a91e8f413a326a219f3eeb4a34018",
+  "hash_method": "PostgreSQL encode(sha256(convert_to(candidate_patch::jsonb::text,'UTF8')),'hex')",
+  "card": {
+    "schema": "LF_L35_AUTH019_OWNER_DECISION_CARD_SIX_FIELDS_V1",
+    "rule_code": "B2B-RULE-AUTH-019",
+    "estado_actual": "CANDIDATO",
+    "titulo": "Factor de segundo control gobernado por política central",
+    "que_dice_hoy": "La regla CANDIDATO todavía asigna Google Workspace/SAML a los administradores 1 y 2, y OTP por correo/Brevo a los perfiles 3–6.",
+    "que_cambiaria": "Admin Empresa (2): usuario + contraseña validados en servidor y, cuando se exija MFA, segundo factor OTP al correo por Brevo verificado antes de crear sesión. Sin FIDO2/passkeys; Admin LF (1) pendiente; perfiles 3–6 mantienen OTP/Brevo.",
+    "por_que": "El dueño revocó la opción C del lote 34 y vuelve a la opción A original de Q01 para el perfil 2, aceptando el riesgo residual de phishing de forma documental.",
+    "sugerencia": "Conservar esta decisión en registro documental, pero BLOQUEAR su aplicación hasta reconciliar política 19 y valor_config, dictamen independiente, decisión formal sobre patch SHA exacto y RUN oficial.",
+    "si_aprueba": "El writer V2 podría registrar la descripción y promover la regla si se invoca con gates válidos; no actualizaría valor_config, política central 19, integración Brevo ni backend. Por eso NO invocar ahora.",
+    "si_rechaza": "No cambiaría AUTH-019; la definición de método seguiría incongruente con decisión conversacional. No implica volver a FIDO2.",
+    "riesgo_aceptado_en_conversacion_pendiente_firma": "El OTP por correo puede ser retransmitido mediante phishing.",
+    "preimagen_fila_sha256": "7802a694fd4d29dab489974760babc984950ef6c06d90981c81e88530bf4882e",
+    "patch_v2_sha256": "58826a2760f593eb9e85f8eedc44aef90b2a91e8f413a326a219f3eeb4a34018",
+    "formal_signed": false,
+    "writer_called": false
+  },
+  "six_field_record_TEMPLATE_NO_SIGNATURE": {
+    "codigo_regla": "B2B-RULE-AUTH-019",
+    "propuesta_sha256": "58826a2760f593eb9e85f8eedc44aef90b2a91e8f413a326a219f3eeb4a34018",
+    "veredicto": "<APROBAR_O_RECHAZAR_SHA_EXACTO>",
+    "decisor": "Cristhian Luján",
+    "fecha": "<YYYY-MM-DDTHH:MM:SS-05:00_AL_FIRMAR>",
+    "frase_literal": "<FRASE_LITERAL_REAL_DE_DECISION_DEL_DUENO>"
+  },
+  "invocation_external_fields_NOT_SUPPLIED": {
+    "p_parent": "<OFFICIAL_PRODUCT_DIRECTOR_RUN_WITH_EXACT_GOVERNED_RULE_PATCH>",
+    "p_rule": "B2B-RULE-AUTH-019",
+    "p_source_sha256": "<CANONICAL_ASSET_SNAPSHOT_SHA_v1_NOT_FULL_ROW_HASH>",
+    "p_decision": "<SIX_FIELD_RECORD_SIGNED_NOT_NOW>"
+  },
+  "database_checks": {
+    "row_count": 1,
+    "source_estado": "CANDIDATO",
+    "outer_fields": 3,
+    "changed_fields": 1,
+    "description_only": true,
+    "config_modified": false,
+    "description_length": 1589,
+    "screen_linked": true
+  },
+  "policy19_conflict_unresolved": true,
+  "completion": "DOCUMENT_ONLY_0_PROMOTIONS"
+}
