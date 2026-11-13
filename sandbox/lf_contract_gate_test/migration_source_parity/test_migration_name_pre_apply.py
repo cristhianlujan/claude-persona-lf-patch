@@ -51,6 +51,20 @@ class MigrationNamePreApplyTest(unittest.TestCase):
         self.assertFalse(delta.exists(), "PR3807_DEPLOYED_DELTA_REINTRODUCED")
         self.assertTrue(rollback.is_file(), "PR3807_ROLLBACK_ARTIFACT_MISSING")
 
+    def test_b07_owner_pending_sql_remains_outside_migration_lane(self) -> None:
+        # B07 #3813: candidate UP/DOWN are DESIGN ONLY, never deployable migrations.
+        # A later approved real migration must have its own official name and path.
+        candidate_dir = ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle"
+        for filename in ("b07_lf4_saly5_candidate_up.sql", "b07_lf4_saly5_candidate_down.sql"):
+            self.assertTrue((candidate_dir / filename).is_file(), "B07_SANDBOX_SOURCE_MISSING")
+            self.assertFalse((ROOT / "supabase/migrations" / filename).exists(),
+                             "B07_CANDIDATE_SQL_IN_OFFICIAL_MIGRATIONS")
+        self.assertEqual(
+            list((ROOT / "supabase/migrations").glob("*b07_lf4_saly5_candidate*.sql")),
+            [],
+            "B07_CANDIDATE_MIGRATION_REQUIRES_OWNER_DECISION",
+        )
+
     def test_unclassified_name_is_gated_before_any_apply_step(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         gate = text.index("- name: Classify migration name before any write")
