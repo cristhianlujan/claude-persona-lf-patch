@@ -12,14 +12,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-BACKFILL_CANDIDATES = sorted((ROOT / "supabase/migrations").glob(
-    "*_lf_asset_owner_one_name_backfill_v1.sql"))
-if len(BACKFILL_CANDIDATES) != 1:
-    raise RuntimeError("LF_BACKFILL_CANONICAL_MIGRATION_NOT_UNIQUE")
-BACKFILL_MIGRATION = BACKFILL_CANDIDATES[0]
-BACKFILL_CODE = BACKFILL_MIGRATION.stem
-BACKFILL_VERSION = BACKFILL_CODE.split("_", 1)[0]
-BACKFILL_PATH = BACKFILL_MIGRATION.relative_to(ROOT).as_posix()
 sys.path.insert(0, str(ROOT / "sandbox/lf_contract_gate_test/db_write_transport"))
 import lf_train_execution_recorder as train_recorder
 BASE = ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle/pg18_live_object_slice_baseline.sql"
@@ -148,10 +140,10 @@ class AssetOwnerPG18(unittest.TestCase):
         # Synthetic only: exact ACT-0001/Train fields required by PR3803 scope.
         # This is not a real Router scope receipt or an authorization to write
         # outside PostgreSQL Docker. Train itself owns these in Supabase.
-        train_code = BACKFILL_CODE
+        train_code = "20261113071927_lf_asset_owner_one_name_backfill_v1"
         train_path = "supabase/migrations/" + train_code + ".sql"
         train_manifest = train_recorder.train_execution_manifest({
-            "producer": "lf-migration-merge-train", "version": BACKFILL_VERSION,
+            "producer": "lf-migration-merge-train", "version": "20261113071927",
             "name": "lf_asset_owner_one_name_backfill_v1", "path": train_path,
             "repo": "cristhianlujan/claude-persona-lf-patch",
             "pr": "3806", "run_id": "123456789", "head_sha": "a"*40
@@ -306,8 +298,8 @@ class AssetOwnerPG18(unittest.TestCase):
     def rebind_train_to_backfill_sql(self):
         """PG-only readback of the ACTUAL recorder-sourced synthetic manifest.
         Does not mutate the fixture RUN; the Train creates a real RUN on deploy."""
-        name = BACKFILL_CODE
-        target = BACKFILL_PATH
+        name = "20261113071927_lf_asset_owner_one_name_backfill_v1"
+        target = "supabase/migrations/" + name + ".sql"
         return ("DO $verify_train$ BEGIN IF NOT EXISTS (SELECT 1 "
                 "FROM public.lf_operation_execution e WHERE e.execution_id="
                 + quote(PARENT)
@@ -345,7 +337,7 @@ class AssetOwnerPG18(unittest.TestCase):
     def test_005_backfill_exact_sql_pg18(self):
         """Execute EXACT one-file backfill under official PG18 fixture RUN and
         rollback the entire transaction, without live Supabase writes."""
-        path = BACKFILL_MIGRATION
+        path = ROOT / "supabase/migrations/20261113071927_lf_asset_owner_one_name_backfill_v1.sql"
         source = path.read_text(encoding="utf-8")
         self.assertTrue(source.startswith("-- LF IG OFFICIAL DATA MIGRATION"))
         self.assertEqual(source.count("\nBEGIN;"),1)
@@ -360,7 +352,7 @@ class AssetOwnerPG18(unittest.TestCase):
         print("PASS_PG18_EXACT_DOCUMENTARY_DATA_MIGRATION_155_ROLLBACK",flush=True)
 
     def test_006_backfill_fails_closed_on_stale_preimage(self):
-        source = (BACKFILL_MIGRATION).read_text(encoding="utf-8")
+        source = (ROOT / "supabase/migrations/20261113071927_lf_asset_owner_one_name_backfill_v1.sql").read_text(encoding="utf-8")
         body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
         query = ("BEGIN;" + self.rebind_train_to_backfill_sql() + ";"
                  "UPDATE public.lf_activos SET owner_name='LF_GOVERNANCE' "
@@ -370,7 +362,7 @@ class AssetOwnerPG18(unittest.TestCase):
         print("PASS_PG18_DOCUMENTARY_BACKFILL_DRIFT_REJECTED",flush=True)
 
     def test_007_backfill_sha_drift_blocks(self):
-        source = (BACKFILL_MIGRATION).read_text(encoding="utf-8")
+        source = (ROOT / "supabase/migrations/20261113071927_lf_asset_owner_one_name_backfill_v1.sql").read_text(encoding="utf-8")
         source = self.fixture_sha_rebind(source)
         body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
         query = ("BEGIN;" + self.rebind_train_to_backfill_sql() + ";"
@@ -383,7 +375,7 @@ class AssetOwnerPG18(unittest.TestCase):
     def test_008_backfill_missing_system_proposer_blocks(self):
         """No proponente is invented inside the SQL writer. It must exist
         on the official Train RUN before the first effect."""
-        source = (BACKFILL_MIGRATION).read_text(encoding="utf-8")
+        source = (ROOT / "supabase/migrations/20261113071927_lf_asset_owner_one_name_backfill_v1.sql").read_text(encoding="utf-8")
         body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
         query = ("BEGIN;"
                  "UPDATE public.lf_operation_execution "
