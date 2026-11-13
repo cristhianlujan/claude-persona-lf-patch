@@ -111,6 +111,30 @@ def governed_request():
             or len(json.dumps(context)) > 55000):
             raise ValueError("PROFILE_NATIVE_BEGIN_CONTEXT_INVALID")
         return {"kind": "BEGIN", "router_context": context, "executor_mode": mode}
+    # B09 receipt transport is NOT an alternate writer. The existing Issue
+    # workflow calls the existing Edge OIDC authority and canonical profile RPC.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_B09_WRITER_REQUEST_V1":
+        mode=data.get("mode")
+        if mode not in ("ISSUE_NONCE","APPEND_EVENT") or not isinstance(data.get("execution_id"),str) or not re.fullmatch(
+            r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}",data["execution_id"]):
+            raise ValueError("B09_WRITER_REQUEST_MODE_OR_RUN_INVALID")
+        expected={"schema_version","execution_id","mode"}
+        if mode=="ISSUE_NONCE":
+            expected|={"candidate_sha256","scope_packet_sha256","producer_prompt_sha256"}
+            if any(not isinstance(data.get(k),str) or not re.fullmatch(r"[0-9a-f]{64}",data[k])
+                   for k in ("candidate_sha256","scope_packet_sha256","producer_prompt_sha256")):
+                raise ValueError("B09_WRITER_REQUEST_SCOPE_INVALID")
+        else:
+            expected|={"seq","kind","raw_text"}
+            seq=data.get("seq")
+            if (type(seq) is not int or seq not in (1,2,3) or
+                data.get("kind") != {1:"REQUEST",2:"EXECUTOR",3:"JUDGE"}[seq] or
+                not isinstance(data.get("raw_text"),str) or
+                len(data["raw_text"].encode("utf-8"))>45000):
+                raise ValueError("B09_WRITER_REQUEST_RAW_INVALID")
+        if set(data)!=expected:
+            raise ValueError("B09_WRITER_REQUEST_FIELDS_INVALID")
+        return {"kind":"B09_WRITER","input":data}
     # A read-only profile invokes a governed skill through its own route. The server uses the
     # authenticated execution as the parent and the skill invoker checks authority and inputs.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
@@ -755,6 +779,24 @@ def main():
                           "code": invoked.get("code"), "detail": invoked.get("detail"),
                           "skill_code": request["skill_code"], "execution_id": request["execution_id"],
                           "result": result if ok else None}, ensure_ascii=False))
+        return 0 if ok else 1
+    if isinstance(request, dict) and request.get("kind") == "B09_WRITER":
+        data=request["input"]
+        sent={k:v for k,v in data.items() if k!="schema_version"}
+        sent["action"]="profile_native_b09_official_writer_v1"
+        status,resp=call_json(EDGE_URL,sent,headers)
+        expected="B09_NONCE_ISSUED" if data["mode"]=="ISSUE_NONCE" else "B09_EVENT_RECORDED"
+        receipt=resp.get("receipt",{}) if isinstance(resp,dict) else {}
+        ok=(status==200 and isinstance(resp,dict) and resp.get("outcome")==expected and
+            resp.get("execution_id")==data["execution_id"] and receipt.get("run_completed") is False and
+            receipt.get("effect_authority") is False)
+        # Do not print RAW events, only server nonce/chain tip and document status.
+        print(json.dumps({"phase":"B09_OIDC_CANONICAL_WRITER","outcome":resp.get("outcome") if isinstance(resp,dict) else None,
+                          "http_status":status,"code":resp.get("code") if isinstance(resp,dict) else None,
+                          "execution_id":data["execution_id"],"mode":data["mode"],
+                          "nonce":receipt.get("nonce") if ok and data["mode"]=="ISSUE_NONCE" else None,
+                          "chain_tip_sha256":receipt.get("chain_tip_sha256") if ok else None,
+                          "run_completed":False,"business_write_performed":False},ensure_ascii=False))
         return 0 if ok else 1
     # Source revision is required only for profile BEGIN/RESUME, not for
     # profile-owned skill invocations: OIDC + server-side parent authority
