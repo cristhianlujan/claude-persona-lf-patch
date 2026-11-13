@@ -1,0 +1,358 @@
+{
+  "schema": "LF_L29_LOGIN_B2B_SECURITY_POLICIES_SELECT_ONLY",
+  "source_sql": "WITH sec AS MATERIALIZED (SELECT security_policy_id,policy_code,status,description,policy_config,parameter_provenance,\n encode(sha256(convert_to(to_jsonb(s)::text,'UTF8')),'hex') AS full_row_sha256\n FROM lf_ops.politicas_seguridad s WHERE security_policy_id IN (3,19,20,25)),\n sess AS MATERIALIZED (SELECT session_policy_id,policy_code,status,reauthentication_actions,mfa_required_profiles,parameter_provenance,\n encode(sha256(convert_to(to_jsonb(t)::text,'UTF8')),'hex') AS full_row_sha256\n FROM lf_ops.politicas_sesion t WHERE session_policy_id=1)\nSELECT\n (SELECT coalesce(jsonb_agg(to_jsonb(sec) ORDER BY security_policy_id),'[]'::jsonb) FROM sec) security_policies,\n (SELECT coalesce(jsonb_agg(to_jsonb(sess) ORDER BY session_policy_id),'[]'::jsonb) FROM sess) session_policies;",
+  "read_only": true,
+  "security_policies": [
+    {
+      "status": "VIGENTE",
+      "description": "Requerir MFA a todos los perfiles humanos del Backoffice B2B definidos por profile_id numérico. La política determina aplicabilidad; las reglas de pantalla no duplican listas de perfiles ni parámetros del factor.",
+      "policy_code": "SEC-B2B-MFA",
+      "policy_config": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "profile_codes_alias": [
+          "B2B_ADMIN_LF",
+          "B2B_ADMIN_EMPRESA",
+          "B2B_APROBADOR",
+          "B2B_OPERADOR_INTEGRAL",
+          "B2B_OPERADOR",
+          "B2B_LECTOR_AUDITOR"
+        ],
+        "applicability_source": "SECURITY_POLICY_ONLY",
+        "factor_policy_status": "DEFINED_LOTE_3B",
+        "profile_relation_key": "profile_id",
+        "coverage_review_status": "CLOSED_ALL_HUMAN_PROFILES",
+        "unresolved_profile_ids": [],
+        "factor_security_policy_id": 19,
+        "profile_relation_key_type": "NUMERIC_ID",
+        "numeric_thresholds_in_rule": "DENY",
+        "current_required_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "full_row_sha256": "f3e8366724d29a4d7a51e12f5ec3a863a9de39ae92485e7b41aaa328826fa243",
+      "security_policy_id": 3,
+      "parameter_provenance": {}
+    },
+    {
+      "status": "CANDIDATO",
+      "description": "La politica central de factores define metodos por perfil. Los administradores requieren SSO Google Workspace SAML con control resistente a phishing. Los demas perfiles usan un segundo control LF de OTP por correo entregado con Brevo; debe verificarse del lado servidor antes del acceso operativo. No puede atribuirse a este OTP la garantia de AAL2 nativo del proveedor sin evidencia. Los bindings del proveedor de identidad permanecen pendientes de M1/ADR-003.",
+      "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+      "policy_config": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "coverage_status": "ALL_HUMAN_PROFILES",
+        "admin_idp_status": "PLANNED_NOT_PROVISIONED",
+        "non_admin_method": "LF_EMAIL_OTP",
+        "totp_flow_status": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+        "admin_profile_ids": [
+          1,
+          2
+        ],
+        "admin_sso_protocol": "SAML_2_0",
+        "admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+        "email_otp_screen_id": 54,
+        "admin_primary_method": "GOOGLE_WORKSPACE_SAML_SSO",
+        "legacy_otp_policy_id": 1,
+        "standard_profile_ids": [
+          5,
+          6
+        ],
+        "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+        "non_admin_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "phone_otp_default_use": "DENY",
+        "admin_minimum_strength": "PHISHING_RESISTANT",
+        "legacy_otp_default_use": "DENY",
+        "admin_identity_provider": "GOOGLE_WORKSPACE",
+        "factor_selection_status": "CLOSED_POLICY_DEFINED",
+        "high_impact_profile_ids": [
+          3,
+          4
+        ],
+        "non_admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+        "totp_challenge_route_id": 13,
+        "factor_registry_strategy": "CENTRAL_POLICY",
+        "totp_challenge_screen_id": 54,
+        "totp_enrollment_route_id": 14,
+        "non_admin_assurance_model": "LF_SECOND_FACTOR_VERIFIED",
+        "standard_minimum_strength": "APPROVED_MFA",
+        "totp_enrollment_screen_id": 55,
+        "non_admin_delivery_channel": "EMAIL",
+        "non_admin_smtp_default_use": "DENY",
+        "numeric_thresholds_in_rule": "DENY",
+        "non_admin_delivery_provider": "BREVO",
+        "high_impact_minimum_strength": "APPROVED_MFA",
+        "non_admin_delivery_execution": "SERVER_SIDE_ONLY",
+        "non_admin_delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+        "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+        "legacy_otp_default_eligibility": "NOT_APPROVED_AS_DEFAULT_BACKOFFICE_FACTOR",
+        "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+        "phishing_resistant_option_required": true,
+        "admin_provider_configuration_status": "PENDING_GOOGLE_WORKSPACE_TENANT_AND_SAML_METADATA",
+        "admin_phishing_resistant_requirement": "GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY",
+        "totp_enrollment_screen_in_normal_flow": "DENY",
+        "provider_architecture_security_policy_id": 23,
+        "supabase_native_aal2_claim_for_email_otp": "DENY"
+      },
+      "full_row_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+      "security_policy_id": 19,
+      "parameter_provenance": {
+        "provider_binding": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        },
+        "admin_alternative_future_method": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        },
+        "provider_architecture_security_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        }
+      }
+    },
+    {
+      "status": "CANDIDATO",
+      "description": "La recuperación del segundo control no puede convertirse en bypass. Para perfiles no administradores que usan OTP por correo, la contingencia por pérdida de acceso al correo queda PENDING_FUNCTIONAL_DEFINITION y bloquea producción de esa rama hasta definir validación de identidad y recuperación segura. Para administradores, la recuperación continúa delegada a Google Workspace. Cuando el mismo buzon recibe codigos para recuperar la contrasena y para el segundo control, controlar ese buzon no demuestra una segunda verificacion independiente de identidad. Ante sospecha o reporte de compromiso del correo, ningun codigo enviado a ese mismo canal puede justificar por si solo la recuperacion del factor o una sesion operativa. El procedimiento independiente y auditable para los perfiles no administradores permanece PENDING_FUNCTIONAL_DEFINITION. No se permite bypass ni degradacion a contrasena sola.",
+      "policy_code": "SEC-B2B-MFA-RECOVERY",
+      "policy_config": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "audit_actions": [
+          "MFA_RECOVERY_REQUESTED",
+          "MFA_RECOVERY_IDENTITY_VERIFIED",
+          "MFA_FACTOR_RESET",
+          "MFA_REENROLLED"
+        ],
+        "recovery_flow": "SEPARATE_GOVERNED_FLOW",
+        "admin_recovery_mode": "GOOGLE_WORKSPACE_IDP_MANAGED",
+        "password_only_bypass": "DENY",
+        "authorization_registry": "lf_ops.perfiles_permisos",
+        "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+        "lost_totp_recovery_mode": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+        "new_factor_reenrollment": "REQUIRED",
+        "non_admin_recovery_mode": "PENDING_FUNCTIONAL_DEFINITION_EMAIL_ACCESS_RECOVERY",
+        "weaker_factor_downgrade": "DENY",
+        "future_profile_assignment": "ADD_PROFILE_PERMISSION_RELATION",
+        "admin_recovery_profile_ids": [
+          1,
+          2
+        ],
+        "authorization_relation_key": "permission_id",
+        "numeric_thresholds_in_rule": "DENY",
+        "email_access_recovery_status": "PENDING_FUNCTIONAL_DEFINITION",
+        "assisted_recovery_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "authorization_relation_key_type": "NUMERIC_ID",
+        "authorized_recovery_actor_binding": "PERMISSION_BASED_DEFINED",
+        "authorized_recovery_permission_id": 38,
+        "emergency_access_is_user_recovery": "DENY",
+        "session_before_recovery_completion": "DENY",
+        "subscriber_notification_on_recovery": "REQUIRED",
+        "password_only_access_during_recovery": "DENY",
+        "lost_factor_revocation_or_replacement": "REQUIRED",
+        "required_assurance_after_reenrollment": "AAL2",
+        "authenticator_rebinding_after_recovery": "REQUIRED_WHEN_FACTOR_LOST",
+        "current_authorized_recovery_profile_ids": [
+          1
+        ],
+        "provider_architecture_security_policy_id": 23,
+        "identity_verification_before_factor_reset": "REQUIRED",
+        "authenticated_operational_session_before_completion": "DENY"
+      },
+      "full_row_sha256": "700c785c955107725c262681fd05031f6c69693989813dae861f88f421135f16",
+      "security_policy_id": 20,
+      "parameter_provenance": {
+        "provider_binding": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        },
+        "provider_architecture_security_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        }
+      }
+    },
+    {
+      "status": "CANDIDATO",
+      "description": "Control de dispositivo confiable para Backoffice Empresa. El OTP por correo se solicita únicamente cuando el login proviene de un dispositivo no reconocido. La duración de confianza es configurable por empresa y no puede ser permanente.",
+      "policy_code": "SEC-B2B-TRUSTED-DEVICE",
+      "policy_config": {
+        "permanent_trust": "DENY",
+        "editable_profiles": [
+          "B2B_ADMIN_LF",
+          "B2B_ADMIN_EMPRESA"
+        ],
+        "read_only_profiles": [
+          "B2B_LECTOR_AUDITOR"
+        ],
+        "company_configurable": true,
+        "device_registry_status": "DEFINED_CANDIDATE",
+        "second_control_channel": "EMAIL_OTP",
+        "second_control_trigger": "UNRECOGNIZED_DEVICE_ONLY",
+        "company_settings_screen": "B2B-ADMIN-001",
+        "manual_revocation_scope": [
+          "SINGLE_DEVICE",
+          "ALL_TRUSTED_DEVICES_FOR_USER"
+        ],
+        "trusted_device_rls_mode": "ENABLED_SERVER_ONLY",
+        "manual_revocation_actions": [
+          "REVOKE_TRUSTED_DEVICE",
+          "REVOKE_ALL_TRUSTED_DEVICES"
+        ],
+        "trust_revocation_triggers": [
+          "TRUST_EXPIRED",
+          "PASSWORD_CHANGED",
+          "USER_SUSPENDED",
+          "MANUAL_REVOCATION"
+        ],
+        "trusted_device_token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+        "trusted_device_cookie_path": "/",
+        "manual_revocation_authority": "SERVER_ONLY",
+        "manual_revocation_next_login": "EMAIL_OTP_REQUIRED",
+        "trusted_device_cookie_domain": "OMIT",
+        "trusted_device_cookie_prefix": "__Host-",
+        "trusted_device_cookie_secure": true,
+        "trusted_device_token_storage": "HASH_ONLY",
+        "trusted_device_cookie_purpose": "DEVICE_RECOGNITION_AFTER_PRIMARY_AUTH",
+        "trusted_device_registry_table": "lf_ops.dispositivos_confiables",
+        "trusted_device_token_rotation": "NEW_TOKEN_AFTER_SUCCESSFUL_EMAIL_OTP",
+        "manual_revocation_confirmation": "REQUIRED",
+        "trusted_device_duration_source": "lf_ops.empresas.trusted_device_duration_days",
+        "trusted_device_registry_status": "DEFINED_CANDIDATE",
+        "logout_preserves_trusted_device": true,
+        "manual_revocation_permission_id": 31,
+        "trusted_device_cookie_http_only": true,
+        "trusted_device_cookie_same_site": "Lax",
+        "trusted_device_expiry_authority": "SERVER",
+        "trusted_device_token_generation": "SERVER_ONLY",
+        "manual_revocation_session_effect": "TERMINATE_AFFECTED_ACTIVE_SESSIONS",
+        "manual_revocation_permission_code": "B2B_USER_UPDATE",
+        "trusted_device_client_direct_access": "DENY",
+        "trusted_device_cookie_expiry_source": "lf_ops.empresas.trusted_device_duration_days",
+        "trusted_device_duration_allowed_days": [
+          7,
+          15,
+          30,
+          60,
+          90
+        ],
+        "trusted_device_duration_default_days": 30,
+        "trusted_device_cookie_contains_identity": "DENY",
+        "trusted_device_cookie_authenticates_user": "DENY",
+        "trusted_device_revoked_token_reactivation": "DENY"
+      },
+      "full_row_sha256": "b3eb2d4f3ab1a67bd99c58f243f55c7092dd8040e2710c3ce1d28a82d36bbc4c",
+      "security_policy_id": 25,
+      "parameter_provenance": {}
+    }
+  ],
+  "session_policies": [
+    {
+      "status": "VIGENTE",
+      "policy_code": "SESSION-B2B-DEFAULT",
+      "full_row_sha256": "3cc7d3742bfe778ac02858ff69c65ecbc32bb79549510dec4d45d33db82586f9",
+      "session_policy_id": 1,
+      "parameter_provenance": {},
+      "mfa_required_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reauthentication_actions": [
+        "APPROVE_LOAD",
+        "PROCESS_LOAD",
+        "ACTIVATE_POLICY",
+        "ASSIGN_ROLE",
+        "SUSPEND_COMPANY"
+      ]
+    }
+  ],
+  "owner_decision_conversation_only": {
+    "mfa_email_provider": "BREVO",
+    "fallback_channel": "SMS",
+    "sms_provider": "NOT_CONFIRMED",
+    "mfa_conditional_triggers": [
+      {
+        "type": "INACTIVITY",
+        "value": 30,
+        "unit": "days",
+        "location": "CENTRAL_SECURITY_POLICY_PARAMETER"
+      },
+      {
+        "type": "PASSWORD_UNCHANGED",
+        "value": 3,
+        "unit": "calendar_months",
+        "location": "CENTRAL_SECURITY_POLICY_PARAMETER"
+      }
+    ],
+    "other_triggers": "PENDING_OWNER",
+    "recovery_support": {
+      "identity_document": "REQUIRED_FORMAT_NOT_DECIDED",
+      "two_persons": "REQUIRED",
+      "wait_hours": 48,
+      "previous_contact_notice": "REQUIRED"
+    },
+    "formal_signature": false
+  }
+}
