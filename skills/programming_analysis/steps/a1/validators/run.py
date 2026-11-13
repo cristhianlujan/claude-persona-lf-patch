@@ -71,8 +71,23 @@ def _guard_check(data: dict, result: dict) -> list[str]:
     return module.check(data, result)
 
 
-def run(data: Any) -> dict:
-    """Return candidate internal-step result; never claims external verification or effects."""
+def run(data: Any, *, business: str | None = None,
+        semantic_producer: Any = None, semantic_reviewer: Any = None) -> dict:
+    """Normalize a prestructured request or semantically reviewed raw input.
+
+    Text-only inputs require two separate callbacks. In their absence the
+    request is NOT pretended to be interpreted; no keyword fallback exists.
+    This remains a local SOURCE_CANDIDATE, not operational attestation.
+    """
+    is_raw_envelope = isinstance(data, dict) and "raw_prompt" in data
+    if isinstance(data, str) or is_raw_envelope:
+        raw = data if isinstance(data, str) else data.get("raw_prompt")
+        if is_raw_envelope and business is not None and "business" in data and data["business"] != business:
+            return _run_semantic(raw, None, None, None, business_conflict=True)
+        declared_business = business if business is not None else (
+            data.get("business") if is_raw_envelope else None
+        )
+        return _run_semantic(raw, declared_business, semantic_producer, semantic_reviewer)
     base = {
         "schema_version": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1",
         "skill_code": "PROGRAMMING_ANALYSIS_LF",
@@ -175,3 +190,76 @@ def run(data: Any) -> dict:
         base["interpretation_state"] = "NO_VALID_INTERPRETATION"
         base["blocking_codes"] = sorted(set(faults))
     return base
+
+
+def _run_semantic(raw_text: Any, business: Any, producer: Any, reviewer: Any,
+                  *, business_conflict: bool = False) -> dict:
+    """Provider-neutral callback seam; canonical REQUEST_CONTEXT_V1 unchanged."""
+    base = {
+        "schema_version": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1",
+        "skill_code": "PROGRAMMING_ANALYSIS_LF",
+        "step_code": "A1",
+        "business": business if isinstance(business, str) else None,
+        "status": "BLOCKED",
+        "payload": None,
+        "declared_intent_kind": None,
+        "normalized_prompt": None,
+        "original_request_sha256": sha256(raw_text.encode("utf-8")).hexdigest()
+            if isinstance(raw_text, str) and raw_text.strip() else None,
+        "semantic_review_required": True,
+        "interpretation_state": "NO_VALID_INTERPRETATION",
+        "blocking_codes": [],
+        "next_capability": None,
+        "external_authority_verified": False,
+        "operationally_integrated": False,
+        "effects_executed": False,
+    }
+    if business_conflict:
+        base["blocking_codes"] = ["RAW_ENVELOPE_BUSINESS_CONFLICT"]
+        return base
+    if business != "LF":
+        base["blocking_codes"] = ["BUSINESS_SCOPE_NOT_PROVIDED_OR_NOT_LF"]
+        return base
+    spec = importlib.util.spec_from_file_location(
+        "a1_semantic_intake_candidate", BASE / "semantic_intake_candidate_v1.py"
+    )
+    if spec is None or spec.loader is None:
+        base["blocking_codes"] = ["SEMANTIC_ADAPTER_UNAVAILABLE"]
+        return base
+    adapter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(adapter)
+    reviewed = adapter.extract(raw_text, producer, reviewer)
+    if reviewed["status"] != "REVIEWED_CANDIDATE":
+        base["status"] = (
+            "REQUIRES_SEMANTIC_REVIEW" if reviewed["status"] == "REQUIRES_SEMANTIC_REVIEW"
+            else "BLOCKED"
+        )
+        base["blocking_codes"] = reviewed["blocking_codes"]
+        return base
+    try:
+        structured = adapter.to_structured_input(raw_text, business, reviewed)
+    except (TypeError, ValueError, KeyError):
+        base["blocking_codes"] = ["SEMANTIC_TO_CANONICAL_MAPPING_INVALID"]
+        return base
+    result = run(structured)
+    if result["status"] not in ("REQUIRES_SEMANTIC_REVIEW", "REQUIRES_DECISION"):
+        return result  # preserve canonical material gates
+    result["intent_analysis"] = copy.deepcopy(reviewed["intent"])
+    result["semantic_candidate_sha256"] = reviewed["candidate_sha256"]
+    result["semantic_reviewer_ref"] = reviewed["reviewer_ref"]
+    result["semantic_review_identity_verified"] = False
+    if result["status"] == "REQUIRES_SEMANTIC_REVIEW":
+        result["status"] = "VALID_OUTPUT"
+        result["semantic_review_required"] = False
+        result["interpretation_state"] = "SEMANTIC_REVIEWED_CANDIDATE"
+        result["next_capability"] = "A2"
+        result["blocking_codes"] = []
+    faults = _problems(result, _schema(BASE / "schemas/output.schema.json"))
+    faults.extend(_guard_check(structured, result))
+    if faults:
+        base["blocking_codes"] = sorted(set(
+            ["SEMANTIC_RESULT_CONTRACT_INVALID"] if _problems(
+                result, _schema(BASE / "schemas/output.schema.json")) else []
+        ) | set(_guard_check(structured, result)))
+        return base
+    return result
