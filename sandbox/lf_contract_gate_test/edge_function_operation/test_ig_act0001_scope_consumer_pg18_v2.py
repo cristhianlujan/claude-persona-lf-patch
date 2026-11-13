@@ -21,11 +21,17 @@ ROLLBACK = ROOT / (
 class ACT0001ScopeConsumerPG18(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        fail_assert(DELTA.is_file() and ROLLBACK.is_file(),
-                    "PR3807_DELTA_OR_ROLLBACK_MISSING")
+        fail_assert(ROLLBACK.is_file(), "PR3807_ROLLBACK_MISSING")
+        fail_assert(STEP70_BASELINE.is_file(),
+                    "PG18_STEP70_LIVE_SOURCE_FIXTURE_MISSING")
+        if not DELTA.is_file():
+            # The LF Merge Train consumes the deployed SQL from main. Keep
+            # this one-time integration test active only on candidate branches.
+            raise unittest.SkipTest(
+                "PR3807_POST_MERGE_DELTA_CONSUMED_BY_MERGE_TRAIN"
+            )
         PG18RealSQL.setUpClass()
         cls.sql = PG18RealSQL.sql
-        fail_assert(STEP70_BASELINE.is_file(),"PG18_STEP70_LIVE_SOURCE_FIXTURE_MISSING")
         cls.sql(STEP70_BASELINE.read_text("utf-8"), timeout=120)
         cls.sql(DELTA.read_text("utf-8"), timeout=120)
         fail_assert(cls.sql(
