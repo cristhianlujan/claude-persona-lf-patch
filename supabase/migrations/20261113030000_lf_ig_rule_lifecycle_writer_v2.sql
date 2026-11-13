@@ -81,7 +81,11 @@ CREATE TABLE public.lf_ig_owner_decision_v2(
   decision_date timestamptz NOT NULL,
   literal_phrase text NOT NULL CHECK(length(btrim(literal_phrase))>=6),
   decision_record jsonb NOT NULL,
-  decision_record_sha256 text NOT NULL CHECK(decision_record_sha256 ~ '^[0-9a-f]{64}
+  decision_record_sha256 text NOT NULL CHECK(
+    decision_record_sha256 ~ '^[0-9a-f]{64}$'),
+  identity_mode text NOT NULL DEFAULT 'UNVERIFIED_CHAT_DECLARATION'
+    CHECK(identity_mode='UNVERIFIED_CHAT_DECLARATION'),
+  parent_execution_id text NOT NULL,
   rule_code text NOT NULL,
   kind text NOT NULL CHECK(kind IN ('CREATE','UPDATE_CANDIDATE','CORRECT_VIGENTE')),
   source_sha256 text NOT NULL CHECK(source_sha256 ~ '^[0-9a-f]{64}$'),
