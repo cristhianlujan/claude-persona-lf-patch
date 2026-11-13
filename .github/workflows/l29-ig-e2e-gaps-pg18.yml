@@ -1,0 +1,88 @@
+name: L29 E2E IG gaps 3 variants PG18 isolated
+on:
+  push:
+    branches: [lf/issue-3779-lote29-e2e-gap-report-v1]
+    paths:
+      - sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/17_l29_e2e_request_sod_retry_pg18.sql
+      - sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_e2e_ig_gap.py
+      - .github/workflows/l29-ig-e2e-gaps-pg18.yml
+permissions:
+  contents: read
+concurrency:
+  group: l29-e2e-gaps-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  one-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    services:
+      postgres18:
+        image: postgres:18
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PostgreSQL 18 client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          psql -X -At -v ON_ERROR_STOP=1 -d postgres -c "SHOW server_version;"
+      - name: Run ONE PG18 e2e runner, 3 scenarios and negative cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_e2e_ig_gap.py | tee "$RUNNER_TEMP/l29_console.log"
+          python3 - <<'PY'
+          import json
+          p="sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/lote29_e2e_runtime.json"
+          d=json.load(open(p))
+          md5={"apply":"86b0494984edf95cf0f9c0a0df67000b",
+           "capture_record":"89cbfac4162dbc9f8ecca59f2c3ab4c3",
+           "citation_verify":"773a62783baa5edbe967200cac66b8c3",
+           "l8_guard":"522d12f0843be1da3c785cef3c0bf3fc"}
+          assert d["gates_md5"]==md5 and not d["gate_sql_modified"]
+          assert d["outcome"]=="SANDBOX_VERIFIED" and d["production"]=="NO_GO_UNVERIFIED"
+          assert d["blockers_closed"]==0 and d["blockers_total"]==14
+          assert [x["kind"] for x in d["scenarios"]]==["NEW","MODIFY_CANDIDATE","CORRECT_VIGENTE"]
+          assert all(x["status"]=="PASS" for x in d["cases"])
+          required={"NO_EVIDENCE","NO_PERMISSION_APPROVE","SUPER_ADMIN_DENIED",
+          "OWNER_CANNOT_CREATE_REQUEST","SAME_ACTOR_CREATOR_APPROVER_BLOCKED",
+          "REQUEST_MISSING_BLOCKS_OWNER","REQUEST_IDEMPOTENCY_CONFLICT",
+          "DIRECT_REQUEST_DML_DENIED","POST_PROMOTION_FAULT_ROLLBACK",
+          "NO_PARTIAL_ROWS_AFTER_FAILURE"}
+          assert required <= {x["id"] for x in d["cases"]}
+          assert len(d["scenarios"])==3
+          assert d["status_counts"]=={"REAL_EN_SANDBOX":21,"SINTETICO":15,"NO_PROBADO":0},d["status_counts"]
+          assert all(s["rollback"]=={"request":0,"curator":0,"owner_intent":0,"promotion":0,"closure":0,"candidate":0} for s in d["scenarios"])
+          assert not d["routing_profile_run_native"] and not d["ig_native"] and not d["step70_oidc_native"] and d["production_writes"]==0
+          print("L29_CI_ASSERT_PASS",d["case_count"],d["status_counts"])
+          PY
+      - name: Preserve original runner, console and source SHA256
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/l29_evidence"
+          cp sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/lote29_e2e_runtime.json "$RUNNER_TEMP/l29_evidence/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/l29_console.log" "$RUNNER_TEMP/l29_evidence/" 2>/dev/null || true
+          sha256sum sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/17_l29_e2e_request_sod_retry_pg18.sql sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote29_e2e_ig_gap.py > "$RUNNER_TEMP/l29_evidence/sources.sha256"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: l29-e2e-pg18-raw
+          path: ${{ runner.temp }}/l29_evidence/
+          retention-days: 14
+          if-no-files-found: warn
