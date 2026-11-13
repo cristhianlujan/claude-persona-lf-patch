@@ -1,0 +1,8 @@
+{
+  "solution_ref": "LF-IG-ASSET-OWNER-BACKFILL-155-V1",
+  "paths": {
+    "supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_asset_owner_one_name_pg18.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-ASSET-OWNER-BACKFILL-155-V1.json": "CHANGESET_MANIFEST"
+  }
+}
