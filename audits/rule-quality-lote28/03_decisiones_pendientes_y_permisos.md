@@ -1,5 +1,7 @@
 # Decisiones Q01–Q12 y brechas de control — SIN FIRMA
 
+**ENMIENDA VIGENTE L28 (SIN FIRMA):** base actual TEMPORAL; grupos Motor **7**, Contenido **5**, Infraestructura final **2**. B13/B14 **fuera del GO técnico del motor temporal**, sin cerrar ni aprobar; detalle vinculante para este plan en `10_decision_base_temporal_migracion_y_rollback.md`. Evidencia de panel B13 aportada por dueño, no leída independientemente. Esta enmienda prevalece sobre todo texto histórico L28 que todavía mencione Motor 9.
+
 **Estado literal para TODAS las filas:** `DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA`, según entrada del dueño en L28. Significa **preferencia o dirección de diseño conversada**, no aprobación acreditada, contrato productivo ni implementación. Las otras 20 decisiones de L21 permanecen PENDIENTE. En la fuente L21 hay 32/32 sin firmas verificadas. **Las firmas de decisiones de Contenido son registro documental en IG, no gate del GO técnico Motor.** Las decisiones de autoridad y alcance de Motor requieren sus propias firmas auténticas. No actualizar `05_respuestas_dueno.csv` de L21.
 
 | Q | Instrucción conversada (no firmada) | Por definir / acreditar | Bloqueos |
@@ -44,4 +46,3 @@ Fuente del señalamiento: pedido L28 del dueño. **Sin SELECT de `lf_ops.permiso
 
 ## Regla de salida
 Ninguna decisión Q01..Q12 se promueve por este paquete. **Contenido (B01/B04/B05/B10/B11):** firma y dictamen quedan como registro documental gobernado por IG y bloquean **solo su propia funcionalidad/promoción**, no GO técnico del Motor. **Motor (B02/B03/B06/B07/B08/B09/B12/B13/B14):** necesita evidencia de cierre, identidad/autoridad y G15-MOTOR antes de una operación de pase gobernada. El contrato técnico compartido y las pruebas fail-closed siguen siendo obligatorios. Toda mutación futura exige versión, impacto, aprobación competente y operación independiente de L28.
-

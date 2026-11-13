@@ -1,5 +1,12 @@
 # Manifiesto de procedencia, readback y protocolo documental
 
+## Enmienda nueva (SIN FIRMA)
+- Supabase actual temporal; alcance Motor **7** (B02/B03/B06/B07/B08/B09/B12), Contenido 5 e Infraestructura final 2 (B13/B14). **0 cierres en los tres grupos**. Fuente: dueño en conversación, ver `10_decision_base_temporal_migracion_y_rollback.md`.
+- Panel descrito por dueño: 7 backups físicos diarios, último 2026-11-12 09:37 UTC. No se verificaron IDs, hashes, panel, retención ni restore; B13 no se cierra.
+- Preimagen SHA por cada cambio; no PITR temporal, no nuevo proyecto Supabase de prueba. B13 y B14 evaluados en proyecto final aún no seleccionado.
+- PR #3803 agrega rollback manual y test PG18/PG17.6, no mueve SQL original. Los estados de CI se registrarán solo tras readback real.
+- El resto de este manifiesto conserva trazabilidad histórica de versiones L28 previas (9/5); **no son el criterio actual de GO**. La norma actual de este plan es 7/5/2.
+
 ## Base conocida
 - Repo: `cristhianlujan/claude-persona-lf-patch`.
 - Base commit EXACTO: `4c3e376c62a3ae488d1c031ba7043d686919a65d`.
@@ -31,13 +38,12 @@
 3. Incorporar pruebas negativas, dependencias y readback independiente del emisor.
 4. Solicitar conformidad según firmantes de L21; registrar resultado firmado, no inferido.
 5. Actualizar tablero solo tras cotejar todos los campos con la fuente y gate correspondiente. Cerrar Bnn individualmente, nunca por arrastre o por avance porcentual.
-6. Para **G15-MOTOR del L28** recopilar **9 recibos Motor** y firmas/autoridades propias del Motor, sus gates G01/G02/G03/G04/G08/G09/G10/G11/G12, riesgos, scope y operación futura separada. **Los 5 recibos y firmas de Contenido no bloquean el GO técnico de IG**; se administran por IG para habilitación de su contenido propio. **G15 original L21 (14 recibos/32 firmas) sigue intacto y no se presupone reconfigurado en runtime**.
+6. Para **G15-MOTOR TEMPORAL del L28** recopilar **7 recibos Motor** y firmas/autoridades propias del Motor, sus gates G01/G02/G03/G04/G08/G11/G12, riesgos, scope y operación futura separada. Los 5 recibos de Contenido no vetan el GO de Motor. B13/B14 y G09/G10 se exigirán en Infraestructura **final**; no se declaran cerrados. G15 original L21 sigue intacto.
 
 ## Readback que debe verificarse luego de la escritura Git
 - Rama creada desde SHA completo `4c3e376c...`.
 - Solo rutas nuevas `audits/rule-quality-lote28/**`.
 - Contenido completo de 7 documentos + 14 recibos = **21 archivos**.
 - 14 plantillas sin actores, fechas, hashes de evidencia productiva ni firmas rellenadas.
-- Tablero conservado **0/14** y **0/15** total histórico, desglosado **Motor 0/9**, **Contenido 0/5**; matriz de 12 etapas igual a L21.
+- Tablero conservado **0/14** y **0/15** total histórico, desglosado **Motor 0/7**, **Contenido 0/5**, **Infraestructura final 0/2**; matriz de 12 etapas igual a L21.
 - Comprobar diff base..HEAD, HEAD remoto y blobs de muestras; registrar SHA de commit en informe de entrega. **READBACK_PASS_DOCUMENTAL (primer commit a3b0d6beec724a7a99c9270f3e0fcbc95801a223):** verificado con compare(base,HEAD) y lectura remota por ruta: 1 commit ahead / 0 behind; 21 rutas nuevas, todas `audits/rule-quality-lote28/**`; 14 filas ABIERTO/NO_VERIFICADO; 15 gates G01–G15; los 14 recibos contienen firma en blanco, ninguna casilla marcada y aviso NO_ES_RECIBO_EMITIDO. La comparación confirma **rutas/archivos**, no funcionamiento productivo, firmas ni gates MD5 live. El commit final tras actualizar este manifiesto debe verificarse con nueva comparación y leerse en informe final; no inventar SHA autofirmada.
-

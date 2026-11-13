@@ -1,5 +1,7 @@
 # L28 — Readback de contratos de liberación (solo SELECT)
 
+**ENMIENDA VIGENTE L28 (SIN FIRMA):** base actual TEMPORAL; grupos Motor **7**, Contenido **5**, Infraestructura final **2**. B13/B14 **fuera del GO técnico del motor temporal**, sin cerrar ni aprobar; detalle vinculante para este plan en `10_decision_base_temporal_migracion_y_rollback.md`. Evidencia de panel B13 aportada por dueño, no leída independientemente. Esta enmienda prevalece sobre todo texto histórico L28 que todavía mencione Motor 9.
+
 **Alcance:** verificar si el requisito «14 bloqueos / 32 firmas» de L21 corresponde a un gate operacional consultable o a una política de dossier; identificar barreras técnicas reales para pase del motor. **Diagnóstico de solo lectura, no aprobación.**
 
 - **Origen:** Supabase actual conectado `https://mhwmirqcgxxukpctffuv.supabase.co` (URL obtenida del conector). Rol SQL `supabase_read_only_user`, database `postgres`. Ningún DML/DDL, RUN, escritura, deploy o modificación de gate.
@@ -77,4 +79,3 @@ FROM public.lf_operation_step_contracts;
 5. Solicitar operación de cambio oficial solo si se determina que es necesaria, con autorización explícita, preimagen hash, regresión y rollback. **L28 no la ejecuta.**
 
 **RESULTADO:** READBACK_SQL_PARCIAL / **NO-GO**. Evidencia SQL real, **sin recibos firmados ni resultados de producción**.
-

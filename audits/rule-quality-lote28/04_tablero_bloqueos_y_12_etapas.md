@@ -1,29 +1,28 @@
-# Tablero dual: Motor (9) / Contenido (5) y 12 etapas PG18
+# Tablero L28 — Motor 7 / Contenido 5 / Infraestructura final 2
 
-## Semáforo de bloqueos
-**Motor IG: 0/9 cerrados (0 %) → NO-GO técnico. Contenido: 0/5 cerrados (0 %), registro paralelo IG sin veto al GO del Motor. Total histórico: 0/14 cerrados (0 %).** No confundir avance documental con cumplimiento del gate de producción.
+**Todos abiertos:** Motor **0/7 (0%)**, Contenido **0/5 (0%)**, Infraestructura final **0/2 (0%)**. Total L21: **0/14**. NO-GO técnico del Motor actual. La evidencia declarada para B13 no constituye cierre de B13 ni B14.
 
-El tablero L21 de etapas y los 14 estados de bloqueo permanecen sin modificar como hechos históricos. Para el pase de IG se consideran solo los nueve bloques Motor y G15-MOTOR; los 5 Content mantienen sus firmas como documental.
+| Bloqueo | Grupo | Condición resumida para evaluación | Gate L21 | Estado |
+|---|---|---|---|---|
+| B01_MFA | CONTENIDO | Seguridad/owner, MFA real, no bypass; B09 test fail-closed si Login | G05 | ABIERTO / SIN FIRMA |
+| B02_RUN_SCOPE | MOTOR | Cohorte congelada, dueño+Ops | G01 | ABIERTO / SIN FIRMA |
+| B03_RUN_EFFECTS | MOTOR | B02, reconciliación efectos/leases | G02 | ABIERTO / SIN FIRMA |
+| B04_FAMILY | CONTENIDO | B06, 15 familias/23 casos; interfaz B07 | G06 | ABIERTO / SIN FIRMA |
+| B05_RULES | CONTENIDO | B04+B01; baseline B12, 57/3/20 | G07 | ABIERTO / SIN FIRMA |
+| B06_OWNER | MOTOR | B06-D→B08→B06-A autenticados | G03 | ABIERTO / SIN FIRMA |
+| B07_SCHEMA | MOTOR | B04 interfaz, B08+B12, preimagen hash/rollback seguro temporal | G11 | ABIERTO / SIN FIRMA |
+| B08_IDENTITY | MOTOR | Auth real, sub/roles/RLS y negativos | G04 | ABIERTO / SIN FIRMA |
+| B09_E2E | MOTOR | B03+B06+B07+B08 y B01 fail-closed si Login | G12 | ABIERTO / SIN FIRMA |
+| B10_BUSINESS | CONTENIDO | B08+B05; permisos, contratos y QA negocio | G13 | ABIERTO / SIN FIRMA |
+| B11_LEGAL | CONTENIDO | B05, dictamen/legal/UX | G14 | ABIERTO / SIN FIRMA |
+| B12_LEGACY | MOTOR | B08+baseline B05, regresión y gates MD5 | G08 | ABIERTO / SIN FIRMA |
+| B13_BACKUP | INFRA_FINAL | Panel temporal: 7 físicos diarios, último 12-nov-2026 09:37 UTC (declaración del dueño, no panel leído); política backup/PITR se exige en base final | G09 | ABIERTO / PENDIENTE FIRMA |
+| B14_RESTORE | INFRA_FINAL | Restore real + PITR evaluados en futura base productiva | G10 | ABIERTO / SIN FIRMA |
 
-| Bloqueo | Grupo | Responsable(s) de evidencia / decisión | Depende de | Gate | Estado |
-|---|---|---|---|---|---|
-| B01_MFA | CONTENIDO | Seguridad, IAM, dueño, Brevo/SMS | B08 | G05 | ABIERTO / NO_VERIFICADO |
-| B02_RUN_SCOPE | MOTOR | Dueño, Operaciones | — | G01 | ABIERTO / NO_VERIFICADO |
-| B03_RUN_EFFECTS | MOTOR | Operaciones, DBA, custodios | B02 | G02 | ABIERTO / NO_VERIFICADO |
-| B04_FAMILY | CONTENIDO | Dueño LF/SALY, Gobernanza | B06 | G06 | ABIERTO / NO_VERIFICADO |
-| B05_RULES | CONTENIDO | Dueño, Seguridad, Legal/Producto | B04, B01 ref MFA | G07 | ABIERTO / NO_VERIFICADO |
-| B06_OWNER | MOTOR | Dueño LF/SALY, IAM | B06-D → B08 → B06-A | G03 | ABIERTO / NO_VERIFICADO |
-| B07_SCHEMA | MOTOR | Dueño LF/SALY, Infra/DBA | interfaz B04; B08, B12, B14 (sin firma B04) | G11 | ABIERTO / NO_VERIFICADO |
-| B08_IDENTITY | MOTOR | Seguridad/IAM, dueño | contrato B06-D | G04 | ABIERTO / NO_VERIFICADO |
-| B09_E2E | MOTOR | IG, Plataforma, Seguridad, dueño | B03, B06, B08, B07; B01 fail-closed si Login, no firma B01 | G12 | ABIERTO / NO_VERIFICADO |
-| B10_BUSINESS | CONTENIDO | Producto, Finanzas, Operaciones, dueño | B08, B05; B09 antes de operar | G13 | ABIERTO / NO_VERIFICADO |
-| B11_LEGAL | CONTENIDO | Legal, UX, Negocio, dueño | B05 | G14 | ABIERTO / NO_VERIFICADO |
-| B12_LEGACY | MOTOR | Arquitectura, Infra/DBA, dueño | B08, baseline/contrato B05, sin firma B05 | G08 | ABIERTO / NO_VERIFICADO |
-| B13_BACKUP | MOTOR | Infra/DBA, Continuidad, dueño | — | G09 | ABIERTO / NO_VERIFICADO |
-| B14_RESTORE | MOTOR | Infra/DBA, Continuidad, dueño | B13 | G10 | ABIERTO / NO_VERIFICADO |
+**G15-MOTOR temporal:** 7 gates G01/G02/G03/G04/G08/G11/G12; evaluación documental NO implementada. G09/G10 se difieren al GO de Infraestructura final. Sin proyecto nuevo ni PITR temporal. No cambiar la muestra histórica de 12 etapas.
 
-### Regla mecánica de actualización (no aplicada en L28)
-Un bloqueo cambia de ABIERTO a CERRADO **solo** si existe recibo auténtico firmado por facultados, evidencia RAW y hashes, readback, pruebas negativas y dependencias **técnicas aplicables** resueltas, además del gate asociado. Para Motor, **una firma/cierre de Contenido no es prerequisito**; debe probarse la interfaz/compatibilidad o fail-closed que el Motor consuma. Para Contenido, las firmas se conservan como registro documental y habilitan solo su promoción funcional posterior. Mantener versión, identidad/sub, as_of y origen. Las plantillas de este lote **no cuentan como recibos**.
+### Regla de evidencia
+Toda preimagen de cambio temporal lleva identificador, fuente/objeto, SHA, algoritmo, actor, scope, diff y readback. La declaración del dueño sobre backups B13 se registra **como evidencia conversada sin firma ni comprobante independiente**, no como estado de backup verificado desde proveedor. Un bloqueo solo se cierra con evidencia exigida y firma auténtica futura.
 
 ## 12 etapas × 3 escenarios — reproducción del L21, no prueba nueva
 
@@ -46,4 +45,3 @@ Un bloqueo cambia de ABIERTO a CERRADO **solo** si existe recibo auténtico firm
 **Totales:** 15/36 REAL_EN_SANDBOX (41,7%), 14/36 SINTETICO, 7/36 NO_PROBADO. 0/36 celdas E2E de producción acreditadas **en estos lotes**. PG18: 18/18 scripts reportados PASS L20, no independencia ni GO productivo. No extrapolar a todo el producto.
 
 **Fuente verificable:** L21 `03_tablero_12_etapas.md` @ `4c3e376c`, blob `bb3faa6b6412b5c540ff0670fb0de0166809e9a6`. Recalcular solo si se aporta nueva evidencia y se registra comparación; no reemplazar estados históricos silenciosamente.
-
