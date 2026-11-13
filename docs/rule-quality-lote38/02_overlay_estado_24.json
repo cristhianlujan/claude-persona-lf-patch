@@ -1,0 +1,518 @@
+{
+  "schema": "LF_L38_OWNER_DECISIONS_STATUS_OVERLAY_V1",
+  "base_manifest": {
+    "path": "docs/rule-quality-lote37/01_manifiesto_firma_en_bloque_v1.json",
+    "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+    "sha256_utf8": "ae43acb08d1783859607921ca54d58d60da89a8dff55ee38e9da37113712e9c7",
+    "git_blob_sha1": "75ad92d85bf0089e7cc8e2b91756f34694582861"
+  },
+  "rationale": "NO modificar manifiesto original cuyo SHA exacto vincula la frase; el estado actualizado es esta capa append-only versionada.",
+  "receipt_ref": "docs/rule-quality-lote38/01_receipt_confirmacion_bloque.json",
+  "target_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+  "confirmation_id": "LF-L38-OWNER-CONFIRM-BLOCK-20261113-001",
+  "identity_mode": "UNVERIFIED_CHAT_DECLARATION",
+  "identity_verified": false,
+  "formal_signature_verified": false,
+  "covered_count": 24,
+  "records": [
+    {
+      "ordinal": 1,
+      "identifier": "L16-Q01",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        },
+        {
+          "path": "docs/rule-quality-lote35/00_decision_dueno_auth019_opcion_a_corrige_l34.json",
+          "branch": "lf/issue-3779-lote35-auth019-option-a-owner-correction-v1",
+          "sha256_utf8": "f9bf7bfda06ab3c05e07d71292fcbdd5f7a61482dabe0c51d46d114c50b297db"
+        },
+        {
+          "path": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+          "branch": "lf/issue-3779-lote36-policy19-admin1-2-otp-owner-decision-v1",
+          "sha256_utf8": "a5947148a32bf1e6199cbb8d495658bd9ba02e026c19d6e2881b521c79a6916f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 2,
+      "identifier": "L16-Q02",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 3,
+      "identifier": "L16-Q03",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "branch": "lf/issue-3779-lote27-owner-decisions-register-v1",
+          "sha256_utf8": "50df21489d05ea859d0d8a7b0c5f61cabf7dc47d333105d8de0c7fc3677f5846"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 4,
+      "identifier": "L16-Q04",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "branch": "lf/issue-3779-lote27-owner-decisions-register-v1",
+          "sha256_utf8": "50df21489d05ea859d0d8a7b0c5f61cabf7dc47d333105d8de0c7fc3677f5846"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 5,
+      "identifier": "L16-Q05",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "branch": "lf/issue-3779-lote27-owner-decisions-register-v1",
+          "sha256_utf8": "50df21489d05ea859d0d8a7b0c5f61cabf7dc47d333105d8de0c7fc3677f5846"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 6,
+      "identifier": "L16-Q06",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 7,
+      "identifier": "L16-Q07",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 8,
+      "identifier": "L16-Q08",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 9,
+      "identifier": "L16-Q09",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 10,
+      "identifier": "L16-Q10",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 11,
+      "identifier": "L16-Q11",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 12,
+      "identifier": "L16-Q12",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 13,
+      "identifier": "L30-APPROVAL-MODEL-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        },
+        {
+          "path": "docs/rule-quality-lote30/04_modelo_aprobacion_y_brechas.md",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "sha256_utf8": "a36098858cf38f93f8be93044771bd63349d1141d848c79874a4ef94decb15fc"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 14,
+      "identifier": "L33-OWNER-FREEZE-ALL-IN_PROGRESS-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote33/09_g01_candidate_receipt_unissued.json",
+          "branch": "lf/issue-3779-lote33-b02-freeze-asof-pr3803-g01-v1",
+          "sha256_utf8": "3df96b23407cdd6e427bb65f3186e76352a03a43c404005959296f4d637390bc"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 15,
+      "identifier": "L35-OWNER-AUTH019-OPTION-A-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote35/00_decision_dueno_auth019_opcion_a_corrige_l34.json",
+          "branch": "lf/issue-3779-lote35-auth019-option-a-owner-correction-v1",
+          "sha256_utf8": "f9bf7bfda06ab3c05e07d71292fcbdd5f7a61482dabe0c51d46d114c50b297db"
+        },
+        {
+          "path": "docs/rule-quality-lote35/01_auth019_opcion_a_patch_v2_tarjeta_seis_campos.json",
+          "branch": "lf/issue-3779-lote35-auth019-option-a-owner-correction-v1",
+          "sha256_utf8": "579ee33ad683dfce66e6d642812f1e0956acedc8a09271fe5c008494be912776"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 16,
+      "identifier": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+          "branch": "lf/issue-3779-lote36-policy19-admin1-2-otp-owner-decision-v1",
+          "sha256_utf8": "a5947148a32bf1e6199cbb8d495658bd9ba02e026c19d6e2881b521c79a6916f"
+        },
+        {
+          "path": "docs/rule-quality-lote36/01_policy19_patch_v2_documental_sha_tarjeta_six_fields.json",
+          "branch": "lf/issue-3779-lote36-policy19-admin1-2-otp-owner-decision-v1",
+          "sha256_utf8": "11ed38359c822e1f9b3e9e4750aa8b14729a8a9ce8839fb89739301f7472f41f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 17,
+      "identifier": "DEC-B06-OWNER-LF-GOVERNANCE-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 18,
+      "identifier": "DEC-B08-DECLARACION-TEMPORAL-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 19,
+      "identifier": "DEC-TRAIN-DIRECTO-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 20,
+      "identifier": "DEC-G15-TEMPORAL-7-GATES-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 21,
+      "identifier": "DEC-TEMPORAL-BACKUP-ROLLBACK-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 22,
+      "identifier": "DEC-B07-PADRE-HIJA-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 23,
+      "identifier": "DEC-B09-NATIVO-JUEZ-MISMO-LLM-001",
+      "previous_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": null
+    },
+    {
+      "ordinal": 24,
+      "identifier": "PROP-RIESGO-RECIBOS-DUENO-001",
+      "previous_status": "PROPUESTA_RIESGO_PENDIENTE_ACEPTACION",
+      "effective_status": "DECIDIDA_CONFIRMADA_EN_BLOQUE_NO_VERIFICADA",
+      "source_document_shas": [
+        {
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "formal_signature_verified": false,
+      "operational_receipt_issued": false,
+      "creates_authority_to_execute": false,
+      "caveat": "Anteriormente propuesta; nueva confirmación cubre aceptación documental, sin convertir recibos ajenos en firmas verificadas"
+    }
+  ],
+  "superseded_decisions_unchanged": [
+    {
+      "id": "L34-OWNER-AUTH019-FIDO2-ADMIN-EMPRESA-001",
+      "status": "SUPERADO_POR_L35_NO_FIRMAR"
+    },
+    {
+      "id": "L30-Q01-PERFIL1_PENDIENTE",
+      "status": "PARCIALMENTE_SUPERADO_POR_L36"
+    },
+    {
+      "id": "20_DECISIONES_L19_L21_NO_TOMADAS",
+      "status": "NO_ENVIAR_A_FIRMA"
+    },
+    {
+      "id": "L33_AUTH_002_003_040_PATCHES",
+      "status": "PROPUESTAS_SIN_DECISION_ESPECIFICA_NO_PROMOVER"
+    }
+  ],
+  "uncovered_decisions_outside_the_24": "See 03_uncovered_proposals_and_signature_mechanism.md",
+  "blockers_closed": 0,
+  "go_allowed": false
+}

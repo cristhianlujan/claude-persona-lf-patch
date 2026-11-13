@@ -1,0 +1,533 @@
+{
+  "schema": "LF_OWNER_BULK_SIGNATURE_002_CANDIDATE_V1",
+  "block_id": "LF-FIRMA-BLOQUE-20261113-002",
+  "state": "BORRADOR_SIN_DECISION_NI_FIRMA_DEL_DUENO",
+  "owner_attribution": null,
+  "owner_signed": false,
+  "identity_verified": false,
+  "approval_phrase_not_yet_received": true,
+  "reference_first_block": {
+    "block_id": "LF-FIRMA-BLOQUE-20261113-001",
+    "source_sha256": "ae43acb08d1783859607921ca54d58d60da89a8dff55ee38e9da37113712e9c7",
+    "relationship": "INDEPENDENT_SECOND_DRAFT"
+  },
+  "scope_count": 23,
+  "historical20_count": 20,
+  "auth_proposals_count": 3,
+  "source_sha_policy": "SHA-256 bytes UTF-8 del documento fuente exacto; entradas repetidas comparten SHA de archivo; no es SHA individual de patch ni aprobación técnica.",
+  "records": [
+    {
+      "id": "L19-Q01",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Qué RUN integran exactamente la cohorte 32 frente a los 232 vivos en SQL?",
+      "priority_and_blocker_literal": "- Prioridad **P1** · bloqueo `B02_RUN_SCOPE` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=232 íntegros; B=32 IDs literales del dueño; C=32 prioritarios propuestos.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** Conservar universo 232 e investigar 32 prioritarios; fijar lista sin ambigüedad.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 congelación universo completo, prevalece sobre antigua cohorte 232",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X06",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Qué identidad real se aceptará: Supabase Auth y sub→perfil/actor por proyecto?",
+      "priority_and_blocker_literal": "- Prioridad **P1** · bloqueo `B08_IDENTITY` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=diseñar binding JWT/RLS probado; B=NO-GO; C=usar HMAC fixture.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B hasta JWT real, rol efectivo, aislamiento por proyecto y denegación SUPER_ADMIN.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 B08 identidad documental temporal, identidad real final pendiente",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X07",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se aprueba solo plan de prueba nativa ACT-0001→perfil→RUN→IG→Step70/OIDC→cierre?",
+      "priority_and_blocker_literal": "- Prioridad **P1** · bloqueo `B09_E2E` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=ensayo real controlado; B=mantener NO-GO; C=aceptar L18 como prueba nativa.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A como plan futuro; no confundir fixtures de L18 con Step70/OIDC real.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 B09 nativo mismo LLM es decisión de diseño, gate independiente sigue",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X10",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se exige respaldo físico + PITR con retención, RPO y RTO explícitos?",
+      "priority_and_blocker_literal": "- Prioridad **P1** · bloqueo `B13_BACKUP` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=evidencia física/PITR y política; B=NO-GO; C=asumir backups.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B hasta recibos de proveedor/DBA; SELECT no acredita backup ni PITR.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 B13/B14 exigibles base final",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X11",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se exige ensayo real de restauración en entorno aislado antes de migrar?",
+      "priority_and_blocker_literal": "- Prioridad **P1** · bloqueo `B14_RESTORE` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=restauración y prueba checksum/tiempos; B=NO-GO; C=aceptar DOWN SQL.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B hasta A: DOWN no es rollback seguro tras poblar datos.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 B13/B14 exigibles base final",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X12",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se aprueba contrato MFA de factor 19 y recuperación sin bypass para 11 reglas candidatas?",
+      "priority_and_blocker_literal": "- Prioridad **P1** · bloqueo `B01_MFA` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=aprobar contrato y pruebas SAML/Brevo/ADR-003; B=mantener CANDIDATO; C=activar sin prueba.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B hasta todo probado y política 19 VIGENTE; correo OTP no acredita AAL2 nativo.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 perfiles1/2 OTP Brevo no garantiza phishing resistant",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q02",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Cómo resolver los 56 B con señales de escritura?",
+      "priority_and_blocker_literal": "- Prioridad **P2** · bloqueo `B03_RUN_EFFECTS` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=conciliar destinos/commits primero; B=reintentar; C=cerrar sin readback.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A; B/C bloqueadas hasta idempotencia y recibos.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q03",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Qué hacer con los 4 posiblemente vivos?",
+      "priority_and_blocker_literal": "- Prioridad **P2** · bloqueo `B03_RUN_EFFECTS` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=confirmar heartbeat y worker; B=mantener sin cambios; C=forzar cierre.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B hasta A; no C.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X04",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se autoriza el diseño de columnas LF reviewed_at,next_review_at,successor_rule_code,effective_to?",
+      "priority_and_blocker_literal": "- Prioridad **P2** · bloqueo `B07_SCHEMA` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=aprobar contrato y borrador UP/DOWN; B=posponer; C=ejecutar SQL directo.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A documental, requiere backfill, RLS/GRANT, compatibilidad, rollback seguro posterior.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 B07 padre/hija sustituye propuesta de columnas",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X05",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se autoriza diseño de columnas SALY más lifecycle_state separado de estado VALIDADO?",
+      "priority_and_blocker_literal": "- Prioridad **P2** · bloqueo `B07_SCHEMA` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=cinco campos+plan; B=posponer; C=reutilizar estado.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A documental sin reutilizar estado; DOWN solo seguro previo a datos.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 B07 padre/hija sustituye propuesta de columnas",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X08",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se aprueba registro operativo project_code+owner_profile_code+actors+familias?",
+      "priority_and_blocker_literal": "- Prioridad **P2** · bloqueo `B06_OWNER` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=diseñar mapa autenticado por proyecto; B=sin owner; C=usar B2B Admin tácito.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A con dueño real LF/SALY y no SUPER_ADMIN, sin activar fuentes sintéticas.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X09",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se aprueba matriz de compatibilidad apply_batch,decide_batch,report,guard?",
+      "priority_and_blocker_literal": "- Prioridad **P2** · bloqueo `B12_LEGACY` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=contratos y regresiones antes adopción; B=posponer; C=sustituir funciones directo.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A antes de cualquier despliegue, respetando funciones existentes y gates.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q04",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Cómo investigar 166 D sin efectos demostrados?",
+      "priority_and_blocker_literal": "- Prioridad **P3** · bloqueo `B03_RUN_EFFECTS` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=ampliar fuentes y contratos por operación; B=archivar masivamente; C=asumir sin efectos.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A; no B/C.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q05",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Pueden 6 A declararse huérfanos sin efectos?",
+      "priority_and_blocker_literal": "- Prioridad **P3** · bloqueo `B03_RUN_EFFECTS` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=verificar sinks externos adicionales; B=asumir cero efecto; C=cerrar de inmediato.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A; clasificación sigue provisional.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X01",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Qué intervalo de revisión LF se aprueba (en días)?",
+      "priority_and_blocker_literal": "- Prioridad **P3** · bloqueo `B04_FAMILY` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=intervalo documentado; B=posponer; C=90 días sintéticos.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B mientras no haya política real; 90 solo fixture.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X02",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Qué intervalo de revisión SALY se aprueba (en días)?",
+      "priority_and_blocker_literal": "- Prioridad **P3** · bloqueo `B04_FAMILY` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=intervalo documentado; B=posponer; C=60 días sintéticos.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** B mientras no haya política real; 60 solo fixture.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L21-X03",
+      "group": "L21_HISTORICO",
+      "topic_literal": "¿Se aprueban las 15 familias LF propuestas y la resolución individual de 23 pertenencias dudosas?",
+      "priority_and_blocker_literal": "- Prioridad **P3** · bloqueo `B04_FAMILY` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=aprobar tras revisión 23/23; B=mantener provisional; C=remapear automáticamente.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A mediante acta separada, sin mutar categorización en este lote.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q06",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Quién debe ser owner real de calidad de reglas de LF?",
+      "priority_and_blocker_literal": "- Prioridad **P4** · bloqueo `B06_OWNER` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=nombrar perfil distinto de SUPER_ADMIN; B=usar B2B_ADMIN_LF como owner automático; C=dejar sin owner.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A con prueba de competencia y vínculo a actor; no B automático.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "L37 owner canónico LF_GOVERNANCE, actor real sin verificar",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q07",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Quién será owner de SALY y de cada familia?",
+      "priority_and_blocker_literal": "- Prioridad **P4** · bloqueo `B06_OWNER` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=nombrar owner SALY y mapas propios; B=heredar LF; C=usar proyecto sin actor.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A; conservar aislamiento SALY/LF.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "L19-Q08",
+      "group": "L19_HISTORICO",
+      "topic_literal": "¿Se autoriza un futuro diseño gobernado del registro de owners y recibos de reconciliación?",
+      "priority_and_blocker_literal": "- Prioridad **P4** · bloqueo `B06_OWNER` · **PENDIENTE**.",
+      "options_literal": "- **Opciones:** A=aprobar solo diseño/plan con identidad verificada; B=implantar L13/L17 sandbox sin adaptar; C=mantener NO-GO.",
+      "proposed_resolution_literal": "- **SUGERENCIA:** A como fase separada, sin adoptar sandbox directamente ni tocar RUN.",
+      "current_status": "PENDIENTE_APROBACION_INDIVIDUAL_NO_DECISION_ACREDITADA_EN_ESTE_DOCUMENTO",
+      "prior_l37_thematic_interaction": "REQUIERE_RECONCILIACION_SEMANTICA_SI_APLICA",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote21-owner-signoff-dossier-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "git_blob_sha1": "7657b239129d0f9853d8f9dab8e702f469f6ed2e",
+          "sha256_utf8": "cce04b452afd2076cb5a2731249292d54160b8fd3a703c2cb3a6ed0de9c662e5"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Las SUGERENCIAS de L21 NO son decisión del dueño. No usar propuesta como autorización de reintento, cambio de policy o aprobación técnica."
+    },
+    {
+      "id": "B2B-RULE-AUTH-018",
+      "group": "PROPUESTA_RULE_CANDIDATO",
+      "topic_literal": "AUTH-018 Login B2B",
+      "source_status_reported_from_L29": "CANDIDATO",
+      "risk_and_delta_literal": "| `AUTH-018` | CANDIDATO | CONTRADICCION_MFA_SIEMPRE; DUPLICACION_PERFILES_EN_CONFIG | /descripcion, /valor_config/covered_profile_ids, /valor_config/mfa_profile_coverage, /valor_config/mfa_required_outcome | 2 | 1 | ESCALAR | DUEÑO:OTROS_DISPARADORES_MFA_PENDIENTE; EXT:ACTUALIZACION_GOBERNADA_POLITICA_3; EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision |",
+      "suggested_resolution": "PENDIENTE_RECONCILIACION_CON_Q01_Q11_POLITICAS_Y_CAMBIO_EXACTO; NO_APROBAR_SOLO_CODIGO",
+      "current_status": "PROPUESTA_NO_APROBADA_INDIVIDUALMENTE_SIN_PATCH_EXACTO_FIRMADO",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote29/09_matriz_humana_51.md",
+          "git_blob_sha1": "d7751395e37c538f7a88353b6113123caff493e2",
+          "sha256_utf8": "13f0ac49390f5f62a7e078366174de48d7f6e5b350b47a7744a9c4a1bad7de9d"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Requiere patch canónico completo, SHA exacto, preimagen y decisión individual V2 tras RUN+judge; el bloque no es escritor."
+    },
+    {
+      "id": "B2B-RULE-AUTH-020",
+      "group": "PROPUESTA_RULE_CANDIDATO",
+      "topic_literal": "AUTH-020 Login B2B",
+      "source_status_reported_from_L29": "CANDIDATO",
+      "risk_and_delta_literal": "| `AUTH-020` | CANDIDATO | VACIO_RECUPERACION_Q11; DEPENDENCIA_IMPL_Q11 | /descripcion, /valor_config/account_recovery_hold_source, /valor_config/email_access_recovery_status, /valor_config/non_admin_recovery_mode, /valor_config/previous_contact_notice | 2 | 1 | ESCALAR | DUEÑO:ALCANCE_Q11_SOPORTE_VS_ADMINS_GOOGLE_NO_CONFIRMADO; EXT:SOPORTE_DOBLE_CONTROL_DOCUMENTO_ALERTA_QA; EXT:POLITICA_20_CAMBIO_GOBERNADO; EXT:BINDING_PENDIENTE_/valor_config/provider_binding; EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision; EXT:BINDING_PENDIENTE_/valor_config/non_admin_recovery_mode; EXT:BINDING_PENDIENTE_/valor_config/email_access_recovery_status |",
+      "suggested_resolution": "PENDIENTE_RECONCILIACION_CON_Q01_Q11_POLITICAS_Y_CAMBIO_EXACTO; NO_APROBAR_SOLO_CODIGO",
+      "current_status": "PROPUESTA_NO_APROBADA_INDIVIDUALMENTE_SIN_PATCH_EXACTO_FIRMADO",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote29/09_matriz_humana_51.md",
+          "git_blob_sha1": "d7751395e37c538f7a88353b6113123caff493e2",
+          "sha256_utf8": "13f0ac49390f5f62a7e078366174de48d7f6e5b350b47a7744a9c4a1bad7de9d"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Requiere patch canónico completo, SHA exacto, preimagen y decisión individual V2 tras RUN+judge; el bloque no es escritor."
+    },
+    {
+      "id": "B2B-RULE-AUTH-033",
+      "group": "PROPUESTA_RULE_CANDIDATO",
+      "topic_literal": "AUTH-033 Login B2B",
+      "source_status_reported_from_L29": "CANDIDATO",
+      "risk_and_delta_literal": "| `AUTH-033` | CANDIDATO | CONTRADICCION_DISPOSITIVO_VS_MFA_CONDICIONAL | /descripcion, /valor_config/recognized_device_outcome, /valor_config/second_control_trigger, /valor_config/unrecognized_device_outcome | 2 | 1 | ESCALAR | DUEÑO:OTROS_CASOS_MFA_DISPOSITIVO_NO_RECONOCIDO_PENDIENTE; EXT:POLITICA_25_DEVICE_ONLY_PENDIENTE_RECONCILIAR; EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision |",
+      "suggested_resolution": "PENDIENTE_RECONCILIACION_CON_Q01_Q11_POLITICAS_Y_CAMBIO_EXACTO; NO_APROBAR_SOLO_CODIGO",
+      "current_status": "PROPUESTA_NO_APROBADA_INDIVIDUALMENTE_SIN_PATCH_EXACTO_FIRMADO",
+      "source_documents": [
+        {
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote29/09_matriz_humana_51.md",
+          "git_blob_sha1": "d7751395e37c538f7a88353b6113123caff493e2",
+          "sha256_utf8": "13f0ac49390f5f62a7e078366174de48d7f6e5b350b47a7744a9c4a1bad7de9d"
+        }
+      ],
+      "owner_decision_verified": false,
+      "authorized_for_execution": false,
+      "warning": "Requiere patch canónico completo, SHA exacto, preimagen y decisión individual V2 tras RUN+judge; el bloque no es escritor."
+    }
+  ],
+  "caveats": [
+    "Las 20 son preguntas históricas pendientes de aprobación individual; SUGERENCIA no equivale a elección del dueño.",
+    "Algunas decisiones temáticas quedaron después cubiertas parcialmente por L37; el segundo bloque NO revoca ni contradice L37 sin conciliación explícita.",
+    "AUTH-018/020/033 son propuestas no aprobadas; no hay SHA de patch canónico en este paquete, no se puede invocar writer V2.",
+    "Aun si dueño copia la frase, se registra declaración no verificada en conversación; nada se promueve ni se escribe en Supabase.",
+    "L21-X05 incluye SALY: el paquete LF no ejerce autoridad sobre SALY sin actor/competencia verificable."
+  ],
+  "gate": "PENDING_OWNER_REVIEW_NO_GO",
+  "supabase_writes": 0,
+  "run_changes": 0
+}
