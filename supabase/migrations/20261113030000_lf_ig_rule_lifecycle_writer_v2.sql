@@ -113,33 +113,52 @@ CREATE TABLE public.lf_ig_rule_change_v2(
 ALTER TABLE public.lf_ig_rule_change_v2 ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.lf_ig_rule_change_v2 FROM PUBLIC, anon, authenticated, service_role;
 
--- Authentication is the verified PostgREST Supabase Auth JWT, NOT a caller-supplied
--- name or a service_role assertion. Require MFA, project-bound owner UUID and
--- the exact profile RAW + independent judge. GitHub OIDC is a DIFFERENT issuer
--- and must be mapped at the Edge only after its own cryptographic verification.
+-- LF TEMPORARY documentary decision. No JWT/AAL2 or Supabase Auth identity.
+-- The decision must be supplied through the official service_role transport.
+-- This is NOT a verified human identity. Production requires separate IAM.
 CREATE FUNCTION public.lf_ig_rule_owner_decide_v2(
-  p_parent text,p_rule text,p_source_sha256 text,p_verdict text
+  p_parent text,p_rule text,p_source_sha256 text,p_decision jsonb
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','lf_ops','extensions'
 AS $fn$
 DECLARE
- v_uid uuid; v_jwt jsonb; v_owner record; v_parent public.lf_operation_execution%ROWTYPE;
+ v_uid uuid; v_owner record; v_parent public.lf_operation_execution%ROWTYPE;
  v_output jsonb; v_patch jsonb; v_kind text; v_source text; v_sha text;
  v_judge jsonb; v_state text; v_id uuid; v_screen text;
  v_skill text; v_skill_input jsonb; v_invoked jsonb; v_final jsonb;
+ v_verdict text; v_decisor text; v_proponente text; v_phrase text;
+ v_decision_date timestamptz; v_decision_sha text;
 BEGIN
- v_uid:=auth.uid(); v_jwt:=auth.jwt();
- IF auth.role() IS DISTINCT FROM 'authenticated' OR v_uid IS NULL
-    OR v_jwt->>'sub' IS DISTINCT FROM v_uid::text
-    OR v_jwt->>'aal' IS DISTINCT FROM 'aal2'
- THEN RAISE EXCEPTION 'LF_IG_OWNER_AUTHENTICATED_AAL2_REQUIRED'; END IF;
- SELECT * INTO v_owner FROM public.lf_ig_project_owner_v2
- WHERE project_code='LF' AND owner_sub=v_uid AND status='ACTIVE';
- IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_OWNER_BINDING_B06_MISSING'; END IF;
- IF p_verdict NOT IN ('APPROVE','REJECT')
-   OR p_rule !~ '^[A-Z0-9][A-Z0-9_-]{3,159}$'
-   OR p_source_sha256 !~ '^[0-9a-f]{64}$'
+
+ IF p_decision IS NULL OR jsonb_typeof(p_decision)<>'object'
+    OR (SELECT count(*) FROM jsonb_object_keys(p_decision))<>6
+    OR NOT (p_decision ?& ARRAY['codigo_regla','propuesta_sha256',
+        'veredicto','decisor','fecha','frase_literal'])
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_RECORD_REQUIRED'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_each(p_decision) e
+   WHERE jsonb_typeof(e.value)<>'string')
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_FIELD_TYPE_INVALID'; END IF;
+ v_verdict:=p_decision->>'veredicto';
+ v_decisor:=p_decision->>'decisor';
+ v_phrase:=p_decision->>'frase_literal';
+ IF v_decisor IS DISTINCT FROM 'Cristhian Luján'
+    OR v_verdict NOT IN ('APROBAR','RECHAZAR')
+    OR p_decision->>'codigo_regla' IS DISTINCT FROM p_rule
+    OR coalesce(p_decision->>'propuesta_sha256','') !~ '^[0-9a-f]{64}$'
+    OR length(btrim(coalesce(v_phrase,'')))<6
+    OR p_rule !~ '^[A-Z0-9][A-Z0-9_-]{3,159}$'
+    OR p_source_sha256 !~ '^[0-9a-f]{64}$'
  THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_INPUT_INVALID'; END IF;
+ IF coalesce(p_decision->>'fecha','') !~
+  '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$'
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_DATE_INVALID'; END IF;
+ v_decision_date:=(p_decision->>'fecha')::timestamptz;
+ SELECT * INTO v_owner FROM public.lf_ig_project_owner_v2
+ WHERE project_code='LF' AND owner_name=v_decisor
+   AND status='TEMP_DOCUMENTARY_ACTIVE'
+   AND identity_mode='UNVERIFIED_CHAT_DECLARATION';
+ IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_OWNER_DECLARATION_MISSING'; END IF;
+ v_uid:=v_owner.owner_sub; -- internal placeholder, NOT an authenticated UID
  SELECT * INTO v_parent FROM public.lf_operation_execution
  WHERE execution_id=p_parent AND operation_code='EJECUCION_PERFIL_LF'
    AND status='IN_PROGRESS' AND target_type='PERFIL'
@@ -149,6 +168,9 @@ BEGIN
    AND manifest->'router_profile_handoff'->'router_authorization_receipt'
        ->>'profile_execution_allowed'='true';
  IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_OWNER_PARENT_NOT_ADMITTED'; END IF;
+ IF v_decision_date < v_parent.started_at-interval '5 minutes'
+    OR v_decision_date > now()+interval '5 minutes'
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_DATE_OUT_OF_SCOPE'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps
    WHERE execution_id=p_parent AND step_id='input_validate'
      AND status='STEP_PASS_WITH_EVIDENCE')
@@ -176,6 +198,12 @@ BEGIN
     OR jsonb_typeof(v_patch->'changes') <> 'object'
     OR (SELECT count(*) FROM jsonb_object_keys(v_patch->'changes'))=0
  THEN RAISE EXCEPTION 'LF_IG_OWNER_EXACT_PROFILE_PATCH_REQUIRED'; END IF;
+ v_proponente:=nullif(btrim(v_output#>>'{deliverable_created,product_decision,proposed_by}'),'');
+ -- Mandatory origin-bound proposer declaration from the RAW profile output.
+ -- This prevents one recorded actor from filling both roles in the evidence.
+ -- Without Auth this is documentary separation, not physical-person proof.
+ IF v_proponente IS NULL OR v_proponente=v_decisor
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_SELF_APPROVAL_FORBIDDEN'; END IF;
  v_screen:=v_parent.manifest->'screen_selection_result'->>'selected_screen_code';
  IF nullif(v_screen,'') IS NULL
  THEN RAISE EXCEPTION 'LF_IG_OWNER_SCREEN_SCOPE_MISSING'; END IF;
@@ -200,16 +228,24 @@ BEGIN
    OR (v_kind='CORRECT_VIGENTE' AND v_patch->>'change_kind' NOT IN ('DOCUMENTARY_ONLY','FUNCTIONAL'))
  THEN RAISE EXCEPTION 'LF_IG_OWNER_CHANGE_KIND_MISMATCH'; END IF;
  v_sha:=encode(extensions.digest(convert_to(v_patch::text,'UTF8'),'sha256'),'hex');
+ IF p_decision->>'propuesta_sha256' IS DISTINCT FROM v_sha
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_PROPOSAL_SHA256_MISMATCH'; END IF;
+ v_decision_sha:=encode(extensions.digest(convert_to(p_decision::text,'UTF8'),'sha256'),'hex');
  INSERT INTO public.lf_ig_owner_decision_v2(
-  project_code,owner_sub,parent_execution_id,rule_code,kind,source_sha256,
-  proposal_sha256,verdict,approved_patch)
- VALUES('LF',v_uid,p_parent,p_rule,v_kind,v_source,v_sha,p_verdict,v_patch)
+  project_code,owner_sub,decisor,proponente,decision_date,literal_phrase,
+  decision_record,decision_record_sha256,parent_execution_id,rule_code,kind,
+  source_sha256,proposal_sha256,verdict,approved_patch)
+ VALUES('LF',v_uid,v_decisor,v_proponente,v_decision_date,v_phrase,
+   p_decision,v_decision_sha,p_parent,p_rule,v_kind,
+   v_source,v_sha,v_verdict,v_patch)
  ON CONFLICT(parent_execution_id,rule_code,kind) DO NOTHING
  RETURNING decision_id INTO v_id;
  IF v_id IS NULL
  THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_ALREADY_RECORDED_NO_OVERRIDE'; END IF;
- IF p_verdict='REJECT' THEN
-   RETURN jsonb_build_object('status','REJECT','decision_id',v_id,
+ IF v_verdict='RECHAZAR' THEN
+   RETURN jsonb_build_object('status','RECHAZADO','decision_id',v_id,
+     'decision_record',p_decision,'decision_record_sha256',v_decision_sha,
+     'decisor',v_decisor,'proponente',v_proponente,'identity_verified',false,
      'rule_code',p_rule,'source_sha256',v_source,'proposal_sha256',v_sha,
      'write_performed',false);
  END IF;
@@ -232,7 +268,10 @@ BEGIN
  IF v_final->>'status'<>'VIGENTE_VERIFIED'
  THEN RAISE EXCEPTION 'LF_IG_OWNER_GOVERNED_FINALIZE_FAILED'; END IF;
  RETURN jsonb_build_object('status','APPROVED_AND_VIGENTE_VERIFIED',
-   'decision_id',v_id,'owner_sub',v_uid,'rule_code',p_rule,'kind',v_kind,
+   'decision_id',v_id,'decisor',v_decisor,'proponente',v_proponente,
+   'decision_record',p_decision,'decision_record_sha256',v_decision_sha,
+   'identity_verified',false,'identity_mode','UNVERIFIED_CHAT_DECLARATION',
+   'rule_code',p_rule,'kind',v_kind,
    'source_sha256',v_source,'proposal_sha256',v_sha,
    'child_execution_id',v_invoked->>'child_execution_id',
    'finalized_snapshot_sha256',v_final->>'result_snapshot_sha256',
