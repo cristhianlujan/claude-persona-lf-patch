@@ -709,7 +709,7 @@ BEGIN
  IF v_scope->>'status'<>'SCOPE_ATTESTED_ROUTE_ONLY'
     OR v_scope->>'execution_id' IS DISTINCT FROM p_train_execution
     OR v_scope->'positive_scope' IS DISTINCT FROM
-       '[{"table":"public.lf_activos","columns":["owner_name"],"entrypoint":"public.lf_ig_asset_owner_apply_v2(uuid)"}]'::jsonb
+       '[{"table":"public.lf_activos","columns":["owner_name","updated_at","updated_by_execution_id"],"business_field":"owner_name","audit_columns":["updated_at","updated_by_execution_id"],"entrypoint":"public.lf_ig_asset_owner_apply_v2(uuid)"}]'::jsonb
     OR v_scope->>'effect_authority'<>'false'
     OR v_scope->>'downstream_execution_allowed'<>'false'
  THEN RAISE EXCEPTION 'LF_IG_ASSET_SCOPE_RECEIPT_NOT_GOVERNED'; END IF;
@@ -1092,20 +1092,20 @@ BEGIN
  THEN RAISE EXCEPTION 'LF_ROUTER_SCOPE_CANONICAL_SOURCE_MISSING'; END IF;
  SELECT jsonb_agg(column_name ORDER BY column_name),
         jsonb_agg(column_name ORDER BY column_name)
-          FILTER(WHERE column_name<>'owner_name')
+          FILTER(WHERE column_name NOT IN ('owner_name','updated_at','updated_by_execution_id'))
  INTO cols,forbidden
  FROM information_schema.columns
  WHERE table_schema='public' AND table_name='lf_activos';
  IF jsonb_typeof(cols)<>'array' OR jsonb_array_length(cols)<3
     OR NOT(cols ? 'owner_name')
-    OR jsonb_array_length(forbidden)<>jsonb_array_length(cols)-1
+    OR jsonb_array_length(forbidden)<>jsonb_array_length(cols)-3
  THEN RAISE EXCEPTION 'LF_ROUTER_SCOPE_COLUMN_COVERAGE_INVALID'; END IF;
  schema_sha:=encode(extensions.digest(convert_to(cols::text,'UTF8'),'sha256'),'hex');
  writer_md5:=md5(pg_get_functiondef('public.lf_ig_asset_owner_apply_v2(uuid)'::regprocedure));
  body:=jsonb_build_object('scope_code','LF_ACTIVOS_OWNER_NAME_WRITE_V1',
    'operation_code','ACTUALIZACION_DB_LF','entrypoint',
    'public.lf_ig_asset_owner_apply_v2(uuid)',
-   'allowed_table','public.lf_activos','allowed_columns',jsonb_build_array('owner_name'),
+   'allowed_table','public.lf_activos','allowed_columns',jsonb_build_array('owner_name','updated_at','updated_by_execution_id'),
    'forbidden_columns',forbidden,'schema_columns_sha256',schema_sha,
    'writer_source_md5',writer_md5);
  INSERT INTO public.lf_router_scope_policy_v1(
@@ -1114,7 +1114,7 @@ BEGIN
    created_by_execution_id)
  VALUES('LF_ACTIVOS_OWNER_NAME_WRITE_V1','ACTUALIZACION_DB_LF',
    'public.lf_ig_asset_owner_apply_v2(uuid)','public.lf_activos',
-   '["owner_name"]'::jsonb,forbidden,schema_sha,writer_md5,
+   '["owner_name","updated_at","updated_by_execution_id"]'::jsonb,forbidden,schema_sha,writer_md5,
    encode(extensions.digest(convert_to(body::text,'UTF8'),'sha256'),'hex'),
    'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3');
 END $scope_seed$;
@@ -1161,11 +1161,11 @@ BEGIN
  IF NOT FOUND OR policy.operation_code<>'ACTUALIZACION_DB_LF'
     OR policy.effect_entrypoint<>'public.lf_ig_asset_owner_apply_v2(uuid)'
     OR policy.allowed_table<>'public.lf_activos'
-    OR policy.allowed_columns IS DISTINCT FROM '["owner_name"]'::jsonb
+    OR policy.allowed_columns IS DISTINCT FROM '["owner_name","updated_at","updated_by_execution_id"]'::jsonb
  THEN RAISE EXCEPTION 'LF_SCOPE_POLICY_NOT_CURRENT'; END IF;
  SELECT jsonb_agg(column_name ORDER BY column_name),
         jsonb_agg(column_name ORDER BY column_name)
-          FILTER(WHERE column_name<>'owner_name')
+          FILTER(WHERE column_name NOT IN ('owner_name','updated_at','updated_by_execution_id'))
  INTO cols,negative FROM information_schema.columns
  WHERE table_schema='public' AND table_name='lf_activos';
  IF cols IS NULL OR negative IS DISTINCT FROM policy.forbidden_columns
@@ -1191,9 +1191,14 @@ BEGIN
    'scope_source','SERVER_CANONICAL_CATALOG_AND_PINNED_OWNER_WRITER',
    'scope_code',policy.scope_code,'policy_sha256',policy.policy_sha256,
    'positive_scope',jsonb_build_array(jsonb_build_object('table','public.lf_activos',
-      'columns',jsonb_build_array('owner_name'),'entrypoint',policy.effect_entrypoint)),
+      'columns',jsonb_build_array('owner_name','updated_at','updated_by_execution_id'),
+      'business_field','owner_name',
+      'audit_columns',jsonb_build_array('updated_at','updated_by_execution_id'),
+      'entrypoint',policy.effect_entrypoint)),
    'negative_scope',jsonb_build_object('table','public.lf_activos',
-      'forbidden_columns',negative,'other_tables','DENY',
+      'forbidden_columns',negative,'other_business_tables','DENY',
+      'allowed_auxiliary_receipt_tables',jsonb_build_array(
+        'public.lf_ig_asset_owner_receipt_v2','public.lf_router_scope_receipt_v1'),
       'other_operations','DENY','project_SALY','DENY',
       'historical_runs','DENY','production_promotion','DENY'),
    'scope_semantics_attested',true,'effect_authority',false,
