@@ -106,6 +106,8 @@ BEGIN
      OR v_run.status IS DISTINCT FROM 'IN_PROGRESS'
      OR v_run.manifest->>'executor_mode' IS DISTINCT FROM 'GPT_NATIVE'
      OR v_run.manifest->>'executor_provider' IS DISTINCT FROM 'OPENAI_CHATGPT_NATIVE'
+     OR v_run.manifest->>'read_only' IS DISTINCT FROM 'true'
+     OR v_run.manifest->>'no_write' IS DISTINCT FROM 'true'
      OR v_run.manifest->>'no_promotion' IS DISTINCT FROM 'true'
      OR v_run.manifest ? 'queue_request_id'
   THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','B09_NONCE_RUN_NOT_ELIGIBLE'); END IF;
