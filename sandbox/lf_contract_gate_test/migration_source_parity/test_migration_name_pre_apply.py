@@ -51,23 +51,32 @@ class MigrationNamePreApplyTest(unittest.TestCase):
         self.assertFalse(delta.exists(), "PR3807_DEPLOYED_DELTA_REINTRODUCED")
         self.assertTrue(rollback.is_file(), "PR3807_ROLLBACK_ARTIFACT_MISSING")
 
-    def test_b07_parent_child_only_sandbox_not_official_migration(self) -> None:
-        directory = ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle"
-        for filename in (
+    def test_b07_lf_only_migration_isolated_from_other_projects(self) -> None:
+        b07 = ROOT / "supabase/migrations/20261113180000_lf_ig_b07_parent_child_atomic_v1.sql"
+        self.assertTrue(b07.is_file(), "B07_LF_OFFICIAL_CANDIDATE_MISSING")
+        source = b07.read_text(encoding="utf-8")
+        self.assertIn("CREATE TABLE lf_ops.reglas_versiones_b07", source)
+        self.assertIn("CREATE TABLE public.lf_b07_project_gate_v1", source)
+        self.assertIn("CREATE FUNCTION public.lf_b07_project_preflight_v1", source)
+        self.assertIn("PERFORM public.lf_b07_append_after_finalize_v1(p_child);", source)
+        self.assertNotIn("saly.", source.lower(), "B07_CROSS_PROJECT_OBJECT")
+        self.assertNotIn("saly_", source.lower(), "B07_CROSS_PROJECT_WRITER")
+        self.assertNotIn("lf_b07_append_version_candidate_v1", source,
+                         "B07_NON_OFFICIAL_WRITER_NOT_REMOVED")
+        self.assertNotIn("ADD COLUMN lifecycle_", source,
+                         "B07_OWNER_REJECTED_LIFECYCLE_COLUMNS")
+        self.assertEqual(source.count("\\nBEGIN;\\n"), 1)
+        self.assertEqual(source.count("\\nCOMMIT;"), 1)
+        for legacy in (
+            "b07_saly_official_writer_candidate_v1.sql",
+            "b07_saly_14_rows_fixture.sql",
             "b07_parent_child_candidate_up.sql",
-            "b07_parent_child_candidate_down.sql",
             "b07_parent_child_v2_finalizer_integration_candidate.sql",
+            "b07_parent_child_candidate_down.sql",
         ):
-            self.assertTrue((directory / filename).is_file(),
-                            "B07_PARENT_CHILD_CANDIDATE_SOURCE_MISSING")
-            self.assertFalse((ROOT / "supabase/migrations" / filename).exists(),
-                             "B07_PARENT_CHILD_NOT_APPROVED_FOR_TRAIN")
+            self.assertFalse((ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle" / legacy).exists(),
+                             "B07_NON_LF_SOURCE_IN_PR:" + legacy)
         deployed = ROOT / "supabase/migrations/20261113030000_lf_ig_rule_lifecycle_writer_v2.sql"
-        for candidate in ("b07_parent_child_candidate_up.sql",
-                          "b07_parent_child_v2_finalizer_integration_candidate.sql"):
-            self.assertNotIn("ADD COLUMN lifecycle_",
-                             (directory / candidate).read_text(encoding="utf-8"),
-                             "B07_OWNER_REJECTED_LIFECYCLE_COLUMNS")
         self.assertTrue(deployed.is_file())
         self.assertNotIn("lf_b07_append_after_finalize_v1", deployed.read_text(encoding="utf-8"),
                          "B07_UNGOVERNED_MUTATION_OF_DEPLOYED_V2")
