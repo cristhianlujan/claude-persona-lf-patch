@@ -666,31 +666,43 @@ CREATE FUNCTION public.lf_ig_asset_owner_approve_v2(
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','extensions'
 AS $fn$
-DECLARE a public.lf_activos%ROWTYPE;v_sha text;v_id uuid;v_sub uuid;
+DECLARE a public.lf_activos%ROWTYPE; v_sha text; v_id uuid; v_sub uuid;
  v_train public.lf_operation_execution%ROWTYPE;
- v_proposer text;v_date timestamptz;v_dec_sha text;
+ v_proposer text; v_date timestamptz; v_dec_sha text;
 BEGIN
  IF p_decision IS NULL OR jsonb_typeof(p_decision)<>'object'
     OR (SELECT count(*) FROM jsonb_object_keys(p_decision))<>6
     OR NOT (p_decision ?& ARRAY['codigo_activo','preimagen_sha256',
-        'veredicto','decisor','fecha','frase_literal'])
+      'veredicto','decisor','fecha','frase_literal'])
  THEN RAISE EXCEPTION 'LF_IG_ASSET_DECISION_RECORD_REQUIRED'; END IF;
  IF EXISTS(SELECT 1 FROM jsonb_each(p_decision) e
    WHERE jsonb_typeof(e.value)<>'string')
  THEN RAISE EXCEPTION 'LF_IG_ASSET_DECISION_FIELD_TYPE_INVALID'; END IF;
  IF p_decision->>'codigo_activo' IS DISTINCT FROM p_asset_code
-    OR p_decision->>'preimagen_sha256' IS DISTINCT FROM p_preimage_sha256
-    OR p_decision->>'veredicto' IS DISTINCT FROM 'APROBAR'
-    OR p_decision->>'decisor' IS DISTINCT FROM 'Cristhian Luján'
-    OR length(btrim(coalesce(p_decision->>'frase_literal','')))<6
-    OR coalesce(p_decision->>'fecha','') !~
-       '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})
- IF NOT EXISTS(SELECT 1 FROM public.lf_operation_execution
-   WHERE execution_id=p_train_execution AND operation_code='ACTUALIZACION_DB_LF'
-   AND status='IN_PROGRESS')
-   OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps
+   OR p_decision->>'preimagen_sha256' IS DISTINCT FROM p_preimage_sha256
+   OR p_decision->>'veredicto' IS DISTINCT FROM 'APROBAR'
+   OR p_decision->>'decisor' IS DISTINCT FROM 'Cristhian Luján'
+   OR length(btrim(coalesce(p_decision->>'frase_literal','')))<6
+   OR coalesce(p_decision->>'fecha','') !~
+      '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$'
+ THEN RAISE EXCEPTION 'LF_IG_ASSET_DECISION_INPUT_INVALID'; END IF;
+ v_date:=(p_decision->>'fecha')::timestamptz;
+ SELECT owner_sub INTO v_sub FROM public.lf_ig_project_owner_v2
+ WHERE project_code='LF' AND owner_name='Cristhian Luján'
+   AND status='TEMP_DOCUMENTARY_ACTIVE';
+ IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_ASSET_OWNER_DECLARATION_MISSING'; END IF;
+ SELECT * INTO v_train FROM public.lf_operation_execution
+ WHERE execution_id=p_train_execution AND operation_code='ACTUALIZACION_DB_LF'
+   AND status='IN_PROGRESS';
+ IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps
     WHERE execution_id=p_train_execution AND step_id='preflight' AND status='PASS_CLEAN')
  THEN RAISE EXCEPTION 'LF_IG_ASSET_MERGE_TRAIN_PRECHECK_MISSING'; END IF;
+ v_proposer:=nullif(btrim(v_train.manifest->>'proposer_actor'),'');
+ IF v_proposer IS NULL OR v_proposer='Cristhian Luján'
+ THEN RAISE EXCEPTION 'LF_IG_ASSET_SELF_APPROVAL_FORBIDDEN'; END IF;
+ IF v_date < v_train.started_at-interval '5 minutes'
+    OR v_date > now()+interval '5 minutes'
+ THEN RAISE EXCEPTION 'LF_IG_ASSET_DECISION_DATE_OUT_OF_SCOPE'; END IF;
  SELECT * INTO a FROM public.lf_activos
  WHERE codigo_activo=p_asset_code AND archived_at IS NULL FOR SHARE;
  IF NOT FOUND OR p_new_owner !~ '^LF_[A-Z0-9_]{4,50}$'
