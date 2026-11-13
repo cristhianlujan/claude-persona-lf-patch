@@ -398,11 +398,10 @@ SELECT 'B12_LEGIT_ROLLBACK_CLEAN|'||
         # Expected is the ORIGINAL frozen ACL, not the post-UP ACL.
         frozen_acl=next(f["acl_raw"] for f in json.loads(FREEZE.read_text(encoding="utf-8"))["functions"]
                         if f["name"]=="lf_rule_promotion_guard_v1")
-        baseline_sql=acl_tuple_sql.replace(
-            "FROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) x\\nWHERE p.oid='public.lf_rule_promotion_guard_v1()'::regprocedure;",
-            "FROM aclexplode('"+frozen_acl+"'::aclitem[]) x;")
-        if baseline_sql==acl_tuple_sql:
+        marker="FROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) x"
+        if marker not in acl_tuple_sql:
             self.fail("B12_EXPECTED_ACL_SOURCE_REPLACEMENT_MISSING")
+        baseline_sql=acl_tuple_sql.split(marker,1)[0]+("FROM aclexplode('"+frozen_acl+"'::aclitem[]) x;")
         expected_acl = self.sql(name, baseline_sql)
         diagnostic = self.sql(name,
             "BEGIN; GRANT EXECUTE ON FUNCTION "
