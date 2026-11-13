@@ -56,12 +56,17 @@ def prelude(owner_token,reader_token,kind,scenario):
  if not p.startswith(fixture):raise AssertionError("L29_FIXTURE_BOUNDARY_NOT_FOUND")
  extra=""
  if kind=="MODIFY_CANDIDATE":
-  extra=("SELECT 'CANDIDATE_PREIMAGE|'||encode(extensions.digest(convert_to(to_jsonb(s)::text,'UTF8'),'sha256'),'hex') "
-        "FROM lf_ops.reglas s WHERE codigo="+lit(CODE)+";\n"
-   "UPDATE lf_ops.reglas SET valor_config=jsonb_set(coalesce(valor_config,'{}'::jsonb),"
-   "'{l29_revision}','\"2\"'::jsonb,true) WHERE codigo="+lit(CODE)+" AND estado='CANDIDATO';\n"
-   "SELECT 'CANDIDATE_POSTIMAGE|'||encode(extensions.digest(convert_to(to_jsonb(s)::text,'UTF8'),'sha256'),'hex') "
-   "FROM lf_ops.reglas s WHERE codigo="+lit(CODE)+";\n")
+  # Modify an already-seeded CANDIDATO before L11B creates evidence hashes
+  # in its fixture; all downstream validators use the changed source snapshot.
+  original="FROM lf_ops.reglas WHERE codigo='RULE-TEST-001';"
+  anchor="SELECT 'CANDIDATE_PREIMAGE|'||encode(extensions.digest(convert_to(to_jsonb(s)::text,'UTF8'),'sha256'),'hex') FROM lf_ops.reglas s WHERE codigo="+lit(CODE)+";\n"
+  revision=("UPDATE lf_ops.reglas SET valor_config=jsonb_set(coalesce(valor_config,'{}'::jsonb),"
+   "'{l29_revision}','\"2\"'::jsonb,true) WHERE codigo="+lit(CODE)+" AND estado='CANDIDATO';\n")
+  after="SELECT 'CANDIDATE_POSTIMAGE|'||encode(extensions.digest(convert_to(to_jsonb(s)::text,'UTF8'),'sha256'),'hex') FROM lf_ops.reglas s WHERE codigo="+lit(CODE)+";\n"
+  if fixture.count(original)!=1:raise AssertionError("L29_SOURCE_INSERT_ANCHOR")
+  modified_fixture=fixture.replace(original,original+"\n"+anchor+revision+after)
+  p=modified_fixture+p[len(fixture):]
+  fixture=modified_fixture
  extra+=intake(reader_token,"REQ-L29-"+scenario,kind,evidence(scenario))
  return fixture+extra+p[len(fixture):]
 def promote(token,promotion="PROM-TEST"):
