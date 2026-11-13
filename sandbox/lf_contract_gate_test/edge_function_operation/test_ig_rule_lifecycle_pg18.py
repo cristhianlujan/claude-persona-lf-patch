@@ -6,6 +6,8 @@ native-model independent judge, full 11-step Router→Perfil or live migration.
 """
 from __future__ import annotations
 import json
+import hashlib
+from datetime import datetime, timezone
 import os
 import shutil
 import subprocess
@@ -78,12 +80,12 @@ class PG18RealSQL(unittest.TestCase):
         return p.stdout.strip()
 
     @classmethod
-    def parent(cls,parent,patch,request="b"*64):
+    def parent(cls,parent,patch,request="b"*64,proposed_by="product_director_lf"):
         # Isolated parent provenance fixture. These four prerequisite evidence
         # rows are NOT a real native model or judge invocation.
         data={"worker":"product_director_lf","output_type":"PRODUCT_DIRECTION_SPEC",
             "self_verdict":"PASS","deliverable_created":{"authority_status":"SUPPORTED","governed_rule_patch":patch,
-              "product_decision":{"decision_id":"DEC-IGPG18","source_refs":[
+              "product_decision":{"decision_id":"DEC-IGPG18","proposed_by":proposed_by,"source_refs":[
                 {"authority":"AUTHORITATIVE","current":True,"source_ref":"fixture://pg18"}]}}}
         manifest={"read_only":True,"no_write":True,"no_promotion":True,
           "router_profile_handoff":{"router_authorization_receipt":{"profile_execution_allowed":True}},
@@ -107,15 +109,40 @@ class PG18RealSQL(unittest.TestCase):
         cls.sql(base)
 
     @classmethod
-    def owner_decide(cls,parent,preimage,verdict="APPROVE",aal="aal2",rule=RULE):
+    def proposal_sha(cls,parent):
+        return cls.sql("""SELECT encode(extensions.digest(convert_to(
+          (evidence_payload#>'{profile_output,deliverable_created,governed_rule_patch}')::text,
+          'UTF8'),'sha256'),'hex')
+          FROM public.lf_operation_execution_steps
+          WHERE execution_id="""+quote(parent)+""" AND step_id='execute_profile';""")
+
+    @classmethod
+    def rule_record(cls,parent,rule=RULE,verdict="APROBAR",**override):
+        stamp=datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        sha=cls.proposal_sha(parent)
+        data={"codigo_regla":rule,"propuesta_sha256":sha,"veredicto":verdict,
+          "decisor":"Cristhian Luján","fecha":stamp,
+          "frase_literal":f"{verdict} regla {rule}; decisión documental temporal."}
+        data.update(override)
+        return data
+
+    @classmethod
+    def owner_decide(cls,parent,preimage,verdict="APROBAR",rule=RULE,record=None,expect_fail=None):
+        payload=record if record is not None else cls.rule_record(parent,rule,verdict)
         return cls.sql(f"""BEGIN;
-         SET LOCAL ROLE authenticated;
-         SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-         SET LOCAL request.jwt.claim.role='authenticated';
-         SET LOCAL request.jwt.claims={quote(json.dumps({"sub":OWNER,"aal":aal,"role":"authenticated"}))};
+         SET LOCAL ROLE service_role;
          SELECT public.lf_ig_rule_owner_decide_v2(
-          {quote(parent)},{quote(rule)},{quote(preimage)},{quote(verdict)})::text;
-         COMMIT;""")
+          {quote(parent)},{quote(rule)},{quote(preimage)},{jq(payload)})::text;
+         COMMIT;""",expect_fail=expect_fail)
+
+    @classmethod
+    def asset_record(cls,asset,preimage,**override):
+        data={"codigo_activo":asset,"preimagen_sha256":preimage,"veredicto":"APROBAR",
+          "decisor":"Cristhian Luján",
+          "fecha":datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+          "frase_literal":f"APROBAR backfill de owner para {asset} en base temporal."}
+        data.update(override)
+        return data
 
     @classmethod
     def invoke(cls,parent,skill,patch,preimage,owner_decision):
@@ -124,21 +151,14 @@ class PG18RealSQL(unittest.TestCase):
         return json.loads(cls.sql(f"SELECT public.lf_skill_invoke_v1({quote(skill)},{quote(parent)},{jq(inp)})::text;"))
 
     def test_integrated_create_vigente_asset(self):
-        # An unbound LF owner cannot approve, even when the test JWT claims AAL2.
-        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-          SET LOCAL request.jwt.claim.role='authenticated';
-          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
-          SELECT public.lf_ig_rule_owner_decide_v2('EXEC-UNBOUND-OWNER',
-            {quote(RULE)},{quote('a'*64)},'APPROVE'); ROLLBACK;""",
-          expect_fail="LF_IG_OWNER_BINDING_B06_MISSING")
-        # Positive: schema real (scoped) with existing official rule writer/step core.
-        self.sql(f"""INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,
-            owner_profile_code,authority_receipt_sha256,status,source_execution_id)
-            VALUES('LF',{quote(OWNER)}::uuid,'PERFIL-LF-OWNER-TEST',
-             {quote('a'*64)},'ACTIVE','PG18-ONLY-IAM-FIXTURE');
-            INSERT INTO lf_ops.pantallas(id,codigo,nombre,estado)
-            VALUES(999991,'LF-PG18-SCREEN','PG18 isolated screen','ACTIVA');""")
+        # Temporary owner declaration is seeded by the migration, without Auth.
+        self.assertEqual(self.sql("""SELECT count(*) FROM public.lf_ig_project_owner_v2
+          WHERE project_code='LF' AND owner_name='Cristhian Luján'
+          AND status='TEMP_DOCUMENTARY_ACTIVE';"""),"1")
+        self.assertEqual(self.sql("""SELECT count(*) FROM public.lf_ig_project_owner_v2
+          WHERE project_code='SALY';"""),"0")
+        self.sql("""INSERT INTO lf_ops.pantallas(id,codigo,nombre,estado)
+          VALUES(999991,'LF-PG18-SCREEN','PG18 isolated screen','ACTIVA');""")
         patch={"rule_code":RULE,"change_kind":"CREATE","changes":{
           "categoria":"TEST","titulo":"Regla PG18 creada","descripcion":"Alta governada prueba PostgreSQL 18",
           "razon":"Prueba PG18 integrada","es_transversal":False,"valor_config":{},"origen":"PG18_ONLY"}}
@@ -150,34 +170,34 @@ class PG18RealSQL(unittest.TestCase):
         fail_assert(fake["status"]=="BLOCKED","FAKE_APPROVAL_CREATED_CHILD "+str(fake))
         fail_assert(self.sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(RULE)+";")=="0",
                     "FAKE_APPROVAL_WROTE_RULE")
-        # negative no identity, no MFA, wrong hash
-        self.sql(f"SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote(pre)},'APPROVE');",
-                 expect_fail="LF_IG_OWNER_AUTHENTICATED_AAL2_REQUIRED")
-        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-         SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-         SET LOCAL request.jwt.claim.role='authenticated';
-         SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal1','role':'authenticated'}))};
-         SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote(pre)},'APPROVE');
-         ROLLBACK;""",expect_fail="LF_IG_OWNER_AUTHENTICATED_AAL2_REQUIRED")
-        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-         SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-         SET LOCAL request.jwt.claim.role='authenticated';
-         SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
-         SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote('0'*64)},'APPROVE');
-         ROLLBACK;""",expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
+        # Record missing; false identity, wrong proposal SHA, absent phrase.
+        self.owner_decide(PARENT,pre,record={},
+          expect_fail="LF_IG_OWNER_DECISION_RECORD_REQUIRED")
+        self.owner_decide(PARENT,pre,
+          record=self.rule_record(PARENT,propuesta_sha256="0"*64),
+          expect_fail="LF_IG_OWNER_PROPOSAL_SHA256_MISMATCH")
+        self.owner_decide(PARENT,pre,
+          record=self.rule_record(PARENT,decisor="OTRO DECISOR"),
+          expect_fail="LF_IG_OWNER_DECISION_INPUT_INVALID")
+        self.owner_decide(PARENT,pre,
+          record=self.rule_record(PARENT,frase_literal=""),
+          expect_fail="LF_IG_OWNER_DECISION_INPUT_INVALID")
+        self.owner_decide(PARENT,"0"*64,
+          expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
+        fail_assert(self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2 WHERE rule_code="+quote(RULE)+";")=="0",
+          "NEGATIVES_PERSISTED_OWNER_APPROVAL")
         d=json.loads(self.owner_decide(PARENT,pre).splitlines()[-1])
         fail_assert(d["status"]=="APPROVED_AND_VIGENTE_VERIFIED" and d.get("child_execution_id"),
                     "OWNER_AUTO_CREATE_PROMOTE_FAILED "+str(d))
+        approval=self.sql("SELECT decision_record::text FROM public.lf_ig_owner_decision_v2 WHERE decision_id="+quote(d["decision_id"])+"::uuid;")
+        fail_assert(json.loads(approval)==d["decision_record"],"OWNER_DECISION_LITERAL_READBACK_MISMATCH")
+        sha=self.sql("SELECT decision_record_sha256 FROM public.lf_ig_owner_decision_v2 WHERE decision_id="+quote(d["decision_id"])+"::uuid;")
+        fail_assert(sha==d["decision_record_sha256"] and len(sha)==64,"OWNER_DECISION_SHA_READBACK_MISMATCH")
         # The official vinculation would have run independently. For PG18
         # bind the synthetic rule to the synthetic screen before testing replay.
         self.sql(f"INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id) SELECT id,999991 FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
-        # Negative replay and no owner bypass (same signed preimage).
-        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
-        SET LOCAL request.jwt.claim.sub={quote(OWNER)};
-        SET LOCAL request.jwt.claim.role='authenticated';
-        SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
-        SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote(pre)},'APPROVE');
-        ROLLBACK;""",expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
+        # Negative replay after promotion: exact old preimage cannot be reused.
+        self.owner_decide(PARENT,pre,expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
         cid=d["child_execution_id"]
         row=self.sql(f"""SELECT estado||'|'||pendiente_decision::text FROM lf_ops.reglas WHERE codigo={quote(RULE)};""")
         fail_assert(row=="VIGENTE|false","AUTO_CHAIN_NOT_VIGENTE "+row)
