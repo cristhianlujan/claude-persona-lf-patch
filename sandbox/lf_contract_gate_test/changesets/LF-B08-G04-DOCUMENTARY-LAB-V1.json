@@ -1,0 +1,8 @@
+{
+  "solution_ref": "LF-B08-G04-DOCUMENTARY-LAB-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b08_documentary_owner_decide_pg176_pg187.py": "RUNTIME_TESTING",
+    "audits/b08-g04/00_scope_criteria.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-B08-G04-DOCUMENTARY-LAB-V1.json": "CHANGESET_MANIFEST"
+  }
+}
