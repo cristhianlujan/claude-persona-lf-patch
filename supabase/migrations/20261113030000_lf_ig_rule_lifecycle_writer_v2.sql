@@ -499,6 +499,11 @@ BEGIN
  IF ch.kind='CORRECT_VIGENTE' THEN
    IF r.estado<>'VIGENTE' OR before_sha IS DISTINCT FROM ch.source_snapshot_sha256
    THEN RAISE EXCEPTION 'LF_IG_VIGENTE_FINALIZE_SOURCE_STALE'; END IF;
+   -- A functional change can weaken security/business controls. Owner AAL2
+   -- plus a profile semantic PASS is insufficient to certify the post-write
+   -- impact; no signed independent impact receipt is installed in this version.
+   IF ch.approved_patch->>'change_kind' IS DISTINCT FROM 'DOCUMENTARY_ONLY'
+   THEN RAISE EXCEPTION 'LF_IG_VIGENTE_FUNCTIONAL_IMPACT_RECEIPT_MISSING'; END IF;
    UPDATE lf_ops.reglas SET
       categoria=coalesce(c->>'categoria',categoria),
       titulo=coalesce(c->>'titulo',titulo),
@@ -509,12 +514,8 @@ BEGIN
       origen=coalesce(c->>'origen',origen),
       pendiente_decision=false,pendiente_detalle=NULL,updated_at=now()
    WHERE codigo=ch.rule_code AND estado='VIGENTE';
-   INSERT INTO public.lf_rule_promotion_v1(
-     rule_code,request_execution_id,requested_by_profile,request_snapshot_sha256,
-     status,reason,decided_by,decided_at,applied_at)
-   VALUES(ch.rule_code,ch.parent_execution_id,par.target_code,before_sha,
-     'APPLIED','VIGENTE_CORRECTION_WITH_AUTHENTICATED_OWNER',
-     'OWNER_UID:'||d.owner_sub::text,now(),now());
+   -- This is a guarded in-place correction, NOT a CANDIDATO promotion.
+   -- Never forge an APPLIED promotion receipt for a rule already VIGENTE.
  ELSE
    IF r.estado<>'CANDIDATO' OR before_sha IS DISTINCT FROM ch.candidate_snapshot_sha256
    THEN RAISE EXCEPTION 'LF_IG_FINALIZE_CANDIDATE_SNAPSHOT_STALE'; END IF;
