@@ -2,7 +2,7 @@
   "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
   "decision_id": "LF-LOGIN-POL19-P1P2-OTP-20261113",
   "decision_title": "Política central 19 — contraseña más OTP Brevo para perfiles 1 y 2",
-  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "status": "DECISION_FUNCIONAL_CONVERSADA_PATCH_POLITICA_PENDIENTE_FIRMA",
   "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
   "documentary_statement": "Aprobación documental propuesta sobre el texto y configuración candidata de SEC-B2B-MFA-FACTOR-ELIGIBILITY: perfiles 1 y 2 ingresan usuario y contraseña validados por servidor y completan OTP por correo/Brevo como segundo factor cuando MFA aplica; perfiles 3–6 conservan OTP/Brevo. No FIDO2/passkeys. El dueño acepta en conversación el riesgo de retransmisión del OTP por phishing. No altera política 3 ni autoriza ejecución.",
   "source_codes": [
@@ -23,5 +23,6 @@
   "rule_writer_v2_called": false,
   "policy_writer_v2_called": false,
   "no_promotion": true,
-  "approval_does_not_authorize_effect": true
+  "approval_does_not_authorize_effect": true,
+  "scope_status_clarification": "La decisión funcional puede estar en conversación pero la aprobación de este SHA/documento no existe aún; para propuestas de AUTH018/020/033 tampoco existe una decisión formal sobre el patch."
 }
