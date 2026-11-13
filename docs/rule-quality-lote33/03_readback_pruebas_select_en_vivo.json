@@ -1,0 +1,71 @@
+{
+  "schema": "LF_L33_LIVE_READONLY_TEST_RECEIPT_V1",
+  "source_date": "2026-11-13",
+  "source_project": "mhwmirqcgxxukpctffuv",
+  "test_mode": "REAL_POSTGRES_SELECT_ONLY_NO_APPLY_NO_JUDGE",
+  "rule_test": {
+    "tested": 3,
+    "source_match": 3,
+    "patch_sha_match": 3,
+    "source_desc_match": 3,
+    "config_match": 3,
+    "full_semantic_base_retained": 3,
+    "writer_shape": 3,
+    "source_states": {
+      "B2B-RULE-AUTH-002": "VIGENTE",
+      "B2B-RULE-AUTH-003": "VIGENTE",
+      "B2B-RULE-AUTH-040": "CANDIDATO"
+    },
+    "drift_codes": null
+  },
+  "screen_test": [
+    {
+      "codigo": "B2B-AUTH-004",
+      "screen_id": 54,
+      "rule_code": "B2B-RULE-AUTH-033",
+      "links": 1
+    }
+  ],
+  "rule_total": [
+    {
+      "total": 578,
+      "target": 3,
+      "auth033": 1
+    }
+  ],
+  "writer_status_boundary": {
+    "auth002": "VIGENTE_REQUIRES_DIFFERENT_GOVERNED_LIFECYCLE",
+    "auth003": "VIGENTE_REQUIRES_DIFFERENT_GOVERNED_LIFECYCLE",
+    "auth040": "CANDIDATO_PATCH_SHAPE_ELIGIBLE_BUT_OWNER_JUDGE_AND_RUN_REQUIRED"
+  },
+  "owner_decision_existing_currentness": [
+    {
+      "decisions_for_3": 0,
+      "current_product_director_active_runs": 5
+    }
+  ],
+  "owner_Q01_conversation_selection": "El segundo factor principal es OTP por correo entregado mediante Brevo; SMS solo contingencia, sin proveedor confirmado. MFA no se exige siempre: se exige después de 30 días sin uso o 3 meses calendario sin cambio de contraseña, como parámetros de política central, no embebidos en AUTH-003 ni en reglas de pantalla. Admin Empresa, perfil 2: OTP por correo, no Google SAML. Admin LF, perfil 1: método pendiente de confirmación.",
+  "owner_Q01_formal_signatures": 0,
+  "router_validation": {
+    "gate2_status": "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+    "gate2_sha256": "6d86c90b336669c38feb6652e321506eee3064fc83154d0a890dab0c3ac7205f",
+    "profile": "PERFIL-PRODUCT-DIRECTOR-LF",
+    "screen_selector_status": "VALID",
+    "selected_screen": "B2B-AUTH-004",
+    "screen_id": 54
+  },
+  "execution_claims": {
+    "supabase_writes": 0,
+    "runs_created": 0,
+    "github_issue_dispatched": 0,
+    "rules_promoted": 0,
+    "ig_rerun": "NOT_EXECUTED",
+    "profile_native_11_steps": "NOT_EXECUTED",
+    "semantic_independent_judge": "NOT_EXECUTED"
+  },
+  "limitations": [
+    "Read-only SELECT verifies exact JSONB SHA and allowed writer payload shape, not that official owner decision can be approved",
+    "No literal external IAM/Brevo/QA evidence generated or verified",
+    "Owner decision Q01 still conflicts with policy 19 admin phishing resistance"
+  ]
+}
