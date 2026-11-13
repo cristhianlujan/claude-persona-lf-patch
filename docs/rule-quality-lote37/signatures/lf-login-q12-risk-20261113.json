@@ -1,0 +1,25 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-Q12-RISK-20261113",
+  "decision_title": "Umbrales de riesgo parametrizables",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "El valor inicial 5 se registra como decisión conceptual de parámetro configurable en base y administrable desde pantalla. NO se asocia a un control, evento, ventana de tiempo ni unidad que aún no se haya definido; no autoriza fijarlo en AUTH-021, AUTH-043 ni otros controles por inferencia.",
+  "source_codes": [
+    "L16-Q12"
+  ],
+  "candidate_patch_sha256": null,
+  "source_artifact": null,
+  "approval_mechanism": "DOCUMENT_GITHUB_ONLY",
+  "required_evidence_unresolved": [
+    "EVENTO_CONTROL_UNIDAD_PENDIENTES",
+    "QA_TELEMETRIA",
+    "PERMISO_PANTALLA_NO_ACREDITADO"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
