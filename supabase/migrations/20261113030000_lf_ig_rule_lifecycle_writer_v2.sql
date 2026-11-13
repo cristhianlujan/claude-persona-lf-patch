@@ -652,7 +652,9 @@ CREATE TABLE public.lf_ig_asset_owner_receipt_v2(
   decisor text NOT NULL CHECK(decisor='Cristhian Luján'),
   proponente text NOT NULL CHECK(proponente<>'Cristhian Luján'),
   decision_record jsonb NOT NULL,
-  decision_record_sha256 text NOT NULL CHECK(decision_record_sha256 ~ '^[0-9a-f]{64}
+  decision_record_sha256 text NOT NULL CHECK(
+    decision_record_sha256 ~ '^[0-9a-f]{64}$'),
+  proposed_owner text NOT NULL,
   train_execution_id text NOT NULL,
   preimage_sha256 text NOT NULL,
   before_row jsonb NOT NULL,
