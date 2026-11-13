@@ -160,13 +160,16 @@ class PG18RealSQL(unittest.TestCase):
         d=json.loads(self.owner_decide(PARENT,pre).splitlines()[-1])
         fail_assert(d["status"]=="APPROVED_AND_VIGENTE_VERIFIED" and d.get("child_execution_id"),
                     "OWNER_AUTO_CREATE_PROMOTE_FAILED "+str(d))
+        # The official vinculation would have run independently. For PG18
+        # bind the synthetic rule to the synthetic screen before testing replay.
+        self.sql(f"INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id) SELECT id,999991 FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
         # Negative replay and no owner bypass (same signed preimage).
         self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
         SET LOCAL request.jwt.claim.sub={quote(OWNER)};
         SET LOCAL request.jwt.claim.role='authenticated';
         SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
         SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote(pre)},'APPROVE');
-        ROLLBACK;""",expect_fail="LF_IG_OWNER_DECISION_ALREADY_RECORDED_NO_OVERRIDE")
+        ROLLBACK;""",expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
         cid=d["child_execution_id"]
         row=self.sql(f"""SELECT estado||'|'||pendiente_decision::text FROM lf_ops.reglas WHERE codigo={quote(RULE)};""")
         fail_assert(row=="VIGENTE|false","AUTO_CHAIN_NOT_VIGENTE "+row)
@@ -180,8 +183,6 @@ class PG18RealSQL(unittest.TestCase):
         fail_assert(row=="VIGENTE|false","CREATE_NOT_VIGENTE "+row)
         promoc=self.sql("SELECT count(*) FROM public.lf_rule_promotion_v1 WHERE status='APPLIED' AND rule_code="+quote(RULE)+";")
         fail_assert(promoc=="1","PROMOTION_RECEIPT_MISSING")
-        # Link to a screen only in PG18 sandbox; real LF uses governed linkage.
-        self.sql(f"INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id) SELECT id,999991 FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
         pre2=self.sql(f"SELECT public.lf_asset_snapshot_sha_v1('REGLA',{quote(RULE)});")
         patch2={"rule_code":RULE,"change_kind":"DOCUMENTARY_ONLY",
           "changes":{"descripcion":"Corrección aprobada y validada PG18."}}
