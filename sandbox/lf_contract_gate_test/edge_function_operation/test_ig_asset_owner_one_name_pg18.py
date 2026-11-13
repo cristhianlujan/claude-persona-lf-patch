@@ -67,7 +67,15 @@ class AssetOwnerPG18(unittest.TestCase):
             if v.returncode == 0: break
             time.sleep(2)
         else: raise AssertionError("PG18_NOT_READY")
-        version = int(cls.run_sql("SHOW server_version_num;"))
+        version = None
+        for attempt in range(12):
+            try:
+                version = int(cls.run_sql("SHOW server_version_num;"))
+                break
+            except AssertionError:
+                time.sleep(1)
+        if version is None:
+            raise AssertionError("POSTGRES_REAL_VERSION_READBACK_FAILED")
         if not (version // 10000 == expected): raise AssertionError("WRONG_POSTGRESQL_VERSION")
         print("OWNER_GUARD_PG_VERSION=" + str(version), flush=True)
         cls.run_sql(BASE.read_text(encoding="utf-8"))
@@ -90,6 +98,38 @@ class AssetOwnerPG18(unittest.TestCase):
             "estado_documental,estado_operativo,owner_name,source_spreadsheet_id,"
             "source_spreadsheet_title,source_sheet_name,source_row_number,"
             "migration_batch_id,archived_at) VALUES\n" + ",\n".join(values) + ";"
+        )
+        # Synthetic PR3803 admission, same shape as its own real PG tests.
+        # Docker-only fixture; NOT a live or authorized RUN.
+        upstream_id = "43379990001"
+        upstream_code = "20261113030000_lf_ig_rule_lifecycle_writer_v2"
+        upstream_exec = "EXEC-DB-TRAIN-PR3803-20261113030000-R" + upstream_id
+        upstream_repo = "cristhianlujan/claude-persona-lf-patch"
+        upstream_path = "supabase/migrations/" + upstream_code + ".sql"
+        upstream_manifest = {
+            "producer": "lf-migration-merge-train", "pr": 3803,
+            "train_run_id": upstream_id, "head_sha": "e"*40,
+            "router_authority_receipt": {
+                "schema_version": "LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+                "operation_code": "ACTUALIZACION_DB_LF",
+                "target_repo": upstream_repo,
+                "target_code": upstream_code,
+                "target_path": upstream_path,
+                "route_eligibility_only": True, "scope_attested": False
+            }
+        }
+        cls.run_sql(
+            "INSERT INTO public.lf_operation_execution("
+            "execution_id,operation_code,target_type,target_code,target_repo,"
+            "target_path,status,request_sha256,manifest,idempotency_key,"
+            "created_by_execution_id) VALUES("
+            + quote(upstream_exec) + ",'ACTUALIZACION_DB_LF','MIGRATION',"
+            + quote(upstream_code) + "," + quote(upstream_repo) + ","
+            + quote(upstream_path) + ",'IN_PROGRESS',"
+            + quote("f"*64) + ","
+            + quote(json.dumps(upstream_manifest,ensure_ascii=False)) + "::jsonb,"
+            + quote("train:20261113030000:"+"e"*40) + ","
+            + quote("LF-MIGRATION-TRAIN-RUN-"+upstream_id) + ");"
         )
         cls.run_sql(UPSTREAM.read_text(encoding="utf-8"))
         cls.run_sql(MIGRATION.read_text(encoding="utf-8"))
