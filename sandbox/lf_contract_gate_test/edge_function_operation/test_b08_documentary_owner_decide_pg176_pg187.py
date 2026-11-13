@@ -156,9 +156,9 @@ class _B08Lab:
 
     @classmethod
     def call(cls,rec,parent=PARENT,sha=None):
-        return "SELECT public.lf_ig_rule_owner_decide_v2("+quote(parent)+","
-        +quote(RULE)+","+quote(sha if sha is not None else cls.preimage)+","
-        +jq(rec)+")::text;"
+        return ("SELECT public.lf_ig_rule_owner_decide_v2("+quote(parent)+","
+            +quote(RULE)+","+quote(sha if sha is not None else cls.preimage)+","
+            +jq(rec)+")::text;")
 
     @classmethod
     def counts(cls):
