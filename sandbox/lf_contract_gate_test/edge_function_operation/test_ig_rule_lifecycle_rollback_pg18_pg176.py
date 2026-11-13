@@ -65,15 +65,15 @@ class PR3803Rollback(unittest.TestCase):
             before_md5 = psql(frozen_sql)
             self.assertEqual(len(before_md5.split(",")), 6)
             psql(FORWARD.read_text(encoding="utf-8"))
-            self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "0")
+            self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "1")
             psql("""INSERT INTO public.lf_ig_project_owner_v2
-                (project_code,owner_sub,owner_profile_code,authority_receipt_sha256,
+                (project_code,owner_sub,owner_name,owner_profile_code,authority_receipt_sha256,
                 status,source_execution_id) VALUES
-                ('LF','00000000-0000-4000-8000-000000000111',
+                ('SALY','00000000-0000-4000-8000-000000000111','Cristhian Luján',
                 'LF_OWNER_PG_TEST',repeat('a',64),'CANDIDATE','EXEC-ROLLBACK-NEGATIVE');""")
             psql(REVERSE.read_text(encoding="utf-8"), should_fail="IG_ROLLBACK_NONEMPTY_V2_TABLES")
-            self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "1")
-            psql("DELETE FROM public.lf_ig_project_owner_v2 WHERE project_code='LF';")
+            self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "2")
+            psql("DELETE FROM public.lf_ig_project_owner_v2 WHERE project_code='SALY';")
             psql(REVERSE.read_text(encoding="utf-8"))
             self.assertEqual(psql(source_sql), before, "CATALOG_PREIMAGE_MISMATCH")
             self.assertEqual(psql(frozen_sql), before_md5, "LEGACY_MD5_MISMATCH")
