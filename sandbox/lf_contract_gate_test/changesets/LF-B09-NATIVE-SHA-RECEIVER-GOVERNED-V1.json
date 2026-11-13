@@ -11,6 +11,7 @@
     "docs/input-governance/b09-native-chat/prompts/B09_EXECUTOR_GPT_NATIVE_V1.txt": "INPUT_GOVERNANCE",
     "docs/input-governance/b09-native-chat/prompts/B09_JUEZ_MISMO_LLM_V1.txt": "INPUT_GOVERNANCE",
     "sandbox/lf_contract_gate_test/changesets/LF-B09-NATIVE-SHA-RECEIVER-GOVERNED-V1.json": "CHANGESET_MANIFEST",
-    "docs/input-governance/b09-native-chat/prompt_sha256_manifest_v1.json": "INPUT_GOVERNANCE"
+    "docs/input-governance/b09-native-chat/prompt_sha256_manifest_v1.json": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b09_sha_receiver_contract_static_v1.py": "RUNTIME_TESTING"
   }
 }
