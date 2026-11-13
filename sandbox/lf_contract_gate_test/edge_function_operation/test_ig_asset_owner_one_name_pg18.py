@@ -428,6 +428,64 @@ class AssetOwnerPG18(unittest.TestCase):
         self.run_sql("SELECT public.lf_ig_asset_owner_apply_v2("+quote(a["receipt_id"])+"::uuid);","LF_IG_ASSET_OWNER_RECEIPT_NOT_APPROVED")
         print("PASS_PG18_ACTIVE_AND_ARCHIVED_OFFICIAL_WRITER_READBACK",flush=True)
 
+    def test_025_b06_proposer_is_decisor_denied(self):
+        """B06 G03: real deployed guard must reject self-approval for BOTH
+        active and archived assets. All mutations happen inside disposable
+        Docker PostgreSQL 17.6/18.7; no live Supabase writes."""
+        cases = [
+            ("ACTIVE", "lf_ig_asset_owner_approve_v2", "archived_at IS NULL"),
+            ("ARCHIVED", "lf_ig_asset_owner_approve_archived_v3", "archived_at IS NOT NULL"),
+        ]
+        for cohort, function, archival_predicate in cases:
+            with self.subTest(cohort=cohort):
+                code = self.run_sql(
+                    "SELECT codigo_activo FROM public.lf_activos "
+                    "WHERE owner_name IS DISTINCT FROM 'LF_GOVERNANCE' AND "
+                    + archival_predicate + " ORDER BY id LIMIT 1;")
+                self.assertTrue(code, "NO_UNMODIFIED_ASSET_FOR_NEGATIVE")
+                sha = self.sha(code)
+                before_receipts = self.run_sql(
+                    "SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2;")
+                self.assertEqual(self.run_sql(
+                    "SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2 "
+                    "WHERE asset_code=" + quote(code) + ";"), "0")
+                decision = {
+                    "codigo_activo": code, "preimagen_sha256": sha,
+                    "veredicto": "APROBAR", "decisor": "Cristhian Luján",
+                    "fecha": datetime.now(timezone.utc).isoformat(),
+                    "frase_literal": "Decisión documental de prueba negativa B06"
+                }
+                # Modify the *synthetic* Train manifest within the same
+                # transaction that invokes the true deployed guard. The
+                # expected SQL exception rolls the whole transaction back.
+                sql = (
+                    "BEGIN; UPDATE public.lf_operation_execution "
+                    "SET manifest=jsonb_set(manifest,'{proposer_actor}',"
+                    "to_jsonb('Cristhian Luján'::text),true) "
+                    "WHERE execution_id=" + quote(PARENT) + ";"
+                    "SET LOCAL ROLE service_role;"
+                    "SELECT public." + function + "("
+                    + quote(PARENT) + "," + quote(code) + ","
+                    + quote(sha) + ",'LF_GOVERNANCE',"
+                    + quote(json.dumps(decision,ensure_ascii=False))
+                    + "::jsonb)::text; COMMIT;"
+                )
+                raw = self.run_sql(sql,error="LF_IG_ASSET_SELF_APPROVAL_FORBIDDEN")
+                self.assertIn("LF_IG_ASSET_SELF_APPROVAL_FORBIDDEN",raw)
+                self.assertEqual(self.run_sql(
+                    "SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2 "
+                    "WHERE asset_code=" + quote(code) + ";"), "0")
+                self.assertEqual(self.run_sql(
+                    "SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2;"),
+                    before_receipts)
+                self.assertEqual(self.sha(code),sha)
+                self.assertEqual(self.run_sql(
+                    "SELECT manifest->>'proposer_actor' "
+                    "FROM public.lf_operation_execution WHERE execution_id="
+                    + quote(PARENT) + ";"), "LF_GOVERNANCE")
+                print("PASS_B06_SELF_APPROVAL_PROPOSER_EQ_DECISOR_"
+                      + cohort + "_REJECTED_ZERO_NEW_RECEIPTS",flush=True)
+
     def test_03_never_approve_as_super_admin(self):
         self.documentary_approve("lf_ig_asset_owner_approve_v2","ACT-0002",
                                  self.sha("ACT-0002"),decisor="SUPER_ADMIN",
