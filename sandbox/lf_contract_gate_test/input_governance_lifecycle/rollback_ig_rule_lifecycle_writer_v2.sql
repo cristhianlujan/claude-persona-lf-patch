@@ -95,7 +95,7 @@ DROP FUNCTION public.lf_skill_o_rule_create_v2(text,jsonb,text,text,text) RESTRI
 DROP FUNCTION public.lf_skill_o_rule_update_v2(text,jsonb,text,text,text) RESTRICT;
 DROP FUNCTION public.lf_ig_rule_step_record_v2(text,text,text,text,jsonb) RESTRICT;
 DROP FUNCTION public.lf_ig_rule_child_guard_v2(text,jsonb,text,text,text,text) RESTRICT;
-DROP FUNCTION public.lf_ig_rule_owner_decide_v2(text,text,text,text) RESTRICT;
+DROP FUNCTION public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb) RESTRICT;
 DROP FUNCTION public.lf_ig_asset_owner_apply_v2(uuid) RESTRICT;
 DROP FUNCTION public.lf_ig_asset_owner_approve_v2(text,text,text,text) RESTRICT;
 DROP TABLE public.lf_ig_rule_change_v2 RESTRICT;
@@ -116,7 +116,7 @@ BEGIN
  OR to_regclass('public.lf_ig_owner_decision_v2') IS NOT NULL
  OR to_regclass('public.lf_ig_rule_change_v2') IS NOT NULL
  OR to_regclass('public.lf_ig_asset_owner_receipt_v2') IS NOT NULL
- OR to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,text)') IS NOT NULL
+ OR to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NOT NULL
  OR to_regprocedure('public.lf_ig_asset_owner_apply_v2(uuid)') IS NOT NULL
  OR EXISTS(SELECT 1 FROM public.lf_operation_registry WHERE operation_code='PROMOCION_REGLA_LF')
  THEN RAISE EXCEPTION 'IG_ROLLBACK_OBJECT_READBACK_FAILED'; END IF;
