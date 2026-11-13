@@ -41,6 +41,16 @@ class MigrationNamePreApplyTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY", result.stderr)
 
+    def test_pr3807_deployed_sql_not_reintroduced(self) -> None:
+        # Merge Train consumed this exact deployed SQL; its rollback remains.
+        delta = ROOT / "supabase/migrations/20261113060000_lf_router_scope_receipt_consumer_v2.sql"
+        rollback = ROOT / (
+            "sandbox/lf_contract_gate_test/input_governance_lifecycle/"
+            "rollback_lf_router_scope_receipt_consumer_v2.sql"
+        )
+        self.assertFalse(delta.exists(), "PR3807_DEPLOYED_DELTA_REINTRODUCED")
+        self.assertTrue(rollback.is_file(), "PR3807_ROLLBACK_ARTIFACT_MISSING")
+
     def test_unclassified_name_is_gated_before_any_apply_step(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         gate = text.index("- name: Classify migration name before any write")
