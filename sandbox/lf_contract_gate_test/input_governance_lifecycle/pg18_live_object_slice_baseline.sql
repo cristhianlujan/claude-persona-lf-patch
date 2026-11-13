@@ -1775,5 +1775,24 @@ INSERT INTO public.lf_skill_catalog_v1 SELECT (jsonb_populate_record(NULL::publi
 
 INSERT INTO public.lf_skill_catalog_v1 SELECT (jsonb_populate_record(NULL::public.lf_skill_catalog_v1,'{"effect":"WRITE_GOVERNED","status":"READY","opener_fn":null,"created_at":"2026-11-04T04:51:18.295213+00:00","handler_fn":"lf_skill_h_rule_create_propose_v1","skill_code":"RULE_CREATE_APPLY","description":"Abre la operacion gobernada CREACION_REGLA_LF desde el perfil (la escritura la hacen sus 7 pasos)","child_caller":null,"input_required":["regla_codigo"],"required_operation":"CREACION_REGLA_LF"}'::jsonb)).*;
 
+-- Column-for-column live public.lf_operation_contracts definition.
+-- External FK to lf_operation_registry not enforced in the isolated object slice.
+CREATE TABLE public.lf_operation_contracts(
+  operation_code text NOT NULL,
+  contract_code text NOT NULL,
+  contract_path text NOT NULL,
+  contract_sha text,
+  required_before_write jsonb NOT NULL DEFAULT '[]'::jsonb,
+  allowed jsonb NOT NULL DEFAULT '{}'::jsonb,
+  blocked jsonb NOT NULL DEFAULT '[]'::jsonb,
+  required_after_write jsonb NOT NULL DEFAULT '[]'::jsonb,
+  status text NOT NULL DEFAULT 'CANDIDATO_READ_ONLY',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN',
+  updated_by_execution_id text,
+  PRIMARY KEY (operation_code,contract_code)
+);
+
 -- Exact live contract row captured read-only for isolated PG18 contract migration.
 INSERT INTO public.lf_operation_contracts SELECT (jsonb_populate_record(NULL::public.lf_operation_contracts,'{"status": "ACTIVE_ENFORCEMENT", "allowed": {"asset_code": "EDGE_FN_INPUT_GOVERNANCE_AGENT_V1", "asset_type": "CAPABILITY", "entrypoint": "programacion.fn_input_governance_execute(integer,text)", "worker_spec": "programacion.fn_input_governance_worker_spec(integer,text)", "sandbox_only": true, "subject_type": "LF_OPS_PANTALLA", "runtime_orchestrator": "SUPABASE_EDGE_FUNCTION:input-governance-agent-v1", "production_authorized": false, "direct_request_consumer": "MANUAL", "canonical_execution_contract": "INPUT_GOVERNANCE_EXECUTION_CONTRACT", "generic_capability_execution": false}, "blocked": ["screen_not_found", "screen_inactive", "screen_ambiguous", "consumer_not_allowed", "production_promotion", "generic_capability_execution", "subject_asset_role_inversion"], "created_at": "2026-09-28T20:20:23.214746+00:00", "updated_at": "2026-09-28T20:20:23.214746+00:00", "contract_sha": "783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9", "contract_code": "CONTRACT-EJECUCION-INPUT-GOVERNANCE-LF-v0.1", "contract_path": "programacion.contratos/INPUT_GOVERNANCE_EXECUTION_CONTRACT", "operation_code": "EJECUCION_INPUT_GOVERNANCE_LF", "required_after_write": ["governance_status", "output_sha256", "screen_code", "consumer"], "required_before_write": ["exact_screen_resolved", "consumer_authorized", "worker_spec_resolved"], "created_by_execution_id": "EXEC-BOOTSTRAP-EJECUCION-INPUT-GOVERNANCE-LF-20260928-001", "updated_by_execution_id": "EXEC-BOOTSTRAP-EJECUCION-INPUT-GOVERNANCE-LF-20260928-001"}'::jsonb)).*;
