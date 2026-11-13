@@ -1,6 +1,9 @@
 -- PR #3803 inverse script: NOT an automatic Supabase migration.
 -- Run solely with separate governed authorization on an isolated Postgres test.
--- Stops when V2 has any owner, rule, decision or asset receipt: never drop data.
+-- Stops if there are unrecognized owner rows, rule changes, decisions or assets.
+-- The sole LF chat-declaration seed is a known forward-created row and is
+-- permitted to be reversed ONLY when it matches the exact expected preimage.
+-- This is not a production execution instruction.
 -- Forward source blob: 3b447b35f5aaad9d548e20255256513d9f27c19f.
 BEGIN;
 DO $preflight$
@@ -10,7 +13,17 @@ BEGIN
     OR to_regclass('public.lf_ig_rule_change_v2') IS NULL
     OR to_regclass('public.lf_ig_asset_owner_receipt_v2') IS NULL
  THEN RAISE EXCEPTION 'IG_ROLLBACK_MISSING_V2_OBJECTS'; END IF;
- IF (SELECT count(*) FROM public.lf_ig_project_owner_v2)>0
+ IF (SELECT count(*) FROM public.lf_ig_project_owner_v2)<>1
+    OR NOT EXISTS (SELECT 1 FROM public.lf_ig_project_owner_v2 o
+      WHERE o.project_code='LF'
+        AND o.owner_sub='00000000-0000-4000-8000-000000000001'::uuid
+        AND o.owner_name='Cristhian Luján'
+        AND o.owner_profile_code='PERFIL-PRODUCT-DIRECTOR-LF'
+        AND o.status='TEMP_DOCUMENTARY_ACTIVE'
+        AND o.identity_mode='UNVERIFIED_CHAT_DECLARATION'
+        AND o.source_execution_id='OWNER_CHAT_TEMPORARY_2026-11-12'
+        AND o.authority_receipt_sha256=encode(extensions.digest(convert_to(
+          'CHAT_DECLARATION_OWNER_CRISTHIAN_LUJAN_2026_11_12_LF_TEMPORAL','UTF8'),'sha256'),'hex'))
     OR (SELECT count(*) FROM public.lf_ig_owner_decision_v2)>0
     OR (SELECT count(*) FROM public.lf_ig_rule_change_v2)>0
     OR (SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2)>0
@@ -26,19 +39,19 @@ BEGIN
     WHERE (skill_code='RULE_CREATE_APPLY'
            AND opener_fn='lf_skill_o_rule_create_v2'
            AND input_required=ARRAY['regla_codigo','analysis_snapshot_sha256','decision_id','candidate_patch','owner_decision_id']::text[]
-           AND description='Creates official CANDIDATO child only after authenticated LF owner approval and 7-step readback')
+           AND description='Creates official CANDIDATO child after LF temporary documentary decision and 7-step readback')
       OR (skill_code='RULE_UPDATE_APPLY'
            AND opener_fn='lf_skill_o_rule_update_v2'
            AND input_required=ARRAY['regla_codigo','analysis_snapshot_sha256','decision_id','candidate_patch','owner_decision_id']::text[]
-           AND description='Candidate-only legacy writer plus staged VIGENTE correction; exact owner-bound preimage required')
+           AND description='Candidate-only legacy writer plus staged VIGENTE correction; exact documentary owner decision and preimage required')
    )<>2 THEN RAISE EXCEPTION 'IG_ROLLBACK_CATALOG_DRIFT'; END IF;
- IF to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,text)') IS NULL
+ IF to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NULL
     OR to_regprocedure('public.lf_ig_rule_child_guard_v2(text,jsonb,text,text,text,text)') IS NULL
     OR to_regprocedure('public.lf_ig_rule_step_record_v2(text,text,text,text,jsonb)') IS NULL
     OR to_regprocedure('public.lf_skill_o_rule_create_v2(text,jsonb,text,text,text)') IS NULL
     OR to_regprocedure('public.lf_skill_o_rule_update_v2(text,jsonb,text,text,text)') IS NULL
     OR to_regprocedure('public.lf_ig_rule_finalize_v2(text)') IS NULL
-    OR to_regprocedure('public.lf_ig_asset_owner_approve_v2(text,text,text,text)') IS NULL
+    OR to_regprocedure('public.lf_ig_asset_owner_approve_v2(text,text,text,text,jsonb)') IS NULL
     OR to_regprocedure('public.lf_ig_asset_owner_apply_v2(uuid)') IS NULL
  THEN RAISE EXCEPTION 'IG_ROLLBACK_V2_FUNCTION_DRIFT'; END IF;
  -- Six pre-existing V1 function definitions MUST still have the same frozen MD5.
@@ -87,6 +100,13 @@ DROP FUNCTION public.lf_ig_asset_owner_apply_v2(uuid) RESTRICT;
 DROP FUNCTION public.lf_ig_asset_owner_approve_v2(text,text,text,text) RESTRICT;
 DROP TABLE public.lf_ig_rule_change_v2 RESTRICT;
 DROP TABLE public.lf_ig_owner_decision_v2 RESTRICT;
+-- Explicitly delete only the exact seed created by the forward migration,
+-- after confirmed zero human decisions and zero child changes.
+DELETE FROM public.lf_ig_project_owner_v2
+ WHERE project_code='LF'
+   AND owner_sub='00000000-0000-4000-8000-000000000001'::uuid
+   AND owner_name='Cristhian Luján'
+   AND source_execution_id='OWNER_CHAT_TEMPORARY_2026-11-12';
 DROP TABLE public.lf_ig_project_owner_v2 RESTRICT;
 DROP TABLE public.lf_ig_asset_owner_receipt_v2 RESTRICT;
 
