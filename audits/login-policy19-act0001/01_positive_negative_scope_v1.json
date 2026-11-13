@@ -1,0 +1,101 @@
+{
+  "schema_version": "LF_ROUTER_POLICY19_POSITIVE_NEGATIVE_SCOPE_DESIGN_V1",
+  "status": "DESIGN_ONLY_NO_AUTHORITY_RECEIPT",
+  "router": "ACT-0001",
+  "operation_code": "ACTUALIZACION_DB_LF",
+  "target_repo": "cristhianlujan/claude-persona-lf-patch",
+  "migration_target_suffix": "_lf_b2b_policy19_otp_brevo_profiles12_v1.sql",
+  "policy_id": 19,
+  "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+  "scope_code_proposed": "LF_POLICY19_ADMIN12_OTP_BREVO_CHANGE_V1",
+  "parent_scope_reuse_forbidden": "LF_ACTIVOS_OWNER_NAME_WRITE_V1",
+  "effect_authority": false,
+  "downstream_execution_allowed": false,
+  "allowed": {
+    "table": "lf_ops.politicas_seguridad",
+    "predicate": {
+      "security_policy_id": 19,
+      "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+      "status": "CANDIDATO"
+    },
+    "columns": [
+      "description",
+      "policy_config",
+      "parameter_provenance",
+      "updated_at"
+    ],
+    "policy_config_changed_keys": [
+      "admin_minimum_strength",
+      "admin_phishing_resistant_requirement",
+      "phishing_resistant_option_required",
+      "admin_primary_method",
+      "admin_identity_provider",
+      "admin_sso_protocol",
+      "admin_provider_configuration_status",
+      "factor_selection_status"
+    ],
+    "provenance_changed_keys": [
+      "admin_minimum_strength",
+      "admin_phishing_resistant_requirement",
+      "phishing_resistant_option_required",
+      "admin_primary_method",
+      "admin_identity_provider",
+      "admin_sso_protocol",
+      "admin_provider_configuration_status",
+      "factor_selection_status"
+    ],
+    "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+    "description_utf8_sha256": "0beb7404a61197b3d2528de19a210350a02ae83a5d7fbc58d57726645173975b"
+  },
+  "denied": {
+    "columns": [
+      "security_policy_id",
+      "policy_code",
+      "category",
+      "enforcement_level",
+      "status",
+      "source_decision_id",
+      "source_decision_number",
+      "created_at"
+    ],
+    "all_other_policy_config_keys": "DENY",
+    "all_other_parameter_provenance_keys": "DENY",
+    "all_other_rows": "DENY",
+    "other_tables": "DENY",
+    "project_SALY": "DENY",
+    "historical_runs": "DENY",
+    "production_promotion": "DENY",
+    "direct_supabase_sql": "DENY",
+    "fake_receipt": "DENY"
+  },
+  "train_origin": {
+    "producer": "lf-migration-merge-train",
+    "operation_code": "ACTUALIZACION_DB_LF",
+    "target_type": "MIGRATION",
+    "status": "IN_PROGRESS",
+    "require_exact_head_sha": true,
+    "require_request_sha256": true,
+    "require_origin_router": "ACT-0001",
+    "require_origin_action": "UPDATE",
+    "require_target_path_equals_run": true
+  },
+  "receipt_contract": {
+    "schema_version": "LF_ROUTER_POSITIVE_NEGATIVE_SCOPE_RECEIPT_V1",
+    "persistence": "public.lf_router_scope_receipt_v1",
+    "require_policy_catalog": "public.lf_router_scope_policy_v1",
+    "issuer_existing": "public.lf_router_scope_bind_v1(text)",
+    "consumer_existing": "public.lf_router_scope_receipt_consume_v2(text,text)",
+    "compatibility_mode": "EXTEND_OFFICIAL_FUNCTIONS_UNDER_GOVERNED_REVIEW_NOT_NEW_PARALLEL_ENTRY",
+    "bind_sha256": [
+      "request",
+      "manifest",
+      "schema",
+      "canonical_scope_policy",
+      "guard_source",
+      "exact_migration_source"
+    ],
+    "require_readback": true,
+    "effect_authority": false,
+    "downstream_execution_allowed": false
+  }
+}
