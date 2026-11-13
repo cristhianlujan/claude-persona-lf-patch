@@ -1,0 +1,25 @@
+{
+  "kind": "L33_FROZEN_COHORT_READBACK_ONLY",
+  "source_cut_at": "2026-11-13 08:36:22.461152+00",
+  "source_member_sha256": "92655adfadaa16478f3fcd14daae78a7b614907444d176ae26c04fbc431dbdb3",
+  "source_preimage_sha256": "04ef6f1448e18a39ef5754b284e802bae265a0a54832feb11f1e5700a3b9b9f2",
+  "observation": {
+    "readback_at_utc": "2026-11-13 08:43:03.858075+00",
+    "current_mvcc": "619234:619234:",
+    "db_role": "supabase_read_only_user",
+    "read_only": "on",
+    "isolation": "repeatable read",
+    "expected_count": 235,
+    "expected_distinct": 235,
+    "present_count": 235,
+    "missing_ids": "[]",
+    "changed_preimage_ids": "[\"EXEC-DB-TRAIN-PR3807-20261113083527-R43394317535\"]",
+    "changed_status_ids": "[\"EXEC-DB-TRAIN-PR3807-20261113083527-R43394317535\"]",
+    "outside_new_current_in_progress_ids": "[]",
+    "current_profile_count": 61,
+    "frozen_profile61_count": 61,
+    "profile61_present": 61,
+    "missing_profile61_ids": "[]"
+  },
+  "meaning": "Readback of prior snapshot; changed/missing/new IDs are never silently included. No G01 issuance and no RUN mutation."
+}
