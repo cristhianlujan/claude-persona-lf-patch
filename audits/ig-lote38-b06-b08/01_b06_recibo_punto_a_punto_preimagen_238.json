@@ -1,0 +1,173 @@
+{
+  "schema": "LF_L38_B06_OWNER_G03_EXECUTED_READBACK_AND_RECONSTRUCTION_V1",
+  "scope": "LF temporary public.lf_activos before PR3806; do not infer SALY",
+  "source_refs": {
+    "L28_doc12": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote28-blocker-closure-plan-v1/audits/rule-quality-lote28/12_criterios_cierre_motor_7.md",
+    "L28_G03_template": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote28-blocker-closure-plan-v1/audits/rule-quality-lote28/recibos/B06_OWNER.md",
+    "baseline": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/main/docs/input-governance/owner-one-name/preimage_238_20261112.csv",
+    "migracion": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/main/supabase/migrations/20261113071927_lf_asset_owner_one_name_backfill_v1.sql",
+    "PG17PG18_laboratory": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43385755925"
+  },
+  "as_of": "live SELECT 2026-11-13; GitHub CI 2026-11-13",
+  "source_before_cohort": {
+    "total": 238,
+    "canonical": 83,
+    "requires_change": 155,
+    "active_change": 144,
+    "archived_change": 11,
+    "archived_total": 13,
+    "preimage_source_csv_blob_sha1": "3157e4ed321ab6c327b2bc2eb605c5e766b50a89",
+    "sha_method": "sha256 UTF8 (to_jsonb(public.lf_activos row)-'updated_at')::text",
+    "original_owner_counts": {
+      "Cristhian": 73,
+      "MOTOR_DE_APRENDIZAJE": 1,
+      "GOVERNANZA_LF": 6,
+      "NULL": 44,
+      "Cristhian Lujan": 1,
+      "LF_GOVERNANCE": 83,
+      "SUPER_ADMIN": 16,
+      "S30": 7,
+      "LF_GOVERNANCE_S30_DB": 1,
+      "LF_GOVERNANCE_S30": 1,
+      "LF_GOVERNANCE_S26_PROFILE_VALIDATION": 2,
+      "LF_SUPER_ADMIN": 1,
+      "PENDING_OWNER_CONFIRMATION": 1,
+      "INPUT_GOVERNANCE": 1
+    }
+  },
+  "current_state": {
+    "total": 238,
+    "canonical": 238,
+    "variants": 0,
+    "archived": 13,
+    "changed_receipts": 155,
+    "unchanged_without_receipt": 83,
+    "matching_source_codes": 238,
+    "before_receipt_sha_matches": 155,
+    "reconstructed_preimage_sha_matches": 155,
+    "unchanged_current_sha_matches": 83,
+    "after_sha_matches": 155,
+    "unchanged_archive_links": 238,
+    "only_owner_and_audit_changed": 155,
+    "decision_sha_matches": 155,
+    "proposers_separated": 155
+  },
+  "official_run": {
+    "execution_id": "EXEC-DB-TRAIN-PR3806-20261113071927-R43384804628",
+    "operation_code": "ACTUALIZACION_DB_LF",
+    "status": "COMPLETED",
+    "started_at": "2026-11-13T07:20:12.513028Z",
+    "completed_at": "2026-11-13T07:20:49.28751Z",
+    "preflight": "PASS_CLEAN",
+    "patch": "PASS_CLEAN",
+    "verify": "PASS_CLEAN",
+    "train_workflow_run_id": 43384804628,
+    "head_sha": "da0af21a4a16c52fc63abd40f4385422f54b1611",
+    "source_blob_sha1": "590a73d8d57a9ee5670e4b063edf359c4d0cb6b4",
+    "producer": "LF_GOVERNANCE"
+  },
+  "negative_tests_executed_in_prior_CI": {
+    "workflow_run": 43385755925,
+    "job": 131753702972,
+    "conclusion": "SUCCESS",
+    "versions": [
+      "Postgres 17.6 AssetOwnerPG176",
+      "Postgres18 AssetOwnerPG18"
+    ],
+    "observed": [
+      "full_155_atomic_apply_rollback",
+      "wrong_scope_active_vs_archived",
+      "stale_SHA_rejected",
+      "SUPER_ADMIN_rejected",
+      "missing_proposer_rejected",
+      "INSERT_normalizes_variants",
+      "update_guard_rejects_variant"
+    ],
+    "caveat": "Exact SQL test fixture SHA 238 adapted to isolated rows; not a reproduction on current live DB; additional SALY/runtime replay not evidenced"
+  },
+  "checks": [
+    {
+      "id": "G03-01",
+      "label": "Cadena #3803,#3804,#3806 en ledger; Train 3806 con preflight/patch/verify PASS_CLEAN",
+      "status": "PASS",
+      "evidence": "live ledger 20261113030000/070051/071927; Train EXEC-DB-TRAIN-PR3806-20261113071927-R43384804628 COMPLETED; Train run 43384804628; HEAD da0af21a4a16c52fc63abd40f4385422f54b1611"
+    },
+    {
+      "id": "G03-02",
+      "label": "Preimagen Git 238 únicos, 83 canónicos y 155 no canónicos",
+      "status": "PASS",
+      "evidence": "Git blob 3157e4ed321ab6c327b2bc2eb605c5e766b50a89; CSV 238 unique ids/codes; original owner breakdown; changed 155"
+    },
+    {
+      "id": "G03-03",
+      "label": "238 SHA de preimagen demostrables: 155 desde receipts before_row; 83 desde filas sin cambios",
+      "status": "PASS",
+      "evidence": "SQL SELECT live: reconstructed_before_hash=155/155, original_unchanged_hash_match=83/83, source=238/238"
+    },
+    {
+      "id": "G03-04",
+      "label": "Solo los 155 correctos cambiaron (144 activos, 11 archivados)",
+      "status": "PASS",
+      "evidence": "SQL full join 238/238; receipts_changed=155; unchanged_no_receipt=83; archived_changes=11; active changes=144"
+    },
+    {
+      "id": "G03-05",
+      "label": "238 owners canónicos, 0 variantes",
+      "status": "PASS",
+      "evidence": "SELECT public.lf_activos total=238 canonical=238 variants=0"
+    },
+    {
+      "id": "G03-06",
+      "label": "13 archivados históricos preservados",
+      "status": "PASS",
+      "evidence": "SQL 238 archives_unchanged; 13 archived total, 11 modified owner but archived_at unchanged"
+    },
+    {
+      "id": "G03-07",
+      "label": "155 recibos APPLIED, before/after hashes, separación proponente/decisor",
+      "status": "PASS",
+      "evidence": "155 unique receipts and asset_codes one Train; originalSHA=155/155, afterSHA=155/155, decisionSHA=155/155; proposer LF_GOVERNANCE distinto decisor Cristhian Luján; identity_verified NO comprobada como humana"
+    },
+    {
+      "id": "G03-08",
+      "label": "Ninguna modificación no autorizada de campos de 155 activos",
+      "status": "PASS",
+      "evidence": "155/155 equality to_jsonb(after) - owner_name/updated_at/updated_by_execution_id == before_row same excluded fields; actor provenance 155/155"
+    },
+    {
+      "id": "G03-09",
+      "label": "Guardas de owner y unicidad registradas, laboratorio de negativos PG17/18",
+      "status": "PASS",
+      "evidence": "DEFAULT LF_GOVERNANCE, 2 triggers, UNIQUE(train_execution_id,asset_code), GitHub CI run 43385755925 job131753702972 SUCCESS: AssetOwnerPG176+AssetOwnerPG18 negative stale, wrong scope, SUPER_ADMIN, rollback; source exact fixture adapted test-only"
+    },
+    {
+      "id": "G03-10",
+      "label": "Negativos completos replay/idempotencia y cross-project LF/SALY en runtime real",
+      "status": "PENDIENTE",
+      "owner": "Seguridad, Arquitectura/DBA, QA/IG",
+      "evidence": "UNIQUE index readback y pruebas CI parciales; no se hizo replay negativo contra Supabase vivo y SALY no está incluido en baseline LF 238"
+    },
+    {
+      "id": "G03-11",
+      "label": "Demostrar cero cambios a todos los RUN históricos mediante freeze anterior y readback por ID",
+      "status": "PENDIENTE",
+      "owner": "Operaciones / custodios de RUN y DBA",
+      "evidence": "0 RUN distintos del Train con updated_by_execution_id apuntando al Train #3806 (SELECT); no freeze histórica comparativa completa disponible"
+    },
+    {
+      "id": "G03-12",
+      "label": "Aceptación independiente G03/B06, ámbito familias y owner humano / firma",
+      "status": "PENDIENTE",
+      "owner": "Dueño, Arquitectura/DBA, Seguridad/IAM, QA independiente",
+      "evidence": "L28 documento 12 temporal permite owner funcional LF_GOVERNANCE, no demuestra identidad humana ni firma; L21 G03 requiere control separado LF/SALY, recibo firmado y negativos cross-project"
+    }
+  ],
+  "passed": 9,
+  "total": 12,
+  "verification_progress_pct": 75,
+  "official_g03_closed": false,
+  "identity_verified": false,
+  "production_go": false,
+  "rollback_risks": "Official migration committed; no deletion or direct rollback allowed. Apply governed compensation if required after new preimage and approvals.",
+  "writes_to_supabase": 0
+}
