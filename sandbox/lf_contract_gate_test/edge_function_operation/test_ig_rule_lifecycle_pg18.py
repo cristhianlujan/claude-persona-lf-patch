@@ -231,7 +231,7 @@ class PG18RealSQL(unittest.TestCase):
           SELECT public.lf_ig_rule_cycle_once_v3(
           {quote('EXEC-PROFILE-GATE2-IGPG18MISSING009')},{quote(RULE)},
           {quote('b'*64)},{jq(decision)},'pg18://step80');
-          ROLLBACK;""",expect_fail="LF_IG_ONCE_CANONICAL_STEP80_NOT_INSTALLED")
+          ROLLBACK;""",expect_fail="LF_IG_ONCE_PARENT_NOT_ADMITTED")
         fail_assert(self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2;")=="0",
                     "ONE_SHOT_NEGATIVE_CREATED_DECISION")
         print("PASS_PG18_G15_MOTOR_7_BLOCKERS_FAIL_CLOSED_IG_CONTRACT_HASHED",flush=True)
