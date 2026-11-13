@@ -89,11 +89,14 @@ export function planLifecycle(s, trusted={}) {
       return next("ACTUALIZACION_DB_LF_MERGE_TRAIN", {asset_code:a.code,preimage_sha256:a.preimage_sha256,
         new_owner:a.new_owner,owner_receipt:trusted.owner.receipt_ref,apply_directly:false});
   }
-  if (!object(trusted.child) || trusted.child.parent_id !== trusted.run.id ||
+  // Do not retry an existing, unverified child: never risk a second write.
+  if (object(trusted.child) && (trusted.child.parent_id !== trusted.run.id ||
       trusted.child.rule_code !== rule.code || trusted.child.proposal_sha256 !== s.proposal.sha256 ||
       trusted.child.official_writer_verified !== true ||
       trusted.child.source_sha256 !== s.proposal.source_sha256 ||
-      trusted.child.status !== "COMPLETED") {
+      trusted.child.status !== "COMPLETED"))
+    return stop("BLOCK_CHILD_RECEIPT_UNVERIFIED", "Existing child requires verified immutable receipt");
+  if (!object(trusted.child)) {
     if (rule.kind === "CORRECT_VIGENTE")
       return next("ACTUALIZACION_DB_LF_MERGE_TRAIN", {rule_code:rule.code,source_sha256:s.proposal.source_sha256,
         proposal_sha256:s.proposal.sha256,owner_receipt:trusted.owner.receipt_ref,
