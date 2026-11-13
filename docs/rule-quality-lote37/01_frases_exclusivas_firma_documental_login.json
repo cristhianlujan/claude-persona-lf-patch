@@ -1,0 +1,235 @@
+{
+  "schema": "LF_L37_LOGIN_OWNER_LITERAL_SIGNATURE_CATALOG_V1",
+  "project": "LF",
+  "source_type": "IMMUTABLE_DECISION_PACKETS_GITHUB_DOCS",
+  "documents_staged": 9,
+  "bytes_sha_proof_method": "PostgreSQL SHA256(convert_to(exact GitHub fetch_file content,'UTF8')) SELECT-only 2026-11-13",
+  "all_owner_statements": "NOT_ISSUED_USER_ACCEPTED_FORMAT_ONLY",
+  "formal_signatures": 0,
+  "identity_verified": false,
+  "scope": "DOCUMENT_APPROVAL_NOT_WRITE_NOT_PRODUCTION",
+  "important_distinction": [
+    "DOCUMENT SHA-256 used in copied phrase proves which document the user ratified; it is not proposal SHA-256 and cannot replace V2 p_decision.propuesta_sha256.",
+    "Rule writer V2 requires a fresh parent RUN after or around the actual decision time and an exact governed_rule_patch, independent semantic PASS, verified source snapshot; calling APROBAR writes immediately.",
+    "For policies Q01/Q11/Q12 and central policy19 there is no established native policy V2 owner writer; chat phrase can only be recorded as a documentary conversation declaration, identity_verified stays false.",
+    "Sign-off of a documentary proposal does not waive unresolved security, QA, identity or promotion gates.",
+    "Admin1 and Admin2 same factor OTP/Brevo now; old L35 AUTH019 patch SHA should not be signed as it left admin1 undecided."
+  ],
+  "items": [
+    {
+      "decision_id": "LF-LOGIN-Q01-MFA-20261113",
+      "topic": "MFA condicional y factores Login B2B",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-q01-mfa-20261113.json",
+      "document_sha256": "767bbcc73eb9c7eacceb060c21f6386119d021ed680a863757c48bcd8c93a545",
+      "document_bytes_utf8": 1478,
+      "github_blob_sha1": "b69b116e5d48a2fef544846fc365b6037403dcc6",
+      "candidate_patch_sha256": null,
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-Q01-MFA-20261113, documento SHA-256 767bbcc73eb9c7eacceb060c21f6386119d021ed680a863757c48bcd8c93a545, exclusivamente como aprobación documental. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": null,
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "FIRMA_Y_VERIFICACION_IDENTIDAD",
+        "POLICY3_VIGENTE_REQUIERE_SUCESORA",
+        "OTROS_DISPARADORES_MFA_PENDIENTES",
+        "QA_MFA"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-Q11-RECOVERY-20261113",
+      "topic": "Recuperación de identidad y MFA",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-q11-recovery-20261113.json",
+      "document_sha256": "f7a9eb88e001aa973e92f10df163cd7809a9d04c80419034d224b1752e3ca4d7",
+      "document_bytes_utf8": 1175,
+      "github_blob_sha1": "323dcb1bbb8751d256caed9f7cec77946416ef0d",
+      "candidate_patch_sha256": null,
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-Q11-RECOVERY-20261113, documento SHA-256 f7a9eb88e001aa973e92f10df163cd7809a9d04c80419034d224b1752e3ca4d7, exclusivamente como aprobación documental. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": null,
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "IDV_SIN_PROVEEDOR",
+        "DOBLE_CONTROL_NO_IMPLEMENTADO",
+        "QA_RECUPERACION",
+        "POLICY20_PENDIENTE"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-Q12-RISK-20261113",
+      "topic": "Umbrales de riesgo parametrizables",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-q12-risk-20261113.json",
+      "document_sha256": "3dfd72354d70e8e62653f4ac82160b2173d233a96be2b58bbee8d46ada3ef21a",
+      "document_bytes_utf8": 1088,
+      "github_blob_sha1": "88d8c19e91819e32ed7a3d2a58673d8c7daa4d05",
+      "candidate_patch_sha256": null,
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-Q12-RISK-20261113, documento SHA-256 3dfd72354d70e8e62653f4ac82160b2173d233a96be2b58bbee8d46ada3ef21a, exclusivamente como aprobación documental. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": null,
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "EVENTO_CONTROL_UNIDAD_PENDIENTES",
+        "QA_TELEMETRIA",
+        "PERMISO_PANTALLA_NO_ACREDITADO"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-POL19-P1P2-OTP-20261113",
+      "topic": "Política central 19 — contraseña más OTP Brevo para perfiles 1 y 2",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-pol19-p1p2-otp-20261113.json",
+      "document_sha256": "5f542d890f07b1f7452316114b1c0d9942d84d7c3b79f7f4b75ef7ef0754314a",
+      "document_bytes_utf8": 1552,
+      "github_blob_sha1": "4fecfe688fef60dcccf386c1d30337d21204bdbd",
+      "candidate_patch_sha256": "4e2156de362f377ace9a0aef758a136501c9530ca02f7ee20691f38494b021f7",
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-POL19-P1P2-OTP-20261113, documento SHA-256 5f542d890f07b1f7452316114b1c0d9942d84d7c3b79f7f4b75ef7ef0754314a, exclusivamente como aprobación documental. Acepto el riesgo residual: el OTP por correo puede ser retransmitido mediante phishing. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": null,
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "NO_NATIVE_POLICY19_OWNER_DECIDE_V2",
+        "PARAMETER_PROVENANCE_REFRESH_REQUIRED",
+        "MIGRATION_MERGE_TRAIN_GOVERNED",
+        "PG17_PG18_ROLLBACK_NOT_TESTED",
+        "JUDGE_Y_QA"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-AUTH019-P1P2-OTP-20261113",
+      "topic": "AUTH-019 — Factor de segundo control para ambos administradores",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-auth019-p1p2-otp-20261113.json",
+      "document_sha256": "8372a76d48029dc91414d1b684a05238932321c4bd8efad4e2d6bff14f0642fd",
+      "document_bytes_utf8": 1435,
+      "github_blob_sha1": "b0e65ae4dfca2319aa81b71aa7090def4bb688d2",
+      "candidate_patch_sha256": "f70ded45a786f6fc6664081ecec5a3963514d0e3cf9ad06089914fcd425dd288",
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-AUTH019-P1P2-OTP-20261113, documento SHA-256 8372a76d48029dc91414d1b684a05238932321c4bd8efad4e2d6bff14f0642fd, exclusivamente como aprobación documental. Acepto el riesgo residual: el OTP por correo puede ser retransmitido mediante phishing. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": "public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb) — p_decision exact six fields, PATCH SHA not DOC SHA, live RUN/judge/source snapshot, MAY EXECUTE/PROMOTE",
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "AUTH019_VALOR_CONFIG_CONTRADICE_TEXTO",
+        "POLICY19_CONTRADICE_OTP",
+        "REAL_RUN_JUDGE_INDEPENDIENTE",
+        "IDENTITY_VERIFIED_FALSE"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-AUTH018-20261113",
+      "topic": "AUTH-018 — MFA exigido antes de sesión",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-auth018-20261113.json",
+      "document_sha256": "e49c3e9be8c1bc5e40da8129b4f46a54bfae1aa487a338b09b339fe65daf56f2",
+      "document_bytes_utf8": 1344,
+      "github_blob_sha1": "49facb1e4bf56ffa3b315d0e287dbbc343ab2439",
+      "candidate_patch_sha256": "c45b974b519ee985a3ae8fd4a0be8d4d0417eb6a113ea3732112efc86a793ef1",
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-AUTH018-20261113, documento SHA-256 e49c3e9be8c1bc5e40da8129b4f46a54bfae1aa487a338b09b339fe65daf56f2, exclusivamente como aprobación documental. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": "public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb) — p_decision exact six fields, PATCH SHA not DOC SHA, live RUN/judge/source snapshot, MAY EXECUTE/PROMOTE",
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "POLICY3_VIGENTE",
+        "OTROS_TRIGGERS",
+        "REAL_RUN_JUEZ",
+        "IDENTIDAD"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-AUTH020-20261113",
+      "topic": "AUTH-020 — Recuperación asistida sin bypass",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-auth020-20261113.json",
+      "document_sha256": "1da3bcbfb95b82ea71abe8cc33a7b39fe7c21599a83ba22d6c6356886aeef399",
+      "document_bytes_utf8": 1225,
+      "github_blob_sha1": "b59d6e0bd3f03a40a5291c172790884fff572b5f",
+      "candidate_patch_sha256": "696c2504d0bbe220d8d616fed545d73b89e9c69efa06f51ab60f78a888f3cd3c",
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-AUTH020-20261113, documento SHA-256 1da3bcbfb95b82ea71abe8cc33a7b39fe7c21599a83ba22d6c6356886aeef399, exclusivamente como aprobación documental. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": "public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb) — p_decision exact six fields, PATCH SHA not DOC SHA, live RUN/judge/source snapshot, MAY EXECUTE/PROMOTE",
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "IDV",
+        "POLICY20",
+        "SOPORTE_DOBLE_CONTROL",
+        "RUN_JUEZ"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-AUTH033-20261113",
+      "topic": "AUTH-033 — Dispositivo y ruta de verificación",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-auth033-20261113.json",
+      "document_sha256": "8710055c8b83af26956afc504c27c78024746262c401a2b21019545837ab5827",
+      "document_bytes_utf8": 1267,
+      "github_blob_sha1": "b02a7016e4765835390c434e33785a761b83fa47",
+      "candidate_patch_sha256": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-AUTH033-20261113, documento SHA-256 8710055c8b83af26956afc504c27c78024746262c401a2b21019545837ab5827, exclusivamente como aprobación documental. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": "public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb) — p_decision exact six fields, PATCH SHA not DOC SHA, live RUN/judge/source snapshot, MAY EXECUTE/PROMOTE",
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "POLICY25_DEVICE",
+        "RUN_PANTALLA_B2B_AUTH004",
+        "JUEZ_INDEPENDIENTE",
+        "OIDC"
+      ]
+    },
+    {
+      "decision_id": "LF-LOGIN-OTP-PHISHING-RISK-20261113",
+      "topic": "Aceptación del riesgo residual de phishing",
+      "document_path": "docs/rule-quality-lote37/signatures/lf-login-otp-phishing-risk-20261113.json",
+      "document_sha256": "1726998d8233e88431708d3b0f11564f89b7a1aa8d6b6ffddaa66a876af0c43e",
+      "document_bytes_utf8": 1213,
+      "github_blob_sha1": "74380a5ba040bed3aa8b7bedeafa1cec6e040709",
+      "candidate_patch_sha256": null,
+      "required_signature_phrase_EXACT_FOR_OWNER_TO_COPY": "Yo, Cristhian Luján, apruebo la decisión LF-LOGIN-OTP-PHISHING-RISK-20261113, documento SHA-256 1726998d8233e88431708d3b0f11564f89b7a1aa8d6b6ffddaa66a876af0c43e, exclusivamente como aprobación documental. Acepto el riesgo residual: el OTP por correo puede ser retransmitido mediante phishing. Esta declaración no autoriza ejecutar escritores, migraciones ni promover a producción.",
+      "register_mechanism_for_chat_confirmation": "GITHUB_DOCUMENT_APPENDED_UNDER_SEPARATE_GOVERNED_DOCUMENT_ONLY_NOT_OWNER_WRITER",
+      "official_rule_writer_after_gates": null,
+      "official_policy_writer": "NOT_AVAILABLE",
+      "formal_signed": false,
+      "identity_verified": false,
+      "ready_to_promote": false,
+      "blockers": [
+        "FIRMA_DEL_DUENO",
+        "DICTAMEN_SEGURIDAD",
+        "CONTROLES_DETECTIVOS_Y_QA"
+      ]
+    }
+  ],
+  "excluded_proposals_NOT_SIGNABLE_NOW": [
+    {
+      "code": "SEC-B2B-MFA (policy3)",
+      "why": "VIGENTE source, candidate L31 needs successor and other MFA triggers; owner controls applicable, not a full approved policy replacement."
+    },
+    {
+      "code": "SEC-B2B-MFA-RECOVERY (policy20)",
+      "why": "Recovery IDV, two-person scope and support authority not proven; no native policy writer."
+    },
+    {
+      "code": "SEC-B2B-TRUSTED-DEVICE (policy25)",
+      "why": "Device recognition and revocation trust status not reconciled and QA pending."
+    },
+    {
+      "code": "AUTH-002/003/040",
+      "why": "L33 documentary patches are unimplemented; AUTH002/003 VIGENTE and AUTH040 has Policy25 and technical blockers; not owner-decided for blanket signing."
+    }
+  ]
+}
