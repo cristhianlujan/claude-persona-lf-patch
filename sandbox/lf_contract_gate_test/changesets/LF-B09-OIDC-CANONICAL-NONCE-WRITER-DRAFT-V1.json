@@ -7,6 +7,8 @@
     "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_b09_official_oidc_nonce_contract_v1.py": "RUNTIME_TESTING",
     "docs/input-governance/b09-native-chat/07_binding_escritor_nonce_oidc_candidato.md": "INPUT_GOVERNANCE",
-    "sandbox/lf_contract_gate_test/changesets/LF-B09-OIDC-CANONICAL-NONCE-WRITER-DRAFT-V1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/LF-B09-OIDC-CANONICAL-NONCE-WRITER-DRAFT-V1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b09_canonical_recorder_live_preimage_20261113.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b09_official_oidc_nonce_pg176_pg187.py": "RUNTIME_TESTING"
   }
 }
