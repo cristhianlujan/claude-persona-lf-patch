@@ -1,0 +1,49 @@
+{
+  "batch_index": 0,
+  "source_live_sha": "ec233aa608d66167f9a0206cac3f4db9d0e40167fbf6daf15437b06e8ea3b60f",
+  "checks": [
+    {
+      "id": "E2E-04-CARD-PREWRITE-ORDER-20260903-002",
+      "ref": "github://commit/58690b658daed48383a1418658f4daa5b6713a51",
+      "found": true,
+      "object_sha": "58690b658daed48383a1418658f4daa5b6713a51"
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ADAPTER-COMPOSITION-20260901-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/449",
+      "found": true,
+      "object_sha": "d3b5934456d50387bb0a4d85fca242c47a0aeb36"
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+      "ref": "git:54d6d7bb4bcfdcbce728262b1456a7c45f04166f",
+      "found": true,
+      "object_sha": "54d6d7bb4bcfdcbce728262b1456a7c45f04166f"
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-AUTODISC-REPAIR-20260910-003",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@de4958e98fb6921be93aed1b2800cd1a7a30d412/skills/learning_engine",
+      "found": true,
+      "object_sha": "de4958e98fb6921be93aed1b2800cd1a7a30d412"
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-CAUSAL-LANE-20260910-002",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@154e4abdba473319501e87638dd7119667a656df",
+      "found": true,
+      "object_sha": "154e4abdba473319501e87638dd7119667a656df"
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-S30-4D-20260910-004",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@237ce20e3c866835464fbbdc67ed26178e2248fd",
+      "found": true,
+      "object_sha": "237ce20e3c866835464fbbdc67ed26178e2248fd"
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ARCHPARITY-20260828-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6b1ea0d871c607dd1c6a3515635675b603aee7/skills/profile_creator",
+      "found": true,
+      "object_sha": "2c6b1ea0d871c607dd1c6a3515635675b603aee7"
+    }
+  ],
+  "no_effect_reconciliation_claim": true
+}
