@@ -37,6 +37,9 @@ HISTORY="""SELECT encode(extensions.digest(convert_to(
  coalesce(jsonb_agg(to_jsonb(h) ORDER BY h.rule_id,h.version_no),'[]'::jsonb)::text,
  'UTF8'),'sha256'),'hex') FROM lf_ops.reglas_versiones_b07 h;"""
 
+REAL_LF_RULE = json.loads("{\"id\":396,\"razon\":\"No confiar únicamente en controles del frontend.\",\"codigo\":\"B2B-RULE-AUTH-001\",\"estado\":\"VIGENTE\",\"origen\":\"HANDOFF_B2B_v0.3\",\"titulo\":\"Denegar por defecto\",\"categoria\":\"SECURITY\",\"created_at\":\"2026-07-21T15:59:54.024242+00:00\",\"created_by\":\"OpenAI\",\"updated_at\":\"2026-08-21T05:56:04.996559+00:00\",\"descripcion\":\"Toda acción operativa del Backoffice posterior a autenticación completa se deniega por defecto y requiere autorización server-side. El servidor resuelve usuario activo, empresa, pantalla/recurso, permiso efectivo y, cuando aplica, transición de estado. Las acciones pre-auth de Login, MFA y recuperación se gobiernan por sus reglas AUTH específicas y nunca conceden por sí mismas permisos operativos.\",\"valor_config\":{\"model\":\"RBAC_PLUS_COMPANY_POLICY\",\"deny_by_default\":true,\"permission_resolution\":\"USER_DENY_GT_USER_ALLOW_GT_PROFILE_ALLOW_GT_DENY_DEFAULT\",\"server_side_enforcement\":true,\"effective_permission_sources\":[\"lf_ops.empresa_usuarios_perfiles\",\"lf_ops.perfiles_permisos\",\"lf_ops.empresa_usuarios_permisos\",\"lf_ops.pantallas_permisos\",\"lf_ops.estados_transiciones\"],\"transition_permission_source\":\"lf_ops.estados_transiciones.required_permission_id\",\"preauth_grants_operational_access\":\"DENY\",\"client_direct_operational_table_access\":\"DENY\",\"screen_access_requires_screen_permission\":true,\"preauth_flows_use_specific_auth_contracts\":true,\"authorization_recheck_on_every_server_action\":\"REQUIRED\",\"operational_access_requires_complete_authentication\":true},\"es_transversal\":true,\"pendiente_detalle\":null,\"pendiente_decision\":false}")
+REAL_LF_ROW_SHA = "f8cbf0c21b3cd88b69fef5f640d1d8a19527e43119a05a63534fea24427d5867"
+
 class B07LFOnly(unittest.TestCase):
  def run_pg(self,image,pg_number):
   self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
@@ -86,10 +89,14 @@ class B07LFOnly(unittest.TestCase):
      'IN_PROGRESS',{q('f'*64)},{j(manifest)},{q('train:20261113030000:'+'e'*40)},
      'LF-MIGRATION-TRAIN-RUN-43379990001');""")
    sql(V2.read_text(encoding="utf-8"))
+   sql("INSERT INTO lf_ops.reglas SELECT (jsonb_populate_record(NULL::lf_ops.reglas,"+j(REAL_LF_RULE)+")).*;")
+   self.assertEqual(sql("""SELECT encode(extensions.digest(convert_to(to_jsonb(r)::text,
+     'UTF8'),'sha256'),'hex') FROM lf_ops.reglas r WHERE codigo='B2B-RULE-AUTH-001';"""),
+     REAL_LF_ROW_SHA,"REAL_LF_SNAPSHOT_DRIFT")
    sql("""INSERT INTO lf_ops.reglas(id,codigo,categoria,titulo,descripcion,estado)
       SELECT -90000-g,'LF-B07-TEST-'||lpad(g::text,4,'0'),'B07_FIXTURE',
        'Synthetic '||g,'Content',CASE WHEN g<=412 THEN 'VIGENTE' ELSE 'CANDIDATO' END
-      FROM generate_series(1,578) g;""")
+      FROM generate_series(2,578) g;""")
    self.assertEqual(sql("SELECT count(*) FROM lf_ops.reglas;"),"578")
    self.assertEqual(sql("SELECT count(*) FROM lf_ops.reglas WHERE estado='CANDIDATO';"),"166")
    before=sql(PARENTS)
@@ -149,6 +156,49 @@ class B07LFOnly(unittest.TestCase):
    sql("""INSERT INTO lf_ops.pantallas(id,codigo,nombre,estado)
      VALUES(999992,'LF-PG18-SCREEN','B07 sandbox','ACTIVA');
      INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id)
+     SELECT id,999992 FROM lf_ops.reglas WHERE codigo='B2B-RULE-AUTH-001';""")
+   # Actual LF rule snapshot from SELECT; synthetic owner/RUN only inside isolated PG.
+   real_code="B2B-RULE-AUTH-001"
+   real_id=396
+   real_run="EXEC-PROFILE-GATE2-B07REALRULE0396"
+   real_patch={"rule_code":real_code,"change_kind":"DOCUMENTARY_ONLY",
+     "changes":{"razon":"B07 prueba reversible PG: no persistir"}}
+   PG18RealSQL.parent(real_run,real_patch)
+   real_preimage=sql("SELECT public.lf_asset_snapshot_sha_v1('REGLA',"+q(real_code)+");")
+   real_decision=PG18RealSQL.rule_record(real_run,rule=real_code)
+   # A single outer transaction encloses official owner_decide -> skill -> V2 -> parent+child.
+   metrics=lambda phase: """SELECT jsonb_build_object(
+     'fase',"""+q(phase)+""",'padre_filas',(SELECT count(*) FROM lf_ops.reglas WHERE id=396),
+     'hija_filas',(SELECT count(*) FROM lf_ops.reglas_versiones_b07 WHERE rule_id=396),
+     'version_max',(SELECT max(version_no) FROM lf_ops.reglas_versiones_b07 WHERE rule_id=396),
+     'razon',(SELECT razon FROM lf_ops.reglas WHERE id=396),
+     'sha_padre',(SELECT encode(extensions.digest(convert_to(to_jsonb(r)::text,
+        'UTF8'),'sha256'),'hex') FROM lf_ops.reglas r WHERE id=396))::text;"""
+   statements="""BEGIN;\n"""+metrics("ANTES")+"""
+     SET LOCAL ROLE service_role;
+     SELECT public.lf_ig_rule_owner_decide_v2(
+       """+q(real_run)+","+q(real_code)+","+q(real_preimage)+","+j(real_decision)+""")::text;
+     RESET ROLE;
+     """+metrics("DENTRO_TX")+"""
+     ROLLBACK;"""
+   tx_out=sql(statements,timeout=240).splitlines()
+   self.assertEqual(len(tx_out),3,"B07_REAL_ROW_SQL_RECEIPTS_NOT_THREE:"+str(tx_out))
+   pre_rec=json.loads(tx_out[0]); result_rec=json.loads(tx_out[1]); post_rec=json.loads(tx_out[2])
+   final_rec=json.loads(sql(metrics("DESPUES_ROLLBACK")))
+   self.assertEqual(result_rec.get("status"),"APPROVED_AND_VIGENTE_VERIFIED",str(result_rec))
+   self.assertEqual((pre_rec["padre_filas"],pre_rec["hija_filas"],pre_rec["version_max"]),(1,1,1))
+   self.assertEqual((post_rec["padre_filas"],post_rec["hija_filas"],post_rec["version_max"]),(1,2,2))
+   self.assertEqual((final_rec["padre_filas"],final_rec["hija_filas"],final_rec["version_max"]),(1,1,1))
+   self.assertEqual(pre_rec["sha_padre"],REAL_LF_ROW_SHA)
+   self.assertNotEqual(post_rec["sha_padre"],REAL_LF_ROW_SHA)
+   self.assertEqual(final_rec["sha_padre"],REAL_LF_ROW_SHA)
+   self.assertEqual(sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2 WHERE rule_code='B2B-RULE-AUTH-001';"),"0")
+   self.assertEqual(sql(INVARIANT),"0")
+   print("B07_LF_REAL_RULE_ROLLBACK_"+image.replace(":","_")+" "+json.dumps({
+     "codigo":real_code,"id":real_id,"decision_status":result_rec["status"],
+     "antes":pre_rec,"dentro_tx":post_rec,"despues_rollback":final_rec},
+     sort_keys=True,ensure_ascii=False),flush=True)
+   sql("""INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id)
      SELECT id,999992 FROM lf_ops.reglas WHERE codigo='LF-B07-TEST-0002';""")
    target="LF-B07-TEST-0002"
    execution="EXEC-PROFILE-GATE2-B07FINALIZER0002"
