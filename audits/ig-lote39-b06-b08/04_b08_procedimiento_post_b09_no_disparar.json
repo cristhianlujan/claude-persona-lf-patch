@@ -1,0 +1,97 @@
+{
+  "schema": "LF_L39_B08_POST_B09_DECISION_PROCEDURE_V1",
+  "scope": "PREPARE_ONLY_RO_SQL_NO_WRITER",
+  "dependency": {
+    "b09_receiver_pr": 3823,
+    "b09_receiver_alone_not_sufficient": true,
+    "requires": "NEW_OR_LEGITIMATELY_CONTINUED PRODUCT_DIRECTOR_LF PROFILE RUN / IN_PROGRESS / Step70 PASS_INDEPENDENT_SEMANTIC / RUN PATCH RAW / screen scope",
+    "pase_sha_receiver_not_equivalent_to_native_independent_judge": true
+  },
+  "queries": [
+    {
+      "path": "01_b08_run_eligible_and_raw_sha_readonly.sql",
+      "purpose": "Prueba específica AUTH033 sobre B2B-AUTH-004"
+    },
+    {
+      "path": "02_b08_generic_run_patch_sha_select.sql",
+      "purpose": "Listado completo de RUN elegibles de Product Director, reglas CREATE/CANDIDATO/VIGENTE, SHA de patch RAW y source SHA equivalente para lectura"
+    }
+  ],
+  "select_executed": {
+    "generic_query": "PASS_SELECT_NO_SQL_ERRORS",
+    "target_auth033_query": "PASS_SELECT_NO_SQL_ERRORS",
+    "eligible_current": 0,
+    "expected_zero_until_b09_real_e2e": true,
+    "readback": "Current Supabase SELECT as of 2026-11-13"
+  },
+  "patch_card": {
+    "test_candidate": "B2B-RULE-AUTH-033",
+    "screen": "B2B-AUTH-004",
+    "currently_CANDIDATO": true,
+    "documentary_patch_sha_L32": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+    "can_use_only_if_equals_raw_patch_sha_from_eligible_RUN": true,
+    "caller_source_sha256": "COMPUTE_THROUGH_OFFICIAL_AUTHORIZED_CONTEXT; SELECT-only equivalent not full writer authority"
+  },
+  "decision_record_template": {
+    "codigo_regla": "<RULE_CODE_FROM_VERIFIED_RUN_RAW>",
+    "propuesta_sha256": "<EXACT_SHA256_FROM_GOVERNED_RULE_PATCH_RAW>",
+    "veredicto": "RECHAZAR",
+    "decisor": "Cristhian Luján",
+    "fecha": "<REAL_ISO8601_DATE_WHEN_OWNER_ISSUES_DECISION>",
+    "frase_literal": "Yo, Cristhian Luján, RECHAZO la propuesta de la regla <RULE_CODE_FROM_VERIFIED_RUN>, SHA-256 <EXACT_SHA256_FROM_GOVERNED_RULE_PATCH_RAW>, originada en el RUN <EXECUTION_ID_REAL>; no autorizo ejecución ni promoción."
+  },
+  "official_writer": "public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)",
+  "invocation_status": "NOT_CALLED",
+  "decision_in_db_status": "NOT_CREATED",
+  "identity_verified": false,
+  "operational_controls": [
+    "Do not reuse an old/COMPLETED RUN; parent must be IN_PROGRESS and Product Director with valid handoff and screen.",
+    "Check actual execute_profile RAW worker/product_decision/independent judge and proposal SHA in live record, never merely documentary L32 sha.",
+    "Re-read source canonical SNAPSHOT via officially authorized context because direct SELECT of lf_asset_snapshot_sha_v1 returns 42501.",
+    "Check exact six strings, veredicto=RECHAZAR and actual owner literal phrase, date within parent.start-5min and now+5min at call time.",
+    "Do not call until owner separately authorizes writer dispatch. RECHAZAR writes immutable record but no rule update or promotion.",
+    "If a rule has already been rejected for parent+code+kind, no overwrite; use a new legitimate RUN for later approval."
+  ],
+  "lab_prior": {
+    "pg18_lab_reject_no_child_no_rule": "PASS (historical CI 43385755925)",
+    "PG17_6_REAL_OWNER_REJECT_LAB": "NOT_VERIFIED_IN_THIS_LOTE",
+    "PG18_7_REAL_OWNER_REJECT_LAB": "NOT_VERIFIED_IN_THIS_LOTE"
+  },
+  "progress": {
+    "control_passed_from_L38": 4,
+    "control_total": 10,
+    "pct": 40,
+    "eligible_run_count": 0,
+    "sql_procedure_prepared": true,
+    "writer_receipt": false
+  },
+  "risk_owner_acceptance_required": [
+    {
+      "risk": "Permanent recorded RECHAZAR for one RUN+rule+kind, no overwrite",
+      "owner_action": "Actual literal rejection with rule/code/SHA/RUN and separate explicit dispatch authorization"
+    },
+    {
+      "risk": "UNVERIFIED_CHAT_DECLARATION identity_verified=false, spoofability",
+      "owner_action": "Documentary owner acceptance for temporary test only; IAM team required for production"
+    }
+  ],
+  "risk_no_owner_approval_required": [
+    {
+      "risk": "Running SELECT-only detector and hash audit",
+      "owner": "IG/DBA"
+    },
+    {
+      "risk": "Running lab tests and negative smoke against isolated PG",
+      "owner": "QA/Security"
+    },
+    {
+      "risk": "Stale SHA/independent judge/eligibility technical gates",
+      "owner": "B09 implementer/IG/Architect; fail closed"
+    }
+  ],
+  "rollback": {
+    "reject": "No rule mutation; decision receipt append-only and cannot be silently removed, future approval needs new RUN.",
+    "approve": "Potential rule VIGENTE; atomic rollback only if function transaction raises; after COMMIT requires separately governed compensating change; not recommended first."
+  },
+  "no_supabase_writes": true
+}
