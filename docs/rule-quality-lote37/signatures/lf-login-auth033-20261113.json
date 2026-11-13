@@ -1,0 +1,26 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-AUTH033-20261113",
+  "decision_title": "AUTH-033 — Dispositivo y ruta de verificación",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "Se aprueba documentalmente la propuesta de AUTH-033 del lote 32 para conservar verificación server-side de dispositivo, desafío MFA cuando corresponda y no omitir un MFA exigido por reconocer el dispositivo. La pantalla correcta es B2B-AUTH-004, no B2B-AUTH-001. Esta tarjeta no aprueba cambios en política 25.",
+  "source_codes": [
+    "L32-AUTH033"
+  ],
+  "candidate_patch_sha256": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+  "source_artifact": "docs/rule-quality-lote32/01_tarjetas_3_y_registros_v2.json",
+  "approval_mechanism": "DOCUMENT_GITHUB_NOW_RULE_OWNER_V2_ONLY_AFTER_GATES",
+  "required_evidence_unresolved": [
+    "POLICY25_DEVICE",
+    "RUN_PANTALLA_B2B_AUTH004",
+    "JUEZ_INDEPENDIENTE",
+    "OIDC"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
