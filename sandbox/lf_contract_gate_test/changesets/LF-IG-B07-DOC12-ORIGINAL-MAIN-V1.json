@@ -1,0 +1,7 @@
+{
+  "solution_ref": "LF-IG-B07-DOC12-ORIGINAL-MAIN-V1",
+  "paths": {
+    "audits/rule-quality-lote28/12_criterios_cierre_motor_7.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-B07-DOC12-ORIGINAL-MAIN-V1.json": "CHANGESET_MANIFEST"
+  }
+}
