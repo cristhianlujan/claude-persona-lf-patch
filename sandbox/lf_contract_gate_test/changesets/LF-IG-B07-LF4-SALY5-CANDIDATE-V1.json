@@ -1,0 +1,12 @@
+{
+  "solution_ref": "LF-IG-B07-LF4-SALY5-CANDIDATE-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_lf4_saly5_candidate_up.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_lf4_saly5_candidate_down.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_saly_14_rows_fixture.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_lf4_saly5_candidate_pg17_pg18.py": "RUNTIME_TESTING",
+    "docs/input-governance/b07_lf4_saly5_candidate/01_matriz_fuentes.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_lf4_saly5_candidate/02_tarjeta_decision_1_pagina.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-B07-LF4-SALY5-CANDIDATE-V1.json": "CHANGESET_MANIFEST"
+  }
+}
