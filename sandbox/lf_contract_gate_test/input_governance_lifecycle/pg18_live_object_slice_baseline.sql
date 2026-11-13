@@ -31,75 +31,318 @@ GRANT USAGE ON SCHEMA public,lf_ops TO authenticated,service_role;
 GRANT USAGE ON SCHEMA extensions TO authenticated,service_role;
 
 CREATE TABLE "lf_ops"."pantallas" (
-  id integer NOT NULL,\n  codigo text NOT NULL,\n  nombre text NOT NULL,\n  descripcion text,\n  flujo text,\n  paso text,\n  estado text NOT NULL DEFAULT 'CANDIDATO'::text,\n  activa boolean NOT NULL DEFAULT true,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  drive_file_id text,\n  drive_url text,\n  drive_filename text,\n  drive_updated_at timestamp with time zone,\n  module_code text,\n  version text NOT NULL DEFAULT 'v0.1'::text,\n  owner_name text,\n  objective text,\n  allowed_profiles jsonb NOT NULL DEFAULT '[]'::jsonb,\n  dependencies jsonb NOT NULL DEFAULT '[]'::jsonb,\n  source_decision_id text,\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  module_id bigint,\n  source_decision_number bigint
+  id integer NOT NULL,
+  codigo text NOT NULL,
+  nombre text NOT NULL,
+  descripcion text,
+  flujo text,
+  paso text,
+  estado text NOT NULL DEFAULT 'CANDIDATO'::text,
+  activa boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  drive_file_id text,
+  drive_url text,
+  drive_filename text,
+  drive_updated_at timestamp with time zone,
+  module_code text,
+  version text NOT NULL DEFAULT 'v0.1'::text,
+  owner_name text,
+  objective text,
+  allowed_profiles jsonb NOT NULL DEFAULT '[]'::jsonb,
+  dependencies jsonb NOT NULL DEFAULT '[]'::jsonb,
+  source_decision_id text,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  module_id bigint,
+  source_decision_number bigint
 );
 
 CREATE TABLE "lf_ops"."reglas" (
-  id integer NOT NULL,\n  codigo text NOT NULL,\n  categoria text NOT NULL,\n  titulo text NOT NULL,\n  descripcion text NOT NULL,\n  razon text,\n  valor_config jsonb,\n  es_transversal boolean NOT NULL DEFAULT false,\n  estado text NOT NULL DEFAULT 'CANDIDATO'::text,\n  origen text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  pendiente_decision boolean NOT NULL DEFAULT false,\n  pendiente_detalle text,\n  created_by text
+  id integer NOT NULL,
+  codigo text NOT NULL,
+  categoria text NOT NULL,
+  titulo text NOT NULL,
+  descripcion text NOT NULL,
+  razon text,
+  valor_config jsonb,
+  es_transversal boolean NOT NULL DEFAULT false,
+  estado text NOT NULL DEFAULT 'CANDIDATO'::text,
+  origen text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  pendiente_decision boolean NOT NULL DEFAULT false,
+  pendiente_detalle text,
+  created_by text
 );
 
 CREATE TABLE "lf_ops"."reglas_pantallas" (
-  id integer NOT NULL,\n  regla_id integer NOT NULL,\n  pantalla_id integer NOT NULL,\n  nota text,\n  created_at timestamp with time zone NOT NULL DEFAULT now()
+  id integer NOT NULL,
+  regla_id integer NOT NULL,
+  pantalla_id integer NOT NULL,
+  nota text,
+  created_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."lf_activos" (
-  id bigint NOT NULL,\n  codigo_activo text NOT NULL,\n  nombre_canonico text NOT NULL,\n  tipo_activo text NOT NULL,\n  subtipo_activo text,\n  tipo_original text,\n  formato_nativo text,\n  linea_codigo text,\n  estado_original text,\n  estado_documental text NOT NULL,\n  estado_operativo text NOT NULL,\n  nivel_control text,\n  runtime_estado text,\n  impacto_automatico text,\n  accion_migracion text,\n  version text,\n  ruta_esperada text,\n  url text,\n  owner_name text,\n  ultima_revision text,\n  rol_arquitectura text,\n  source_spreadsheet_id text NOT NULL,\n  source_spreadsheet_title text NOT NULL,\n  source_sheet_name text NOT NULL,\n  source_row_number integer NOT NULL,\n  migration_batch_id uuid NOT NULL,\n  raw_payload jsonb NOT NULL DEFAULT '{}'::jsonb,\n  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,\n  archived_at timestamp with time zone,\n  archived_reason text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text
+  id bigint NOT NULL,
+  codigo_activo text NOT NULL,
+  nombre_canonico text NOT NULL,
+  tipo_activo text NOT NULL,
+  subtipo_activo text,
+  tipo_original text,
+  formato_nativo text,
+  linea_codigo text,
+  estado_original text,
+  estado_documental text NOT NULL,
+  estado_operativo text NOT NULL,
+  nivel_control text,
+  runtime_estado text,
+  impacto_automatico text,
+  accion_migracion text,
+  version text,
+  ruta_esperada text,
+  url text,
+  owner_name text,
+  ultima_revision text,
+  rol_arquitectura text,
+  source_spreadsheet_id text NOT NULL,
+  source_spreadsheet_title text NOT NULL,
+  source_sheet_name text NOT NULL,
+  source_row_number integer NOT NULL,
+  migration_batch_id uuid NOT NULL,
+  raw_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  archived_at timestamp with time zone,
+  archived_reason text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text
 );
 
 CREATE TABLE "public"."lf_execution_mode_catalog" (
-  execution_mode text NOT NULL,\n  description text NOT NULL,\n  allows_partial_input boolean NOT NULL DEFAULT false,\n  canonical_write_allowed boolean NOT NULL DEFAULT false,\n  runtime_allowed boolean NOT NULL DEFAULT false,\n  promotion_allowed boolean NOT NULL DEFAULT false,\n  requires_evidence_complete boolean NOT NULL DEFAULT false,\n  reference_source text NOT NULL,\n  status text NOT NULL DEFAULT 'ACTIVE'::text,\n  created_by_execution_id text NOT NULL,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now()
+  execution_mode text NOT NULL,
+  description text NOT NULL,
+  allows_partial_input boolean NOT NULL DEFAULT false,
+  canonical_write_allowed boolean NOT NULL DEFAULT false,
+  runtime_allowed boolean NOT NULL DEFAULT false,
+  promotion_allowed boolean NOT NULL DEFAULT false,
+  requires_evidence_complete boolean NOT NULL DEFAULT false,
+  reference_source text NOT NULL,
+  status text NOT NULL DEFAULT 'ACTIVE'::text,
+  created_by_execution_id text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."lf_operation_execution" (
-  execution_id text NOT NULL,\n  operation_code text NOT NULL,\n  target_type text NOT NULL,\n  target_code text NOT NULL,\n  target_repo text,\n  target_path text,\n  status text NOT NULL DEFAULT 'IN_PROGRESS'::text,\n  started_at timestamp with time zone NOT NULL DEFAULT now(),\n  completed_at timestamp with time zone,\n  manifest jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text,\n  idempotency_key text,\n  request_sha256 text,\n  lease_owner text,\n  lease_expires_at timestamp with time zone,\n  lease_fence bigint NOT NULL DEFAULT 0,\n  checkpoint_seq bigint NOT NULL DEFAULT 0,\n  checkpoint_payload jsonb NOT NULL DEFAULT '{}'::jsonb
+  execution_id text NOT NULL,
+  operation_code text NOT NULL,
+  target_type text NOT NULL,
+  target_code text NOT NULL,
+  target_repo text,
+  target_path text,
+  status text NOT NULL DEFAULT 'IN_PROGRESS'::text,
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  completed_at timestamp with time zone,
+  manifest jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text,
+  idempotency_key text,
+  request_sha256 text,
+  lease_owner text,
+  lease_expires_at timestamp with time zone,
+  lease_fence bigint NOT NULL DEFAULT 0,
+  checkpoint_seq bigint NOT NULL DEFAULT 0,
+  checkpoint_payload jsonb NOT NULL DEFAULT '{}'::jsonb
 );
 
 CREATE TABLE "public"."lf_operation_execution_steps" (
-  execution_id text NOT NULL,\n  step_order integer NOT NULL,\n  step_id text NOT NULL,\n  status text NOT NULL,\n  evidence_ref text,\n  evidence_payload jsonb NOT NULL DEFAULT '{}'::jsonb,\n  observed_at timestamp with time zone NOT NULL DEFAULT now(),\n  notes text,\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_by_execution_id text,\n  updated_at timestamp with time zone
+  execution_id text NOT NULL,
+  step_order integer NOT NULL,
+  step_id text NOT NULL,
+  status text NOT NULL,
+  evidence_ref text,
+  evidence_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  observed_at timestamp with time zone NOT NULL DEFAULT now(),
+  notes text,
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_by_execution_id text,
+  updated_at timestamp with time zone
 );
 
 CREATE TABLE "public"."lf_operation_judges" (
-  operation_code text NOT NULL,\n  judge_code text NOT NULL,\n  judge_path text NOT NULL,\n  judge_sha text,\n  pass_if jsonb NOT NULL DEFAULT '[]'::jsonb,\n  fail_if jsonb NOT NULL DEFAULT '[]'::jsonb,\n  result_values jsonb NOT NULL DEFAULT '["PASS", "FAIL", "BLOCKED"]'::jsonb,\n  status text NOT NULL DEFAULT 'CANDIDATO_READ_ONLY'::text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text
+  operation_code text NOT NULL,
+  judge_code text NOT NULL,
+  judge_path text NOT NULL,
+  judge_sha text,
+  pass_if jsonb NOT NULL DEFAULT '[]'::jsonb,
+  fail_if jsonb NOT NULL DEFAULT '[]'::jsonb,
+  result_values jsonb NOT NULL DEFAULT '["PASS", "FAIL", "BLOCKED"]'::jsonb,
+  status text NOT NULL DEFAULT 'CANDIDATO_READ_ONLY'::text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text
 );
 
 CREATE TABLE "public"."lf_operation_mode_bindings" (
-  operation_code text NOT NULL,\n  task_mode text NOT NULL,\n  execution_mode text NOT NULL,\n  allowed boolean NOT NULL DEFAULT false,\n  write_allowed boolean NOT NULL DEFAULT false,\n  destination_kind text NOT NULL,\n  input_completeness text NOT NULL,\n  canonical_state text,\n  required_existing_state text,\n  notes text,\n  status text NOT NULL DEFAULT 'ACTIVE'::text,\n  created_by_execution_id text NOT NULL,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now()
+  operation_code text NOT NULL,
+  task_mode text NOT NULL,
+  execution_mode text NOT NULL,
+  allowed boolean NOT NULL DEFAULT false,
+  write_allowed boolean NOT NULL DEFAULT false,
+  destination_kind text NOT NULL,
+  input_completeness text NOT NULL,
+  canonical_state text,
+  required_existing_state text,
+  notes text,
+  status text NOT NULL DEFAULT 'ACTIVE'::text,
+  created_by_execution_id text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."lf_operation_registry" (
-  operation_code text NOT NULL,\n  version text NOT NULL,\n  status text NOT NULL,\n  source_model text NOT NULL DEFAULT 'GIT_FIRST_YAML'::text,\n  source_repo text NOT NULL,\n  source_paths jsonb NOT NULL DEFAULT '[]'::jsonb,\n  notes text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  operation_family text,\n  operation_domain text,\n  operation_type text,\n  applies_to_asset_type text,\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text,\n  lifecycle_state_code text NOT NULL
+  operation_code text NOT NULL,
+  version text NOT NULL,
+  status text NOT NULL,
+  source_model text NOT NULL DEFAULT 'GIT_FIRST_YAML'::text,
+  source_repo text NOT NULL,
+  source_paths jsonb NOT NULL DEFAULT '[]'::jsonb,
+  notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  operation_family text,
+  operation_domain text,
+  operation_type text,
+  applies_to_asset_type text,
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text,
+  lifecycle_state_code text NOT NULL
 );
 
 CREATE TABLE "public"."lf_operation_step_contracts" (
-  operation_code text NOT NULL,\n  step_id text NOT NULL,\n  step_order integer NOT NULL,\n  execution_order integer NOT NULL,\n  contract_code text NOT NULL,\n  purpose text NOT NULL,\n  input_required jsonb NOT NULL DEFAULT '[]'::jsonb,\n  resolver_ref text NOT NULL DEFAULT 'GPT_RUNTIME_WITH_SUPABASE_CONTEXT'::text,\n  output_payload jsonb NOT NULL DEFAULT '[]'::jsonb,\n  pass_condition jsonb NOT NULL DEFAULT '{}'::jsonb,\n  block_condition jsonb NOT NULL DEFAULT '{}'::jsonb,\n  blocking_code text NOT NULL,\n  mini_judge_code text NOT NULL,\n  required_evidence_keys jsonb NOT NULL DEFAULT '[]'::jsonb,\n  next_if_pass text,\n  next_if_blocked text,\n  status text NOT NULL DEFAULT 'ACTIVE'::text,\n  notes text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  execution_sql text,\n  fail_condition jsonb,\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text
+  operation_code text NOT NULL,
+  step_id text NOT NULL,
+  step_order integer NOT NULL,
+  execution_order integer NOT NULL,
+  contract_code text NOT NULL,
+  purpose text NOT NULL,
+  input_required jsonb NOT NULL DEFAULT '[]'::jsonb,
+  resolver_ref text NOT NULL DEFAULT 'GPT_RUNTIME_WITH_SUPABASE_CONTEXT'::text,
+  output_payload jsonb NOT NULL DEFAULT '[]'::jsonb,
+  pass_condition jsonb NOT NULL DEFAULT '{}'::jsonb,
+  block_condition jsonb NOT NULL DEFAULT '{}'::jsonb,
+  blocking_code text NOT NULL,
+  mini_judge_code text NOT NULL,
+  required_evidence_keys jsonb NOT NULL DEFAULT '[]'::jsonb,
+  next_if_pass text,
+  next_if_blocked text,
+  status text NOT NULL DEFAULT 'ACTIVE'::text,
+  notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  execution_sql text,
+  fail_condition jsonb,
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text
 );
 
 CREATE TABLE "public"."lf_operation_step_judge_bindings" (
-  operation_code text NOT NULL,\n  step_order integer NOT NULL,\n  step_id text NOT NULL,\n  judge_code text NOT NULL,\n  clean_result_value text NOT NULL,\n  blocked_result_value text NOT NULL,\n  return_result_value text NOT NULL,\n  required_evidence_keys jsonb NOT NULL DEFAULT '[]'::jsonb,\n  status text NOT NULL DEFAULT 'ACTIVE_ENFORCEMENT'::text,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text
+  operation_code text NOT NULL,
+  step_order integer NOT NULL,
+  step_id text NOT NULL,
+  judge_code text NOT NULL,
+  clean_result_value text NOT NULL,
+  blocked_result_value text NOT NULL,
+  return_result_value text NOT NULL,
+  required_evidence_keys jsonb NOT NULL DEFAULT '[]'::jsonb,
+  status text NOT NULL DEFAULT 'ACTIVE_ENFORCEMENT'::text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text
 );
 
 CREATE TABLE "public"."lf_operation_steps" (
-  operation_code text NOT NULL,\n  step_order integer NOT NULL,\n  step_id text NOT NULL,\n  required boolean NOT NULL DEFAULT true,\n  evidence_required text NOT NULL,\n  source_path text NOT NULL,\n  source_sha text,\n  active boolean NOT NULL DEFAULT true,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now(),\n  execution_order integer,\n  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,\n  updated_by_execution_id text
+  operation_code text NOT NULL,
+  step_order integer NOT NULL,
+  step_id text NOT NULL,
+  required boolean NOT NULL DEFAULT true,
+  evidence_required text NOT NULL,
+  source_path text NOT NULL,
+  source_sha text,
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  execution_order integer,
+  created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN'::text,
+  updated_by_execution_id text
 );
 
 CREATE TABLE "public"."lf_profile_write_authority_v1" (
-  profile_code text NOT NULL,\n  operation_code text NOT NULL,\n  status text NOT NULL DEFAULT 'PROPOSED'::text,\n  basis text,\n  self_update_allowed boolean NOT NULL DEFAULT false
+  profile_code text NOT NULL,
+  operation_code text NOT NULL,
+  status text NOT NULL DEFAULT 'PROPOSED'::text,
+  basis text,
+  self_update_allowed boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE "public"."lf_rule_promotion_v1" (
-  promotion_id text NOT NULL DEFAULT ('PROM-'::text || upper(substr(md5(((random())::text || (clock_timestamp())::text)), 1, 16))),\n  rule_code text NOT NULL,\n  request_execution_id text NOT NULL,\n  requested_by_profile text NOT NULL,\n  request_snapshot_sha256 text NOT NULL,\n  status text NOT NULL DEFAULT 'PENDING'::text,\n  reason text,\n  decided_by text,\n  decided_at timestamp with time zone,\n  applied_at timestamp with time zone,\n  created_at timestamp with time zone NOT NULL DEFAULT now()
+  promotion_id text NOT NULL DEFAULT ('PROM-'::text || upper(substr(md5(((random())::text || (clock_timestamp())::text)), 1, 16))),
+  rule_code text NOT NULL,
+  request_execution_id text NOT NULL,
+  requested_by_profile text NOT NULL,
+  request_snapshot_sha256 text NOT NULL,
+  status text NOT NULL DEFAULT 'PENDING'::text,
+  reason text,
+  decided_by text,
+  decided_at timestamp with time zone,
+  applied_at timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."lf_skill_catalog_v1" (
-  skill_code text NOT NULL,\n  description text NOT NULL,\n  required_operation text NOT NULL,\n  handler_fn text NOT NULL,\n  effect text NOT NULL,\n  input_required text[] NOT NULL DEFAULT '{}'::text[],\n  status text NOT NULL,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  opener_fn text,\n  child_caller jsonb
+  skill_code text NOT NULL,
+  description text NOT NULL,
+  required_operation text NOT NULL,
+  handler_fn text NOT NULL,
+  effect text NOT NULL,
+  input_required text[] NOT NULL DEFAULT '{}'::text[],
+  status text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  opener_fn text,
+  child_caller jsonb
 );
 
 CREATE TABLE "public"."lf_skill_invocation_v1" (
-  skill_run_id text NOT NULL,\n  skill_code text NOT NULL,\n  parent_execution_id text NOT NULL,\n  profile_code text,\n  status text NOT NULL,\n  blocking_code text,\n  input_sha256 text,\n  output jsonb,\n  evidence_ref text,\n  child_execution_id text,\n  created_at timestamp with time zone NOT NULL DEFAULT now()
+  skill_run_id text NOT NULL,
+  skill_code text NOT NULL,
+  parent_execution_id text NOT NULL,
+  profile_code text,
+  status text NOT NULL,
+  blocking_code text,
+  input_sha256 text,
+  output jsonb,
+  evidence_ref text,
+  child_execution_id text,
+  created_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."lf_task_mode_catalog" (
-  task_mode text NOT NULL,\n  description text NOT NULL,\n  allows_new_target boolean NOT NULL DEFAULT false,\n  requires_existing_target boolean NOT NULL DEFAULT false,\n  mutation_intent boolean NOT NULL DEFAULT false,\n  reference_source text NOT NULL,\n  status text NOT NULL DEFAULT 'ACTIVE'::text,\n  created_by_execution_id text NOT NULL,\n  created_at timestamp with time zone NOT NULL DEFAULT now(),\n  updated_at timestamp with time zone NOT NULL DEFAULT now()
+  task_mode text NOT NULL,
+  description text NOT NULL,
+  allows_new_target boolean NOT NULL DEFAULT false,
+  requires_existing_target boolean NOT NULL DEFAULT false,
+  mutation_intent boolean NOT NULL DEFAULT false,
+  reference_source text NOT NULL,
+  status text NOT NULL DEFAULT 'ACTIVE'::text,
+  created_by_execution_id text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE SEQUENCE IF NOT EXISTS lf_ops.pantallas_id_seq; ALTER TABLE "lf_ops"."pantallas" ALTER COLUMN "id" SET DEFAULT nextval('lf_ops.pantallas_id_seq'::regclass);
