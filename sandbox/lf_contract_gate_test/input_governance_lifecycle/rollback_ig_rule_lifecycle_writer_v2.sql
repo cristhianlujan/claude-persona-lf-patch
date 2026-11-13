@@ -21,7 +21,7 @@ BEGIN
  OR NOT EXISTS(SELECT 1 FROM public.lf_router_scope_policy_v1
    WHERE scope_code='LF_ACTIVOS_OWNER_NAME_WRITE_V1'
    AND operation_code='ACTUALIZACION_DB_LF'
-   AND allowed_columns='["owner_name"]'::jsonb
+   AND allowed_columns='["owner_name","updated_at","updated_by_execution_id"]'::jsonb
    AND created_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V3')
  THEN RAISE EXCEPTION 'IG_ROLLBACK_SCOPE_RECEIPTS_OR_POLICY_DRIFT'; END IF;
  IF (SELECT count(*) FROM public.lf_ig_project_owner_v2)<>1
