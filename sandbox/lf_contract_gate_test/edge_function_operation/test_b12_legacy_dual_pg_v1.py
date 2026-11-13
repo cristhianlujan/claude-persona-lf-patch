@@ -237,11 +237,141 @@ class B12DualPG(unittest.TestCase):
             result=self.sql(name,SCENARIOS,timeout=180)
             self.assertIn('B12_ROLLBACK_CLEAN|true',result,
                 'B12_ROLLBACK_NOT_CLEAN:'+result)
+            self.check_guard_acl(name, image)
             # Confirm execution of all notices rather than assuming DO completes.
             print('PASS_B12_TRANSACTIONAL_BEHAVIOR_AND_ROLLBACK_'+image,flush=True)
             print('B12_EXACT_VERSION='+version+' B12_SOURCE_COUNT='+str(len(SOURCES)),flush=True)
         finally:
             subprocess.run(['docker','rm','-f',name],capture_output=True,text=True,timeout=30)
+
+    def check_guard_acl(self, name, image):
+        """Trigger EXECUTE exposure: direct, UPDATE, REVOKE, rollback, legitimate 4-function flow."""
+        sig = "'public.lf_rule_promotion_guard_v1()'::regprocedure"
+        roles = ("anon", "authenticated")
+        for role in roles:
+            is_allowed = self.sql(name,
+                f"SELECT has_function_privilege('{role}',{sig},'EXECUTE');")
+            self.assertEqual(is_allowed, "t", "B12_GUARD_INITIAL_EXECUTE_NOT_GRANTED:"+role)
+            self.sql(name, f"BEGIN; SET LOCAL ROLE {role}; "
+                     "SELECT public.lf_rule_promotion_guard_v1();",
+                     error="trigger functions can only be called as triggers")
+            self.sql(name, "BEGIN; "
+                     "INSERT INTO lf_ops.reglas(id,codigo,estado,categoria,titulo,descripcion)"
+                     "VALUES (999,'B12-ACL','CANDIDATO','SECURITY','ACL','ACL'); "
+                     f"SET LOCAL ROLE {role}; "
+                     "UPDATE lf_ops.reglas SET estado='VIGENTE' WHERE codigo='B12-ACL';",
+                     error="permission denied for table reglas")
+        print("PASS_B12_GUARD_DIRECT_UNCALLABLE_AND_UPDATE_DENIED_BY_TABLE_ACL_"+image,
+              flush=True)
+
+        # Proof that permission on the table is a separate boundary from
+        # EXECUTE on a trigger function. These grants are DOCKER-ONLY.
+        self.sql(name,"GRANT UPDATE(estado) ON lf_ops.reglas TO anon, authenticated;")
+        for role in roles:
+            before = self.sql(name, "SELECT count(*) FROM lf_ops.reglas;")
+            self.assertEqual(before,"0","B12_GUARD_PRE_TEST_ROW_DRIFT")
+            self.sql(name, "BEGIN; "
+                "INSERT INTO lf_ops.reglas(id,codigo,estado,categoria,titulo,descripcion)"
+                "VALUES (999,'B12-ACL','CANDIDATO','SECURITY','ACL','ACL'); "
+                f"SET LOCAL ROLE {role}; "
+                "UPDATE lf_ops.reglas SET estado='VIGENTE' WHERE codigo='B12-ACL';",
+                error="LF_RULE_PROMOTION_REQUIRED:B12-ACL")
+            self.assertEqual(self.sql(name,"SELECT count(*) FROM lf_ops.reglas;"),"0",
+                "B12_GUARD_PRE_REVOKE_ERROR_ROLLBACK")
+        print("PASS_B12_GUARD_UPDATE_PRIVILEGE_DOES_NOT_BYPASS_GUARD_"+image,flush=True)
+
+        revoke = ("REVOKE EXECUTE ON FUNCTION public.lf_rule_promotion_guard_v1() "
+                  "FROM PUBLIC, anon, authenticated;")
+        # Transactional ACL rollback proof. After ROLLBACK, original grants survive.
+        acl = self.sql(name, "BEGIN; "+revoke+
+            f" SELECT has_function_privilege('anon',{sig},'EXECUTE')::text||'|'||"
+            f"has_function_privilege('authenticated',{sig},'EXECUTE')::text;"
+            " ROLLBACK;"
+            f" SELECT has_function_privilege('anon',{sig},'EXECUTE')::text||'|'||"
+            f"has_function_privilege('authenticated',{sig},'EXECUTE')::text;")
+        self.assertEqual(acl.splitlines(),["false|false","true|true"],
+            "B12_GUARD_ACL_REVOKE_ROLLBACK_FAILED:"+acl)
+        print("PASS_B12_GUARD_REVOKE_TRANSACTION_ROLLBACK_"+image,flush=True)
+
+        # Apply the proposed ACL to the disposable container only.
+        self.sql(name,revoke+
+            " GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_guard_v1() TO service_role;")
+        for role in roles:
+            self.assertEqual(self.sql(name,
+                f"SELECT has_function_privilege('{role}',{sig},'EXECUTE');"),"f",
+                "B12_GUARD_REVOKE_NOT_ENFORCED:"+role)
+            self.sql(name, f"BEGIN; SET LOCAL ROLE {role}; "
+                     "SELECT public.lf_rule_promotion_guard_v1();",
+                     error="permission denied for function lf_rule_promotion_guard_v1")
+            self.sql(name, "BEGIN; "
+                "INSERT INTO lf_ops.reglas(id,codigo,estado,categoria,titulo,descripcion)"
+                "VALUES (999,'B12-ACL','CANDIDATO','SECURITY','ACL','ACL'); "
+                f"SET LOCAL ROLE {role}; "
+                "UPDATE lf_ops.reglas SET estado='VIGENTE' WHERE codigo='B12-ACL';",
+                error="LF_RULE_PROMOTION_REQUIRED:B12-ACL")
+            self.assertEqual(self.sql(name,"SELECT count(*) FROM lf_ops.reglas;"),"0",
+                "B12_GUARD_POST_REVOKE_ERROR_ROLLBACK")
+        self.assertEqual(self.sql(name,
+            f"SELECT has_function_privilege('service_role',{sig},'EXECUTE');"),"t",
+            "B12_GUARD_SERVICE_ROLE_ACCESS_LOST")
+        print("PASS_B12_GUARD_POST_REVOKE_DIRECT_DENY_TRIGGER_STILL_ENFORCED_"+image,
+              flush=True)
+
+        # End-to-end legal caller (service_role): report -> decide_batch ->
+        # apply_batch -> trigger guard -> report; no persistent test rows.
+        positive = self.sql(name, """
+BEGIN;
+INSERT INTO lf_ops.reglas(id,codigo,estado,categoria,titulo,descripcion,razon)
+VALUES (997,'B12-LEGIT','CANDIDATO','SECURITY','B12 legitimate','only sandbox','sandbox');
+INSERT INTO public.lf_rule_promotion_v1(
+ promotion_id,rule_code,status,request_snapshot_sha256,reason,requested_by_profile)
+SELECT 'PROM-B12-LEGIT',codigo,'PENDING',
+ public.lf_asset_snapshot_sha_v1('REGLA',codigo),'sandbox','PERFIL-B12-ONLY'
+FROM lf_ops.reglas WHERE codigo='B12-LEGIT';
+SET LOCAL ROLE service_role;
+DO $b12acl$
+DECLARE v jsonb;
+BEGIN
+ v:=public.lf_rule_promotion_report_v1(1,8);
+ IF (v->>'total_pending')::integer<>1 THEN
+   RAISE EXCEPTION 'B12_LEGIT_REPORT_PRE_FAILED:%',v; END IF;
+ v:=public.lf_rule_promotion_decide_batch_v1(
+   ARRAY['PROM-B12-LEGIT'],'APPROVE','HUMAN:b12-sandbox','no actual owner identity');
+ IF (v->>'ok')::integer<>1 OR v->'detail'->0->>'status'<>'APPROVED' THEN
+   RAISE EXCEPTION 'B12_LEGIT_DECIDE_FAILED:%',v; END IF;
+ v:=public.lf_rule_promotion_apply_batch_v1(ARRAY['PROM-B12-LEGIT']);
+ IF (v->>'applied')::integer<>1 OR v->'detail'->0->>'status'<>'APPLIED' THEN
+   RAISE EXCEPTION 'B12_LEGIT_APPLY_GUARD_FAILED:%',v; END IF;
+ v:=public.lf_rule_promotion_report_v1(1,8);
+ IF (v->>'total_pending')::integer<>0 THEN
+   RAISE EXCEPTION 'B12_LEGIT_REPORT_POST_FAILED:%',v; END IF;
+END $b12acl$;
+RESET ROLE;
+SELECT 'B12_LEGIT_BEFORE_ROLLBACK|'||(
+ SELECT CASE WHEN (SELECT estado FROM lf_ops.reglas WHERE codigo='B12-LEGIT')='VIGENTE'
+ AND (SELECT status FROM public.lf_rule_promotion_v1 WHERE promotion_id='PROM-B12-LEGIT')='APPLIED'
+ THEN 'true' ELSE 'false' END);
+ROLLBACK;
+SELECT 'B12_LEGIT_ROLLBACK_CLEAN|'||
+  CASE WHEN (SELECT count(*) FROM lf_ops.reglas)=0
+        AND (SELECT count(*) FROM public.lf_rule_promotion_v1)=0
+  THEN 'true' ELSE 'false' END;
+""",timeout=120)
+        self.assertIn("B12_LEGIT_BEFORE_ROLLBACK|true",positive,
+            "B12_LEGIT_WORKFLOW_DID_NOT_COMPLETE:"+positive)
+        self.assertIn("B12_LEGIT_ROLLBACK_CLEAN|true",positive,
+            "B12_LEGIT_ROLLBACK_FAILED:"+positive)
+        print("PASS_B12_LEGITIMATE_FOUR_FUNCTION_FLOW_AFTER_REVOKE_"+image,
+              flush=True)
+        # Return Docker to original SQL-role permission state.
+        self.sql(name, "GRANT EXECUTE ON FUNCTION "
+            "public.lf_rule_promotion_guard_v1() TO PUBLIC, anon, authenticated;"
+            " REVOKE UPDATE(estado) ON lf_ops.reglas FROM anon, authenticated;")
+        for role in roles:
+            self.assertEqual(self.sql(name,
+                f"SELECT has_function_privilege('{role}',{sig},'EXECUTE');"),"t",
+                "B12_GUARD_ORIGINAL_ACL_NOT_RESTORED")
+        print("PASS_B12_GUARD_FIXTURE_ACL_RESTORED_"+image,flush=True)
 
     def test_pg17_6(self): self.check_one('postgres:17.6',17)
     def test_pg18_7(self): self.check_one('postgres:18.7',18)
