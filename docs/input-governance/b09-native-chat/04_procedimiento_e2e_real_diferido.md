@@ -29,26 +29,30 @@ Caso creación y caso corrección requieren RUNs nuevos independientes o decisio
 6. `chain_sha256`: SHA256(UTF8("LF_NATIVE_CHAT_EVENT_V1|execution_id|seq|kind|raw_sha256|prev_sha256|writer_receipt_sha256")); `prev_sha256` del primer evento = 64 ceros, los demás = cadena anterior.
 7. El nonce debe generarse y reservarse de manera atómica POR EL REGISTRADOR, tener unicidad/TTL vinculada a RUN/candidato/scope y rechazo cross-RUN.
 
-## Secuencia operativa futura, con evidencia requerida
-| Orden | EKB / etapa | Recibo exigido |
-|---|---|---|
-| 0 | RUN nuevo por operación oficial | execution_id + lease/manifest/handoff y SHA |
-| 10 | input_validate | input literal + fuente + IG aplicabilidad |
-| 20 | screen_selection | selección fuente y política/herencia |
-| 30 | input_governance | ticket oficial/Curator, si aplica |
-| 40 | research_baseline | fuente real y RAW |
-| 45 | research_synthesis | salida nativa RAW/hash |
-| 47 | research_baseline/bridge (según binding vigente) | recibo real del paso 47, sin inventar paso doble |
-| 50 | draft_output | propuesta y candidato SHA |
-| 60 | quality_check | Validator, negativos y decisión |
-| 70 | semantic_judge | chat juez distinto, SHA prompts, controls V3 y receptor, registro oficial |
-| 80 | output_report | bridge oficial, readback y autoridad terminal |
+## Secuencia operativa futura: 11/11 pasos, catálogo vivo `public.lf_operation_steps`
 
-**Advertencia:** los nombres/órdenes concretos deben cotejarse con `public.lf_operation_steps` del RUN nuevo; la tabla es una guía preliminar, NO un reemplazo del catálogo vivo ni una confirmación de 11 IDs.
+Fuente de nombres, orden y requisitos: **SELECT de solo lectura en Supabase**, `operation_code='EJECUCION_PERFIL_LF'`, 11 registros `required=true,active=true`, readback posterior al Train #3827 del 2026-11-13. Este mapeo es referencia documental; antes de un RUN real volver a leer `lf_operation_steps`, `lf_operation_step_contracts`, `lf_operation_step_judge_bindings` y `lf_operation_contracts`. No cambiar contratos ni dar PASS basándose en esta tabla.
+
+| Orden | step_id **exacto** | Evidencia requerida por el catálogo vivo | Ejecución/autoridad |
+|---|---|---|---|
+| 0 | `init_execution` | `execution_id_created` | Solo RUN **nuevo** creado por mecanismo oficial de Paso 0; no inventar ni reutilizar |
+| 10 | `router` | `router_read; action=PROFILE_EXECUTION` | ACT-0001 + Gate2 y recibo Router autorizado |
+| 20 | `profile_resolve` | `exact_profile_resolved; codigo_activo; profile_slug` | Resolver perfil `PERFIL-PRODUCT-DIRECTOR-LF` |
+| 30 | `profile_source_read` | `profile_source_ref; source_revision` | Fuente canónica y revisión exacta |
+| 40 | `input_validate` | `input_scope; activation_trigger_match` | Verificar alcance, políticas/herencia e IG aplicable; EKB exige además comprobación de `scope_authority_packet` y SHA cuando corresponda |
+| 45 | `context_admission` | `context_receipt_ref; context_receipt_digest; context_budget_status; context_event_id; context_budget_event_id; delivery; lazy_refs; profile_source_mode; jit_resolver_ref; server_validated` | Evidencia admitida y transporte del contexto, no reconstruir paquete Gate2 |
+| 47 | `research_baseline_freeze` | `research_baseline_binding; baseline_receipt_ref; server_validated` | Función de baseline oficial y congelamiento del recibo |
+| 50 | `execute_profile` | `profile_output; source_refs; context_receipt_ref; context_receipt_digest; context_transport; research_baseline_ref; research_baseline_digest` | Chat GPT productor genuino, salida RAW y hashes, ejecución del perfil por ruta oficial |
+| 60 | `output_validate` | `output_contract_result; deterministic_validation` | Validator y controles deterministas; IG/Curator como dependencias si el contrato las solicita |
+| 70 | `semantic_judge` | `semantic_judge_result; unsupported_claims` | Chat juez separado, prompt distinto, SHA nativo documental y bridge oficial `lf_profile_native_bridge_record_semantic_v1`; **BLOQUEA** hasta enmienda gobernada Step70/G15, escritor y nonce oficiales |
+| 80 | `report_output` | `result; profile_code; execution_id; no_write_performed` | Bridge oficial `lf_profile_native_bridge_record_report_v1`, readback y recibo de terminal; no confundir reporte con modificación de reglas |
+
+**No existen en este catálogo** los supuestos pasos `screen_selection`, `input_governance`, `research_synthesis`, `draft_output`, `quality_check` ni `output_report`: eran etiquetas preliminares, **no IDs ejecutables**. Las actividades de políticas/IG, investigación, propuesta y validación se resuelven dentro de los pasos oficiales mediante el binding del perfil, no por rutas paralelas. El ID exacto y sus `input_required`, `resolver_ref`, condiciones y claves deben releerse antes de ejecutar cada paso.
+
 - En cada etapa: `STEP_PASS_WITH_EVIDENCE` con RAW, función/escritor oficial, p_execution_id, evidencia_ref, evidencia_payload y SHA. Leer `public.lf_operation_execution_steps` 11/11 y `public.lf_profile_execution_terminal_authority_receipt_v1(execution_id)`.
 - Terminal solo si `RUN.status=COMPLETED`, `READY`, Step70 y Step80 acreditados, y reglas nueva/corregida realmente `VIGENTE` con readback exacto.
 - Antinegativos: HMAC_TEST/MOCK, self-review, mismo chat o prompt, hash alterado, nonce replay, RUN ajeno, paso sin RAW, B01 MFA bypass, writer no oficial y callback no autorizado. Bloqueo en cualquiera => NO-GO.
 - Sin autorización de la siguiente fase, NO ejecutar siquiera Paso 0.
 
 ## Resultado actual
-PREPARADO_DOCUMENTAL; PR de receptor no desplegado; Step70/G15 aún no adaptados; escritor/nonce oficial no conectado; ejecución en chat nuevo, 11/11, Step80, READY, VIGENTE = NOT_TESTED.
+PREPARADO_DOCUMENTAL_CON_CATALOGO_11_11; receptor desplegado y leído en ledger `20261113143831` (PR #3823, Train #43444580985), ruta R17 corregida en main por PR #3827 (Train #43457359558). Step70/G15 aún no adaptados; escritor/nonce oficial no conectado; chat GPT nuevo, 11/11, Step80, READY, VIGENTE = NOT_TESTED. No existe RUN elegible nuevo; nunca usar el RUN del Train como RUN de perfil.
