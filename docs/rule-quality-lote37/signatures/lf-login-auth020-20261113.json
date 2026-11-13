@@ -1,0 +1,27 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-AUTH020-20261113",
+  "decision_title": "AUTH-020 — Recuperación asistida sin bypass",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "Se aprueba documentalmente la propuesta de AUTH-020 del lote 32 para recuperación asistida con verificación de documento, dos personas, espera 48h, aviso previo y ningún bypass de MFA, reconociendo explícitamente que el proveedor IDV y controles de soporte siguen pendientes.",
+  "source_codes": [
+    "L32-AUTH020",
+    "L16-Q11"
+  ],
+  "candidate_patch_sha256": "696c2504d0bbe220d8d616fed545d73b89e9c69efa06f51ab60f78a888f3cd3c",
+  "source_artifact": "docs/rule-quality-lote32/01_tarjetas_3_y_registros_v2.json",
+  "approval_mechanism": "DOCUMENT_GITHUB_NOW_RULE_OWNER_V2_ONLY_AFTER_GATES",
+  "required_evidence_unresolved": [
+    "IDV",
+    "POLICY20",
+    "SOPORTE_DOBLE_CONTROL",
+    "RUN_JUEZ"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
