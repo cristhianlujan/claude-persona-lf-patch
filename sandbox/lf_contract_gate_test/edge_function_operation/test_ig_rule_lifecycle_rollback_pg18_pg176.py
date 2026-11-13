@@ -108,6 +108,13 @@ class PR3803Rollback(unittest.TestCase):
             self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "2")
             psql("DELETE FROM public.lf_ig_project_owner_v2 WHERE project_code='SALY';")
             psql(REVERSE.read_text(encoding="utf-8"))
+            # Rollback removes only the new registry row. Preserve the
+            # freshly reserved bootstrap execution for immutable audit history.
+            bootstrap="EXEC-BOOTSTRAP-PROMOCION-REGLA-LF-R"+runid
+            self.assertEqual(psql("SELECT count(*) FROM public.lf_operation_execution WHERE execution_id='"+
+              bootstrap+"' AND operation_code='VULNERABILITY_COVERAGE_REPAIR_LF' "+
+              "AND created_by_execution_id='"+train+"';"),"1",
+              "BOOTSTRAP_AUDIT_RUN_REMOVED_OR_TAMPERED")
             self.assertEqual(psql(ig_contract_sql), original_contract, "IG_OPERATION_CONTRACT_NOT_RESTORED")
             self.assertEqual(psql("SELECT to_regclass('public.lf_ig_contract_preimage_v3') IS NULL;"),"t")
             self.assertEqual(psql(source_sql), before, "CATALOG_PREIMAGE_MISMATCH")
