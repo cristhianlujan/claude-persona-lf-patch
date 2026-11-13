@@ -1,0 +1,23 @@
+{
+  "solution_ref": "LF-LOGIN-POLICY19-L37-PGDUAL-AUDIT-V1",
+  "paths": {
+    "docs/rule-quality-lote37/apply_preparation/policy19_description_only_candidate.sql": "INPUT_GOVERNANCE",
+    "docs/rule-quality-lote37/apply_preparation/policy19_pg_isolated_fixture.sql": "INPUT_GOVERNANCE",
+    "docs/rule-quality-lote37/apply_preparation/test_policy19_pg17_pg18_rollback.py": "RUNTIME_TESTING",
+    "docs/rule-quality-lote37/00_auth019_p1p2_nuevo_patch_v2.json": "INPUT_GOVERNANCE",
+    "docs/rule-quality-lote37/02_plan_aplicacion_politica19_train_pg17_pg18_rollback.md": "INPUT_GOVERNANCE",
+    "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json": "INPUT_GOVERNANCE",
+    "docs/rule-quality-lote36/01_policy19_patch_v2_documental_sha_tarjeta_six_fields.json": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_l37_exact_original_harness_pgdual.py": "RUNTIME_TESTING",
+    "audits/login-policy19-l37/00_scope_preflight_no_go.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-LOGIN-POLICY19-L37-PGDUAL-AUDIT-V1.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261113130100_lf_b2b_policy19_otp_brevo_profiles12_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/policy19_live_provenance_guard_lab.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_l36_full_config_guard_pgdual.py": "RUNTIME_TESTING",
+    "audits/login-policy19-l37/01_full_config_migration_scope.md": "INPUT_GOVERNANCE",
+    "audits/login-policy19-l37/rollback_exact_transaction_only.sql": "INPUT_GOVERNANCE",
+    "audits/login-policy19-l37/02_pre_act0001_original_migration_snapshot.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_l38_governed_apply_pgdual_v1.py": "RUNTIME_TESTING",
+    "audits/login-policy19-l37/03_governed_receipt_train_binding.md": "INPUT_GOVERNANCE"
+  }
+}
