@@ -7,7 +7,8 @@ export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 // (lf_skill_invoke_v1) owns the authority/input checks; this action only transports the call.
 export const PROFILE_SKILL_INVOKE_ACTION = "profile_native_skill_invoke_v1";
 export const PROFILE_SKILL_STEP_BATCH_ACTION = "profile_native_skill_step_batch_v1";
-export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION, PROFILE_SKILL_STEP_BATCH_ACTION] as const;
+export const PROFILE_B09_WRITER_ACTION = "profile_native_b09_official_writer_v1";
+export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION, PROFILE_SKILL_STEP_BATCH_ACTION, PROFILE_B09_WRITER_ACTION] as const;
 const SKILL_CODE_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
 const SKILL_TARGET_PATH_RE = /^profiles\/[A-Za-z0-9][A-Za-z0-9_./-]*$/;
 // Extra GitHub path type is *only* allowed for SKILL_UPDATE_APPLY; the invoker
@@ -662,6 +663,84 @@ export async function handleProfileContinuation(
   const executionId = typeof body.execution_id === "string" ? body.execution_id : "";
   const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId);
   if (error || !e) return error ?? blocked("PROFILE_CONTINUATION_EXECUTION_NOT_FOUND");
+  if (action === PROFILE_B09_WRITER_ACTION) {
+    // The caller has already checked GitHub OIDC issuer, audience, repo, ref,
+    // workflow and run_id. Never accept an identity from the Issue payload.
+    if (!callerIdentity ||
+        callerIdentity.method !== "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1" ||
+        callerIdentity.repository !== config.repository ||
+        !/^[0-9]{1,20}$/.test(callerIdentity.run_id) ||
+        !/^[0-9a-f]{40}$/.test(callerIdentity.workflow_sha)) {
+      return blocked("B09_NATIVE_OFFICIAL_OIDC_REQUIRED", 403);
+    }
+    if (e.target_code !== "PERFIL-PRODUCT-DIRECTOR-LF" ||
+        e.manifest?.executor_mode !== "GPT_NATIVE" ||
+        e.manifest?.executor_provider !== "OPENAI_CHATGPT_NATIVE") {
+      return blocked("B09_NATIVE_RUN_SCOPE_INVALID", 403);
+    }
+    const mode = body.mode;
+    const sha = (v: unknown) => typeof v === "string" && /^[0-9a-f]{64}$/.test(v);
+    let evidence: Payload;
+    let stepId: string;
+    if (mode === "ISSUE_NONCE") {
+      if (!sha(body.candidate_sha256) || !sha(body.scope_packet_sha256) ||
+          !sha(body.producer_prompt_sha256) ||
+          Object.keys(body).sort().join("|") !==
+            ["action","candidate_sha256","execution_id","mode","producer_prompt_sha256","scope_packet_sha256"].sort().join("|")) {
+        return blocked("B09_NATIVE_ISSUE_NONCE_SCHEMA_INVALID", 400);
+      }
+      stepId = "b09_native_nonce_issue";
+      evidence = {
+        candidate_sha256: body.candidate_sha256,
+        scope_packet_sha256: body.scope_packet_sha256,
+        producer_prompt_sha256: body.producer_prompt_sha256,
+        _verified_oidc: callerIdentity,
+      };
+    } else if (mode === "APPEND_EVENT") {
+      const seq = body.seq;
+      const kind = body.kind;
+      if (![1,2,3].includes(Number(seq)) || !Number.isInteger(seq) ||
+          kind !== (seq === 1 ? "REQUEST" : seq === 2 ? "EXECUTOR" : "JUDGE") ||
+          typeof body.raw_text !== "string" || body.raw_text.length > 50000 ||
+          Object.keys(body).sort().join("|") !==
+            ["action","execution_id","kind","mode","raw_text","seq"].sort().join("|")) {
+        return blocked("B09_NATIVE_APPEND_SCHEMA_INVALID", 400);
+      }
+      stepId = "b09_native_receipt_append";
+      evidence = {seq, kind, raw_text: body.raw_text, _verified_oidc: callerIdentity};
+    } else {
+      return blocked("B09_NATIVE_WRITER_MODE_INVALID", 400);
+    }
+    // Only the existing canonical profile recorder has receipt write authority.
+    // Never insert into lf_ig_native_chat_receipt_v1 directly from Edge.
+    const written = await rpc(config, fetchFn, "lf_record_profile_execution_step_v1", {
+      p_execution_id: e.execution_id,
+      p_step_id: stepId,
+      p_evidence_ref: "actions://oidc/" + callerIdentity.run_id + "/b09",
+      p_evidence_payload: evidence,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (written.error) return written.error;
+    const receipt = written.result ?? {};
+    const expected = mode === "ISSUE_NONCE" ? "B09_SERVER_NONCE_ISSUED" :
+      "B09_NATIVE_EVENT_RECORDED_DOCUMENTAL_ONLY";
+    if (receipt.status !== expected || receipt.execution_id !== e.execution_id) {
+      return respond({outcome:"BLOCKED",code:receipt.blocking_code ??
+        "B09_CANONICAL_RECORDER_REJECTED",execution_id:e.execution_id},409);
+    }
+    // Native SHA == integrity; never assert cryptographic provider/model provenance.
+    return respond({
+      outcome: mode === "ISSUE_NONCE" ? "B09_NONCE_ISSUED" : "B09_EVENT_RECORDED",
+      execution_id: e.execution_id,
+      receipt: {
+        status:receipt.status,nonce:mode === "ISSUE_NONCE" ? receipt.nonce : undefined,
+        seq:mode === "APPEND_EVENT" ? receipt.seq : undefined,
+        chain_tip_sha256:receipt.chain_tip_sha256 ?? null,
+        identity_verified:false, provider_attested:false,
+        effect_authority:false, run_completed:false,
+      },
+    });
+  }
   if (action === PROFILE_SOURCE_BIND_ACTION) {
     return respond({
       outcome: "SOURCE_BINDING_REQUIRED",
