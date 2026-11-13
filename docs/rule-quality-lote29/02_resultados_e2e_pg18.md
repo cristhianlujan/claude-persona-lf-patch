@@ -1,70 +1,64 @@
-# L29 — Resultado REAL de E2E PG18 con datos de muestra y NO-GO
+# L29 ajustado — Resultado verificable con 49 reglas REALES del Login B2B
 
 ## Dictamen
 
-**SANDBOX_VERIFIED para el alcance experimental de L29:** 22/22 controles PASS, tres caminos de regla LF distintos medidos en tres bases PG18 desechables, rollback y protección adicional de solicitud/SoD/idempotencia. **Producción/IG nativo: NO-GO / UNVERIFIED**; **bloqueos B01..B14 cerrados: 0/14**.
+**SANDBOX_VERIFIED sólo para revisión de reglas reales copiadas de origen.** No equivale a ejecución del IG productivo, Router, perfil, RUN, jueces independientes, promoción ni cierre del circuito oficial.
 
-**Evidencia primaria:** [GitHub Actions #43336082581](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43336082581), job `131592483828`, HEAD probado `39b7ebcbf56d76f65b821376e8893650dd0e567b`, conclusión `success`. PG servidor: **PostgreSQL 18.7** dentro del contenedor de CI, sin conexiones productivas. Artifact `l29-e2e-pg18-raw` id `13997605666` (retención 14 días), SHA-256 del ZIP `5ec6781482fcd9f5dbf97dea579c15feb9a4a0fde76f027eec748662041959dc`.
+**CI final:** [GitHub Actions #43340333844](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43340333844) · job `131606765364` · commit probado `7ba1d3b38bd63b0e69ac96a1fd90bf2ebc6befb1` · `SUCCESS` · PostgreSQL 18 desechable. RAW `l29_login_b2b_actual_runtime.json`, SHA-256 `a898a38cb6f8cedaf1271e7390df7517ef8bd3cfce63c60997ae097edd05b08f` (artefacto `13998749112`; ZIP SHA-256 `c82bdb62c7b270ade62a9082413bc68f84fb243d67502259351dbdb845502cac`; retención 14 días).
 
-**SHA-256 JSON RAW exacto (emitido por runner CI):** `122712edfb41308417ab2a2b3f5e76089e078239e5dd161be0967c6e4e7c0ca8`. Guardado en artifact `lote29_e2e_runtime.json`; no recomponer ni sustituir por un JSON de esta documentación.
+**Lectura sólo origen:** `lf_ops.reglas` 49 filas, 9 VIGENTE + 40 CANDIDATO, copia en PostgreSQL con SHA-256 idéntico al generado por servidor vivo: `4959cfd6d9319ea26b60f9a21a1751c674e06c4417fb4d589f3665424d539bd3`. Se buscaron 51: **AUTH-009 y AUTH-010 no existen**, las otras tres reglas tienen prefijo `B2B-RULE-` completo. Ninguna se inventó.
 
-## Conteos realmente ejecutados
+## Métrica real de vueltas (no estimada)
 
-| Grupo | Casos | Estado |
-|---|---:|---|
-| Bootstrap aislado PG18 (tres DB) | 3 | PASS |
-| Positivos completos NEW / MODIFY_CANDIDATE / CORRECT_VIGENTE | 3 | PASS |
-| Negativos y readback adversariales | 10 | PASS |
-| MD5 antes y después, por DB | 6 | PASS |
-| **Total** | **22/22** | **PASS** |
+| Métrica | SQL PG18 observado |
+|---|---:|
+| Reglas reales copiadas y revisadas | **49/49** |
+| Códigos sin fila, fuera de revisión | **2** |
+| Primeras evaluaciones | **49** |
+| Segundas evaluaciones por corrección propuesta | **4** |
+| **Total iteraciones** | **53** |
+| **DEVOLVER_CON_MOTIVO primera vuelta** | **4** |
+| ACEPTAR_PRELIMINAR_SANDBOX final | **23** |
+| ESCALAR_A_HUMANO final | **26** |
+| NO_EVALUABLE_SIN_FUENTE | **2** |
+| Firmas del dueño | **0** |
+| Reglas promovidas | **0** |
 
-La misma corrida ejecutó las tres trayectorias, y los seis tests de MD5 compararon contra el inventario congelado. La prueba no ejecutó todo el inventario de 21 scripts de L26 nuevamente; no inflar los denominadores.
+`AUTH-018`, `AUTH-019`, `AUTH-020`, `AUTH-033`: cada una requirió una devolución `DEVOLVER` en vuelta 1 y un diff aplicado **únicamente a su copia candidata PG18**; la vuelta 2 `ESCALAR_A_HUMANO` porque quedan decisiones adicionales o dependencias sin verificar. El Curator no devuelve indefinidamente lo que ya no puede corregir sin evidencia externa. **Ninguna de esas cuatro quedó lista para promoción oficial.**
 
-## Tres recorridos completos
+Las **23** aceptaciones son preliminares bajo comparador SQL determinista, sin firma, sin despliegue, sin revisión semántica independiente ni QA productivo. La métrica `cierra_sin_intervencion_humana` corresponde sólo a revisión documental automática de sandbox, **no cierre del RUN ni adopción de regla**.
 
-| Prueba | Modelo de datos | Evidencia objetiva en PG18 | Cierre |
+## Políticas centrales: 4 propuestas, sin modificar VIGENTE
+
+| Política existente | Evidencia en fuente | Propuesta documental de sandbox | Límite |
 |---|---|---|---|
-| **A_NEW** | Nuevo candidato sin conflicto real en fixture A | Solicitud HMAC de no-owner; owner L17 distinto; Curator `ACEPTAR`; wrapper L14 `APPLIED/READY`; L20 VIGENTE y divergencia 0; promoción y cierre L24/L26 con SHA | PASS y ROLLBACK, 0 filas temporales |
-| **B_MODIFIED_CANDIDATE** | Candidata existente del fixture con `valor_config.l29_revision: absent → "2"` ANTES de capturar evidencia | SHA preimage ≠ postimage; luego misma cadena de validación/captura/owner/Curator/Promoción/Cierre sin modificar la evidencia congelada a posteriori | PASS y ROLLBACK |
-| **C_CORRECTED_VIGENTE** | Sucesora explícita de `RULE-DEPENDENCY-001` VIGENTE | Curator detecta configuración distinta pero admite sólo con lineage de corrección y owner HMAC; L20 marca anterior `SUCEDIDA` en ambas fuentes y nueva `VIGENTE` | PASS y ROLLBACK |
+| Seguridad 3 `SEC-B2B-MFA` | **VIGENTE**; perfiles 1..6, sin parámetros 30/3 | Parámetros **30 días sin uso** y **3 meses calendario sin cambiar clave**. Otros casos `PENDING_OWNER` | No insertar valores en AUTH-003 ni modificar política VIGENTE |
+| Seguridad 19 `SEC-B2B-MFA-FACTOR-ELIGIBILITY` | **CANDIDATO**; 1–2 Google SAML; 3–6 correo OTP Brevo | Conservar métodos; SMS exclusivamente contingencia, proveedor `NOT_CONFIRMED` | Definir alcance de SMS para perfiles SAML; ejecutar SAML/Brevo QA |
+| Seguridad 20 `SEC-B2B-MFA-RECOVERY` | **CANDIDATO**; recuperación email no definida | Soporte, documento, dos personas, plazo central de **48h**, aviso contacto anterior, sin bypass | Dependencia de soporte/IAM; alcance administradores Google pendiente |
+| Seguridad 25 `SEC-B2B-TRUSTED-DEVICE` | **CANDIDATO**; `UNRECOGNIZED_DEVICE_ONLY` | La confianza no anula disparadores MFA centrales | Otros disparadores de dispositivo/revocación pendientes del dueño |
 
-**No confundir:** `MODIFY_CANDIDATE` es edición de un **CANDIDATO previo a aprobación** en fixture PG18, NO mutación en caliente de una regla VIGENTE. `CORRECT_VIGENTE` usa sucesora explícita: no se editó la VIGENTE in-place. Los tres escenarios fueron LF, **no prueban la ruta SALY**; el cambio de denominador respecto al escenario C SALY de L26 se declara en el tablero.
+**CI adicional real:** `PASS_L29_REAL_FOUR_POLICY_DRAFTS_ONLY`: `draft_revised=4`, `draft_matches_proposal=4`, `source_rows_unchanged=4`. Ocurrió en PG18 aislado, no en Supabase.
 
-## Diez negativas con evidencia SQL
+## Adversariales SQL ejecutados
 
-| Control exacto en JSON | Efecto observado |
-|---|---|
-| `NO_EVIDENCE` | `BLOCK_L29_EVIDENCE_REQUIRED` |
-| `NO_PERMISSION_APPROVE` | Reader sin owner: `BLOCK_L17_NOT_PROJECT_OWNER` |
-| `SUPER_ADMIN_DENIED` | `BLOCK_SUPER_ADMIN_APPROVAL` |
-| `OWNER_CANNOT_CREATE_REQUEST` | ACL PG18: `permission denied for function l29_submit_request_v1` |
-| `SAME_ACTOR_CREATOR_APPROVER_BLOCKED` | Una solicitud forjada sólo por superuser de fixture como mismo actor no supera trigger `BLOCK_L29_SAME_ACTOR_CREATOR_APPROVER` |
-| `REQUEST_MISSING_BLOCKS_OWNER` | `BLOCK_L29_REQUEST_REQUIRED` |
-| `REQUEST_IDEMPOTENCY_CONFLICT` | Mismo ID con cuerpo diferente: `BLOCK_L29_IDEMPOTENCY_KEY_CONFLICT` |
-| `DIRECT_REQUEST_DML_DENIED` | `permission denied for table l29_request_evidence` |
-| `POST_PROMOTION_FAULT_ROLLBACK` | Fallo inducido `L26_INJECTED_AFTER_PROMOTION_BEFORE_CLOSURE` |
-| `NO_PARTIAL_ROWS_AFTER_FAILURE` | 0 filas en solicitud, owner intent, Curator, promoción, cierre y candidato |
+- `SOURCE_SHA_MATCH`: SHA-256 de 49 reglas cargadas coincide con original del SELECT vivo.
+- `SOURCE_ORIGINAL_UNTOUCHED`: 49/49 preimágenes sin alteración.
+- `NO_LITERAL_DUPLICATES`: cero pares de configuración+descripción idénticos, sin afirmar cero duplicidad semántica.
+- `CENTRAL_POLICY_ONLY_THRESHOLDS`: 30d y 3m en config de política 3, 48h en config de política 20, cero parámetros nuevos numéricos MFA embebidos en regla.
+- `IMMUTABLE_REAL_ORIGIN`: actualización del origen PG18 bloqueada.
+- `NO_UNSIGNED_PROMOTION`: `BLOCK_L29_NO_FORMAL_OWNER_SIGNATURE`.
+- `MISSING_SOURCE_FAIL_CLOSED`: `BLOCK_L29_REAL_RULE_SOURCE_MISSING`.
+- `NO_DUPLICATE_APPLY`: rechaza segunda aplicación del mismo diff.
+- `BOARD_49_BY_12`: **588** celdas auditadas, sin sobreacreditar etapas nativas.
 
-**Repetición idempotente positiva en los tres caminos:** solicitud idéntica → `ALREADY_REQUESTED_NOOP`; promoción → `ALREADY_PROMOTED_VERIFIED_NOOP`; cierre → `ALREADY_CLOSED_VERIFIED_NOOP`. Se observa **1 sola solicitud + 1 intención + 1 promoción + 1 cierre** dentro de cada transacción, seguida de **0** filas tras rollback. Esto demuestra idempotencia del **wrapper PG18 por clave lógica**, no replay de RUN nativo de producción.
+## Base histórica L29 de muestra — NO es la entrega ajustada
 
-## Gates congelados — MD5 antes/después por escenario
+La CI anterior [#43336082581](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43336082581) probó **22/22** con `REG_SEG_004` y otros fixtures y observó MD5 de gates. **Está sustituida como prueba principal** por la CI real de 49 reglas. El script previo se conserva por trazabilidad en Git, pero la CI modificada **ya no lo ejecuta** para este ajuste.
 
-| Función de PG18 | MD5 antes = MD5 después |
-|---|---|
-| apply L11B | `86b0494984edf95cf0f9c0a0df67000b` |
-| capture_record | `89cbfac4162dbc9f8ecca59f2c3ab4c3` |
-| citation_verify | `773a62783baa5edbe967200cac66b8c3` |
-| l8 guard | `522d12f0843be1da3c785cef3c0bf3fc` |
+**MD5 gates históricamente verificados y SQL originales intactos:** apply `86b0494984edf95cf0f9c0a0df67000b`, capture `89cbfac4162dbc9f8ecca59f2c3ab4c3`, citation_verify `773a62783baa5edbe967200cac66b8c3`, l8 guard `522d12f0843be1da3c785cef3c0bf3fc`. **No se recalcularon los cuatro MD5 durante la nueva revisión de las 49 reglas** porque ésta no invocó el apply congelado. La integridad de sus archivos se audita por diff de Git desde L26.
 
-**SQL no tocados:** L7/L8/L11B, L14, L17, L23, L24, L26. L29 añadió `17_l29_e2e_request_sod_retry_pg18.sql` separado y un script runner. El md5 legado del apply de Supabase no se compara con este gate PG18; son objetos distintos.
+## Gobierno
 
-## Honradez de autoría, autoridad y producción
+Los inputs del dueño sobre MFA y Q11 son **DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA**; 0 firmas y 0 promociones. Otros casos MFA, operador SMS, dependencia SAML/Brevo/IdP y alcance del soporte siguen sin autorización. En todos los cambios, el Curator es mini-revisor determinista escrito por **GPT-6, mismo modelo y sin independencia**; no se ejecutó JWT nativo de Supabase. La referencia HMAC L17 pertenece a los lotes históricos de laboratorio.
 
-- **Modelo:** GPT-6, mismo autor/juez, **NO** Claude independiente. Curator L23 es SQL determinista de prueba; no Curator oficial ni auditor externo.
-- **JWT:** JSON firmado con HMAC de fixture L17, no Supabase Auth/JWT real; rol PG18 simulado con `SET SESSION AUTHORIZATION`.
-- **Solicitud / propuestas / autorizaciones:** asientos en PG18 desechable, no actividad oficial de ACT-0001, perfil, IG, Step70/OIDC o firma del dueño.
-- **Cierre:** L24/L26 append-only verificado en sandbox, no `lf_profile_execution_terminal_authority_receipt_v1` de RUN real.
-- **Cambio productivo:** 0; **RUN alterados/cerrados/reintentados:** 0; DML/DDL Supabase: 0.
-- **B09_E2E/B07/B08/B12/B02/B03:** ninguno recibe GO por este laboratorio, **14/14 bloqueos productivos abiertos**.
-
-**Límite final: SANDBOX_VERIFIED / PRODUCTION NO-GO / UNVERIFIED.**
+**B09_E2E Nativo: NO_PROBADO. Bloqueos B01..B14 cerrados: 0/14. Producción NO-GO / UNVERIFIED.**
