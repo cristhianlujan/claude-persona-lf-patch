@@ -1,0 +1,160 @@
+{
+  "schema": "LF_L34_AUTH019_PROFILE2_DECISION_IMPACTS_V1",
+  "decision_source_file": "00_decision_dueno_auth019_q01_perfil2_fido2_pendiente_firma.json",
+  "policy19": {
+    "code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+    "security_policy_id": 19,
+    "source_status": "CANDIDATO",
+    "source_full_row_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+    "current": {
+      "description": "La politica central de factores define metodos por perfil. Los administradores requieren SSO Google Workspace SAML con control resistente a phishing. Los demas perfiles usan un segundo control LF de OTP por correo entregado con Brevo; debe verificarse del lado servidor antes del acceso operativo. No puede atribuirse a este OTP la garantia de AAL2 nativo del proveedor sin evidencia. Los bindings del proveedor de identidad permanecen pendientes de M1/ADR-003.",
+      "admin_profile_ids": [
+        1,
+        2
+      ],
+      "admin_primary_method": "GOOGLE_WORKSPACE_SAML_SSO",
+      "admin_identity_provider": "GOOGLE_WORKSPACE",
+      "admin_sso_protocol": "SAML_2_0",
+      "admin_minimum_strength": "PHISHING_RESISTANT",
+      "admin_phishing_resistant_requirement": "GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY",
+      "phishing_resistant_option_required": true,
+      "non_admin_method": "LF_EMAIL_OTP",
+      "non_admin_profile_ids": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "non_admin_delivery_provider": "BREVO",
+      "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION"
+    },
+    "proposed_reconciliation_ONLY_NOT_WRITTEN": [
+      {
+        "field": "policy_config/profile_2_mfa_factor_requirement",
+        "change": "PER_PROFILE_FIDO2_WEBAUTHN_PASSKEY_OR_SECURITY_KEY_PHISHING_RESISTANT",
+        "why": "Fija el factor requerido para Admin Empresa, perfil 2, por la nueva decisión sin asumir IdP."
+      },
+      {
+        "field": "policy_config/profile_2_email_otp_brevo_role",
+        "change": "SUPPLEMENTAL_ONLY_NEVER_ALTERNATIVE_OR_FIDO2_BYPASS",
+        "why": "Conserva Brevo como complemento, no como prueba de FIDO2."
+      },
+      {
+        "field": "policy_config/profile_1_mfa_factor_requirement",
+        "change": "PENDING_OWNER_CONFIRMATION",
+        "why": "Evitar declarar Google SAML/FIDO2/OTP aprobado para Admin LF sin decisión."
+      },
+      {
+        "field": "policy_config/admin_phishing_resistant_requirement",
+        "change": "MAKE_PROFILE_SPECIFIC_P2_WEBAUTHN_FIDO2_P1_PENDING_AND_KEEP_GLOBAL_MINIMUM",
+        "why": "Actualmente está atado a GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY y los dos administradores comparten método."
+      },
+      {
+        "field": "policy_config/admin_primary_method;admin_identity_provider;admin_sso_protocol",
+        "change": "REQUIRES_SEPARATE_REAL_IDP_BINDING_DECISION_DO_NOT_SILENTLY_CHANGE",
+        "why": "La elección de factor FIDO2 no selecciona un proveedor OIDC/SAML."
+      },
+      {
+        "field": "policy_config/admin_minimum_strength",
+        "change": "PRESERVE_PHISHING_RESISTANT",
+        "why": "Prohibido degradar control para pasar OTP/Brevo."
+      },
+      {
+        "field": "policy_config/non_admin_method;non_admin_profile_ids;non_admin_delivery_provider",
+        "change": "PRESERVE_LF_EMAIL_OTP_BREVO_FOR_PROFILES_3_TO_6",
+        "why": "Nueva decisión solo reemplaza parte de Q01 para perfil 2."
+      },
+      {
+        "field": "policy_config/admin_local_password_fallback;phone_otp_default_use",
+        "change": "PRESERVE_DENY",
+        "why": "Ni contraseña sola ni SMS sin proveedor pueden eludir FIDO2."
+      }
+    ],
+    "needs_actual_politica19_governed_patch": true,
+    "done": false
+  },
+  "rules": [
+    {
+      "code": "B2B-RULE-AUTH-003",
+      "status": "VIGENTE",
+      "row_sha256": "aa4c953f6945fe2d404d47bd93f5e0f3a44b0f485befc83a4cd3558dd7199262",
+      "direct_change_required_by_this_owner_decision": false,
+      "unchanged_control": "La exigencia de MFA y step-up se determina por políticas centrales; no se cambian disparadores ni umbrales de MFA en la regla.",
+      "indirect_impact": "La política de factor por perfil debe dirigir al Admin Empresa a FIDO2; la definición Q01 30 días/3 meses pertenece a política 3 y sigue su gobierno separado.",
+      "dependency": "Su estado VIGENTE impide usar RULE_UPDATE_APPLY documental CANDIDATO para modificarla; no inventar patch automático."
+    },
+    {
+      "code": "B2B-RULE-AUTH-018",
+      "status": "CANDIDATO",
+      "row_sha256": "70f6effce7976fa30a0022862649738c1d161246dc97d2db69d7b727110d75de",
+      "direct_change_required_by_this_owner_decision": false,
+      "unchanged_control": "Tras credenciales válidas, MFA_REQUIRED debe impedir AUTHENTICATED, sesión y permisos mientras el segundo factor requerido no esté satisfecho.",
+      "indirect_impact": "Para perfil 2, satisfacción MFA exige FIDO2 probado; OTP/Brevo complementario no puede completar por sí solo el control. La cobertura de perfiles y el MFA condicional Q01 no cambian por esta decisión.",
+      "dependency": "Exige política 19 reconciliada, binding de factor FIDO2/IdP, pruebas y la aprobación separada del patch documental previo L32 si se opta por revisarla."
+    },
+    {
+      "code": "B2B-RULE-AUTH-033",
+      "status": "CANDIDATO",
+      "row_sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b",
+      "direct_change_required_by_this_owner_decision": false,
+      "unchanged_control": "La selección de desafío y reconocimiento de dispositivo es server-side; rutas de desafío protegidas. AUTH039 mantiene OTP ante dispositivo revocado en su alcance definido.",
+      "indirect_impact": "B2B-AUTH-004 (pantalla 54) no puede usar OTP correo como sustituto del desafío FIDO2 de Admin Empresa. El dispositivo reconocido tampoco concede AUTHENTICATED cuando MFA FIDO2 sea exigible; rutas y UI deben distinguir perfiles y tipos de desafío.",
+      "dependency": "El atributo actual second_control_trigger=UNRECOGNIZED_DEVICE_ONLY y la política 25 candidata requieren reconciliación; verificar enrolamiento/routing WebAuthn y QA de pasos de B2B-AUTH-004 y B2B-AUTH-005 antes de aplicar cambios."
+    }
+  ],
+  "cross_component_dependencies": [
+    {
+      "owner": "DUEÑO",
+      "blocking": "FIRMA_FORMAL_Q01_PROFILE2_Y_APROBACION_PATCH_SHA_EXACTO_A_TRAVES_DE_V2",
+      "evidence": "Decisión firmada/identidad autorizada, frase literal, fecha de firma, RUN+patch SHA; método Admin LF perfil 1 continúa pendiente independientemente",
+      "can_motor_auto_close": false
+    },
+    {
+      "owner": "SEGURIDAD/IAM",
+      "blocking": "WEBAUTHN_RP_ID_ORIGIN_CHALLENGE_CRYPTO_VERIFICATION_AND_CREDENTIAL_LIFECYCLE",
+      "evidence": "Especificación RP ID/origin, verificaciones server-side de desafío y assertions, registro/enrolamiento y revocación de credenciales, recuperación sin bypass",
+      "can_motor_auto_close": false
+    },
+    {
+      "owner": "IDENTIDAD/OIDC",
+      "blocking": "ADR003_M1_IDP_REAL_AND_BACKEND_ADAPTER_BINDING",
+      "evidence": "Selección real de IdP y método primario; interoperabilidad SAML/OIDC con verificación FIDO2; issuer/JWKS/claims; pruebas autenticación y sesiones",
+      "can_motor_auto_close": false
+    },
+    {
+      "owner": "PRODUCTO/UI",
+      "blocking": "PASSKEY_ENROLLMENT_UX_AND_STEPUP_FLOW_B2B_AUTH004_005",
+      "evidence": "Definición segura de registro de passkey, verificación, errores, recuperación, pérdida de dispositivo y ruta correcta por perfil",
+      "can_motor_auto_close": false
+    },
+    {
+      "owner": "BREVO/OPERACIONES",
+      "blocking": "EMAIL_OTP_BREVO_FOR_3_TO_6_AND_COMPLEMENTARY_FOR_2",
+      "evidence": "Proveedor, credenciales, entrega, callbacks/webhooks, antiabuso y aseguramiento de que OTP nunca da acceso a perfil 2 sin FIDO2",
+      "can_motor_auto_close": false
+    },
+    {
+      "owner": "MOTOR_IG/GOBERNANZA",
+      "blocking": "POLICY19_AND_AUTH019_CONFIG_VS_DOCUMENTARY_ONLY_WRITER_CONFLICT",
+      "evidence": "Sucesor de política 19, configuración segregada por perfil y pruebas, juez semántico independiente, RAW perfil, SHA canónico e identidad del dueño; writer V2 documental no modifica valor_config",
+      "can_motor_auto_close": false
+    },
+    {
+      "owner": "QA/SEGURIDAD",
+      "blocking": "INTEGRATION_E2E_PASSKEY_POSITIVE_NEGATIVE",
+      "evidence": "Admin Empresa OTP solo denegado, passkey válida con challenge/servidor concede cuando aplica, origen/RP ID diferente denegado, credencial revocada denegada, dispositivo reconocido no bypass, fallos de proveedor fail-closed",
+      "can_motor_auto_close": false
+    }
+  ],
+  "final_state": {
+    "policy19_changed": false,
+    "auth003_changed": false,
+    "auth018_changed": false,
+    "auth033_changed": false,
+    "auth019_changed": false,
+    "ig_closures": 0,
+    "owner_conversation_decision_recorded": true,
+    "owner_approval_signature": false,
+    "production_go": false
+  }
+}
