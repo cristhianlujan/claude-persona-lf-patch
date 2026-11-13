@@ -26,7 +26,7 @@
 - Rollback manual (no autoaplicado): `sandbox/lf_contract_gate_test/input_governance_lifecycle/rollback_ig_rule_lifecycle_writer_v2.sql`.
 - Test Docker: `sandbox/lf_contract_gate_test/edge_function_operation/test_ig_rule_lifecycle_rollback_pg18_pg176.py`.
 - El rollback se bloquea si hay filas nuevas en tablas V2, restaura catálogo/ACL y utiliza `DROP ... RESTRICT`; no toca RUN. **No ejecutar en Supabase actual** ni prometer que substituye restore o backup.
-- **Resultados de CI:** verificar workflow y logs en el SHA final del PR; hasta entonces `PENDIENTE_EVIDENCIA_DE_EJECUCION`.
+- **Resultados CI verificados (solo prueba de código):** HEAD `607880071ffef18071d92f1979a93e270502e8b8`, `PASE` **SUCCESS** run `43363122819`, clasificación de migración **SUCCESS** run `43363122964`, R17 **SUCCESS** run `43363123119`; logs PG17.6 v170006 `PASS_PR3803_REVERSE_postgres_17.6`, PG18.7 v180007 `PASS_PR3803_REVERSE_postgres_18`, suite 211 tests `OK`. Evidencia en `11_resultado_pr3803_rollback_ci.md`. No probado contra instancia real Supabase ni base completa.
 
 ## Evidencia y firmas faltantes
 | Campo | Registro |

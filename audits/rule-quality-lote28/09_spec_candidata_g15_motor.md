@@ -35,6 +35,6 @@
 | T13 | Cambio temporal sin reversión segura o con rollback no verificado | NO_GO para esa operación de cambio |
 | T14 | Infra final sin PITR/restore real cuando se solicita migración | NO_GO_BASE_FINAL |
 
-**PR #3803:** `sandbox/lf_contract_gate_test/input_governance_lifecycle/rollback_ig_rule_lifecycle_writer_v2.sql` es script inverso manual, **fuera de migrations** para respetar 1 SQL migración/PR. Archivo de prueba `test_ig_rule_lifecycle_rollback_pg18_pg176.py` para PostgreSQL 18 y 17.6 aislados por Docker CI. **No afirmar PASS hasta verificar CI/logs**. Migración forward sin tocar.
+**PR #3803:** rollback manual fuera de `supabase/migrations/`, test Docker PostgreSQL 17.6 y 18.7; **PASS verificado** por logs de GitHub Actions `43363123119` (ambas pruebas `ok`; 211 tests R17 `OK`). Forward intacto. Evidencia y límites exactos en `11_resultado_pr3803_rollback_ci.md`. Un PASS en CI **NO** promueve el PR, no acredita restore ni sustituye un backend completo.
 
 **Fuentes inmutables:** G15 L21 y contratos oficiales. Para usar 7/7 realmente, validar autoridad y cursar una modificación gobernada separada de contrato/gate desplegado si hay conflicto. Propuesta ≠ aprobación.

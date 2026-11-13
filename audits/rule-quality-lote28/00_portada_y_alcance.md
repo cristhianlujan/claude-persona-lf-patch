@@ -41,4 +41,5 @@
 - `08_readback_live_release_scope.md`: SELECT histórico L28, sin permiso de producción.
 - `09_spec_candidata_g15_motor.md`: spec candidata 7/7, no aplicar.
 - `10_decision_base_temporal_migracion_y_rollback.md`: nueva decisión pendiente de firma y PR #3803.
+- `11_resultado_pr3803_rollback_ci.md`: CI verificado PG18/PG17.6, PASE/clasificación, SHA y límites.
 - `recibos/B01...B14`: 14 formularios originales vacíos e intactos.

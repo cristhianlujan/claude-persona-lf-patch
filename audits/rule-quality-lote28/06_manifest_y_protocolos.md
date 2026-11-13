@@ -1,5 +1,12 @@
 # Manifiesto de procedencia, readback y protocolo documental
 
+## Evidencia de pruebas PR #3803 (CI ejecutado, sin producción)
+- PR #3803 DRAFT, HEAD `607880071ffef18071d92f1979a93e270502e8b8`; migración forward blob Git `3b447b35f5aaad9d548e20255256513d9f27c19f` **sin alterar**.
+- Rollback blob `841f6b26ecbddfe8c797be9b6398f8f6920e0308` y test blob `5ad2d1ac190d5e496a78a4a7fc3a88ff04760e96`.
+- GitHub Actions `LF Edge Operation R17 Tests` run **43363123119 SUCCESS**, job 131681069596: real Docker PostgreSQL **17.6 (170006) PASS** y **18.7 (180007) PASS**; 211 pruebas `OK` totales (suite R17, no 211 exclusivos del rollback).
+- `PASE` run **43363122819 SUCCESS**; `LF migration name classification` run **43363122964 SUCCESS**, mismo HEAD. Descripción/IDs y límites en `11_resultado_pr3803_rollback_ci.md`.
+- PR permanece DRAFT / NO-GO. Las pruebas usan un subconjunto de definiciones/catálogos, no todo Supabase ni autenticación real; sin aprobación ni ejecución en base viva.
+
 ## Enmienda nueva (SIN FIRMA)
 - Supabase actual temporal; alcance Motor **7** (B02/B03/B06/B07/B08/B09/B12), Contenido 5 e Infraestructura final 2 (B13/B14). **0 cierres en los tres grupos**. Fuente: dueño en conversación, ver `10_decision_base_temporal_migracion_y_rollback.md`.
 - Panel descrito por dueño: 7 backups físicos diarios, último 2026-11-12 09:37 UTC. No se verificaron IDs, hashes, panel, retención ni restore; B13 no se cierra.
