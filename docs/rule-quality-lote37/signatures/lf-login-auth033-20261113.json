@@ -2,7 +2,7 @@
   "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
   "decision_id": "LF-LOGIN-AUTH033-20261113",
   "decision_title": "AUTH-033 — Dispositivo y ruta de verificación",
-  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "status": "PROPUESTA_DOCUMENTAL_PENDIENTE_DECISION_DEL_DUENO",
   "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
   "documentary_statement": "Se aprueba documentalmente la propuesta de AUTH-033 del lote 32 para conservar verificación server-side de dispositivo, desafío MFA cuando corresponda y no omitir un MFA exigido por reconocer el dispositivo. La pantalla correcta es B2B-AUTH-004, no B2B-AUTH-001. Esta tarjeta no aprueba cambios en política 25.",
   "source_codes": [
@@ -22,5 +22,6 @@
   "rule_writer_v2_called": false,
   "policy_writer_v2_called": false,
   "no_promotion": true,
-  "approval_does_not_authorize_effect": true
+  "approval_does_not_authorize_effect": true,
+  "scope_status_clarification": "La decisión funcional puede estar en conversación pero la aprobación de este SHA/documento no existe aún; para propuestas de AUTH018/020/033 tampoco existe una decisión formal sobre el patch."
 }
