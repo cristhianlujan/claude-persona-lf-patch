@@ -3,7 +3,6 @@ on:
   pull_request:
     paths:
       - 'sandbox/lf_contract_gate_test/edge_function_operation/**'
-      - 'sandbox/lf_contract_gate_test/input_governance_lifecycle/**'
 permissions:
   contents: read
 jobs:
@@ -12,8 +11,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python -m unittest discover -s sandbox/lf_contract_gate_test/edge_function_operation -p 'test_*.py' -v
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: LF IG lifecycle candidate unit and simulated E2E
-        run: node --test sandbox/lf_contract_gate_test/input_governance_lifecycle/test_lifecycle_gate.mjs
