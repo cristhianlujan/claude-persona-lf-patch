@@ -57,8 +57,48 @@ class PG18RealSQL(unittest.TestCase):
         fail_assert(int(version)>=180000 and int(version)<190000,"NOT_PG18")
         cls.sql(SLICE.read_text("utf-8"),timeout=350)
         print("PASS_PG18_LIVE_SCHEMA_SLICE_LOADED",flush=True)
-        cls.sql(MIGRATION.read_text("utf-8"),timeout=240)
+        # Verify true PRE-COMMIT rollback, not only logical error handling.
+        # Exact migration SQL is replayed inside the caller-controlled tx,
+        # stripping ONLY its single outer BEGIN/COMMIT for this one check.
+        baseline=cls.catalog_sha256()
+        src=MIGRATION.read_text("utf-8")
+        fail_assert(src.count("\nBEGIN;\n")==1 and src.count("\nCOMMIT;")==1,
+                    "PG18_OUTER_TRANSACTION_WRAPPERS_DRIFT")
+        inner=src.split("\nBEGIN;\n",1)[1].rsplit("\nCOMMIT;",1)[0]
+        cls.sql("BEGIN;\n"+inner+"\nROLLBACK;",timeout=350)
+        readback=cls.catalog_sha256()
+        fail_assert(baseline==readback,"PG18_PRECOMMIT_ROLLBACK_CATALOG_DRIFT "+
+                    baseline+" != "+readback)
+        fail_assert(cls.sql("SELECT to_regclass('public.lf_ig_owner_decision_v2') IS NULL;")=="t",
+                    "PG18_PRECOMMIT_ROLLBACK_LEFT_NEW_TABLE")
+        print("PASS_PG18_PRECOMMIT_ROLLBACK_CATALOG_SHA256 "+baseline,flush=True)
+        cls.sql(src,timeout=240)
         print("PASS_PG18_EXACT_MIGRATION_APPLIED",flush=True)
+
+    @classmethod
+    def catalog_sha256(cls):
+        return cls.sql("""SELECT encode(extensions.digest(convert_to(
+          jsonb_build_object(
+            'functions',(SELECT coalesce(jsonb_agg(
+              jsonb_build_array(n.nspname,p.proname,pg_get_functiondef(p.oid),
+                p.proacl::text) ORDER BY n.nspname,p.proname),
+              '[]'::jsonb) FROM pg_proc p JOIN pg_namespace n
+              ON n.oid=p.pronamespace WHERE n.nspname IN ('public','lf_ops')),
+            'tables',(SELECT coalesce(jsonb_agg(
+              jsonb_build_array(n.nspname,c.relname,c.relkind,
+                c.relacl::text,c.relrowsecurity) ORDER BY n.nspname,c.relname),
+              '[]'::jsonb) FROM pg_class c JOIN pg_namespace n
+              ON n.oid=c.relnamespace WHERE n.nspname IN ('public','lf_ops')
+                AND c.relkind IN ('r','v','S')),
+            'skills',(SELECT coalesce(jsonb_agg(
+               jsonb_build_array(skill_code,opener_fn,input_required)
+               ORDER BY skill_code),'[]'::jsonb)
+               FROM public.lf_skill_catalog_v1),
+            'registry',(SELECT coalesce(jsonb_agg(
+               jsonb_build_array(operation_code,status,version)
+               ORDER BY operation_code),'[]'::jsonb)
+               FROM public.lf_operation_registry))::text,
+          'UTF8'),'sha256'),'hex');""")
 
     @classmethod
     def tearDownClass(cls):
