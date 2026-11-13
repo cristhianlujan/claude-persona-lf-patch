@@ -1,0 +1,53 @@
+{
+  "schema": "LF_L34_AUTH019_PG_LIVE_25_GUARDS_READBACK_V1",
+  "database": "mhwmirqcgxxukpctffuv",
+  "access": "ONLY_SELECT",
+  "pg_observed_at": "2026-11-13 08:40:33.411054+00",
+  "rule_code": "B2B-RULE-AUTH-019",
+  "live_state": "CANDIDATO",
+  "live_row_sha256": "7802a694fd4d29dab489974760babc984950ef6c06d90981c81e88530bf4882e",
+  "recomputed_patch_sha256": "d2b77023da5920dc6a5fad9fad7a213b4e3a89b9b9d3bdf653c3c1d3fcca3093",
+  "expected_patch_sha256": "d2b77023da5920dc6a5fad9fad7a213b4e3a89b9b9d3bdf653c3c1d3fcca3093",
+  "status": "25_OF_25_PASS",
+  "checks": {
+    "no_aal2_claim": true,
+    "preimage_match": true,
+    "size_8_to_8000": true,
+    "rule_code_exact": true,
+    "documentary_only": true,
+    "only_descripcion": true,
+    "profile1_pending": true,
+    "three_outer_keys": true,
+    "one_changed_field": true,
+    "config_not_changed": true,
+    "patch_sha256_match": true,
+    "profiles3_6_preserved": true,
+    "server_side_challenge": true,
+    "policy19_sha_unchanged": true,
+    "passkey_or_security_key": true,
+    "profile2_webAuthn_fido2": true,
+    "brevo_supplementary_only": true,
+    "profile2_phish_resistant": true,
+    "candidate_linked_login001": true,
+    "sms_contingency_unconfirmed": true,
+    "no_password_or_device_bypass": true,
+    "policy19_strength_still_phish": true,
+    "description_differs_from_source": true,
+    "old_google_policy_requires_reconcile": true,
+    "conversation_unsigned_and_other3_rows_unchanged": true
+  },
+  "sql_executed": "WITH i AS(SELECT '{\"patch\":{\"changes\":{\"descripcion\":\"El Login B2B obtiene de la política central de factores la exigencia y el método de segundo control por perfil, y el servidor verifica los factores; la pantalla no elige proveedores ni concede por sí misma AUTHENTICATED. Para Admin Empresa (profile_id 2), cuando MFA o step-up sea exigible, el segundo control requerido es WebAuthn/FIDO2 resistente a phishing mediante passkey o llave de seguridad, con desafío y verificación server-side vinculados al origen y a la identidad; sin superar ese control no existe sesión operativa ni permisos. Para este perfil, el OTP por correo entregado mediante Brevo se admite únicamente como canal complementario y nunca sustituye, evita, rebaja o recupera por sí solo el requisito FIDO2, ni constituye fallback que permita acceso operativo sin FIDO2. La configuración del proveedor de identidad, el enrolamiento, la recuperación y la validación efectiva de passkeys continúan pendientes de integración y pruebas; esta regla no presume un IdP ni un método de autenticación primaria concretos. Para Admin LF (profile_id 1), el método de segundo factor permanece pendiente de decisión del dueño, sin afirmar como confirmado Google Workspace SAML ni otro proveedor. Para los perfiles 3, 4, 5 y 6 se conserva el OTP por correo gestionado por LF y entregado mediante Brevo, verificado del lado servidor y sin atribuirle por sí solo resistencia a phishing ni Supabase native AAL2. SMS sigue siendo solamente contingencia, sin proveedor confirmado ni habilitación automática y nunca como bypass de FIDO2. Se prohíben contraseña sola cuando MFA aplique, bypass por dispositivo reconocido, elección de factor desde el cliente y exposición de secretos o credenciales del proveedor.\"},\"rule_code\":\"B2B-RULE-AUTH-019\",\"change_kind\":\"DOCUMENTARY_ONLY\"},\"source_hash\":\"7802a694fd4d29dab489974760babc984950ef6c06d90981c81e88530bf4882e\",\"patch_hash\":\"d2b77023da5920dc6a5fad9fad7a213b4e3a89b9b9d3bdf653c3c1d3fcca3093\",\"policy_hash\":\"f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07\",\"other_hashes\":{\"B2B-RULE-AUTH-003\":\"aa4c953f6945fe2d404d47bd93f5e0f3a44b0f485befc83a4cd3558dd7199262\",\"B2B-RULE-AUTH-018\":\"70f6effce7976fa30a0022862649738c1d161246dc97d2db69d7b727110d75de\",\"B2B-RULE-AUTH-033\":\"181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b\"},\"owner_status\":\"DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA\",\"owner_signed\":false,\"record\":{\"codigo_regla\":\"B2B-RULE-AUTH-019\",\"propuesta_sha256\":\"d2b77023da5920dc6a5fad9fad7a213b4e3a89b9b9d3bdf653c3c1d3fcca3093\",\"veredicto\":\"<APROBAR_O_RECHAZAR_PATCH_EXACTO>\",\"decisor\":\"Cristhian Luján\",\"fecha\":\"<YYYY-MM-DDTHH:MM:SS-05:00_AL_FIRMAR>\",\"frase_literal\":\"<DECLARACION_LITERAL_DE_APROBACION_O_RECHAZO_DE_ESTE_SHA>\"}}'::jsonb v),\n c AS(SELECT r.*,i.v, (i.v#>>'{patch,changes,descripcion}') AS proposed,\n encode(pg_catalog.sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') AS rowsha,\n encode(pg_catalog.sha256(convert_to((i.v->'patch')::text,'UTF8')),'hex') AS patchsha\n FROM i JOIN lf_ops.reglas r ON r.codigo='B2B-RULE-AUTH-019')\n SELECT now()::text AS pg_observed_at,codigo AS rule_code,estado AS live_state,rowsha AS live_row_sha256,patchsha AS recomputed_patch_sha256,\n jsonb_build_object('preimage_match',(v->>'source_hash'=rowsha),\n'patch_sha256_match',(v->>'patch_hash'=patchsha),\n'rule_code_exact',(v#>>'{patch,rule_code}'=codigo),\n'documentary_only',(v#>>'{patch,change_kind}'='DOCUMENTARY_ONLY'),\n'three_outer_keys',((SELECT count(*) FROM jsonb_object_keys(v->'patch'))=3),\n'one_changed_field',((SELECT count(*) FROM jsonb_object_keys(v#>'{patch,changes}'))=1),\n'only_descripcion',(v#>'{patch,changes}' ? 'descripcion'),\n'config_not_changed',(NOT (v#>'{patch,changes}' ? 'valor_config')),\n'size_8_to_8000',(length(proposed) BETWEEN 8 AND 8000),\n'description_differs_from_source',(proposed IS DISTINCT FROM descripcion),\n'profile2_webAuthn_fido2',(proposed ILIKE '%Admin Empresa (profile_id 2)%' AND proposed ILIKE '%WebAuthn/FIDO2%'),\n'profile2_phish_resistant',(proposed ILIKE '%resistente a phishing%'),\n'passkey_or_security_key',(proposed ILIKE '%passkey o llave de seguridad%'),\n'server_side_challenge',(proposed ILIKE '%desafío%' AND proposed ILIKE '%server-side%'),\n'brevo_supplementary_only',(proposed ILIKE '%Brevo%' AND proposed ILIKE '%complementario%' AND proposed ILIKE '%nunca sustituye%'),\n'profile1_pending',(proposed ILIKE '%Admin LF (profile_id 1)%' AND proposed ILIKE '%pendiente de decisión%'),\n'profiles3_6_preserved',(proposed ILIKE '%perfiles 3, 4, 5 y 6%' AND proposed ILIKE '%Brevo%'),\n'no_aal2_claim',(proposed ILIKE '%sin atribuirle por sí solo%' AND proposed ILIKE '%Supabase native AAL2%'),\n'sms_contingency_unconfirmed',(proposed ILIKE '%SMS sigue siendo solamente contingencia%' AND proposed ILIKE '%sin proveedor confirmado%'),\n'no_password_or_device_bypass',(proposed ILIKE '%contraseña sola%' AND proposed ILIKE '%dispositivo reconocido%'),\n'candidate_linked_login001',(estado='CANDIDATO' AND EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas rp JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id WHERE rp.regla_id=c.id AND p.codigo='B2B-AUTH-001')),\n'policy19_sha_unchanged',((SELECT encode(pg_catalog.sha256(convert_to(to_jsonb(q)::text,'UTF8')),'hex') FROM lf_ops.politicas_seguridad q WHERE q.security_policy_id=19)=v->>'policy_hash'),\n'policy19_strength_still_phish',((SELECT policy_config->>'admin_minimum_strength' FROM lf_ops.politicas_seguridad WHERE security_policy_id=19)='PHISHING_RESISTANT'),\n'old_google_policy_requires_reconcile',((SELECT policy_config->>'admin_phishing_resistant_requirement' FROM lf_ops.politicas_seguridad WHERE security_policy_id=19)='GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY' AND valor_config->>'admin_method'='GOOGLE_WORKSPACE_SAML_SSO_WITH_PHISHING_RESISTANT_POLICY'),\n'conversation_unsigned_and_other3_rows_unchanged',(v->>'owner_status'='DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA' AND (v->>'owner_signed')::boolean=false AND (SELECT count(*) FROM jsonb_object_keys(v->'record'))=6 AND (SELECT count(*) FROM lf_ops.reglas t WHERE t.codigo IN ('B2B-RULE-AUTH-003','B2B-RULE-AUTH-018','B2B-RULE-AUTH-033') AND encode(pg_catalog.sha256(convert_to(to_jsonb(t)::text,'UTF8')),'hex')=v->'other_hashes'->>t.codigo)=3)) AS checks\n FROM c",
+  "source_docs": {
+    "decision_blob_sha1": "37f1917e5c7c92d3305d314a57a2f4599f76ffa9",
+    "patch_blob_sha1": "e7d010102c9b07289f1cc44ed5065ccfd101be86",
+    "impacts_blob_sha1": "a703d6542169df526333018582211a0eea375483"
+  },
+  "test_limitations": [
+    "Guards are deterministic assertions on the current DB and proposed text, not independent semantic adjudication",
+    "No SQL writes, migrations, writer V2, owner decision or passkey integration exercised",
+    "Owner statement is not the exact-patch APPROVAL signature, profile RAW output, Step70 or production authorization",
+    "AUTH019 and Policy19 old valor_config remain unreconciled; these guard PASS values explicitly verify that blocker"
+  ],
+  "no_supabase_writes": true,
+  "no_promotion": true
+}
