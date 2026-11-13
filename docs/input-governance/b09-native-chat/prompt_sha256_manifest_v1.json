@@ -1,0 +1,14 @@
+{
+  "schema_version": "LF_B09_NATIVE_CHAT_PROMPT_SHA_MANIFEST_V1",
+  "status": "DOCUMENTAL_ONLY_NO_PROVIDER_ATTESTATION",
+  "algorithm": "SHA-256",
+  "encoding": "UTF-8",
+  "normalization": "NONE_EXACT_FILE_BYTES_LF_INCLUDED",
+  "source_ci_run": "43438746499",
+  "source_ci_head": "b1d8f58c141fbe33136bd0c64deb69610a64b320",
+  "prompts": {
+    "B09_EXECUTOR_GPT_NATIVE_V1.txt": "47ec11c44e859a0da5e93a5541c7a0959a0526efd9fcabfce24a66936a8dc66f",
+    "B09_JUEZ_MISMO_LLM_V1.txt": "c895c6f5bc36074545d9c9094651e7099e6a23d3a399b37a32d0c029baee065f"
+  },
+  "note": "Byte-level digests only. No ChatGPT provenance or human signature verified."
+}
