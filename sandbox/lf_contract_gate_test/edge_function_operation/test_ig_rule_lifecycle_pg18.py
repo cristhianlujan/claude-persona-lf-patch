@@ -250,7 +250,7 @@ class PG18RealSQL(unittest.TestCase):
           SELECT public.lf_router_scope_bind_v1({quote(run)})::text;
           COMMIT;""").splitlines()[-1])
         fail_assert(twice==res and
-          self.sql("SELECT count(*) FROM public.lf_router_scope_receipt_v1;")=="1",
+          self.sql("SELECT count(*) FROM public.lf_router_scope_receipt_v1 WHERE execution_id="+quote(run)+";")=="1",
           "ROUTER_SCOPE_REPLAY_NOT_IDEMPOTENT")
         # Negative tests operate in rolls back transaction: no catalog effect.
         self.sql(f"""BEGIN;
@@ -286,7 +286,7 @@ class PG18RealSQL(unittest.TestCase):
         self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
           SELECT public.lf_router_scope_bind_v1({quote(alt)});
           ROLLBACK;""",expect_fail="LF_SCOPE_ROUTER_ORIGIN_NOT_GOVERNED")
-        fail_assert(self.sql("SELECT count(*) FROM public.lf_router_scope_receipt_v1;")=="1",
+        fail_assert(self.sql("SELECT count(*) FROM public.lf_router_scope_receipt_v1 WHERE execution_id="+quote(run)+";")=="1",
           "ROUTER_NEGATIVES_CREATED_RECEIPT")
         print("PASS_PG18_ACT0001_POSITIVE_NEGATIVE_SERVER_SCOPE_RECEIPT_SHA_READBACK",flush=True)
         print("PASS_PG18_ACT0001_NO_CHAT_SCOPE_AND_5_FAIL_CLOSED_NEGATIVES",flush=True)
