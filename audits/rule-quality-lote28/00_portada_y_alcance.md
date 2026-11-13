@@ -1,5 +1,10 @@
 # LOTE 28 — Plan de cierre por entorno y responsabilidad
 
+## Readback operativo posterior (13-nov-2026, SOLO SELECT / CI)
+- El estado de PR #3803/#3804/#3806 descrito debajo es **histórico**, no el último despliegue. Las migraciones V2 `20261113030000`, guard `20261113070051`, backfill `20261113071927` constan ya en ledger vivo; `238/238` owners LF_GOVERNANCE, `155/155` receipts `APPLIED` y 13 archivados a las 07:27:11 UTC. **NO CIERRA B06** sin reconciliación completa, negativos y aceptación.
+- B07: `14_resultado_b07_live_pg17_pg18.md` documenta READBACK de esquemas/datos y test aislado #3810, PG17.6/18.7 **PASS parcial**, gate **NO-GO** por DDL LF4/SALY5 no especificado/aprobado; **0/7 cierres de Motor**.
+- `15_ruta_critica_1_hoja.md`: texto operativo de una página; también se entrega como PDF/DOCX.
+
 ## ENMIENDA PRIORITARIA L28 — decisión del dueño, PENDIENTE DE FIRMA
 
 **Solo base temporal.** B08 ya no exige verificar identidad humana vía Supabase Auth/JWT/MFA: toda decisión humana se **atribuye documentalmente** a `Cristhian Luján` con `identity_verified=false`, `identity_mode=UNVERIFIED_CHAT_DECLARATION`, frase, fecha, proponente, hashes y readback. No es identidad física comprobada ni firma. IAM humano real queda como requisito al migrar a la base de producción final. **B06**: el owner canónico de activos es `LF_GOVERNANCE` (distinto del decisor humano), guard en PR #3804 y backfill de **155** en PR #3806; ambos sujetos a PR #3803 vía Train. Los tres PR están sin readback de aplicación.

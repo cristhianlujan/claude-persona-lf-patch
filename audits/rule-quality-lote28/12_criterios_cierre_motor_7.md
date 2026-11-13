@@ -1,5 +1,10 @@
 # L28 — Siete pruebas EXACTAS de cierre de Motor temporal
 
+## Readback operativo posterior (13-nov-2026, SOLO SELECT / CI)
+- El estado de PR #3803/#3804/#3806 descrito debajo es **histórico**, no el último despliegue. Las migraciones V2 `20261113030000`, guard `20261113070051`, backfill `20261113071927` constan ya en ledger vivo; `238/238` owners LF_GOVERNANCE, `155/155` receipts `APPLIED` y 13 archivados a las 07:27:11 UTC. **NO CIERRA B06** sin reconciliación completa, negativos y aceptación.
+- B07: `14_resultado_b07_live_pg17_pg18.md` documenta READBACK de esquemas/datos y test aislado #3810, PG17.6/18.7 **PASS parcial**, gate **NO-GO** por DDL LF4/SALY5 no especificado/aprobado; **0/7 cierres de Motor**.
+- `15_ruta_critica_1_hoja.md`: texto operativo de una página; también se entrega como PDF/DOCX.
+
 **Estado de esta especificación:** `DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA`; no modifica los 14 recibos vacíos, contrato desplegado, SQL ni RUN. **Siete bloqueos abiertos = 0/7.** Evidencia de PG18 o un PR no sustituye readback real. Fecha de la enmienda: 13-nov-2026, sin hora exacta acreditada.
 
 ## Definiciones de identidad y owner
@@ -23,6 +28,8 @@
 **Falta:** #3803 Train+readback, #3804 guard DRAFT y rebase contra nuevo HEAD, #3806 backfill DRAFT + aplicación/readback final. CI PG18 de fixture **no cierra**. **ABIERTO.**
 
 ### B07_SCHEMA · G11
+**Evidencia de este lote (ejecutada, no cierre):** #3810, GitHub Actions R17 run `43385755925` SUCCESS, PostgreSQL 17.6 y 18.7: copia parcial live-object + SALY reconstruido, replay V2, SHA preimagen y prueba ROLLBACK tras UPDATE sintético; originales intactos. Negativo `B07_NO_GO_MISSING_APPROVED_LF4_SALY5_UP_DOWN_AND_FULL_CONSUMER_PROOF`. `saly.reglas.lifecycle_state` ausente en vivo, no consta SQL UP/DOWN exacto de las 9 columnas ni prueba de consumidores. Detalle `14_resultado_b07_live_pg17_pg18.md`. **ABIERTO.**
+
 **Exacta:** SQL/catálogo de ciclo LF **4 columnas** y SALY **5** (incluida `lifecycle_state`, sin falsear SALY.`estado` VALIDADO); DDL UP/DOWN versionado, índices/constraints/RLS/consumidores, preimagen SHA por cambio, simulación PG18 y PG17.6 con muestra representativa, rollback tras datos sin pérdida, SELECT real antes/después. Conserva interfaz B04 y baseline B12, sin exigir firma integral Contenido.
 **Falta:** SQL lifecycle LF4/SALY5/recibo y prueba post-datos completa (no se encuentran demostrados por #3803/#3804/#3806); #3803 solo ofrece contrato/objetos V2/V3/rollback parcial. Falta Train/readback de la ruta oficial. **ABIERTO.**
 
