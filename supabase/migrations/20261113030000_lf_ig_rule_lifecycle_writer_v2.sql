@@ -919,151 +919,95 @@ REVOKE ALL ON FUNCTION public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text
 GRANT EXECUTE ON FUNCTION public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)
  TO service_role;
 
--- L28 documentary specification G15-MOTOR: seven TEMPORARY motor blockers.
--- No runtime-verifiable independent signatures for all 7 in current schema.
--- Consequently a complete supplied JSON is NOT a release credential.
+-- G15-MOTOR-TEMPORARY candidate: 7 technical blockers, no runtime GO.
 CREATE FUNCTION public.lf_ig_g15_motor_temporary_v1(p_evidence jsonb)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path TO 'pg_catalog','public'
 AS $fn$
 DECLARE expected text[]:=ARRAY[
-'B02_RUN_SCOPE','B03_RUN_EFFECTS','B06_OWNER','B07_SCHEMA',
-'B08_IDENTITY','B09_E2E','B12_LEGACY'];
- v text; v_missing text[]:=ARRAY[]::text[];
+ 'B02_RUN_SCOPE','B03_RUN_EFFECTS','B06_OWNER','B07_SCHEMA',
+ 'B08_IDENTITY','B09_E2E','B12_LEGACY'];
+ v text;missing text[]:=ARRAY[]::text[];
 BEGIN
- IF jsonb_typeof(p_evidence)<>'object'
- THEN RETURN jsonb_build_object('status','NO_GO_MOTOR',
-    'blocking_code','G15_MOTOR_EVIDENCE_MISSING','required',to_jsonb(expected)); END IF;
+ IF jsonb_typeof(p_evidence)<>'object' THEN
+   RETURN jsonb_build_object('status','NO_GO_MOTOR',
+     'blocking_code','G15_MOTOR_EVIDENCE_MISSING'); END IF;
  FOREACH v IN ARRAY expected LOOP
-  IF jsonb_typeof(p_evidence->v)<>'object'
+   IF jsonb_typeof(p_evidence->v)<>'object'
      OR p_evidence->v->>'status'<>'VERIFIED'
-     OR coalesce(p_evidence->v->>'sha256','') !~ '^[0-9a-f]{64}
-      WHERE skill_code='RULE_CREATE_APPLY')<>'lf_skill_o_rule_create_v2'
- OR (SELECT opener_fn FROM public.lf_skill_catalog_v1
-      WHERE skill_code='RULE_UPDATE_APPLY')<>'lf_skill_o_rule_update_v2'
- OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
-       WHERE project_code='LF' AND owner_name='Cristhian Luján'
-       AND status='TEMP_DOCUMENTARY_ACTIVE')<>1
- OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
-       WHERE project_code='SALY')<>0
- OR NOT EXISTS(SELECT 1 FROM public.lf_operation_registry
-       WHERE operation_code='PROMOCION_REGLA_LF' AND status='SANDBOX_ACTIVE')
- THEN RAISE EXCEPTION 'LF_IG_V2_MIGRATION_READBACK_FAILED'; END IF;
-END $readback$;
-
-COMMIT;
-
+     OR char_length(coalesce(p_evidence->v->>'sha256',''))<>64
+     OR coalesce(p_evidence->v->>'sha256','') ~ '[^0-9a-f]'
      OR nullif(p_evidence->v->>'evidence_ref','') IS NULL
-  THEN v_missing:=array_append(v_missing,v); END IF;
+   THEN missing:=array_append(missing,v); END IF;
  END LOOP;
- IF cardinality(v_missing)>0 THEN
- RETURN jsonb_build_object('status','NO_GO_MOTOR',
-    'blocking_code','G15_MOTOR_7_OF_7_NOT_EVIDENCED',
-    'missing_or_unverified',to_jsonb(v_missing)); END IF;
+ IF cardinality(missing)>0 THEN
+   RETURN jsonb_build_object('status','NO_GO_MOTOR',
+     'blocking_code','G15_MOTOR_7_OF_7_NOT_EVIDENCED',
+     'missing_or_unverified',to_jsonb(missing)); END IF;
  RETURN jsonb_build_object('status','NO_GO_MOTOR',
    'blocking_code','G15_MOTOR_CRYPTOGRAPHIC_SIGNATURES_NOT_VERIFIED',
    'evidence_shape','7_OF_7_DECLARED_NOT_AUTHENTICATED',
-   'content_production_authorized',false,
-   'final_database_authorized',false);
+   'content_production_authorized',false,'final_database_authorized',false);
 END $fn$;
 REVOKE ALL ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb)
  FROM PUBLIC,anon,authenticated,service_role;
-GRANT EXECUTE ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb)
- TO service_role;
+GRANT EXECUTE ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb) TO service_role;
 
-
--- Governed, reversible ADDITIVE contract update for IG execution operation.
--- Does not overwrite programacion.contratos v1.7 or authorize production.
--- G15-MOTOR is only a CANDIDATE gate per L28; no claimed signatures/GO.
+-- Additive, reversible candidate amendment of IG operation contract only.
+-- Strict preimage MD5 guards; preserve production_promotion prohibition.
 CREATE TABLE public.lf_ig_contract_preimage_v3(
- operation_code text PRIMARY KEY,
- old_row jsonb NOT NULL,
- old_sha256 text NOT NULL CHECK(old_sha256 ~ '^[0-9a-f]{64}
-      WHERE skill_code='RULE_CREATE_APPLY')<>'lf_skill_o_rule_create_v2'
- OR (SELECT opener_fn FROM public.lf_skill_catalog_v1
-      WHERE skill_code='RULE_UPDATE_APPLY')<>'lf_skill_o_rule_update_v2'
- OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
-       WHERE project_code='LF' AND owner_name='Cristhian Luján'
-       AND status='TEMP_DOCUMENTARY_ACTIVE')<>1
- OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
-       WHERE project_code='SALY')<>0
- OR NOT EXISTS(SELECT 1 FROM public.lf_operation_registry
-       WHERE operation_code='PROMOCION_REGLA_LF' AND status='SANDBOX_ACTIVE')
- THEN RAISE EXCEPTION 'LF_IG_V2_MIGRATION_READBACK_FAILED'; END IF;
-END $readback$;
-
-COMMIT;
-),
- new_allowed_sha256 text NOT NULL CHECK(new_allowed_sha256 ~ '^[0-9a-f]{64}
-      WHERE skill_code='RULE_CREATE_APPLY')<>'lf_skill_o_rule_create_v2'
- OR (SELECT opener_fn FROM public.lf_skill_catalog_v1
-      WHERE skill_code='RULE_UPDATE_APPLY')<>'lf_skill_o_rule_update_v2'
- OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
-       WHERE project_code='LF' AND owner_name='Cristhian Luján'
-       AND status='TEMP_DOCUMENTARY_ACTIVE')<>1
- OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
-       WHERE project_code='SALY')<>0
- OR NOT EXISTS(SELECT 1 FROM public.lf_operation_registry
-       WHERE operation_code='PROMOCION_REGLA_LF' AND status='SANDBOX_ACTIVE')
- THEN RAISE EXCEPTION 'LF_IG_V2_MIGRATION_READBACK_FAILED'; END IF;
-END $readback$;
-
-COMMIT;
-),
- migration_execution_id text NOT NULL,
- captured_at timestamptz NOT NULL DEFAULT now()
+  operation_code text PRIMARY KEY,
+  old_row jsonb NOT NULL,
+  old_sha256 text NOT NULL CHECK(length(old_sha256)=64 AND old_sha256 !~ '[^0-9a-f]'),
+  new_allowed_sha256 text NOT NULL CHECK(length(new_allowed_sha256)=64 AND new_allowed_sha256 !~ '[^0-9a-f]'),
+  migration_execution_id text NOT NULL,
+  captured_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.lf_ig_contract_preimage_v3 ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.lf_ig_contract_preimage_v3 FROM PUBLIC,anon,authenticated,service_role;
 DO $ig_contract_change$
-DECLARE v_old public.lf_operation_contracts%ROWTYPE;
- v_allowed jsonb;v_new_sha text;
+DECLARE old_row public.lf_operation_contracts%ROWTYPE;
+ new_allowed jsonb;new_sha text;
 BEGIN
- SELECT * INTO v_old FROM public.lf_operation_contracts
+ SELECT * INTO old_row FROM public.lf_operation_contracts
  WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF' FOR UPDATE;
- IF NOT FOUND OR v_old.status<>'ACTIVE_ENFORCEMENT'
- OR v_old.contract_sha<>'783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9'
- OR md5(v_old.allowed::text)<>'4a2a2a7135b2f3c1df04347f9e8ab2cb'
- OR md5(v_old.blocked::text)<>'695078c51acf6737f8aae57498a0b4c2'
- OR NOT v_old.blocked ? 'production_promotion'
- OR v_old.allowed->>'production_authorized'<>'false'
+ IF NOT FOUND OR old_row.status<>'ACTIVE_ENFORCEMENT'
+    OR old_row.contract_sha<>'783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9'
+    OR md5(old_row.allowed::text)<>'4a2a2a7135b2f3c1df04347f9e8ab2cb'
+    OR md5(old_row.blocked::text)<>'695078c51acf6737f8aae57498a0b4c2'
+    OR NOT(old_row.blocked ? 'production_promotion')
+    OR old_row.allowed->>'production_authorized'<>'false'
  THEN RAISE EXCEPTION 'LF_IG_V3_CONTRACT_PREIMAGE_DRIFT'; END IF;
- v_allowed:=v_old.allowed || jsonb_build_object(
-  'g15_motor_candidate',jsonb_build_object(
-    'version','G15_MOTOR_TEMPORARY_V2',
-    'authority','L28_DOCUMENTARY_CANDIDATE_NOT_RUNTIME_ENABLED',
-    'scope','INPUT_GOVERNANCE_MOTOR_TEMPORARY_DB_ONLY',
-    'required_blockers',jsonb_build_array(
-      'B02_RUN_SCOPE','B03_RUN_EFFECTS','B06_OWNER','B07_SCHEMA',
-      'B08_IDENTITY','B09_E2E','B12_LEGACY'),
-    'implementation','public.lf_ig_g15_motor_temporary_v1(jsonb)',
-    'decision','NO_GO_UNTIL_INDEPENDENT_SIGNATURE_VALIDATION',
-    'production_authorized',false),
-  'governed_rule_single_entrypoint',jsonb_build_object(
-    'function','public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)',
-    'uses_canonical_step80',true,'requires_native_step70',true,
-    'status','CANDIDATE_NOT_DEPLOYED',
-    'production_authorized',false));
- v_new_sha:=encode(extensions.digest(convert_to(v_allowed::text,'UTF8'),'sha256'),'hex');
+ new_allowed:=old_row.allowed || jsonb_build_object(
+    'g15_motor_candidate',jsonb_build_object(
+       'version','G15_MOTOR_TEMPORARY_V2',
+       'scope','INPUT_GOVERNANCE_MOTOR_TEMPORARY_DB_ONLY',
+       'required_blockers',jsonb_build_array('B02_RUN_SCOPE',
+         'B03_RUN_EFFECTS','B06_OWNER','B07_SCHEMA','B08_IDENTITY','B09_E2E','B12_LEGACY'),
+       'implementation','public.lf_ig_g15_motor_temporary_v1(jsonb)',
+       'decision','NO_GO_UNTIL_INDEPENDENT_SIGNATURE_VALIDATION',
+       'production_authorized',false),
+    'governed_rule_single_entrypoint',jsonb_build_object(
+       'function','public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)',
+       'status','CANDIDATE_NOT_DEPLOYED',
+       'uses_canonical_step80',true,'requires_native_step70',true,
+       'production_authorized',false));
+ new_sha:=encode(extensions.digest(convert_to(new_allowed::text,'UTF8'),'sha256'),'hex');
  INSERT INTO public.lf_ig_contract_preimage_v3(
    operation_code,old_row,old_sha256,new_allowed_sha256,migration_execution_id)
- VALUES(v_old.operation_code,to_jsonb(v_old),
-   encode(extensions.digest(convert_to(to_jsonb(v_old)::text,'UTF8'),'sha256'),'hex'),
-   v_new_sha,'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3');
+ VALUES(old_row.operation_code,to_jsonb(old_row),
+   encode(extensions.digest(convert_to(to_jsonb(old_row)::text,'UTF8'),'sha256'),'hex'),
+   new_sha,'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3');
  UPDATE public.lf_operation_contracts
- SET allowed=v_allowed,
-     contract_sha=v_new_sha,
-     updated_at=now(),
+ SET allowed=new_allowed,contract_sha=new_sha,updated_at=now(),
      updated_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V3'
- WHERE operation_code=v_old.operation_code
-   AND contract_sha=v_old.contract_sha;
+ WHERE operation_code=old_row.operation_code AND contract_sha=old_row.contract_sha;
  IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.lf_operation_contracts c
-   WHERE c.operation_code=v_old.operation_code
-     AND c.contract_sha=v_new_sha
-     AND c.blocked ? 'production_promotion'
-     AND c.allowed->>'production_authorized'='false'
-     AND c.allowed#>>'{g15_motor_candidate,decision}'
-       ='NO_GO_UNTIL_INDEPENDENT_SIGNATURE_VALIDATION')
+    WHERE c.operation_code=old_row.operation_code
+      AND c.contract_sha=new_sha AND c.blocked ? 'production_promotion'
+      AND c.allowed->>'production_authorized'='false'
+      AND c.allowed#>>'{g15_motor_candidate,decision}'
+        ='NO_GO_UNTIL_INDEPENDENT_SIGNATURE_VALIDATION')
  THEN RAISE EXCEPTION 'LF_IG_V3_CONTRACT_READBACK_FAILED'; END IF;
 END $ig_contract_change$;
 
