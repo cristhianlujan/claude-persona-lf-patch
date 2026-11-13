@@ -63,8 +63,16 @@ class PR3803Rollback(unittest.TestCase):
                     'lf_rule_promotion_decide_v1','lf_record_operation_step_core_v1');"""
             before = psql(source_sql)
             before_md5 = psql(frozen_sql)
+            ig_contract_sql = """SELECT contract_sha||'|'||allowed::text||'|'||blocked::text
+               FROM public.lf_operation_contracts
+               WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF';"""
+            original_contract=psql(ig_contract_sql)
+            self.assertTrue(original_contract.startswith(
+              '783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9|'))
             self.assertEqual(len(before_md5.split(",")), 6)
             psql(FORWARD.read_text(encoding="utf-8"))
+            self.assertNotEqual(psql(ig_contract_sql),original_contract)
+            self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_contract_preimage_v3;"), "1")
             self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "1")
             psql("""INSERT INTO public.lf_ig_project_owner_v2
                 (project_code,owner_sub,owner_name,owner_profile_code,authority_receipt_sha256,
@@ -75,6 +83,8 @@ class PR3803Rollback(unittest.TestCase):
             self.assertEqual(psql("SELECT count(*) FROM public.lf_ig_project_owner_v2;"), "2")
             psql("DELETE FROM public.lf_ig_project_owner_v2 WHERE project_code='SALY';")
             psql(REVERSE.read_text(encoding="utf-8"))
+            self.assertEqual(psql(ig_contract_sql), original_contract, "IG_OPERATION_CONTRACT_NOT_RESTORED")
+            self.assertEqual(psql("SELECT to_regclass('public.lf_ig_contract_preimage_v3') IS NULL;"),"t")
             self.assertEqual(psql(source_sql), before, "CATALOG_PREIMAGE_MISMATCH")
             self.assertEqual(psql(frozen_sql), before_md5, "LEGACY_MD5_MISMATCH")
             self.assertEqual(psql("SELECT to_regclass('public.lf_ig_project_owner_v2') IS NULL;"), "t")
