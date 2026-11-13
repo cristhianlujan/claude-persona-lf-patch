@@ -90,9 +90,10 @@ class PG18RealSQL(unittest.TestCase):
           "screen_selection_result":{"selected_screen_code":"LF-PG18-SCREEN"}}
         base=f"""INSERT INTO public.lf_operation_execution(
         execution_id,operation_code,target_type,target_code,manifest,request_sha256,
-        created_by_execution_id)
+        idempotency_key,created_by_execution_id)
         VALUES({quote(parent)},'EJECUCION_PERFIL_LF','PERFIL',
-        'PERFIL-PRODUCT-DIRECTOR-LF',{jq(manifest)},{quote(request)},{quote(parent)});"""
+        'PERFIL-PRODUCT-DIRECTOR-LF',{jq(manifest)},{quote(request)},
+        {quote('ig-pg18-parent:'+parent)},{quote(parent)});"""
         rows=[
           ("input_validate",40,{"status":"READY"}),
           ("execute_profile",60,{"profile_output":data}),
