@@ -2,7 +2,7 @@
   "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
   "decision_id": "LF-LOGIN-AUTH020-20261113",
   "decision_title": "AUTH-020 — Recuperación asistida sin bypass",
-  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "status": "PROPUESTA_DOCUMENTAL_PENDIENTE_DECISION_DEL_DUENO",
   "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
   "documentary_statement": "Se aprueba documentalmente la propuesta de AUTH-020 del lote 32 para recuperación asistida con verificación de documento, dos personas, espera 48h, aviso previo y ningún bypass de MFA, reconociendo explícitamente que el proveedor IDV y controles de soporte siguen pendientes.",
   "source_codes": [
@@ -23,5 +23,6 @@
   "rule_writer_v2_called": false,
   "policy_writer_v2_called": false,
   "no_promotion": true,
-  "approval_does_not_authorize_effect": true
+  "approval_does_not_authorize_effect": true,
+  "scope_status_clarification": "La decisión funcional puede estar en conversación pero la aprobación de este SHA/documento no existe aún; para propuestas de AUTH018/020/033 tampoco existe una decisión formal sobre el patch."
 }
