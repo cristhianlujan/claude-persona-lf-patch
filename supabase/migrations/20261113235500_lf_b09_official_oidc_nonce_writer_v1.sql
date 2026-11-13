@@ -93,20 +93,20 @@ BEGIN
   v_sha:=v_oidc->>'workflow_sha';
   IF v_method IS DISTINCT FROM 'GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1'
      OR v_repo IS DISTINCT FROM 'cristhianlujan/claude-persona-lf-patch'
-     OR v_ref NOT LIKE 'cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/%'
-     OR v_run_id !~ '^[0-9]{1,20}$'
-     OR v_sha !~ '^[0-9a-f]{40}$'
+     OR coalesce(v_ref,'') NOT LIKE 'cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/%'
+     OR coalesce(v_run_id,'') !~ '^[0-9]{1,20}$'
+     OR coalesce(v_sha,'') !~ '^[0-9a-f]{40}$'
      OR p_evidence_ref IS DISTINCT FROM 'actions://oidc/'||v_run_id||'/b09'
   THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','B09_OIDC_EDGE_CONTEXT_INVALID'); END IF;
   SELECT * INTO v_run FROM public.lf_operation_execution
    WHERE execution_id=p_execution_id FOR SHARE;
-  IF NOT FOUND OR v_run.operation_code<>'EJECUCION_PERFIL_LF'
-     OR v_run.target_type<>'PERFIL'
-     OR v_run.target_code<>'PERFIL-PRODUCT-DIRECTOR-LF'
-     OR v_run.status<>'IN_PROGRESS'
-     OR v_run.manifest->>'executor_mode'<>'GPT_NATIVE'
-     OR v_run.manifest->>'executor_provider'<>'OPENAI_CHATGPT_NATIVE'
-     OR v_run.manifest->>'no_promotion'<>'true'
+  IF NOT FOUND OR v_run.operation_code IS DISTINCT FROM 'EJECUCION_PERFIL_LF'
+     OR v_run.target_type IS DISTINCT FROM 'PERFIL'
+     OR v_run.target_code IS DISTINCT FROM 'PERFIL-PRODUCT-DIRECTOR-LF'
+     OR v_run.status IS DISTINCT FROM 'IN_PROGRESS'
+     OR v_run.manifest->>'executor_mode' IS DISTINCT FROM 'GPT_NATIVE'
+     OR v_run.manifest->>'executor_provider' IS DISTINCT FROM 'OPENAI_CHATGPT_NATIVE'
+     OR v_run.manifest->>'no_promotion' IS DISTINCT FROM 'true'
      OR v_run.manifest ? 'queue_request_id'
   THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','B09_NONCE_RUN_NOT_ELIGIBLE'); END IF;
 
@@ -132,7 +132,7 @@ BEGIN
 
   SELECT * INTO v_nonce FROM public.lf_ig_native_chat_nonce_v1
    WHERE execution_id=p_execution_id FOR SHARE;
-  IF NOT FOUND OR v_nonce.oidc_workflow_ref<>v_ref THEN
+  IF NOT FOUND OR v_nonce.oidc_workflow_ref IS DISTINCT FROM v_ref THEN
     RETURN jsonb_build_object('status','BLOCKED','blocking_code','B09_NONCE_ISSUER_BINDING_MISSING'); END IF;
   IF v_nonce.issued_at < clock_timestamp() - interval '24 hours' THEN
     RETURN jsonb_build_object('status','BLOCKED','blocking_code','B09_NONCE_EXPIRED'); END IF;
