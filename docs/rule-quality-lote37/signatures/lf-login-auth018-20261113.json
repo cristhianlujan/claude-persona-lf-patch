@@ -2,7 +2,7 @@
   "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
   "decision_id": "LF-LOGIN-AUTH018-20261113",
   "decision_title": "AUTH-018 — MFA exigido antes de sesión",
-  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "status": "PROPUESTA_DOCUMENTAL_PENDIENTE_DECISION_DEL_DUENO",
   "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
   "documentary_statement": "Se aprueba documentalmente el diseño del desafío MFA previo a sesión de la tarjeta L32: LF_AUTH_BOUNDARY responde MFA_REQUIRED cuando la política central aplica y no crea sesión ni permisos hasta satisfacerse el segundo factor exigido, hoy OTP/Brevo según política de factor propuesta para los administradores; conserva los demás controles. No valida backend ni sustituye aprobación de política 3.",
   "source_codes": [
@@ -22,5 +22,6 @@
   "rule_writer_v2_called": false,
   "policy_writer_v2_called": false,
   "no_promotion": true,
-  "approval_does_not_authorize_effect": true
+  "approval_does_not_authorize_effect": true,
+  "scope_status_clarification": "La decisión funcional puede estar en conversación pero la aprobación de este SHA/documento no existe aún; para propuestas de AUTH018/020/033 tampoco existe una decisión formal sobre el patch."
 }
