@@ -1026,6 +1026,180 @@ BEGIN
  THEN RAISE EXCEPTION 'LF_IG_V3_CONTRACT_READBACK_FAILED'; END IF;
 END $ig_contract_change$;
 
+
+-- ACT-0001 complementary scope receipt. This is NOT a new Router, RUN starter,
+-- effect-authority grant, or an LLM interpretation of a chat message.
+-- The only positive effect is the approved V2 writer's owner_name column.
+-- All other columns are prohibited by the current *database catalog*.
+CREATE TABLE public.lf_router_scope_policy_v1(
+ scope_code text PRIMARY KEY,
+ operation_code text NOT NULL,
+ effect_entrypoint text NOT NULL,
+ allowed_table text NOT NULL,
+ allowed_columns jsonb NOT NULL,
+ forbidden_columns jsonb NOT NULL,
+ schema_columns_sha256 text NOT NULL,
+ writer_source_md5 text NOT NULL,
+ policy_sha256 text NOT NULL,
+ created_by_execution_id text NOT NULL
+);
+CREATE TABLE public.lf_router_scope_receipt_v1(
+ execution_id text PRIMARY KEY,
+ scope_code text NOT NULL REFERENCES public.lf_router_scope_policy_v1(scope_code),
+ manifest_sha256 text NOT NULL,
+ receipt jsonb NOT NULL,
+ receipt_sha256 text NOT NULL,
+ issued_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.lf_router_scope_policy_v1 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lf_router_scope_receipt_v1 ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.lf_router_scope_policy_v1 FROM PUBLIC,anon,authenticated,service_role;
+REVOKE ALL ON public.lf_router_scope_receipt_v1 FROM PUBLIC,anon,authenticated,service_role;
+DO $scope_seed$
+DECLARE cols jsonb; forbidden jsonb; schema_sha text; writer_md5 text;
+ body jsonb;
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM public.lf_router_action_registry
+     WHERE asset_type='DB' AND action_code='UPDATE'
+       AND operation_code='ACTUALIZACION_DB_LF'
+       AND status='ACTIVE' AND write_allowed)
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_contracts
+     WHERE operation_code='ACTUALIZACION_DB_LF'
+       AND contract_sha='ab2a04183c24636a01ba4ea69bc546773206bd494b458370259f488c7e474fad'
+       AND status='ACTIVE_ENFORCEMENT')
+ OR to_regprocedure('public.lf_ig_asset_owner_apply_v2(uuid)') IS NULL
+ THEN RAISE EXCEPTION 'LF_ROUTER_SCOPE_CANONICAL_SOURCE_MISSING'; END IF;
+ SELECT jsonb_agg(column_name ORDER BY column_name),
+        jsonb_agg(column_name ORDER BY column_name)
+          FILTER(WHERE column_name<>'owner_name')
+ INTO cols,forbidden
+ FROM information_schema.columns
+ WHERE table_schema='public' AND table_name='lf_activos';
+ IF jsonb_typeof(cols)<>'array' OR jsonb_array_length(cols)<3
+    OR NOT(cols ? 'owner_name')
+    OR jsonb_array_length(forbidden)<>jsonb_array_length(cols)-1
+ THEN RAISE EXCEPTION 'LF_ROUTER_SCOPE_COLUMN_COVERAGE_INVALID'; END IF;
+ schema_sha:=encode(extensions.digest(convert_to(cols::text,'UTF8'),'sha256'),'hex');
+ writer_md5:=md5(pg_get_functiondef('public.lf_ig_asset_owner_apply_v2(uuid)'::regprocedure));
+ body:=jsonb_build_object('scope_code','LF_ACTIVOS_OWNER_NAME_WRITE_V1',
+   'operation_code','ACTUALIZACION_DB_LF','entrypoint',
+   'public.lf_ig_asset_owner_apply_v2(uuid)',
+   'allowed_table','public.lf_activos','allowed_columns',jsonb_build_array('owner_name'),
+   'forbidden_columns',forbidden,'schema_columns_sha256',schema_sha,
+   'writer_source_md5',writer_md5);
+ INSERT INTO public.lf_router_scope_policy_v1(
+   scope_code,operation_code,effect_entrypoint,allowed_table,allowed_columns,
+   forbidden_columns,schema_columns_sha256,writer_source_md5,policy_sha256,
+   created_by_execution_id)
+ VALUES('LF_ACTIVOS_OWNER_NAME_WRITE_V1','ACTUALIZACION_DB_LF',
+   'public.lf_ig_asset_owner_apply_v2(uuid)','public.lf_activos',
+   '["owner_name"]'::jsonb,forbidden,schema_sha,writer_md5,
+   encode(extensions.digest(convert_to(body::text,'UTF8'),'sha256'),'hex'),
+   'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3');
+END $scope_seed$;
+
+-- Accepts only an existing canonical Migration-Train operation ID.
+-- The caller does not supply scope strings, positive/negative target lists,
+-- actor names, semantic model output, HMAC or decision.
+CREATE FUNCTION public.lf_router_scope_bind_v1(p_execution_id text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','extensions'
+AS $scope$
+DECLARE e public.lf_operation_execution%ROWTYPE;
+ policy public.lf_router_scope_policy_v1%ROWTYPE;
+ stored public.lf_router_scope_receipt_v1%ROWTYPE;
+ cols jsonb; negative jsonb; current_sha text; manifest_sha text; body jsonb;
+ body_sha text; origin jsonb;
+BEGIN
+ SELECT * INTO e FROM public.lf_operation_execution
+ WHERE execution_id=p_execution_id AND operation_code='ACTUALIZACION_DB_LF'
+   AND target_type='MIGRATION'
+   AND target_repo='cristhianlujan/claude-persona-lf-patch'
+   AND target_path='supabase/migrations/'||target_code||'.sql'
+   AND status='IN_PROGRESS'
+ FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'LF_SCOPE_TRAIN_EXECUTION_NOT_BOUND'; END IF;
+ origin:=e.manifest->'router_authority_receipt';
+ IF coalesce(e.request_sha256,'') !~ '^[0-9a-f]{64}$'
+    OR coalesce(e.manifest->>'head_sha','') !~ '^[0-9a-f]{40}$'
+    OR coalesce(e.manifest->>'train_run_id','') !~ '^[0-9]{8,20}$'
+    OR coalesce(e.manifest->>'pr','') !~ '^[0-9]{1,10}$'
+    OR e.manifest->>'producer'<>'lf-migration-merge-train'
+    OR origin->>'schema_version'<>'LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1'
+    OR origin->>'router'<>'ACT-0001'
+    OR origin->>'operation_code'<>'ACTUALIZACION_DB_LF'
+    OR origin->>'action_code'<>'UPDATE'
+    OR origin->>'target_repo' IS DISTINCT FROM e.target_repo
+    OR origin->>'target_path' IS DISTINCT FROM e.target_path
+    OR origin->>'target_code' IS DISTINCT FROM e.target_code
+    OR origin->>'scope_attested'<>'false'
+    OR origin->>'route_eligibility_only'<>'true'
+ THEN RAISE EXCEPTION 'LF_SCOPE_ROUTER_ORIGIN_NOT_GOVERNED'; END IF;
+ SELECT * INTO policy FROM public.lf_router_scope_policy_v1
+ WHERE scope_code='LF_ACTIVOS_OWNER_NAME_WRITE_V1';
+ IF NOT FOUND OR policy.operation_code<>'ACTUALIZACION_DB_LF'
+    OR policy.effect_entrypoint<>'public.lf_ig_asset_owner_apply_v2(uuid)'
+    OR policy.allowed_table<>'public.lf_activos'
+    OR policy.allowed_columns IS DISTINCT FROM '["owner_name"]'::jsonb
+ THEN RAISE EXCEPTION 'LF_SCOPE_POLICY_NOT_CURRENT'; END IF;
+ SELECT jsonb_agg(column_name ORDER BY column_name),
+        jsonb_agg(column_name ORDER BY column_name)
+          FILTER(WHERE column_name<>'owner_name')
+ INTO cols,negative FROM information_schema.columns
+ WHERE table_schema='public' AND table_name='lf_activos';
+ IF cols IS NULL OR negative IS DISTINCT FROM policy.forbidden_columns
+    OR encode(extensions.digest(convert_to(cols::text,'UTF8'),'sha256'),'hex')
+       IS DISTINCT FROM policy.schema_columns_sha256
+    OR md5(pg_get_functiondef('public.lf_ig_asset_owner_apply_v2(uuid)'::regprocedure))
+       IS DISTINCT FROM policy.writer_source_md5
+ THEN RAISE EXCEPTION 'LF_SCOPE_SCHEMA_OR_WRITER_DRIFT'; END IF;
+ current_sha:=encode(extensions.digest(convert_to(
+   jsonb_build_object('scope_code',policy.scope_code,'operation_code',policy.operation_code,
+     'entrypoint',policy.effect_entrypoint,'allowed_table',policy.allowed_table,
+     'allowed_columns',policy.allowed_columns,'forbidden_columns',negative,
+     'schema_columns_sha256',policy.schema_columns_sha256,
+     'writer_source_md5',policy.writer_source_md5)::text,'UTF8'),'sha256'),'hex');
+ IF current_sha IS DISTINCT FROM policy.policy_sha256
+ THEN RAISE EXCEPTION 'LF_SCOPE_POLICY_SHA_MISMATCH'; END IF;
+ manifest_sha:=encode(extensions.digest(convert_to(e.manifest::text,'UTF8'),'sha256'),'hex');
+ body:=jsonb_build_object('schema_version','LF_ROUTER_POSITIVE_NEGATIVE_SCOPE_RECEIPT_V1',
+   'router','ACT-0001','status','SCOPE_ATTESTED_ROUTE_ONLY',
+   'execution_id',e.execution_id,'request_sha256',e.request_sha256,
+   'operation_code',e.operation_code,'target_code',e.target_code,
+   'target_path',e.target_path,'manifest_sha256',manifest_sha,
+   'scope_source','SERVER_CANONICAL_CATALOG_AND_PINNED_OWNER_WRITER',
+   'scope_code',policy.scope_code,'policy_sha256',policy.policy_sha256,
+   'positive_scope',jsonb_build_array(jsonb_build_object('table','public.lf_activos',
+      'columns',jsonb_build_array('owner_name'),'entrypoint',policy.effect_entrypoint)),
+   'negative_scope',jsonb_build_object('table','public.lf_activos',
+      'forbidden_columns',negative,'other_tables','DENY',
+      'other_operations','DENY','project_SALY','DENY',
+      'historical_runs','DENY','production_promotion','DENY'),
+   'scope_semantics_attested',true,'effect_authority',false,
+   'downstream_execution_allowed',false,
+   'identity_verified',false);
+ body_sha:=encode(extensions.digest(convert_to(body::text,'UTF8'),'sha256'),'hex');
+ SELECT * INTO stored FROM public.lf_router_scope_receipt_v1
+ WHERE execution_id=p_execution_id FOR UPDATE;
+ IF FOUND THEN
+   IF stored.manifest_sha256 IS DISTINCT FROM manifest_sha
+      OR stored.receipt_sha256 IS DISTINCT FROM body_sha
+      OR stored.receipt IS DISTINCT FROM body
+   THEN RAISE EXCEPTION 'LF_SCOPE_STORED_RECEIPT_DRIFT'; END IF;
+ ELSE
+   INSERT INTO public.lf_router_scope_receipt_v1(
+     execution_id,scope_code,manifest_sha256,receipt,receipt_sha256)
+   VALUES(p_execution_id,policy.scope_code,manifest_sha,body,body_sha);
+ END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.lf_router_scope_receipt_v1
+     WHERE execution_id=p_execution_id AND receipt=body AND receipt_sha256=body_sha)
+ THEN RAISE EXCEPTION 'LF_SCOPE_RECEIPT_READBACK_FAILED'; END IF;
+ RETURN body||jsonb_build_object('receipt_sha256',body_sha);
+END $scope$;
+REVOKE ALL ON FUNCTION public.lf_router_scope_bind_v1(text)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION public.lf_router_scope_bind_v1(text) TO service_role;
+
 DO $readback$
 BEGIN
  IF (SELECT opener_fn FROM public.lf_skill_catalog_v1
