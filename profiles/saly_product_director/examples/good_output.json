@@ -1,0 +1,19 @@
+{
+  "status": "VALID_OUTPUT",
+  "project_code": "SALY",
+  "profile_code": "PERFIL-PRODUCT-DIRECTOR-SALY",
+  "identity_verified": false,
+  "production_authorized": false,
+  "pack_type": "profile",
+  "deliverable_created": {
+    "summary": "Propuesta documental para SALY, no escritura",
+    "scope": "saly.reglas y saly.decisiones",
+    "operations_performed": []
+  },
+  "evidence_map": [
+    "decision documental 2026-11-13T12:53-05:00, identidad no verificada",
+    "ACT-0001 y RUN nativo pendiente"
+  ],
+  "blocking_codes": [],
+  "next_gate": "OWNER_REVIEW_NO_LIVE_WRITE"
+}

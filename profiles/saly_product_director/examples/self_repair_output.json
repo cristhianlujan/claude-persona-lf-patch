@@ -1,0 +1,19 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "project_code": "SALY",
+  "profile_code": "PERFIL-PRODUCT-DIRECTOR-SALY",
+  "identity_verified": false,
+  "production_authorized": false,
+  "pack_type": "profile",
+  "deliverable_created": {
+    "summary": "Salida SALY incompleta o sin evidencia nativa; prohibida cualquier mutación",
+    "required_repair": "Completar expediente y revalidar por ACT-0001"
+  },
+  "evidence_map": [
+    "Missing target-bound evidence"
+  ],
+  "blocking_codes": [
+    "SALY_NATIVE_PROFILE_RUN_REQUIRED"
+  ],
+  "next_gate": "REENTER_ACT0001_READ_ONLY"
+}
