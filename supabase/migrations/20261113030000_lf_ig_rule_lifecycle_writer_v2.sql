@@ -282,8 +282,8 @@ END
 $fn$;
 
 -- Every child must use the SAME fresh parent RAW, persisted judge and an
--- authenticated owner decision. The approved patch is read from SQL, never from
--- a caller-controlled metadata assertion. Service-role invocations cannot decide.
+-- owner decision recorded documentarily, not by Auth. The approved patch is
+-- read from SQL, never from a caller-provided claim; official transport only.
 CREATE FUNCTION public.lf_ig_rule_child_guard_v2(
  p_child text,p_input jsonb,p_parent text,p_run text,p_request_sha text,p_skill text
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
@@ -309,10 +309,11 @@ BEGIN
  SELECT * INTO v_dec FROM public.lf_ig_owner_decision_v2
  WHERE decision_id=(p_input->>'owner_decision_id')::uuid
  AND parent_execution_id=p_parent
- AND rule_code=p_input->>'regla_codigo' AND verdict='APPROVE';
+ AND rule_code=p_input->>'regla_codigo' AND verdict='APROBAR';
  IF NOT FOUND OR NOT EXISTS (SELECT 1 FROM public.lf_ig_project_owner_v2
-    WHERE project_code='LF' AND owner_sub=v_dec.owner_sub AND status='ACTIVE')
- THEN RAISE EXCEPTION 'LF_IG_CHILD_OWNER_APPROVAL_NOT_AUTHENTICATED'; END IF;
+    WHERE project_code='LF' AND owner_sub=v_dec.owner_sub AND owner_name=v_dec.decisor
+      AND status='TEMP_DOCUMENTARY_ACTIVE')
+ THEN RAISE EXCEPTION 'LF_IG_CHILD_OWNER_DOCUMENTARY_APPROVAL_NOT_RECORDED'; END IF;
  SELECT evidence_payload->'profile_output' INTO v_output
  FROM public.lf_operation_execution_steps WHERE execution_id=p_parent
  AND step_id='execute_profile' AND status='STEP_PASS_WITH_EVIDENCE';
@@ -322,13 +323,23 @@ BEGIN
     OR v_patch IS DISTINCT FROM p_input->'candidate_patch'
     OR v_sha IS DISTINCT FROM v_dec.proposal_sha256
     OR v_dec.source_sha256 IS DISTINCT FROM p_input->>'analysis_snapshot_sha256'
+    OR v_dec.decision_record->>'propuesta_sha256' IS DISTINCT FROM v_sha
+    OR v_dec.decision_record->>'codigo_regla' IS DISTINCT FROM v_dec.rule_code
+    OR v_dec.decision_record->>'decisor' IS DISTINCT FROM v_dec.decisor
+    OR v_dec.decision_record->>'veredicto' IS DISTINCT FROM 'APROBAR'
+    OR v_output#>>'{deliverable_created,product_decision,proposed_by}'
+        IS DISTINCT FROM v_dec.proponente
+    OR encode(extensions.digest(convert_to(v_dec.decision_record::text,'UTF8'),'sha256'),'hex')
+        IS DISTINCT FROM v_dec.decision_record_sha256
  THEN RAISE EXCEPTION 'LF_IG_CHILD_APPROVED_PATCH_SHA_DRIFT'; END IF;
  v_source:=coalesce(public.lf_asset_snapshot_sha_v1('REGLA',v_dec.rule_code),
     encode(extensions.digest(convert_to('LF_RULE_ABSENT:'||v_dec.rule_code,'UTF8'),'sha256'),'hex'));
  IF v_source IS DISTINCT FROM v_dec.source_sha256
  THEN RAISE EXCEPTION 'LF_IG_CHILD_SOURCE_STALE'; END IF;
  RETURN jsonb_build_object('decision_id',v_dec.decision_id,'kind',v_dec.kind,
-   'rule_code',v_dec.rule_code,'source_sha256',v_source,'proposal_sha256',v_sha,'patch',v_patch);
+   'rule_code',v_dec.rule_code,'source_sha256',v_source,'proposal_sha256',v_sha,
+   'decision_record_sha256',v_dec.decision_record_sha256,
+   'decision_record',v_dec.decision_record,'patch',v_patch);
 END
 $fn$;
 
@@ -377,6 +388,7 @@ BEGIN
   jsonb_build_object('profile_handoff',jsonb_build_object(
    'source_execution_id',p_parent,'skill_run_id',p_run,'via','SKILL_INVOKER'),
    'analysis_snapshot_sha256',v_source,'approved_owner_decision_id',v->>'decision_id',
+   'owner_decision_record_sha256',v->>'decision_record_sha256',
    'production_allowed',false,'promotion_authorized',false));
  IF res->>'result'<>'RESERVED_NEW_EXECUTION' THEN
  RAISE EXCEPTION 'LF_IG_CREATE_CHILD_RESERVATION_NOT_NEW'; END IF;
@@ -471,6 +483,7 @@ BEGIN
   jsonb_build_object('profile_handoff',jsonb_build_object(
    'source_execution_id',p_parent,'skill_run_id',p_run,'via','SKILL_INVOKER'),
    'analysis_snapshot_sha256',v_source,'approved_owner_decision_id',v->>'decision_id',
+   'owner_decision_record_sha256',v->>'decision_record_sha256',
    'production_allowed',false,'promotion_authorized',false,
    'candidate_patch_scope','VIGENTE_REVISION_STAGED'));
  IF r->>'result'<>'RESERVED_NEW_EXECUTION' THEN
@@ -531,9 +544,10 @@ BEGIN
  WHERE child_execution_id=p_child FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_FINALIZE_CHILD_NOT_FOUND'; END IF;
  SELECT * INTO d FROM public.lf_ig_owner_decision_v2
- WHERE decision_id=ch.owner_decision_id AND verdict='APPROVE';
+ WHERE decision_id=ch.owner_decision_id AND verdict='APROBAR';
  IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.lf_ig_project_owner_v2
- WHERE project_code='LF' AND owner_sub=d.owner_sub AND status='ACTIVE')
+ WHERE project_code='LF' AND owner_sub=d.owner_sub
+   AND owner_name=d.decisor AND status='TEMP_DOCUMENTARY_ACTIVE')
  THEN RAISE EXCEPTION 'LF_IG_FINALIZE_OWNER_RECEIPT_STALE'; END IF;
  SELECT * INTO ce FROM public.lf_operation_execution
  WHERE execution_id=p_child AND created_by_execution_id=ch.parent_execution_id
@@ -560,8 +574,8 @@ BEGIN
  IF ch.kind='CORRECT_VIGENTE' THEN
    IF r.estado<>'VIGENTE' OR before_sha IS DISTINCT FROM ch.source_snapshot_sha256
    THEN RAISE EXCEPTION 'LF_IG_VIGENTE_FINALIZE_SOURCE_STALE'; END IF;
-   -- A functional change can weaken security/business controls. Owner AAL2
-   -- plus a profile semantic PASS is insufficient to certify the post-write
+   -- A functional change can weaken security/business controls. A declared
+   -- human decision plus profile semantic PASS is insufficient for post-write
    -- impact; no signed independent impact receipt is installed in this version.
    IF ch.approved_patch->>'change_kind' IS DISTINCT FROM 'DOCUMENTARY_ONLY'
    THEN RAISE EXCEPTION 'LF_IG_VIGENTE_FUNCTIONAL_IMPACT_RECEIPT_MISSING'; END IF;
@@ -593,8 +607,8 @@ BEGIN
      v_promotion:=p.promotion_id;
    END IF;
    UPDATE public.lf_rule_promotion_v1
-   SET status='APPROVED',decided_by='OWNER_UID:'||d.owner_sub::text,
-       decided_at=now()
+   SET status='APPROVED',decided_by=d.decisor,
+       decided_at=d.decision_date
    WHERE promotion_id=v_promotion AND status='PENDING'
    AND request_snapshot_sha256=before_sha;
    IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_PROMOTION_APPROVAL_NOT_RECORDED'; END IF;
@@ -616,7 +630,10 @@ BEGIN
  IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_FINALIZE_RECEIPT_CLOSE_FAILED'; END IF;
  RETURN jsonb_build_object('status','VIGENTE_VERIFIED','rule_code',ch.rule_code,
    'source_snapshot_sha256',before_sha,'result_snapshot_sha256',after_sha,
-   'owner_decision_id',d.decision_id,'parent_execution_id',ch.parent_execution_id,
+   'owner_decision_id',d.decision_id,
+   'owner_decision_record_sha256',d.decision_record_sha256,
+   'decision_record',d.decision_record,'identity_verified',false,
+   'parent_execution_id',ch.parent_execution_id,
    'next_action','OFFICIAL_PROFILE_STEP80_REPORT_READBACK_AND_CLOSE',
    'parent_closed',false,'production_authorized',false);
 END
@@ -1050,6 +1067,7 @@ BEGIN
   jsonb_build_object('profile_handoff',jsonb_build_object(
    'source_execution_id',p_parent,'skill_run_id',p_run,'via','SKILL_INVOKER'),
    'analysis_snapshot_sha256',v_source,'approved_owner_decision_id',v->>'decision_id',
+   'owner_decision_record_sha256',v->>'decision_record_sha256',
    'production_allowed',false,'promotion_authorized',false));
  IF res->>'result'<>'RESERVED_NEW_EXECUTION' THEN
  RAISE EXCEPTION 'LF_IG_CREATE_CHILD_RESERVATION_NOT_NEW'; END IF;
@@ -1144,6 +1162,7 @@ BEGIN
   jsonb_build_object('profile_handoff',jsonb_build_object(
    'source_execution_id',p_parent,'skill_run_id',p_run,'via','SKILL_INVOKER'),
    'analysis_snapshot_sha256',v_source,'approved_owner_decision_id',v->>'decision_id',
+   'owner_decision_record_sha256',v->>'decision_record_sha256',
    'production_allowed',false,'promotion_authorized',false,
    'candidate_patch_scope','VIGENTE_REVISION_STAGED'));
  IF r->>'result'<>'RESERVED_NEW_EXECUTION' THEN
