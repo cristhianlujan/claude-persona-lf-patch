@@ -1,0 +1,14 @@
+{
+  "solution_ref": "LF-IG-ASSET-OWNER-ONE-NAME-PG18-V1",
+  "paths": {
+    "supabase/migrations/20261113233000_lf_asset_owner_one_name_guard_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_asset_owner_one_name_pg18.py": "RUNTIME_TESTING",
+    "docs/input-governance/owner-one-name/README.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/owner-one-name/preimage_238_20261112.csv": "INPUT_GOVERNANCE",
+    "docs/input-governance/owner-one-name/archived_13_separate_20261112.csv": "INPUT_GOVERNANCE",
+    "docs/input-governance/owner-one-name/preflight_and_after_readback.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-ASSET-OWNER-ONE-NAME-PG18-V1.json": "CHANGESET_MANIFEST",
+    "docs/input-governance/owner-one-name/official_batch_plan_155.json": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/pg18_live_object_slice_baseline.sql": "RUNTIME_TESTING"
+  }
+}
