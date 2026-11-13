@@ -1,0 +1,11 @@
+{
+  "solution_ref": "LF-B12-LEGACY-GUARD-ACL-HARDENING-V1",
+  "paths": {
+    "supabase/migrations/20261113112500_lf_b12_legacy_guard_execute_acl_hardening_v1.sql": "MIGRATION",
+    "audits/rule-quality-lote28/b12/02_guard_acl_hardening_rollback_v1.sql": "RUNTIME_TESTING",
+    "audits/rule-quality-lote28/b12/01_preimagen_S21_04_live_20261113.json": "RUNTIME_TESTING",
+    "audits/rule-quality-lote28/b12/03_recibo_g08_para_dueno_v1.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b12_legacy_dual_pg_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-B12-LEGACY-GUARD-ACL-HARDENING-V1.json": "CHANGESET_MANIFEST"
+  }
+}
