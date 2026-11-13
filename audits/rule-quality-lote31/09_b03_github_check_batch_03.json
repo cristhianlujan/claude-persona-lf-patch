@@ -1,0 +1,49 @@
+{
+  "batch_index": 3,
+  "source_live_sha": "ec233aa608d66167f9a0206cac3f4db9d0e40167fbf6daf15437b06e8ea3b60f",
+  "checks": [
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-003",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@85f69e5674117e099a5cf6552b6bae721295f47d",
+      "found": true,
+      "object_sha": "85f69e5674117e099a5cf6552b6bae721295f47d"
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-004",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@72b7212686c2c8d3bdd5bc9ae3617080ee1a0519",
+      "found": true,
+      "object_sha": "72b7212686c2c8d3bdd5bc9ae3617080ee1a0519"
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260923-005",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@81726b7c8dd1d98909841fbd5406df1d8227680a",
+      "found": true,
+      "object_sha": "81726b7c8dd1d98909841fbd5406df1d8227680a"
+    },
+    {
+      "id": "EXEC-S37-WP01-PROFILE-OPPORTUNITY-EXPANDER-20260914-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@6607cf7aaf74fef84420cc6017b527f6495ac2a5/profiles/opportunity_expander",
+      "found": true,
+      "object_sha": "6607cf7aaf74fef84420cc6017b527f6495ac2a5"
+    },
+    {
+      "id": "EXEC-SKILL-1452A11A05CEC8B2",
+      "ref": "git:9695a2902d19a43a5b6b81e0366a369be7d1ca5d",
+      "found": true,
+      "object_sha": "9695a2902d19a43a5b6b81e0366a369be7d1ca5d"
+    },
+    {
+      "id": "EXEC-SKILL-5C4A07F52DA71B3C",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@1023179d214a9572724b9e51353af025e7019fe7/profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "found": true,
+      "object_sha": "1023179d214a9572724b9e51353af025e7019fe7"
+    },
+    {
+      "id": "EXEC-SKILL-92E56FF772B6A3FD",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@00767e934f438e25f3112aa36b419301c8f09e8b/profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "found": true,
+      "object_sha": "00767e934f438e25f3112aa36b419301c8f09e8b"
+    }
+  ],
+  "no_effect_reconciliation_claim": true
+}
