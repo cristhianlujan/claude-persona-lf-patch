@@ -1,0 +1,7 @@
+{
+  "solution_ref": "LF-IG-B07-LIFECYCLE-COPY-TEST-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_b07_lifecycle_preflight_pg18_pg176.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-B07-LIFECYCLE-COPY-TEST-V1.json": "CHANGESET_MANIFEST"
+  }
+}
