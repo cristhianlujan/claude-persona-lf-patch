@@ -101,7 +101,7 @@ class B09DocumentalStep70G15(unittest.TestCase):
                 "idempotency_key,manifest,created_by_execution_id) VALUES ("+
                 ",".join([quote(EID),quote("EJECUCION_PERFIL_LF"),quote("PERFIL"),
                 quote("PERFIL-PRODUCT-DIRECTOR-LF"),quote("IN_PROGRESS"),quote("a"*64),
-                quote("b09-doc:"+EID),quote(json.dumps(manifest)+"::jsonb"),quote(EID)])+");")
+                quote("b09-doc:"+EID),quote(json.dumps(manifest))+"::jsonb",quote(EID)])+");")
             val={"status":"PASS","validator_status":"PASS",
                  "review_mode":"SAME_LLM_SEPARATE_CHAT",
                  "verdict":"PASS_SEMANTIC_COMPENSATED_SAME_MODEL",
