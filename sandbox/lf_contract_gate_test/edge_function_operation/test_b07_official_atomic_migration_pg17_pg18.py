@@ -102,11 +102,10 @@ class B07LFOnly(unittest.TestCase):
      VALUES(-777777,'PERFIL-PRODUCT-DIRECTOR-LF','CI LF OWNER PROFILE','PERFIL',
        'CANDIDATO','READ_ONLY','CI_SYNTHETIC','CI_SYNTHETIC','CI_ONLY',
        1,'00000000-0000-4000-8000-000000000111'::uuid);""")
-   sql("""INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,owner_name,
-     owner_profile_code,authority_receipt_sha256,status,source_execution_id)
-     VALUES('LF','00000000-0000-4000-8000-000000000111',
-       'Cristhian Luján','PERFIL-PRODUCT-DIRECTOR-LF',repeat('f',64),
-       'TEMP_DOCUMENTARY_ACTIVE','EXEC-B07-LF-CI-ONLY');""")
+   # V2 installs the synthetic LF project-owner row; do not duplicate it.
+   self.assertEqual(sql("""SELECT count(*) FROM public.lf_ig_project_owner_v2
+      WHERE project_code='LF' AND status='TEMP_DOCUMENTARY_ACTIVE'
+      AND owner_profile_code='PERFIL-PRODUCT-DIRECTOR-LF';"""),"1")
    catalog_before=sql(CATALOG)
    inner=src.split("\nBEGIN;\n",1)[1].rsplit("\nCOMMIT;",1)[0]
    sql("BEGIN;\n"+inner+"\nROLLBACK;",timeout=600)
