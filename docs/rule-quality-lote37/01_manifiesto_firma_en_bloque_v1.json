@@ -1,0 +1,577 @@
+{
+  "schema_version": "LF_L37_OWNER_SIGNATURE_BLOCK_V1",
+  "block_id": "LF-FIRMA-BLOQUE-20261113-001",
+  "state": "DRAFT_UNSIGNED",
+  "owner_claimed": "Cristhian Luján",
+  "identity_mode": "UNVERIFIED_CHAT_DECLARATION",
+  "identity_verified": false,
+  "formal_signature_verified": false,
+  "scope": "DOCUMENTARY_ONLY_NO_WRITERS_NO_RUN_MUTATION_NO_PROMOTION",
+  "number_of_records": 24,
+  "records": [
+    {
+      "id": "L16-Q01",
+      "title": "MFA B2B",
+      "decision_summary": "OTP correo/Brevo; 30 dias/3 meses como triggers de politica; perfiles 1 y 2 resueltos por L35/L36; SMS contingencia",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        },
+        {
+          "ref": "L35",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote35-auth019-option-a-owner-correction-v1",
+          "path": "docs/rule-quality-lote35/00_decision_dueno_auth019_opcion_a_corrige_l34.json",
+          "sha256_utf8": "f9bf7bfda06ab3c05e07d71292fcbdd5f7a61482dabe0c51d46d114c50b297db"
+        },
+        {
+          "ref": "L36",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote36-policy19-admin1-2-otp-owner-decision-v1",
+          "path": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+          "sha256_utf8": "a5947148a32bf1e6199cbb8d495658bd9ba02e026c19d6e2881b521c79a6916f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q02",
+      "title": "Ledger payment",
+      "decision_summary": "payment/payment_detail append-only, estados derivados, compensaciones, Producto/QA",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q03",
+      "title": "Niubiz",
+      "decision_summary": "unico proveedor de recaudo tarjetas Yape, requiere contrato callbacks PCI QA",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L27",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote27-owner-decisions-register-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "sha256_utf8": "50df21489d05ea859d0d8a7b0c5f61cabf7dc47d333105d8de0c7fc3677f5846"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q04",
+      "title": "Cuotas",
+      "decision_summary": "estados y vencimiento sin gracia, corte Lima y reconciliacion Niubiz; cancelacion parametrizada, texto completo L27 prevalece",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L27",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote27-owner-decisions-register-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "sha256_utf8": "50df21489d05ea859d0d8a7b0c5f61cabf7dc47d333105d8de0c7fc3677f5846"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q05",
+      "title": "Pricing",
+      "decision_summary": "historial versionado no huecos/solapes, snapshot plan, no cotizar sin vigencia",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L27",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote27-owner-decisions-register-v1",
+          "path": "audits/rule-quality-lote21/01_registro_unico_decisiones.md",
+          "sha256_utf8": "50df21489d05ea859d0d8a7b0c5f61cabf7dc47d333105d8de0c7fc3677f5846"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q06",
+      "title": "Parametros",
+      "decision_summary": "20 pares distinguidos por sujeto evento alcance",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q07",
+      "title": "Familias",
+      "decision_summary": "15 familias y 23 pertenencias por dictamen individual",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q08",
+      "title": "Legales",
+      "decision_summary": "muestras en desarrollo, Legal pendiente publicacion",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q09",
+      "title": "Home",
+      "decision_summary": "muestras sin publicar claims/copys no verificados",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q10",
+      "title": "Carta No Adeudo",
+      "decision_summary": "dos modelos del aliado reenvio y pantalla por permisos",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q11",
+      "title": "Recuperacion",
+      "decision_summary": "soporte ID, dos personas, 48 horas, aviso contacto anterior, sin bypass",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L16-Q12",
+      "title": "Umbrales",
+      "decision_summary": "parametros DB con valor inicial 5 y unidad/control por definir",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L30-APPROVAL-MODEL-001",
+      "title": "Autoridad",
+      "decision_summary": "Manual aprueba dueno; sistema owner logico LF_GOVERNANCE; SUPER_ADMIN sin autoridad",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L30",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json",
+          "sha256_utf8": "c42ff945049548660a256454af2a265efdd4be260c8e7bc9d95bd262a195b28f"
+        },
+        {
+          "ref": "L30M",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote30-owner-conversation-decisions-v1",
+          "path": "docs/rule-quality-lote30/04_modelo_aprobacion_y_brechas.md",
+          "sha256_utf8": "a36098858cf38f93f8be93044771bd63349d1141d848c79874a4ef94decb15fc"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "L33-OWNER-FREEZE-ALL-IN_PROGRESS-001",
+      "title": "Cohorte RUN",
+      "decision_summary": "Universo completo 235 RUN IN_PROGRESS al as_of L33, 32 solo prioridad; sin escrituras",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L33",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote33-b02-freeze-asof-pr3803-g01-v1",
+          "path": "audits/rule-quality-lote33/09_g01_candidate_receipt_unissued.json",
+          "sha256_utf8": "3df96b23407cdd6e427bb65f3186e76352a03a43c404005959296f4d637390bc"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false,
+      "g01_receipt_issued": false
+    },
+    {
+      "id": "L35-OWNER-AUTH019-OPTION-A-001",
+      "title": "AUTH-019",
+      "decision_summary": "Admin Empresa perfil2 password y OTP correo Brevo cuando MFA requerido; no FIDO2 L34",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L35",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote35-auth019-option-a-owner-correction-v1",
+          "path": "docs/rule-quality-lote35/00_decision_dueno_auth019_opcion_a_corrige_l34.json",
+          "sha256_utf8": "f9bf7bfda06ab3c05e07d71292fcbdd5f7a61482dabe0c51d46d114c50b297db"
+        },
+        {
+          "ref": "L35P",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote35-auth019-option-a-owner-correction-v1",
+          "path": "docs/rule-quality-lote35/01_auth019_opcion_a_patch_v2_tarjeta_seis_campos.json",
+          "sha256_utf8": "579ee33ad683dfce66e6d642812f1e0956acedc8a09271fe5c008494be912776"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false,
+      "rule_code": "B2B-RULE-AUTH-019",
+      "v2_potential_conditional": true
+    },
+    {
+      "id": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+      "title": "Politica19",
+      "decision_summary": "Perfil1 mismo criterio que perfil2; perfiles3-6 sin cambio, no FIDO2",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L36",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote36-policy19-admin1-2-otp-owner-decision-v1",
+          "path": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+          "sha256_utf8": "a5947148a32bf1e6199cbb8d495658bd9ba02e026c19d6e2881b521c79a6916f"
+        },
+        {
+          "ref": "L36P",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote36-policy19-admin1-2-otp-owner-decision-v1",
+          "path": "docs/rule-quality-lote36/01_policy19_patch_v2_documental_sha_tarjeta_six_fields.json",
+          "sha256_utf8": "11ed38359c822e1f9b3e9e4750aa8b14729a8a9ce8839fb89739301f7472f41f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "DEC-B06-OWNER-LF-GOVERNANCE-001",
+      "title": "B06 owner",
+      "decision_summary": "LF_GOVERNANCE owner canonico, no decisor humano, sin variantes",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L28",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "DEC-B08-DECLARACION-TEMPORAL-001",
+      "title": "B08 identidad",
+      "decision_summary": "Nombre documental Cristhian Lujan; identity_verified=false, IAM final",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L28",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "DEC-TRAIN-DIRECTO-001",
+      "title": "Merge Train",
+      "decision_summary": "migraciones por Train sin Router manual previo; no eludir guards/procedencia",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L28",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "DEC-G15-TEMPORAL-7-GATES-001",
+      "title": "G15",
+      "decision_summary": "Motor temporal 7 gates G01/G02/G03/G04/G08/G11/G12, NO GO productivo",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L28",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "ref": "L37R",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "DEC-TEMPORAL-BACKUP-ROLLBACK-001",
+      "title": "Backups temporales",
+      "decision_summary": "Sin PITR/otro Supabase temporal, preimagen SHA y rollback; B13/B14 base final",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L28",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote28-blocker-closure-plan-v1",
+          "path": "audits/rule-quality-lote28/10_decision_base_temporal_migracion_y_rollback.md",
+          "sha256_utf8": "45b11f1bca3f76a28c76df2e08dd1675cbbe0276b8b98983b2c1c7325275895a"
+        },
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    },
+    {
+      "id": "DEC-B07-PADRE-HIJA-001",
+      "title": "B07 schema",
+      "decision_summary": "Padre vigente e hija version/decisor/hash/fecha; no LF4+SALY5; revision tecnica pendiente",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "ref": "L37R",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false,
+      "source_type": "NORMALIZACION_NUEVA_DE_CONVERSACION"
+    },
+    {
+      "id": "DEC-B09-NATIVO-JUEZ-MISMO-LLM-001",
+      "title": "B09 E2E",
+      "decision_summary": "GPT nativo nuevo chat; juez como instrucciones mismo LLM, sin claves externas; no independiente",
+      "current_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "source_documents": [
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "ref": "L37R",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false,
+      "source_type": "NORMALIZACION_NUEVA_DE_CONVERSACION"
+    },
+    {
+      "id": "PROP-RIESGO-RECIBOS-DUENO-001",
+      "title": "Recibos",
+      "decision_summary": "Dueno firma conformidad de Ops/DBA/auditor sin reemplazar testimonio y auditoria real",
+      "current_status": "PROPUESTA_RIESGO_PENDIENTE_ACEPTACION",
+      "source_documents": [
+        {
+          "ref": "L37A",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md",
+          "sha256_utf8": "cf7ad4769360b41e8cbaebeb2bd4f6d9ed088b09d222e3f8edf99b676e3e0900"
+        },
+        {
+          "ref": "L37R",
+          "repo": "cristhianlujan/claude-persona-lf-patch",
+          "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+          "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+          "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+        }
+      ],
+      "signed": false,
+      "identity_verified": false
+    }
+  ],
+  "risk_register": {
+    "ids": [
+      "R01_RECIBOS",
+      "R02_B09_NATIVO_MISMO_LLM",
+      "R03_B07_PADRE_HIJA",
+      "R04_G15_TEMPORAL",
+      "R05_OTP_EMAIL_PHISHING"
+    ],
+    "source_document": {
+      "ref": "L37R",
+      "repo": "cristhianlujan/claude-persona-lf-patch",
+      "branch": "lf/issue-3779-lote37-owner-bulk-signature-draft-v1",
+      "path": "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md",
+      "sha256_utf8": "bccbd29bef3af338576866325f28869bd5f2d4d5c6884c3afd3ee432ab97708f"
+    },
+    "status": "REQUIERE_ACEPTACION_EXPRESA_EN_FIRMA_DEL_BLOQUE"
+  },
+  "superseded_excluded": [
+    {
+      "id": "L34-OWNER-AUTH019-FIDO2-ADMIN-EMPRESA-001",
+      "status": "SUPERADO_POR_L35_NO_FIRMAR"
+    },
+    {
+      "id": "L30-Q01-PERFIL1_PENDIENTE",
+      "status": "PARCIALMENTE_SUPERADO_POR_L36"
+    },
+    {
+      "id": "20_DECISIONES_L19_L21_NO_TOMADAS",
+      "status": "NO_ENVIAR_A_FIRMA"
+    },
+    {
+      "id": "L33_AUTH_002_003_040_PATCHES",
+      "status": "PROPUESTAS_SIN_DECISION_ESPECIFICA_NO_PROMOVER"
+    }
+  ],
+  "v2_writer_contract": {
+    "eligible_rules_only": [
+      "B2B-RULE-AUTH-019 (POTENCIAL; NO AUTOMATICO)"
+    ],
+    "non_eligible": "Q transversales, policy19, G01, B06, B07, B08, B09, G15, Train, recibos y riesgo. Cada regla exigiria seis campos exactos, SHA de patch y preimagen canonica, RUN autorizado, juez independiente.",
+    "critical": "APROBAR en lf_ig_rule_owner_decide_v2 invoca escritor y promocion en transaccion; NO invocar con firma de bloque."
+  },
+  "gates": {
+    "closed_14": 0,
+    "motor_closed_7": 0,
+    "b02_closed": false,
+    "b03_closed": false,
+    "production": "NO_GO"
+  },
+  "document_hash_method": "SHA-256 calculado sobre bytes UTF-8 del archivo Git exacto en la rama indicada; hash repetido si varios IDs comparten documento; no es hash por fila ni candidato JSONB SQL.",
+  "owner_signature_literal_ref": "03_firma_unica_copiar.txt (se crea luego de fijar este manifiesto)",
+  "signed_at_utc": null,
+  "signature_receipt_ref": null
+}
