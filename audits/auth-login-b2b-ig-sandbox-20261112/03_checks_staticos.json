@@ -1,0 +1,109 @@
+{
+  "test_mode": "DETERMINISTIC_STATIC_REVIEW_NOT_RUNTIME_NOT_INDEPENDENT",
+  "tested_at": "2026-11-12",
+  "source": "SELECT only, Supabase main",
+  "total": 18,
+  "passed": 18,
+  "failed": 0,
+  "tests": [
+    {
+      "id": "INVENTORY_47",
+      "pass": true,
+      "evidence": "47 reglas actuales"
+    },
+    {
+      "id": "LOGIN_SCREEN_31",
+      "pass": true,
+      "evidence": "31 vinculadas a pantalla 51"
+    },
+    {
+      "id": "NO_DUPLICATE_CODES",
+      "pass": true,
+      "evidence": "sin códigos repetidos"
+    },
+    {
+      "id": "NO_VIGENTE_PENDING",
+      "pass": true,
+      "evidence": "sin VIGENTE + pendiente_decision=true"
+    },
+    {
+      "id": "DENY_DEFAULT",
+      "pass": true,
+      "evidence": "deny_by_default vigente"
+    },
+    {
+      "id": "PREAUTH_DENY",
+      "pass": true,
+      "evidence": "pre-auth sin acceso operativo"
+    },
+    {
+      "id": "SESSION_MFA_DENY",
+      "pass": true,
+      "evidence": "MFA gate conserva denegación"
+    },
+    {
+      "id": "MFA_PASSWORD_BYPASS_DENY",
+      "pass": true,
+      "evidence": "sin fallback contraseña"
+    },
+    {
+      "id": "LEGACY_TOTP_DENY",
+      "pass": true,
+      "evidence": "TOTP legado sin promoción"
+    },
+    {
+      "id": "UNBOUND_AUTH_DENY",
+      "pass": true,
+      "evidence": "endpoint no inventado"
+    },
+    {
+      "id": "TRUSTED_DEVICE_CANDIDATE",
+      "pass": true,
+      "evidence": "dispositivo confiable no acreditado"
+    },
+    {
+      "id": "MFA_FACTOR_CANDIDATE",
+      "pass": true,
+      "evidence": "política factor no acreditada"
+    },
+    {
+      "id": "RECOVERY_CANDIDATE",
+      "pass": true,
+      "evidence": "política recuperación no acreditada"
+    },
+    {
+      "id": "CAPS_POLICY_DEP_MISSING",
+      "pass": true,
+      "evidence": "AUTH-047 sin promoción"
+    },
+    {
+      "id": "EDIT_016_FAIL_CLOSED",
+      "pass": true,
+      "evidence": "sin habilitar proveedor"
+    },
+    {
+      "id": "EDIT_020_NO_BYPASS",
+      "pass": true,
+      "evidence": "recuperación independiente"
+    },
+    {
+      "id": "EDIT_033_POLICY_GATED",
+      "pass": true,
+      "evidence": "confianza no equivale a autenticación libre"
+    },
+    {
+      "id": "CORRECTIONS_KEEP_STATUS_CONFIG",
+      "pass": true,
+      "evidence": "solo descripción candidata"
+    }
+  ],
+  "not_tested": [
+    "Semántica por juez independiente V3",
+    "RUNTIME_E2E_STAGING",
+    "FRESHNESS_CURRENTNESS_NUEVO_RUN",
+    "CANONICAL_SHA256_REQUIRES_PERMISSION",
+    "PROMOTION_OWNERSHIP_AUTHORITY",
+    "ROUTER_PROFILE_OFFICIAL_EXECUTION",
+    "CURATOR_VALIDATOR_ON_SANDBOX"
+  ]
+}
