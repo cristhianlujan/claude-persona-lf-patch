@@ -2255,3 +2255,21 @@ BEGIN
 END
 $function$
 ;
+
+-- Exact source-derived active Router action policy (foreign keys omitted in PG18 slice).
+CREATE TABLE public.lf_router_action_registry (
+ asset_type text NOT NULL,action_code text NOT NULL,operation_code text,
+ operation_resolution text NOT NULL DEFAULT 'STATIC',
+ requires_existing_target boolean NOT NULL DEFAULT true,
+ requires_missing_target boolean NOT NULL DEFAULT false,
+ write_allowed boolean NOT NULL DEFAULT false,
+ status text NOT NULL DEFAULT 'ACTIVE',notes text,
+ created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN',
+ updated_by_execution_id text,created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(asset_type,action_code)
+);
+INSERT INTO public.lf_router_action_registry SELECT
+ (jsonb_populate_record(NULL::public.lf_router_action_registry,'{"notes": "Sandbox-only canonical DB mutation route. Explicit asset_type hint required; exact target/schema/source/rollback/readback remain mandatory.", "status": "ACTIVE", "asset_type": "DB", "created_at": "2026-09-03T16:52:30.385083+00:00", "updated_at": "2026-09-03T16:59:37.08354+00:00", "action_code": "UPDATE", "write_allowed": true, "operation_code": "ACTUALIZACION_DB_LF", "operation_resolution": "STATIC", "created_by_execution_id": "EXEC-PROGRAMMING-E2E-DB-ROUTE-REPAIR-20260903-001", "requires_missing_target": false, "updated_by_execution_id": "EXEC-PROGRAMMING-E2E-DB-ROUTE-REPAIR-20260903-001", "requires_existing_target": false}'::jsonb)).*;
+INSERT INTO public.lf_operation_contracts SELECT
+ (jsonb_populate_record(NULL::public.lf_operation_contracts,'{"status": "ACTIVE_ENFORCEMENT", "allowed": {"sandbox_only": true, "bypass_allowed": false, "manual_hash_patch": false, "production_allowed": false, "function_trigger_repair": true, "direct_db_write_executor": "SUPABASE_MCP", "migration_reconciliation": true, "migration_transport_mode": "EXACT_VERSION_SOURCE_FIRST", "minimal_reversible_patch": true, "router_authority_recorder": "lf_record_db_operation_step_v1", "schema_or_contract_repair": true, "db_write_transport_version": "1.0.0", "migration_primary_executor": "SUPABASE_CLI_DB_PUSH_LINKED", "migration_fallback_executor": "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML", "db_write_transport_capability": "DB_WRITE_TRANSPORT", "db_write_transport_selector_ref": "sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py", "router_authority_receipt_schema": "LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1", "router_downstream_authority_version": "v0.4", "router_downstream_authority_capability": "ROUTER_DOWNSTREAM_AUTHORITY"}, "blocked": ["direct_hash_patch", "exact_version_migration_via_apply_migration", "migration_server_timestamp_remint", "migration_transport_without_selector", "parity_bypass", "production", "router_authority_missing", "router_authority_replay", "router_authority_spoof", "router_authority_stale", "router_authority_toctou", "unscoped_ddl", "write_without_exact_target", "write_without_readback", "write_without_rollback"], "created_at": "2026-09-03T16:52:30.385083+00:00", "updated_at": "2026-09-17T22:43:47.487254+00:00", "contract_sha": "ab2a04183c24636a01ba4ea69bc546773206bd494b458370259f488c7e474fad", "contract_code": "CONTRACT-ACTUALIZACION-DB-LF-v0.1", "contract_path": "supabase://public/lf_operation_contracts/ACTUALIZACION_DB_LF/v0.1", "operation_code": "ACTUALIZACION_DB_LF", "required_after_write": ["db_write_transport_readback", "ekb_closeout", "exact_target_readback", "no_unscoped_changes", "operation_effect_guard_readback", "regression_or_parity_retest", "router_downstream_authority_readback"], "required_before_write": ["db_write_transport_capability_binding", "db_write_transport_capability_preflight", "ekb_read", "exact_target_bound", "migration_parity_precheck_if_applicable", "operation_effect_guard_reservation", "rollback_plan", "router_downstream_authority_receipt", "router_downstream_authority_validation", "router_read", "schema_source_read"], "created_by_execution_id": "EXEC-PROGRAMMING-E2E-DB-ROUTE-REPAIR-20260903-001", "updated_by_execution_id": "EXEC-S30-ROUTER-DOWNSTREAM-AUTHORITY-A1-20260917-001"}'::jsonb)).*;
