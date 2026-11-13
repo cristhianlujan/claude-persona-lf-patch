@@ -12,8 +12,18 @@ BEGIN
     OR to_regclass('public.lf_ig_owner_decision_v2') IS NULL
     OR to_regclass('public.lf_ig_rule_change_v2') IS NULL
     OR to_regclass('public.lf_ig_asset_owner_receipt_v2') IS NULL
- OR to_regclass('public.lf_ig_contract_preimage_v3') IS NULL
+
+ OR to_regclass('public.lf_router_scope_policy_v1') IS NULL
+ OR to_regclass('public.lf_router_scope_receipt_v1') IS NULL OR to_regclass('public.lf_ig_contract_preimage_v3') IS NULL
  THEN RAISE EXCEPTION 'IG_ROLLBACK_MISSING_V2_OBJECTS'; END IF;
+ IF (SELECT count(*) FROM public.lf_router_scope_receipt_v1)<>0
+ OR (SELECT count(*) FROM public.lf_router_scope_policy_v1)<>1
+ OR NOT EXISTS(SELECT 1 FROM public.lf_router_scope_policy_v1
+   WHERE scope_code='LF_ACTIVOS_OWNER_NAME_WRITE_V1'
+   AND operation_code='ACTUALIZACION_DB_LF'
+   AND allowed_columns='["owner_name"]'::jsonb
+   AND created_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V3')
+ THEN RAISE EXCEPTION 'IG_ROLLBACK_SCOPE_RECEIPTS_OR_POLICY_DRIFT'; END IF;
  IF (SELECT count(*) FROM public.lf_ig_project_owner_v2)<>1
     OR NOT EXISTS (SELECT 1 FROM public.lf_ig_project_owner_v2 o
       WHERE o.project_code='LF'
@@ -46,6 +56,8 @@ BEGIN
            AND input_required=ARRAY['regla_codigo','analysis_snapshot_sha256','decision_id','candidate_patch','owner_decision_id']::text[]
            AND description='Candidate-only legacy writer plus staged VIGENTE correction; exact documentary owner decision and preimage required')
    )<>2 THEN RAISE EXCEPTION 'IG_ROLLBACK_CATALOG_DRIFT'; END IF;
+ IF to_regprocedure('public.lf_router_scope_bind_v1(text)') IS NULL
+ THEN RAISE EXCEPTION 'IG_ROLLBACK_SCOPE_FUNCTION_MISSING'; END IF;
  IF to_regprocedure('public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)') IS NULL
     OR to_regprocedure('public.lf_ig_g15_motor_temporary_v1(jsonb)') IS NULL
     OR to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NULL
@@ -130,6 +142,9 @@ GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_decide_v1(text,text,text,text
 GRANT EXECUTE ON FUNCTION public.lf_skill_o_rule_update_v1(text,jsonb,text,text,text) TO service_role;
 
 -- Explicit RESTRICT: never silently cascade to unrelated objects.
+DROP FUNCTION public.lf_router_scope_bind_v1(text) RESTRICT;
+DROP TABLE public.lf_router_scope_receipt_v1 RESTRICT;
+DROP TABLE public.lf_router_scope_policy_v1 RESTRICT;
 DROP FUNCTION public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text) RESTRICT;
 DROP FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb) RESTRICT;
 DROP FUNCTION public.lf_ig_rule_finalize_v2(text) RESTRICT;
@@ -159,6 +174,9 @@ BEGIN
  OR to_regclass('public.lf_ig_owner_decision_v2') IS NOT NULL
  OR to_regclass('public.lf_ig_rule_change_v2') IS NOT NULL
  OR to_regclass('public.lf_ig_asset_owner_receipt_v2') IS NOT NULL
+ OR to_regclass('public.lf_router_scope_receipt_v1') IS NOT NULL
+ OR to_regclass('public.lf_router_scope_policy_v1') IS NOT NULL
+ OR to_regprocedure('public.lf_router_scope_bind_v1(text)') IS NOT NULL
  OR to_regclass('public.lf_ig_contract_preimage_v3') IS NOT NULL
  OR to_regprocedure('public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)') IS NOT NULL
  OR to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NOT NULL
