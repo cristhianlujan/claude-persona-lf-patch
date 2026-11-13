@@ -841,6 +841,24 @@ BEGIN
   IF v_matches<>1 THEN
     RAISE EXCEPTION 'LF_IG_PROMOTION_EXACT_LIVE_TRAIN_RUN_REQUIRED:%',v_matches;
   END IF;
+  SELECT * INTO STRICT v_train
+  FROM public.lf_operation_execution e
+  WHERE e.operation_code='ACTUALIZACION_DB_LF'
+    AND e.target_code='20261113030000_lf_ig_rule_lifecycle_writer_v2'
+    AND e.status='IN_PROGRESS'
+    AND e.manifest->>'producer'='lf-migration-merge-train'
+    AND e.manifest->>'pr'='3803'
+    AND e.execution_id='EXEC-DB-TRAIN-PR3803-20261113030000-R'||(e.manifest->>'train_run_id')
+  FOR SHARE;
+  IF v_train.manifest->'router_authority_receipt'->>'target_repo'
+       IS DISTINCT FROM v_train.target_repo
+    OR v_train.manifest->'router_authority_receipt'->>'target_code'
+       IS DISTINCT FROM v_train.target_code
+  THEN RAISE EXCEPTION 'LF_IG_PROMOTION_TRAIN_ROUTE_SCOPE_DRIFT'; END IF;
+  v_bootstrap:='EXEC-BOOTSTRAP-PROMOCION-REGLA-LF-R'||(v_train.manifest->>'train_run_id');
+  v_request_sha:=encode(extensions.digest(convert_to(
+    'PROMOCION_REGLA_LF|'||v_train.execution_id||'|'||v_train.request_sha256,
+    'UTF8'),'sha256'),'hex');
 -- Canonical invoker calls these two openers. Old update function remains intact
 -- for vetted candidate-only cases, but callers may no longer bypass the V2 gate.
 UPDATE public.lf_skill_catalog_v1
