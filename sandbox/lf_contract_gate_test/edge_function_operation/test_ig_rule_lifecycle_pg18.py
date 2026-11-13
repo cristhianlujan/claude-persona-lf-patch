@@ -228,14 +228,16 @@ class PG18RealSQL(unittest.TestCase):
           res["downstream_execution_allowed"] is False,
           "ROUTER_SCOPE_ROUTING_EVIDENCE_INVALID")
         fail_assert(res["positive_scope"]==[
-          {"table":"public.lf_activos","columns":["owner_name"],
+          {"table":"public.lf_activos","columns":["owner_name","updated_at",
+             "updated_by_execution_id"],"business_field":"owner_name",
+           "audit_columns":["updated_at","updated_by_execution_id"],
            "entrypoint":"public.lf_ig_asset_owner_apply_v2(uuid)"}],
           "SCOPE_NOT_MINIMAL_ALLOWED")
         forbidden=res["negative_scope"]["forbidden_columns"]
         total=self.sql("""SELECT count(*) FROM information_schema.columns
           WHERE table_schema='public' AND table_name='lf_activos';""")
-        fail_assert(len(forbidden)==int(total)-1 and
-          "owner_name" not in forbidden and "updated_by_execution_id" in forbidden,
+        fail_assert(len(forbidden)==int(total)-3 and
+          all(x not in forbidden for x in ("owner_name","updated_at","updated_by_execution_id")),
           "ROUTER_NEGATIVE_SCOPE_NOT_EXHAUSTIVE")
         row=json.loads(self.sql("""SELECT receipt::text FROM
           public.lf_router_scope_receipt_v1 WHERE execution_id="""+quote(run)+";"))
