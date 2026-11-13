@@ -136,6 +136,12 @@ class PG18RealSQL(unittest.TestCase):
           "razon":"Prueba PG18 integrada","es_transversal":False,"valor_config":{},"origen":"PG18_ONLY"}}
         pre=self.sql("SELECT encode(extensions.digest(convert_to('LF_RULE_ABSENT:'||"+quote(RULE)+",'UTF8'),'sha256'),'hex');")
         self.parent(PARENT,patch)
+        # A fake receipt must not create a candidate or invoke the official writer.
+        fake=self.invoke(PARENT,"RULE_CREATE_APPLY",patch,pre,
+                         "00000000-0000-4000-8000-000000000999")
+        fail_assert(fake["status"]=="BLOCKED","FAKE_APPROVAL_CREATED_CHILD "+str(fake))
+        fail_assert(self.sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(RULE)+";")=="0",
+                    "FAKE_APPROVAL_WROTE_RULE")
         # negative no identity, no MFA, wrong hash
         self.sql(f"SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote(pre)},'APPROVE');",
                  expect_fail="LF_IG_OWNER_AUTHENTICATED_AAL2_REQUIRED")
@@ -152,8 +158,8 @@ class PG18RealSQL(unittest.TestCase):
          SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote('0'*64)},'APPROVE');
          ROLLBACK;""",expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
         d=json.loads(self.owner_decide(PARENT,pre).splitlines()[-1])
-        fail_assert(d["status"]=="APPROVE","CREATE_OWNER_DECISION_FAIL")
-        self.owner_decide(PARENT,pre) if False else None
+        fail_assert(d["status"]=="APPROVED_AND_VIGENTE_VERIFIED" and d.get("child_execution_id"),
+                    "OWNER_AUTO_CREATE_PROMOTE_FAILED "+str(d))
         # Negative replay and no owner bypass (same signed preimage).
         self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
         SET LOCAL request.jwt.claim.sub={quote(OWNER)};
@@ -161,11 +167,9 @@ class PG18RealSQL(unittest.TestCase):
         SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
         SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote(pre)},'APPROVE');
         ROLLBACK;""",expect_fail="LF_IG_OWNER_DECISION_ALREADY_RECORDED_NO_OVERRIDE")
-        result=self.invoke(PARENT,"RULE_CREATE_APPLY",patch,pre,d["decision_id"])
-        fail_assert(result["status"]=="COMPLETED" and result.get("child_execution_id"),"CREATE_NOT_COMPLETED "+str(result))
-        cid=result["child_execution_id"]
+        cid=d["child_execution_id"]
         row=self.sql(f"""SELECT estado||'|'||pendiente_decision::text FROM lf_ops.reglas WHERE codigo={quote(RULE)};""")
-        fail_assert(row=="CANDIDATO|true","CREATE_NOT_CANDIDATO "+row)
+        fail_assert(row=="VIGENTE|false","AUTO_CHAIN_NOT_VIGENTE "+row)
         cnt=self.sql("SELECT count(*) FROM public.lf_operation_execution_steps WHERE execution_id="+quote(cid)+" AND status='PASS_CLEAN';")
         fail_assert(cnt=="7","CREATE_NOT_7_STEPS "+cnt)
         replay=self.invoke(PARENT,"RULE_CREATE_APPLY",patch,pre,d["decision_id"])
@@ -183,15 +187,67 @@ class PG18RealSQL(unittest.TestCase):
           "changes":{"descripcion":"Corrección aprobada y validada PG18."}}
         self.parent(PARENT2,patch2)
         d2=json.loads(self.owner_decide(PARENT2,pre2).splitlines()[-1])
-        r2=self.invoke(PARENT2,"RULE_UPDATE_APPLY",patch2,pre2,d2["decision_id"])
-        fail_assert(r2.get("child_execution_id") and r2.get("status")=="COMPLETED","VIGENTE_STAGE_FAIL "+str(r2))
-        before=self.sql(f"SELECT descripcion FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
-        fail_assert(before!="Corrección aprobada y validada PG18.","VIGENTE_WROTE_BEFORE_FINAL")
-        fin=json.loads(self.sql(f"SELECT public.lf_ig_rule_finalize_v2({quote(r2['child_execution_id'])})::text;"))
-        fail_assert(fin["status"]=="VIGENTE_VERIFIED","VIGENTE_FINALIZE_FAIL "+str(fin))
+        fail_assert(d2.get("status")=="APPROVED_AND_VIGENTE_VERIFIED" and
+                    d2.get("child_execution_id"),"VIGENTE_OWNER_AUTO_CHAIN_FAIL "+str(d2))
+        staged=self.sql("SELECT count(*) FROM public.lf_ig_rule_change_v2 WHERE child_execution_id="+
+                         quote(d2['child_execution_id'])+" AND kind='CORRECT_VIGENTE' AND state='VIGENTE_VERIFIED';")
+        fail_assert(staged=="1","VIGENTE_STAGE_OR_FINALIZE_NOT_RECORDED")
+        fin=json.loads(self.sql(f"SELECT public.lf_ig_rule_finalize_v2({quote(d2['child_execution_id'])})::text;"))
+        fail_assert(fin["status"]=="VIGENTE_VERIFIED" and fin.get("replay")==True,
+                    "VIGENTE_FINALIZE_REPLAY_FAIL "+str(fin))
         desc=self.sql(f"SELECT descripcion FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
         fail_assert(desc=="Corrección aprobada y validada PG18.","VIGENTE_PATCH_NOT_APPLIED")
         print("PASS_PG18_SQL_RULE_CREATE_PROMOTE_VIGENTE_CORRECT",flush=True)
+
+        # Asset-owner backfill authority on a disposable ACTUALIZACION_DB_LF RUN.
+        train="EXEC-IG-PG18-TRAIN-0001"
+        asset="LF-IG-PG18-ACTIVO"
+        self.sql(f"""INSERT INTO public.lf_operation_execution(
+            execution_id,operation_code,target_type,target_code,request_sha256,
+            idempotency_key,created_by_execution_id)
+          VALUES({quote(train)},'ACTUALIZACION_DB_LF','DB','lf_activos',
+            {quote('c'*64)},{quote('ig-pg18-train:'+train)},{quote(train)});
+          INSERT INTO public.lf_operation_execution_steps(
+            execution_id,step_order,step_id,status,evidence_payload,created_by_execution_id)
+          VALUES({quote(train)},10,'preflight','PASS_CLEAN',
+            '{"source":"PG18_SANDBOX_ONLY"}'::jsonb,{quote(train)});
+          INSERT INTO public.lf_activos(
+            id,codigo_activo,nombre_canonico,tipo_activo,estado_documental,estado_operativo,
+            owner_name,source_spreadsheet_id,source_spreadsheet_title,source_sheet_name,
+            source_row_number,migration_batch_id,created_by_execution_id)
+          VALUES(999999,{quote(asset)},'PG18 test asset','CAPABILITY','CANDIDATO',
+            'READ_ONLY','OLD_OWNER','PG18_ONLY','PG18_ONLY','PG18_ONLY',1,
+            '00000000-0000-4000-8000-000000000991'::uuid,{quote(train)});""")
+        assetsha=self.sql(f"""SELECT encode(extensions.digest(
+            convert_to((to_jsonb(a)-'updated_at')::text,'UTF8'),'sha256'),'hex')
+            FROM public.lf_activos a WHERE codigo_activo={quote(asset)};""")
+        # A fake preimage cannot gain a backfill receipt.
+        self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
+          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
+          SET LOCAL request.jwt.claim.role='authenticated';
+          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
+          SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
+            {quote('0'*64)},'LF_OWNER_PG18'); ROLLBACK;""",
+          expect_fail="LF_IG_ASSET_PREIMAGE_STALE")
+        signed=self.sql(f"""BEGIN; SET LOCAL ROLE authenticated;
+          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
+          SET LOCAL request.jwt.claim.role='authenticated';
+          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
+          SELECT public.lf_ig_asset_owner_approve_v2({quote(train)},{quote(asset)},
+            {quote(assetsha)},'LF_OWNER_PG18')::text; COMMIT;""")
+        receipt=json.loads(signed.splitlines()[-1])
+        fail_assert(receipt["status"]=="APPROVED","ASSET_APPROVAL_MISSING")
+        # Direct anon invocation must fail; apply is service_role-only.
+        self.sql(f"BEGIN; SET LOCAL ROLE anon; SELECT public.lf_ig_asset_owner_apply_v2({quote(receipt['receipt_id'])}::uuid); ROLLBACK;",
+          expect_fail="permission denied")
+        applied=json.loads(self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+          SELECT public.lf_ig_asset_owner_apply_v2({quote(receipt['receipt_id'])}::uuid)::text; COMMIT;""").splitlines()[-1])
+        fail_assert(applied["status"]=="APPLIED_VERIFIED" and applied["old_sha256"]!=applied["new_sha256"],
+          "ASSET_READBACK_HASH_FAILED "+str(applied))
+        owner=self.sql("SELECT owner_name FROM public.lf_activos WHERE codigo_activo="+quote(asset)+";")
+        fail_assert(owner=="LF_OWNER_PG18","ASSET_OWNER_NOT_APPLIED")
+        print("PASS_PG18_SQL_ASSET_OWNER_PREIMAGE_AUTH_AND_READBACK",flush=True)
+
 
 if __name__=="__main__":
     unittest.main()
