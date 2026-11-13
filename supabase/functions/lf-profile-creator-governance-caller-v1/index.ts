@@ -181,6 +181,37 @@ Deno.serve(async (req: Request) => {
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
 
+    // SALY is an exact, documentary-only create action on the existing OIDC main workflow.
+    // This is NOT the Customer creation lane; do not broaden TARGETS or permissions.
+    if (body.action === "saly_profile_creator_init_v1") {
+      if (caller.method !== UPDATE_CALLER_METHOD || identity.workflowRef !== UPDATE_WORKFLOW_REF) {
+        return json({ outcome: "BLOCKED", code: "SALY_CREATION_OIDC_SCOPE_DENIED" }, 403);
+      }
+      const targetCode = body.target_code;
+      const profileSlug = body.profile_slug;
+      const receipt = "107332ebbae4295dc76179bd5619856cb61807b91a856c080b12e1942018fb0f";
+      if (targetCode !== "PERFIL-PRODUCT-DIRECTOR-SALY"
+        || profileSlug !== "saly_product_director"
+        || body.project_code !== "SALY"
+        || body.owner_decision_sha256 !== receipt
+        || body.identity_verified !== false
+        || body.production_authorized !== false) {
+        return json({ outcome: "BLOCKED", code: "SALY_CREATION_SCOPE_OR_DECISION_INVALID" }, 400);
+      }
+      const requestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim() : "";
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(requestId)) {
+        return json({ outcome: "BLOCKED", code: "SALY_CREATION_REQUEST_ID_INVALID" }, 400);
+      }
+      const result = await callRuntime({
+        action: "initialize_profile_creation_v1", caller_request_id: requestId,
+        target_code: targetCode, profile_slug: profileSlug, target_repo: REPOSITORY,
+        project_code: "SALY", owner_decision_sha256: receipt,
+        identity_verified: false, production_authorized: false, caller,
+      });
+      return json({ outcome: result.outcome ?? "BLOCKED", caller, result },
+        result.outcome === "INITIALIZED" ? 201 : 409);
+    }
+
     if (body.action === "profile_update_init_v1") {
       if (caller.method !== UPDATE_CALLER_METHOD) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_CALLER_NOT_ALLOWED", caller }, 403);
       const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim().toLowerCase() : "";

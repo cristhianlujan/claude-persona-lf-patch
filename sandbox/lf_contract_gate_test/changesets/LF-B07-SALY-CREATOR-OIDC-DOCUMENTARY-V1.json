@@ -1,0 +1,12 @@
+{
+  "solution_ref": "LF-B07-SALY-CREATOR-OIDC-DOCUMENTARY-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/changesets/LF-B07-SALY-CREATOR-OIDC-DOCUMENTARY-V1.json": "CHANGESET_MANIFEST",
+    "supabase/functions/run-creacion-perfil-lf/index.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "SUPABASE_FUNCTION",
+    ".github/workflows/lf-customer-profile-creator-governance-caller.yml": "WORKFLOW",
+    "scripts/lf_profile_update_issue_dispatch.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_saly_profile_creator_oidc_v1.py": "RUNTIME_TESTING",
+    "docs/input-governance/b07_parent_child_candidate/14_saly_creator_admission_security_v1.md": "INPUT_GOVERNANCE"
+  }
+}

@@ -39,7 +39,12 @@ class SalyNativeProfilePreflight(unittest.TestCase):
   self.assertIn("CUSTOMER_PROFILE_TARGET_NOT_ALLOWED",caller)
   self.assertIn('const TARGETS: Record<string, string>',caller)
   self.assertNotIn('"PERFIL-PRODUCT-DIRECTOR-SALY": "saly_product_director"',caller)
-  self.assertIn('production_authorized: true',runtime)
+  # Real gate: preserve true ONLY for the old Customer cases and deny SALY.
+  self.assertIn('const salyTarget = targetCode === "PERFIL-PRODUCT-DIRECTOR-SALY"',runtime)
+  self.assertIn('production_authorized: !salyTarget',runtime)
+  self.assertIn('customer_profile_scope: !salyTarget',runtime)
+  self.assertIn('body.production_authorized !== false',runtime)
+  self.assertIn('if (!salyTarget && caller.method !== CUSTOMER_CALLER_METHOD)',runtime)
   self.assertIn('lf-profile-update-governed',workflow)
   self.assertIn("PROFILE_NATIVE_BEGIN_GATE2_INVALID",begin)
   self.assertIn("s.get('negocio_codigo') != 'LF'",begin)
