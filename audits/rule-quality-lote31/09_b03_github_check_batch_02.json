@@ -1,0 +1,49 @@
+{
+  "batch_index": 2,
+  "source_live_sha": "ec233aa608d66167f9a0206cac3f4db9d0e40167fbf6daf15437b06e8ea3b60f",
+  "checks": [
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-006",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@25f8fc304b94c69e37ad2da99375defcd59895b9",
+      "found": true,
+      "object_sha": "25f8fc304b94c69e37ad2da99375defcd59895b9"
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-008",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@ec9d79052ac304658e1805b2aa01175d8d1b27a6",
+      "found": true,
+      "object_sha": "ec9d79052ac304658e1805b2aa01175d8d1b27a6"
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-009",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@866e9c464be1a62452af025e933177f012e1ace5",
+      "found": true,
+      "object_sha": "866e9c464be1a62452af025e933177f012e1ace5"
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-010",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@11edaa0637a3d260d4c2e315ff29742e5f54fde5",
+      "found": true,
+      "object_sha": "11edaa0637a3d260d4c2e315ff29742e5f54fde5"
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-SEMANTIC-JUDGE-20260921-011",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@c4c17322078bb050dba75512719d27bbcc9006b7",
+      "found": true,
+      "object_sha": "c4c17322078bb050dba75512719d27bbcc9006b7"
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-SEMANTIC-JUDGE-20260921-012",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@fc520a7a521b3da7a90d7fbb23943340019ec636",
+      "found": true,
+      "object_sha": "fc520a7a521b3da7a90d7fbb23943340019ec636"
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@7f37c33e7f52ed669f6b9341f32660689e223802",
+      "found": true,
+      "object_sha": "7f37c33e7f52ed669f6b9341f32660689e223802"
+    }
+  ],
+  "no_effect_reconciliation_claim": true
+}
