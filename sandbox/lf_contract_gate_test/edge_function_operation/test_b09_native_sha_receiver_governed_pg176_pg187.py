@@ -102,6 +102,17 @@ class B09NativeShaGoverned(unittest.TestCase):
             sql(UPSTREAM.read_text(encoding="utf-8"),timeout=450)
             sql(STEP70_PREIMAGE.read_text(encoding="utf-8"),timeout=240)
             sql(SCOPE_3807.read_text(encoding="utf-8"),timeout=300)
+            # The live-object slice omits the full profile step writer. Create
+            # ONLY a blocked/no-effect signature fixture in throwaway Docker;
+            # production preflight still requires the existing canonical writer.
+            if sql("SELECT to_regprocedure('public.lf_record_profile_execution_step_v1(text,text,text,jsonb,text)') IS NULL;")=="t":
+                sql("""CREATE FUNCTION public.lf_record_profile_execution_step_v1(
+                    p_execution_id text,p_step_id text,p_evidence_ref text,
+                    p_evidence_payload jsonb,p_actor_execution_id text)
+                    RETURNS jsonb LANGUAGE sql AS $
+                    SELECT jsonb_build_object('status','BLOCKED',
+                        'blocking_code','B09_TEST_STUB_NO_WRITER_EFFECTS') $;""")
+                print("B09_TEST_FIXTURE_CANONICAL_WRITER_SIGNATURE_ONLY_NO_EFFECTS",flush=True)
             step70_before=sql("SELECT md5(pg_get_functiondef('public."
                 "lf_profile_native_bridge_record_semantic_v1(text,jsonb,text,text)'::regprocedure));")
             g15_before=sql("SELECT md5(pg_get_functiondef('public."
