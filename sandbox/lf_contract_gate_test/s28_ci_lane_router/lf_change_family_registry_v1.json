@@ -259,6 +259,7 @@
     "default_github": "DENY",
     "github_exact": [
       ".github/workflows/input-governance-pr418-holdout-replay.yml",
+      ".github/workflows/l38-owner-confirmation-documentary-ci.yml",
       ".github/workflows/lf-contract-check.yml",
       ".github/workflows/lf-customer-profile-creator-governance-caller.yml",
       ".github/workflows/lf-db-regression.yml",
