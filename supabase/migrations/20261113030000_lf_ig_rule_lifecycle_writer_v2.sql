@@ -835,6 +835,142 @@ GRANT EXECUTE ON FUNCTION public.lf_skill_o_rule_update_v2(text,jsonb,text,text,
 GRANT EXECUTE ON FUNCTION public.lf_ig_rule_finalize_v2(text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.lf_ig_asset_owner_apply_v2(uuid) TO service_role;
 
+
+-- V3: one transaction and one permitted SQL entrypoint AFTER a canonical
+-- profile RUN has independently reached the 10/11 clean step-70 boundary.
+-- Must call the SAME canonical Step80 bridge and terminal receipt, never
+-- manufacture 11/11 by manual INSERTs or UPDATE execution.status.
+CREATE FUNCTION public.lf_ig_rule_cycle_once_v3(
+ p_parent text,p_rule text,p_source_sha256 text,
+ p_decision jsonb,p_report_evidence_ref text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','lf_ops','extensions'
+AS $fn$
+DECLARE p public.lf_operation_execution%ROWTYPE;
+ j jsonb;v_native jsonb;v_dec jsonb;v_report jsonb;v_term jsonb;
+ v_clean int;v_active text;v_final text;
+BEGIN
+ IF nullif(btrim(coalesce(p_report_evidence_ref,'')),'') IS NULL
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_REPORT_EVIDENCE_MISSING'; END IF;
+ IF to_regprocedure('public.lf_profile_native_bridge_record_report_v1(text,text,text)') IS NULL
+ OR to_regprocedure('public.lf_profile_execution_terminal_authority_receipt_v1(text)') IS NULL
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_CANONICAL_STEP80_NOT_INSTALLED'; END IF;
+ SELECT * INTO p FROM public.lf_operation_execution
+ WHERE execution_id=p_parent AND operation_code='EJECUCION_PERFIL_LF'
+ AND target_type='PERFIL' AND target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+ AND status='IN_PROGRESS' FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_ONCE_PARENT_NOT_ADMITTED'; END IF;
+ IF p.manifest->>'executor_mode' NOT IN ('GPT_NATIVE','CLAUDE_NATIVE')
+    OR (p.manifest->>'executor_mode'='GPT_NATIVE'
+        AND p.manifest->>'executor_provider'<>'OPENAI_CHATGPT_NATIVE')
+    OR (p.manifest->>'executor_mode'='CLAUDE_NATIVE'
+        AND p.manifest->>'executor_provider'<>'ANTHROPIC_CLAUDE_NATIVE')
+    OR p.manifest ? 'queue_request_id'
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_NATIVE_EXECUTOR_REQUIRED'; END IF;
+ SELECT count(*) INTO v_clean FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_parent AND status='STEP_PASS_WITH_EVIDENCE';
+ IF v_clean<>10 OR EXISTS (SELECT 1 FROM public.lf_operation_execution_steps
+   WHERE execution_id=p_parent AND step_id='report_output')
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_10_CLEAN_PRE_STEP80_REQUIRED'; END IF;
+ SELECT evidence_payload->'semantic_judge_result' INTO j
+ FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_parent AND step_id='semantic_judge'
+ AND status='STEP_PASS_WITH_EVIDENCE';
+ -- A manually asserted verdict, test HMAC, or CURRENT_CONTEXT_REVIEW is
+ -- insufficient to execute an effects-bearing governed child.
+ IF j->>'status' IS DISTINCT FROM 'PASS'
+    OR j->>'verdict' IS DISTINCT FROM 'PASS_INDEPENDENT_SEMANTIC'
+    OR j->>'review_mode' IN ('CURRENT_CONTEXT_REVIEW','HMAC_TEST','MOCK')
+    OR coalesce(j->>'provider_receipt_ref','')=''
+    OR j->>'producer_independence_proven' IS DISTINCT FROM 'true'
+    OR j->>'model_call_count' IS DISTINCT FROM '1'
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_REAL_STEP70_RECEIPT_REQUIRED'; END IF;
+ v_dec:=public.lf_ig_rule_owner_decide_v2(
+   p_parent,p_rule,p_source_sha256,p_decision);
+ IF v_dec->>'status'='RECHAZADO' THEN
+    RETURN v_dec || jsonb_build_object('profile_run_closed',false,
+      'next_action','OWNER_REJECTED_NO_WRITER');
+ END IF;
+ IF v_dec->>'status'<>'APPROVED_AND_VIGENTE_VERIFIED'
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_OWNER_DECISION_NOT_APPLIED'; END IF;
+ v_report:=public.lf_profile_native_bridge_record_report_v1(
+   p_parent,p_report_evidence_ref,p_parent);
+ IF v_report->>'status' IS DISTINCT FROM 'PROFILE_EXECUTION_COMPLETED'
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_OFFICIAL_STEP80_NOT_COMPLETED:%',
+    coalesce(v_report->>'blocking_code','UNKNOWN'); END IF;
+ v_term:=public.lf_profile_execution_terminal_authority_receipt_v1(p_parent);
+ IF v_term->>'status' IS DISTINCT FROM 'READY'
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_TERMINAL_AUTHORITY_NOT_READY'; END IF;
+ SELECT status INTO v_active FROM public.lf_operation_execution
+ WHERE execution_id=p_parent;
+ SELECT estado INTO v_final FROM lf_ops.reglas WHERE codigo=p_rule;
+ SELECT count(*) INTO v_clean FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_parent AND status='STEP_PASS_WITH_EVIDENCE';
+ IF v_active<>'COMPLETED' OR v_final<>'VIGENTE' OR v_clean<>11
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_FINAL_CANONICAL_READBACK_FAILED'; END IF;
+ RETURN v_dec || jsonb_build_object('status','RUN_COMPLETED_VIGENTE_VERIFIED',
+   'profile_run_closed',true,'clean_steps',11,
+   'terminal_authority_receipt_sha256',
+   v_term->>'terminal_authority_receipt_sha256',
+   'official_report_bridge_result',v_report);
+END $fn$;
+REVOKE ALL ON FUNCTION public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)
+ TO service_role;
+
+-- L28 documentary specification G15-MOTOR: seven TEMPORARY motor blockers.
+-- No runtime-verifiable independent signatures for all 7 in current schema.
+-- Consequently a complete supplied JSON is NOT a release credential.
+CREATE FUNCTION public.lf_ig_g15_motor_temporary_v1(p_evidence jsonb)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public'
+AS $fn$
+DECLARE expected text[]:=ARRAY[
+'B02_RUN_SCOPE','B03_RUN_EFFECTS','B06_OWNER','B07_SCHEMA',
+'B08_IDENTITY','B09_E2E','B12_LEGACY'];
+ v text; v_missing text[]:=ARRAY[]::text[];
+BEGIN
+ IF jsonb_typeof(p_evidence)<>'object'
+ THEN RETURN jsonb_build_object('status','NO_GO_MOTOR',
+    'blocking_code','G15_MOTOR_EVIDENCE_MISSING','required',to_jsonb(expected)); END IF;
+ FOREACH v IN ARRAY expected LOOP
+  IF jsonb_typeof(p_evidence->v)<>'object'
+     OR p_evidence->v->>'status'<>'VERIFIED'
+     OR coalesce(p_evidence->v->>'sha256','') !~ '^[0-9a-f]{64}
+      WHERE skill_code='RULE_CREATE_APPLY')<>'lf_skill_o_rule_create_v2'
+ OR (SELECT opener_fn FROM public.lf_skill_catalog_v1
+      WHERE skill_code='RULE_UPDATE_APPLY')<>'lf_skill_o_rule_update_v2'
+ OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
+       WHERE project_code='LF' AND owner_name='Cristhian Luján'
+       AND status='TEMP_DOCUMENTARY_ACTIVE')<>1
+ OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
+       WHERE project_code='SALY')<>0
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_registry
+       WHERE operation_code='PROMOCION_REGLA_LF' AND status='SANDBOX_ACTIVE')
+ THEN RAISE EXCEPTION 'LF_IG_V2_MIGRATION_READBACK_FAILED'; END IF;
+END $readback$;
+
+COMMIT;
+
+     OR nullif(p_evidence->v->>'evidence_ref','') IS NULL
+  THEN v_missing:=array_append(v_missing,v); END IF;
+ END LOOP;
+ IF cardinality(v_missing)>0 THEN
+ RETURN jsonb_build_object('status','NO_GO_MOTOR',
+    'blocking_code','G15_MOTOR_7_OF_7_NOT_EVIDENCED',
+    'missing_or_unverified',to_jsonb(v_missing)); END IF;
+ RETURN jsonb_build_object('status','NO_GO_MOTOR',
+   'blocking_code','G15_MOTOR_CRYPTOGRAPHIC_SIGNATURES_NOT_VERIFIED',
+   'evidence_shape','7_OF_7_DECLARED_NOT_AUTHENTICATED',
+   'content_production_authorized',false,
+   'final_database_authorized',false);
+END $fn$;
+REVOKE ALL ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb)
+ TO service_role;
+
 DO $readback$
 BEGIN
  IF (SELECT opener_fn FROM public.lf_skill_catalog_v1
