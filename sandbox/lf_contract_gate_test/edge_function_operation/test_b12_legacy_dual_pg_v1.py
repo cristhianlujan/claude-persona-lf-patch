@@ -199,7 +199,18 @@ class B12DualPG(unittest.TestCase):
                 if ready.returncode==0: break
                 time.sleep(1)
             else: self.fail('B12_POSTGRES_NOT_READY:'+image)
-            number=int(self.sql(name,'SHOW server_version_num;'))
+            # pg_isready can hit the temporary initdb server before final
+            # PostgreSQL restarts; poll the final exact-version connection.
+            number=None
+            for attempt in range(15):
+                try:
+                    number=int(self.sql(name,'SHOW server_version_num;'))
+                    break
+                except AssertionError as exc:
+                    if "connection to server on socket" not in str(exc):
+                        raise
+                    time.sleep(1)
+            self.assertIsNotNone(number,"B12_POSTGRES_STARTUP_NOT_READY:"+image)
             self.assertEqual(number//10000,expected_num,'B12_WRONG_POSTGRES_VERSION')
             version=self.sql(name,'SHOW server_version;')
             self.assertTrue(version.startswith(str(expected_num)+'.'),
@@ -384,7 +395,15 @@ SELECT 'B12_LEGIT_ROLLBACK_CLEAN|'||
         # B12_DIAG_ONLY: inspect real ACL tuples AFTER rollback GRANT, inside
         # a disposable transaction. Prints expected vs actual in BOTH PG versions.
         acl_tuple_sql = "SELECT 'B12_ACLEXPLODE|'||COALESCE(jsonb_agg(\njsonb_build_object('grantee', CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,\n'privilegio',x.privilege_type,'grantor',pg_get_userbyid(x.grantor),'is_grantable',x.is_grantable)\nORDER BY CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,\nx.privilege_type,pg_get_userbyid(x.grantor),x.is_grantable),'[]'::jsonb)::text\nFROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) x\nWHERE p.oid='public.lf_rule_promotion_guard_v1()'::regprocedure;"
-        expected_acl = self.sql(name, acl_tuple_sql)
+        # Expected is the ORIGINAL frozen ACL, not the post-UP ACL.
+        frozen_acl=next(f["acl_raw"] for f in json.loads(FREEZE.read_text(encoding="utf-8"))["functions"]
+                        if f["name"]=="lf_rule_promotion_guard_v1")
+        baseline_sql=acl_tuple_sql.replace(
+            "FROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) x\\nWHERE p.oid='public.lf_rule_promotion_guard_v1()'::regprocedure;",
+            "FROM aclexplode('"+frozen_acl+"'::aclitem[]) x;")
+        if baseline_sql==acl_tuple_sql:
+            self.fail("B12_EXPECTED_ACL_SOURCE_REPLACEMENT_MISSING")
+        expected_acl = self.sql(name, baseline_sql)
         diagnostic = self.sql(name,
             "BEGIN; GRANT EXECUTE ON FUNCTION "
             "public.lf_rule_promotion_guard_v1() TO PUBLIC, anon, authenticated; "
@@ -394,7 +413,9 @@ SELECT 'B12_LEGIT_ROLLBACK_CLEAN|'||
         self.assertEqual(len(actual_rows),1,"B12_DIAG_ACLEXPLODE_MISSING:"+diagnostic)
         print("B12_ACLEXPLODE_EXPECTED_FROM_FREEZE_"+image+"="+expected_acl,flush=True)
         print("B12_ACLEXPLODE_REAL_AFTER_ROLLBACK_GRANT_"+image+"="+actual_rows[0],flush=True)
-        print("B12_ACLEXPLODE_TEXT_EQUAL="+str(expected_acl==actual_rows[0]),flush=True)
+        self.assertEqual(expected_acl,actual_rows[0],
+           "B12_ACLEXPLODE_FROZEN_SET_MISMATCH:"+actual_rows[0])
+        print("PASS_B12_ACLEXPLODE_FROZEN_SET_MATCH_"+image,flush=True)
         self.sql(name,ROLLBACK_SCRIPT.read_text(encoding="utf-8"))
         self.sql(name, "REVOKE UPDATE(estado) ON lf_ops.reglas FROM anon, authenticated;")
         print("PASS_B12_EXACT_ROLLBACK_FILE_RESTORES_PREIMAGE_"+image,flush=True)
