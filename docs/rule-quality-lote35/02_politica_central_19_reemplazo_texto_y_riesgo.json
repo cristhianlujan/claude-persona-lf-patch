@@ -1,0 +1,73 @@
+{
+  "schema": "LF_L35_POLICY19_EXACT_DESCRIPTION_CHANGE_PROPOSAL_ONLY_V1",
+  "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+  "security_policy_id": 19,
+  "source_status": "CANDIDATO",
+  "source_full_row_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+  "current_description_LITERAL": "La politica central de factores define metodos por perfil. Los administradores requieren SSO Google Workspace SAML con control resistente a phishing. Los demas perfiles usan un segundo control LF de OTP por correo entregado con Brevo; debe verificarse del lado servidor antes del acceso operativo. No puede atribuirse a este OTP la garantia de AAL2 nativo del proveedor sin evidencia. Los bindings del proveedor de identidad permanecen pendientes de M1/ADR-003.",
+  "proposed_replacement_description_LITERAL": "La política central de factores determina el segundo factor aplicable a cada perfil. Para Admin Empresa (profile_id 2), el Login comienza con usuario y contraseña validados por el servidor. Cuando la política de aplicabilidad MFA exige segundo factor, LF genera y envía un código de un solo uso (OTP) al correo registrado mediante Brevo y debe verificar ese OTP del lado servidor antes de completar AUTHENTICATED, crear sesión operativa o conceder permisos. Para Admin Empresa el OTP por correo/Brevo es el segundo factor elegido por el dueño: no se exigen FIDO2/WebAuthn, passkeys ni llaves de seguridad. Para Admin LF (profile_id 1) el método del segundo factor continúa pendiente de decisión del dueño y no se afirma como confirmado Google Workspace SAML ni otro proveedor. Para perfiles 3, 4, 5 y 6 se conserva el segundo factor OTP por correo/Brevo, verificado del lado servidor. Un OTP por correo no es resistente a phishing ni equivale por sí solo a Supabase native AAL2. SMS es solo contingencia, sin proveedor confirmado ni fallback automático. Si MFA resulta exigible, una contraseña sola, un OTP inválido o no verificado y un dispositivo reconocido no conceden acceso operativo. El contrato real de identidad, el transporte y la recuperación quedan pendientes de sus pruebas y aprobación gobernada conforme ADR-003 M1.",
+  "proposed_description_utf8_sha256": "df0f5e069fcc4d707116f565cde0cc993ef3737397ff29d2e349975e50188f6e",
+  "change_scope": "REEMPLAZAR_DESCRIPCION_COMPLETA_SOLO_COMO_PROPUESTA; NO_APLICAR",
+  "risk_residual_single_line": "RIESGO RESIDUAL ACEPTADO POR EL DUEÑO EN CONVERSACIÓN, PENDIENTE DE FIRMA: el OTP por correo puede ser retransmitido mediante phishing.",
+  "additional_policy_config_conflicts_REQUIRES_SEPARATE_GOVERNED_CHANGE": [
+    {
+      "path": "policy_config.admin_minimum_strength",
+      "current": "PHISHING_RESISTANT",
+      "required": "Dejar de imponer PHISHING_RESISTANT al perfil 2; conservar controles de perfiles que sigan aprobados, y dejar perfil 1 pendiente. No usar un mínimo global que contradiga OTP."
+    },
+    {
+      "path": "policy_config.admin_phishing_resistant_requirement",
+      "current": "GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY",
+      "required": "Retirar la exigencia GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY para perfil 2; separarla por perfil sin asumir resolución de perfil 1."
+    },
+    {
+      "path": "policy_config.phishing_resistant_option_required",
+      "current": true,
+      "required": "No exigir FIDO2/passkey para Admin Empresa; redefinir condición por perfil. No desactivar otros controles sin evaluar su alcance."
+    },
+    {
+      "path": "policy_config.admin_primary_method",
+      "current": "GOOGLE_WORKSPACE_SAML_SSO",
+      "required": "Reconciliar con login usuario + contraseña, segundo factor OTP correo/Brevo para perfil 2; perfil 1 PENDING_OWNER. No fijar un método primario global para ambos administradores."
+    },
+    {
+      "path": "policy_config.admin_identity_provider",
+      "current": "GOOGLE_WORKSPACE",
+      "required": "No atribuir Google Workspace confirmado a perfil 2 ni perfil 1 sin binding real; seleccionar proveedor de identidad por la ruta ADR-003 M1."
+    },
+    {
+      "path": "policy_config.admin_sso_protocol",
+      "current": "SAML_2_0",
+      "required": "No exigir SAML como método confirmado a los perfiles 1 y 2 solo por agrupación; OIDC/SAML pendiente de contrato real de identidad."
+    },
+    {
+      "path": "policy_config.admin_profile_ids",
+      "current": [
+        1,
+        2
+      ],
+      "required": "Conservar cobertura administrativa 1 y 2, pero desagregar método y fuerza MFA por perfil; no tratar la lista como método único."
+    },
+    {
+      "path": "policy_config.admin_provider_configuration_status",
+      "current": "PENDING_GOOGLE_WORKSPACE_TENANT_AND_SAML_METADATA",
+      "required": "Marcar integración seleccionada para perfil 2 como pendiente de pruebas de identidad y Brevo, sin inventar configuración lista."
+    },
+    {
+      "path": "policy_config.factor_selection_status",
+      "current": "CLOSED_POLICY_DEFINED",
+      "required": "No declarar cierre global del factor de todos los administradores mientras el perfil 1 siga sin método decidido."
+    }
+  ],
+  "retain_without_change": [
+    "OTP correo/Brevo para perfiles 3–6",
+    "SMS solo contingencia sin proveedor confirmado",
+    "Denegar acceso cuando MFA requerido no concluido",
+    "No afirmar AAL2 nativo por OTP de correo",
+    "Binding identidad ADR-003 M1 pendiente"
+  ],
+  "owner_signature_verified": false,
+  "policy_modified": false,
+  "writer_called": false,
+  "security_risk_formally_signed": false
+}
