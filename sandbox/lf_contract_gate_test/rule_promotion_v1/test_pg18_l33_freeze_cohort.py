@@ -131,11 +131,13 @@ CREATE TABLE evidence_copy.priority32(run_id text PRIMARY KEY);""")
           "old232_present":232,"old234_present":234,"priority32_present":32,
           "new_vs232":3,"new_vs234":1,"pr61_in_frozen":12,
           "pr61_outside":49,"profile_not_eq":0},diff)
-        ro=scalar("""BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
-SELECT current_setting('transaction_read_only')||':'||
+        ro_output=sql("""BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT 'L33_RO|'||current_setting('transaction_read_only')||':'||
 current_setting('transaction_isolation')||':'||
 (SELECT count(*) FROM evidence_copy.frozen);
 ROLLBACK;""")
+        ro_lines=[z.split('L33_RO|',1)[1] for z in ro_output.splitlines() if 'L33_RO|' in z]
+        ro=ro_lines[0] if len(ro_lines)==1 else "MISSING_READONLY_RESULT"
         check("READ_ONLY_SQL_CAPTURE_LOGIC_PG18",ro=="on:repeatable read:235",{"readback":ro})
         victim=ids[0]
         missing=int(txvalue("CREATE TEMP TABLE stage AS SELECT * FROM evidence_copy.frozen; DELETE FROM stage WHERE run_id="+lit(victim)+";",
