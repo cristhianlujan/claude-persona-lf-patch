@@ -82,7 +82,7 @@ class PG18RealSQL(unittest.TestCase):
         # Isolated parent provenance fixture. These four prerequisite evidence
         # rows are NOT a real native model or judge invocation.
         data={"worker":"product_director_lf","output_type":"PRODUCT_DIRECTION_SPEC",
-            "self_verdict":"PASS","deliverable_created":{"governed_rule_patch":patch,
+            "self_verdict":"PASS","deliverable_created":{"authority_status":"SUPPORTED","governed_rule_patch":patch,
               "product_decision":{"decision_id":"DEC-IGPG18","source_refs":[
                 {"authority":"AUTHORITATIVE","current":True,"source_ref":"fixture://pg18"}]}}}
         manifest={"read_only":True,"no_write":True,"no_promotion":True,
@@ -107,14 +107,14 @@ class PG18RealSQL(unittest.TestCase):
         cls.sql(base)
 
     @classmethod
-    def owner_decide(cls,parent,preimage,verdict="APPROVE",aal="aal2"):
+    def owner_decide(cls,parent,preimage,verdict="APPROVE",aal="aal2",rule=RULE):
         return cls.sql(f"""BEGIN;
          SET LOCAL ROLE authenticated;
          SET LOCAL request.jwt.claim.sub={quote(OWNER)};
          SET LOCAL request.jwt.claim.role='authenticated';
          SET LOCAL request.jwt.claims={quote(json.dumps({"sub":OWNER,"aal":aal,"role":"authenticated"}))};
          SELECT public.lf_ig_rule_owner_decide_v2(
-          {quote(parent)},{quote(RULE)},{quote(preimage)},{quote(verdict)})::text;
+          {quote(parent)},{quote(rule)},{quote(preimage)},{quote(verdict)})::text;
          COMMIT;""")
 
     @classmethod
@@ -227,6 +227,46 @@ class PG18RealSQL(unittest.TestCase):
         fail_assert(sha_after==sha_before,"FUNCTIONAL_NEGATIVE_MUTATED_ACTIVE_RULE")
         pending=self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id="+quote(parent3)+";")
         fail_assert(pending=="0","FAILED_FUNCTIONAL_APPROVAL_PERSISTED")
+        # Existing CANDIDATO regression: V2 invokes the original candidate-only
+        # official writer (does not silently replace legacy semantics).
+        cand="LF-IG-PG18-TEST-CANDIDATE"
+        candparent="EXEC-PROFILE-GATE2-IGPG18CAND0004"
+        self.sql(f"""INSERT INTO lf_ops.reglas(
+            codigo,categoria,titulo,descripcion,estado,pendiente_decision,es_transversal,
+            created_by) VALUES({quote(cand)},'TEST','Candidata PG18',
+            'Regla candidata antes de modificar','CANDIDATO',true,false,
+            {quote(candparent)});
+          INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id)
+            SELECT id,999991 FROM lf_ops.reglas WHERE codigo={quote(cand)};""")
+        candsha=self.sql("SELECT public.lf_asset_snapshot_sha_v1('REGLA',"+quote(cand)+");")
+        candpatch={"rule_code":cand,"change_kind":"DOCUMENTARY_ONLY",
+          "changes":{"descripcion":"Candidata corregida por escritor oficial PG18."}}
+        self.parent(candparent,candpatch)
+        cand_result=json.loads(self.owner_decide(candparent,candsha,rule=cand).splitlines()[-1])
+        fail_assert(cand_result.get("status")=="APPROVED_AND_VIGENTE_VERIFIED",
+                    "CANDIDATO_LEGACY_WRITER_REGRESSION "+str(cand_result))
+        candrow=self.sql(f"SELECT estado||'|'||descripcion FROM lf_ops.reglas WHERE codigo={quote(cand)};")
+        fail_assert(candrow=="VIGENTE|Candidata corregida por escritor oficial PG18.",
+                    "CANDIDATO_WRITER_POSTSTATE_FAILED "+candrow)
+        candpromo=self.sql("SELECT count(*) FROM public.lf_rule_promotion_v1 WHERE rule_code="+quote(cand)+" AND status='APPLIED';")
+        fail_assert(candpromo=="1","CANDIDATO_PROMOTION_NOT_APPLIED")
+        print("PASS_PG18_CANDIDATO_EXISTING_WRITER_REGRESSION",flush=True)
+        # Rejection is recorded as a human decision but never starts a child.
+        reject_code="LF-IG-PG18-TEST-REJECT"
+        reject_parent="EXEC-PROFILE-GATE2-IGPG18REJECT005"
+        reject_patch={"rule_code":reject_code,"change_kind":"CREATE",
+          "changes":{"categoria":"TEST","titulo":"Rechazo PG18",
+            "descripcion":"Regla rechazada sin escritura PG18",
+            "es_transversal":False}}
+        reject_sha=self.sql("SELECT encode(extensions.digest(convert_to('LF_RULE_ABSENT:'||"+
+            quote(reject_code)+",'UTF8'),'sha256'),'hex');")
+        self.parent(reject_parent,reject_patch)
+        denied=json.loads(self.owner_decide(reject_parent,reject_sha,verdict="REJECT",rule=reject_code).splitlines()[-1])
+        fail_assert(denied.get("status")=="REJECT" and denied.get("write_performed") is False,
+                    "OWNER_REJECT_WRITE_FLOW_WRONG "+str(denied))
+        fail_assert(self.sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(reject_code)+";")=="0",
+                    "REJECT_CREATED_RULE")
+        print("PASS_PG18_OWNER_REJECT_NO_CHILD_NO_RULE",flush=True)
         print("PASS_PG18_FUNCTIONAL_CHANGE_ROLLBACK_AND_NO_FALSE_PROMOTION",flush=True)
         print("PASS_PG18_SQL_RULE_CREATE_PROMOTE_VIGENTE_CORRECT",flush=True)
 
