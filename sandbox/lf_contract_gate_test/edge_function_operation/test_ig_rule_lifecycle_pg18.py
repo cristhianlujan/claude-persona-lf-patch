@@ -120,6 +120,25 @@ class PG18RealSQL(unittest.TestCase):
         print("PASS_PG18_PRECOMMIT_ROLLBACK_CATALOG_SHA256 "+baseline,flush=True)
         cls.sql(src,timeout=240)
         print("PASS_PG18_EXACT_MIGRATION_APPLIED",flush=True)
+        # Success may only be credited to the proper bootstrap: a new,
+        # scoped VULNERABILITY_COVERAGE_REPAIR_LF RUN reserved by official API.
+        bootstrap="EXEC-BOOTSTRAP-PROMOCION-REGLA-LF-R"+cls.train_run_id
+        provenance=cls.sql("""SELECT r.operation_code||'|'||r.status||'|'||
+             r.created_by_execution_id||'|'||e.operation_code||'|'||e.status||'|'||
+             e.created_by_execution_id||'|'||
+             e.manifest->>'bootstrap_operation_code'||'|'||
+             e.manifest->>'bootstrap_status_ceiling'
+           FROM public.lf_operation_registry r
+           JOIN public.lf_operation_execution e
+             ON e.execution_id=r.created_by_execution_id
+           WHERE r.operation_code='PROMOCION_REGLA_LF';""")
+        expected="|".join(["PROMOCION_REGLA_LF","SANDBOX_ACTIVE",bootstrap,
+          "VULNERABILITY_COVERAGE_REPAIR_LF","IN_PROGRESS",
+          cls.train_execution,"PROMOCION_REGLA_LF","SANDBOX_ACTIVE"])
+        fail_assert(provenance==expected,
+                    "LIVE_GUARD_COMPATIBLE_PROVENANCE_READBACK_FAIL "+provenance)
+        print("PASS_PG18_GENUINE_TRAIN_SCOPED_BOOTSTRAP_REGISTRATION_READBACK",flush=True)
+
 
     @classmethod
     def catalog_sha256(cls):
