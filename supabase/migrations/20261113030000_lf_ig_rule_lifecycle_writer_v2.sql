@@ -875,6 +875,27 @@ BEGIN
      OR v_reserved->>'execution_id' IS DISTINCT FROM v_bootstrap
      OR v_reserved->>'status'<>'IN_PROGRESS'
   THEN RAISE EXCEPTION 'LF_IG_PROMOTION_GOVERNED_BOOTSTRAP_RESERVATION_FAILED'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM public.lf_operation_execution e
+    WHERE e.execution_id=v_bootstrap
+      AND e.operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+      AND e.target_type='OPERATION_PROTOCOL_REPAIR'
+      AND e.target_code='PROMOCION_REGLA_LF'
+      AND e.created_by_execution_id=v_train.execution_id
+      AND e.manifest->>'governance_bootstrap'='true'
+      AND e.manifest->>'bootstrap_operation_code'='PROMOCION_REGLA_LF'
+      AND e.manifest->>'bootstrap_status_ceiling'='SANDBOX_ACTIVE'
+      AND e.manifest->>'source_train_execution_id'=v_train.execution_id)
+  THEN RAISE EXCEPTION 'LF_IG_PROMOTION_BOOTSTRAP_READBACK_FAILED'; END IF;
+  INSERT INTO public.lf_operation_registry(
+    operation_code,version,status,source_model,source_repo,source_paths,notes,
+    operation_family,operation_domain,operation_type,applies_to_asset_type,
+    created_by_execution_id,lifecycle_state_code)
+  VALUES('PROMOCION_REGLA_LF','v0.2','SANDBOX_ACTIVE','GIT_FIRST_YAML',
+    'cristhianlujan/claude-persona-lf-patch',
+    '["public.lf_ig_rule_finalize_v2","public.lf_rule_promotion_apply_v1","lf_ops.reglas"]'::jsonb,
+    'Governed candidate; documentary LF owner plus official child 7/7; no direct Router write.',
+    'RULE_OPERATIONS','RULE_GOVERNANCE','PROMOTE_CANDIDATE','REGLA',
+    v_bootstrap,'OP_CANDIDATE');
 -- Canonical invoker calls these two openers. Old update function remains intact
 -- for vetted candidate-only cases, but callers may no longer bypass the V2 gate.
 UPDATE public.lf_skill_catalog_v1
