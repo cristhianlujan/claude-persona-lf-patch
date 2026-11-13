@@ -1,0 +1,66 @@
+{
+  "schema": "LF_L31_LIVE_SELECT_ONLY_POSTWRITE_READBACK_V1",
+  "run_date": "2026-11-12 America/Lima",
+  "source_project": "mhwmirqcgxxukpctffuv",
+  "execution_mode": "SUPABASE_READ_ONLY_SELECT",
+  "source_only_no_mutation": true,
+  "scope": "26 exact escalated LF Login B2B rules + four central security policies; 49 baseline check",
+  "files": {
+    "preimage": "00_preimagen_viva_26.json",
+    "rule_proposals": "01_matriz_26_estado_diffs_sha256.json",
+    "policy_proposals": "02_politicas_centrales_q01_q11_y_q12.json"
+  },
+  "evidence_from_live_SQL": {
+    "rules_original_hash_matches": "26/26",
+    "rules_proposed_hash_matches": "26/26",
+    "security_policies_original_hash_matches": "4/4",
+    "security_policies_proposed_hash_matches": "4/4",
+    "total_49_rules": 49,
+    "current_49_sha256": "4959cfd6d9319ea26b60f9a21a1751c674e06c4417fb4d589f3665424d539bd3",
+    "original_49_sha256": "4959cfd6d9319ea26b60f9a21a1751c674e06c4417fb4d589f3665424d539bd3",
+    "vigente": 9,
+    "candidato": 40
+  },
+  "deterministic_guard_tests": {
+    "Q01_POLICY_3_CENTRAL_30D_3MONTHS": "PASS",
+    "Q01_ADMIN_EMPRESA_2_EMAIL_BREVO": "PASS",
+    "Q01_ADMIN_LF_UNCONFIRMED": "PASS",
+    "Q01_SMS_UNCONFIRMED": "PASS",
+    "Q01_EXISTING_PHISHING_RESISTANCE_NOT_REMOVED": "PASS",
+    "Q01_EMAIL_OTP_NOT_CLAIMED_AAL2": "PASS",
+    "Q11_SUPPORT_TWO_PERSON_DOCUMENT_48H": "PASS",
+    "Q11_NO_PASSWORD_FALLBACK": "PASS",
+    "Q11_NOTICE_OLD_CONTACT": "PASS",
+    "Q11_PROFILE2_RECOVERY_NOT_GRANTED": "PASS",
+    "Q12_VALUE_5_UNBOUND": "PASS",
+    "Q12_NO_NUMERIC_THRESHOLDS_INSERTED_IN_AUTH_RULES": "PASS",
+    "AUTH039_EXISTING_MFA_REVOCATION_PRESERVED": "PASS",
+    "AUTH033_TRUSTED_COOKIE_NOT_AUTH": "PASS",
+    "AUTH047_UNRESOLVED_NOT_PROMOTED": "PASS",
+    "NO_FORMAL_SIGNATURE_OR_PROMOTION": "PASS"
+  },
+  "summary": {
+    "tested_cases": 16,
+    "pass": 16,
+    "fail": 0,
+    "rules_total": 26,
+    "rule_corrected_documental": 3,
+    "rule_blocked": 23,
+    "changed_rule_drafts": 4,
+    "changed_but_blocked": 1,
+    "policy_drafts": 4,
+    "formally_approved": 0,
+    "promoted": 0,
+    "new_run_created": 0,
+    "existing_run_modified": 0,
+    "supabase_dml_or_ddl": 0
+  },
+  "limitations": [
+    "No DB write test: verification by SELECT with candidate JSONB, not mutation or actual execution",
+    "No real Curator independent, semantic judge V3, Step70, RUN, IG rerun or release executed in this lot",
+    "Historical L29 PG18 evidence is previous trial, not this test",
+    "Rule-019 explicitly blocked by phishing-resistant requirement vs OTP email for admin profile 2",
+    "Q12 value 5 is unbound; control and unit unknown",
+    "Owner decisions documented in conversation, still without authenticated formal signature"
+  ]
+}
