@@ -57,6 +57,33 @@ class PG18RealSQL(unittest.TestCase):
         fail_assert(int(version)>=180000 and int(version)<190000,"NOT_PG18")
         cls.sql(SLICE.read_text("utf-8"),timeout=350)
         print("PASS_PG18_LIVE_SCHEMA_SLICE_LOADED",flush=True)
+        # Synthetic TRAIN context exists only in disposable PG18; real
+        # deployment must resolve the already-created, OIDC-governed Train RUN.
+        cls.train_run_id="43379990001"
+        cls.train_execution="EXEC-DB-TRAIN-PR3803-20261113030000-R"+cls.train_run_id
+        code="20261113030000_lf_ig_rule_lifecycle_writer_v2"
+        repo="cristhianlujan/claude-persona-lf-patch"
+        target="supabase/migrations/"+code+".sql"
+        manifest={"producer":"lf-migration-merge-train","pr":3803,
+          "train_run_id":cls.train_run_id,"head_sha":"e"*40,
+          "router_authority_receipt":{
+            "schema_version":"LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+            "operation_code":"ACTUALIZACION_DB_LF","target_repo":repo,
+            "target_code":code,"target_path":target,
+            "route_eligibility_only":True,"scope_attested":False}}
+        cls.sql(f"""INSERT INTO public.lf_operation_execution(
+          execution_id,operation_code,target_type,target_code,target_repo,
+          target_path,status,request_sha256,manifest,idempotency_key,
+          created_by_execution_id)
+          VALUES({quote(cls.train_execution)},'ACTUALIZACION_DB_LF','MIGRATION',
+          {quote(code)},{quote(repo)},{quote(target)},'IN_PROGRESS',
+          {quote('f'*64)},{jq(manifest)},{quote('train:20261113030000:'+'e'*40)},
+          {quote('LF-MIGRATION-TRAIN-RUN-'+cls.train_run_id)});""")
+        guard_md5=cls.sql("SELECT md5(pg_get_functiondef("
+          "'public.fn_lf_operation_provenance_guard_v1()'::regprocedure));")
+        fail_assert(guard_md5=="1837873ff152a31db399327dec0f6c11",
+                    "PG18_LIVE_PROVENANCE_GUARD_NOT_INSTALLED")
+
         # Verify true PRE-COMMIT rollback, not only logical error handling.
         # Exact migration SQL is replayed inside the caller-controlled tx,
         # stripping ONLY its single outer BEGIN/COMMIT for this one check.
