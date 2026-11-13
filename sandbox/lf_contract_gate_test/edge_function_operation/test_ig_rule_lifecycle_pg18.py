@@ -211,7 +211,7 @@ class PG18RealSQL(unittest.TestCase):
           INSERT INTO public.lf_operation_execution_steps(
             execution_id,step_order,step_id,status,evidence_payload,created_by_execution_id)
           VALUES({quote(train)},10,'preflight','PASS_CLEAN',
-            '{"source":"PG18_SANDBOX_ONLY"}'::jsonb,{quote(train)});
+            '{{"source":"PG18_SANDBOX_ONLY"}}'::jsonb,{quote(train)});
           INSERT INTO public.lf_activos(
             id,codigo_activo,nombre_canonico,tipo_activo,estado_documental,estado_operativo,
             owner_name,source_spreadsheet_id,source_spreadsheet_title,source_sheet_name,
