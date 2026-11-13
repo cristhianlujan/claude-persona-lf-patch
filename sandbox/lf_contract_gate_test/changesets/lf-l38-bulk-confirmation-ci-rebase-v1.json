@@ -1,0 +1,20 @@
+{
+  "solution_ref": "lf-l38-bulk-confirmation-ci-rebase-v1",
+  "paths": {
+    "docs/rule-quality-lote37/00_alcance_y_decisiones_complementarias.md": "DOCUMENTATION",
+    "docs/rule-quality-lote37/01_manifiesto_firma_en_bloque_v1.json": "DOCUMENTATION",
+    "docs/rule-quality-lote37/02_ajustes_criterio_y_riesgo_una_pagina.md": "DOCUMENTATION",
+    "docs/rule-quality-lote37/03_firma_unica_copiar.txt": "DOCUMENTATION",
+    "docs/rule-quality-lote37/04_matriz_24_decisiones_ids_y_shas.md": "DOCUMENTATION",
+    "docs/rule-quality-lote37/05_mecanismo_de_registro_y_alcance_writer_v2.md": "DOCUMENTATION",
+    "docs/rule-quality-lote37/06_readback_verificacion_y_pendientes.md": "DOCUMENTATION",
+    "docs/rule-quality-lote38/01_receipt_confirmacion_bloque.json": "DOCUMENTATION",
+    "docs/rule-quality-lote38/02_overlay_estado_24.json": "DOCUMENTATION",
+    "docs/rule-quality-lote38/03_uncovered_proposals_and_signature_mechanism.md": "DOCUMENTATION",
+    "docs/rule-quality-lote39/01_manifiesto_segundo_bloque_candidato.json": "DOCUMENTATION",
+    "docs/rule-quality-lote39/02_frase_segundo_bloque_NO_ENVIADA.txt": "DOCUMENTATION",
+    "docs/rule-quality-lote39/03_listado_23_fuentes_sha_y_pendientes.md": "DOCUMENTATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-l38-bulk-confirmation-ci-rebase-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/owner_bulk_l38/test_l38_documentary_confirmation.py": "RUNTIME_TESTING"
+  }
+}
