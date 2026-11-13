@@ -83,6 +83,25 @@ class PG18RealSQL(unittest.TestCase):
           "'public.fn_lf_operation_provenance_guard_v1()'::regprocedure));")
         fail_assert(guard_md5=="1837873ff152a31db399327dec0f6c11",
                     "PG18_LIVE_PROVENANCE_GUARD_NOT_INSTALLED")
+        # Reproduce the exact Train 23503 on the REAL live guard body,
+        # before applying the candidate migration: nonexistent fake actor.
+        registry_cols="operation_code,version,status,source_model,source_repo,source_paths,lifecycle_state_code,created_by_execution_id"
+        registry_values="'PG18_GUARD_NEGATIVE','v0.1','CANDIDATO_READ_ONLY','GIT_FIRST_YAML','cristhianlujan/claude-persona-lf-patch','[]'::jsonb,'OP_CANDIDATE',"
+        cls.sql("BEGIN; INSERT INTO public.lf_operation_registry("+
+          registry_cols+") VALUES("+registry_values+
+          quote("EXEC-MIGRATION-LF-IG-LIFECYCLE-V2")+"); ROLLBACK;",
+          expect_fail="LF_OPERATION_PROVENANCE_CREATED_EXECUTION_MISSING")
+        # The genuine Train ACTUALIZACION_DB_LF actor cannot own a NEW
+        # operation; it fails the real scope-mismatch branch (23514).
+        cls.sql("BEGIN; INSERT INTO public.lf_operation_registry("+
+          registry_cols+") VALUES("+registry_values+
+          quote(cls.train_execution)+"); ROLLBACK;",
+          expect_fail="LF_OPERATION_PROVENANCE_CREATED_SCOPE_MISMATCH")
+        fail_assert(cls.sql("SELECT count(*) FROM public.lf_operation_registry "
+                  "WHERE operation_code='PG18_GUARD_NEGATIVE';")=="0",
+                  "PG18_GUARD_NEGATIVES_PERSISTED")
+        print("PASS_PG18_LIVE_PROVENANCE_GUARD_23503_AND_23514",flush=True)
+
 
         # Verify true PRE-COMMIT rollback, not only logical error handling.
         # Exact migration SQL is replayed inside the caller-controlled tx,
