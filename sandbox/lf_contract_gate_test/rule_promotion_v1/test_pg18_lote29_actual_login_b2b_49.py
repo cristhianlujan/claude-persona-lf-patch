@@ -62,6 +62,11 @@ CREATE TABLE l29_actual.policy_source(
 CREATE TABLE l29_actual.proposals(
  code text PRIMARY KEY, proposal jsonb NOT NULL
 );
+CREATE TABLE l29_actual.policy_draft(
+ policy_id int PRIMARY KEY REFERENCES l29_actual.policy_source(policy_id),
+ description text NOT NULL, policy_config jsonb NOT NULL,
+ revisions int NOT NULL DEFAULT 0
+);
 CREATE TABLE l29_actual.draft(
  code text PRIMARY KEY REFERENCES l29_actual.source_rules(code),
  descripcion text NOT NULL, valor_config jsonb NOT NULL,
@@ -173,7 +178,9 @@ END $f$;
          "INSERT INTO l29_actual.policy_source(policy_id,origin) "+
          "SELECT (j->>'security_policy_id')::int,j FROM jsonb_array_elements("+pol_lit+"::jsonb) j;\n"+
          "INSERT INTO l29_actual.draft(code,descripcion,valor_config) "+
-         "SELECT code,origin->>'descripcion',origin->'valor_config' FROM l29_actual.source_rules;")
+         "SELECT code,origin->>'descripcion',origin->'valor_config' FROM l29_actual.source_rules;\n"+
+         "INSERT INTO l29_actual.policy_draft(policy_id,description,policy_config) "+
+         "SELECT policy_id,origin->>'description',origin->'policy_config' FROM l29_actual.policy_source;")
     actual_hash=psql("SELECT encode(digest(convert_to("+
         "coalesce(jsonb_agg(origin ORDER BY code),'[]'::jsonb)::text,'UTF8'),'sha256'),'hex') "+
         "FROM l29_actual.source_rules;")
@@ -237,6 +244,25 @@ def exercise(src,pol,prop):
     check("SOURCE_ORIGINAL_UNTOUCHED",unmodified==49,{"matching_live_preimage":unmodified})
     # Central policy proposals are tested as distinct drafts; no source policy writes.
     p_diff={p["policy_id"]:p for p in prop["central_policy_proposals"]}
+    # Four REAL central policy source copies; apply only to policy_draft in PG18.
+    for pid,p in sorted(p_diff.items()):
+        d=p["despues"]
+        sql_update=("UPDATE l29_actual.policy_draft SET description="+quote(d["description"])+
+          ",policy_config="+quote(json.dumps(d["policy_config"],ensure_ascii=False,sort_keys=True))+
+          "::jsonb,revisions=revisions+1 WHERE policy_id="+str(pid)+" AND revisions=0;")
+        psql(sql_update)
+    policy_read=get_json("SELECT jsonb_build_object("+
+      "'draft_revised',count(*) FILTER(WHERE d.revisions=1),"+
+      "'source_rows_unchanged',count(*) FILTER(WHERE s.origin->>'description'=p.proposal->'antes'->>'description'"+
+      " AND s.origin->'policy_config'=p.proposal->'antes'->'policy_config'),"+
+      "'draft_matches_proposal',count(*) FILTER(WHERE d.description=p.proposal->'despues'->>'description'"+
+      " AND d.policy_config=p.proposal->'despues'->'policy_config'))"+
+      " FROM l29_actual.policy_draft d JOIN l29_actual.policy_source s USING(policy_id)"+
+      " JOIN (SELECT (j->>'policy_id')::int policy_id,j proposal"+
+      " FROM jsonb_array_elements("+quote(json.dumps(prop["central_policy_proposals"],ensure_ascii=False,sort_keys=True))+
+      "::jsonb) j) p USING(policy_id);")
+    check("FOUR_POLICY_DRAFTS_ONLY",policy_read=={
+      "draft_revised":4,"source_rows_unchanged":4,"draft_matches_proposal":4},policy_read)
     check("CENTRAL_POLICY_ONLY_THRESHOLDS",p_diff[3]["despues"]["policy_config"]["mfa_inactivity_trigger_days"]==30
       and p_diff[3]["despues"]["policy_config"]["mfa_password_unchanged_months"]==3
       and p_diff[20]["despues"]["policy_config"]["assisted_recovery_wait_hours"]==48
@@ -305,7 +331,7 @@ def exercise(src,pol,prop):
        "citation_verify":"773a62783baa5edbe967200cac66b8c3",
        "l8_guard":"522d12f0843be1da3c785cef3c0bf3fc"},
       "md5_reexecuted_in_actual_rules_review":False},
-     "policy_change_only_sandbox":True,
+     "policy_change_only_sandbox":True,"policy_draft_patched":4,
      "scope":"CURATOR_AND_DIFF_COPY_PG18_NOT_NATIVE_IG_E2E",
      "readback_status":"ORIGINAL_49_PRESERVED"}
     OUT.write_text(json.dumps(report,ensure_ascii=False,sort_keys=True,indent=2,default=str)+"\n",encoding="utf-8")
