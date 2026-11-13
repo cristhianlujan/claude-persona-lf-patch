@@ -127,16 +127,21 @@ class PG18RealSQL(unittest.TestCase):
              r.created_by_execution_id||'|'||e.operation_code||'|'||e.status||'|'||
              e.created_by_execution_id||'|'||
              (e.manifest->>'bootstrap_operation_code')||'|'||
-             (e.manifest->>'bootstrap_status_ceiling')
+             (e.manifest->>'bootstrap_status_ceiling')||'|'||
+             (e.manifest->>'source_train_request_sha256')
            FROM public.lf_operation_registry r
            JOIN public.lf_operation_execution e
              ON e.execution_id=r.created_by_execution_id
            WHERE r.operation_code='PROMOCION_REGLA_LF';""")
         expected="|".join(["PROMOCION_REGLA_LF","SANDBOX_ACTIVE",bootstrap,
           "VULNERABILITY_COVERAGE_REPAIR_LF","IN_PROGRESS",
-          cls.train_execution,"PROMOCION_REGLA_LF","SANDBOX_ACTIVE"])
+          cls.train_execution,"PROMOCION_REGLA_LF","SANDBOX_ACTIVE","f"*64])
         fail_assert(provenance==expected,
                     "LIVE_GUARD_COMPATIBLE_PROVENANCE_READBACK_FAIL "+provenance)
+        fail_assert(cls.sql("SELECT count(*) FROM public.lf_operation_registry "+
+          "WHERE operation_code='PROMOCION_REGLA_LF' "+
+          "AND created_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V2';")=="0",
+          "FAKE_PROVENANCE_ID_REMAINED")
         print("PASS_PG18_GENUINE_TRAIN_SCOPED_BOOTSTRAP_REGISTRATION_READBACK",flush=True)
 
 

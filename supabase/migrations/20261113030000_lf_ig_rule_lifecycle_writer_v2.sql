@@ -903,7 +903,11 @@ BEGIN
       AND r.status='SANDBOX_ACTIVE'
       AND e.operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
       AND e.status='IN_PROGRESS'
-      AND e.manifest->>'source_train_execution_id'=v_train.execution_id)
+      AND e.manifest->>'source_train_execution_id'=v_train.execution_id
+      AND e.manifest->>'source_train_request_sha256'=v_train.request_sha256
+      AND e.created_by_execution_id=v_train.execution_id
+      AND e.target_type='OPERATION_PROTOCOL_REPAIR'
+      AND e.target_code='PROMOCION_REGLA_LF')
   THEN RAISE EXCEPTION 'LF_IG_PROMOTION_OPERATION_PROVENANCE_READBACK_FAILED'; END IF;
 END $promotion_operation_bootstrap$;
 
