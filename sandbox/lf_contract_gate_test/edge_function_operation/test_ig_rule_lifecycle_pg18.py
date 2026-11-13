@@ -151,7 +151,7 @@ class PG18RealSQL(unittest.TestCase):
          SET LOCAL request.jwt.claims={quote(json.dumps({'sub':OWNER,'aal':'aal2','role':'authenticated'}))};
          SELECT public.lf_ig_rule_owner_decide_v2({quote(PARENT)},{quote(RULE)},{quote('0'*64)},'APPROVE');
          ROLLBACK;""",expect_fail="LF_IG_OWNER_SOURCE_PREIMAGE_DRIFT")
-        d=json.loads(self.owner_decide(PARENT,pre).splitlines()[-2])
+        d=json.loads(self.owner_decide(PARENT,pre).splitlines()[-1])
         fail_assert(d["status"]=="APPROVE","CREATE_OWNER_DECISION_FAIL")
         self.owner_decide(PARENT,pre) if False else None
         # Negative replay and no owner bypass (same signed preimage).
@@ -182,7 +182,7 @@ class PG18RealSQL(unittest.TestCase):
         patch2={"rule_code":RULE,"change_kind":"DOCUMENTARY_ONLY",
           "changes":{"descripcion":"Corrección aprobada y validada PG18."}}
         self.parent(PARENT2,patch2)
-        d2=json.loads(self.owner_decide(PARENT2,pre2).splitlines()[-2])
+        d2=json.loads(self.owner_decide(PARENT2,pre2).splitlines()[-1])
         r2=self.invoke(PARENT2,"RULE_UPDATE_APPLY",patch2,pre2,d2["decision_id"])
         fail_assert(r2.get("child_execution_id") and r2.get("status")=="COMPLETED","VIGENTE_STAGE_FAIL "+str(r2))
         before=self.sql(f"SELECT descripcion FROM lf_ops.reglas WHERE codigo={quote(RULE)};")
