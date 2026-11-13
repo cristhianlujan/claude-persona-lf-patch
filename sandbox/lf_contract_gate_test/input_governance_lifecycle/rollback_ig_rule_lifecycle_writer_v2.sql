@@ -97,7 +97,7 @@ DROP FUNCTION public.lf_ig_rule_step_record_v2(text,text,text,text,jsonb) RESTRI
 DROP FUNCTION public.lf_ig_rule_child_guard_v2(text,jsonb,text,text,text,text) RESTRICT;
 DROP FUNCTION public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb) RESTRICT;
 DROP FUNCTION public.lf_ig_asset_owner_apply_v2(uuid) RESTRICT;
-DROP FUNCTION public.lf_ig_asset_owner_approve_v2(text,text,text,text) RESTRICT;
+DROP FUNCTION public.lf_ig_asset_owner_approve_v2(text,text,text,text,jsonb) RESTRICT;
 DROP TABLE public.lf_ig_rule_change_v2 RESTRICT;
 DROP TABLE public.lf_ig_owner_decision_v2 RESTRICT;
 -- Explicitly delete only the exact seed created by the forward migration,
