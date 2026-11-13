@@ -1,0 +1,191 @@
+{
+  "schema": "LF_L33_LOGIN_B2B_THREE_DOCUMENTARY_PATCHES_V2_V1",
+  "method": "Supabase live SELECT, no DML/DDL. PG sha256 of patch::text as jsonb, original row sha256 of to_jsonb(r)::text.",
+  "selection": [
+    "B2B-RULE-AUTH-002",
+    "B2B-RULE-AUTH-003",
+    "B2B-RULE-AUTH-040"
+  ],
+  "signed_or_promoted": false,
+  "tests": {
+    "source_count": 3,
+    "all_retained": true,
+    "all_patch_keys_3": true,
+    "all_changed_fields_1": true,
+    "all_config_unmodified": true,
+    "all_screens_linked": true,
+    "source_statuses": {
+      "B2B-RULE-AUTH-002": "VIGENTE",
+      "B2B-RULE-AUTH-003": "VIGENTE",
+      "B2B-RULE-AUTH-040": "CANDIDATO"
+    }
+  },
+  "entries": [
+    {
+      "rule_code": "B2B-RULE-AUTH-002",
+      "source_status": "VIGENTE",
+      "title": "Aislamiento por empresa",
+      "original_sha256": "2f58410ed5a158a52b22313a0b9deeabd2b9632c83dc4eb7e14b8078dbef1584",
+      "patch_sha256": "8d5bcb9986f664906552fab43493455acda5b4c12a86b9ede19dd69b8a0e9ffe",
+      "source_description": "Toda consulta o mutación operativa B2B con alcance de empresa debe resolverse server-side contra la empresa objetivo dentro del conjunto de empresas autorizadas para el usuario activo. Para usuarios con alcance simple, el conjunto contiene una sola empresa; para usuarios multiempresa, puede contener varias empresas explícitamente asignadas conforme B2B-RULE-SCOPE-002. El tenant puede estar en company_id de la fila o derivarse por su relación padre canónica; si no existe una relación de tenant y scope autorizada, el recurso permanece server-only. Los flujos pre-auth sin tenant resuelto no quedan autorizados por esta regla ni pueden acceder a recursos operativos.",
+      "proposed_description": "Toda consulta o mutación operativa B2B con alcance de empresa debe resolverse server-side contra la empresa objetivo dentro del conjunto de empresas autorizadas para el usuario activo. Para usuarios con alcance simple, el conjunto contiene una sola empresa; para usuarios multiempresa, puede contener varias empresas explícitamente asignadas conforme B2B-RULE-SCOPE-002. El tenant puede estar en company_id de la fila o derivarse por su relación padre canónica; si no existe una relación de tenant y scope autorizada, el recurso permanece server-only. Los flujos pre-auth sin tenant resuelto no quedan autorizados por esta regla ni pueden acceder a recursos operativos. Aclaración de alcance y evidencia: la autorización lógica multiempresa definida por esta regla no acredita por sí sola que el modelo físico multiempresa esté implementado. Hasta que multi_company_physical_model_status deje de ser PENDING_FUNCTIONAL_DEFINITION mediante evidencia de Arquitectura/DB y QA, el servidor mantiene denegación de acceso a todo recurso cuya relación de empresa autorizada no pueda comprobarse. Los identificadores de empresa suministrados por cliente nunca sustituyen la validación server-side; se requieren pruebas negativas de cruce de tenant y lectura efectiva de RLS antes de declarar el circuito listo. Esta aclaración no cambia alcance, fuentes ni precedencia de autorización.",
+      "source_configuration_unchanged": {
+        "tenant_key": "company_id",
+        "cross_tenant": "DENY",
+        "security_policy_id": 1,
+        "rls_policy_required": true,
+        "direct_company_tables": [
+          "lf_ops.cargas_lotes",
+          "lf_ops.auditoria_eventos",
+          "lf_ops.dispositivos_confiables"
+        ],
+        "tenant_resolution_mode": "AUTHORIZED_COMPANY_SET",
+        "multi_company_scope_rule": "B2B-RULE-SCOPE-002",
+        "negative_cross_tenant_test": "REQUIRED",
+        "preauth_tenant_requirement": "NOT_APPLICABLE_UNTIL_TENANT_RESOLVED",
+        "rls_enabled_without_policy": "FAIL_GATE",
+        "tenant_resolution_authority": "SERVER_ONLY",
+        "parent_derived_company_tables": {
+          "lf_ops.cargas_archivos": "load_id -> lf_ops.cargas_lotes.company_id",
+          "lf_ops.aprobaciones_registros": "load_id -> lf_ops.cargas_lotes.company_id"
+        },
+        "rls_required_before_production": true,
+        "single_company_scope_supported": true,
+        "multi_company_physical_model_status": "PENDING_FUNCTIONAL_DEFINITION",
+        "multi_company_scope_supported_by_rule": true,
+        "server_only_without_authorized_tenant_relation": [
+          "lf_ops.errores_ocurrencias",
+          "lf_ops.otp_entrega_eventos"
+        ]
+      },
+      "patch": {
+        "changes": {
+          "descripcion": "Toda consulta o mutación operativa B2B con alcance de empresa debe resolverse server-side contra la empresa objetivo dentro del conjunto de empresas autorizadas para el usuario activo. Para usuarios con alcance simple, el conjunto contiene una sola empresa; para usuarios multiempresa, puede contener varias empresas explícitamente asignadas conforme B2B-RULE-SCOPE-002. El tenant puede estar en company_id de la fila o derivarse por su relación padre canónica; si no existe una relación de tenant y scope autorizada, el recurso permanece server-only. Los flujos pre-auth sin tenant resuelto no quedan autorizados por esta regla ni pueden acceder a recursos operativos. Aclaración de alcance y evidencia: la autorización lógica multiempresa definida por esta regla no acredita por sí sola que el modelo físico multiempresa esté implementado. Hasta que multi_company_physical_model_status deje de ser PENDING_FUNCTIONAL_DEFINITION mediante evidencia de Arquitectura/DB y QA, el servidor mantiene denegación de acceso a todo recurso cuya relación de empresa autorizada no pueda comprobarse. Los identificadores de empresa suministrados por cliente nunca sustituyen la validación server-side; se requieren pruebas negativas de cruce de tenant y lectura efectiva de RLS antes de declarar el circuito listo. Esta aclaración no cambia alcance, fuentes ni precedencia de autorización."
+        },
+        "rule_code": "B2B-RULE-AUTH-002",
+        "change_kind": "DOCUMENTARY_ONLY"
+      },
+      "screens": [
+        "B2B-ADMIN-001",
+        "B2B-ADMIN-002",
+        "B2B-ADMIN-003",
+        "B2B-AUTH-001",
+        "B2B-CARGA-001",
+        "B2B-CARGA-002",
+        "B2B-CARGA-003",
+        "B2B-CARGA-004",
+        "B2B-CARGA-005"
+      ],
+      "live_shape_checked": {
+        "full_original_retained": true,
+        "config_mutated": false,
+        "patch_keys": 3,
+        "changed_fields": 1
+      },
+      "official_gate": "BLOCK_V2_CHILD_REQUIRES_CANDIDATO",
+      "semantic_independent_review": "NOT_EXECUTED",
+      "canonical_source_sha_for_writer": "NOT_AVAILABLE_TO_READONLY_SQL_ROLE",
+      "proposed_not_applied": true
+    },
+    {
+      "rule_code": "B2B-RULE-AUTH-003",
+      "source_status": "VIGENTE",
+      "title": "MFA según políticas centrales de perfil y acción",
+      "original_sha256": "aa4c953f6945fe2d404d47bd93f5e0f3a44b0f485befc83a4cd3558dd7199262",
+      "patch_sha256": "b54de40a5b472a0e48a70534d136b6566dad59a9f02551e8466a566479e95490",
+      "source_description": "La exigencia MFA y cualquier step-up de autenticación se resuelven mediante las políticas centrales aplicables. La regla no mantiene listas propias de perfiles, acciones ni parámetros del factor; referencia las políticas numéricas que gobiernan MFA y sesión.",
+      "proposed_description": "La exigencia MFA y cualquier step-up de autenticación se resuelven mediante las políticas centrales aplicables. La regla no mantiene listas propias de perfiles, acciones ni parámetros del factor; referencia las políticas numéricas que gobiernan MFA y sesión. Aclaración de control: el backend debe comprobar la política central aplicable al acceso y no dar por satisfecho un MFA exigido por el mero hecho de reconocer un dispositivo; si el MFA es exigible, no concede sesión operativa ni permisos antes de verificarlo. La decisión conversada Q01 sobre condiciones de 30 días sin uso y tres meses sin rotación de contraseña no altera automáticamente la política central 3 VIGENTE; corresponde a su versión sucesora gobernada. Hasta esa reconciliación no se rebaja la cobertura ni se cambian disparadores, umbrales o perfiles desde esta regla.",
+      "source_configuration_unchanged": {
+        "relation_keys": [
+          "security_policy_id",
+          "session_policy_id"
+        ],
+        "profile_source": "lf_ops.politicas_seguridad",
+        "session_policy_id": 1,
+        "step_up_action_source": "lf_ops.politicas_sesion.reauthentication_actions",
+        "mfa_security_policy_id": 3,
+        "numeric_thresholds_in_rule": "DENY"
+      },
+      "patch": {
+        "changes": {
+          "descripcion": "La exigencia MFA y cualquier step-up de autenticación se resuelven mediante las políticas centrales aplicables. La regla no mantiene listas propias de perfiles, acciones ni parámetros del factor; referencia las políticas numéricas que gobiernan MFA y sesión. Aclaración de control: el backend debe comprobar la política central aplicable al acceso y no dar por satisfecho un MFA exigido por el mero hecho de reconocer un dispositivo; si el MFA es exigible, no concede sesión operativa ni permisos antes de verificarlo. La decisión conversada Q01 sobre condiciones de 30 días sin uso y tres meses sin rotación de contraseña no altera automáticamente la política central 3 VIGENTE; corresponde a su versión sucesora gobernada. Hasta esa reconciliación no se rebaja la cobertura ni se cambian disparadores, umbrales o perfiles desde esta regla."
+        },
+        "rule_code": "B2B-RULE-AUTH-003",
+        "change_kind": "DOCUMENTARY_ONLY"
+      },
+      "screens": [
+        "B2B-ADMIN-001",
+        "B2B-ADMIN-002",
+        "B2B-ADMIN-003",
+        "B2B-AUTH-001",
+        "B2B-CARGA-001",
+        "B2B-CARGA-002",
+        "B2B-CARGA-003",
+        "B2B-CARGA-004",
+        "B2B-CARGA-005"
+      ],
+      "live_shape_checked": {
+        "full_original_retained": true,
+        "config_mutated": false,
+        "patch_keys": 3,
+        "changed_fields": 1
+      },
+      "official_gate": "BLOCK_V2_CHILD_REQUIRES_CANDIDATO",
+      "semantic_independent_review": "NOT_EXECUTED",
+      "canonical_source_sha_for_writer": "NOT_AVAILABLE_TO_READONLY_SQL_ROLE",
+      "proposed_not_applied": true
+    },
+    {
+      "rule_code": "B2B-RULE-AUTH-040",
+      "source_status": "CANDIDATO",
+      "title": "Token opaco de dispositivo confiable protegido por servidor",
+      "original_sha256": "7f0256dcbae7c1f233301793e596bd4de785f4bdbafe9b033a80e29cbe746a89",
+      "patch_sha256": "92e734ea8a3e948f087d5adc9ba9382e10befc585f87cc394e921e798cbda330",
+      "source_description": "La confianza de dispositivo no sustituye la autenticación primaria. Después de validar email y contraseña, LF puede reconocer un dispositivo únicamente mediante un token opaco emitido por servidor. Un dispositivo nuevo obtiene el token solo después de validar correctamente el OTP por correo. El navegador conserva el token en una cookie host-only con HttpOnly, Secure, SameSite=Lax, Path=/ y prefijo __Host-. La cookie no contiene identidad ni autoriza acceso por sí sola. LF persiste únicamente el hash del token en lf_ops.dispositivos_confiables, valida vencimiento y revocación del lado servidor y genera un token nuevo después de cada nueva validación OTP; un token revocado nunca se reactiva.",
+      "proposed_description": "La confianza de dispositivo no sustituye la autenticación primaria. Después de validar email y contraseña, LF puede reconocer un dispositivo únicamente mediante un token opaco emitido por servidor. Un dispositivo nuevo obtiene el token solo después de validar correctamente el OTP por correo. El navegador conserva el token en una cookie host-only con HttpOnly, Secure, SameSite=Lax, Path=/ y prefijo __Host-. La cookie no contiene identidad ni autoriza acceso por sí sola. LF persiste únicamente el hash del token en lf_ops.dispositivos_confiables, valida vencimiento y revocación del lado servidor y genera un token nuevo después de cada nueva validación OTP; un token revocado nunca se reactiva. Aclaración anti-bypass: reconocer la cookie de dispositivo confiable tampoco permite omitir un MFA que las políticas centrales exijan; LF_AUTH_BOUNDARY comprueba nuevamente la aplicabilidad MFA y el estado real de dispositivo del lado servidor antes de emitir AUTHENTICATED. Un token vencido, inválido o revocado no recupera confianza y el siguiente acceso conserva el desafío exigido por AUTH-039 y por la política de dispositivos 25. Esta descripción no cambia el disparador UNRECOGNIZED_DEVICE_ONLY de la política candidata 25 ni lo declara reconciliado: toda ampliación de disparadores requiere decisión, versionado y pruebas gobernadas.",
+      "source_configuration_unchanged": {
+        "token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+        "cookie_path": "/",
+        "issue_after": "SUCCESSFUL_EMAIL_OTP_FOR_UNRECOGNIZED_DEVICE",
+        "cookie_domain": "OMIT",
+        "cookie_prefix": "__Host-",
+        "cookie_secure": true,
+        "expiry_source": "lf_ops.empresas.trusted_device_duration_days",
+        "token_storage": "HASH_ONLY",
+        "registry_table": "lf_ops.dispositivos_confiables",
+        "token_rotation": "NEW_TOKEN_AFTER_SUCCESSFUL_EMAIL_OTP",
+        "cookie_http_only": true,
+        "cookie_same_site": "Lax",
+        "expiry_authority": "SERVER",
+        "token_generation": "SERVER_ONLY",
+        "cookie_identity_payload": "DENY",
+        "trusted_device_policy_id": 25,
+        "revoked_token_reactivation": "DENY",
+        "client_direct_registry_access": "DENY",
+        "cookie_authentication_authority": "DENY",
+        "primary_authentication_required": true
+      },
+      "patch": {
+        "changes": {
+          "descripcion": "La confianza de dispositivo no sustituye la autenticación primaria. Después de validar email y contraseña, LF puede reconocer un dispositivo únicamente mediante un token opaco emitido por servidor. Un dispositivo nuevo obtiene el token solo después de validar correctamente el OTP por correo. El navegador conserva el token en una cookie host-only con HttpOnly, Secure, SameSite=Lax, Path=/ y prefijo __Host-. La cookie no contiene identidad ni autoriza acceso por sí sola. LF persiste únicamente el hash del token en lf_ops.dispositivos_confiables, valida vencimiento y revocación del lado servidor y genera un token nuevo después de cada nueva validación OTP; un token revocado nunca se reactiva. Aclaración anti-bypass: reconocer la cookie de dispositivo confiable tampoco permite omitir un MFA que las políticas centrales exijan; LF_AUTH_BOUNDARY comprueba nuevamente la aplicabilidad MFA y el estado real de dispositivo del lado servidor antes de emitir AUTHENTICATED. Un token vencido, inválido o revocado no recupera confianza y el siguiente acceso conserva el desafío exigido por AUTH-039 y por la política de dispositivos 25. Esta descripción no cambia el disparador UNRECOGNIZED_DEVICE_ONLY de la política candidata 25 ni lo declara reconciliado: toda ampliación de disparadores requiere decisión, versionado y pruebas gobernadas."
+        },
+        "rule_code": "B2B-RULE-AUTH-040",
+        "change_kind": "DOCUMENTARY_ONLY"
+      },
+      "screens": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-004"
+      ],
+      "live_shape_checked": {
+        "full_original_retained": true,
+        "config_mutated": false,
+        "patch_keys": 3,
+        "changed_fields": 1
+      },
+      "official_gate": "WRITER_CANDIDATE_ELIGIBLE_SUBJECT_TO_RUN_OWNER_JUDGE",
+      "semantic_independent_review": "NOT_EXECUTED",
+      "canonical_source_sha_for_writer": "NOT_AVAILABLE_TO_READONLY_SQL_ROLE",
+      "proposed_not_applied": true
+    }
+  ]
+}
