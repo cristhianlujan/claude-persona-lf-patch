@@ -1,0 +1,151 @@
+{
+  "schema": "LF_L39_G03_B06_OWNER_EVIDENCE_LEDGER_V1",
+  "reference_spec": "audits/rule-quality-lote28/12_criterios_cierre_motor_7.md (G03 B06)",
+  "reference_original_receipt": "audits/rule-quality-lote28/recibos/B06_OWNER.md",
+  "supabase_instance": "mhwmirqcgxxukpctffuv",
+  "scope": "READ_ONLY_LIVE_AUDIT_AND_ISOLATED_POSTGRES_TESTS_ONLY",
+  "before_pr3806": {
+    "frozen_asset_csv_git_blob_sha1": "3157e4ed321ab6c327b2bc2eb605c5e766b50a89",
+    "active_canonical": 83,
+    "change_required": 155,
+    "archive_total": 13,
+    "archive_changed": 11
+  },
+  "after_pr3806": {
+    "total": 238,
+    "canonical": 238,
+    "applied": 155,
+    "hash_before_reconstructed": 155,
+    "hash_after_verified": 155,
+    "unchanged_original_sha": 83,
+    "archives_unchanged": 238
+  },
+  "frozen_historical_runs_postbackfill": {
+    "source_pr": 3811,
+    "source_branch": "lf/b06-g03-self-approval-historical-run-hashes-audit-v1",
+    "cutoff": "2026-11-13T07:20:12.513028Z",
+    "captured": "POST_3806_NOT_PRE_3806",
+    "root_sha256": "7bae2d2952c1dae06bbe32e498421a3752f9802078d29da4e218d62749512a02",
+    "batch_count": 13,
+    "run_ids": 2456,
+    "steps": 8244,
+    "matched_ids": 2456,
+    "matched_run_hashes": 2456,
+    "matched_step_counts": 2456,
+    "matched_step_bundle_sha256": 2456,
+    "drift": 0,
+    "retroactive_integrity_claim": false,
+    "live_readback_method": "13/13 GitHub frozen CSV vs current Supabase SELECT by execution_id + full row sha256 + step bundle sha256"
+  },
+  "isolated_new_lab": {
+    "pr": 3825,
+    "run": 43447324574,
+    "job": 131960086429,
+    "pg17_6_cases_pass": 5,
+    "pg18_7_cases_pass": 5,
+    "total_pass": 10,
+    "failed_cases_in_B06": 0,
+    "global_r17_conclusion": "FAIL: two B09 PG17/PG18 source missing, one B09 static import missing, one legacy PR3803 PG17.6 startup/socket missing; 10/10 B06 tests PASS.",
+    "commit": "61274200c19b7db93a96c14f7461f944831e57fa",
+    "rollback": "All failed attempts roll back; successful LF apply trial in BEGIN/ROLLBACK leaves zero receipts and SALY shadow absent.",
+    "source_file": "sandbox/lf_contract_gate_test/edge_function_operation/test_b06_replay_project_isolation_pg17_pg18.py",
+    "latest_exact_head_verification": {
+      "r17_run": 43448773117,
+      "job": 131965118963,
+      "b06_cases_pass": 10,
+      "global_r17": "FAILURE",
+      "pase_run": 43448773298,
+      "pase_result": "SUCCESS",
+      "failure_breakdown": "B09 2 FAIL+1 ERROR; unrelated legacy PR3803 rollback pg17 start 1 FAIL"
+    }
+  },
+  "points": [
+    {
+      "id": "G03-01",
+      "result": "PASS",
+      "evidence": "Train #3803/#3804/#3806 desplegados; #3806 ACTUALIZACION_DB_LF COMPLETED y 3/3 pasos PASS_CLEAN"
+    },
+    {
+      "id": "G03-02",
+      "result": "PASS",
+      "evidence": "Preimagen CSV 238 IDs únicos, 83 propietarios canónicos y 155 por corregir"
+    },
+    {
+      "id": "G03-03",
+      "result": "PASS",
+      "evidence": "238 hashes reconciliados: 155 after de before_row, 83 inmutados"
+    },
+    {
+      "id": "G03-04",
+      "result": "PASS",
+      "evidence": "155/155 IDs correctos, 144 activos y 11 archivados"
+    },
+    {
+      "id": "G03-05",
+      "result": "PASS",
+      "evidence": "238/238 LF_GOVERNANCE, cero variantes"
+    },
+    {
+      "id": "G03-06",
+      "result": "PASS",
+      "evidence": "13 archivados conservados por ID/archived_at"
+    },
+    {
+      "id": "G03-07",
+      "result": "PASS",
+      "evidence": "155/155 receipts APPLIED, before/after SHA y proponente separado"
+    },
+    {
+      "id": "G03-08",
+      "result": "PASS",
+      "evidence": "155/155 solo owner_name y columnas de auditoría cambiadas, resto preimagen igual"
+    },
+    {
+      "id": "G03-09",
+      "result": "PASS",
+      "evidence": "Default/2 triggers/unique index reales; negativos PG17.6 y PG18.7 ya ejecutados"
+    },
+    {
+      "id": "G03-10",
+      "result": "PASS",
+      "evidence": "PR #3825 CI job 131960086429: 5 pruebas nuevas en PG17.6 + 5 PG18.7 PASS: duplicate receipt ACTIVE/ARCHIVED/rollback; SALY-only owner no autoriza LF; SALY-only asset rechazado; LF apply no altera SALY y rollback. R17 general en ese HEAD FAIL por B09 SQL fuente ausente, NO atribuir PASS global."
+    },
+    {
+      "id": "G03-11",
+      "result": "NO_ACREDITADO_RETROACTIVO",
+      "evidence": "13 archivos congelados #3811 POST #3806, 2456/2456 RUN completos y 8244 pasos, 0 drift; falta snapshot anterior a 2026-11-13T07:20:12.513028Z o backup/audit equivalente para acreditar 0 RUN modificados DURANTE #3806",
+      "responsable": "Operaciones / DBA / Infra — copia PITR o auditoría inmutable pre-backfill"
+    },
+    {
+      "id": "G03-12",
+      "result": "PENDIENTE_ACEPTACION",
+      "evidence": "Sin recibo independiente/firma/identidad verificada para G03 y separación por proyecto y familia L21",
+      "responsable": "Dueño + Arquitectura/DBA + Seguridad/IAM + QA independiente"
+    }
+  ],
+  "counts": {
+    "passed": 10,
+    "total": 12,
+    "not_satisfied": 2,
+    "pct": 83
+  },
+  "gate_status": "ABIERTO_NO_GO",
+  "reason_for_not_12_12": [
+    "No comparable pre-#3806 freeze for all RUN historical rows and steps; #3811 is POST operation.",
+    "Independent G03 owner/architecture/security review and formal documentary acceptance not issued."
+  ],
+  "risk_owner_acceptance_required": [
+    "Owner must explicitly decide whether to request a new exception or recovery of pre-backfill PITR proof; cannot simply mark retrospective check PASS by accepting risk.",
+    "Owner + independent Architecture/DBA and Security must approve scope and segregation if considering G03 close; identity remains unverified."
+  ],
+  "risk_no_owner_decision_needed": [
+    "Routine laboratory replay/duplicate negative testing in isolated PG.",
+    "READ-ONLY hash comparison and EKB/CI diagnostics.",
+    "Technical hardening and documenting unchanged LF/SALY boundaries, owned by Security/QA."
+  ],
+  "supabase_live_dml_ddl": 0,
+  "live_writers_called": 0,
+  "runs_modified": 0,
+  "production_go": false,
+  "formal_owner_signature": false
+}
