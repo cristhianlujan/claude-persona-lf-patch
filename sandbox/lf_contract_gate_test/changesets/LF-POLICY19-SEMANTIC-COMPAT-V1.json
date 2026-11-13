@@ -1,0 +1,11 @@
+{
+  "solution_ref": "LF-POLICY19-SEMANTIC-COMPAT-V1",
+  "paths": {
+    "supabase/migrations/20261113173000_lf_policy19_semantic_factor_selection_compat_v1.sql": "MIGRATION",
+    "audits/login-policy19-semantic/01_rollback_guarded_v1.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/policy19_semantic_live_three_functions_fixture.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_semantic_factor_selection_pgdual_v1.py": "RUNTIME_TESTING",
+    "audits/login-policy19-semantic/00_scope_evidence_and_negative_matrix.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-POLICY19-SEMANTIC-COMPAT-V1.json": "CHANGESET_MANIFEST"
+  }
+}
