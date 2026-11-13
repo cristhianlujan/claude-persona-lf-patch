@@ -144,9 +144,16 @@ UPDATE public.lf_skill_catalog_v1
      description='Ejecuta ACTUALIZACION_REGLA_LF solo para parche documental exacto validado por el mismo Product Director RUN; 7 pasos registrados y readback CANDIDATO, nunca promocion'
  WHERE skill_code='RULE_UPDATE_APPLY' AND opener_fn='lf_skill_o_rule_update_v2';
 
-DELETE FROM public.lf_operation_registry
- WHERE operation_code='PROMOCION_REGLA_LF' AND version='v0.2'
-   AND created_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V2';
+-- Reverse the new catalog row only; preserve genuine bootstrap RUN for audit.
+DELETE FROM public.lf_operation_registry r
+ WHERE r.operation_code='PROMOCION_REGLA_LF' AND r.version='v0.2'
+   AND EXISTS(SELECT 1 FROM public.lf_operation_execution e
+       WHERE e.execution_id=r.created_by_execution_id
+         AND e.operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+         AND e.target_code='PROMOCION_REGLA_LF'
+         AND e.manifest->>'governance_bootstrap'='true'
+         AND e.manifest->>'bootstrap_operation_code'='PROMOCION_REGLA_LF'
+         AND e.manifest->>'bootstrap_status_ceiling'='SANDBOX_ACTIVE');
 
 -- Preimage pg_proc ACL for both legacy functions had only postgres & service_role EXECUTE.
 GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_decide_v1(text,text,text,text) TO service_role;
