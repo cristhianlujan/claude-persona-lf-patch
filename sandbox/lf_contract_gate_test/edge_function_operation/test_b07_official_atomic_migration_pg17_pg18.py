@@ -134,7 +134,7 @@ class B07LFOnly(unittest.TestCase):
    self.assertEqual(sql("SELECT count(*) FROM public.lf_b07_project_gate_v1;"),"1")
    self.assertEqual(sql("SELECT count(*) FROM public.lf_b07_project_gate_v1 WHERE project_code='LF' AND enabled;"),"1")
    print("PASS_B07_LF_INSTALL_HASH_PREFLIGHT_DENY_CROSS_PROJECT_"+image.replace(":","_"),flush=True)
-   sql("""BEGIN; UPDATE lf_ops.reglas SET titulo='UNAUTHORIZED' WHERE codigo='LF-B07-TEST-0001'; COMMIT;""",
+   sql("""BEGIN; UPDATE lf_ops.reglas SET titulo='UNAUTHORIZED' WHERE codigo='B2B-RULE-AUTH-001'; COMMIT;""",
        fail="B07_PARENT_LATEST_MISMATCH")
    sql("""UPDATE lf_ops.reglas_versiones_b07 SET snapshot='{}'::jsonb WHERE version_no=1;""",fail="B07_HISTORY_IMMUTABLE")
    sql("""TRUNCATE lf_ops.reglas_versiones_b07;""",fail="B07_HISTORY_TRUNCATE_BLOCKED")
