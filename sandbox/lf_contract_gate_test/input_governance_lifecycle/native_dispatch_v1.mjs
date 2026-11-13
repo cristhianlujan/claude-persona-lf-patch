@@ -1,3 +1,4 @@
+import {verifyNativeReceiptEd25519V1} from "./native_receipt_ed25519_v1.mjs";
 /**
  * Candidate: native RUN and Step70 transport adapter. NOT a model executor.
  * Requires server-verified OIDC and a genuine provider adapter from the host.
@@ -61,6 +62,21 @@ export async function dispatchNativeV1(request, authority, provider) {
      output.candidate_sha256!==request.candidate_sha256 ||
      output.scope_packet_sha256!==request.scope_packet_sha256))
     return blocked("NATIVE_DISPATCH_STEP70_INDEPENDENCE_UNVERIFIED");
+  // A provider callback returning true is not cryptographic verification.
+  // The verified Edge runtime owns keyset and nonce, never request JSON.
+  if(typeof output.signed_native_receipt_jws!=="string" ||
+      !authority.native_receipt_trust ||
+      !authority.native_challenge_nonce)
+    return blocked("NATIVE_DISPATCH_SIGNED_ATTESTATION_REQUIRED");
+  const receipt=await verifyNativeReceiptEd25519V1(
+    output.signed_native_receipt_jws,
+    {...request,nonce:authority.native_challenge_nonce},
+    authority.native_receipt_trust);
+  if(receipt.signature_valid!==true)
+    return blocked("NATIVE_DISPATCH_SIGNED_ATTESTATION_INVALID");
+  // A valid attester signature is not evidence of a vendor model call.
+  if(receipt.vendor_model_provenance_verified!==true)
+    return blocked("NATIVE_DISPATCH_VENDOR_MODEL_PROVENANCE_UNVERIFIED");
   return Object.freeze({status:"PROVIDER_RECEIPT_READY_NOT_RECORDED",
     execution_id:request.execution_id,phase:request.phase,
     provider_receipt_ref:output.provider_receipt_ref,
