@@ -190,6 +190,53 @@ class PG18RealSQL(unittest.TestCase):
           "candidate_patch":patch,"owner_decision_id":owner_decision}
         return json.loads(cls.sql(f"SELECT public.lf_skill_invoke_v1({quote(skill)},{quote(parent)},{jq(inp)})::text;"))
 
+    def test_g15_motor_contract_and_full_run_gate(self):
+        # Test the current forward contract against an actual PG18 row, not a planner.
+        before=self.sql("""SELECT old_row->>'contract_sha'
+          FROM public.lf_ig_contract_preimage_v3
+          WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF';""")
+        fail_assert(before=="783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9",
+                    "IG_CONTRACT_PREIMAGE_NOT_CAPTURED")
+        after=self.sql("""SELECT contract_sha FROM public.lf_operation_contracts
+          WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF';""")
+        fail_assert(after!=before and len(after)==64,"IG_CONTRACT_NOT_CHANGED")
+        forbidden=self.sql("""SELECT blocked ? 'production_promotion'
+          FROM public.lf_operation_contracts
+          WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF';""")
+        fail_assert(forbidden=="t","IG_PRODUCTION_PROMOTION_UNBLOCKED")
+        empty=json.loads(self.sql("""SELECT public.lf_ig_g15_motor_temporary_v1('{}'::jsonb)::text;"""))
+        fail_assert(empty["status"]=="NO_GO_MOTOR" and
+                    empty["blocking_code"]=="G15_MOTOR_7_OF_7_NOT_EVIDENCED",
+                    "G15_EMPTY_EVIDENCE_DID_NOT_FAIL_CLOSED")
+        expected=["B02_RUN_SCOPE","B03_RUN_EFFECTS","B06_OWNER","B07_SCHEMA",
+                  "B08_IDENTITY","B09_E2E","B12_LEGACY"]
+        full={k:{"status":"VERIFIED","sha256":"a"*64,"evidence_ref":"fixture://PG18"}
+              for k in expected}
+        six={k:v for k,v in full.items() if k!="B12_LEGACY"}
+        insufficient=json.loads(self.sql("SELECT public.lf_ig_g15_motor_temporary_v1("+jq(six)+")::text;"))
+        fail_assert("B12_LEGACY" in insufficient["missing_or_unverified"],
+                    "G15_6_OF_7_FAIL_OPEN")
+        complete=json.loads(self.sql("SELECT public.lf_ig_g15_motor_temporary_v1("+jq(full)+")::text;"))
+        fail_assert(complete["status"]=="NO_GO_MOTOR" and
+                    complete["blocking_code"]=="G15_MOTOR_CRYPTOGRAPHIC_SIGNATURES_NOT_VERIFIED",
+                    "G15_UNSIGNED_7_OF_7_WENT_GO")
+        self.sql("""BEGIN; SET LOCAL ROLE anon;
+          SELECT public.lf_ig_g15_motor_temporary_v1('{}'::jsonb);
+          ROLLBACK;""",expect_fail="permission denied")
+        # Cannot close with a fake receipt or non-installed canonical Step80.
+        decision={"codigo_regla":RULE,"propuesta_sha256":"a"*64,
+          "veredicto":"APROBAR","decisor":"Cristhian Luján",
+          "fecha":"2026-11-13T00:00:00Z","frase_literal":"Aprobar regla de prueba."}
+        self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+          SELECT public.lf_ig_rule_cycle_once_v3(
+          {quote('EXEC-PROFILE-GATE2-IGPG18MISSING009')},{quote(RULE)},
+          {quote('b'*64)},{jq(decision)},'pg18://step80');
+          ROLLBACK;""",expect_fail="LF_IG_ONCE_CANONICAL_STEP80_NOT_INSTALLED")
+        fail_assert(self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2;")=="0",
+                    "ONE_SHOT_NEGATIVE_CREATED_DECISION")
+        print("PASS_PG18_G15_MOTOR_7_BLOCKERS_FAIL_CLOSED_IG_CONTRACT_HASHED",flush=True)
+        print("PASS_PG18_SINGLE_ENTRYPOINT_REFUSES_NONCANONICAL_STEP80",flush=True)
+
     def test_integrated_create_vigente_asset(self):
         # Temporary owner declaration is seeded by the migration, without Auth.
         self.assertEqual(self.sql("""SELECT count(*) FROM public.lf_ig_project_owner_v2
