@@ -5,6 +5,8 @@ on:
     paths:
       - audits/rule-quality-lote31/01_b02_r01_live_cohorte_jsonb.json
       - audits/rule-quality-lote31/03_b03_run_effects_live.json
+      - audits/rule-quality-lote31/06_b02_canonical_live_jsonb_text.json
+      - audits/rule-quality-lote31/07_b03_canonical_live_jsonb_text.json
       - sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_l31_b02_b03_snapshot.py
       - .github/workflows/l31-b02-b03-run-forensics-pg18.yml
 permissions:
@@ -68,7 +70,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/l31"
           cp "$RUNNER_TEMP/l31.log" "$RUNNER_TEMP/l31/" 2>/dev/null || true
           cp audits/rule-quality-lote31/05_pg18_result_runtime.json "$RUNNER_TEMP/l31/" 2>/dev/null || true
-          sha256sum audits/rule-quality-lote31/01_b02_r01_live_cohorte_jsonb.json audits/rule-quality-lote31/03_b03_run_effects_live.json sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_l31_b02_b03_snapshot.py > "$RUNNER_TEMP/l31/source_sha256.txt"
+          sha256sum audits/rule-quality-lote31/06_b02_canonical_live_jsonb_text.json audits/rule-quality-lote31/07_b03_canonical_live_jsonb_text.json sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_l31_b02_b03_snapshot.py > "$RUNNER_TEMP/l31/source_sha256.txt"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
