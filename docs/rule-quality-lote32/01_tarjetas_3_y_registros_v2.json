@@ -1,0 +1,400 @@
+{
+  "schema": "LF_L32_OWNER_CARDS_AND_WRITER_V2_SIX_FIELDS_DRAFT_V1",
+  "sources": {
+    "l31_rule_matrix_sha1": "f7eec471f33f107415530baecde55f00281fb22a",
+    "live_function": "public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)",
+    "live_update_writer": "RULE_UPDATE_APPLY/documentary-only",
+    "screen_binding": "lf_ops.reglas_pantallas actual",
+    "owner_identity": "UNVERIFIED_CHAT_DECLARATION"
+  },
+  "notes": [
+    "DO NOT INVOKE: APROBAR calls writer and may promote VIGENTE",
+    "Proposed six-field records are NOT valid owner decisions before actual verdict, decision time, literal phrase and profile-judged exact patch",
+    "L31 full-candidate SHA is not V2 governed patch SHA",
+    "p_source_sha256 must come from canonical lf_asset_snapshot_sha_v1, not row SHA256; read-only connection cannot invoke that function",
+    "Each profile RAW output supports one exact governed_rule_patch; three rules should not share one profile patch"
+  ],
+  "cards": [
+    {
+      "code": "B2B-RULE-AUTH-018",
+      "screen": "B2B-AUTH-001",
+      "titulo": "MFA solo cuando la política central lo exija",
+      "issue": "Q01",
+      "actual": "Hoy, después de validar la contraseña, la regla exige el segundo factor para los seis perfiles humanos. No concede sesión ni permisos sin completar MFA.",
+      "cambio": "El servidor revisaría la política central y exigiría MFA solo cuando corresponda al acceso. La cobertura de perfiles no equivale a pedir un código siempre. Los 30 días sin uso y tres meses sin cambiar contraseña se definirían en la política 3, nunca en esta regla.",
+      "porque": "Evita duplicar umbrales en pantalla y permite MFA condicional como decidió el dueño, preservando bloqueo de sesión si se exige el factor.",
+      "sugerencia": "FAVORABLE AL CAMBIO DOCUMENTAL, PERO NO APROBAR EN V2 TODAVÍA: política 3 sigue VIGENTE con otra exigencia; faltan sucesión gobernada, disparadores adicionales, dictamen de seguridad y juez independiente.",
+      "si_aprueba": "Después de cumplir gates, el writer V2 cambiaría solo la descripción y podría promover la regla. NO cambiaría automáticamente política 3, sus parámetros ni backend; una aprobación inmediata sin esos ajustes dejaría contradicciones.",
+      "si_rechaza": "La descripción original permanece; continúa MFA exigido a los seis perfiles según la política actual. Q01 queda pendiente de conciliación documental y técnica.",
+      "blockers": [
+        "POLICY_3_VIGENTE_REQUIRES_GOVERNED_SUCCESSOR",
+        "OTHER_MFA_TRIGGERS_PENDING_OWNER",
+        "OIDC_BINDING",
+        "INDEPENDENT_JUDGE_AND_CURRENT_RUN_REQUIRED"
+      ],
+      "estado_fuente": "CANDIDATO",
+      "sha256_preimagen_fila": "70f6effce7976fa30a0022862649738c1d161246dc97d2db69d7b727110d75de",
+      "sha256_candidato_completo_l31": "46e118ed2febbb49eea4ba95c040f4e3837dd7eff417dea2f945014eb8330914",
+      "writer_patch_v2": {
+        "rule_code": "B2B-RULE-AUTH-018",
+        "change_kind": "DOCUMENTARY_ONLY",
+        "changes": {
+          "descripcion": "Cuando las credenciales primarias son válidas, LF_AUTH_BOUNDARY consulta la política central MFA para determinar si corresponde un desafío en este acceso. Sólo si la política exige MFA responde MFA_REQUIRED y bloquea la sesión operativa hasta verificar el factor. La cobertura de perfiles no equivale a exigir MFA en todos los accesos. Los umbrales y disparadores se conservan exclusivamente en la política central; otros disparadores siguen pendientes del dueño. Nunca se conceden permisos ni AUTHENTICATED antes de completar un MFA exigido."
+        }
+      },
+      "sha256_writer_patch_v2": "c45b974b519ee985a3ae8fd4a0be8d4d0417eb6a113ea3732112efc86a793ef1",
+      "registro_6_campos_borrador": {
+        "codigo_regla": "B2B-RULE-AUTH-018",
+        "propuesta_sha256": "c45b974b519ee985a3ae8fd4a0be8d4d0417eb6a113ea3732112efc86a793ef1",
+        "veredicto": "<APROBAR_O_RECHAZAR>",
+        "decisor": "Cristhian Luján",
+        "fecha": "<ISO8601_AL_MOMENTO_DE_DECIDIR>",
+        "frase_literal": "<TEXTO_LITERAL_ESCRITO_POR_EL_DUENO>"
+      },
+      "p_parent": "<RUN_PERFIL_IN_PROGRESS_STEP70_JUEZ_INDEPENDIENTE_MISMA_REGLA_Y_PANTALLA>",
+      "p_source_sha256": "<HASH_CANONICO_DE_lf_asset_snapshot_sha_v1_PENDIENTE_AUTH_READBACK>",
+      "ready_to_execute": false,
+      "formal_owner_decision": false,
+      "no_write": true
+    },
+    {
+      "code": "B2B-RULE-AUTH-020",
+      "screen": "B2B-AUTH-001",
+      "titulo": "Recuperar identidad sin saltarse MFA",
+      "issue": "Q11",
+      "actual": "La cuenta no puede recuperarse con contraseña sola ni enviando un OTP al correo comprometido; el procedimiento independiente para no administradores sigue sin definición funcional terminada y administradores se derivan al antiguo esquema Google.",
+      "cambio": "Se documentaría recuperación asistida por soporte con documento y verificación independiente, dos personas autorizadas, espera de 48 horas en política 20, aviso al contacto anterior, auditoría, revocación/reinscripción de factor y ninguna sesión durante el trámite. Perfiles de administradores requieren decisión aparte.",
+      "porque": "Define una recuperación segura en línea con Q11 sin introducir un bypass del segundo factor.",
+      "sugerencia": "FAVORABLE A LA DESCRIPCIÓN, NO A ACTIVARLA TODAVÍA: faltan método IDV comprobado, doble control y autorización real, política 20 y alcance de perfiles 1 y 2.",
+      "si_aprueba": "Con gates cumplidos, el writer podría registrar la nueva descripción y promover la regla; NO instalará soporte, IDV, permiso ni regla de espera 48 h en política 20.",
+      "si_rechaza": "Se conserva el estado de recuperación no definida; el acceso por contraseña sola continúa prohibido; no se habilita un canal alternativo.",
+      "blockers": [
+        "IDV_NOT_SELECTED_OR_TESTED",
+        "SUPPORT_DUAL_CONTROL_AND_PERMISSIONS_MISSING",
+        "POLICY_20_CANDIDATE_NOT_GOVERNED",
+        "ADMIN_PROFILES_1_2_SCOPE_PENDING",
+        "INDEPENDENT_JUDGE_AND_CURRENT_RUN_REQUIRED"
+      ],
+      "estado_fuente": "CANDIDATO",
+      "sha256_preimagen_fila": "f17060b3b5c28a4c6b1736a5b78673c3951aebac6623b3dd1b7f16245f6cc18c",
+      "sha256_candidato_completo_l31": "c0a4238b25cae6f92402a22a9dba3c08a40a05822be6083f2ff966734aae37ef",
+      "writer_patch_v2": {
+        "rule_code": "B2B-RULE-AUTH-020",
+        "change_kind": "DOCUMENTARY_ONLY",
+        "changes": {
+          "descripcion": "Si el usuario pierde el correo utilizado como segundo control, la recuperación se realiza exclusivamente en flujo separado a través de soporte. La identidad requiere documento y verificación independiente, actuación de dos personas autorizadas, período de espera definido en la política central 20 y aviso al contacto anterior. La aprobación no equivale a sesión: queda prohibido contraseña sola, OTP al correo perdido o comprometido, bypass MFA y cualquier permiso operativo durante el trámite. Tras autorizar el restablecimiento server-side deben revocarse o reemplazarse factores y reenrolarse conforme al nivel de seguridad exigido. La decisión para Admin Empresa perfil 2 (correo OTP) no constituye autorización automática de soporte ni de recuperación; la cobertura, actores y permisos de perfiles 1 y 2 permanecen PENDING_SECURITY_RECONCILIATION hasta decisión y QA."
+        }
+      },
+      "sha256_writer_patch_v2": "696c2504d0bbe220d8d616fed545d73b89e9c69efa06f51ab60f78a888f3cd3c",
+      "registro_6_campos_borrador": {
+        "codigo_regla": "B2B-RULE-AUTH-020",
+        "propuesta_sha256": "696c2504d0bbe220d8d616fed545d73b89e9c69efa06f51ab60f78a888f3cd3c",
+        "veredicto": "<APROBAR_O_RECHAZAR>",
+        "decisor": "Cristhian Luján",
+        "fecha": "<ISO8601_AL_MOMENTO_DE_DECIDIR>",
+        "frase_literal": "<TEXTO_LITERAL_ESCRITO_POR_EL_DUENO>"
+      },
+      "p_parent": "<RUN_PERFIL_IN_PROGRESS_STEP70_JUEZ_INDEPENDIENTE_MISMA_REGLA_Y_PANTALLA>",
+      "p_source_sha256": "<HASH_CANONICO_DE_lf_asset_snapshot_sha_v1_PENDIENTE_AUTH_READBACK>",
+      "ready_to_execute": false,
+      "formal_owner_decision": false,
+      "no_write": true
+    },
+    {
+      "code": "B2B-RULE-AUTH-033",
+      "screen": "B2B-AUTH-004",
+      "titulo": "Dispositivo conocido no reemplaza la verificación MFA",
+      "issue": "Q01",
+      "actual": "Tras la contraseña, la regla reconoce el dispositivo. Para perfiles no administradores, el reconocido puede continuar sin OTP; el desconocido debe pasar a verificación por correo. El servidor controla el dispositivo y las rutas.",
+      "cambio": "Antes de dar una sesión, el servidor reevaluaría MFA central y la confianza real. Aunque el dispositivo sea reconocido, no omitiría MFA central exigido. Un dispositivo nuevo o revocado seguiría requiriendo OTP; sin sesión ni ruta pública durante el desafío.",
+      "porque": "Impide que la marca de 'dispositivo confiable' neutralice los disparadores centrales de MFA o la revocación de AUTH-039.",
+      "sugerencia": "FAVORABLE A LA DESCRIPCIÓN Y AL CONTROL FAIL-CLOSED, PERO NO APROBAR V2 HASTA RECONCILIAR POLÍTICA 25, DISPARADORES MFA Y EL RUN SELECCIONADO PARA PANTALLA VINCULADA.",
+      "si_aprueba": "Con RUN de perfil de B2B-AUTH-004 o B2B-AUTH-005 y gates, writer V2 actualizaría solo descripción; sin cambiar política 25 ni credenciales de dispositivo. La aprobación sin reconciliación podría crear incongruencia funcional.",
+      "si_rechaza": "Sigue texto original, donde dispositivo conocido continúa sin OTP salvo otros controles efectivos. La contradicción potencial con MFA condicional sigue sin resolver.",
+      "blockers": [
+        "SCREEN_SCOPE_B2B_AUTH001_NOT_LINKED",
+        "POLICY_25_DEVICE_ONLY_RECONCILIATION",
+        "MFA_TRIGGERS_PENDING_OWNER",
+        "OIDC_BINDING",
+        "INDEPENDENT_JUDGE_AND_SEPARATE_PROFILE_RUN_REQUIRED"
+      ],
+      "estado_fuente": "CANDIDATO",
+      "sha256_preimagen_fila": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b",
+      "sha256_candidato_completo_l31": "b06846214880f86c470a1d004d80cd9409211cd1470591dfca98eff74079ecee",
+      "writer_patch_v2": {
+        "rule_code": "B2B-RULE-AUTH-033",
+        "change_kind": "DOCUMENTARY_ONLY",
+        "changes": {
+          "descripcion": "Tras el primer factor, LF_AUTH_BOUNDARY consulta en servidor la política central de aplicabilidad MFA y la vigencia real de la confianza del dispositivo. Un dispositivo reconocido jamás omite MFA exigido por política central ni concede AUTHENTICATED sin completar el factor requerido. Un dispositivo no reconocido o revocado conserva el desafío de OTP por correo exigido por las reglas actuales, incluida AUTH-039, salvo decisión posterior formalmente gobernada que NO se presume. El desafío usa contexto transitorio server-side, sin sesión operativa ni acceso directo a B2B-AUTH-004. Los otros disparadores aún no decididos no se inventan; solo el backend verifica factor, identidad, dispositivo y autorización."
+        }
+      },
+      "sha256_writer_patch_v2": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+      "registro_6_campos_borrador": {
+        "codigo_regla": "B2B-RULE-AUTH-033",
+        "propuesta_sha256": "6a398f8cdbd59a4a56099f9deb8ec01a3ea95e62ea1864735546db60c5cfb769",
+        "veredicto": "<APROBAR_O_RECHAZAR>",
+        "decisor": "Cristhian Luján",
+        "fecha": "<ISO8601_AL_MOMENTO_DE_DECIDIR>",
+        "frase_literal": "<TEXTO_LITERAL_ESCRITO_POR_EL_DUENO>"
+      },
+      "p_parent": "<RUN_PERFIL_IN_PROGRESS_STEP70_JUEZ_INDEPENDIENTE_MISMA_REGLA_Y_PANTALLA>",
+      "p_source_sha256": "<HASH_CANONICO_DE_lf_asset_snapshot_sha_v1_PENDIENTE_AUTH_READBACK>",
+      "ready_to_execute": false,
+      "formal_owner_decision": false,
+      "no_write": true
+    }
+  ],
+  "blocked_23": {
+    "total": 23,
+    "primary_owner_groups": {
+      "DUENO": {
+        "primary_codes": [
+          "003",
+          "019",
+          "021",
+          "039",
+          "043",
+          "047"
+        ],
+        "specific": "Política MFA 3/19; perfil 1/SMS y seguridad de Admin Empresa; parámetro 5 de Q12 sin unidad; disparadores revocación y dispositivo; Caps Lock y contador password-failure."
+      },
+      "MOTOR_IG": {
+        "primary_codes": [
+          "002",
+          "040"
+        ],
+        "specific": "002 exige modelo físico multiempresa acreditado por Arquitectura, no lo puede crear IG. 040 permite propuesta documental para reconciliar política 25/semántica de dispositivo y QA, sin promoción ni cierre autónomo."
+      },
+      "BREVO_SMS": {
+        "primary_codes": [
+          "034",
+          "037",
+          "044",
+          "045"
+        ],
+        "specific": "Integración correo OTP, proveedor de entrega, credenciales, webhook firmado, rotación y QA reales; SMS contingencia sin proveedor. AUTH-034 también depende de políticas 3/25."
+      },
+      "OIDC": {
+        "primary_codes": [
+          "013",
+          "015",
+          "016",
+          "017",
+          "022",
+          "026",
+          "028",
+          "030",
+          "035",
+          "036",
+          "048"
+        ],
+        "specific": "ADR-003 M1/IdP real y binding OIDC, issuer/JWKS/JWT, adapter, outcomes, sesión, recuperación, timeout y submit; varios tienen además dependencia Brevo."
+      }
+    },
+    "individual": [
+      {
+        "owner": "DUENO",
+        "codigo": "B2B-RULE-AUTH-003",
+        "motivos_precisos": [
+          "EXT:POLICY_3_VIGENTE_REQUIRES_CANDIDATE_UPDATE_B07_OWNER_APPROVAL"
+        ]
+      },
+      {
+        "owner": "DUENO",
+        "codigo": "B2B-RULE-AUTH-019",
+        "motivos_precisos": [
+          "OWNER:PROVEEDOR_SMS_SIN_CONFIRMAR",
+          "OWNER:APLICABILIDAD_SMS_A_ADMIN_SAML_SIN_DEFINIR",
+          "EXT:GOOGLE_WORKSPACE_SAML_TENANT_METADATA_PRUEBAS",
+          "EXT:BREVO_CREDENCIALES_Y_QA",
+          "EXT:BINDING_PENDIENTE_/valor_config/admin_provider_status",
+          "EXT:BINDING_PENDIENTE_/valor_config/non_admin_delivery_provider_status",
+          "SECURITY:ADMIN_EMPRESA_OTP_BREVO_VS_POLICY_19_PHISHING_RESISTANT_UNRESOLVED",
+          "OWNER:ADMIN_LF_PROFILE_1_METHOD_UNCONFIRMED"
+        ]
+      },
+      {
+        "owner": "DUENO",
+        "codigo": "B2B-RULE-AUTH-021",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_binding",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision",
+          "Q12:INITIAL_VALUE_5_UNBOUND_PARAMETER_CONTROL_UNIT_AND_MAINTENANCE_PERMISSION_MISSING"
+        ]
+      },
+      {
+        "owner": "DUENO",
+        "codigo": "B2B-RULE-AUTH-039",
+        "motivos_precisos": [
+          "OWNER:REVOCACION_DISPOSITIVO_COMO_DISPARADOR_MFA_NO_CONFIRMADO",
+          "EXT:POLITICA_25_Y_REGISTRO_DISPOSITIVOS_QA"
+        ]
+      },
+      {
+        "owner": "DUENO",
+        "codigo": "B2B-RULE-AUTH-043",
+        "motivos_precisos": [
+          "OWNER:ALCANCE_NUEVOS_DISPARADORES_MFA_PENDIENTE",
+          "EXT:OPERACION_RATE_LIMIT_Y_PANTALLA_PARA_30D_3M_QA",
+          "Q12:INITIAL_VALUE_5_UNBOUND_PARAMETER_CONTROL_UNIT_AND_MAINTENANCE_PERMISSION_MISSING"
+        ]
+      },
+      {
+        "owner": "DUENO",
+        "codigo": "B2B-RULE-AUTH-047",
+        "motivos_precisos": [
+          "OWNER:PENDIENTE_DECISION_AUTH047_CAPS_LOCK",
+          "OWNER:PENDIENTE_DECISION_ORIGEN_B2B-RULE-AUTH-047"
+        ]
+      },
+      {
+        "owner": "MOTOR_IG",
+        "codigo": "B2B-RULE-AUTH-002",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/multi_company_physical_model_status"
+        ]
+      },
+      {
+        "owner": "MOTOR_IG",
+        "codigo": "B2B-RULE-AUTH-040",
+        "motivos_precisos": [
+          "EXT:POLITICA_25_AJUSTE_QA"
+        ]
+      },
+      {
+        "owner": "BREVO_SMS",
+        "codigo": "B2B-RULE-AUTH-034",
+        "motivos_precisos": [
+          "EXT:AUTH033_Y_POLITICA3",
+          "EXT:BREVO_ENTREGA_QA",
+          "EXT:BINDING_PENDIENTE_/valor_config/delivery_provider_status"
+        ]
+      },
+      {
+        "owner": "BREVO_SMS",
+        "codigo": "B2B-RULE-AUTH-037",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/delivery_provider_status"
+        ]
+      },
+      {
+        "owner": "BREVO_SMS",
+        "codigo": "B2B-RULE-AUTH-044",
+        "motivos_precisos": [
+          "EXT:BREVO_TRANSACTIONAL_EMAIL_REAL_Y_WEBHOOK_QA",
+          "EXT:BINDING_PENDIENTE_/valor_config/credential_status"
+        ]
+      },
+      {
+        "owner": "BREVO_SMS",
+        "codigo": "B2B-RULE-AUTH-045",
+        "motivos_precisos": [
+          "EXT:BREVO_WEBHOOK_FIRMADO_CALLBACK_TEST_QA",
+          "EXT:BINDING_PENDIENTE_/valor_config/secret_rotation_status"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-013",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_binding",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision",
+          "EXT:BINDING_PENDIENTE_/valor_config/selected_server_adapter",
+          "EXT:BINDING_PENDIENTE_/valor_config/brevo_webhook_runtime_status",
+          "EXT:BINDING_PENDIENTE_/valor_config/admin_identity_provider_status",
+          "EXT:BINDING_PENDIENTE_/valor_config/selected_server_adapter_status"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-015",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision",
+          "EXT:BINDING_PENDIENTE_/valor_config/identity_contract_status"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-016",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_selected",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-017",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-022",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-026",
+        "motivos_precisos": [
+          "EXT:ADR003_SPIKE_M1_OIDC_PROVIDER_REAL",
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_binding",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_provider",
+          "EXT:BINDING_PENDIENTE_/valor_config/preferred_adapter_status",
+          "EXT:BINDING_PENDIENTE_/valor_config/brevo_webhook_runtime_status",
+          "EXT:BINDING_PENDIENTE_/valor_config/implementation_validation_status"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-028",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_binding",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-030",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_binding",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-035",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/provider_binding",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-036",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      },
+      {
+        "owner": "OIDC",
+        "codigo": "B2B-RULE-AUTH-048",
+        "motivos_precisos": [
+          "EXT:BINDING_PENDIENTE_/valor_config/submit_target",
+          "EXT:BINDING_PENDIENTE_/valor_config/local_identity_decision"
+        ]
+      }
+    ],
+    "auto_closed_now": 0,
+    "ig_can_prepare_without_new_owner_decision": [
+      "B2B-RULE-AUTH-040"
+    ],
+    "ig_can_analyze_but_not_close_without_external_evidence": [
+      "B2B-RULE-AUTH-002"
+    ],
+    "fully_closable_by_ig_alone_now": []
+  }
+}
