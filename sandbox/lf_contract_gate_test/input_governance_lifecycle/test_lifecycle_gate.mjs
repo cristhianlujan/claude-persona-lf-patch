@@ -17,7 +17,7 @@ const build = (kind="CREATE") => {
       source_sha256:source,subject:"github-sub:259964988",verified_receipt:"oidc://verified/1",
       receipt_sha256:h("f")}};
   const trusted={run:{id:runid,is_new:true,profile:"PERFIL-PRODUCT-DIRECTOR-LF",request_sha256:req,
-    status:"COMPLETED",terminal:"READY",steps},
+    status:"COMPLETED",terminal:"READY",steps:{...steps}},
     native:{run_id:runid,provider_bound:true,source_attested:true,independent_judge_attested:true},
     ig:{status:"READY",current:true,run_id:runid},
     rule:{exists:kind!=="CREATE",state:kind==="CORRECT_VIGENTE"?"VIGENTE":"CANDIDATO",
