@@ -1,24 +1,15 @@
-# B07 — paquete migración oficial VERSIONADO, CANDIDATO (SIN Train)
+# B07 LF — Paquete oficial candidato (NO despliegue)
 
-Ruta: `supabase/migrations/20261113180000_lf_ig_b07_parent_child_atomic_v1.sql`. Prefijo `lf_` clasificado por `lf_migration_source_parity_ci_context.py`; el Train puede retimestamp y hay que releer el nombre final. **No modificar migraciones ya desplegadas.**
+Ruta: `supabase/migrations/20261113180000_lf_ig_b07_parent_child_atomic_v1.sql`.
+Migración **LF-only**: crea `public.lf_b07_project_gate_v1` con única entrada habilitada LF; `public.lf_b07_project_preflight_v1(text)` fail-closed ante proyecto desconocido, operación LF ausente o owner/perfil inválido. Los futuros proyectos se admiten por registro **gobernado** y escritores propios sin alterar el contrato de preflight; no se implementa ninguno aquí.
 
-Composición: (1) UP padre/hija, (2) hook oficial LF V2, (3) escritor SALY B07; Git blobs respectivamente `d3962191b547d4613198dc68b5d196932a6ab14f`, `aa9f177d4fab048c058c03d8b0bf9ab6d1ac6a90`, `ff6d47c70f42f5fb2ad6f8b132caf278ec16c79d`. Se sustituyen exclusivamente las tres parejas `BEGIN/COMMIT` por **una** pareja exterior y se añade preflight gobernado. Ninguna operación ni owner se registra en este archivo. No tocar RUN históricos.
+DDL en **una transacción**:
+- Una hija `lf_ops.reglas_versiones_b07` con snapshot completo, SHA-256, anterior SHA, versión, evidencia documental, protección RLS/ACL y FK.
+- Una baseline por regla LF existente, sin atribución histórica previa. 166 candidatas permanecen no consumibles.
+- Triggers diferidos impiden padre distinto de última hija al COMMIT; UPDATE/DELETE/TRUNCATE de historia rechazados.
+- Hook privado en finalizador oficial `public.lf_ig_rule_finalize_v2(text)` para append atómico y reversibilidad del COMMIT de la transacción si falla; no se instala una RPC candidata alternativa.
+- Vista de lectura efectiva LF. Sin cambios a SALY, otros proyectos, padres preexistentes, RUNs históricos o migraciones desplegadas.
 
-## Preflight DDL de la migración (fail-closed)
-- `B07_GOVERNANCE_CATALOG_MISSING` si falta catálogo.
-- `B07_SALY_OFFICIAL_OPERATION_NOT_REGISTERED` si operación `ACTUALIZACION_REGLA_SALY` no está `SANDBOX_ACTIVE` y `OP_CANDIDATE`.
-- `B07_SALY_OWNER_AND_PROFILE_GOVERNED_REQUIRED` si no hay owner SALY `TEMP_DOCUMENTARY_ACTIVE` `UNVERIFIED_CHAT_DECLARATION`, recibo SHA y perfil real de tipo PERFIL en `lf_activos`. Esto es admisión técnica, **no** afirma identidad autenticada ni sustituye decisión explícita del dueño.
-- Otros guardas originales B07 y LF/SALY permanecen en SQL. STOP ante cualquier error, sin intentar DML alternativo.
+**Gates**: operación LF+owner documental+perfil existentes, ausencia de historia anterior, identidad documental sin elevarse a autenticada, bloqueo de proyecto no admitido, source finalizer V2 no derivado, pruebas PG17.6/18.7 en copia aislada, 3 CI HEAD exacto, backup y restauración pre-Train, autorización específica del dueño. Los resultados de CI no reemplazan backup de Supabase vivo.
 
-## Suite ligada al archivo oficial
-`sandbox/lf_contract_gate_test/edge_function_operation/test_b07_official_atomic_migration_pg17_pg18.py`: PG17.6 y PG18.7 aislados; rechaza ausencia de operación, owner y perfil, luego migración atómica sobre fixture sintético, 578 LF/14 SALY, padre=última hija, contrato SALY, roles y hash padres antes/después. Los tests originales continúan, con rollback y restore posdatos en fixture. **No equiparar PASS CI con restore de backup vivo.**
-
-## Requisitos de aprobación y readback — sin evidencia aún
-- Decisión documental B07 #3821 + #3831 en main, `identity_verified=false`.
-- Alta SALY oficial separada con readback de operación/owner/Router/Perfil, status y procedencia, sin reutilizar LF. PR #3832 es solo preparatorio.
-- Confirmación **nueva y específica** del dueño sobre DDL B07 y la base temporal, distinta de aprobación documental #3831.
-- Backup previo de datos/esquema, IDs SHA, WAL/PITR si existe, restauración pre-Train en base aislada y recibo; CI exactos R17/PASE/clasificación/PG17/18 PASS; un solo Train y una migración; no otro Train concurrente.
-- SQL readback: `to_regclass` ambas hijas; 578 LF (166 CANDIDATO, 412 VIGENTE), 14 SALY VALIDADO **solo si preimagen coincide**; versiones baseline, hash encadenado, última hija igual padre, RLS/ACL, checksum funciones y recibos; 0 RUN históricos modificados; backup pos-commit con datos restaurado en instancia aislada y SHA iguales.
-- DOWN no destruye historia confirmada. Fallas: detener, código, restauración gobernada con custodia, nunca borrar filas.
-
-**HOLD:** No poner `ready-to-merge`, NO quitar DRAFT de #3818 ni ejecutar Train hasta las dependencias y OK explícito del dueño. Paquete preparado ≠ despliegue acreditado.
+**Post:** consulta SELECT versiones_lf/divergencias del documento 08, hash original/nuevo, ACL/RLS/funciones, recibos. **Sin ready-to-merge / Train hasta OK específico del dueño**.
