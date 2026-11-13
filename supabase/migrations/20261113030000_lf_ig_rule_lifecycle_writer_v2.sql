@@ -827,8 +827,20 @@ BEGIN
      AND e.started_at>=now()-interval '90 minutes'
      AND e.manifest->>'producer'='lf-migration-merge-train'
      AND e.manifest->>'pr'='3803'
-     AND coalesce(e.manifest->>'head_sha','') ~ '^[0-9a-f]{40}
-
+     AND coalesce(e.manifest->>'head_sha','') ~ '^[0-9a-f]{40}$'
+     AND coalesce(e.manifest->>'train_run_id','') ~ '^[0-9]{10,20}$'
+     AND e.created_by_execution_id='LF-MIGRATION-TRAIN-RUN-'||(e.manifest->>'train_run_id')
+     AND e.execution_id='EXEC-DB-TRAIN-PR3803-20261113030000-R'||(e.manifest->>'train_run_id')
+     AND e.idempotency_key ~ '^train:20261113030000:[0-9a-f]{40}$'
+     AND coalesce(e.request_sha256,'') ~ '^[0-9a-f]{64}$'
+     AND e.manifest->'router_authority_receipt'->>'schema_version'
+         ='LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1'
+     AND e.manifest->'router_authority_receipt'->>'operation_code'='ACTUALIZACION_DB_LF'
+     AND e.manifest->'router_authority_receipt'->>'target_path'=e.target_path
+     AND e.manifest->'router_authority_receipt'->>'route_eligibility_only'='true';
+  IF v_matches<>1 THEN
+    RAISE EXCEPTION 'LF_IG_PROMOTION_EXACT_LIVE_TRAIN_RUN_REQUIRED:%',v_matches;
+  END IF;
 -- Canonical invoker calls these two openers. Old update function remains intact
 -- for vetted candidate-only cases, but callers may no longer bypass the V2 gate.
 UPDATE public.lf_skill_catalog_v1
