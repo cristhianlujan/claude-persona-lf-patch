@@ -896,6 +896,17 @@ BEGIN
     'Governed candidate; documentary LF owner plus official child 7/7; no direct Router write.',
     'RULE_OPERATIONS','RULE_GOVERNANCE','PROMOTE_CANDIDATE','REGLA',
     v_bootstrap,'OP_CANDIDATE');
+  IF NOT EXISTS(SELECT 1 FROM public.lf_operation_registry r
+    JOIN public.lf_operation_execution e
+      ON e.execution_id=r.created_by_execution_id
+    WHERE r.operation_code='PROMOCION_REGLA_LF'
+      AND r.status='SANDBOX_ACTIVE'
+      AND e.operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+      AND e.status='IN_PROGRESS'
+      AND e.manifest->>'source_train_execution_id'=v_train.execution_id)
+  THEN RAISE EXCEPTION 'LF_IG_PROMOTION_OPERATION_PROVENANCE_READBACK_FAILED'; END IF;
+END $promotion_operation_bootstrap$;
+
 -- Canonical invoker calls these two openers. Old update function remains intact
 -- for vetted candidate-only cases, but callers may no longer bypass the V2 gate.
 UPDATE public.lf_skill_catalog_v1
