@@ -1,0 +1,330 @@
+{
+  "schema": "LF_L31_GITHUB_EXISTENCE_CHECK_ALL_29_WRITE_REFS_V1",
+  "as_of_source_b03": "2026-11-13 07:32:15.742705+00",
+  "live_b03_sha256": "ec233aa608d66167f9a0206cac3f4db9d0e40167fbf6daf15437b06e8ea3b60f",
+  "scope": "GITHUB_OBJECT_EXISTENCE_NOT_EFFECT_RECONCILIATION",
+  "counts": {
+    "positive_runs": 29,
+    "github_refs": 29,
+    "unique_refs": 28,
+    "objects_found": 29,
+    "objects_missing": 0
+  },
+  "checks": [
+    {
+      "id": "E2E-04-CARD-PREWRITE-ORDER-20260903-002",
+      "ref": "github://commit/58690b658daed48383a1418658f4daa5b6713a51",
+      "readback": {
+        "id": "E2E-04-CARD-PREWRITE-ORDER-20260903-002",
+        "ref": "github://commit/58690b658daed48383a1418658f4daa5b6713a51",
+        "found": true,
+        "object_sha": "58690b658daed48383a1418658f4daa5b6713a51"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-ADAPTER-FACTORY-COMPOSITION-20260901-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/449",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ADAPTER-COMPOSITION-20260901-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/449",
+        "found": true,
+        "object_sha": "d3b5934456d50387bb0a4d85fca242c47a0aeb36"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+      "ref": "git:54d6d7bb4bcfdcbce728262b1456a7c45f04166f",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+        "ref": "git:54d6d7bb4bcfdcbce728262b1456a7c45f04166f",
+        "found": true,
+        "object_sha": "54d6d7bb4bcfdcbce728262b1456a7c45f04166f"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-AUTODISC-REPAIR-20260910-003",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@de4958e98fb6921be93aed1b2800cd1a7a30d412/skills/learning_engine",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-AUTODISC-REPAIR-20260910-003",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@de4958e98fb6921be93aed1b2800cd1a7a30d412/skills/learning_engine",
+        "found": true,
+        "object_sha": "de4958e98fb6921be93aed1b2800cd1a7a30d412"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-CAUSAL-LANE-20260910-002",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@154e4abdba473319501e87638dd7119667a656df",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-CAUSAL-LANE-20260910-002",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@154e4abdba473319501e87638dd7119667a656df",
+        "found": true,
+        "object_sha": "154e4abdba473319501e87638dd7119667a656df"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-S30-4D-20260910-004",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@237ce20e3c866835464fbbdc67ed26178e2248fd",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-S30-4D-20260910-004",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@237ce20e3c866835464fbbdc67ed26178e2248fd",
+        "found": true,
+        "object_sha": "237ce20e3c866835464fbbdc67ed26178e2248fd"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ADAPTER-COMPOSITION-20260901-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/449",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ADAPTER-COMPOSITION-20260901-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/449",
+        "found": true,
+        "object_sha": "d3b5934456d50387bb0a4d85fca242c47a0aeb36"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ARCHPARITY-20260828-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6b1ea0d871c607dd1c6a3515635675b603aee7/skills/profile_creator",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-ARCHPARITY-20260828-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@2c6b1ea0d871c607dd1c6a3515635675b603aee7/skills/profile_creator",
+        "found": true,
+        "object_sha": "2c6b1ea0d871c607dd1c6a3515635675b603aee7"
+      }
+    },
+    {
+      "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-S22-PL005-20260916-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/868@a513c0415513ea01d7cd6064a19d958bb7545665",
+      "readback": {
+        "id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-S22-PL005-20260916-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/868@a513c0415513ea01d7cd6064a19d958bb7545665",
+        "found": true,
+        "object_sha": "a513c0415513ea01d7cd6064a19d958bb7545665"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-BOUND-SEMANTIC-JUDGE-20260922-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@398d8238e5ab6781d0d30d69008e734f24ea70f0",
+      "readback": {
+        "id": "EXEC-RUNTIME-BOUND-SEMANTIC-JUDGE-20260922-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@398d8238e5ab6781d0d30d69008e734f24ea70f0",
+        "found": true,
+        "object_sha": "398d8238e5ab6781d0d30d69008e734f24ea70f0"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@85f0ba3d8725c5f4bda521823a5f6f692c7222b4",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@85f0ba3d8725c5f4bda521823a5f6f692c7222b4",
+        "found": true,
+        "object_sha": "85f0ba3d8725c5f4bda521823a5f6f692c7222b4"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-002",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@f72baf2bd4e6159bb2db76fb80908b3ca60a8dce",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-002",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@f72baf2bd4e6159bb2db76fb80908b3ca60a8dce",
+        "found": true,
+        "object_sha": "f72baf2bd4e6159bb2db76fb80908b3ca60a8dce"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-003",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@d1c06a3160865650433adbf38fac43a45ffeeb6d",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-003",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@d1c06a3160865650433adbf38fac43a45ffeeb6d",
+        "found": true,
+        "object_sha": "d1c06a3160865650433adbf38fac43a45ffeeb6d"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-004",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@d7b5b09ce8aaea9581b07341de6ddf2f539a572d",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-004",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@d7b5b09ce8aaea9581b07341de6ddf2f539a572d",
+        "found": true,
+        "object_sha": "d7b5b09ce8aaea9581b07341de6ddf2f539a572d"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-005",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@fd147f8bb94c6ad74a53c655b8c1a211ae3b474b",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-005",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@fd147f8bb94c6ad74a53c655b8c1a211ae3b474b",
+        "found": true,
+        "object_sha": "fd147f8bb94c6ad74a53c655b8c1a211ae3b474b"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-006",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@25f8fc304b94c69e37ad2da99375defcd59895b9",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-006",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@25f8fc304b94c69e37ad2da99375defcd59895b9",
+        "found": true,
+        "object_sha": "25f8fc304b94c69e37ad2da99375defcd59895b9"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-008",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@ec9d79052ac304658e1805b2aa01175d8d1b27a6",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-008",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@ec9d79052ac304658e1805b2aa01175d8d1b27a6",
+        "found": true,
+        "object_sha": "ec9d79052ac304658e1805b2aa01175d8d1b27a6"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-009",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@866e9c464be1a62452af025e933177f012e1ace5",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-009",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@866e9c464be1a62452af025e933177f012e1ace5",
+        "found": true,
+        "object_sha": "866e9c464be1a62452af025e933177f012e1ace5"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-010",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@11edaa0637a3d260d4c2e315ff29742e5f54fde5",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-BASELINE-FREEZE-20260921-010",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@11edaa0637a3d260d4c2e315ff29742e5f54fde5",
+        "found": true,
+        "object_sha": "11edaa0637a3d260d4c2e315ff29742e5f54fde5"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-SEMANTIC-JUDGE-20260921-011",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@c4c17322078bb050dba75512719d27bbcc9006b7",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-SEMANTIC-JUDGE-20260921-011",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@c4c17322078bb050dba75512719d27bbcc9006b7",
+        "found": true,
+        "object_sha": "c4c17322078bb050dba75512719d27bbcc9006b7"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-PROFILE-SEMANTIC-JUDGE-20260921-012",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@fc520a7a521b3da7a90d7fbb23943340019ec636",
+      "readback": {
+        "id": "EXEC-RUNTIME-PROFILE-SEMANTIC-JUDGE-20260921-012",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@fc520a7a521b3da7a90d7fbb23943340019ec636",
+        "found": true,
+        "object_sha": "fc520a7a521b3da7a90d7fbb23943340019ec636"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@7f37c33e7f52ed669f6b9341f32660689e223802",
+      "readback": {
+        "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@7f37c33e7f52ed669f6b9341f32660689e223802",
+        "found": true,
+        "object_sha": "7f37c33e7f52ed669f6b9341f32660689e223802"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-003",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@85f69e5674117e099a5cf6552b6bae721295f47d",
+      "readback": {
+        "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-003",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@85f69e5674117e099a5cf6552b6bae721295f47d",
+        "found": true,
+        "object_sha": "85f69e5674117e099a5cf6552b6bae721295f47d"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-004",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@72b7212686c2c8d3bdd5bc9ae3617080ee1a0519",
+      "readback": {
+        "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-004",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@72b7212686c2c8d3bdd5bc9ae3617080ee1a0519",
+        "found": true,
+        "object_sha": "72b7212686c2c8d3bdd5bc9ae3617080ee1a0519"
+      }
+    },
+    {
+      "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260923-005",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@81726b7c8dd1d98909841fbd5406df1d8227680a",
+      "readback": {
+        "id": "EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260923-005",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@81726b7c8dd1d98909841fbd5406df1d8227680a",
+        "found": true,
+        "object_sha": "81726b7c8dd1d98909841fbd5406df1d8227680a"
+      }
+    },
+    {
+      "id": "EXEC-S37-WP01-PROFILE-OPPORTUNITY-EXPANDER-20260914-001",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@6607cf7aaf74fef84420cc6017b527f6495ac2a5/profiles/opportunity_expander",
+      "readback": {
+        "id": "EXEC-S37-WP01-PROFILE-OPPORTUNITY-EXPANDER-20260914-001",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@6607cf7aaf74fef84420cc6017b527f6495ac2a5/profiles/opportunity_expander",
+        "found": true,
+        "object_sha": "6607cf7aaf74fef84420cc6017b527f6495ac2a5"
+      }
+    },
+    {
+      "id": "EXEC-SKILL-1452A11A05CEC8B2",
+      "ref": "git:9695a2902d19a43a5b6b81e0366a369be7d1ca5d",
+      "readback": {
+        "id": "EXEC-SKILL-1452A11A05CEC8B2",
+        "ref": "git:9695a2902d19a43a5b6b81e0366a369be7d1ca5d",
+        "found": true,
+        "object_sha": "9695a2902d19a43a5b6b81e0366a369be7d1ca5d"
+      }
+    },
+    {
+      "id": "EXEC-SKILL-5C4A07F52DA71B3C",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@1023179d214a9572724b9e51353af025e7019fe7/profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "readback": {
+        "id": "EXEC-SKILL-5C4A07F52DA71B3C",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@1023179d214a9572724b9e51353af025e7019fe7/profiles/systemic_root_cause_repair_lf/SKILL.md",
+        "found": true,
+        "object_sha": "1023179d214a9572724b9e51353af025e7019fe7"
+      }
+    },
+    {
+      "id": "EXEC-SKILL-92E56FF772B6A3FD",
+      "ref": "github://cristhianlujan/claude-persona-lf-patch@00767e934f438e25f3112aa36b419301c8f09e8b/profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "readback": {
+        "id": "EXEC-SKILL-92E56FF772B6A3FD",
+        "ref": "github://cristhianlujan/claude-persona-lf-patch@00767e934f438e25f3112aa36b419301c8f09e8b/profiles/systemic_root_cause_repair_lf/SKILL.md",
+        "found": true,
+        "object_sha": "00767e934f438e25f3112aa36b419301c8f09e8b"
+      }
+    }
+  ],
+  "source_batch_blobs": [
+    {
+      "file": "09_b03_github_check_batch_00.json",
+      "blob": "3438cc137aa29a894e3c53691f3aa42843db1445"
+    },
+    {
+      "file": "09_b03_github_check_batch_01.json",
+      "blob": "2b2031487e262a427cb02e4978752fe5202f44b6"
+    },
+    {
+      "file": "09_b03_github_check_batch_02.json",
+      "blob": "1777584f5044d675f6c8a5e9cc77f72b477a6da7"
+    },
+    {
+      "file": "09_b03_github_check_batch_03.json",
+      "blob": "3b4118efe0d29b1b28b5ebd3d281bff4054a9d33"
+    }
+  ],
+  "limitations": [
+    "Existence of commit/PR does not prove RUN caused it or the destination matches its intended effect",
+    "GitHub reference is not authenticated EFFECT_RECON_RECEIPT per RUN",
+    "No READBACK external DB/payment provider or leased worker heartbeat was performed",
+    "Do not close/retry any historical RUN from this evidence"
+  ],
+  "release": "B03_G02_NO_GO"
+}
