@@ -1,0 +1,28 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-Q01-MFA-20261113",
+  "decision_title": "MFA condicional y factores Login B2B",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "El MFA se exige cuando la política central determina su aplicabilidad: 30 días sin uso o tres meses calendario sin cambio de contraseña, sin introducir umbrales en reglas de pantalla. Los seis perfiles humanos quedan cubiertos por política, no significa MFA en cada acceso. Los administradores perfiles 1 y 2 tienen segundo factor OTP por correo/Brevo tras usuario y contraseña validados por servidor; perfiles 3–6 conservan OTP por correo/Brevo. SMS es contingencia sin proveedor confirmado. Otros disparadores MFA no están definidos y no se infieren.",
+  "source_codes": [
+    "L16-Q01",
+    "L35-OWNER-AUTH019-OPTION-A-001",
+    "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001"
+  ],
+  "candidate_patch_sha256": null,
+  "source_artifact": null,
+  "approval_mechanism": "DOCUMENT_GITHUB_ONLY",
+  "required_evidence_unresolved": [
+    "FIRMA_Y_VERIFICACION_IDENTIDAD",
+    "POLICY3_VIGENTE_REQUIERE_SUCESORA",
+    "OTROS_DISPARADORES_MFA_PENDIENTES",
+    "QA_MFA"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
