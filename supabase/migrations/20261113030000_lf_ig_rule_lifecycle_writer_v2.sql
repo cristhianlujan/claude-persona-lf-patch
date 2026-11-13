@@ -859,6 +859,22 @@ BEGIN
   v_request_sha:=encode(extensions.digest(convert_to(
     'PROMOCION_REGLA_LF|'||v_train.execution_id||'|'||v_train.request_sha256,
     'UTF8'),'sha256'),'hex');
+  v_reserved:=public.fn_lf_operation_reserve_execution_v1(
+    v_bootstrap,'VULNERABILITY_COVERAGE_REPAIR_LF','OPERATION_PROTOCOL_REPAIR',
+    'PROMOCION_REGLA_LF','governed-operation-bootstrap:'||v_train.execution_id,
+    v_request_sha,v_train.execution_id,NULL,NULL,
+    jsonb_build_object(
+      'mode','RULE_PROMOTION_OPERATION_GOVERNANCE_BOOTSTRAP_V1',
+      'governance_bootstrap',true,
+      'bootstrap_operation_code','PROMOCION_REGLA_LF',
+      'bootstrap_status_ceiling','SANDBOX_ACTIVE',
+      'candidate_only',true,'production_allowed',false,'runtime_activation',false,
+      'source_train_execution_id',v_train.execution_id,
+      'source_train_request_sha256',v_train.request_sha256));
+  IF v_reserved->>'result'<>'RESERVED_NEW_EXECUTION'
+     OR v_reserved->>'execution_id' IS DISTINCT FROM v_bootstrap
+     OR v_reserved->>'status'<>'IN_PROGRESS'
+  THEN RAISE EXCEPTION 'LF_IG_PROMOTION_GOVERNED_BOOTSTRAP_RESERVATION_FAILED'; END IF;
 -- Canonical invoker calls these two openers. Old update function remains intact
 -- for vetted candidate-only cases, but callers may no longer bypass the V2 gate.
 UPDATE public.lf_skill_catalog_v1
