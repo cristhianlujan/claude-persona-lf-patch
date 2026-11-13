@@ -1,0 +1,59 @@
+{
+  "mode": "SANDBOX_ONLY_NOT_APPLIED",
+  "source_main_sha": "882c7213f83887952a99ad0793174d535eb91233",
+  "reasons": {
+    "B2B-RULE-AUTH-016": "Aclarar separación entre definición de timeout vigente y binding/QA sin autorizar producción",
+    "B2B-RULE-AUTH-020": "Eliminar redundancia/ambigüedad del procedimiento pendiente, mantener anti-bypass y la independencia del canal",
+    "B2B-RULE-AUTH-033": "Alinear el outcome de trusted device con política central candidata; prohibir AUTHENTICATED basado solo en confianza no efectiva"
+  },
+  "candidates": [
+    {
+      "code": "B2B-RULE-AUTH-016",
+      "source_table": "lf_ops.reglas",
+      "original_id": 435,
+      "original_estado": "VIGENTE",
+      "original_pending": false,
+      "original_review_md5": "6cbcef382a3e20d12595e46c4409f11f",
+      "field": "descripcion",
+      "original": "La autenticación debe consumir una política de timeout centralizada y reutilizable desde lf_ops.politicas_timeout. La regla de Login no almacena segundos, cantidades de reintentos ni backoff. Ante una política que resulte en timeout o indisponibilidad, se mantiene fail-closed y la respuesta funcional se normaliza como SERVICE_UNAVAILABLE.",
+      "proposed": "La autenticación debe consumir una política de timeout centralizada y reutilizable desde lf_ops.politicas_timeout. Esta regla no almacena segundos, cantidades de reintentos ni backoff. Ante timeout o indisponibilidad se mantiene fail-closed, se deniega la sesión y la respuesta funcional se normaliza como SERVICE_UNAVAILABLE. Esta definición no acredita el binding físico del proveedor: mientras el spike M1/ADR-003, la implementación y QA continúen pendientes, la promoción operativa y producción no están autorizadas.",
+      "valor_config_change": false,
+      "estado_change": false,
+      "write_executed": false,
+      "scope": "SANDBOX_PROPOSAL_ONLY",
+      "independent_judge": "NOT_RUN"
+    },
+    {
+      "code": "B2B-RULE-AUTH-020",
+      "source_table": "lf_ops.reglas",
+      "original_id": 439,
+      "original_estado": "CANDIDATO",
+      "original_pending": false,
+      "original_review_md5": "bbb6ff784448485d42c429018864d161",
+      "field": "descripcion",
+      "original": "Si un usuario sujeto al segundo control por correo pierde acceso a su correo, el Login no puede degradar a contraseña sola ni habilitar un bypass. Para perfiles no administradores, la recuperación de acceso al correo queda PENDING_FUNCTIONAL_DEFINITION y debe resolverse en flujo separado con validación de identidad y auditoría antes de producción. Para administradores la recuperación continúa en Google Workspace. Si se perdio el control del correo o existe sospecha de compromiso, reenviar un OTP al mismo buzon no aporta verificacion independiente. Para los perfiles no administradores debe aplicarse un procedimiento de identidad separado, auditable y aun PENDING_FUNCTIONAL_DEFINITION, bajo la politica central de recuperacion ID 20, sin autorizar acceso operativo ni bypass.",
+      "proposed": "Si un usuario sujeto al segundo control por correo pierde acceso a su buzón, el Login no puede degradar a contraseña sola ni habilitar un bypass. Para perfiles no administradores, la recuperación permanece PENDING_FUNCTIONAL_DEFINITION y requiere un procedimiento separado, auditable y con verificación de identidad independiente antes de producción, bajo la política central SEC-B2B-MFA-RECOVERY (ID 20). Si existe sospecha de compromiso del correo, un OTP enviado a ese mismo buzón no constituye verificación independiente y nunca autoriza recuperación del factor ni sesión operativa por sí solo. Para administradores, la recuperación permanece delegada a Google Workspace. Hasta completar la definición, la implementación, la autorización y QA, no se concede acceso operativo.",
+      "valor_config_change": false,
+      "estado_change": false,
+      "write_executed": false,
+      "scope": "SANDBOX_PROPOSAL_ONLY",
+      "independent_judge": "NOT_RUN"
+    },
+    {
+      "code": "B2B-RULE-AUTH-033",
+      "source_table": "lf_ops.reglas",
+      "original_id": 452,
+      "original_estado": "CANDIDATO",
+      "original_pending": false,
+      "original_review_md5": "f5a23754b0a00d7ef94efded069d79cc",
+      "field": "descripcion",
+      "original": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega.",
+      "proposed": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor el dispositivo conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, el reconocimiento solo permite continuar sin un nuevo OTP cuando la política central lo autorice efectivamente y el servidor haya verificado token opaco, vigencia, alcance y ausencia de revocación; una política candidata, un token inválido o una comprobación inconclusa nunca autorizan por sí solos AUTHENTICATED. Un dispositivo no reconocido requiere MFA_REQUIRED y desafío OTP por correo en B2B-AUTH-004 según OTP_POL_B2B_AUTH_EMAIL_BREVO, o el acceso permanece denegado si no puede cumplirse el control. El cliente no decide dispositivo, factor, proveedor ni resultado. B2B-AUTH-004 exige contexto MFA transitorio válido del servidor, no una sesión operativa completa, y la navegación directa sin desafío se deniega.",
+      "valor_config_change": false,
+      "estado_change": false,
+      "write_executed": false,
+      "scope": "SANDBOX_PROPOSAL_ONLY",
+      "independent_judge": "NOT_RUN"
+    }
+  ]
+}
