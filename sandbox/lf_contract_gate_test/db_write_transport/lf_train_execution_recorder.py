@@ -415,6 +415,34 @@ def record_receipt(state: dict) -> dict:
     return res
 
 
+# Canonical documentary-system proposer for the LF asset-owner backfill only.
+# It is operational provenance, NOT a human Auth identity or owner signature.
+OWNER_BACKFILL_MIGRATION_NAME = "lf_asset_owner_one_name_backfill_v1"
+OWNER_BACKFILL_SYSTEM_PROPONENT = "LF_GOVERNANCE"
+OWNER_BACKFILL_REPO = "cristhianlujan/claude-persona-lf-patch"
+
+
+def train_execution_manifest(ctx: dict) -> dict:
+    """Construct the exact manifest fed to fn_lf_operation_reserve_execution_v1.
+
+    The owner-backfill proposer is determined by the canonical migration name
+    and repository. It is never accepted as a caller-supplied arbitrary actor.
+    Train operation receipts, Router authority and real run provenance remain
+    separate, mandatory gates.
+    """
+    manifest = {"producer": "lf-migration-merge-train",
+                "train_run_id": ctx["run_id"],
+                "pr": int(ctx["pr"]), "head_sha": ctx["head_sha"]}
+    if ctx["name"] == OWNER_BACKFILL_MIGRATION_NAME:
+        match = MIGRATION_PATH_RE.fullmatch(ctx["path"])
+        if (ctx["repo"] != OWNER_BACKFILL_REPO or not match
+                or match.group(1) != ctx["version"]
+                or match.group(2) != OWNER_BACKFILL_MIGRATION_NAME):
+            raise ValueError("TRAIN_OWNER_BACKFILL_PROPOSER_TARGET_MISMATCH")
+        manifest["proposer_actor"] = OWNER_BACKFILL_SYSTEM_PROPONENT
+    return manifest
+
+
 def begin(ctx: dict) -> dict:
     global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
     _TELEMETRY_STAGE = "preflight"
@@ -424,8 +452,7 @@ def begin(ctx: dict) -> dict:
     provenance = capture_provenance(ctx)
     enforce_d1(provenance)
     ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
-    manifest = {"producer": "lf-migration-merge-train", "train_run_id": ctx["run_id"],
-                "pr": int(ctx["pr"]), "head_sha": ctx["head_sha"]}
+    manifest = train_execution_manifest(ctx)
     res = call(
         "select public.fn_lf_operation_reserve_execution_v1(:'exec', 'ACTUALIZACION_DB_LF', 'MIGRATION',"
         " :'target', :'idem', :'reqsha', :'actor', :'repo', :'path', (:'manifest')::jsonb);",

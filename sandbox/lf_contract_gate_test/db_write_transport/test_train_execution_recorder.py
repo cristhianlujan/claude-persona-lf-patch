@@ -18,6 +18,68 @@ class TrainExecutionRecorderTest(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stderr)
         self.assertIn("PASS_TRAIN_EXECUTION_RECORDER_SELFTEST", out.stdout)
 
+    def test_owner_backfill_system_proposer_manifest_is_scoped(self) -> None:
+        import lf_train_execution_recorder as recorder
+        ctx = {"pr": "3806", "version": "20261113235900",
+               "name": "lf_asset_owner_one_name_backfill_v1",
+               "path": "supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql",
+               "repo": "cristhianlujan/claude-persona-lf-patch",
+               "head_sha": "a"*40, "run_id": "43380001234"}
+        manifest = recorder.train_execution_manifest(ctx)
+        self.assertEqual(manifest["proposer_actor"], "LF_GOVERNANCE")
+        self.assertNotEqual(manifest["proposer_actor"], "Cristhian Luján")
+        self.assertEqual(manifest["producer"], "lf-migration-merge-train")
+        self.assertEqual(manifest["pr"], 3806)
+        self.assertEqual(manifest["head_sha"], "a"*40)
+        for key in ("proposer_actor", "decisor", "human_signature"):
+            if key != "proposer_actor":
+                self.assertNotIn(key, manifest)
+        unrelated = dict(ctx, name="lf_other_v1",
+                         path="supabase/migrations/20261113235900_lf_other_v1.sql")
+        self.assertNotIn("proposer_actor", recorder.train_execution_manifest(unrelated))
+        mismatched = [
+            dict(ctx, repo="different/repo"),
+            dict(ctx, path="supabase/migrations/20261113235900_lf_other_v1.sql"),
+            dict(ctx, version="20261114000000")
+        ]
+        for bad in mismatched:
+            with self.subTest(bad=bad), self.assertRaisesRegex(
+                    ValueError, "TRAIN_OWNER_BACKFILL_PROPOSER_TARGET_MISMATCH"):
+                recorder.train_execution_manifest(bad)
+
+    def test_begin_reserves_existing_train_run_with_documentary_system_proposer(self) -> None:
+        import json
+        import lf_train_execution_recorder as recorder
+        from unittest.mock import patch
+        ctx = {"pr":"3806","version":"20261113235900",
+               "name":"lf_asset_owner_one_name_backfill_v1",
+               "path":"supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql",
+               "repo":"cristhianlujan/claude-persona-lf-patch",
+               "source_blob":"a"*40,"source_sha256":"b"*64,
+               "head_sha":"c"*40,"persisted_head_sha":"c"*40,
+               "run_id":"43380001234"}
+        captured=[]
+        def db(sql, **params):
+            if "fn_lf_operation_reserve_execution_v1" in sql:
+                captured.append(json.loads(params["manifest"]))
+                return {"status":"IN_PROGRESS"}
+            if "fn_lf_operation_acquire_lease_v1" in sql:
+                return {"result":"LEASE_ACQUIRED","lease_fence":1}
+            if "v_lf_capability_entry_guard_v1" in sql:
+                return {"entry_guard_state":"GUARDED"}
+            if "fn_lf_operation_reserve_effect_v1" in sql:
+                return {"dispatch_permitted":True}
+            raise AssertionError("UNEXPECTED_TRAIN_DB_CALL:"+sql[:180])
+        with patch.object(recorder,"capture_provenance",
+                          return_value={"label":"ready-to-merge","diff_class":recorder.DIFF_NO_CHANGE}), \
+             patch.object(recorder,"call",side_effect=db), \
+             patch.object(recorder,"record_step",return_value=None):
+            result=recorder.begin(ctx)
+        self.assertEqual(result["result"],"TRAIN_EXECUTION_READY_TO_APPLY")
+        self.assertEqual(len(captured),1)
+        self.assertEqual(captured[0]["proposer_actor"],"LF_GOVERNANCE")
+        self.assertNotIn("decisor",captured[0])
+
     def test_reservation_idempotency_is_version_scoped(self) -> None:
         source = RECORDER.read_text()
         self.assertIn('idem=f"train:{ctx[\'version\']}:{ctx[\'source_blob\']}"', source)

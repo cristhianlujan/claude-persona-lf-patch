@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """PostgreSQL 18 and 17.6 real SQL tests on deployed PR3803 documentary ABI.\nNo live Supabase writes, no human identity signature verification.\n"""
 import csv
+import sys
 import json
 import os
 import subprocess
@@ -11,9 +12,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "sandbox/lf_contract_gate_test/db_write_transport"))
+import lf_train_execution_recorder as train_recorder
 BASE = ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle/pg18_live_object_slice_baseline.sql"
 UPSTREAM = ROOT / "supabase/migrations/20261113030000_lf_ig_rule_lifecycle_writer_v2.sql"
-MIGRATION = ROOT / "supabase/migrations/20261113233000_lf_asset_owner_one_name_guard_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20261113070051_lf_asset_owner_one_name_guard_v1.sql"
 PREIMAGE = ROOT / "docs/input-governance/owner-one-name/preimage_238_20261112.csv"
 OWNER = "00000000-0000-4000-8000-000000000111"
 PARENT = "EXEC-DB-TRAIN-PG18-OWNER-V1"
@@ -137,25 +140,25 @@ class AssetOwnerPG18(unittest.TestCase):
         # Synthetic only: exact ACT-0001/Train fields required by PR3803 scope.
         # This is not a real Router scope receipt or an authorization to write
         # outside PostgreSQL Docker. Train itself owns these in Supabase.
-        train_code = "20261113233000_lf_asset_owner_one_name_guard_v1"
+        train_code = "20261113235900_lf_asset_owner_one_name_backfill_v1"
         train_path = "supabase/migrations/" + train_code + ".sql"
-        train_manifest = {
-            "producer": "lf-migration-merge-train",
-            "head_sha": "a"*40,
-            "train_run_id": "123456789",
-            "pr": "3804",
-            "proposer_actor": "LF_GOVERNANCE",
-            "router_authority_receipt": {
-                "schema_version": "LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
-                "router": "ACT-0001",
-                "operation_code": "ACTUALIZACION_DB_LF",
-                "action_code": "UPDATE",
-                "target_repo": "cristhianlujan/claude-persona-lf-patch",
-                "target_path": train_path,
-                "target_code": train_code,
-                "scope_attested": False,
-                "route_eligibility_only": True
-            }
+        train_manifest = train_recorder.train_execution_manifest({
+            "producer": "lf-migration-merge-train", "version": "20261113235900",
+            "name": "lf_asset_owner_one_name_backfill_v1", "path": train_path,
+            "repo": "cristhianlujan/claude-persona-lf-patch",
+            "pr": "3806", "run_id": "123456789", "head_sha": "a"*40
+        })
+        assert train_manifest["proposer_actor"] == "LF_GOVERNANCE"
+        train_manifest["router_authority_receipt"] = {
+            "schema_version": "LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+            "router": "ACT-0001",
+            "operation_code": "ACTUALIZACION_DB_LF",
+            "action_code": "UPDATE",
+            "target_repo": "cristhianlujan/claude-persona-lf-patch",
+            "target_path": train_path,
+            "target_code": train_code,
+            "scope_attested": False,
+            "route_eligibility_only": True
         }
         cls.run_sql(
             "INSERT INTO public.lf_operation_execution "
