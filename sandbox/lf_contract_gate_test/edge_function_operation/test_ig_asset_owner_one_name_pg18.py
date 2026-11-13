@@ -295,6 +295,97 @@ class AssetOwnerPG18(unittest.TestCase):
             "WHERE execution_id="+quote(PARENT)+";"),"1")
         print("PASS_POSTGRES_ROUTER_SCOPE_POLICY_WRITER_REPIN",flush=True)
 
+    def rebind_train_to_backfill_sql(self):
+        """PG-only readback of the ACTUAL recorder-sourced synthetic manifest.
+        Does not mutate the fixture RUN; the Train creates a real RUN on deploy."""
+        name = "20261113235900_lf_asset_owner_one_name_backfill_v1"
+        target = "supabase/migrations/" + name + ".sql"
+        return ("DO $verify_train$ BEGIN IF NOT EXISTS (SELECT 1 "
+                "FROM public.lf_operation_execution e WHERE e.execution_id="
+                + quote(PARENT)
+                + " AND e.target_code=" + quote(name)
+                + " AND e.target_path=" + quote(target)
+                + " AND e.operation_code='ACTUALIZACION_DB_LF'"
+                + " AND e.manifest->>'producer'='lf-migration-merge-train'"
+                + " AND e.manifest->>'proposer_actor'='LF_GOVERNANCE'"
+                + " AND e.manifest->'router_authority_receipt'->>'target_path'="
+                + quote(target)
+                + ") THEN RAISE EXCEPTION "
+                  "'PG_TEST_TRAIN_PROPOSER_FROM_RECORDER_MISSING';"
+                  " END IF; END $verify_train$")
+
+    def fixture_sha_rebind(self, source):
+        """Test-only translation from LIVE Supabase SHA to the limited PG18
+        row fixture SHA. Never edits the committed official migration file."""
+        raw = self.run_sql(
+            "SELECT a.id::text||'|'||encode(extensions.digest(convert_to("
+            "(to_jsonb(a)-'updated_at')::text,'UTF8'),'sha256'),'hex') "
+            "FROM public.lf_activos a ORDER BY a.id;")
+        actual = {}
+        for line in raw.splitlines():
+            id_value, hashed = line.split("|",1)
+            actual[id_value] = hashed
+        self.assertEqual(len(actual),238)
+        for row in self.assets:
+            live_hash = row["preimage_sha256"]
+            self.assertEqual(source.count(live_hash),1,
+              "OFFICIAL_SQL_MANIFEST_PREIMAGE_MISSING id=" + row["id"])
+            source = source.replace(live_hash,actual[row["id"]])
+        print("PG18_FIXTURE_SHA_ADAPTATION_238_TEST_ONLY",flush=True)
+        return source
+
+    def test_005_backfill_exact_sql_pg18(self):
+        """Execute EXACT one-file backfill under official PG18 fixture RUN and
+        rollback the entire transaction, without live Supabase writes."""
+        path = ROOT / "supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql"
+        source = path.read_text(encoding="utf-8")
+        self.assertTrue(source.startswith("-- LF IG OFFICIAL DATA MIGRATION"))
+        self.assertEqual(source.count("\nBEGIN;"),1)
+        self.assertTrue(source.rstrip().endswith("COMMIT;"))
+        source = self.fixture_sha_rebind(source)
+        body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
+        query = ("BEGIN;" + self.rebind_train_to_backfill_sql() + ";" + body + "ROLLBACK;")
+        self.run_sql(query)
+        self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"),"155")
+        self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2;"),"0")
+        self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE archived_at IS NOT NULL;"),"13")
+        print("PASS_PG18_EXACT_DOCUMENTARY_DATA_MIGRATION_155_ROLLBACK",flush=True)
+
+    def test_006_backfill_fails_closed_on_stale_preimage(self):
+        source = (ROOT / "supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql").read_text(encoding="utf-8")
+        body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
+        query = ("BEGIN;" + self.rebind_train_to_backfill_sql() + ";"
+                 "UPDATE public.lf_activos SET owner_name='LF_GOVERNANCE' "
+                 "WHERE codigo_activo='ACT-0001';" + body + "ROLLBACK;")
+        self.run_sql(query,error="LF_OWNER_BACKFILL_ROW_SCOPE_DRIFT")
+        self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"),"155")
+        print("PASS_PG18_DOCUMENTARY_BACKFILL_DRIFT_REJECTED",flush=True)
+
+    def test_007_backfill_sha_drift_blocks(self):
+        source = (ROOT / "supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql").read_text(encoding="utf-8")
+        source = self.fixture_sha_rebind(source)
+        body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
+        query = ("BEGIN;" + self.rebind_train_to_backfill_sql() + ";"
+                 "UPDATE public.lf_activos SET metadata='{\"test_sha_drift\":true}'::jsonb "
+                 "WHERE codigo_activo='ACT-0001';" + body + "ROLLBACK;")
+        self.run_sql(query,error="LF_OWNER_BACKFILL_SHA_DRIFT")
+        self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"),"155")
+        print("PASS_PG18_DOCUMENTARY_BACKFILL_SHA_DRIFT_REJECTED",flush=True)
+
+    def test_008_backfill_missing_system_proposer_blocks(self):
+        """No proponente is invented inside the SQL writer. It must exist
+        on the official Train RUN before the first effect."""
+        source = (ROOT / "supabase/migrations/20261113235900_lf_asset_owner_one_name_backfill_v1.sql").read_text(encoding="utf-8")
+        body = source.split("\nBEGIN;",1)[1].rsplit("COMMIT;",1)[0]
+        query = ("BEGIN;"
+                 "UPDATE public.lf_operation_execution "
+                 "SET manifest=manifest-'proposer_actor' "
+                 "WHERE execution_id=" + quote(PARENT) + ";"
+                 + body + "ROLLBACK;")
+        self.run_sql(query,error="LF_OWNER_BACKFILL_DOCUMENTARY_PROPOSER_REQUIRED")
+        self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2;"),"0")
+        print("PASS_PG_SYSTEM_PROPOSER_MISSING_FAIL_CLOSED",flush=True)
+
     def test_01_guard_and_counts(self):
         self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"), "155")
         self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE archived_at IS NOT NULL AND owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"), "11")
