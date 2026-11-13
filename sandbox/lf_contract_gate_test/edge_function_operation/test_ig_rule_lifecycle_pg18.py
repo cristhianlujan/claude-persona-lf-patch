@@ -273,6 +273,10 @@ class PG18RealSQL(unittest.TestCase):
           "MISSING_PROVIDER_WROTE_RULE")
         fail_assert(self.sql("SELECT count(*) FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id="+quote(chain_parent)+";")=="0",
           "MISSING_PROVIDER_CREATED_APPROVAL")
+        parent_status=self.sql("SELECT status FROM public.lf_operation_execution WHERE execution_id="+quote(chain_parent)+";")
+        terminal_rows=self.sql("SELECT count(*) FROM public.lf_operation_execution_steps WHERE execution_id="+quote(chain_parent)+" AND step_id='report_output';")
+        fail_assert(parent_status=="IN_PROGRESS" and terminal_rows=="0",
+                    "MISSING_PROVIDER_CREATED_FALSE_TERMINAL_PASS")
         print("PASS_PG18_ONE_SHOT_WITH_10_FIXTURE_STEPS_STILL_REJECTS_UNSIGNED_STEP70",flush=True)
 
 
