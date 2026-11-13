@@ -1,54 +1,60 @@
-# Lote 29 — Tablero 12 etapas, medido exclusivamente en la CI de PG18
+# L29 — Tablero ajustado: 12 etapas × 49 reglas REALES B2B
 
-**CI:** GitHub Actions #43336082581, **SUCCESS**, test `test_pg18_lote29_e2e_ig_gap.py` con tres escenarios LF y 22/22 controles PASS. Resultado productivo: **NO-GO / UNVERIFIED**. Fuente RAW: `lote29_e2e_runtime.json` SHA-256 `122712edfb41308417ab2a2b3f5e76089e078239e5dd161be0967c6e4e7c0ca8` (artifact `13997605666`).
+**CI:** [#43340333844](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43340333844), PG18. SHA-256 RAW: `a898a38cb6f8cedaf1271e7390df7517ef8bd3cfce63c60997ae097edd05b08f`. Ninguna regla aprobada o promovida.
 
-## Estados de las 36 celdas medidas
+| Etapa | REAL_EN_SANDBOX | SINTETICO | NO_PROBADO | Motivo |
+|---|---:|---:|---:|---|
+| Router | 0 | 0 | 49 | ACT-0001 no ejecutado; B09 |
+| Perfil | 0 | 0 | 49 | No se invocó perfil oficial |
+| RUN | 0 | 0 | 49 | No se creó, reanudó ni cerró ningún RUN nativo; B02/B03 |
+| IG | 0 | 49 | 0 | Loop de revisión SQL del sandbox, no dependencia IG nativa |
+| Curator | 49 | 0 | 0 | Mini-Curator determinista ejecutado contra 49 copias reales |
+| Validator | 49 | 0 | 0 | SHA de fuente, diff, duplicidad exacta, umbral central y pruebas de bloqueo |
+| Retorno perfil | 0 | 0 | 49 | No hubo handoff/retorno del perfil |
+| Ejecucion | 0 | 4 | 45 | Cuatro parches solo en draft: AUTH-018/019/020/033 |
+| Promocion | 0 | 0 | 49 | Falta firma; sin registrador oficial |
+| VIGENTE | 0 | 0 | 49 | 9 VIGENTE de origen, cero transición nueva acreditada |
+| Readback | 49 | 0 | 0 | SHA idéntico al SELECT vivo y 49 preimágenes intactas |
+| Cierre | 0 | 0 | 49 | Sin Step70 ni recibo terminal oficial |
 
-| Etapa L26 | A: nueva LF | B: modificada CANDIDATO LF | C: corregida VIGENTE LF | Evidencia / limitación |
-|---|---|---|---|---|
-| Router | `SINTETICO` | `SINTETICO` | `SINTETICO` | No ACT-0001; solicitud de laboratorio L29 no equivale a Router |
-| Perfil | `SINTETICO` | `SINTETICO` | `SINTETICO` | L11B owner profile fixture y HMAC L17; no perfil nativo |
-| RUN | `SINTETICO` | `SINTETICO` | `SINTETICO` | EXEC-PARENT-TEST-001 / EXEC-OWNER-L11B-001 fixtures, system_attestation=false |
-| IG | `SINTETICO` | `SINTETICO` | `SINTETICO` | L11B stub de Input Governance; sin ticket Edge real |
-| Curator | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | L23 Curator SQL ACEPTAR+HMAC, guarda de activación ejecutada |
-| Validator | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | L7/L8 captura/cita/binding bajo SQL real de PG18, provenance sintética |
-| Retorno perfil | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | L14 profile_return READY verificado por función PG18, no transporte nativo |
-| Ejecución | `SINTETICO` | `SINTETICO` | `SINTETICO` | Perfil/Step70 RUN del fixture no completó 11 pasos oficiales |
-| Promoción | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | Gate congelado APPLIED + recibo L26 y replay L29 NOOP |
-| VIGENTE | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | Fuente y quality registry PG18 VIGENTE; C anterior SUCEDIDA |
-| Readback | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | L20 divergence=0, L26 receipts/readback y L29 request count |
-| Cierre | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | `REAL_EN_SANDBOX` | L24/L26 closure hash VERIFIED, doble close NOOP y rollback |
+## Recuento real del nuevo experimento
 
-## Recuento verificable
-
-| Grupo | Base L26 (LF nueva + LF corregida + SALY nueva) | L29 (tres LF) |
+| Estado | Celdas | Porcentaje |
 |---|---:|---:|
-| REAL_EN_SANDBOX | 21/36 = **58,33%** | **21/36 = 58,33%** |
-| SINTETICO | 11/36 | **15/36** |
-| NO_PROBADO | 4/36 | **0/36** |
-| Total | 36 | 36 |
+| REAL_EN_SANDBOX | **147** | **25,00%** |
+| SINTETICO | **53** | **9,01%** |
+| NO_PROBADO | **388** | **65,99%** |
+| **TOTAL** | **588** | **100%** |
 
-**Fórmula:** `100 × COUNT(REAL_EN_SANDBOX) / 36 = 100 × 21 / 36 = 58,33%`. **Incremento real de la cobertura medida: 0 puntos porcentuales.** No contar los 22 tests como 22 etapas.
+**Fórmula:** 49 × 12 = 588; 100 × 147/588 = **25,00%** de etapas mecánicas dentro del alcance de revisión de las 49 reglas. Dos códigos ausentes NO integran este denominador.
 
-**Precisión importante:** el paso de 4 `NO_PROBADO` a 0 en L29 es consecuencia del **cambio de composición de escenarios**: se sustituyó la trayectoria SALY por una tercera LF para demostrar modificación de candidata. **No significa que se cubrieran Router/Perfil/RUN/IG de SALY**, que permanecen NO_PROBADOS en producción y fuera de este runner. Es engañoso afirmar que se cerraron cuatro brechas de SALY.
+## Comparación explícita: cohortes distintas, NO sumables
 
-## Readbacks adicionales del usuario (no son filas nuevas del tablero original)
+| Lote | Cohorte | Real PG18 | Sintético | No probado |
+|---|---|---:|---:|---:|
+| L26 base | LF nueva, LF corregida y SALY nueva (fixtures) | 21/36 = 58,33% | 11 | 4 |
+| L29 previo | 3 variantes LF sobre reglas de muestra | 21/36 = 58,33% | 15 | 0 |
+| **L29 ajustado** | **49 reglas reales de Login B2B copiadas** | **147/588 = 25,00%** | **53** | **388** |
 
-| Checkpoint requerido | Evidencia L29 | Realidad limitada |
-|---|---|---|
-| Solicitud | `l29_submit_request_v1` y `REQUEST_RECEIVED_PG18` | `REAL_EN_SANDBOX` solo del wrapper, no Router |
-| Propuesta | CANDIDATO origen, source SHA-256, versión B modificada pre/post | `REAL_EN_SANDBOX` fixture |
-| Perfil dueño | OWNER HMAC L17, `l18_owner_intents`, creator≠owner | `REAL_EN_SANDBOX` sólo verificador de prueba, no perfil/identidad productiva |
-| Revisión Curator | L23 `ACEPTAR`, sello HMAC y familia fixture | `REAL_EN_SANDBOX`, no motor semántico independiente |
-| Ejecución y validación | L11B run fixture + L7/L8 + ticket L23 + L14 | Ejecución `SINTETICO`, validador SQL `REAL_EN_SANDBOX` |
-| Promoción/VIGENTE/readback/cierre | Gates PG18, L20 VIGENTE, L24/L26 SHA y NOOP de L29 | `REAL_EN_SANDBOX`; `ROLLBACK` revierte todos los cambios |
+Estos porcentajes **no son directamente comparables**: difieren las cohortes, denominadores y fases ejecutadas. No supone una regresión de producto ni puede presentarse como avance productivo de IG. Los 9 registros originalmente VIGENTE no fueron promovidos ni modificados.
 
-**Estado de validación por escenario:** `A_NEW` PASS, `B_MODIFIED_CANDIDATE` PASS (hash de candidato antes≠después, antes de captura), `C_CORRECTED_VIGENTE` PASS (sucesora y anterior SUCEDIDA). Todos sin escritura productiva.
+## Flujo realmente observado
 
-## Qué significa para los 14 bloqueos
+```text
+SELECT vivo solo lectura + SHA → copia íntegra PG18 (49)
+  → Curator 1.ª vuelta: 23 ACEPTAR preliminar / 22 ESCALAR / 4 DEVOLVER
+  → 4 diffs aplicados solo a drafts PG18 (AUTH-018/019/020/033)
+  → Curator 2.ª vuelta: 4 ESCALAR
+  → 23 preliminares / 26 escaladas / 2 ausentes
+  → NO HAY FIRMA → BLOQUEO PROMOCIÓN → NO-GO
+```
 
-El laboratorio acredita funciones SQL sintéticas/aditivas, no la ruta oficial ACT-0001→Perfil→RUN→IG→juez→Step70→cierre. B07 (esquema de lifecycle) sigue pendiente de DDL autorizado; B08 (Supabase Auth/owner real) sigue HMAC fixture; B12 (compatibilidad legacy) no fue ensayada contra esquema migrado; B02/B03 no reconciliaron los RUN reales. **Bloqueos cerrados = 0/14**.
+Cuatro propuestas de políticas 3,19,20,25 también se aplicaron a drafts independientes del sandbox (4/4), no al origen. Se detuvo la revisión sin vueltas artificiales donde dependía de decisiones no confirmadas o pruebas externas.
 
-**No cambiar en el dashboard oficial los resultados L21/L26 ni marcar GO.** Este tablero L29 tiene su propia composición de casos, y los % son sólo cobertura de laboratorio.
+## B09 y las 14 condiciones de producción
 
-**Auditor:** GPT-6 (mismo modelo), sin juez independiente; Curator L23 determinista, JWT L17 HMAC test. **NO-GO / UNVERIFIED.**
+El runner NO ejecutó ACT-0001, perfil real, RUN, IG nativo, Step70, OIDC, promoción ni cierre terminal. B07 (columnas lifecycle), B08 (identidad), B12 (funciones legacy) y B02/B03 (RUN existentes/efectos) permanecen pendientes. **Bloqueos cerrados 0/14**.
+
+**Gates:** no se editaron funciones congeladas; MD5 de la prueba PG18 previa: apply `86b0494984edf95cf0f9c0a0df67000b`, capture `89cbfac4162dbc9f8ecca59f2c3ab4c3`, citation_verify `773a62783baa5edbe967200cac66b8c3`, L8 guard `522d12f0843be1da3c785cef3c0bf3fc`. **No se recalcularon en este runner real**, ya que no hubo promoción.
+
+**Curator:** SQL determinista del mismo GPT-6; no juez independiente. **JWT:** no se probó autenticación real; el HMAC de laboratorio es del L29 previo. **NO-GO / UNVERIFIED.**
