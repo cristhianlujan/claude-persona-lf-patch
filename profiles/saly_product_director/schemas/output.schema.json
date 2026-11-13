@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "status",
+    "project_code",
+    "profile_code",
+    "identity_verified",
+    "production_authorized",
+    "pack_type",
+    "deliverable_created",
+    "evidence_map",
+    "blocking_codes",
+    "next_gate"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "VALID_OUTPUT",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "project_code": {
+      "const": "SALY"
+    },
+    "profile_code": {
+      "const": "PERFIL-PRODUCT-DIRECTOR-SALY"
+    },
+    "identity_verified": {
+      "const": false
+    },
+    "production_authorized": {
+      "const": false
+    },
+    "pack_type": {
+      "const": "profile"
+    },
+    "deliverable_created": {
+      "type": "object"
+    },
+    "evidence_map": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocking_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_gate": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
