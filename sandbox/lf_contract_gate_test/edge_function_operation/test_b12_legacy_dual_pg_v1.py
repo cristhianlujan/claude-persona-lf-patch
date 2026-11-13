@@ -381,6 +381,20 @@ SELECT 'B12_LEGIT_ROLLBACK_CLEAN|'||
         print("PASS_B12_LEGITIMATE_FOUR_FUNCTION_FLOW_AFTER_REVOKE_"+image,
               flush=True)
         # Return Docker to original SQL-role permission state.
+        # B12_DIAG_ONLY: inspect real ACL tuples AFTER rollback GRANT, inside
+        # a disposable transaction. Prints expected vs actual in BOTH PG versions.
+        acl_tuple_sql = "SELECT 'B12_ACLEXPLODE|'||COALESCE(jsonb_agg(\njsonb_build_object('grantee', CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,\n'privilegio',x.privilege_type,'grantor',pg_get_userbyid(x.grantor),'is_grantable',x.is_grantable)\nORDER BY CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,\nx.privilege_type,pg_get_userbyid(x.grantor),x.is_grantable),'[]'::jsonb)::text\nFROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) x\nWHERE p.oid='public.lf_rule_promotion_guard_v1()'::regprocedure;"
+        expected_acl = self.sql(name, acl_tuple_sql)
+        diagnostic = self.sql(name,
+            "BEGIN; GRANT EXECUTE ON FUNCTION "
+            "public.lf_rule_promotion_guard_v1() TO PUBLIC, anon, authenticated; "
+            + acl_tuple_sql + " ROLLBACK;")
+        actual_rows = [line for line in diagnostic.splitlines()
+                       if line.startswith("B12_ACLEXPLODE|")]
+        self.assertEqual(len(actual_rows),1,"B12_DIAG_ACLEXPLODE_MISSING:"+diagnostic)
+        print("B12_ACLEXPLODE_EXPECTED_FROM_FREEZE_"+image+"="+expected_acl,flush=True)
+        print("B12_ACLEXPLODE_REAL_AFTER_ROLLBACK_GRANT_"+image+"="+actual_rows[0],flush=True)
+        print("B12_ACLEXPLODE_TEXT_EQUAL="+str(expected_acl==actual_rows[0]),flush=True)
         self.sql(name,ROLLBACK_SCRIPT.read_text(encoding="utf-8"))
         self.sql(name, "REVOKE UPDATE(estado) ON lf_ops.reglas FROM anon, authenticated;")
         print("PASS_B12_EXACT_ROLLBACK_FILE_RESTORES_PREIMAGE_"+image,flush=True)
