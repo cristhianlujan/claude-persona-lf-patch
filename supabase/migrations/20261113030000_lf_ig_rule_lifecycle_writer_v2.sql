@@ -150,7 +150,7 @@ BEGIN
     OR p_source_sha256 !~ '^[0-9a-f]{64}$'
  THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_INPUT_INVALID'; END IF;
  IF coalesce(p_decision->>'fecha','') !~
-  '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$'
+  '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$'
  THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_DATE_INVALID'; END IF;
  v_decision_date:=(p_decision->>'fecha')::timestamptz;
  SELECT * INTO v_owner FROM public.lf_ig_project_owner_v2
