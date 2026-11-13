@@ -1,0 +1,27 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-AUTH019-P1P2-OTP-20261113",
+  "decision_title": "AUTH-019 — Factor de segundo control para ambos administradores",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "El patch documental de AUTH-019 define que perfiles 1 y 2 validan usuario y contraseña y, cuando MFA es exigido, segundo factor OTP correo/Brevo verificado del lado servidor antes de AUTHENTICATED. Perfiles 3–6 mantienen OTP/Brevo; no FIDO2/passkeys, no fallback sin segundo factor exigido. No modifica valor_config ni política 19.",
+  "source_codes": [
+    "L35-OWNER-AUTH019-OPTION-A-001",
+    "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001"
+  ],
+  "candidate_patch_sha256": "f70ded45a786f6fc6664081ecec5a3963514d0e3cf9ad06089914fcd425dd288",
+  "source_artifact": "docs/rule-quality-lote37/00_auth019_p1p2_nuevo_patch_v2.json",
+  "approval_mechanism": "DOCUMENT_GITHUB_NOW_RULE_OWNER_V2_ONLY_AFTER_GATES",
+  "required_evidence_unresolved": [
+    "AUTH019_VALOR_CONFIG_CONTRADICE_TEXTO",
+    "POLICY19_CONTRADICE_OTP",
+    "REAL_RUN_JUDGE_INDEPENDIENTE",
+    "IDENTITY_VERIFIED_FALSE"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
