@@ -42,6 +42,9 @@ class B09OfficialNonceDocumentaryCandidate(unittest.TestCase):
         self.assertIn("lf_ig_native_chat_nonce_no_mutation_v1",MIG)
         self.assertIn("lf_ig_native_chat_receipt_immutable_guard_v1",MIG)
         self.assertIn("B09_NONCE_ROLLBACK_DURABLE_RECEIPTS_PRESENT",DOWN)
+        self.assertIn("v_run.manifest->>'read_only' IS DISTINCT FROM 'true'",MIG)
+        self.assertIn("v_run.manifest->>'no_write' IS DISTINCT FROM 'true'",MIG)
+        self.assertIn("v_run.manifest->>'no_promotion' IS DISTINCT FROM 'true'",MIG)
 
     def test_sha_never_attests_model_or_grants_effects(self):
         self.assertIn("'OFFICIAL_OIDC_WRITER_NONCE_CHAIN_BOUND'",MIG)
