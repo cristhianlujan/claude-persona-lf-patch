@@ -1,6 +1,6 @@
 # Decisiones Q01–Q12 y brechas de control — SIN FIRMA
 
-**Estado literal para TODAS las filas:** `DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA`, según entrada del dueño en L28. Significa **preferencia o dirección de diseño conversada**, no aprobación acreditada, contrato productivo ni implementación. Las otras 20 decisiones de L21 permanecen PENDIENTE. En la fuente L21 hay 32/32 sin firmas verificadas. No actualizar `05_respuestas_dueno.csv` de L21.
+**Estado literal para TODAS las filas:** `DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA`, según entrada del dueño en L28. Significa **preferencia o dirección de diseño conversada**, no aprobación acreditada, contrato productivo ni implementación. Las otras 20 decisiones de L21 permanecen PENDIENTE. En la fuente L21 hay 32/32 sin firmas verificadas. **Las firmas de decisiones de Contenido son registro documental en IG, no gate del GO técnico Motor.** Las decisiones de autoridad y alcance de Motor requieren sus propias firmas auténticas. No actualizar `05_respuestas_dueno.csv` de L21.
 
 | Q | Instrucción conversada (no firmada) | Por definir / acreditar | Bloqueos |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Fuente del señalamiento: pedido L28 del dueño. **Sin SELECT de `lf_ops.permiso
 | Aprobar recuperación por soporte | Seguridad + Soporte/Operaciones | B01, B10, B08 | **dos identidades distintas**, espera 48 h, notificación previa, no autoaprobación, negativa por bypass |
 | Actualizar parámetros de riesgo | Seguridad/Riesgos + IAM | B05, B10, B08 | versionado, scope y límites, trazabilidad actor, rollback, autorización de cambio |
 
-**No inferir códigos, scopes, IDs ni roles:** esos campos deben provenir del inventario y contratos reales. No crear grants nuevos ni asignaciones tácitas. La ausencia no exime políticas o restricciones server-side existentes.
+**No inferir códigos, scopes, IDs ni roles:** esos campos deben provenir del inventario y contratos reales. No crear grants nuevos ni asignaciones tácitas. La ausencia no exime políticas o restricciones server-side existentes. Estas cuatro brechas de **Contenido** no impiden por sí solas el GO de Motor, **siempre que** B08/B09 prueben deny-by-default y no queden capacidades de negocio expuestas sin permiso; la falla de aislamiento o auth sí bloquea Motor.
 
 ## Separación de trabajo y autoridad
 | Capa | Puede preparar en L28 | No puede acreditar por sí sola | Autoridad de cierre futura |
@@ -43,5 +43,5 @@ Fuente del señalamiento: pedido L28 del dueño. **Sin SELECT de `lf_ops.permiso
 | **Infra/DBA/proveedor** | backup policy, planes restore/migración | backup/restore real sin pruebas y firmas | custodia DBA/Continuidad + dueño |
 
 ## Regla de salida
-Ninguna decisión Q01..Q12 se promueve por este paquete. Se necesita firma autenticada, versión de contrato, impacto, aprobación por competencia y operación gobernada independiente de L28 para cualquier mutación futura.
+Ninguna decisión Q01..Q12 se promueve por este paquete. **Contenido (B01/B04/B05/B10/B11):** firma y dictamen quedan como registro documental gobernado por IG y bloquean **solo su propia funcionalidad/promoción**, no GO técnico del Motor. **Motor (B02/B03/B06/B07/B08/B09/B12/B13/B14):** necesita evidencia de cierre, identidad/autoridad y G15-MOTOR antes de una operación de pase gobernada. El contrato técnico compartido y las pruebas fail-closed siguen siendo obligatorios. Toda mutación futura exige versión, impacto, aprobación competente y operación independiente de L28.
 
