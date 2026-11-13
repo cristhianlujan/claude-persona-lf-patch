@@ -11,6 +11,8 @@ from test_ig_rule_lifecycle_pg18 import PG18RealSQL, jq, quote, fail_assert
 
 ROOT = Path(__file__).resolve().parents[3]
 DELTA = ROOT / "supabase/migrations/20261113060000_lf_router_scope_receipt_consumer_v2.sql"
+STEP70_BASELINE = ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle/pg18_step70_bridge_live_preimage.sql"
+
 ROLLBACK = ROOT / (
     "sandbox/lf_contract_gate_test/input_governance_lifecycle/"
     "rollback_lf_router_scope_receipt_consumer_v2.sql"
@@ -23,6 +25,8 @@ class ACT0001ScopeConsumerPG18(unittest.TestCase):
                     "PR3807_DELTA_OR_ROLLBACK_MISSING")
         PG18RealSQL.setUpClass()
         cls.sql = PG18RealSQL.sql
+        fail_assert(STEP70_BASELINE.is_file(),"PG18_STEP70_LIVE_SOURCE_FIXTURE_MISSING")
+        cls.sql(STEP70_BASELINE.read_text("utf-8"), timeout=120)
         cls.sql(DELTA.read_text("utf-8"), timeout=120)
         fail_assert(cls.sql(
             "SELECT to_regprocedure("
