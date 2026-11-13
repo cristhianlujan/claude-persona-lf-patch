@@ -1,0 +1,45 @@
+{
+  "schema": "LF_L36_OWNER_CONVERSATION_DECISION_ADMIN_LF_OTP_BREVO_V1",
+  "id": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+  "estado": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "fecha_conversacion": "2026-11-13",
+  "decisor_declarado": "Cristhian Luján",
+  "literal_owner_statement": "Decisión del dueño (DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA, decisor Cristhian Luján): Admin LF (perfil 1) usa el mismo criterio que Admin Empresa: usuario y contraseña validados por el servidor + OTP por correo/Brevo como segundo factor; sin FIDO2/passkeys. El dueño confirma formalizar las decisiones tomadas.",
+  "scope": {
+    "project": "LF",
+    "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+    "policy_id": 19,
+    "decision_concrete": {
+      "profile_1": "USERNAME_PASSWORD_SERVER_VALIDATED_PLUS_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+      "profile_2": "USERNAME_PASSWORD_SERVER_VALIDATED_PLUS_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+      "profiles_3_to_6": "LF_EMAIL_OTP_BREVO_UNCHANGED",
+      "profiles_1_2_fido2_passkeys": "NOT_ADOPTED",
+      "sms": "CONTINGENCY_PROVIDER_PENDING",
+      "mfa_applicability": "PRESERVE_Q01_POLICY3_SEPARATE",
+      "identity_provider": "PENDING_ADR_003_M1"
+    },
+    "supersedes_l35_profile1_pending": true,
+    "maintains_l35_profile2_option_a": true,
+    "l34_fido2_option_c_remains_superseded": true,
+    "source_document_l35": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote35-auth019-option-a-owner-correction-v1/docs/rule-quality-lote35/00_decision_dueno_auth019_opcion_a_corrige_l34.json"
+  },
+  "risk_acceptance": {
+    "literal": "El OTP por correo puede ser retransmitido mediante phishing.",
+    "accepted_by_owner_in_conversation": true,
+    "signature_pending": true,
+    "security_review_pending": true,
+    "not_phishing_resistant": true
+  },
+  "owner_requests_formalization": true,
+  "formal_signature": {
+    "exists": false,
+    "verified_actor": false,
+    "exact_patch_sha_signed": false,
+    "signed_at": null,
+    "receipt_ref": null,
+    "identity_mode": "DECLARATION_IN_CHAT_NOT_VERIFIED_HUMAN_SIGNATURE"
+  },
+  "supabase_writes": 0,
+  "runs_touched": 0,
+  "promotion": 0
+}
