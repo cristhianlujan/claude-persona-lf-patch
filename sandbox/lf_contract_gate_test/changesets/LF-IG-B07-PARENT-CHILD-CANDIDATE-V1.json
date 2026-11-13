@@ -1,0 +1,22 @@
+{
+  "solution_ref": "LF-IG-B07-PARENT-CHILD-CANDIDATE-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_parent_child_candidate_up.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_parent_child_candidate_down.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_parent_child_pg17_pg18.py": "RUNTIME_TESTING",
+    "docs/input-governance/b07_parent_child_candidate/01_inventario_modelo_fuentes.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_parent_child_candidate/02_tarjeta_decision_padre_hija_1_pagina.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_parent_child_candidate/03_criterio_literal_b07_cobertura.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_parent_child_candidate/04_evidencia_pg17_pg18.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-B07-PARENT-CHILD-CANDIDATE-V1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_saly_14_rows_fixture.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_parent_child_v2_finalizer_integration_candidate.sql": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_parent_child_candidate/05_enmienda_literal_para_documento_12.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py": "MIGRATION_SOURCE_PARITY_TOOLING",
+    "docs/input-governance/b07_parent_child_candidate/06_orden_train_y_readback.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/b07_saly_official_writer_candidate_v1.sql": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_parent_child_candidate/08_train_hold_backup_restore_readback_v1.md": "INPUT_GOVERNANCE",
+    "docs/input-governance/b07_parent_child_candidate/09_atomic_migration_package_v1.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_official_atomic_migration_pg17_pg18.py": "RUNTIME_TESTING"
+  }
+}

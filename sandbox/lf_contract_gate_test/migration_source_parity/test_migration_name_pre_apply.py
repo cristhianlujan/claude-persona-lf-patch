@@ -51,6 +51,27 @@ class MigrationNamePreApplyTest(unittest.TestCase):
         self.assertFalse(delta.exists(), "PR3807_DEPLOYED_DELTA_REINTRODUCED")
         self.assertTrue(rollback.is_file(), "PR3807_ROLLBACK_ARTIFACT_MISSING")
 
+    def test_b07_parent_child_only_sandbox_not_official_migration(self) -> None:
+        directory = ROOT / "sandbox/lf_contract_gate_test/input_governance_lifecycle"
+        for filename in (
+            "b07_parent_child_candidate_up.sql",
+            "b07_parent_child_candidate_down.sql",
+            "b07_parent_child_v2_finalizer_integration_candidate.sql",
+        ):
+            self.assertTrue((directory / filename).is_file(),
+                            "B07_PARENT_CHILD_CANDIDATE_SOURCE_MISSING")
+            self.assertFalse((ROOT / "supabase/migrations" / filename).exists(),
+                             "B07_PARENT_CHILD_NOT_APPROVED_FOR_TRAIN")
+        deployed = ROOT / "supabase/migrations/20261113030000_lf_ig_rule_lifecycle_writer_v2.sql"
+        for candidate in ("b07_parent_child_candidate_up.sql",
+                          "b07_parent_child_v2_finalizer_integration_candidate.sql"):
+            self.assertNotIn("ADD COLUMN lifecycle_",
+                             (directory / candidate).read_text(encoding="utf-8"),
+                             "B07_OWNER_REJECTED_LIFECYCLE_COLUMNS")
+        self.assertTrue(deployed.is_file())
+        self.assertNotIn("lf_b07_append_after_finalize_v1", deployed.read_text(encoding="utf-8"),
+                         "B07_UNGOVERNED_MUTATION_OF_DEPLOYED_V2")
+
     def test_unclassified_name_is_gated_before_any_apply_step(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         gate = text.index("- name: Classify migration name before any write")
