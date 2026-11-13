@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
-SQL=(ROOT/"supabase/migrations/20261113150000_lf_ig_native_chat_sha_receiver_v1.sql").read_text()
+SQL=(ROOT/"supabase/migrations/20261113143831_lf_ig_native_chat_sha_receiver_v1.sql").read_text()
 DOWN=(ROOT/"sandbox/lf_contract_gate_test/input_governance_lifecycle/rollback_lf_ig_native_chat_sha_receiver_v1.sql").read_text()
 
 class B09ShaReceiverContractStatic(unittest.TestCase):
