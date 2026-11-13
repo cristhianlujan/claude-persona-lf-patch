@@ -50,12 +50,14 @@ class AssetOwnerPG18(unittest.TestCase):
         assert len([r for r in cls.assets if r["cohort"] == "ARCHIVED_SEPARATE" and r["change_required"] == "true"]) == 11
         assert len([r for r in cls.assets if r["cohort"] == "ARCHIVED_SEPARATE" and r["owner_original"] == "GOVERNANZA_LF"]) == 6
         assert all(len(r["preimage_sha256"]) == 64 for r in cls.assets)
-        cls.container = "lf-owner-pg18-" + uuid.uuid4().hex[:10]
-        if os.getenv("LF_PG18_IMAGE", "postgres:18") != "postgres:18":
-            raise AssertionError("PG18_IMAGE_REQUIRED")
+        cls.container = "lf-owner-" + uuid.uuid4().hex[:10]
+        image = getattr(cls, "PG_IMAGE", "postgres:18")
+        expected = getattr(cls, "EXPECTED_VERSION", 18)
+        if image not in ("postgres:18", "postgres:17.6"):
+            raise AssertionError("PG18_OR_PG17_6_REQUIRED")
         p = subprocess.run(
             ["docker", "run", "-d", "--rm", "--name", cls.container,
-             "-e", "POSTGRES_PASSWORD=postgres", "-e", "POSTGRES_DB=postgres", "postgres:18"],
+             "-e", "POSTGRES_PASSWORD=postgres", "-e", "POSTGRES_DB=postgres", image],
             text=True, capture_output=True, timeout=240
         )
         if p.returncode: raise AssertionError("DOCKER_PG18_UNAVAILABLE " + p.stderr[-900:])
@@ -66,8 +68,8 @@ class AssetOwnerPG18(unittest.TestCase):
             time.sleep(2)
         else: raise AssertionError("PG18_NOT_READY")
         version = int(cls.run_sql("SHOW server_version_num;"))
-        if not (180000 <= version < 190000): raise AssertionError("NOT_POSTGRESQL18")
-        print("OWNER_GUARD_PG18_VERSION=" + str(version), flush=True)
+        if not (version // 10000 == expected): raise AssertionError("WRONG_POSTGRESQL_VERSION")
+        print("OWNER_GUARD_PG_VERSION=" + str(version), flush=True)
         cls.run_sql(BASE.read_text(encoding="utf-8"))
         # Fixture rows are copies of identifiers, original owners and archive
         # indicators ONLY. The frozen real full-row hashes cannot be recomputed
@@ -92,15 +94,42 @@ class AssetOwnerPG18(unittest.TestCase):
         cls.run_sql(UPSTREAM.read_text(encoding="utf-8"))
         cls.run_sql(MIGRATION.read_text(encoding="utf-8"))
         # Upstream PR3803 migration seeds TEMP_DOCUMENTARY_ACTIVE Cristhian.
-        cls.run_sql(f"""INSERT INTO public.lf_operation_execution
-            (execution_id,operation_code,target_type,target_code,idempotency_key,
-             created_by_execution_id,manifest)
-            VALUES ('{PARENT}','ACTUALIZACION_DB_LF','DB','public.lf_activos',
-                    'pg18-owner-only-v2','PG18_FIXTURE',
-                    '{{"proposer_actor":"LF_GOVERNANCE"}}'::jsonb);
-            INSERT INTO public.lf_operation_execution_steps
-            (execution_id,step_order,step_id,status,created_by_execution_id)
-            VALUES ('{PARENT}',10,'preflight','PASS_CLEAN','PG18_FIXTURE');""")
+        # Synthetic only: exact ACT-0001/Train fields required by PR3803 scope.
+        # This is not a real Router scope receipt or an authorization to write
+        # outside PostgreSQL Docker. Train itself owns these in Supabase.
+        train_code = "20261113233000_lf_asset_owner_one_name_guard_v1"
+        train_path = "supabase/migrations/" + train_code + ".sql"
+        train_manifest = {
+            "producer": "lf-migration-merge-train",
+            "head_sha": "a"*40,
+            "train_run_id": "123456789",
+            "pr": "3804",
+            "proposer_actor": "LF_GOVERNANCE",
+            "router_authority_receipt": {
+                "schema_version": "LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+                "router": "ACT-0001",
+                "operation_code": "ACTUALIZACION_DB_LF",
+                "action_code": "UPDATE",
+                "target_repo": "cristhianlujan/claude-persona-lf-patch",
+                "target_path": train_path,
+                "target_code": train_code,
+                "scope_attested": False,
+                "route_eligibility_only": True
+            }
+        }
+        cls.run_sql(
+            "INSERT INTO public.lf_operation_execution "
+            "(execution_id,operation_code,target_type,target_code,target_repo,target_path,"
+            "idempotency_key,created_by_execution_id,request_sha256,manifest) VALUES("
+            + quote(PARENT) + ",'ACTUALIZACION_DB_LF','MIGRATION',"
+            + quote(train_code) + ",'cristhianlujan/claude-persona-lf-patch',"
+            + quote(train_path) + ",'pg-fixture-owner-guard',"
+            "'PG_FIXTURE_ONLY'," + quote("a"*64) + ","
+            + quote(json.dumps(train_manifest, ensure_ascii=False)) + "::jsonb);"
+            + "INSERT INTO public.lf_operation_execution_steps "
+              "(execution_id,step_order,step_id,status,created_by_execution_id) "
+              "VALUES(" + quote(PARENT) + ",10,'preflight','PASS_CLEAN','PG_FIXTURE_ONLY');"
+        )
         assert cls.run_sql("SELECT count(*) FROM public.lf_activos;") == "238"
         print("PASS_PG18_OWNER_238_SOURCE_ROWS", flush=True)
 
@@ -200,6 +229,29 @@ class AssetOwnerPG18(unittest.TestCase):
             "13", "ARCHIVE_COHORT_CHANGED")
         print("PASS_PG18_FULL_155_ATOMIC_APPLY_AND_ROLLBACK", flush=True)
 
+    def test_04_scope_policy_rebound_and_router_receipt(self):
+        policy = json.loads(self.run_sql(
+            "SELECT json_build_object('pinned',p.writer_source_md5,"
+            "'live',md5(pg_get_functiondef("
+            "'public.lf_ig_asset_owner_apply_v2(uuid)'::regprocedure)),"
+            "'scope',p.scope_code)::text FROM public.lf_router_scope_policy_v1 p "
+            "WHERE p.scope_code='LF_ACTIVOS_OWNER_NAME_WRITE_V1';"
+        ))
+        self.assertEqual(policy["pinned"],policy["live"])
+        self.assertNotEqual(policy["pinned"],"cc5c36bf2ae0686bd46192b97956cbb2")
+        receipt=json.loads(self.run_sql(
+            "SELECT public.lf_router_scope_bind_v1(" + quote(PARENT) + ")::text;"
+        ))
+        self.assertEqual(receipt["status"],"SCOPE_ATTESTED_ROUTE_ONLY")
+        self.assertEqual(receipt["scope_code"],"LF_ACTIVOS_OWNER_NAME_WRITE_V1")
+        self.assertFalse(receipt["effect_authority"])
+        self.assertFalse(receipt["downstream_execution_allowed"])
+        self.assertEqual(receipt["positive_scope"][0]["table"],"public.lf_activos")
+        self.assertEqual(self.run_sql(
+            "SELECT count(*) FROM public.lf_router_scope_receipt_v1 "
+            "WHERE execution_id="+quote(PARENT)+";"),"1")
+        print("PASS_POSTGRES_ROUTER_SCOPE_POLICY_WRITER_REPIN",flush=True)
+
     def test_01_guard_and_counts(self):
         self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"), "155")
         self.assertEqual(self.run_sql("SELECT count(*) FROM public.lf_activos WHERE archived_at IS NOT NULL AND owner_name IS DISTINCT FROM 'LF_GOVERNANCE';"), "11")
@@ -247,6 +299,11 @@ class AssetOwnerPG18(unittest.TestCase):
           "SELECT count(*) FROM public.lf_ig_asset_owner_receipt_v2 "
           "WHERE asset_code='ACT-0003' AND decisor='Cristhian Luján';"),"1")
         print("PASS_PG18_DOCUMENTARY_CRISTHIAN_NO_AUTH_SIGNATURE",flush=True)
+
+class AssetOwnerPG176(AssetOwnerPG18):
+    """Run the exact guard/documentary writer tests on PostgreSQL 17.6."""
+    PG_IMAGE = "postgres:17.6"
+    EXPECTED_VERSION = 17
 
 if __name__ == "__main__":
     unittest.main()
