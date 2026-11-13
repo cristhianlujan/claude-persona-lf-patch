@@ -69,11 +69,9 @@ test("provider adapter cannot claim Step70 independence with zero model calls",a
   await block("call count",base,workflow,adapter,
     "NATIVE_DISPATCH_STEP70_INDEPENDENCE_UNVERIFIED");
 });
-test("provider adapter may only return a transport receipt, never a RUN PASS",async()=>{
+test("spoofed provider callback true still BLOCKED without an Ed25519 signed receipt",async()=>{
   const adapter=fakeAdapter();
   adapter.verifyProviderReceipt=async()=>true; // TEST INJECTION, not live proof.
-  const x=await dispatchNativeV1(base,workflow,adapter);
-  assert.equal(x.status,"PROVIDER_RECEIPT_READY_NOT_RECORDED");
-  assert.equal(x.canonical_write_performed,false);
-  assert.equal(x.profile_run_closed,false);
+  await block("callback spoof",base,workflow,adapter,
+    "NATIVE_DISPATCH_SIGNED_ATTESTATION_REQUIRED");
 });
