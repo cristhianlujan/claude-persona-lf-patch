@@ -33,5 +33,5 @@
 - Contenido completo de 7 documentos + 14 recibos = **21 archivos**.
 - 14 plantillas sin actores, fechas, hashes de evidencia productiva ni firmas rellenadas.
 - `0/14` y `0/15` en tablero; matriz 12 etapas igual a L21.
-- Comprobar diff base..HEAD, HEAD remoto y blobs de muestras; registrar SHA de commit en informe de entrega. **READBACK_PENDING** hasta efectuar esta comprobación efectiva.
+- Comprobar diff base..HEAD, HEAD remoto y blobs de muestras; registrar SHA de commit en informe de entrega. **READBACK_PASS_DOCUMENTAL (primer commit a3b0d6beec724a7a99c9270f3e0fcbc95801a223):** verificado con compare(base,HEAD) y lectura remota por ruta: 1 commit ahead / 0 behind; 21 rutas nuevas, todas `audits/rule-quality-lote28/**`; 14 filas ABIERTO/NO_VERIFICADO; 15 gates G01–G15; los 14 recibos contienen firma en blanco, ninguna casilla marcada y aviso NO_ES_RECIBO_EMITIDO. La comparación confirma **rutas/archivos**, no funcionamiento productivo, firmas ni gates MD5 live. El commit final tras actualizar este manifiesto debe verificarse con nueva comparación y leerse en informe final; no inventar SHA autofirmada.
 
