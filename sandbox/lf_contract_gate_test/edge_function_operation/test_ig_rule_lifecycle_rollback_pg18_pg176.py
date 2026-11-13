@@ -2,6 +2,7 @@
 """PR #3803 transactional reverse tests in isolated Docker PG18 and PG17.6.
 No Supabase keys, no live mutations, no historical RUN changes.
 """
+import json
 import shutil
 import subprocess
 import time
@@ -51,6 +52,30 @@ class PR3803Rollback(unittest.TestCase):
             if image == "postgres:17.6":
                 self.assertEqual(version, "170006")
             psql(FIXTURE.read_text(encoding="utf-8"))
+            # Genuine Train RUN source is simulated solely in disposable
+            # PG18/17.6; the forward SQL must reserve a NEW governed bootstrap.
+            runid="43379990002"
+            code="20261113030000_lf_ig_rule_lifecycle_writer_v2"
+            train="EXEC-DB-TRAIN-PR3803-20261113030000-R"+runid
+            repo="cristhianlujan/claude-persona-lf-patch"
+            target="supabase/migrations/"+code+".sql"
+            manifest={"producer":"lf-migration-merge-train","pr":3803,
+              "train_run_id":runid,"head_sha":"e"*40,
+              "router_authority_receipt":{
+                 "schema_version":"LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+                 "operation_code":"ACTUALIZACION_DB_LF","target_repo":repo,
+                 "target_code":code,"target_path":target,
+                 "route_eligibility_only":True,"scope_attested":False}}
+            payload=json.dumps(manifest,separators=(",",":"),ensure_ascii=False).replace("'","''")
+            psql("""INSERT INTO public.lf_operation_execution(
+              execution_id,operation_code,target_type,target_code,target_repo,
+              target_path,status,request_sha256,manifest,idempotency_key,
+              created_by_execution_id)
+              VALUES('%s','ACTUALIZACION_DB_LF','MIGRATION','%s','%s',
+              '%s','IN_PROGRESS','%s','%s'::jsonb,'%s','%s');"""%(
+              train,code,repo,target,"f"*64,payload,
+              "train:20261113030000:"+"e"*40,"LF-MIGRATION-TRAIN-RUN-"+runid))
+
             source_sql = """SELECT jsonb_agg(jsonb_build_object(
                 'skill',skill_code,'opener',opener_fn,'required',input_required,
                 'description',description) ORDER BY skill_code)::text
