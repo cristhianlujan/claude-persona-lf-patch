@@ -674,7 +674,7 @@ SET search_path TO 'pg_catalog','public','extensions'
 AS $fn$
 DECLARE a public.lf_activos%ROWTYPE; v_sha text; v_id uuid; v_sub uuid;
  v_train public.lf_operation_execution%ROWTYPE;
- v_proposer text; v_date timestamptz; v_dec_sha text;
+ v_proposer text; v_date timestamptz; v_dec_sha text; v_scope jsonb;
 BEGIN
  IF p_decision IS NULL OR jsonb_typeof(p_decision)<>'object'
     OR (SELECT count(*) FROM jsonb_object_keys(p_decision))<>6
@@ -703,6 +703,16 @@ BEGIN
  IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps
     WHERE execution_id=p_train_execution AND step_id='preflight' AND status='PASS_CLEAN')
  THEN RAISE EXCEPTION 'LF_IG_ASSET_MERGE_TRAIN_PRECHECK_MISSING'; END IF;
+ -- ACT-0001 server-bound scope receipt is issued from canonical catalog
+ -- and Train provenance; no human-defined positive/negative JSON is accepted.
+ v_scope:=public.lf_router_scope_bind_v1(p_train_execution);
+ IF v_scope->>'status'<>'SCOPE_ATTESTED_ROUTE_ONLY'
+    OR v_scope->>'execution_id' IS DISTINCT FROM p_train_execution
+    OR v_scope->'positive_scope' IS DISTINCT FROM
+       '[{"table":"public.lf_activos","columns":["owner_name"],"entrypoint":"public.lf_ig_asset_owner_apply_v2(uuid)"}]'::jsonb
+    OR v_scope->>'effect_authority'<>'false'
+    OR v_scope->>'downstream_execution_allowed'<>'false'
+ THEN RAISE EXCEPTION 'LF_IG_ASSET_SCOPE_RECEIPT_NOT_GOVERNED'; END IF;
  v_proposer:=nullif(btrim(v_train.manifest->>'proposer_actor'),'');
  IF v_proposer IS NULL OR v_proposer='Cristhian Luján'
  THEN RAISE EXCEPTION 'LF_IG_ASSET_SELF_APPROVAL_FORBIDDEN'; END IF;
@@ -734,7 +744,7 @@ CREATE FUNCTION public.lf_ig_asset_owner_apply_v2(p_receipt uuid)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','extensions'
 AS $fn$
-DECLARE t public.lf_ig_asset_owner_receipt_v2%ROWTYPE;a public.lf_activos%ROWTYPE;v_sha text;v_after text;
+DECLARE t public.lf_ig_asset_owner_receipt_v2%ROWTYPE;a public.lf_activos%ROWTYPE;v_sha text;v_after text; v_scope jsonb;
 BEGIN
  SELECT * INTO t FROM public.lf_ig_asset_owner_receipt_v2 WHERE receipt_id=p_receipt FOR UPDATE;
  IF NOT FOUND OR t.state<>'APPROVED'
@@ -753,6 +763,17 @@ BEGIN
     OR t.decision_record->>'decisor' IS DISTINCT FROM t.decisor
     OR t.decision_record->>'veredicto' IS DISTINCT FROM 'APROBAR'
  THEN RAISE EXCEPTION 'LF_IG_ASSET_DECISION_RECEIPT_CORRUPT'; END IF;
+ -- This mandatory readback blocks a direct service_role apply without
+ -- the canonical ACT-0001 scope. One stable run => one idempotent receipt.
+ v_scope:=public.lf_router_scope_bind_v1(t.train_execution_id);
+ IF v_scope->>'status'<>'SCOPE_ATTESTED_ROUTE_ONLY'
+    OR v_scope->>'execution_id' IS DISTINCT FROM t.train_execution_id
+    OR v_scope->>'scope_code'<>'LF_ACTIVOS_OWNER_NAME_WRITE_V1'
+    OR v_scope->>'effect_authority'<>'false'
+    OR NOT EXISTS(SELECT 1 FROM public.lf_router_scope_receipt_v1 sr
+      WHERE sr.execution_id=t.train_execution_id
+        AND sr.receipt_sha256=v_scope->>'receipt_sha256')
+ THEN RAISE EXCEPTION 'LF_IG_ASSET_SCOPE_RECEIPT_NOT_CURRENT'; END IF;
  SELECT * INTO a FROM public.lf_activos WHERE codigo_activo=t.asset_code
  AND archived_at IS NULL FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'LF_IG_ASSET_OWNER_TARGET_MISSING'; END IF;
