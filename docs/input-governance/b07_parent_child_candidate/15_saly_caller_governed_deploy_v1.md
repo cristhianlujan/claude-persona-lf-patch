@@ -1,0 +1,13 @@
+# B07 SALY — despliegue de caller creador por ruta oficial existente (DRAFT, NO-GO)
+
+El PR #3837 de admisión OIDC SALY fue fusionado por **LF Migration Merge Train**; esto instala fuente en main pero NO despliega Edge Functions. Readback del Supabase temporal: `lf-profile-creator-governance-caller-v1` ACTIVE v17 `verify_jwt=false`, `run-creacion-perfil-lf` ACTIVE v43 `verify_jwt=true`, ambos anteriores a SALY. El usuario aprobó creación/homologación documental «Si me designo», 2026-11-13 12:53 Lima, `identity_verified=false`, `production_authorized=false`.
+
+**Razón del cambio:** el workflow oficial `lf-edge-deploy-credential-readback.yml` solo tenía deploy-caller para `lf-profiles-governance-caller-v1` y deploy-profile-runtime para `run-creacion-perfil-lf`. No se puede redeployar `lf-profile-creator-governance-caller-v1` por esa ruta sin ampliar el workflow de forma explícita y acotada. Nada de Supabase API/CLI directo desde chat.
+
+**Extensión propuesta al mismo workflow protegido:** acción fija `deploy-profile-creator-caller` bajo `workflow_dispatch` + ambiente `lf-edge-deploy`. Fuente exacta `main`, checkout con historia, guard de HEAD y SHA, busca presencia del código SALY y regresión, ejecuta CLI fijada v2.48.3 solo para slug `lf-profile-creator-governance-caller-v1` y conserva `verify_jwt=false`. Preimagen por Management API GET; postimagen confirma target, JWT no alterado y versión incrementada; ante error postdeploy, rollback fuente de commit `e39abc6eb8fc44d21252f6bcdd34ca2431e816b8` con recibo. La herramienta readback propia contiene allowlist fija con un solo slug/JWT false, no permite desplegar.
+
+**Disparador documentado sin credenciales:** Issue etiquetado `lf-profile-update-governed`, JSON exacto `{"schema_version":"LF_PROFILE_UPDATE_REQUEST_V1","action":"profile_creator_caller_deploy"}`. El script de dispatch existente traduce el único action a `workflow_dispatch` contra main. El Issue no define objetivo, versión ni secretos. Pruebas negativas rechazan campos extra y JWT alterado.
+
+**Secuencia posterior a gates del PR de despliegue:** Merge Train del PR (sin SQL) → workflow de deploy caller protegido → readback Management API y fuente desplegada con `saly_profile_creator_init_v1` → workflow de deploy runtime preexistente `deploy-profile-runtime` → readback fuente/despliegue de `SALY_CREATION_DOCUMENTARY_AUTHORITY_INVALID` y `production_authorized=false` → Issue SALY nativo → RUN `CREACION_PERFIL_LF` y 40 pasos → readback `lf_activos` → Train separado #3832. #3818 sigue DRAFT hasta OK DDL explícito.
+
+**No se ha ejecutado el deployment ni el RUN.** El PR es un control de seguridad, no una autorización de producción ni un segundo escritor.

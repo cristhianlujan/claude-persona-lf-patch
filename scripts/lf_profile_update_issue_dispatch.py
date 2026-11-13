@@ -27,6 +27,7 @@ WORKFLOW_FILE = "lf-customer-profile-creator-governance-caller.yml"
 PROOF_WORKFLOW_FILE = "lf-profile-evolution-proof.yml"
 DEPLOY_WORKFLOW_FILE = "lf-edge-deploy-credential-readback.yml"
 DEPLOY_ACTION = "deploy-profile-runtime"  # fixed target: run-creacion-perfil-lf, exact main, readback + rollback
+DEPLOY_CREATOR_ACTION = "deploy-profile-creator-caller"  # exact main, creator caller only, pre/post readback + rollback
 DISPATCH_REF = "main"
 MAX_BODY_CHARS = 64000
 MAX_INPUT_CHARS = 60000
@@ -155,7 +156,7 @@ def governed_request(event, env):
         if mode == "measure" and cand != ZERO_SHA:
             raise ValueError("UPDATE_ISSUE_PROOF_INVALID")
         return {"action": action, "mode": mode, "profile_slug": slug, "base_sha": base, "candidate_sha": cand}
-    if action == "profile_runtime_deploy":
+    if action in ("profile_runtime_deploy", "profile_creator_caller_deploy"):
         if set(data) != DEPLOY_KEYS:
             raise ValueError("UPDATE_ISSUE_SCHEMA_INVALID")
         return {"action": action}
@@ -163,6 +164,9 @@ def governed_request(event, env):
 
 
 def dispatch_command(inputs):
+    if inputs["action"] == "profile_creator_caller_deploy":
+        return ["gh", "workflow", "run", DEPLOY_WORKFLOW_FILE, "--ref", DISPATCH_REF,
+                "-f", f"action={DEPLOY_CREATOR_ACTION}"]
     if inputs["action"] == "profile_runtime_deploy":
         # Fixed governed deploy of the profile runtime; the deploy job itself guards main, readback and rollback.
         return ["gh", "workflow", "run", DEPLOY_WORKFLOW_FILE, "--ref", DISPATCH_REF, "-f", f"action={DEPLOY_ACTION}"]
