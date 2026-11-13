@@ -1,0 +1,1575 @@
+{
+  "schema": "LF_L29_LOGIN_B2B_51_RULES_ITERATION_TRACE_DETERMINISTIC_RECONSTRUCTION",
+  "verified_against_ci_aggregate": {
+    "run_id": 43340017690,
+    "output_sha256": "3fd9da877faf0997a06578a2436c3fd0b6f136643a052b9332ad8ac2cdfcd207",
+    "cases": {
+      "actual": 49,
+      "rounds": 53,
+      "returns": 4,
+      "preliminary": 23,
+      "escalated": 26,
+      "missing": 2
+    }
+  },
+  "not_raw_artifact": true,
+  "method": "EXACT_SQL_BRANCH_LOGIC_RECONSTRUCTION_OF_L29_CURATOR_V1_CHECKED_AGAINST_CI_COUNTS",
+  "source_snapshot_sha256": "4959cfd6d9319ea26b60f9a21a1751c674e06c4417fb4d589f3665424d539bd3",
+  "owner_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "promotions": 0,
+  "counts": {
+    "vueltas": 53,
+    "devoluciones": 4,
+    "final": {
+      "ACEPTAR_PRELIMINAR_SANDBOX": 23,
+      "ESCALAR_A_HUMANO": 26,
+      "NO_EVALUABLE_SIN_FUENTE": 2
+    },
+    "owner_block": 7,
+    "external_block": 27
+  },
+  "rows": [
+    {
+      "codigo": "B2B-RULE-AUTH-001",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-001",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-002",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-002",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/multi_company_physical_model_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-003",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_POLITICA_CENTRAL"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-003",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "POLICY_3_VIGENTE_REQUIRES_CANDIDATE_UPDATE_B07_OWNER_APPROVAL"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-004",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-004",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-005",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-005",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-006",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-006",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-007",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-007",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-008",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-008",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-011",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-011",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-012",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-012",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-013",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-013",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision",
+        "BINDING_PENDIENTE_/valor_config/selected_server_adapter",
+        "BINDING_PENDIENTE_/valor_config/brevo_webhook_runtime_status",
+        "BINDING_PENDIENTE_/valor_config/admin_identity_provider_status",
+        "BINDING_PENDIENTE_/valor_config/selected_server_adapter_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-014",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-014",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-015",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-015",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision",
+        "BINDING_PENDIENTE_/valor_config/identity_contract_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-016",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-016",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/provider_selected",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-017",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-017",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-018",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 2,
+      "numero_devolver": 1,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "DEVOLVER_CON_MOTIVO",
+          "reason": "CORRECCION_PROPUESTA_NO_APLICADA_EN_SANDBOX",
+          "tipo": "ORIGEN_REAL_COPIADO_NO_MUTADO"
+        },
+        {
+          "vuelta": 2,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "DIFF_APLICADO_A_COPIA_SANDBOX"
+        }
+      ],
+      "hallazgo": [
+        "CONTRADICCION_MFA_SIEMPRE",
+        "DUPLICACION_PERFILES_EN_CONFIG"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": true,
+      "diff_literal_count": 4,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-018",
+      "dueno_faltante": [
+        "OTROS_DISPARADORES_MFA_PENDIENTE"
+      ],
+      "dependencia_externa": [
+        "ACTUALIZACION_GOBERNADA_POLITICA_3",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-019",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 2,
+      "numero_devolver": 1,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "DEVOLVER_CON_MOTIVO",
+          "reason": "CORRECCION_PROPUESTA_NO_APLICADA_EN_SANDBOX",
+          "tipo": "ORIGEN_REAL_COPIADO_NO_MUTADO"
+        },
+        {
+          "vuelta": 2,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "DIFF_APLICADO_A_COPIA_SANDBOX"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_FACTORES_SAML_SMS"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": true,
+      "diff_literal_count": 3,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-019",
+      "dueno_faltante": [
+        "PROVEEDOR_SMS_SIN_CONFIRMAR",
+        "APLICABILIDAD_SMS_A_ADMIN_SAML_SIN_DEFINIR"
+      ],
+      "dependencia_externa": [
+        "GOOGLE_WORKSPACE_SAML_TENANT_METADATA_PRUEBAS",
+        "BREVO_CREDENCIALES_Y_QA",
+        "BINDING_PENDIENTE_/valor_config/admin_provider_status",
+        "BINDING_PENDIENTE_/valor_config/non_admin_delivery_provider_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-020",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 2,
+      "numero_devolver": 1,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "DEVOLVER_CON_MOTIVO",
+          "reason": "CORRECCION_PROPUESTA_NO_APLICADA_EN_SANDBOX",
+          "tipo": "ORIGEN_REAL_COPIADO_NO_MUTADO"
+        },
+        {
+          "vuelta": 2,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "DIFF_APLICADO_A_COPIA_SANDBOX"
+        }
+      ],
+      "hallazgo": [
+        "VACIO_RECUPERACION_Q11",
+        "DEPENDENCIA_IMPL_Q11"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": true,
+      "diff_literal_count": 5,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-020",
+      "dueno_faltante": [
+        "ALCANCE_Q11_SOPORTE_VS_ADMINS_GOOGLE_NO_CONFIRMADO"
+      ],
+      "dependencia_externa": [
+        "SOPORTE_DOBLE_CONTROL_DOCUMENTO_ALERTA_QA",
+        "POLITICA_20_CAMBIO_GOBERNADO",
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision",
+        "BINDING_PENDIENTE_/valor_config/non_admin_recovery_mode",
+        "BINDING_PENDIENTE_/valor_config/email_access_recovery_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-021",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-021",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-022",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-022",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-023",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-023",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-024",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-024",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-025",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-025",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-026",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_IDENTIDAD"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-026",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "ADR003_SPIKE_M1_OIDC_PROVIDER_REAL",
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision",
+        "BINDING_PENDIENTE_/valor_config/local_identity_provider",
+        "BINDING_PENDIENTE_/valor_config/preferred_adapter_status",
+        "BINDING_PENDIENTE_/valor_config/brevo_webhook_runtime_status",
+        "BINDING_PENDIENTE_/valor_config/implementation_validation_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-027",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-027",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-028",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-028",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-029",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-029",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-030",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-030",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-031",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-031",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-032",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-032",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-033",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 2,
+      "numero_devolver": 1,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "DEVOLVER_CON_MOTIVO",
+          "reason": "CORRECCION_PROPUESTA_NO_APLICADA_EN_SANDBOX",
+          "tipo": "ORIGEN_REAL_COPIADO_NO_MUTADO"
+        },
+        {
+          "vuelta": 2,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "DIFF_APLICADO_A_COPIA_SANDBOX"
+        }
+      ],
+      "hallazgo": [
+        "CONTRADICCION_DISPOSITIVO_VS_MFA_CONDICIONAL"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": true,
+      "diff_literal_count": 4,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-033",
+      "dueno_faltante": [
+        "OTROS_CASOS_MFA_DISPOSITIVO_NO_RECONOCIDO_PENDIENTE"
+      ],
+      "dependencia_externa": [
+        "POLITICA_25_DEVICE_ONLY_PENDIENTE_RECONCILIAR",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-034",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_ROUTING_MFA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-034",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "AUTH033_Y_POLITICA3",
+        "BREVO_ENTREGA_QA",
+        "BINDING_PENDIENTE_/valor_config/delivery_provider_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-035",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-035",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/provider_binding",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-036",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-036",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-037",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-037",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/delivery_provider_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-038",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-038",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-039",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "CONTRADICCION_POTENCIAL_REVOCACION_VS_OTROS_DISPARADORES"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-039",
+      "dueno_faltante": [
+        "REVOCACION_DISPOSITIVO_COMO_DISPARADOR_MFA_NO_CONFIRMADO"
+      ],
+      "dependencia_externa": [
+        "POLITICA_25_Y_REGISTRO_DISPOSITIVOS_QA"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-040",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_DEVICE_TRUST"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-040",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "POLITICA_25_AJUSTE_QA"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-041",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-041",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-042",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-042",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-043",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_RATE_LIMIT_NUEVOS_MFA"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-043",
+      "dueno_faltante": [
+        "ALCANCE_NUEVOS_DISPARADORES_MFA_PENDIENTE"
+      ],
+      "dependencia_externa": [
+        "OPERACION_RATE_LIMIT_Y_PANTALLA_PARA_30D_3M_QA"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-044",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_BREVO"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-044",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BREVO_TRANSACTIONAL_EMAIL_REAL_Y_WEBHOOK_QA",
+        "BINDING_PENDIENTE_/valor_config/credential_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-045",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DEPENDENCIA_WEBHOOK_BREVO"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-045",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BREVO_WEBHOOK_FIRMADO_CALLBACK_TEST_QA",
+        "BINDING_PENDIENTE_/valor_config/secret_rotation_status"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-046",
+      "estado_origen": "VIGENTE",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-046",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-047",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DECISION_DUENO_FALTANTE",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "DECISION_PENDIENTE_EN_ORIGEN"
+      ],
+      "razon_final": "DECISION_DUENO_FALTANTE",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-047",
+      "dueno_faltante": [
+        "PENDIENTE_DECISION_AUTH047_CAPS_LOCK",
+        "PENDIENTE_DECISION_ORIGEN_B2B-RULE-AUTH-047"
+      ],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-048",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ESCALAR_A_HUMANO",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ESCALAR_A_HUMANO",
+          "reason": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "DEPENDENCIA_EXTERNA_NO_VERIFICADA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-048",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "BINDING_PENDIENTE_/valor_config/submit_target",
+        "BINDING_PENDIENTE_/valor_config/local_identity_decision"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-STATE-001",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-STATE-001",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-NAV-LEGAL-001",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-NAV-LEGAL-001",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-SECURITY-BASELINE-001",
+      "estado_origen": "CANDIDATO",
+      "dictamen_curator_final": "ACEPTAR_PRELIMINAR_SANDBOX",
+      "numero_vueltas": 1,
+      "numero_devolver": 0,
+      "vueltas": [
+        {
+          "vuelta": 1,
+          "curator": "ACEPTAR_PRELIMINAR_SANDBOX",
+          "reason": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+          "tipo": "SIN_CAMBIO_EN_SNAPSHOT"
+        }
+      ],
+      "hallazgo": [
+        "SIN_CONTRADICCION_ESPECIFICA_DETECTADA"
+      ],
+      "razon_final": "SIN_CONFLICTO_DETECTADO_PERO_SIN_FIRMA",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-SECURITY-BASELINE-001",
+      "dueno_faltante": [],
+      "dependencia_externa": [],
+      "cierra_preliminar_sin_humano": true,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-009",
+      "estado_origen": "NO_ENCONTRADA",
+      "dictamen_curator_final": "NO_EVALUABLE_SIN_FUENTE",
+      "numero_vueltas": 0,
+      "numero_devolver": 0,
+      "vueltas": [],
+      "hallazgo": [
+        "VACIO_NO_EXISTE_REGISTRO"
+      ],
+      "razon_final": "SOURCE_NOT_FOUND",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-009",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "FUENTE_FALTANTE_VERIFICAR_INVENTARIO_NO_CREAR_AUTOMATICAMENTE"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-010",
+      "estado_origen": "NO_ENCONTRADA",
+      "dictamen_curator_final": "NO_EVALUABLE_SIN_FUENTE",
+      "numero_vueltas": 0,
+      "numero_devolver": 0,
+      "vueltas": [],
+      "hallazgo": [
+        "VACIO_NO_EXISTE_REGISTRO"
+      ],
+      "razon_final": "SOURCE_NOT_FOUND",
+      "correccion_propuesta": false,
+      "diff_literal_count": 0,
+      "diff_documental_ref": "07_login_b2b_matriz_diffs_51.json#B2B-RULE-AUTH-010",
+      "dueno_faltante": [],
+      "dependencia_externa": [
+        "FUENTE_FALTANTE_VERIFICAR_INVENTARIO_NO_CREAR_AUTOMATICAMENTE"
+      ],
+      "cierra_preliminar_sin_humano": false,
+      "lista_para_promocion_oficial": false,
+      "firma_formal": false,
+      "aprobacion": false
+    }
+  ]
+}
