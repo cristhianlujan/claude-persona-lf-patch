@@ -190,6 +190,105 @@ class PG18RealSQL(unittest.TestCase):
           "candidate_patch":patch,"owner_decision_id":owner_decision}
         return json.loads(cls.sql(f"SELECT public.lf_skill_invoke_v1({quote(skill)},{quote(parent)},{jq(inp)})::text;"))
 
+    def test_router_scope_positive_negative_receipt_pg18(self):
+        # The ACT-0001 scope whitelist is governed DB policy; the caller supplies
+        # ONLY a canonical run ID, not "positive" or "negative" prose/JSON.
+        run="EXEC-DB-TRAIN-PR3803-SCOPE-PG18"
+        code="20261113030000_lf_ig_rule_lifecycle_writer_v2"
+        path="supabase/migrations/"+code+".sql"
+        repo="cristhianlujan/claude-persona-lf-patch"
+        manifest={
+          "producer":"lf-migration-merge-train",
+          "head_sha":"e"*40,
+          "train_run_id":"43370424814",
+          "pr":"3803",
+          "router_authority_receipt":{
+            "schema_version":"LF_ROUTER_DOWNSTREAM_AUTHORITY_RECEIPT_V1",
+            "router":"ACT-0001","operation_code":"ACTUALIZACION_DB_LF",
+            "action_code":"UPDATE","target_repo":repo,
+            "target_code":code,"target_path":path,
+            "route_eligibility_only":True,"scope_attested":False}}
+        self.sql(f"""INSERT INTO public.lf_operation_execution(
+            execution_id,operation_code,target_type,target_code,target_repo,
+            target_path,status,request_sha256,manifest,idempotency_key,
+            created_by_execution_id)
+          VALUES({quote(run)},'ACTUALIZACION_DB_LF','MIGRATION',{quote(code)},
+          {quote(repo)},{quote(path)},'IN_PROGRESS',{quote('f'*64)},
+          {jq(manifest)},{quote('scope-pg18-'+run)},{quote(run)});""")
+        self.sql(f"""BEGIN; SET LOCAL ROLE anon;
+          SELECT public.lf_router_scope_bind_v1({quote(run)});
+          ROLLBACK;""",expect_fail="permission denied")
+        res=json.loads(self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+          SELECT public.lf_router_scope_bind_v1({quote(run)})::text;
+          COMMIT;""").splitlines()[-1])
+        fail_assert(res["status"]=="SCOPE_ATTESTED_ROUTE_ONLY" and
+          res["router"]=="ACT-0001" and
+          res["scope_semantics_attested"] is True and
+          res["effect_authority"] is False and
+          res["downstream_execution_allowed"] is False,
+          "ROUTER_SCOPE_ROUTING_EVIDENCE_INVALID")
+        fail_assert(res["positive_scope"]==[
+          {"table":"public.lf_activos","columns":["owner_name"],
+           "entrypoint":"public.lf_ig_asset_owner_apply_v2(uuid)"}],
+          "SCOPE_NOT_MINIMAL_ALLOWED")
+        forbidden=res["negative_scope"]["forbidden_columns"]
+        total=self.sql("""SELECT count(*) FROM information_schema.columns
+          WHERE table_schema='public' AND table_name='lf_activos';""")
+        fail_assert(len(forbidden)==int(total)-1 and
+          "owner_name" not in forbidden and "updated_by_execution_id" in forbidden,
+          "ROUTER_NEGATIVE_SCOPE_NOT_EXHAUSTIVE")
+        row=json.loads(self.sql("""SELECT receipt::text FROM
+          public.lf_router_scope_receipt_v1 WHERE execution_id="""+quote(run)+";"))
+        sha=self.sql("""SELECT encode(extensions.digest(convert_to(receipt::text,
+          'UTF8'),'sha256'),'hex') FROM public.lf_router_scope_receipt_v1
+          WHERE execution_id="""+quote(run)+";")
+        fail_assert(row=={k:v for k,v in res.items() if k!="receipt_sha256"} and
+          sha==res["receipt_sha256"],"ROUTER_PERSISTED_RECEIPT_SHA_MISMATCH")
+        twice=json.loads(self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+          SELECT public.lf_router_scope_bind_v1({quote(run)})::text;
+          COMMIT;""").splitlines()[-1])
+        fail_assert(twice==res and
+          self.sql("SELECT count(*) FROM public.lf_router_scope_receipt_v1;")=="1",
+          "ROUTER_SCOPE_REPLAY_NOT_IDEMPOTENT")
+        # Negative tests operate in rolls back transaction: no catalog effect.
+        self.sql(f"""BEGIN;
+          UPDATE public.lf_router_scope_policy_v1 SET policy_sha256={quote('0'*64)}
+          WHERE scope_code='LF_ACTIVOS_OWNER_NAME_WRITE_V1';
+          SET LOCAL ROLE service_role;
+          SELECT public.lf_router_scope_bind_v1({quote(run)});
+          ROLLBACK;""",expect_fail="LF_SCOPE_POLICY_SHA_MISMATCH")
+        self.sql(f"""BEGIN;
+          UPDATE public.lf_operation_execution
+          SET manifest=jsonb_set(manifest,'{{head_sha}}','"{"0"*40}"'::jsonb)
+          WHERE execution_id={quote(run)};
+          SET LOCAL ROLE service_role;
+          SELECT public.lf_router_scope_bind_v1({quote(run)});
+          ROLLBACK;""",expect_fail="LF_SCOPE_STORED_RECEIPT_DRIFT")
+        self.sql(f"""BEGIN;
+          UPDATE public.lf_operation_execution
+          SET status='COMPLETED' WHERE execution_id={quote(run)};
+          SET LOCAL ROLE service_role;
+          SELECT public.lf_router_scope_bind_v1({quote(run)});
+          ROLLBACK;""",expect_fail="LF_SCOPE_TRAIN_EXECUTION_NOT_BOUND")
+        fake={**manifest}
+        fake["router_authority_receipt"]={
+          **manifest["router_authority_receipt"],"target_repo":"user-declared-other"}
+        alt=run+"-SPOOF"
+        self.sql(f"""INSERT INTO public.lf_operation_execution(
+          execution_id,operation_code,target_type,target_code,target_repo,
+          target_path,status,request_sha256,manifest,idempotency_key,
+          created_by_execution_id)
+          VALUES({quote(alt)},'ACTUALIZACION_DB_LF','MIGRATION',{quote(code)},
+          {quote(repo)},{quote(path)},'IN_PROGRESS',{quote('f'*64)},
+          {jq(fake)},{quote('scope-spoof-'+run)},{quote(alt)});""")
+        self.sql(f"""BEGIN; SET LOCAL ROLE service_role;
+          SELECT public.lf_router_scope_bind_v1({quote(alt)});
+          ROLLBACK;""",expect_fail="LF_SCOPE_ROUTER_ORIGIN_NOT_GOVERNED")
+        fail_assert(self.sql("SELECT count(*) FROM public.lf_router_scope_receipt_v1;")=="1",
+          "ROUTER_NEGATIVES_CREATED_RECEIPT")
+        print("PASS_PG18_ACT0001_POSITIVE_NEGATIVE_SERVER_SCOPE_RECEIPT_SHA_READBACK",flush=True)
+        print("PASS_PG18_ACT0001_NO_CHAT_SCOPE_AND_5_FAIL_CLOSED_NEGATIVES",flush=True)
+
     def test_g15_motor_contract_and_full_run_gate(self):
         # Test the current forward contract against an actual PG18 row, not a planner.
         before=self.sql("""SELECT old_row->>'contract_sha'
