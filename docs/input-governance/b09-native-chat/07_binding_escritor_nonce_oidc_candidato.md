@@ -29,3 +29,11 @@ EKB V1.4: ACT-0001 → Gate2 → PERFIL-PRODUCT-DIRECTOR-LF → EJECUCION_PERFIL
 6. Chat juez diferente: bytes exactos de 'prompts/B09_JUEZ_MISMO_LLM_V1.txt', SHA-256 c895c6f5bc36074545d9c9094651e7099e6a23d3a399b37a32d0c029baee065f; registrar JUDGE(3) con chat_ref diferente.
 7. Leer SHA receipt+nonce binding, exigir evidencia documental con falsos explícitos para independencia/firmas; Step70 y Step80 solo si gate de confianza y autoridad está aprobado.
 8. Verificar 11/11, RUN COMPLETED, terminal READY; cambio/VIGENTE de regla es operación aparte. Ante bloqueo: NO_GO y readback exacto; NO ejecutar E2E en este lote.
+
+## Lote adicional: refuerzo fail-closed y laboratorio SQL (13/11/2026)
+- SELECT de solo lectura en Supabase: 61 ejecuciones de perfil; los 3 RUN recientes consultados muestran `read_only=true`, `no_write=true` y `no_promotion=true`. No se modificaron RUN.
+- MD5 de preimagen del registrador canónico vigente: `7cf717887006e278356a716f3fd80182`. Se capturó exclusivamente su definición de función (sin datos personales ni secretos) en `b09_canonical_recorder_live_preimage_20261113.sql` para pruebas aisladas.
+- El guard del registrador B09 ahora rechaza explícitamente RUN sin los tres flags en `true`; los 11 pasos ordinarios conservan la llamada previa a trust-validation y core.
+- Test Docker PG17.6/18.7 candidato: `test_b09_official_oidc_nonce_pg176_pg187.py` con dependencia Step70/G15 fijada al commit inmutable `3bb05b3b9cf477bf0743670e4422775c7fd2c3d6`. Comprueba apply, nonce servidor, tres eventos en orden, rechazos de replay/cross-policy, RLS/grants, recibo documental, G15 NO-GO y rollback.
+- La prueba usa un objeto OIDC **sintético** en Docker; no demuestra firma JWT ni autorización externa del Issue. La revisión de seguridad SECURITY DEFINER y regresión E2E 11/11 permanecen bloqueantes para promoción.
+- Estado del laboratorio: **pendiente de readback CI del HEAD exacto**. No inferir PASS de la existencia del archivo.
