@@ -1,8 +1,8 @@
 {
   "schema": "LF_L29_LOGIN_B2B_51_RULES_ITERATION_TRACE_DETERMINISTIC_RECONSTRUCTION",
   "verified_against_ci_aggregate": {
-    "run_id": 43340017690,
-    "output_sha256": "3fd9da877faf0997a06578a2436c3fd0b6f136643a052b9332ad8ac2cdfcd207",
+    "run_id": 43340333844,
+    "output_sha256": "a898a38cb6f8cedaf1271e7390df7517ef8bd3cfce63c60997ae097edd05b08f",
     "cases": {
       "actual": 49,
       "rounds": 53,
@@ -10,6 +10,10 @@
       "preliminary": 23,
       "escalated": 26,
       "missing": 2
+    },
+    "policy_drafts": {
+      "patched": 4,
+      "sources_unchanged": 4
     }
   },
   "not_raw_artifact": true,
@@ -1571,5 +1575,8 @@
       "firma_formal": false,
       "aprobacion": false
     }
-  ]
+  ],
+  "raw_artifact_id": 13998749112,
+  "raw_artifact_sha256_zip": "c82bdb62c7b270ade62a9082413bc68f84fb243d67502259351dbdb845502cac",
+  "reconciliation_note": "The per-rule row trace is deterministic reconstruction of the exact SQL classification checked against final L29 CI aggregates; the runner's original 51-result JSON lives in the CI artifact and is not the same file."
 }
