@@ -1,0 +1,62 @@
+{
+  "schema": "LF_L34_OWNER_CONVERSATION_DECISION_AUTH019_V1",
+  "id": "L34-OWNER-AUTH019-FIDO2-ADMIN-EMPRESA-001",
+  "decision_source": "DECLARACION_EXPLICITA_DEL_DUENO_EN_ESTA_CONVERSACION",
+  "source_timestamp_precision": "FECHA_DEL_CHAT_SIN_RECIBO_DE_FIRMA",
+  "source_date": "2026-11-13",
+  "owner_declared": "Cristhian Luján",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "scope": {
+    "rule_code": "B2B-RULE-AUTH-019",
+    "profile_id": 2,
+    "profile_alias": "B2B_ADMIN_EMPRESA",
+    "reference": "L16-Q01",
+    "affected_authority": "SOLO_METODO_SEGUNDO_FACTOR_DE_ADMIN_EMPRESA_PERFIL_2",
+    "replaces_prior_owner_Q01_profile2_email_otp_primary": true,
+    "preserves_other_Q01_30days_and_3months": true,
+    "preserves_other_Q01_sms_contingency_provider_pending": true,
+    "preserves_profile1_method_pending": true,
+    "preserves_profiles_3_to_6_email_otp_brevo": true
+  },
+  "literal_owner_statement": "se adopta la opción C, FIDO2/WebAuthn resistente a phishing para Admin Empresa (perfil 2), con OTP por correo/Brevo solo como canal complementario, nunca como alternativa que omita FIDO2. Esto reemplaza la parte de Q01 para ese perfil. Admin LF (perfil 1) sigue pendiente.",
+  "decision_extracted": {
+    "selected_option": "C",
+    "profile2_required_second_factor": "FIDO2_WEBAUTHN_PHISHING_RESISTANT_PASSKEY_OR_SECURITY_KEY",
+    "profile2_brevo_role": "SUPPLEMENTAL_EMAIL_OTP_ONLY_NO_FIDO2_SUBSTITUTION",
+    "profile2_otp_only_access": "DENY",
+    "profile2_sms_bypass": "DENY",
+    "profile1_required_factor": "PENDING_OWNER_CONFIRMATION",
+    "profiles_3_to_6": "LF_EMAIL_OTP_BREVO_UNCHANGED",
+    "identity_provider_binding": "NOT_DECIDED_BY_THIS_STATEMENT",
+    "passkey_enrollment_method": "NOT_DECIDED_OR_PROVEN_BY_THIS_STATEMENT"
+  },
+  "formal_approval": {
+    "signed": false,
+    "verified_owner_identity": false,
+    "signature_date": null,
+    "signature_receipt": null,
+    "rule_patch_exact_sha_approved": false,
+    "independent_judge_receipt": null,
+    "ig_owner_decision_v2_written": false,
+    "promotion_authorized": false,
+    "implemented": false
+  },
+  "source_refs": [
+    {
+      "type": "OWNER_CONVERSATION_CURRENT_TURN",
+      "ref": "2026-11-13: AUTH-019 decision option C"
+    },
+    {
+      "type": "HISTORICAL_OWNER_Q01",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote30-owner-conversation-decisions-v1/docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json"
+    },
+    {
+      "type": "AUTH019_L31_SOURCE",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote31-login-b2b-q01-q11-q12-v1/docs/rule-quality-lote31/01_matriz_26_estado_diffs_sha256.json"
+    }
+  ],
+  "no_supabase_writes": true,
+  "no_run_creation": true,
+  "no_promotion": true,
+  "owner_separate_rule_patch_approval_required": true
+}
