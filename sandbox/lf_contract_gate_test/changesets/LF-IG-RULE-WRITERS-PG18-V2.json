@@ -1,0 +1,16 @@
+{
+  "solution_ref": "LF-IG-RULE-WRITERS-PG18-V2",
+  "paths": {
+    "supabase/migrations/20261113030000_lf_ig_rule_lifecycle_writer_v2.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/pg18_live_object_slice_baseline.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_rule_lifecycle_pg18.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-RULE-WRITERS-PG18-V2.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/rollback_ig_rule_lifecycle_writer_v2.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_rule_lifecycle_rollback_pg18_pg176.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/native_dispatch_v1.mjs": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/native_dispatch_v1.test.mjs": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_native_dispatch_gate_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/native_receipt_ed25519_v1.mjs": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance_lifecycle/native_receipt_ed25519_v1.test.mjs": "RUNTIME_TESTING"
+  }
+}
