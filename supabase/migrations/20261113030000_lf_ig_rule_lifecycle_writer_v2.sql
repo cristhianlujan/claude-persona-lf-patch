@@ -104,6 +104,7 @@ DECLARE
  v_uid uuid; v_jwt jsonb; v_owner record; v_parent public.lf_operation_execution%ROWTYPE;
  v_output jsonb; v_patch jsonb; v_kind text; v_source text; v_sha text;
  v_judge jsonb; v_state text; v_id uuid; v_screen text;
+ v_skill text; v_skill_input jsonb; v_invoked jsonb; v_final jsonb;
 BEGIN
  v_uid:=auth.uid(); v_jwt:=auth.jwt();
  IF auth.role() IS DISTINCT FROM 'authenticated' OR v_uid IS NULL
@@ -185,9 +186,37 @@ BEGIN
  RETURNING decision_id INTO v_id;
  IF v_id IS NULL
  THEN RAISE EXCEPTION 'LF_IG_OWNER_DECISION_ALREADY_RECORDED_NO_OVERRIDE'; END IF;
- RETURN jsonb_build_object('status',p_verdict,'decision_id',v_id,
-  'owner_sub',v_uid,'rule_code',p_rule,'kind',v_kind,
-  'source_sha256',v_source,'proposal_sha256',v_sha);
+ IF p_verdict='REJECT' THEN
+   RETURN jsonb_build_object('status','REJECT','decision_id',v_id,
+     'rule_code',p_rule,'source_sha256',v_source,'proposal_sha256',v_sha,
+     'write_performed',false);
+ END IF;
+ -- Single owner decision triggers official skill invoker, seven-step writer,
+ -- promotion and canonical readback in ONE transaction. On any failure,
+ -- RAISE rolls back approval + child + candidate/active mutation atomically.
+ v_skill:=case when v_kind='CREATE' then 'RULE_CREATE_APPLY' else 'RULE_UPDATE_APPLY' end;
+ v_skill_input:=jsonb_build_object(
+   'regla_codigo',p_rule,'analysis_snapshot_sha256',v_source,
+   'decision_id',v_output->'deliverable_created'->'product_decision'->>'decision_id',
+   'candidate_patch',v_patch,'owner_decision_id',v_id);
+ IF nullif(v_skill_input->>'decision_id','') IS NULL THEN
+   RAISE EXCEPTION 'LF_IG_OWNER_PROFILE_DECISION_ID_MISSING'; END IF;
+ v_invoked:=public.lf_skill_invoke_v1(v_skill,p_parent,v_skill_input);
+ IF v_invoked->>'status'<>'COMPLETED'
+    OR nullif(v_invoked->>'child_execution_id','') IS NULL
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_OFFICIAL_SKILL_INVOKE_FAILED:%',
+      coalesce(v_invoked->>'blocking_code','UNKNOWN'); END IF;
+ v_final:=public.lf_ig_rule_finalize_v2(v_invoked->>'child_execution_id');
+ IF v_final->>'status'<>'VIGENTE_VERIFIED'
+ THEN RAISE EXCEPTION 'LF_IG_OWNER_GOVERNED_FINALIZE_FAILED'; END IF;
+ RETURN jsonb_build_object('status','APPROVED_AND_VIGENTE_VERIFIED',
+   'decision_id',v_id,'owner_sub',v_uid,'rule_code',p_rule,'kind',v_kind,
+   'source_sha256',v_source,'proposal_sha256',v_sha,
+   'child_execution_id',v_invoked->>'child_execution_id',
+   'finalized_snapshot_sha256',v_final->>'result_snapshot_sha256',
+   'profile_execution_id',p_parent,
+   'next_action','OFFICIAL_PROFILE_STEP80_REPORT_READBACK_AND_CLOSE',
+   'profile_run_closed',false,'write_performed',true);
 END
 $fn$;
 
