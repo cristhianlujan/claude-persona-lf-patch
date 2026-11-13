@@ -37,5 +37,7 @@
 - `05_mapeo_go_no_go.md` — G01–G15 sin marcar.
 - `06_manifest_y_protocolos.md` — trazabilidad y criterios de uso de plantillas.
 - `07_separacion_motor_contenido.md` — alcance de GO de IG y dependencias técnicas cruzadas, sin alterar fuentes L21.
+- `08_readback_live_release_scope.md` — lectura SELECT de contratos vivos y límites de G15.
+- `09_spec_candidata_g15_motor.md` — especificación futura y 12 regresiones negativas/positivas; NO_APLICAR.
 - `recibos/B01_...md` hasta `recibos/B14_...md` — formularios vacíos.
 

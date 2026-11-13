@@ -20,6 +20,11 @@
 - No modificar permisos, políticas, esquema, MFA, credenciales, Niubiz, Brevo ni proveedores.
 - El desarrollo con muestras Q08–Q11 no satisface legalidad, homologación ni QA de producción.
 
+## Continuación de diagnóstico (consulta live SELECT, sin escritura)
+- Documentos agregados: `08_readback_live_release_scope.md` y `09_spec_candidata_g15_motor.md`; SQL replicable y spec no aplicada.
+- Supabase leído mediante usuario `supabase_read_only_user` en proyecto `mhwmirqcgxxukpctffuv`. El contrato IG ordinario (`EJECUCION_INPUT_GOVERNANCE_LF`, `ACTIVE_ENFORCEMENT`) bloquea `production_promotion` y el módulo health declara `does_not_require` familias todas listas, bloqueos funcionales cero ni producción lista. El contrato de ejecución IG aún indica `human_owner=SUPER_ADMIN` (dato contractual, no poder aprobado).
+- Sin evidencia de contrato de liberación `G15-MOTOR` activo en campos SQL buscados; la ausencia general no está demostrada. No cambia el alcance 0/9 o 0/5 ni las 14 plantillas.
+
 ## Reglas para completar recibos — futura operación, no L28
 1. Clonar plantilla Bnn; conservar la versión vacía original del L28 inmutable.
 2. Asentar alcance, versión y hash de evidencia RAW, entorno y as_of, identidad/sub autenticada; **no poner "adjunto" sin ruta/ID/hash**.
