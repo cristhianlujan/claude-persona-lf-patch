@@ -14,7 +14,7 @@ class LifecycleCandidateTest(unittest.TestCase):
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for the existing CI test carrier")
         self.assertTrue(TEST.is_file(), str(TEST))
-        result = subprocess.run([node, "--test", str(TEST)], cwd=ROOT, text=True,
+        result = subprocess.run([node, "--test", "--test-reporter=tap", str(TEST)], cwd=ROOT, text=True,
                                 capture_output=True, timeout=30, check=False)
         self.assertEqual(result.returncode, 0, result.stdout + "\n" + result.stderr)
         self.assertIn("# fail 0", result.stdout)
