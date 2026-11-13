@@ -971,6 +971,102 @@ REVOKE ALL ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb)
 GRANT EXECUTE ON FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb)
  TO service_role;
 
+
+-- Governed, reversible ADDITIVE contract update for IG execution operation.
+-- Does not overwrite programacion.contratos v1.7 or authorize production.
+-- G15-MOTOR is only a CANDIDATE gate per L28; no claimed signatures/GO.
+CREATE TABLE public.lf_ig_contract_preimage_v3(
+ operation_code text PRIMARY KEY,
+ old_row jsonb NOT NULL,
+ old_sha256 text NOT NULL CHECK(old_sha256 ~ '^[0-9a-f]{64}
+      WHERE skill_code='RULE_CREATE_APPLY')<>'lf_skill_o_rule_create_v2'
+ OR (SELECT opener_fn FROM public.lf_skill_catalog_v1
+      WHERE skill_code='RULE_UPDATE_APPLY')<>'lf_skill_o_rule_update_v2'
+ OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
+       WHERE project_code='LF' AND owner_name='Cristhian Luján'
+       AND status='TEMP_DOCUMENTARY_ACTIVE')<>1
+ OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
+       WHERE project_code='SALY')<>0
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_registry
+       WHERE operation_code='PROMOCION_REGLA_LF' AND status='SANDBOX_ACTIVE')
+ THEN RAISE EXCEPTION 'LF_IG_V2_MIGRATION_READBACK_FAILED'; END IF;
+END $readback$;
+
+COMMIT;
+),
+ new_allowed_sha256 text NOT NULL CHECK(new_allowed_sha256 ~ '^[0-9a-f]{64}
+      WHERE skill_code='RULE_CREATE_APPLY')<>'lf_skill_o_rule_create_v2'
+ OR (SELECT opener_fn FROM public.lf_skill_catalog_v1
+      WHERE skill_code='RULE_UPDATE_APPLY')<>'lf_skill_o_rule_update_v2'
+ OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
+       WHERE project_code='LF' AND owner_name='Cristhian Luján'
+       AND status='TEMP_DOCUMENTARY_ACTIVE')<>1
+ OR (SELECT count(*) FROM public.lf_ig_project_owner_v2
+       WHERE project_code='SALY')<>0
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_registry
+       WHERE operation_code='PROMOCION_REGLA_LF' AND status='SANDBOX_ACTIVE')
+ THEN RAISE EXCEPTION 'LF_IG_V2_MIGRATION_READBACK_FAILED'; END IF;
+END $readback$;
+
+COMMIT;
+),
+ migration_execution_id text NOT NULL,
+ captured_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.lf_ig_contract_preimage_v3 ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.lf_ig_contract_preimage_v3 FROM PUBLIC,anon,authenticated,service_role;
+DO $ig_contract_change$
+DECLARE v_old public.lf_operation_contracts%ROWTYPE;
+ v_allowed jsonb;v_new_sha text;
+BEGIN
+ SELECT * INTO v_old FROM public.lf_operation_contracts
+ WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF' FOR UPDATE;
+ IF NOT FOUND OR v_old.status<>'ACTIVE_ENFORCEMENT'
+ OR v_old.contract_sha<>'783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9'
+ OR md5(v_old.allowed::text)<>'4a2a2a7135b2f3c1df04347f9e8ab2cb'
+ OR md5(v_old.blocked::text)<>'695078c51acf6737f8aae57498a0b4c2'
+ OR NOT v_old.blocked ? 'production_promotion'
+ OR v_old.allowed->>'production_authorized'<>'false'
+ THEN RAISE EXCEPTION 'LF_IG_V3_CONTRACT_PREIMAGE_DRIFT'; END IF;
+ v_allowed:=v_old.allowed || jsonb_build_object(
+  'g15_motor_candidate',jsonb_build_object(
+    'version','G15_MOTOR_TEMPORARY_V2',
+    'authority','L28_DOCUMENTARY_CANDIDATE_NOT_RUNTIME_ENABLED',
+    'scope','INPUT_GOVERNANCE_MOTOR_TEMPORARY_DB_ONLY',
+    'required_blockers',jsonb_build_array(
+      'B02_RUN_SCOPE','B03_RUN_EFFECTS','B06_OWNER','B07_SCHEMA',
+      'B08_IDENTITY','B09_E2E','B12_LEGACY'),
+    'implementation','public.lf_ig_g15_motor_temporary_v1(jsonb)',
+    'decision','NO_GO_UNTIL_INDEPENDENT_SIGNATURE_VALIDATION',
+    'production_authorized',false),
+  'governed_rule_single_entrypoint',jsonb_build_object(
+    'function','public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)',
+    'uses_canonical_step80',true,'requires_native_step70',true,
+    'status','CANDIDATE_NOT_DEPLOYED',
+    'production_authorized',false));
+ v_new_sha:=encode(extensions.digest(convert_to(v_allowed::text,'UTF8'),'sha256'),'hex');
+ INSERT INTO public.lf_ig_contract_preimage_v3(
+   operation_code,old_row,old_sha256,new_allowed_sha256,migration_execution_id)
+ VALUES(v_old.operation_code,to_jsonb(v_old),
+   encode(extensions.digest(convert_to(to_jsonb(v_old)::text,'UTF8'),'sha256'),'hex'),
+   v_new_sha,'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3');
+ UPDATE public.lf_operation_contracts
+ SET allowed=v_allowed,
+     contract_sha=v_new_sha,
+     updated_at=now(),
+     updated_by_execution_id='EXEC-MIGRATION-LF-IG-LIFECYCLE-V3'
+ WHERE operation_code=v_old.operation_code
+   AND contract_sha=v_old.contract_sha;
+ IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.lf_operation_contracts c
+   WHERE c.operation_code=v_old.operation_code
+     AND c.contract_sha=v_new_sha
+     AND c.blocked ? 'production_promotion'
+     AND c.allowed->>'production_authorized'='false'
+     AND c.allowed#>>'{g15_motor_candidate,decision}'
+       ='NO_GO_UNTIL_INDEPENDENT_SIGNATURE_VALIDATION')
+ THEN RAISE EXCEPTION 'LF_IG_V3_CONTRACT_READBACK_FAILED'; END IF;
+END $ig_contract_change$;
+
 DO $readback$
 BEGIN
  IF (SELECT opener_fn FROM public.lf_skill_catalog_v1
