@@ -12,6 +12,7 @@ BEGIN
     OR to_regclass('public.lf_ig_owner_decision_v2') IS NULL
     OR to_regclass('public.lf_ig_rule_change_v2') IS NULL
     OR to_regclass('public.lf_ig_asset_owner_receipt_v2') IS NULL
+ OR to_regclass('public.lf_ig_contract_preimage_v3') IS NULL
  THEN RAISE EXCEPTION 'IG_ROLLBACK_MISSING_V2_OBJECTS'; END IF;
  IF (SELECT count(*) FROM public.lf_ig_project_owner_v2)<>1
     OR NOT EXISTS (SELECT 1 FROM public.lf_ig_project_owner_v2 o
@@ -45,7 +46,9 @@ BEGIN
            AND input_required=ARRAY['regla_codigo','analysis_snapshot_sha256','decision_id','candidate_patch','owner_decision_id']::text[]
            AND description='Candidate-only legacy writer plus staged VIGENTE correction; exact documentary owner decision and preimage required')
    )<>2 THEN RAISE EXCEPTION 'IG_ROLLBACK_CATALOG_DRIFT'; END IF;
- IF to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NULL
+ IF to_regprocedure('public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)') IS NULL
+    OR to_regprocedure('public.lf_ig_g15_motor_temporary_v1(jsonb)') IS NULL
+    OR to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NULL
     OR to_regprocedure('public.lf_ig_rule_child_guard_v2(text,jsonb,text,text,text,text)') IS NULL
     OR to_regprocedure('public.lf_ig_rule_step_record_v2(text,text,text,text,jsonb)') IS NULL
     OR to_regprocedure('public.lf_skill_o_rule_create_v2(text,jsonb,text,text,text)') IS NULL
@@ -70,6 +73,43 @@ BEGIN
  THEN RAISE EXCEPTION 'IG_ROLLBACK_LEGACY_MD5_DRIFT'; END IF;
 END $preflight$;
 
+-- Restore IG contract source row from exact preimage, never infer it from
+-- a manually authored reverse object. Unknown runtime changes BLOCK.
+DO $contract_rollback$
+DECLARE p public.lf_ig_contract_preimage_v3%ROWTYPE;
+ c public.lf_operation_contracts%ROWTYPE;
+BEGIN
+ SELECT * INTO p FROM public.lf_ig_contract_preimage_v3
+ WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF';
+ SELECT * INTO c FROM public.lf_operation_contracts
+ WHERE operation_code='EJECUCION_INPUT_GOVERNANCE_LF' FOR UPDATE;
+ IF NOT FOUND OR p.operation_code IS NULL OR
+   (SELECT count(*) FROM public.lf_ig_contract_preimage_v3)<>1
+   OR p.migration_execution_id<>'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3'
+   OR c.contract_sha IS DISTINCT FROM p.new_allowed_sha256
+   OR c.updated_by_execution_id<>'EXEC-MIGRATION-LF-IG-LIFECYCLE-V3'
+   OR encode(extensions.digest(convert_to(c.allowed::text,'UTF8'),'sha256'),'hex')
+      IS DISTINCT FROM p.new_allowed_sha256
+   OR p.old_row->>'contract_sha'
+      <>'783103f2196c1e49d1460bee239d41b74235be97f3b114ab27366f7c436afbb9'
+   OR encode(extensions.digest(convert_to(p.old_row::text,'UTF8'),'sha256'),'hex')
+      IS DISTINCT FROM p.old_sha256
+ THEN RAISE EXCEPTION 'IG_ROLLBACK_CONTRACT_CANDIDATE_DRIFT'; END IF;
+ UPDATE public.lf_operation_contracts SET
+   allowed=p.old_row->'allowed',
+   blocked=p.old_row->'blocked',
+   contract_sha=p.old_row->>'contract_sha',
+   updated_at=(p.old_row->>'updated_at')::timestamptz,
+   updated_by_execution_id=p.old_row->>'updated_by_execution_id'
+ WHERE operation_code=p.operation_code AND contract_sha=c.contract_sha;
+ IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.lf_operation_contracts
+    WHERE operation_code=p.operation_code
+      AND contract_sha=p.old_row->>'contract_sha'
+      AND allowed=p.old_row->'allowed'
+      AND blocked=p.old_row->'blocked')
+ THEN RAISE EXCEPTION 'IG_ROLLBACK_CONTRACT_READBACK_FAILED'; END IF;
+END $contract_rollback$;
+
 -- Restore exactly the two source rows; read-only source SELECT performed for preimage.
 UPDATE public.lf_skill_catalog_v1
  SET opener_fn=NULL, input_required=ARRAY['regla_codigo']::text[],
@@ -90,6 +130,8 @@ GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_decide_v1(text,text,text,text
 GRANT EXECUTE ON FUNCTION public.lf_skill_o_rule_update_v1(text,jsonb,text,text,text) TO service_role;
 
 -- Explicit RESTRICT: never silently cascade to unrelated objects.
+DROP FUNCTION public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text) RESTRICT;
+DROP FUNCTION public.lf_ig_g15_motor_temporary_v1(jsonb) RESTRICT;
 DROP FUNCTION public.lf_ig_rule_finalize_v2(text) RESTRICT;
 DROP FUNCTION public.lf_skill_o_rule_create_v2(text,jsonb,text,text,text) RESTRICT;
 DROP FUNCTION public.lf_skill_o_rule_update_v2(text,jsonb,text,text,text) RESTRICT;
@@ -109,6 +151,7 @@ DELETE FROM public.lf_ig_project_owner_v2
    AND source_execution_id='OWNER_CHAT_TEMPORARY_2026-11-12';
 DROP TABLE public.lf_ig_project_owner_v2 RESTRICT;
 DROP TABLE public.lf_ig_asset_owner_receipt_v2 RESTRICT;
+DROP TABLE public.lf_ig_contract_preimage_v3 RESTRICT;
 
 DO $readback$
 BEGIN
@@ -116,6 +159,8 @@ BEGIN
  OR to_regclass('public.lf_ig_owner_decision_v2') IS NOT NULL
  OR to_regclass('public.lf_ig_rule_change_v2') IS NOT NULL
  OR to_regclass('public.lf_ig_asset_owner_receipt_v2') IS NOT NULL
+ OR to_regclass('public.lf_ig_contract_preimage_v3') IS NOT NULL
+ OR to_regprocedure('public.lf_ig_rule_cycle_once_v3(text,text,text,jsonb,text)') IS NOT NULL
  OR to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NOT NULL
  OR to_regprocedure('public.lf_ig_asset_owner_apply_v2(uuid)') IS NOT NULL
  OR EXISTS(SELECT 1 FROM public.lf_operation_registry WHERE operation_code='PROMOCION_REGLA_LF')
