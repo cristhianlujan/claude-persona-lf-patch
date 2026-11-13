@@ -1,0 +1,26 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-OTP-PHISHING-RISK-20261113",
+  "decision_title": "Aceptación del riesgo residual de phishing",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "El dueño acepta en conversación el riesgo residual de utilizar OTP por correo como segundo factor en perfiles 1 y 2, concretamente: el OTP por correo puede ser retransmitido mediante phishing. La aceptación no supone que OTP sea resistente a phishing, que Seguridad haya firmado la excepción, ni que esté lista la producción.",
+  "source_codes": [
+    "L35-OWNER-AUTH019-OPTION-A-001",
+    "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001"
+  ],
+  "candidate_patch_sha256": null,
+  "source_artifact": null,
+  "approval_mechanism": "DOCUMENT_GITHUB_ONLY_RISK_REGISTER",
+  "required_evidence_unresolved": [
+    "FIRMA_DEL_DUENO",
+    "DICTAMEN_SEGURIDAD",
+    "CONTROLES_DETECTIVOS_Y_QA"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
