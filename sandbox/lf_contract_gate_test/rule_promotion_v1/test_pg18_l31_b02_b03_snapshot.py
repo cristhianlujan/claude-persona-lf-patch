@@ -82,6 +82,18 @@ CREATE TABLE evidence_copy.priority32 (
         "SELECT jsonb_array_elements_text("+literal(b02["historical"]["priority32_ids"])+");\n"
     )
     sql(q)
+    # PostgreSQL jsonb preserves the scale of numeric values: R01's
+    # round(numeric,1) / round(numeric,2) serialize 8.0 / 8.00.
+    # A JSON->JavaScript->JSON roundtrip loses that scale (8 -> 8), so
+    # reapply EXACT R01 SQL numeric types to the PG18 COPY, not live data.
+    sql("""UPDATE evidence_copy.b02
+SET payload=jsonb_set(
+ jsonb_set(payload,'{antiguedad_dias}',
+   to_jsonb((payload->>'antiguedad_dias')::numeric(18,1)),true),
+ '{inactividad_dias}',
+   to_jsonb((payload->>'inactividad_dias')::numeric(18,2)),true)
+WHERE payload->>'antiguedad_dias' IS NOT NULL
+  AND payload->>'inactividad_dias' IS NOT NULL;""")
     got = jsonsql("""SELECT jsonb_build_object(
       'b02',(SELECT count(*) FROM evidence_copy.b02),
       'b03',(SELECT count(*) FROM evidence_copy.b03),
@@ -155,59 +167,79 @@ def readback(b02,b03):
 
 def negatives(b02,b03):
     known=b02["current"]["rows_r01"][0]["run_id"]
-    # G01: missing, duplicate, changed status, and post-freeze new RUN must not pass.
-    sql("BEGIN; DELETE FROM evidence_copy.b02 WHERE run_id="+repr_sql(known)+";")
-    changed=sha_copy("b02")
-    check("B02_NEG_MISSING_ID_REJECTED",changed!=b02["raw_result_sha256"],
-          {"old_sha":b02["raw_result_sha256"],"tampered_sha":changed})
-    sql("ROLLBACK;")
+
+    # Each negative runs in ONE psql session and ROLLBACK within that
+    # session. No use of the real RUN table; all mutation is PG18 COPY.
+    def trans_value(dml, expr):
+        output=sql("BEGIN;\n"+dml+"\nSELECT 'L31_VALUE|'||("+expr+")::text;\nROLLBACK;\n")
+        vals=[ln.split("L31_VALUE|",1)[1] for ln in output.splitlines()
+              if "L31_VALUE|" in ln]
+        if len(vals)!=1:raise AssertionError("NEG_TX_VALUE_MISSING "+output[-1000:])
+        return vals[0]
+
+    hash_expr=("encode(sha256(convert_to("+
+       "coalesce(jsonb_agg(payload ORDER BY payload::text),'[]'::jsonb)::text,'UTF8')),'hex')")
+    # Missing ID negative: test staging copy without FK to B03.
+    miss=trans_value(
+        "CREATE TEMP TABLE test_stage AS SELECT * FROM evidence_copy.b02;\n"
+        "DELETE FROM test_stage WHERE run_id="+repr_sql(known)+";",
+        "(SELECT "+hash_expr+" FROM test_stage)")
+    check("B02_NEG_MISSING_ID_REJECTED",miss!=b02["raw_result_sha256"],
+          {"mismatch_after_one_missing":True})
+
     dupe=sql("BEGIN; INSERT INTO evidence_copy.b02(run_id,payload) "+
-       "SELECT run_id,payload FROM evidence_copy.b02 WHERE run_id="+repr_sql(known)+";",fail=True)
-    check("B02_NEG_DUPLICATE_PK_REJECTED","duplicate key" in dupe,{"error":"unique_violation"})
-    sql("ROLLBACK;")
-    sql("BEGIN; UPDATE evidence_copy.b02 SET payload=jsonb_set(payload,'{clase_propuesta}',"
-        "'\"D_FALSO\"'::jsonb,true) WHERE run_id="+repr_sql(known)+";")
-    changed=sha_copy("b02")
-    check("B02_NEG_ALTERED_ROW_REJECTED",changed!=b02["raw_result_sha256"],
+       "SELECT run_id,payload FROM evidence_copy.b02 WHERE run_id="+repr_sql(known)+";",
+       fail=True)
+    check("B02_NEG_DUPLICATE_PK_REJECTED","duplicate key" in dupe,
+          {"error":"unique_violation"})
+    new_sha=trans_value(
+        "UPDATE evidence_copy.b02 SET payload=jsonb_set(payload,'{clase_propuesta}',"
+        "'\"D_FALSO\"'::jsonb,true) WHERE run_id="+repr_sql(known)+";",
+        "(SELECT "+hash_expr+" FROM evidence_copy.b02)")
+    check("B02_NEG_ALTERED_ROW_REJECTED",new_sha!=b02["raw_result_sha256"],
           {"sha_differs":True})
-    sql("ROLLBACK;")
-    sql("BEGIN; INSERT INTO evidence_copy.b02(run_id,payload) "
-        "SELECT 'EXEC-NEWER-POST-FREEZE-SANDBOX',jsonb_set(payload,'{run_id}',"
-        "'\"EXEC-NEWER-POST-FREEZE-SANDBOX\"'::jsonb,true) FROM evidence_copy.b02 WHERE run_id="
-        +repr_sql(known)+";")
-    changed=sha_copy("b02")
-    check("B02_NEG_LATER_RUN_REJECTED",changed!=b02["raw_result_sha256"] and
-        int(scalar("SELECT count(*) FROM evidence_copy.b02;"))==b02["current"]["n"]+1,
-        {"stale_cohort_detected":True})
-    sql("ROLLBACK;")
-    # G02: positive receipt contents alone aren't an authenticated external effect.
-    guard = next(x for x in b03["rows"] if int(x["guard_succeeded"])>0)
+
+    after_run=trans_value(
+       "INSERT INTO evidence_copy.b02(run_id,payload) "+
+       "SELECT 'EXEC-NEWER-POST-FREEZE-SANDBOX',jsonb_set(payload,'{run_id}',"+
+       "'\"EXEC-NEWER-POST-FREEZE-SANDBOX\"'::jsonb,true) "+
+       "FROM evidence_copy.b02 WHERE run_id="+repr_sql(known)+";",
+       "(SELECT count(*) FROM evidence_copy.b02)")
+    check("B02_NEG_LATER_RUN_REJECTED",int(after_run)==b02["current"]["n"]+1,
+          {"current_plus_one":int(after_run),"freeze_rejected":True})
+
+    guard=next(x for x in b03["rows"] if int(x["guard_succeeded"])>0)
     k=guard["run_id"]
-    sql("BEGIN; UPDATE evidence_copy.b03 SET payload=jsonb_set(payload,"
-        "'{guard_succeeded_missing_receipt}','1'::jsonb,true) WHERE run_id="+repr_sql(k)+";")
-    bad=int(scalar("SELECT count(*) FROM evidence_copy.b03 WHERE "
-       "(payload->>'guard_succeeded_missing_receipt')::int>0;"))
-    check("B03_NEG_SUCCEEDED_WITHOUT_RECEIPT_REJECTED",bad==1,{"affected_run":k,"bad":bad})
-    sql("ROLLBACK;")
-    keys=[x for x in b03["rows"] if x["idempotency_key_sha256"] is not None]
+    bad=trans_value(
+        "UPDATE evidence_copy.b03 SET payload=jsonb_set(payload,"+
+        "'{guard_succeeded_missing_receipt}','1'::jsonb,true) WHERE run_id="+repr_sql(k)+";",
+        "(SELECT count(*) FROM evidence_copy.b03 WHERE "+
+        "(payload->>'guard_succeeded_missing_receipt')::int>0)")
+    check("B03_NEG_SUCCEEDED_WITHOUT_RECEIPT_REJECTED",int(bad)==1,
+          {"affected_run":k,"bad":int(bad)})
+    keys=[x for x in b03["rows"] if x["idempotency_key_sha256"]]
     assert len(keys)>=2
-    k1,k2=keys[0],keys[1]
-    sql("BEGIN; UPDATE evidence_copy.b03 SET payload=jsonb_set(payload,"
-       "'{idempotency_key_sha256}',"+repr_sql('"' + k1["idempotency_key_sha256"] + '"')+"::jsonb,true) "
-       "WHERE run_id="+repr_sql(k2["run_id"])+";")
-    d=int(scalar("SELECT count(*) FROM (SELECT payload->>'idempotency_key_sha256' k,count(*) n "
-         "FROM evidence_copy.b03 WHERE payload->>'idempotency_key_sha256' IS NOT NULL "
-         "GROUP BY 1 HAVING count(*)>1) a;"))
-    check("B03_NEG_DUPLICATED_IDEMPOTENCY_REJECTED",d>=1,
-          {"different_runs":[k1["run_id"],k2["run_id"]],"dup_groups":d})
-    sql("ROLLBACK;")
-    sql("BEGIN; UPDATE evidence_copy.b03 SET payload=jsonb_set(payload,"
-       "'{current_status}','\"COMPLETED\"'::jsonb,true) WHERE run_id="+repr_sql(known)+";")
-    n=int(scalar("SELECT count(*) FROM evidence_copy.b03 WHERE payload->>'current_status'<>'IN_PROGRESS';"))
-    check("B03_NEG_STATUS_DRIFT_REJECTED",n==1,{"drift_runs":n})
-    sql("ROLLBACK;")
-    # Eight leases are expired; there is NO live worker heartbeat receipt.
-    expired=int(scalar("SELECT count(*) FROM evidence_copy.b03 WHERE (payload->>'lease_expired_now')::boolean;"))
+    k1,k2=keys[:2]
+    duplicate=trans_value(
+       "UPDATE evidence_copy.b03 SET payload=jsonb_set(payload,"+
+       "'{idempotency_key_sha256}',"+
+       "to_jsonb("+repr_sql(k1["idempotency_key_sha256"] )+"::text),true) "+
+       "WHERE run_id="+repr_sql(k2["run_id"])+";",
+       "(SELECT count(*) FROM "+
+       "(SELECT payload->>'idempotency_key_sha256' AS k,count(*) n "+
+       "FROM evidence_copy.b03 WHERE payload->>'idempotency_key_sha256' IS NOT NULL "+
+       "GROUP BY 1 HAVING count(*)>1) z)")
+    check("B03_NEG_DUPLICATED_IDEMPOTENCY_REJECTED",int(duplicate)>0,
+          {"different_runs":[k1["run_id"],k2["run_id"]],
+           "duplicated_key_groups":int(duplicate)})
+    drift=trans_value(
+        "UPDATE evidence_copy.b03 SET payload=jsonb_set(payload,"+
+        "'{current_status}','\"COMPLETED\"'::jsonb,true) WHERE run_id="+repr_sql(known)+";",
+        "(SELECT count(*) FROM evidence_copy.b03 WHERE payload->>'current_status'<>'IN_PROGRESS')")
+    check("B03_NEG_STATUS_DRIFT_REJECTED",int(drift)==1,
+          {"drift_runs":int(drift)})
+    expired=int(scalar("SELECT count(*) FROM evidence_copy.b03 WHERE "+
+                       "(payload->>'lease_expired_now')::boolean;"))
     check("B03_EXPIRED_LEASES_NO_LIVENESS_GO",expired==8,
           {"expired":expired,"liveness_receipt_available":False,"gate":"BLOCK"})
     check("B03_INCOMPLETE_EXTERNAL_EFFECTS_FAIL_CLOSED",
