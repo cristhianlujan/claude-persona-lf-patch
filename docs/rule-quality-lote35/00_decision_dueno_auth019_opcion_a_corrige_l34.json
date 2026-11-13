@@ -1,0 +1,56 @@
+{
+  "schema": "LF_L35_OWNER_CONVERSATION_CORRECTION_AUTH019_OPTION_A_V1",
+  "record_id": "L35-OWNER-AUTH019-OPTION-A-001",
+  "fecha_declaracion": "2026-11-13",
+  "declarant": "Cristhian Luján",
+  "source_type": "CONVERSATION_DECLARATION_UNVERIFIED_IDENTITY",
+  "estado": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "scope": {
+    "rule_code": "B2B-RULE-AUTH-019",
+    "scope_profile_id": 2,
+    "scope_profile_name": "Admin Empresa",
+    "original_decision": "L16-Q01 — profile2 OTP email Brevo",
+    "revokes_prior_conversation_decision": "L34-OWNER-AUTH019-FIDO2-ADMIN-EMPRESA-001",
+    "reverts_to_option": "A",
+    "other_scope_unchanged": [
+      "Q01 policy MFA applicability conditional pending reconciliation",
+      "Admin LF profile1 method PENDING_OWNER_CONFIRMATION",
+      "Profiles3-6 email OTP/Brevo",
+      "SMS contingency only, no provider confirmed"
+    ]
+  },
+  "literal_owner_correction": "CORRECCIÓN del dueño sobre AUTH-019 (pendiente de firma): NO se adopta FIDO2 ni passkeys; el dueño no contará con dispositivos para eso y es demasiado complejo. Queda la opción A: Admin Empresa (perfil 2) usa solo OTP por correo/Brevo (Q01 original). Deja sin efecto la opción C que te pasé.",
+  "literal_owner_clarification": "el login del Admin Empresa es usuario + contraseña + OTP por correo (Brevo), según las reglas de Login B2B ya definidas; el OTP es el segundo factor después de validar credenciales.",
+  "resolved_flow": [
+    "LOGIN_USERNAME_PASSWORD",
+    "SERVER_VALIDATE_PRIMARY_CREDENTIALS",
+    "IF_MFA_REQUIRED_SERVER_ISSUES_EMAIL_OTP_THROUGH_BREVO",
+    "SERVER_VERIFIES_OTP_BEFORE_FULL_AUTHENTICATED_SESSION"
+  ],
+  "fido2_for_profile2": "REVOKED_IN_CONVERSATION_NOT_APPROVED",
+  "brevo_profile2": "SECOND_FACTOR_EMAIL_OTP",
+  "risk_register": {
+    "statement": "El OTP por correo puede ser retransmitido mediante phishing.",
+    "acceptance_status": "ACEPTADO_POR_DUENO_EN_CONVERSACION_PENDIENTE_FIRMA",
+    "risk_owner": "Cristhian Luján",
+    "formal_signature_verified": false,
+    "external_security_review_verified": false
+  },
+  "former_l34_decision": {
+    "reference": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/lf/issue-3779-lote34-auth019-fido2-owner-decision-v1/docs/rule-quality-lote34/00_decision_dueno_auth019_q01_perfil2_fido2_pendiente_firma.json",
+    "document_retained_for_audit": true,
+    "conversation_effect": "SUPERSEDED_BY_L35_OWNER_OPTION_A",
+    "no_delete_no_edit_prior_document": true
+  },
+  "formal_gates": {
+    "owner_signature": null,
+    "identity_verified": false,
+    "owner_patch_exact_sha_decision": null,
+    "semantic_judge_v3_receipt": null,
+    "run_execution_id": null,
+    "policy19_update_completed": false,
+    "rule019_update_completed": false,
+    "promotion": false
+  },
+  "supabase_write_count": 0
+}
