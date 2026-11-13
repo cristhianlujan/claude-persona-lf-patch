@@ -1,0 +1,26 @@
+{
+  "schema": "LF_LOGIN_DOCUMENT_APPROVAL_PACKET_V1",
+  "decision_id": "LF-LOGIN-Q11-RECOVERY-20261113",
+  "decision_title": "Recuperación de identidad y MFA",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "source_type": "OWNER_DECLARATION_AND_CANDIDATE_DOCUMENTS",
+  "documentary_statement": "Se solicita recuperación asistida mediante soporte y documento de identidad, con verificación, dos operadores autorizados, espera de 48 horas y aviso al contacto anterior. No se concede sesión ni se permite evitar el MFA. El IDV/proveedor, las autorizaciones reales, los contactos y pruebas siguen pendientes; esta decisión no habilita recuperación automática.",
+  "source_codes": [
+    "L16-Q11"
+  ],
+  "candidate_patch_sha256": null,
+  "source_artifact": null,
+  "approval_mechanism": "DOCUMENT_GITHUB_ONLY",
+  "required_evidence_unresolved": [
+    "IDV_SIN_PROVEEDOR",
+    "DOBLE_CONTROL_NO_IMPLEMENTADO",
+    "QA_RECUPERACION",
+    "POLICY20_PENDIENTE"
+  ],
+  "formal_signature": false,
+  "identity_verified": false,
+  "rule_writer_v2_called": false,
+  "policy_writer_v2_called": false,
+  "no_promotion": true,
+  "approval_does_not_authorize_effect": true
+}
