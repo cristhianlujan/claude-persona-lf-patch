@@ -878,6 +878,21 @@ BEGIN
  AND status='STEP_PASS_WITH_EVIDENCE';
  -- A manually asserted verdict, test HMAC, or CURRENT_CONTEXT_REVIEW is
  -- insufficient to execute an effects-bearing governed child.
+ -- A JSON claim of independence is not a native-model receipt.
+ -- No cryptographic provider adapter is connected to this temporary DB.
+ -- An external signed/proven provenance verifier must be installed by a
+ -- later governed operation before the transactional writer may run.
+ IF to_regprocedure('public.lf_ig_verified_native_provider_receipt_v1(text)') IS NULL
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_VERIFIED_NATIVE_PROVIDER_BINDING_REQUIRED'; END IF;
+ EXECUTE 'SELECT public.lf_ig_verified_native_provider_receipt_v1($1)'
+ INTO v_native USING p_parent;
+ IF jsonb_typeof(v_native)<>'object'
+    OR v_native->>'status' IS DISTINCT FROM 'CRYPTOGRAPHICALLY_VERIFIED'
+    OR v_native->>'execution_id' IS DISTINCT FROM p_parent
+    OR v_native->>'provider_receipt_ref' IS DISTINCT FROM j->>'provider_receipt_ref'
+    OR v_native->>'candidate_sha256' IS DISTINCT FROM j->>'candidate_sha256'
+    OR v_native->>'scope_packet_sha256' IS DISTINCT FROM j->>'scope_packet_sha256'
+ THEN RAISE EXCEPTION 'LF_IG_ONCE_VERIFIED_NATIVE_RECEIPT_MISMATCH'; END IF;
  IF j->>'status' IS DISTINCT FROM 'PASS'
     OR j->>'verdict' IS DISTINCT FROM 'PASS_INDEPENDENT_SEMANTIC'
     OR j->>'review_mode' IN ('CURRENT_CONTEXT_REVIEW','HMAC_TEST','MOCK')
