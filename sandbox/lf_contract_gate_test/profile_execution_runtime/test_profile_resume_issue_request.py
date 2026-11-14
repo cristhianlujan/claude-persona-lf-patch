@@ -150,6 +150,69 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertEqual(selection["semantic_candidates"][0]["skill_code"], "FICTICIA_SEMANTICA")
         self.assertFalse(checkpoint["last_run_completed"])
 
+    def test_readonly_ig_blocked_ticket_continues_only_after_step40_readback(self):
+        # Transport-only fixture: server makes the real Step40 admission decision.
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id})
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        p = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        p.parent.mkdir(parents=True)
+        p.write_text("# profile test source\n", encoding="utf-8")
+        calls = []
+        def fake_call(_url, data, headers):
+            calls.append((data.copy(), headers.copy()))
+            if data["action"] == "profile_native_source_bind_v1":
+                return 200, {"outcome": "SOURCE_BINDING_REQUIRED",
+                    "execution_id": execution_id, "profile_code": profile_code,
+                    "source_revision_required": "a" * 40,
+                    "target_repo": "test-owner/test-repo",
+                    "target_path": "profiles/test_profile/SKILL.md",
+                    "operation_plan": self._mock_operation_plan(profile_code)}
+            if data["action"] == "input_readiness_context_pack_runtime_v1":
+                return 200, {"outcome":"TERMINAL_WITH_FINDINGS",
+                    "code":"IG_CONTEXT_PACK_BLOCKED_REPORTABLE_READ_ONLY",
+                    "terminal_status":"BLOCKED","analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
+                    "ig_security_state":"BLOCKED","ig_security_clearance":False,
+                    "write_authorized":False,"continuation_allowed_for_effects":False,
+                    "execution_id":execution_id,
+                    "result":{"result":{"status":"BLOCKED","predecision_crosscheck":{
+                        "deterministic_finding_count":3}}}}
+            if data["action"] == "profile_native_continue_v1":
+                if sum(k[0]["action"] == "profile_native_continue_v1" for k in calls) == 1:
+                    return 200, {"outcome":"CONTINUATION_REQUIRED",
+                        "phase":"INPUT_GOVERNANCE_RUNTIME_REQUIRED",
+                        "result":{"input_governance_runtime_request":{
+                            "transport":"DIRECT_EDGE_INVOCATION",
+                            "queue_required":False,"polling_required":False,
+                            "request_headers":{"X-LF-Profile-Runtime-Ticket":"fixture-ticket"},
+                            "request_body":{"action":"input_readiness_context_pack_runtime_v1",
+                                            "execution_id":execution_id,"pantalla_id":51}}}}
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY",
+                    "result":{"execution_write_mode":"READ_ONLY",
+                        "input_governance":{"status":"BLOCKED",
+                            "analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
+                            "governance_result":{"predecision_crosscheck":{
+                                "deterministic_finding_count":3}}}}}
+            raise AssertionError("unrecognized mocked Edge action")
+        env = {**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"42"}
+        with patch.dict(os.environ,env,clear=True), patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)):
+            main = runpy.run_path(str(SCRIPT),run_name="read_only_ticket_test")["main"]
+            with patch.dict(main.__globals__, {"oidc":lambda:"opaque-oidc",
+                                                  "call_json":fake_call}):
+                self.assertEqual(main(),1)
+        steps=[x[0]["action"] for x in calls]
+        self.assertEqual(steps,["profile_native_source_bind_v1",
+                                "profile_native_continue_v1",
+                                "input_readiness_context_pack_runtime_v1",
+                                "profile_native_continue_v1"])
+        checkpoint=json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["execution_id"],execution_id)
+        self.assertEqual(checkpoint["next_step"],"execute_profile")
+        self.assertFalse(checkpoint["last_run_completed"])
+
     def test_native_profile_single_resume_automatically_chains_50_60_70_80(self):
         """One Issue carries native RAW+V3; mock only transport, never claim live SQL."""
         import hashlib
