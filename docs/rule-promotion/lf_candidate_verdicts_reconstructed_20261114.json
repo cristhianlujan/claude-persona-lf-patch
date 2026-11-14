@@ -1,14 +1,13 @@
 {
-  "schema_version": "LF_RULE_PROMOTION_FIVE_CRITERIA_READONLY_RECONSTRUCTION_20261114",
-  "source": "read-only SELECT from lf_ops.reglas and reglas_pantallas; mirrors function programacion.fn_t_remed_rule_promotion_verdicts_v1(5,NULL), which returns 42501 to inspection role",
+  "schema_version": "LF_RULE_PROMOTION_FIVE_CRITERIA_READONLY_RECONSTRUCTION_20261114_POST_L16",
+  "source": "SELECT lf_ops.reglas after PR #3896 applied; mirrors programacion.fn_t_remed_rule_promotion_verdicts_v1(5,NULL), denied to inspection role 42501",
   "not_official_function_receipt": true,
-  "as_of_date": "2026-11-14",
-  "min_screens": 5,
+  "owner_identity_verified": false,
   "candidate_count": 166,
   "pass_count": 0,
   "hold_count": 166,
   "failed_criterion_counts": {
-    "NO_PENDING_MARKER": 65,
+    "NO_PENDING_MARKER": 66,
     "NO_PENDING_DECISION": 57,
     "USED_BY_ENOUGH_SCREENS": 148,
     "HAS_STATED_REASON": 3
@@ -1014,6 +1013,7 @@
       "verdict": "HOLD",
       "failed": [
         "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
         "USED_BY_ENOUGH_SCREENS"
       ]
     },
