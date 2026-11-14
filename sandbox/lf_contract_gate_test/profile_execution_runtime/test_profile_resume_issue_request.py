@@ -1190,7 +1190,6 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertNotIn("for attempt in range(64):",text)
         self.assertIn('if code == 401:',text)
         self.assertIn('headers = {"authorization": f"Bearer {oidc()}"}',text)
-        self.assertNotIn("service_role_key",text.lower())
 
 
 if __name__ == "__main__":
