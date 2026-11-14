@@ -30,13 +30,13 @@ class ReadbackBlocked(Exception):
 def sha(raw:bytes)->str: return hashlib.sha256(raw).hexdigest()
 
 def validate(meta:dict,slug:str,mode:str,index:bytes,shared:bytes|None,expected_index:bytes,expected_shared:bytes|None)->dict:
-    if slug not in ROLLOUT or mode not in ("before","after"):raise ReadbackBlocked("IG_DEPLOY_SCOPE_INVALID")
+    if slug not in ROLLOUT or mode not in ("before","after","rollback"):raise ReadbackBlocked("IG_DEPLOY_SCOPE_INVALID")
     if not isinstance(meta,dict) or meta.get("slug")!=slug:
         raise ReadbackBlocked("IG_READBACK_WRONG_SLUG")
     if meta.get("status")!="ACTIVE" or meta.get("verify_jwt") is not True:
         raise ReadbackBlocked("IG_READBACK_STATUS_OR_JWT_DRIFT")
     version=meta.get("version")
-    if type(version) is not int or version < ROLLOUT[slug]+(mode=="after"):
+    if type(version) is not int or version < ROLLOUT[slug]+(mode!="before"):
         raise ReadbackBlocked("IG_READBACK_VERSION_NOT_ADVANCED")
     if mode=="before" and version!=ROLLOUT[slug]:
         raise ReadbackBlocked("IG_READBACK_PREVERSION_DRIFT")
@@ -104,7 +104,7 @@ def main(argv):
     slug,mode=argv[1:]
     if slug not in ROLLOUT or mode not in ("before","after"):
         raise ReadbackBlocked("IG_READBACK_SCOPE_INVALID")
-    ref=ROLLBACK if mode=="before" else "HEAD"
+    ref=ROLLBACK if mode in ("before","rollback") else "HEAD"
     expected_index=github_source("supabase/functions/"+slug+"/index.ts",ref)
     expected_shared=github_source(SHARED,ref) if mode=="after" else None
     index,shared=fetch_body(slug)
