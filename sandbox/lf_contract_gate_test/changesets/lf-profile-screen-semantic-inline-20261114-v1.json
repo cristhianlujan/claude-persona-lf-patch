@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-profile-screen-semantic-inline-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114121600_lf_profile_screen_no_match_finding_v1.sql": "MIGRATION",
+    "scripts/lf_profile_native_resume.py": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "TEST",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-screen-semantic-inline-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
