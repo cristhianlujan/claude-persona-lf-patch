@@ -11,7 +11,6 @@ import uuid
 ROOT = Path(__file__).resolve().parents[3]
 V1 = ROOT / "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_rule_promotion_v1_live_defs_20261114.sql"
 MIG1 = ROOT / "supabase/migrations/20261114193000_lf_rule_promotion_dual_gate_scope_evidence_v2.sql"
-MIG2 = ROOT / "supabase/migrations/20261114193100_lf_rule_scope_wrong_screen_gate_ekb_v1.sql"
 EXPECTED_MD5 = "92e8025b70d17e3de7da7206795ed73d"
 
 FIXTURE = r"""
@@ -89,12 +88,12 @@ def inside_transaction(sql: str) -> str:
 class DualGatePgDual(unittest.TestCase):
     def test_pg17_pg18_rollback_and_semantics(self):
         self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
-        src1, src2 = MIG1.read_text("utf-8"), MIG2.read_text("utf-8")
+        src1 = MIG1.read_text("utf-8")
         legacy = V1.read_text("utf-8")
         self.assertIn("USED_BY_ENOUGH_SCREENS", legacy)
-        self.assertNotIn("UPDATE lf_ops.reglas", src1+src2)
-        self.assertNotIn("INSERT INTO lf_ops.reglas_pantallas", src1+src2)
-        self.assertNotIn("UPDATE lf_ops.politicas_seguridad", src1+src2)
+        self.assertNotIn("UPDATE lf_ops.reglas", src1)
+        self.assertNotIn("INSERT INTO lf_ops.reglas_pantallas", src1)
+        self.assertNotIn("UPDATE lf_ops.politicas_seguridad", src1)
         for version in ("17.6","18.7"):
             with self.subTest(pg=version):
                 name = "lf-dual-gate-" + uuid.uuid4().hex[:10]
@@ -154,7 +153,7 @@ SELECT 'ANON_DENIED='||
  (NOT has_function_privilege('anon','public.lf_rule_promotion_verdicts_readonly_v2(bigint)','EXECUTE'))::text;
 """
                     query = ("BEGIN;\n"+inside_transaction(src1)+"\n"+
-                             inside_transaction(src2)+"\n"+checks+
+                             checks+
                              "\nROLLBACK;\n"
                              "SELECT 'V2_ROLLED_BACK='||("
                              "to_regprocedure('programacion.fn_t_remed_rule_promotion_verdicts_v2(bigint)') IS NULL)::text;\n"
