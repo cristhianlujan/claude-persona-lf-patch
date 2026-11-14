@@ -1,7 +1,7 @@
 {
   "schema": "LF_OTHER_LOGIN_SCREENS_AUDIT_V1",
   "base_sha": "f9d20b3add2418ddae3f3372ccc0b0a49e3a9f6f",
-  "source": "Supabase SELECT, solo lectura",
+  "source": "Supabase SELECT, solo lectura; propuestas revisadas por decisión dueño 22:03; SIN escrituras vivas",
   "scope": [
     {
       "pantalla": "B2B-AUTH-002",
@@ -177,7 +177,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "Solicitud de recuperación por soporte, sin OTP automático",
-      "texto_nuevo": "B2B-AUTH-002 acepta correo validado y muestra idéntica respuesta haya cuenta o no. Para una cuenta elegible, LF_AUTH_BOUNDARY abre expediente con soporte, DNI escaneado, aprobadores configurables 1 o 2 según approvers_required de política 20 (inicial 1), aviso al contacto anterior, auditoría y espera de 48 horas. El servidor emite clave temporal de un solo uso solo al cumplirse todos los controles; no crea desafío OTP PASSWORD_RECOVERY, sesión ni permisos.",
+      "texto_nuevo": "B2B-AUTH-002 acepta correo validado y muestra idéntica respuesta haya cuenta o no. Para una cuenta elegible, LF_AUTH_BOUNDARY abre expediente con soporte, DNI escaneado, aprobadores configurables 1 o 2 según approvers_required de política 20 (inicial 1), aviso al contacto anterior, auditoría y espera de 48 horas. El servidor emite clave temporal de un solo uso solo al cumplirse todos los controles; no crea desafío OTP PASSWORD_RECOVERY, sesión ni permisos. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita.",
       "config_nueva": {
         "gateway": "LF_AUTH_BOUNDARY",
         "route_id": 9,
@@ -216,7 +216,13 @@
         "recovery_mode": "SUPPORT_DNI_SCANNED",
         "approvers_policy_id": 20,
         "recovery_hold_hours": 48,
-        "auto_recovery_otp": "DENY"
+        "auto_recovery_otp": "DENY",
+        "hold_start_event": "LAST_REQUIRED_APPROVAL_AND_PREVIOUS_CONTACT_DELIVERED",
+        "previous_contact_delivery_requirement": "DELIVERED_RECEIPT",
+        "delivery_failure_action": "BLOCK_OR_PAUSE_NO_RELEASE",
+        "alternate_delivery_policy": "GOVERNED_ROUTE_PENDING_ACCEPTANCE",
+        "alternate_contact_allowlist_status": "PENDING_HUMAN_DECISION",
+        "owner_identity_verified": false
       }
     },
     {
@@ -279,7 +285,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "Validación de expediente de soporte y contexto restringido",
-      "texto_nuevo": "B2B-AUTH-006 solo habilita PASSWORD_UPDATE_ONLY tras validación server-side de expediente de soporte con DNI escaneado, aprobación 1 o 2 según política 20, avisos al contacto anterior, auditoría y espera 48 horas. La clave temporal es de un solo uso, no satisface MFA ni crea sesión operativa. Estados pendientes, falsos, vencidos o reutilizados se deniegan con respuesta genérica.",
+      "texto_nuevo": "B2B-AUTH-006 solo habilita PASSWORD_UPDATE_ONLY tras validación server-side de expediente de soporte con DNI escaneado, aprobación 1 o 2 según política 20, avisos al contacto anterior, auditoría y espera 48 horas. La clave temporal es de un solo uso, no satisface MFA ni crea sesión operativa. Estados pendientes, falsos, vencidos o reutilizados se deniegan con respuesta genérica. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. La clave temporal de un solo uso se genera únicamente DESPUÉS de satisfacer el gate; el contexto PASSWORD_UPDATE_ONLY no sustituye la verificación MFA normal.",
       "config_nueva": {
         "grant_mode": "ONE_TIME_TEMP_PASSWORD_SERVER_VALIDATED",
         "accepted_context": "SUPPORT_RECOVERY_APPROVED_48H",
@@ -296,7 +302,11 @@
         "provider_architecture_security_policy_id": 23,
         "operational_authorization_before_completion": "DENY",
         "recovery_hold_hours": 48,
-        "auto_recovery_otp": "DENY"
+        "auto_recovery_otp": "DENY",
+        "hold_start_event": "AFTER_APPROVALS_AND_CONFIRMED_DELIVERY",
+        "delivery_failure_action": "BLOCK_OR_PAUSE",
+        "temporary_password_issue_guard": "AFTER_48H_ELAPSED_AND_DELIVERY_STILL_VALID",
+        "owner_identity_verified": false
       }
     },
     {
@@ -391,7 +401,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "Validación por soporte de recuperación B2B",
-      "texto_nuevo": "B2B-AUTH-006 presenta estado genérico de un expediente de soporte, sin envío ni verificación OTP PASSWORD_RECOVERY. El servidor exige DNI escaneado, aprobadores configurables según política 20, aviso previo, auditoría y 48 horas transcurridas antes de emitir clave temporal de uso único. Sin evidencia, bloquear PASSWORD_UPDATE_ONLY y no revelar existencia de cuenta.",
+      "texto_nuevo": "B2B-AUTH-006 presenta estado genérico de un expediente de soporte, sin envío ni verificación OTP PASSWORD_RECOVERY. El servidor exige DNI escaneado, aprobadores configurables según política 20, aviso previo, auditoría y 48 horas transcurridas antes de emitir clave temporal de uso único. Sin evidencia, bloquear PASSWORD_UPDATE_ONLY y no revelar existencia de cuenta. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita.",
       "config_nueva": {
         "success_scope": "PASSWORD_UPDATE_ONLY",
         "otp_value_logs": "DENY",
@@ -420,7 +430,11 @@
         "approval_policy_id": 20,
         "hold_hours": 48,
         "auto_otp_challenge": "DENY",
-        "temporary_password": "ONE_TIME_AFTER_APPROVAL"
+        "temporary_password": "ONE_TIME_AFTER_APPROVAL",
+        "hold_start_event": "LAST_REQUIRED_APPROVAL_AND_DELIVERY",
+        "notify_old_contact_status": "DELIVERED_REQUIRED",
+        "alternate_contact_accepted": "PENDING_HUMAN_DECISION",
+        "owner_identity_verified": false
       }
     },
     {
@@ -471,7 +485,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "Espera de recuperación y estados calculados por servidor",
-      "texto_nuevo": "B2B-AUTH-006 muestra exclusivamente estados normalizados de expediente y espera de 48 horas calculados server-side; no muestra reenvío OTP ni permite que un temporizador del navegador autorice el desbloqueo. Antes de la aprobación, notificación y vencimiento de espera, no habilita PASSWORD_UPDATE_ONLY. En todos los estados mantiene anti-enumeración.",
+      "texto_nuevo": "B2B-AUTH-006 muestra exclusivamente estados normalizados de expediente y espera de 48 horas calculados server-side; no muestra reenvío OTP ni permite que un temporizador del navegador autorice el desbloqueo. Antes de la aprobación, notificación y vencimiento de espera, no habilita PASSWORD_UPDATE_ONLY. En todos los estados mantiene anti-enumeración. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Tiempo transcurrido y pausa se calculan desde el ledger server-side, sin que el cliente reanude por acción local.",
       "config_nueva": {
         "hardcoded_expiry": "DENY",
         "verify_screen_id": 56,
@@ -480,7 +494,13 @@
         "numeric_thresholds_in_rule": "DENY",
         "recovery_hold_hours": 48,
         "display_source": "SERVER_RECOVERY_CASE",
-        "resend_otp_visible": false
+        "resend_otp_visible": false,
+        "hold_start": "LATEST_OF_REQUIRED_APPROVAL_COMPLETION_AND_DELIVERY",
+        "hold_elapsed_calculation": "SERVER_SIDE_ACCUMULATED_ELIGIBLE_INTERVALS",
+        "hold_paused_when_delivery_invalid": true,
+        "restart_requires_fresh_delivery_receipt": true,
+        "wait_hours": 48,
+        "owner_identity_verified": false
       }
     },
     {
@@ -547,7 +567,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "Rate limit aislado de recuperación por soporte",
-      "texto_nuevo": "Las solicitudes de soporte de B2B-AUTH-002/006 consumen un contador independiente de MFA y correos transaccionales; mismo tratamiento para cuenta existente e inexistente y sujeto derivado del correo canónico mediante secreto server-side. La IP solo eleva señal preventiva de abuso; nunca bloquea por sí sola. Ventanas y umbrales provienen de la política central, sin duplicarlos.",
+      "texto_nuevo": "Las solicitudes de soporte de B2B-AUTH-002/006 consumen un contador independiente de MFA y correos transaccionales; mismo tratamiento para cuenta existente e inexistente y sujeto derivado del correo canónico mediante secreto server-side. La IP solo eleva señal preventiva de abuso; nunca bloquea por sí sola. Ventanas y umbrales provienen de la política central, sin duplicarlos. La recuperación por soporte conserva el mismo tratamiento para cuenta existente/inexistente incluso al pausar el reloj por aviso no entregado; mensajes y códigos observables no revelan si hay expediente real.",
       "config_nueva": {
         "ip_escalation": "RISK_OR_ANTIBOT",
         "ip_hard_limit": "DENY",
@@ -567,7 +587,10 @@
         "other_otp_operation_counter_interference": "DENY",
         "transactional_email_counter_interference": "DENY",
         "functional_operation": "SUPPORT_RECOVERY",
-        "automatic_otp_send": "DENY"
+        "automatic_otp_send": "DENY",
+        "recovery_failure_ui": "ANTI_ENUMERATION_GENERIC",
+        "delivery_state_reveal_to_unauthenticated": "DENY",
+        "owner_identity_verified": false
       }
     },
     {
@@ -688,7 +711,7 @@
         "pendiente_decision": true
       },
       "titulo_nuevo": "Resultado IDV y comprobante manual Q11 distintos",
-      "texto_nuevo": "Un resultado automático IDV VERIFIED solo procede del proveedor integrado y verificado, nunca de una simulación ni del DNI solo. En forma separada, soporte Q11 emite comprobante server-side tras escaneo DNI, creador distinto del aprobador, avisos a celular y correo anteriores, auditoría y 48 horas de espera. Ni falla, ni falta de proveedor, ni caso en revisión autoriza reasignación o acceso. La UI no ve respuestas crudas de proveedor ni documentos.",
+      "texto_nuevo": "Un resultado automático IDV VERIFIED solo procede del proveedor integrado y verificado, nunca de una simulación ni del DNI solo. En forma separada, soporte Q11 emite comprobante server-side tras escaneo DNI, creador distinto del aprobador, avisos a celular y correo anteriores, auditoría y 48 horas de espera. Ni falla, ni falta de proveedor, ni caso en revisión autoriza reasignación o acceso. La UI no ve respuestas crudas de proveedor ni documentos. El comprobante manual Q11 se valida con aprobador diferente, dos avisos ENTREGADOS y 48 horas de espera elegible; falta de entrega o rechazo mantiene DENY. No confundir un expediente de soporte con el outcome externo VERIFIED. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "config_nueva": {
         "flow": "RECOVERY_FLOW",
         "front": "CLIENTE",
@@ -737,7 +760,11 @@
         "provider_specific_reason_to_client": "DENY",
         "q11_manual_proof": "Q11_TWO_DISTINCT_APPROVERS_48H",
         "manual_approval_not_provider_verified": true,
-        "selfie": "UNDECIDED"
+        "selfie": "INACTIVE",
+        "manual_q11_release_gate": "TWO_DISTINCT_PEOPLE_OLD_PHONE_AND_EMAIL_DELIVERED_48H",
+        "idv_provider": "PENDING_SELECTION",
+        "identity_verified_by_selfie": false,
+        "owner_identity_verified": false
       }
     },
     {
@@ -828,7 +855,7 @@
         "pendiente_decision": true
       },
       "titulo_nuevo": "Step-up Cliente con soporte Q11 e IDV sin seleccionar",
-      "texto_nuevo": "REC_001 permite, sin celular anterior, la ruta Q11 con DNI escaneado, dos personas distintas (una registra y otra aprueba), notificación a celular y correo anteriores, auditoría y 48 horas de espera. El celular actual debe seguir verificado en ONB_002, sin que su OTP sustituya identidad. El proveedor IDV no está elegido y selfie no está decidida: ninguno se presume implementado. Riesgo HIGH conserva bloqueo y revisión.",
+      "texto_nuevo": "REC_001 permite, sin celular anterior, la ruta Q11 con DNI escaneado, dos personas distintas (una registra y otra aprueba), notificación a celular y correo anteriores, auditoría y 48 horas de espera. El celular actual debe seguir verificado en ONB_002, sin que su OTP sustituya identidad. El proveedor IDV no está elegido y selfie no está decidida: ninguno se presume implementado. Riesgo HIGH conserva bloqueo y revisión. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Para Q11 la aprobación requiere dos personas diferentes: operador creador y operador aprobador; ambos avisos al celular y correo anteriores deben quedar ENTREGADOS con evidencia; si falla uno, el reloj no empieza o queda en PAUSED. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "config_nueva": {
         "flow": "RECOVERY_FLOW",
         "front": "CLIENTE",
@@ -867,7 +894,19 @@
           "EMAIL"
         ],
         "hold_hours": 48,
-        "selfie": "UNDECIDED"
+        "selfie": "DISABLED_OWNER_DECISION",
+        "selfie_operational_rules": "NONE",
+        "idv_provider": "PENDING_SELECTION",
+        "q11_approval_separation": "CREATOR_NE_APPROVER",
+        "previous_contacts_required": [
+          "OLD_PHONE",
+          "OLD_EMAIL"
+        ],
+        "previous_contacts_delivery": "ALL_DELIVERED",
+        "hold_start": "AFTER_APPROVAL_AND_ALL_DELIVERED",
+        "hold_invalid_delivery": "BLOCK_OR_PAUSE",
+        "alternate_acceptance": "PENDING_HUMAN_DECISION",
+        "owner_identity_verified": false
       }
     },
     {
@@ -936,7 +975,7 @@
         "pendiente_decision": true
       },
       "titulo_nuevo": "Celular actual verificado y recuperación Q11 sin el anterior",
-      "texto_nuevo": "REC_001 reutiliza el celular actual verificado en ONB_002 mientras la misma sesión siga válida. Si el anterior está disponible, verificar su OTP por la ruta existente; si no, pasar a soporte Q11 con DNI escaneado, dos personas distintas, avisos a celular/correo anteriores, auditoría y 48 horas. Ningún camino permite reasociación antes del comprobante válido ni revela existencia de cuenta.",
+      "texto_nuevo": "REC_001 reutiliza el celular actual verificado en ONB_002 mientras la misma sesión siga válida. Si el anterior está disponible, verificar su OTP por la ruta existente; si no, pasar a soporte Q11 con DNI escaneado, dos personas distintas, avisos a celular/correo anteriores, auditoría y 48 horas. Ningún camino permite reasociación antes del comprobante válido ni revela existencia de cuenta. El OTP al celular nuevo NO inicia recuperación. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Q11 exige evidencia ENTREGADO en celular y correo anteriores o bloqueo; contacto alterno no sustituye automáticamente sin decisión humana. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "config_nueva": {
         "source_state": "RECOVERY_FLOW",
         "source_screen": "ONB_003",
@@ -961,7 +1000,12 @@
           "PHONE",
           "EMAIL"
         ],
-        "manual_q11_distinct_people": true
+        "manual_q11_distinct_people": true,
+        "new_phone_otp_starts_48h": false,
+        "old_contacts_delivery_gate": "PHONE_AND_EMAIL_DELIVERED",
+        "hold_start": "AFTER_APPROVAL_AND_DELIVERED",
+        "selfie": "NO_NOT_ACTIVE",
+        "owner_identity_verified": false
       }
     },
     {
@@ -1048,7 +1092,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "Reasignación Cliente atómica e idempotente tras comprobante Q11",
-      "texto_nuevo": "Solo reasociar celular a cuenta Cliente con sesión ONB_002 válida, verificación de unicidad y una prueba aprobada. Sin celular anterior, admitir comprobante Q11 server-side tras DNI escaneado, creación y aprobación por personas distintas, aviso a celular/correo anteriores, auditoría y espera 48 horas. Selfie no autorizada; IDV externo no elegido. Antes de commit revalidar riesgo HIGH y revocar acceso y sesiones del principal anterior; evitar escrituras parciales o dobles vínculos.",
+      "texto_nuevo": "Solo reasociar celular a cuenta Cliente con sesión ONB_002 válida, verificación de unicidad y una prueba aprobada. Sin celular anterior, admitir comprobante Q11 server-side tras DNI escaneado, creación y aprobación por personas distintas, aviso a celular/correo anteriores, auditoría y espera 48 horas. Selfie no autorizada; IDV externo no elegido. Antes de commit revalidar riesgo HIGH y revocar acceso y sesiones del principal anterior; evitar escrituras parciales o dobles vínculos. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Para Q11 verificar creador distinto del aprobador, DNI escaneado y entrega efectiva al antiguo celular y correo, y esperar 48 horas elegibles con readback del estado no PAUSED inmediatamente antes del commit. Ni aceptación del proveedor ni aviso no entregado permiten rebind. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "config_nueva": {
         "idempotency": "REQUIRED",
         "atomic_commit": "REQUIRED",
@@ -1085,7 +1129,16 @@
           "PHONE",
           "EMAIL"
         ],
-        "selfie": "UNDECIDED"
+        "selfie": "UNDECIDED",
+        "q11_hold_start": "LATEST_APPROVAL_COMPLETED_AND_REQUIRED_NOTIFICATIONS_DELIVERED",
+        "old_notifications_required_delivered": [
+          "PHONE",
+          "EMAIL"
+        ],
+        "no_release_if_paused": true,
+        "server_clock_only": true,
+        "secondary_contact_cannot_substitute_without_owner_decision": true,
+        "owner_identity_verified": false
       }
     },
     {
@@ -1192,7 +1245,7 @@
         "pendiente_decision": false
       },
       "titulo_nuevo": "ONB_002 — estados OTP y SMS por soporte",
-      "texto_nuevo": "ONB_002 conserva estados A normal, B contador agotado y C OTP incorrecto; tiempos y CTA consumen contratos server-side y tokens de diseño. Ante fallo de WhatsApp no activa SMS automáticamente. SMS Intico solo aparece por contingencia habilitada por soporte con auditoría; en caso contrario permanece oculto. El OTP demuestra control del celular, no identidad civil.",
+      "texto_nuevo": "ONB_002 conserva estados A normal, B contador agotado y C OTP incorrecto; tiempos y CTA consumen contratos server-side y tokens de diseño. Ante fallo de WhatsApp no activa SMS automáticamente. SMS Intico solo aparece por contingencia habilitada por soporte con auditoría; en caso contrario permanece oculto. El OTP demuestra control del celular, no identidad civil. Contingencia SMS Intico sólo si soporte la habilitó. Si el usuario deriva a recuperación REC_001, el OTP de ONB_002 no inicia las 48 horas ni habilita readbind por sí solo; rige la prueba de aprobación y entrega de aviso histórico de Q11. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "config_nueva": {
         "title": "Te enviamos un código",
         "state_A": {
@@ -1234,7 +1287,11 @@
         "source_visual_decision": "VD_CLIENT_ONB002_WEB_V06_20260820",
         "sms_fallback_mode": "SUPPORT_ONLY",
         "sms_provider": "INTICO",
-        "auto_sms_fallback": "DENY"
+        "auto_sms_fallback": "DENY",
+        "recovery_timer_started_by_current_phone_otp": false,
+        "selfie_recovery_path": "INACTIVE",
+        "idv_provider_status": "PENDING_SELECTION",
+        "owner_identity_verified": false
       }
     }
   ],
@@ -1248,7 +1305,7 @@
       ],
       "categoria": "AUTH",
       "titulo": "Recuperación asistida B2B con 48 horas y clave temporal",
-      "descripcion": "Soporte registra DNI escaneado; la política central 20 determina 1 o 2 aprobadores (inicial 1). Exigir aviso al contacto previo, auditoría y 48 horas antes de emitir clave temporal de uso único limitada a contraseña nueva. No ofrecer OTP PASSWORD_RECOVERY ni establecer sesión antes de nuevo login y MFA conforme a política. Si falta evidencia, bloquear sin revelar existencia de usuario.",
+      "descripcion": "Soporte registra DNI escaneado; la política central 20 determina 1 o 2 aprobadores (inicial 1). Exigir aviso al contacto previo, auditoría y 48 horas antes de emitir clave temporal de uso único limitada a contraseña nueva. No ofrecer OTP PASSWORD_RECOVERY ni establecer sesión antes de nuevo login y MFA conforme a política. Si falta evidencia, bloquear sin revelar existencia de usuario. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita.",
       "valor_config": {
         "approvers_policy_id": 20,
         "initial_approvers_required": 1,
@@ -1257,7 +1314,11 @@
         "previous_contact_notification": true,
         "audit": true,
         "temporary_password": "ONE_TIME",
-        "state": "PROPOSED_NOT_ACTIVE"
+        "state": "PROPOSED_NOT_ACTIVE",
+        "hold_start": "AFTER_ALL_APPROVALS_AND_PREVIOUS_DELIVERED",
+        "delivery_failure": "BLOCK_OR_PAUSE",
+        "alt_contacts": "CANDIDATE_PENDING_OWNER_AUTHORIZATION",
+        "identity_verified": false
       }
     },
     {
@@ -1267,7 +1328,7 @@
       ],
       "categoria": "RECOVERY",
       "titulo": "Recuperación Cliente Q11 por dos personas",
-      "descripcion": "Sin celular anterior, soporte registra DNI escaneado y una segunda persona distinta aprueba. Avisar al celular y correo anteriores; conservar auditoría y bloquear 48 horas antes de emitir comprobante apto para rebind atómico del celular verificado en ONB_002. Selfie y proveedor IDV quedan sin decidir; no fingir evidencia ni liberar cuenta antes de completar el proceso.",
+      "descripcion": "Sin celular anterior, soporte registra DNI escaneado y una segunda persona distinta aprueba. Avisar al celular y correo anteriores; conservar auditoría y bloquear 48 horas antes de emitir comprobante apto para rebind atómico del celular verificado en ONB_002. Selfie y proveedor IDV quedan sin decidir; no fingir evidencia ni liberar cuenta antes de completar el proceso. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Q11 exige ENTREGADO en celular y correo anteriores. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "valor_config": {
         "approvers_required": 2,
         "hold_hours": 48,
@@ -1277,9 +1338,14 @@
           "PREVIOUS_EMAIL"
         ],
         "creator_differs_from_approver": true,
-        "selfie": "UNDECIDED",
+        "selfie": "NO_NOT_ACTIVE",
         "idv": "PENDING_SELECTION",
-        "state": "PROPOSED_NOT_ACTIVE"
+        "state": "PROPOSED_NOT_ACTIVE",
+        "hold_start": "AFTER_CREATOR_APPROVER_SEPARATION_AND_PHONE_EMAIL_DELIVERED",
+        "delivery_failure": "BLOCK_OR_PAUSE",
+        "idv_provider": "PENDING_SELECTION",
+        "alternate_contacts": "PENDING_HUMAN_DECISION",
+        "identity_verified": false
       }
     },
     {
@@ -1289,13 +1355,76 @@
       ],
       "categoria": "AUTH",
       "titulo": "SMS Intico como contingencia no automática",
-      "descripcion": "En ONB_002 el canal de OTP Cliente es WhatsApp. Ante falla no activar fallback SMS automáticamente: registrar incidente, permitir reintento según política y comunicar a soporte. Solo soporte puede habilitar SMS Intico con evidencia auditable; el frontend no selecciona proveedor, no duplica OTP ni convierte control de teléfono en identidad personal.",
+      "descripcion": "En ONB_002 el canal de OTP Cliente es WhatsApp. Ante falla no activar fallback SMS automáticamente: registrar incidente, permitir reintento según política y comunicar a soporte. Solo soporte puede habilitar SMS Intico con evidencia auditable; el frontend no selecciona proveedor, no duplica OTP ni convierte control de teléfono en identidad personal. La activación de soporte SMS no inicia ni levanta la espera de recuperación Q11. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
       "valor_config": {
         "channel": "WHATSAPP",
         "contingency": "INTICO_SMS",
         "activation": "SUPPORT_ONLY",
         "auto_fallback": "DENY",
-        "state": "PROPOSED_NOT_ACTIVE"
+        "state": "PROPOSED_NOT_ACTIVE",
+        "recovery_clock_from_otp": "DENY",
+        "selfie": "INACTIVE",
+        "identity_verified": false
+      }
+    },
+    {
+      "codigo": "B2B-RULE-RECOVERY-MFA-SEPARATION-001",
+      "screens": [
+        "B2B-AUTH-004"
+      ],
+      "categoria": "AUTH",
+      "titulo": "MFA B2B no hereda aprobación ni clave temporal de recuperación",
+      "descripcion": "B2B-AUTH-004 solo concluye MFA cuando LF_AUTH_BOUNDARY verifica OTP por correo Brevo conforme a política vigente. Ni la clave temporal de recuperación, ni la aprobación de soporte, ni el aviso entregado, ni las 48 horas satisfacen MFA, crean sesión o eligen factor. La entrega Brevo requiere implementación y QA; no hay bypass SMS automático ni passkeys. Esta regla es CANDIDATO documental y no modifica AUTH-018/019/020/021/026/047 ni políticas 19/20/23/25.",
+      "valor_config": {
+        "mfa": "SERVER_VERIFIED_EMAIL_BREVO_IF_REQUIRED",
+        "recovery_proof_satisfies_mfa": false,
+        "temporary_password_satisfies_mfa": false,
+        "sms": "SUPPORT_CONTINGENCY_ONLY",
+        "operational": false,
+        "identity_verified": false
+      }
+    },
+    {
+      "codigo": "B2B-RULE-RECOVERY-ALTERNATE-CONTACT-001",
+      "screens": [
+        "B2B-AUTH-002",
+        "B2B-AUTH-006"
+      ],
+      "categoria": "RECOVERY",
+      "titulo": "Notificación B2B entregada antes del reloj; contingencia de contacto",
+      "descripcion": "El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Solo contar 48 horas de tiempo elegible; no emitir clave temporal si aviso falló o está en PAUSED. approvers_required se resuelve desde política 20 y no se asume implementado hasta readback real.",
+      "valor_config": {
+        "wait_hours": 48,
+        "hold_start": "LAST_APPROVAL_AND_DELIVERED",
+        "approval_source": "SECURITY_POLICY_20_APPROVERS_REQUIRED_PENDING_BINDING",
+        "delivery_receipt": "DELIVERED_ONLY",
+        "failure": "BLOCK_OR_PAUSE",
+        "secondary_contact_qualifies": "PENDING_HUMAN_DECISION",
+        "status": "PROPOSAL",
+        "identity_verified": false
+      }
+    },
+    {
+      "codigo": "REG_CLIENT_RECOVERY_ALTERNATE_CONTACT_001",
+      "screens": [
+        "REC_001"
+      ],
+      "categoria": "RECOVERY",
+      "titulo": "Notificaciones previas Cliente Q11 y ruta alternativa bloqueada",
+      "descripcion": "El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. En Q11 se exige que el celular y correo anteriores reciban aviso ENTREGADO; si falla cualquiera, no liberar, pausar y conservar audit trail. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "valor_config": {
+        "hold_hours": 48,
+        "approvers": "TWO_DISTINCT_PEOPLE",
+        "old_notification_channels": [
+          "OLD_PHONE",
+          "OLD_EMAIL"
+        ],
+        "delivery": "ALL_DELIVERED",
+        "failure": "BLOCK_OR_PAUSE",
+        "secondary_contact_qualifies": "PENDING_HUMAN_DECISION",
+        "selfie": "NOT_ACTIVE",
+        "idv_provider": "PENDING_SELECTION",
+        "identity_verified": false
       }
     }
   ],
@@ -1331,34 +1460,58 @@
   ],
   "human": [
     {
-      "id": "H01",
-      "asunto": "Selfie en recuperación Cliente",
-      "propuesta": "No activar selfie ni darla por prueba aprobada hasta decisión explícita sobre liveness, seguridad, consentimiento y QA.",
-      "tipo": "DECISION_HUMANA"
-    },
-    {
       "id": "H02",
       "asunto": "Proveedor IDV para recuperación Cliente",
-      "propuesta": "Dejar PENDING_CANONICAL_IDV_PROVIDER; definir proveedor y pruebas antes de aceptar VERIFIED automático.",
-      "tipo": "DECISION_HUMANA"
+      "propuesta": "Proveedor IDV sin elegir; mantener PENDING_CANONICAL_IDV_PROVIDER y bloqueo de IDV automático hasta selección, seguridad y QA.",
+      "tipo": "DECISION_HUMANA",
+      "estado": "PENDIENTE"
     },
     {
-      "id": "H03",
-      "asunto": "Inicio de la espera de 48 horas B2B y Cliente",
-      "propuesta": "Iniciar después de completar aprobación(es) y avisos al contacto previo, con timestamp server-side auditable.",
-      "tipo": "DECISION_HUMANA"
+      "id": "H04A",
+      "tipo": "DECISION_HUMANA",
+      "estado": "PENDIENTE",
+      "asunto": "Qué contacto alterno puede sustituir el aviso anterior ENTREGADO",
+      "propuesta": "Proponer únicamente correo secundario o celular secundario ligado y verificado en registro canónico ANTES del inicio de recuperación, misma identidad y recibo DELIVERED; no se halló evidencia de registro de verificación de estos contactos. Sin aceptación expresa del dueño y esquema verificado, ni esos contactos satisfacen el gate ni reinician reloj."
     },
     {
-      "id": "H04",
-      "asunto": "Avisos al contacto anterior fallidos",
-      "propuesta": "Bloquear liberación hasta definir tratamiento alterno gobernado, sin bypass silencioso.",
-      "tipo": "DECISION_HUMANA"
+      "id": "H04B",
+      "tipo": "DECISION_HUMANA",
+      "estado": "PENDIENTE",
+      "asunto": "Excepción si ambos canales históricos son inaccesibles",
+      "propuesta": "No admitir contacto nuevo proporcionado durante el expediente, aprobador, familiar ni tercero como destinatario equivalente; mantener bloqueo hasta especificación expresa de responsable alterno, prueba independiente de titularidad y autoridad de notificación."
     },
     {
       "id": "H05",
       "asunto": "Enlaces compartidos de OTP Brevo en pantallas de recuperación",
       "propuesta": "Reconciliar por PR independiente los vínculos AUTH-041/044/045 sin afectar B2B-AUTH-004 ni reglas cubiertas por #3844/#3846.",
-      "tipo": "GATE_TECNICO"
+      "tipo": "GATE_TECNICO",
+      "estado": "PENDIENTE"
     }
-  ]
+  ],
+  "owner_decision": {
+    "reference": "OWNER_LF_2026-11-13_22_03_LIMA_PR3847",
+    "source": "CONVERSATION_OWNER_DOCUMENTARY",
+    "identity_verified": false,
+    "signed": false,
+    "decisions": [
+      {
+        "id": "H01",
+        "outcome": "CLOSED_SELFIE_NOT_ACTIVE",
+        "operational_rule_created": false
+      },
+      {
+        "id": "H02",
+        "outcome": "IDV_PROVIDER_PENDING_SELECTION"
+      },
+      {
+        "id": "H03",
+        "outcome": "CLOSED_WAIT_AFTER_APPROVALS_AND_CONFIRMED_PREVIOUS_DELIVERY"
+      },
+      {
+        "id": "H04",
+        "outcome": "FAILED_DELIVERY_BLOCK_OR_PAUSE_ALTERNATIVE_GOVERNED_WITH_CONTACT_EQUIVALENCE_PENDING"
+      }
+    ],
+    "not_implemented": true
+  }
 }

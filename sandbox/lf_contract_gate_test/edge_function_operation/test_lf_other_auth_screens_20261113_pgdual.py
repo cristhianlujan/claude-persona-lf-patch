@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LF other auth screens: source SHA, 10 UPDATE + 3 INSERT (5 links) and ROLLBACK.
+"""LF other auth screens: source SHA, 10 UPDATE + 6 INSERT (9 links) and ROLLBACK.
 PostgreSQL 17.6 / 18.7 disposable Docker only. NEVER connects to Supabase live.
 """
 from __future__ import annotations
@@ -29,8 +29,23 @@ class OtherAuthScreenAudit(unittest.TestCase):
         self.assertEqual(doc["schema"],"LF_OTHER_LOGIN_SCREENS_AUDIT_V1")
         self.assertEqual(sum(x["vinculos"] for x in doc["scope"]),344)
         self.assertEqual(len(doc["updates"]),10)
-        self.assertEqual(len(doc["inserts"]),3)
-        self.assertEqual(sum(len(x["screens"]) for x in doc["inserts"]),5)
+        self.assertEqual(len(doc["inserts"]),6)
+        self.assertEqual(sum(len(x["screens"]) for x in doc["inserts"]),9)
+        owner=doc["owner_decision"]
+        self.assertFalse(owner["identity_verified"])
+        self.assertFalse(owner["signed"])
+        self.assertEqual(owner["decisions"][0]["outcome"],"CLOSED_SELFIE_NOT_ACTIVE")
+        self.assertEqual(owner["decisions"][2]["outcome"],"CLOSED_WAIT_AFTER_APPROVALS_AND_CONFIRMED_PREVIOUS_DELIVERY")
+        bycode={x["codigo"]:x for x in doc["updates"]}
+        self.assertEqual(len(bycode),10)
+        for code in ("B2B-RULE-AUTH-028","B2B-RULE-AUTH-029","B2B-RULE-AUTH-037","B2B-RULE-AUTH-038","REG_CLIENT_RECOVERY_IDV_STEPUP_001","REG_CLIENT_RECOVERY_REBIND_ATOMIC_001"):
+            self.assertIn("ENTREGADO",bycode[code]["texto_nuevo"])
+            self.assertIn("48 horas",bycode[code]["texto_nuevo"])
+        self.assertEqual(bycode["REG_CLIENT_RECOVERY_IDV_STEPUP_001"]["config_nueva"]["selfie"],"DISABLED_OWNER_DECISION")
+        self.assertEqual(bycode["REG_CLIENT_RECOVERY_REBIND_ATOMIC_001"]["config_nueva"]["old_notifications_required_delivered"],["PHONE","EMAIL"])
+        self.assertEqual({x["codigo"] for x in doc["inserts"] if "B2B-AUTH-004" in x["screens"]},{"B2B-RULE-RECOVERY-MFA-SEPARATION-001"})
+        self.assertTrue(all(x["valor_config"].get("identity_verified") is False for x in doc["inserts"]))
+        self.assertIn("PENDING_HUMAN_DECISION",next(x for x in doc["inserts"] if x["codigo"]=="REG_CLIENT_RECOVERY_ALTERNATE_CONTACT_001")["valor_config"]["secondary_contact_qualifies"])
         protected=set(doc["protected_codes"])
         self.assertFalse(protected & {x["codigo"] for x in doc["updates"]})
         self.assertFalse(protected & {x["codigo"] for x in doc["inserts"]})
@@ -127,7 +142,7 @@ class OtherAuthScreenAudit(unittest.TestCase):
                 self.assertEqual(links,[len(x["screens"])])
                 self.assertEqual(sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(code)+";"),["0"])
                 print("SHA_INSERT|"+image+"|"+code+"|"+before+"|"+during[0]+"|"+after[0]+"|PASS",flush=True)
-            print("PASS_OTHER_AUTH_10_UPDATES_3_INSERTS_5_LINKS_ROLLBACK_"+image.replace(":","_"),flush=True)
+            print("PASS_OTHER_AUTH_10_UPDATES_6_INSERTS_9_LINKS_ROLLBACK_"+image.replace(":","_"),flush=True)
         finally:
             subprocess.run(["docker","rm","-f",cid],capture_output=True,text=True,timeout=60)
     def test_pg176(self):self.exercise("postgres:17.6","170006")
