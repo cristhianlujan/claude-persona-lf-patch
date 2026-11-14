@@ -1,5 +1,5 @@
 {
-  "schema": "LF_LOGIN_B2B_LOTE2_DEVICE_RECONCILIATION_V2",
+  "schema": "LF_LOGIN_B2B_LOTE2_OPTION_C_ROLLING_DEVICE_30D_V3",
   "scope_codes": [
     "B2B-RULE-AUTH-004",
     "B2B-RULE-AUTH-005",
@@ -41,8 +41,10 @@
     "B2B-RULE-AUTH-030",
     "B2B-RULE-AUTH-033",
     "B2B-RULE-AUTH-034",
-    "B2B-RULE-AUTH-043",
-    "B2B-RULE-AUTH-040"
+    "B2B-RULE-AUTH-039",
+    "B2B-RULE-AUTH-040",
+    "B2B-RULE-AUTH-041",
+    "B2B-RULE-AUTH-043"
   ],
   "protected_codes": [
     "B2B-RULE-AUTH-018",
@@ -53,7 +55,7 @@
     "B2B-RULE-AUTH-047"
   ],
   "excluded_state_rule": "B2B-RULE-STATE-001",
-  "status": "DOCUMENTARY_PROPOSALS_ONLY_NO_LIVE_WRITES",
+  "status": "DOCUMENT_ONLY_UNVERIFIED_OWNER_NO_LIVE_WRITES",
   "model": "PR3844_DOCKER_PG17_6_PG18_7_JSONB_POPULATE_ROW_SHA256_UPDATE_ROLLBACK",
   "dependency": {
     "pr3844_head": "980c203d67df6469161cf44bbb457861cc32c065",
@@ -68,7 +70,7 @@
       "source_status": "CANDIDATO",
       "source_sha256": "913048734e534b21eba79a7338715b9acf824749470421d95aeb6dafa4935f26",
       "original_description": "El Login se comunica exclusivamente con una capa de autenticación controlada por LF del lado servidor. Esa capa puede delegar la verificación a un IdP/proveedor confiable, pero el navegador no debe verificar credenciales por sí mismo ni depender directamente del contrato particular del proveedor. Si la identidad no puede verificarse válidamente, no se crea sesión ni se concede acceso.",
-      "proposed_description": "El Login usa exclusivamente LF_AUTH_BOUNDARY del lado servidor. LF valida el usuario y contraseña sin exponer al navegador credenciales, secretos ni contratos particulares del IdP. Cuando SEC-B2B-MFA exige segundo factor para los perfiles 1 a 6 por 30 días sin uso o 3 meses calendario sin cambio de contraseña, LF verifica OTP por correo Brevo antes de AUTHENTICATED; no se exige Google Workspace, SAML, FIDO2, passkeys ni llaves de seguridad. La selección o integración real del proveedor de identidad principal sigue PENDING_ADR_003_M1_SPIKE y no se presume implementada. Si la identidad o el segundo factor exigido no pueden validarse, no se crea sesión ni permisos.",
+      "proposed_description": "LF_AUTH_BOUNDARY verifica usuario y contraseña en servidor. Perfiles 1 a 6: dispositivo nuevo, revocado o sin acceso autenticado válido en 30 días, o contraseña sin cambiar durante 3 meses calendario, exige OTP por correo Brevo. Cambio de correo, teléfono y recuperación de acceso exigen OTP siempre aun con token reconocido. SMS Intico solo por soporte manual autorizado tras actualizar correo sin recibir OTP, sin fallback automático. Un token no concede sesión solo. Se excluyen Google Workspace/SAML y FIDO2/passkeys. IdP principal pendiente ADR-003/M1.",
       "config_patch": {
         "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
         "admin_identity_provider_status": "NOT_SELECTED_NOT_GOOGLE_SAML",
@@ -83,11 +85,19 @@
           6
         ],
         "google_saml_required": false,
-        "fido2_passkey_required": false
+        "fido2_passkey_required": false,
+        "trusted_device_policy_id": 25,
+        "device_inactivity_days": 30,
+        "password_age_trigger_calendar_months": 3,
+        "always_otp_operations": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
+        ]
       },
-      "reason": "valor_config.admin_identity_provider=GOOGLE_WORKSPACE contradice la eliminación de Google Workspace/SAML como método del Login.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
       "owner_decisions": [
-        "a"
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
       ],
       "changes_applied_in_live": false
     },
@@ -96,7 +106,7 @@
       "source_status": "CANDIDATO",
       "source_sha256": "6b82d5d7cb56f0318f3870437e0d7ec0e486c27b955bd29dd2fc34924a3df6d5",
       "original_description": "B2B-AUTH-003 solo puede actualizar la contraseña después de AUTH-029. El servidor valida la nueva credencial contra security_policy_id=24, comprueba la coincidencia exacta de los dos campos y delega la actualización a el proveedor OIDC que resulte del spike M1 de ADR-003. La UI muestra una guía dinámica derivada de la política, pero no mantiene una copia independiente de sus umbrales ni requisitos.",
-      "proposed_description": "B2B-AUTH-003 permite actualizar contraseña solo después de AUTH-029 con contexto temporal PASSWORD_UPDATE_ONLY, O como final de recuperación asistida aprobada por soporte conforme AUTH-020 y política central 20. La vía asistida exige DNI escaneado, permisos por perfil de lf_ops.b2b_recovery_profile_permissions, approvers_required configurable 1 o 2 (inicial 1), aviso al contacto anterior, auditoría y espera de 48 horas; después emite una clave temporal de un solo uso al correo designado y obliga a renovar clave y correo antes de cualquier sesión operativa. La clave temporal no sustituye MFA del siguiente acceso. El servidor valida contraseña nueva y coincidencia de campos contra security_policy_id=24; la UI solo muestra guía dinámica y no duplica umbrales. La actualización se efectúa exclusivamente por la frontera de identidad LF con proveedor primario pendiente ADR-003/M1; ningún flujo de recuperación concede acceso operativo por sí solo.",
+      "proposed_description": "El cambio de contraseña de B2B-AUTH-003 procede después de AUTH-029 o de la recuperación asistida AUTH-020/política20: DNI escaneado, permisos por perfil, approvers_required 1 o 2 (inicial 1), aviso al contacto anterior, auditoría, espera 48h y clave temporal de uso único. La recuperación exige OTP aunque el dispositivo esté reconocido; cuando soporte la APRUEBA, antes de restablecer credenciales se revocan todos los tokens. Todo cambio efectivo de contraseña también los revoca. Clave temporal no autoriza sesión ni omite MFA; identidad principal pendiente ADR-003/M1.",
       "config_patch": {
         "recovery_allowed_entry_paths": [
           "AUTH029_PASSWORD_UPDATE_ONLY",
@@ -115,11 +125,15 @@
         "assisted_audit": "REQUIRED",
         "assisted_temp_key": "ONE_TIME_ONLY",
         "assisted_force_password_and_email_change": true,
-        "assisted_session_before_completion": "DENY"
+        "assisted_session_before_completion": "DENY",
+        "assisted_otp_always": "REQUIRED_EVEN_RECOGNIZED_DEVICE",
+        "trusted_device_revoke_on_recovery_approval": "ALL_USER_TOKENS_BEFORE_RESET",
+        "trusted_device_revoke_on_password_change": "ALL_USER_TOKENS",
+        "trusted_device_policy_id": 25
       },
-      "reason": "«solo después de AUTH-029» excluye la recuperación asistida autorizada sin correo/celular previo.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
       "owner_decisions": [
-        "d"
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
       ],
       "changes_applied_in_live": false
     },
@@ -128,41 +142,29 @@
       "source_status": "CANDIDATO",
       "source_sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b",
       "original_description": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega.",
-      "proposed_description": "Tras validar usuario y contraseña, LF_AUTH_BOUNDARY evalúa MFA exclusivamente por la política central SEC-B2B-MFA para perfiles 1 a 6: 30 días sin actividad autenticada o 3 meses calendario sin cambiar contraseña. La última actividad debe acreditarse con el registro server-side de acceso autenticado del usuario (fuente propuesta lf_ops.empresa_usuarios.last_access_at, su escritura y semántica sujetas a QA), nunca con un token, cookie, reconocimiento, revocación o last_used_at de dispositivo. AUTH-040 retira el token de dispositivo confiable del Login operativo: ni activa ni omite MFA, ni renueva la fecha de última actividad. Si algún disparador aplica, LF crea el contexto transitorio MFA_REQUIRED para B2B-AUTH-004 y verifica OTP por correo Brevo antes de AUTHENTICATED o permisos. Si ninguno aplica, puede continuar tras validar las credenciales, sin segundo factor por estado de dispositivo. SMS Intico solo por contingencia manual auditada tras actualización de correo, no recepción de OTP y llamada al soporte con permiso can_enable_sms_contingency; nunca fallback automático. El cliente no selecciona el factor ni declara autenticación; B2B-AUTH-004 exige desafío emitido por servidor y no es una ruta pública.",
+      "proposed_description": "Después de usuario y contraseña validados, LF_AUTH_BOUNDARY consulta token opaco/hash, usuario/empresa, revocación y lf_ops.dispositivos_confiables.last_used_at. Perfiles 1 a 6: dispositivo nuevo, revocado o sin acceso autenticado válido en 30 días, o contraseña sin cambiar durante 3 meses calendario, exige OTP por correo Brevo. Cambio de correo, teléfono y recuperación de acceso exigen OTP siempre aun con token reconocido. SMS Intico solo por soporte manual autorizado tras actualizar correo sin recibir OTP, sin fallback automático. Cookie por sí sola nunca autentica ni actualiza last_used_at: solo acceso autenticado completo, OTP incluido cuando corresponda, reinicia plazo y expires_at por 30 días. Si se exige OTP devuelve MFA_REQUIRED y desafío server-side B2B-AUTH-004 sin sesión operativa; si ningún disparador aplica, credenciales válidas continúan sin OTP. El cliente no decide MFA ni reconoce dispositivos.",
       "config_patch": {
-        "factor_source": "LF_EMAIL_OTP_BREVO_IF_POLICY3_MFA_REQUIRED",
-        "mfa_profile_ids": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
+        "second_control_trigger": "NEW_REVOKED_OR_30D_DEVICE_INACTIVE_OR_3_MONTHS_PASSWORD",
+        "recognized_device_outcome": "CHECK_30D_ACTIVITY_AND_PASSWORD_AGE",
+        "unrecognized_device_outcome": "MFA_REQUIRED",
+        "mfa_decision_authority": "SEC_B2B_MFA_PLUS_POLICY25",
+        "trusted_device_policy_id": 25,
+        "device_last_valid_activity_source": "lf_ops.dispositivos_confiables.last_used_at",
+        "device_activity_update_authority": "AFTER_FULL_AUTHENTICATED_LOGIN_SERVER_ONLY",
+        "device_activity_refresh_window_days": 30,
+        "device_token_usage_without_authentication": "DENY_NO_REFRESH",
+        "mfa_trigger_device_recognition": "NEW_REVOKED_OR_INACTIVE",
+        "always_otp_operations": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
         ],
-        "non_admin_second_factor": "LF_EMAIL_OTP_BREVO_IF_POLICY3_MFA_REQUIRED",
-        "recognized_device_outcome": "NOT_USED_IN_LOGIN",
-        "unrecognized_device_outcome": "NOT_USED_IN_LOGIN",
-        "mfa_decision_authority": "SEC-B2B-MFA_SECURITY_POLICY_ID_3",
-        "mfa_trigger_device_recognition": "DENY",
-        "sms_contingency_provider": "INTICO",
-        "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_EMAIL_UPDATE_FAILED_DELIVERY_AND_USER_CALL",
-        "sms_support_permission": "can_enable_sms_contingency",
-        "sms_automatic_fallback": "DENY",
-        "fido2_passkey_requirement": "DENY",
-        "second_control_trigger": "POLICY3_30D_AUTHENTICATED_INACTIVITY_OR_3_CALENDAR_MONTHS_PASSWORD",
-        "trusted_device_policy_id": null,
-        "device_recognition_authority": "DISABLED_RETIRED_DEVICE_TOKEN",
-        "logout_preserves_trusted_device": false,
-        "last_activity_source": "lf_ops.empresa_usuarios.last_access_at",
-        "last_activity_recording_authority": "SERVER_VERIFIED_AUTHENTICATED_ACCESS_ONLY",
-        "last_activity_binding_status": "PENDING_SERVER_WRITE_AND_SEMANTICS_QA",
-        "device_token_last_used_at_as_activity": "DENY"
+        "password_age_trigger_calendar_months": 3,
+        "logout_preserves_trusted_device": true
       },
-      "reason": "La política 25/registro de token no puede decidir MFA ni ser fuente de 30 días: last_used_at refleja uso del token, distinto de last_access_at de usuario; retirar token del Login operativo.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
       "owner_decisions": [
-        "a",
-        "b",
-        "c"
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
       ],
       "changes_applied_in_live": false
     },
@@ -171,7 +173,7 @@
       "source_status": "CANDIDATO",
       "source_sha256": "7556b0412ca1cabb5b2eadef82e4c3f8884ad6f3f8cc91e81a47e0fc4c8d0147",
       "original_description": "B2B-AUTH-004 solicita un código OTP únicamente después de que AUTH-033 determine que corresponde el segundo control por correo. LF genera el desafío del lado servidor, entrega el código mediante Brevo al correo registrado y valida el valor antes de continuar. El código, credenciales de Brevo y respuesta cruda del proveedor no se registran ni se exponen a analytics o al cliente.",
-      "proposed_description": "B2B-AUTH-004 presenta desafío OTP únicamente tras usuario y contraseña validados y cuando la política central SEC-B2B-MFA exija MFA a cualquier perfil 1–6 (30 días sin uso o 3 meses sin cambiar contraseña). LF genera OTP en servidor, lo entrega primero por correo Brevo registrado y valida el valor antes de AUTHENTICATED. Un dispositivo nuevo o reconocido no es por sí mismo disparador ni excepción de MFA. Cuando el usuario actualizó su correo y aún no recibe el OTP, solo soporte, tras solicitud telefónica y comprobación, puede habilitar de forma auditada SMS Intico con can_enable_sms_contingency; nunca fallback automático ni selección del cliente. El OTP SMS se verifica también en servidor. No registrar ni exponer OTP, credenciales Brevo/Intico o payload crudo; el rate limit del OTP MFA es distinto de RATE-B2B-LOGIN por IP, con recurso canónico pendiente de homologar.",
+      "proposed_description": "B2B-AUTH-004 presenta OTP después de usuario y contraseña válidos para dispositivo nuevo, revocado o inactivo 30 días o por contraseña de 3 meses; los perfiles 1 a 6 usan Brevo. Correo, teléfono y recuperación exigen OTP en su propia operación aun con cookie reconocida. El servidor genera, entrega y verifica OTP antes de sesión/acción; no expone código ni secretos. Intico solo soporte manual autorizado y auditado tras actualizar correo y no recibirlo; no fallback automático. Contador OTP independiente de RATE-B2B-LOGIN por IP y fallo de contraseña.",
       "config_patch": {
         "mfa_applicability_policy_id": 3,
         "mfa_profile_ids": [
@@ -182,7 +184,7 @@
           5,
           6
         ],
-        "mfa_challenge_trigger": "SEC_B2B_MFA_ONLY_30D_IDLE_OR_3_MONTHS_PASSWORD",
+        "mfa_challenge_trigger": "NEW_REVOKED_OR_30D_DEVICE_INACTIVE_OR_3_MONTHS_PASSWORD",
         "sms_contingency_provider": "INTICO",
         "sms_contingency_mode": "SUPPORT_MANUAL_WITH_PERMISSION_AND_AUDIT",
         "sms_support_permission": "can_enable_sms_contingency",
@@ -191,13 +193,19 @@
         "new_device_rate_limit_policy_id": null,
         "new_device_rate_limit_resource": null,
         "general_mfa_otp_rate_limit_mapping": "PENDING_HOMOLOGATION_NOT_YET_VIGENTE",
-        "separate_login_ip_rate_limit_code": "RATE-B2B-LOGIN"
+        "separate_login_ip_rate_limit_code": "RATE-B2B-LOGIN",
+        "trusted_device_policy_id": 25,
+        "sensitive_operations_always_otp": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
+        ],
+        "sensitive_operation_device_exemption": "DENY",
+        "device_last_valid_activity_source": "lf_ops.dispositivos_confiables.last_used_at"
       },
-      "reason": "Los atributos OTP y rate limit dicen «dispositivo nuevo» como ámbito del segundo factor, que ahora depende solo de la política 3.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
       "owner_decisions": [
-        "a",
-        "b",
-        "c"
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
       ],
       "changes_applied_in_live": false
     },
@@ -206,7 +214,7 @@
       "source_status": "CANDIDATO",
       "source_sha256": "3e15341ff449f436f3c8cef077be20f9282f260465e738468a76cecac5fbcea7",
       "original_description": "La solicitud inicial y los reenvíos del OTP para dispositivo no reconocido comparten únicamente el contador de AUTH_NEW_DEVICE_OTP_SEND. El contador no consume ni bloquea PASSWORD_RECOVERY ni correos transaccionales. La IP es una señal preventiva de riesgo: puede elevar evaluación de abuso o anti-bot, pero no bloquea por sí sola. Mientras el OTP siga vigente y tenga intentos disponibles, Reenviar entrega el mismo código; la emisión de un código nuevo solo procede al vencer o agotar intentos y siempre queda sujeta a la política de rate limit de esta operación.",
-      "proposed_description": "El envío inicial y los reenvíos del OTP de segundo factor comparten un contador aislado de la operación MFA por correo, exigida solo por la política central SEC-B2B-MFA tras 30 días sin uso o 3 meses sin cambiar contraseña, para perfiles 1–6, sin depender del reconocimiento de dispositivo. El contador no consume ni bloquea PASSWORD_RECOVERY, correos transaccionales o el control de contraseña fallida AUTH_LOGIN_FAILED_PASSWORD. RATE-B2B-LOGIN por IP es independiente. La IP en esta operación OTP es señal preventiva de abuso/anti-bot, no bloquea por sí sola. Mientras el OTP esté vigente y conserve intentos, Reenviar entrega el mismo código sin ampliar expires_at ni intentos; un nuevo código solo al vencer o agotar intentos, sujeto a rate limit OTP. El recurso y la política de rate limit canónicos para OTP MFA condicional requieren homologación técnica antes de ejecución o promoción; no reutilizar sin verificar la configuración exclusiva de NEW_DEVICE.",
+      "proposed_description": "El contador de OTP MFA cubre dispositivo nuevo, revocado o sin uso autenticado válido 30 días y contraseña sin cambio 3 meses, perfiles 1 a 6; no se omite OTP de cambios de correo/teléfono o recuperación por token reconocido. Contadores MFA, recuperación, operaciones de cambio de datos, mensajes transaccionales, AUTH_LOGIN_FAILED_PASSWORD y RATE-B2B-LOGIN por IP son independientes. IP solo señal anti-abuso; reenvío de OTP válido no amplía vigencia ni intentos. Recurso general OTP MFA pendiente de homologación, no asumir que AUTH_NEW_DEVICE_OTP_SEND sirve a todos.",
       "config_patch": {
         "resource_code": "PENDING_CANONICAL_MFA_EMAIL_OTP_RESOURCE",
         "rate_limit_policy_id": null,
@@ -222,15 +230,21 @@
           5,
           6
         ],
-        "device_is_mfa_trigger": "DENY",
+        "device_is_mfa_trigger": "NEW_REVOKED_OR_30D_DEVICE_INACTIVE",
         "password_login_rate_limit_policy": "AUTH_LOGIN_FAILED_PASSWORD",
         "ip_login_rate_limit_policy": "RATE-B2B-LOGIN",
-        "ip_login_counter_interference": "DENY"
+        "ip_login_counter_interference": "DENY",
+        "trusted_device_policy_id": 25,
+        "password_age_trigger_calendar_months": 3,
+        "always_otp_operations": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
+        ]
       },
-      "reason": "Rate limit OTP se restringe a dispositivo no reconocido; debe abarcar OTP por MFA condicional y separarse del rate limit de Login por IP.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
       "owner_decisions": [
-        "b",
-        "e"
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
       ],
       "changes_applied_in_live": false
     },
@@ -239,32 +253,105 @@
       "source_status": "CANDIDATO",
       "source_sha256": "7f0256dcbae7c1f233301793e596bd4de785f4bdbafe9b033a80e29cbe746a89",
       "original_description": "La confianza de dispositivo no sustituye la autenticación primaria. Después de validar email y contraseña, LF puede reconocer un dispositivo únicamente mediante un token opaco emitido por servidor. Un dispositivo nuevo obtiene el token solo después de validar correctamente el OTP por correo. El navegador conserva el token en una cookie host-only con HttpOnly, Secure, SameSite=Lax, Path=/ y prefijo __Host-. La cookie no contiene identidad ni autoriza acceso por sí sola. LF persiste únicamente el hash del token en lf_ops.dispositivos_confiables, valida vencimiento y revocación del lado servidor y genera un token nuevo después de cada nueva validación OTP; un token revocado nunca se reactiva.",
-      "proposed_description": "El token opaco de dispositivo confiable queda RETIRADO del flujo operativo de Login B2B y no se emite, renueva ni consulta para autenticar, decidir, habilitar o eximir MFA. El token tampoco registra la última actividad para los 30 días: lf_ops.dispositivos_confiables.last_used_at refleja uso del token, no demuestra acceso autenticado. La actividad de usuario para SEC-B2B-MFA debe acreditarse por acceso autenticado verificado en servidor (fuente propuesta lf_ops.empresa_usuarios.last_access_at; actualización y semántica pendientes de QA). El único disparador de MFA sigue siendo 30 días sin uso o 3 meses calendario sin cambiar contraseña, perfiles 1 a 6; ante cualquiera se verifica OTP Brevo antes de sesión. Se conservan los hashes de tokens y registros existentes solo para trazabilidad, caducidad y revocación, sin reactivar confianza, emisión ni cookie __Host-. La política 25 y la regla AUTH-039 conservan referencias legadas contradictorias y requieren reconciliación gobernada separada; esta propuesta no las modifica ni autoriza producción.",
+      "proposed_description": "Se CONSERVA el token opaco criptográficamente aleatorio, hash solo en lf_ops.dispositivos_confiables y cookie __Host- HttpOnly Secure SameSite=Lax Path=/ sin identidad ni autenticación autónoma. Perfiles 1 a 6: dispositivo nuevo, revocado o sin acceso autenticado válido en 30 días, o contraseña sin cambiar durante 3 meses calendario, exige OTP por correo Brevo. Cambio de correo, teléfono y recuperación de acceso exigen OTP siempre aun con token reconocido. SMS Intico solo por soporte manual autorizado tras actualizar correo sin recibir OTP, sin fallback automático. Emitir token nuevo tras OTP válido para dispositivo nuevo, revocado o inactivo; revocado nunca reutilizar. Actualizar last_used_at y expires_at a +30 días exclusivamente después de autenticación completa (OTP si exigido), no por token presentado ni intento fallido. Con cambio de contraseña, recuperación aprobada y revocación manual se invalidan tokens según AUTH-039. Duración 30 días FIJA, no configurable por empresa ni permanente.",
       "config_patch": {
-        "issue_after": "DENY_RETIRED",
-        "token_generation": "DENY_RETIRED",
-        "token_rotation": "DENY_RETIRED",
-        "expiry_source": "NOT_USED_RETIRED",
-        "token_storage": "HISTORICAL_HASH_ONLY_NO_NEW_TOKENS",
-        "token_form": "RETIRED_OPAQUE_HISTORICAL_ONLY",
-        "cookie_prefix": "RETIRED_NO_NEW_COOKIE",
-        "cookie_authentication_authority": "DENY",
-        "device_token_operational_usage": "DENY",
-        "device_token_decides_mfa": "DENY",
-        "device_token_registers_user_last_activity": "DENY",
-        "token_last_used_at_source": "lf_ops.dispositivos_confiables.last_used_at",
-        "user_last_activity_source_proposed": "lf_ops.empresa_usuarios.last_access_at",
-        "user_last_activity_authentication_boundary": "SERVER_VERIFIED_ACCESS_ONLY",
-        "user_last_activity_binding_status": "PENDING_SERVER_WRITE_AND_SEMANTICS_QA",
-        "historical_registry_retention": "AUDIT_REVOCATION_ONLY",
-        "policy25_reconciliation_status": "BLOCKED_SEPARATE_GOVERNED_CHANGE",
-        "auth039_reconciliation_status": "BLOCKED_VIGENTE_SEPARATE_GOVERNED_CHANGE"
+        "token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+        "token_generation": "SERVER_ONLY",
+        "token_storage": "HASH_ONLY",
+        "cookie_prefix": "__Host-",
+        "cookie_http_only": true,
+        "cookie_secure": true,
+        "cookie_same_site": "Lax",
+        "cookie_path": "/",
+        "issue_after": "SUCCESSFUL_OTP_FOR_NEW_REVOKED_OR_INACTIVE_DEVICE",
+        "token_rotation": "NEW_TOKEN_AFTER_REQUIRED_OTP",
+        "expiry_source": "SEC_B2B_TRUSTED_DEVICE_FIXED_30D",
+        "fixed_trust_duration_days": 30,
+        "device_last_activity_source": "lf_ops.dispositivos_confiables.last_used_at",
+        "last_used_at_update": "SERVER_AFTER_COMPLETED_AUTHENTICATION_ONLY",
+        "rolling_expiry_update": "LAST_VALID_AUTHENTICATED_USE_PLUS_30D",
+        "token_presentation_is_activity": "DENY",
+        "device_token_operational_usage": "SERVER_RECOGNITION_ONLY",
+        "device_token_decides_mfa": "30D_DEVICE_INACTIVITY_WITH_PW_3M_OVERRIDE",
+        "device_token_registers_user_last_activity": "ONLY_AUTHENTICATED_DEVICE_USE",
+        "user_last_activity_source_proposed": null,
+        "user_last_activity_binding_status": "NOT_USED_FOR_DEVICE_30D",
+        "always_otp_operations": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
+        ],
+        "revoke_on_password_change": "ALL_TOKENS",
+        "revoke_on_approved_access_recovery": "ALL_TOKENS",
+        "revoked_token_reactivation": "DENY",
+        "policy25_reconciliation_status": "OWNER_OPTION_C_PROPOSED",
+        "auth039_reconciliation_status": "VIGENTE_REQUIRES_SEPARATE_GOVERNED_CHANGE",
+        "primary_authentication_required": true,
+        "cookie_authentication_authority": "DENY"
       },
-      "reason": "Retira por completo token operacional: no decide MFA ni representa última actividad; conserva solo evidencia histórica para no alterar registros.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
       "owner_decisions": [
-        "b"
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
       ],
       "changes_applied_in_live": false
+    },
+    {
+      "code": "B2B-RULE-AUTH-039",
+      "source_status": "VIGENTE",
+      "source_sha256": "d629b76e895959d6a253169ddada0506f4ff0b49d0c1474b3ad2216756714d4b",
+      "original_description": "Cerrar sesión termina la sesión operativa pero conserva la confianza del dispositivo. La confianza termina por vencimiento, cambio de contraseña, usuario en estado canónico DISABLED o revocación manual autorizada. La revocación manual puede aplicarse a un dispositivo específico o a todos los dispositivos confiables del usuario; en ambos casos el servidor termina inmediatamente las sesiones activas afectadas y el siguiente acceso desde un dispositivo revocado exige OTP por correo. La acción requiere confirmación explícita y permiso B2B_USER_UPDATE. El cliente no puede auto-marcar, revocar ni restaurar confianza.",
+      "config_patch": {
+        "revocation_triggers": [
+          "TRUST_EXPIRED_30D_INACTIVITY",
+          "PASSWORD_CHANGED",
+          "ACCESS_RECOVERY_APPROVED",
+          "USER_DISABLED",
+          "MANUAL_REVOCATION"
+        ],
+        "device_activity_source": "lf_ops.dispositivos_confiables.last_used_at",
+        "device_last_use_refresh": "SERVER_AFTER_COMPLETED_AUTHENTICATION_ONLY",
+        "device_expiry_refresh": "ROLLING_30_DAYS_AFTER_COMPLETED_AUTHENTICATION",
+        "fixed_trust_duration_days": 30,
+        "recovery_policy_id": 20,
+        "recovery_revocation_scope": "ALL_TOKENS_BEFORE_PASSWORD_RESET",
+        "recognized_device_password_age_override": "OTP_AFTER_3_MONTHS",
+        "sensitive_operation_otp_required": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
+        ]
+      },
+      "changes_applied_in_live": false,
+      "proposed_description": "El token opaco confiable se valida server-side y es reconocido solo si no está revocado y se usó en acceso autenticado válido durante los últimos 30 días. Tras completar autenticación (incluido OTP si corresponde) renovar last_used_at y expires_at a +30 días; cookie sola o intento fallido no renueva. Logout termina sesión conservando token válido. Cambio de contraseña y recuperación APROBADA AUTH-020 revocan TODOS los tokens antes de restablecer credenciales; usuario DISABLED también. Revocación manual de uno o todos exige confirmación, permiso B2B_USER_UPDATE y termina sesiones afectadas. Token revocado no se rehabilita: siguiente login OTP. Contraseña 3 meses, cambio de correo/teléfono y recuperación siempre exigen OTP aun en dispositivo reconocido.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
+      "owner_decisions": [
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
+      ]
+    },
+    {
+      "code": "B2B-RULE-AUTH-041",
+      "source_status": "CANDIDATO",
+      "source_sha256": "17005985437ac51d1b1dc467c1e748e93073a20f31140d401a80a7dd841b8c07",
+      "original_description": "Cada OTP emitido por OTP_POL_B2B_AUTH_EMAIL_BREVO es válido para un solo uso. Mientras el código permanezca vigente y tenga intentos disponibles, Reenviar entrega nuevamente el mismo código y conserva exactamente su expires_at y contador de intentos. Reenviar no amplía la vigencia ni concede intentos adicionales. Solo un OTP vencido o con intentos agotados puede ser sustituido por un código nuevo, sujeto al cooldown y rate limit aplicables. Un código consumido, vencido o agotado no vuelve a aceptarse.",
+      "config_patch": {
+        "sensitive_action_otp_required": [
+          "CHANGE_EMAIL",
+          "CHANGE_PHONE",
+          "ACCESS_RECOVERY"
+        ],
+        "sensitive_action_device_bypass": "DENY",
+        "email_phone_canonical_otp_operation_binding": "PENDING_HOMOLOGATION_NO_NEW_IDS",
+        "applies_to_operation_ids": [
+          4,
+          5
+        ]
+      },
+      "changes_applied_in_live": false,
+      "proposed_description": "Los OTP Brevo son de un solo uso, sujetos a verificación server-side. Cambio de correo, teléfono y recuperación exigen OTP de su operación, incluso en dispositivo reconocido. Las operaciones B2B existentes son id 4 MFA Login y 5 recuperación; no inventar IDs para cambio de correo/teléfono, requieren homologación técnica antes de liberar acciones. Reenviar OTP vigente repite el mismo código sin ampliar expires_at ni intentos; otro solo por expiración/intentos agotados con cooldown y rate limit; consumido nunca aceptado.",
+      "reason": "OPTION_C_OWNER_2130: 30d por dispositivo validado; 3 meses password; OTP en operaciones sensibles",
+      "owner_decisions": [
+        "OWNER_OPTION_C_20261113_2130_IDENTITY_UNVERIFIED"
+      ]
     }
   ],
   "audit": [
@@ -496,20 +583,30 @@
   "identity_verified": false,
   "supabase_writes": 0,
   "token_decision": {
-    "status": "RETIRED_FROM_OPERATIONAL_LOGIN",
-    "owner_authorization": "ARCHITECT_REQUEST_21_12_LIMA",
-    "last_activity_device_token": "NOT_AUTHORITATIVE",
-    "last_activity_user_record": "lf_ops.empresa_usuarios.last_access_at",
-    "last_activity_user_record_qa": "PENDING",
-    "other_related_rules": {
-      "AUTH035": "KEEP_LEGACY_TOTP",
-      "AUTH038": "KEEP_RECOVERY_COUNTDOWN",
-      "AUTH041": "KEEP_SECOND_FACTOR_OP4_AND_RECOVERY_OP5",
-      "AUTH042": "KEEP_RECOVERY_RATE_LIMIT"
-    },
-    "external_blockers": [
-      "SEC-B2B-TRUSTED-DEVICE policy25",
-      "B2B-RULE-AUTH-039 VIGENTE"
-    ]
-  }
+    "status": "OPTION_C_RESTORED",
+    "source": "lf_ops.dispositivos_confiables.last_used_at",
+    "refresh": "SERVER_AFTER_COMPLETED_AUTHENTICATION",
+    "fixed_duration_days": 30
+  },
+  "owner_decision": {
+    "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+    "identity_verified": false,
+    "date_local": "2026-11-13 21:30 America/Lima",
+    "option": "C",
+    "replaces": "AUTH040_TOKEN_RETIRED_V2",
+    "days": 30,
+    "months_password": 3
+  },
+  "non_conflicts": [
+    "B2B-RULE-AUTH-035",
+    "B2B-RULE-AUTH-038",
+    "B2B-RULE-AUTH-042"
+  ],
+  "external_blockers": [
+    "AUTH039_VIGENTE_SEPARATE_GOVERNANCE",
+    "POLICY25_PARAMETER_PROVENANCE_GUARD",
+    "EMAIL_PHONE_OTP_OPERATIONS_NO_B2B_IDS",
+    "PASSWORD_3_MONTHS_CANONICAL_DATE_SOURCE_QA",
+    "SIGNATURE_IDENTITY_VERIFIED_FALSE"
+  ]
 }
