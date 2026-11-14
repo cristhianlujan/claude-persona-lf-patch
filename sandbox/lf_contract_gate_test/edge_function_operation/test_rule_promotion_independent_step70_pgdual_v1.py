@@ -19,6 +19,8 @@ PREIMAGE="2fcac9f18b1581985af93639e475cd1a"
 
 SCHEMA=r"""
 CREATE ROLE service_role;
+CREATE ROLE anon;
+CREATE ROLE authenticated;
 CREATE SCHEMA programacion;
 CREATE FUNCTION programacion.fn_t_remed_rule_promotion_verdicts_v1(integer,bigint)
  RETURNS TABLE(regla_id bigint,regla_codigo text,screens integer,criteria jsonb,
