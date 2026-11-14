@@ -2,7 +2,7 @@
   "solution_ref": "lf-ig-v58-edge-deploy-governed-20261114-v1",
   "paths": {
     ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
-    "sandbox/lf_contract_gate_test/edge_function_operation/edge_ig_v58_governed_readback_v1.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/edge_function_operation/edge_ig_v58_governed_readback_v1.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_v58_governed_deploy_readback_v1.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/lf-ig-v58-edge-deploy-governed-20261114-v1.json": "CHANGESET_MANIFEST"
   }
