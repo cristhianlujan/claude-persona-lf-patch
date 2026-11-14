@@ -599,7 +599,7 @@ CREATE TABLE public.lf_skill_invocation_v1 (
  profile_code text,status text,input_sha256 text,output jsonb,evidence_ref text
 );
 CREATE TABLE public.lf_operation_execution (
- execution_id text PRIMARY KEY, target_code text,status text,operation_code text
+ execution_id text PRIMARY KEY, target_code text,status text,operation_code text,manifest jsonb
 );
 INSERT INTO public.lf_profile_selection_registry_v1
  VALUES ('PERFIL-IG-TEST','CURRENT'),('PERFIL-OTHER-TEST','CURRENT'),
@@ -726,8 +726,10 @@ BEGIN
 END;
 $mock_invoker$;
 INSERT INTO public.lf_operation_execution VALUES
- ('EXEC-IG-TEST','PERFIL-IG-TEST','IN_PROGRESS','EJECUCION_PERFIL_LF'),
- ('EXEC-OTHER-TEST','PERFIL-OTHER-TEST','IN_PROGRESS','EJECUCION_PERFIL_LF');
+ ('EXEC-IG-TEST','PERFIL-IG-TEST','IN_PROGRESS','EJECUCION_PERFIL_LF',
+  '{"router_profile_handoff":{"channel":"PRODUCTO"}}'::jsonb),
+ ('EXEC-OTHER-TEST','PERFIL-OTHER-TEST','IN_PROGRESS','EJECUCION_PERFIL_LF',
+  '{"router_profile_handoff":{"channel":"PRODUCTO"}}'::jsonb);
 SELECT public.lf_profile_skill_invoke_selected_v1('EXEC-IG-TEST','PRODUCTO',
  'INPUT_GOVERNANCE_CONTEXT_PACK','{}'::jsonb);
 SELECT public.lf_profile_skill_invoke_selected_v1('EXEC-OTHER-TEST','PRODUCTO',
@@ -737,6 +739,8 @@ SELECT public.lf_profile_skill_invoke_selected_v1('EXEC-OTHER-TEST','PRODUCTO',
    "review_mode":"CURRENT_CONTEXT_REVIEW"}'::jsonb);
 SELECT 'INVOCATION_TRACE_PASS='||count(*) FROM public.lf_profile_skill_selection_receipt_v1
  WHERE parent_execution_id IN ('EXEC-IG-TEST','EXEC-OTHER-TEST');
+SELECT 'BLOCK_CHANNEL='||(public.lf_profile_skill_invoke_selected_v1('EXEC-IG-TEST','PROGRAMACION',
+ 'INPUT_GOVERNANCE_CONTEXT_PACK','{}'::jsonb)->>'blocking_code');
 ROLLBACK;
 SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
  CASE WHEN to_regclass('public.lf_operation_steps') IS NULL
@@ -776,6 +780,7 @@ SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
                 self.assertIn("BLOCK_AMBIG=SKILL_SEMANTIC_SELECTION_AMBIGUOUS", values)
                 self.assertIn("BLOCK_STALE=SKILL_DESCRIPTOR_STALE_OR_MISSING", values)
                 self.assertIn("INVOCATION_TRACE_PASS=2", values)
+                self.assertIn("BLOCK_CHANNEL=SKILL_CHANNEL_NOT_BOUND_TO_PARENT_RUN", values)
                 self.assertIn("GENERIC_DB_PLAN_PASS=SIM-IG|11/11", values)
                 self.assertIn("GENERIC_DB_PLAN_PASS=SIM-OTHER|11/11", values)
                 self.assertIn("ROLLBACK_GENERIC_EMPTY=true", values)
