@@ -141,9 +141,9 @@ SELECT CASE WHEN
 FROM (SELECT public.lf_router_stage1_validate_v2(jsonb_build_object(
  'schema_version','LF_ROUTER_STAGE1_V2',
  'texto_original','Entra por el router y revisa las reglas de carga masiva del b2b',
- 'es_operacion',true,'ambiguo',false,
+ 'es_operacion',true,'ambiguo',false,'downstream_execution_allowed',false,
  'formas_busqueda',jsonb_build_array('busqueda 1','busqueda 2','busqueda 3','busqueda 4','busqueda 5'),
- 'alternativas','[]'::jsonb,'canal','PRODUCTO','negocio','LF',
+ 'alternativas','[]'::jsonb,'canal_candidato','PRODUCTO','negocio_codigo','LF',
  'razon_seleccion','El usuario pide una revisión de reglas',
  'sujeto','B2B-CARGA-002','accion','revisar')) AS v) test;
 """
