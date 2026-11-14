@@ -1119,5 +1119,79 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertEqual(self.check()["screen_semantic_decision"]["decision"],"NO_MATCH")
 
 
+    def test_bounded_ig_409_then_step40_finding_and_no_third_ticket(self):
+        """Mock native transport only; SQL authority is verified in PG fixture."""
+        import datetime as dt
+        literal = "Probar la carga masiva B2B"
+        run = "EXEC-PROFILE-GATE2-" + "A"*24
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version":SCHEMA,"execution_id":run})
+        self.event_path.write_text(json.dumps(self.event))
+        target = Path(self.tmp.name)/"profiles"/"product_director_lf"/"SKILL.md"
+        target.parent.mkdir(parents=True,exist_ok=True)
+        target.write_text("# Real source-bound fixture\n",encoding="utf-8")
+        expires = (dt.datetime.now(dt.timezone.utc)+dt.timedelta(minutes=5)).isoformat()
+        calls = []
+        prepare = 0
+        def fake(_url, body, _headers):
+            nonlocal prepare
+            calls.append(body["action"])
+            if body["action"]=="profile_native_source_bind_v1":
+                return 200,{"outcome":"SOURCE_BINDING_REQUIRED",
+                    "execution_id":run,"profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+                    "source_revision_required":"a"*40,"target_repo":"test-owner/test-repo",
+                    "target_path":"profiles/product_director_lf/SKILL.md",
+                    "operation_plan":self._mock_operation_plan("PERFIL-PRODUCT-DIRECTOR-LF")}
+            if body["action"]=="profile_native_continue_v1":
+                prepare+=1
+                if prepare<=2:
+                    return 200,{"outcome":"CONTINUATION_REQUIRED",
+                        "phase":"SKILL_RUNTIME_REQUIRED","execution_id":run,
+                        "result":{"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK",
+                            "input_governance_runtime_request":{
+                                "transport":"DIRECT_EDGE_INVOCATION",
+                                "queue_required":False,"polling_required":False,
+                                "ticket_expires_at":expires,
+                                "request_headers":{"X-LF-Profile-Runtime-Ticket":
+                                    "11111111-1111-4111-8111-111111111111"},
+                                "request_body":{"action":"profile_skill_runtime_v1",
+                                    "execution_id":run,"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK"}}}}
+                return 200,{"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY","execution_id":run,
+                    "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+                    "result":{"execution_write_mode":"READ_ONLY",
+                              "skill_findings":[{"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK",
+                                                  "status":"SKILL_FAILED_AS_FINDING"}]}}
+            if body["action"]=="profile_skill_runtime_v1":
+                return 409,{"outcome":"BLOCKED",
+                            "code":"IG_CONTEXT_PACK_WORKER_409"}
+            raise AssertionError("Unexpected action "+body["action"])
+        env={**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"9001"}
+        with patch.dict(os.environ,env,clear=True):
+            module=runpy.run_path(str(SCRIPT),run_name="bounded_ig_e2e_test")
+            with patch.dict(module["main"].__globals__,{
+                "oidc":lambda:"signed-oidc-test-only",
+                "call_json":fake,
+            }):
+                with patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)), \
+                     patch("time.sleep",return_value=None):
+                    rc=module["main"]()
+        self.assertEqual(rc,1)  # No fake Step50, only native continuation
+        self.assertEqual(calls.count("profile_skill_runtime_v1"),2)
+        self.assertEqual(calls.count("profile_native_continue_v1"),3)
+        self.assertEqual(prepare,3)
+        checkpoint=json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["next_step"],"execute_profile")
+        self.assertFalse(checkpoint["last_run_completed"])
+
+    def test_ig_bounded_retry_and_single_refresh_guard(self):
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("for attempt in range(2):",text)
+        self.assertNotIn("for attempt in range(64):",text)
+        self.assertIn('if code == 401:',text)
+        self.assertIn('headers = {"authorization": f"Bearer {oidc()}"}',text)
+        self.assertNotIn("service_role_key",text.lower())
+
+
 if __name__ == "__main__":
     unittest.main()
