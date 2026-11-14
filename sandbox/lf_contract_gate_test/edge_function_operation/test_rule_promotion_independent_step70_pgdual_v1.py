@@ -114,9 +114,10 @@ class PGIndependentPromotionTest(unittest.TestCase):
 UPDATE public.lf_operation_execution_steps
  SET evidence_payload='{"semantic_judge_result":{
   "verdict":"PASS_INDEPENDENT_SEMANTIC",
-  "review_mode":"INDEPENDENT_SEMANTIC_REVIEW",
-  "model_call_count":1,"reviewer_is_producer":false,
-  "producer_independence_proven":true,
+  "model_call_count":1,"producer_independence_proven":true,
+  "judge_v3_evidence":{"judge_invocation_kind":"NEW_INDEPENDENT_CURRENT_CHAT_GPT_NATIVE",
+    "judge_role":"INDEPENDENT_REVIEWER_NOT_PRODUCT_DIRECTOR_PRODUCER",
+    "unsupported_claims":[]},
   "candidate_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "scope_packet_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "unsupported_claims":[]}}'::jsonb
