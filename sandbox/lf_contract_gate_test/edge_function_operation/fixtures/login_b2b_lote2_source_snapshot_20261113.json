@@ -1230,6 +1230,62 @@
     },
     {
       "snapshot": {
+        "id": 496,
+        "razon": "Evitar pedir OTP nuevamente después de cada cierre de sesión manteniendo revocación explícita ante eventos de seguridad.",
+        "codigo": "B2B-RULE-AUTH-039",
+        "estado": "VIGENTE",
+        "origen": "OWNER_APPROVAL_2026-08-18",
+        "titulo": "Ciclo de vida del dispositivo confiable",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T04:08:36.479266+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-21T06:05:02.602098+00:00",
+        "descripcion": "Cerrar sesión termina la sesión operativa pero conserva la confianza del dispositivo. La confianza termina por vencimiento, cambio de contraseña, usuario en estado canónico DISABLED o revocación manual autorizada. La revocación manual puede aplicarse a un dispositivo específico o a todos los dispositivos confiables del usuario; en ambos casos el servidor termina inmediatamente las sesiones activas afectadas y el siguiente acceso desde un dispositivo revocado exige OTP por correo. La acción requiere confirmación explícita y permiso B2B_USER_UPDATE. El cliente no puede auto-marcar, revocar ni restaurar confianza.",
+        "valor_config": {
+          "user_status_source": "lf_ops.empresa_usuarios.status",
+          "revocation_triggers": [
+            "TRUST_EXPIRED",
+            "PASSWORD_CHANGED",
+            "USER_DISABLED",
+            "MANUAL_REVOCATION"
+          ],
+          "user_disabled_scope": "ALL_TRUSTED_DEVICES_FOR_USER",
+          "device_registry_table": "lf_ops.dispositivos_confiables",
+          "disable_permission_id": 32,
+          "legacy_semantic_alias": "USER_SUSPENDED",
+          "password_change_scope": "ALL_TRUSTED_DEVICES_FOR_USER",
+          "session_logout_effect": "TERMINATE_OPERATIONAL_SESSION",
+          "client_trust_authority": "DENY",
+          "device_registry_status": "DEFINED_CANDIDATE",
+          "logout_effect_on_trust": "PRESERVE",
+          "server_trust_authority": "REQUIRED",
+          "disable_permission_code": "B2B_USER_DISABLE",
+          "manual_revocation_scope": [
+            "SINGLE_DEVICE",
+            "ALL_TRUSTED_DEVICES_FOR_USER"
+          ],
+          "trusted_device_policy_id": 25,
+          "manual_revocation_actions": [
+            "REVOKE_TRUSTED_DEVICE",
+            "REVOKE_ALL_TRUSTED_DEVICES"
+          ],
+          "manual_revocation_authority": "SERVER_ONLY",
+          "manual_revocation_next_login": "EMAIL_OTP_REQUIRED",
+          "trusted_device_token_storage": "HASH_ONLY",
+          "canonical_user_status_trigger": "DISABLED",
+          "manual_revocation_confirmation": "REQUIRED",
+          "manual_revocation_permission_id": 31,
+          "manual_revocation_session_effect": "TERMINATE_AFFECTED_ACTIVE_SESSIONS",
+          "manual_revocation_permission_code": "B2B_USER_UPDATE"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "d629b76e895959d6a253169ddada0506f4ff0b49d0c1474b3ad2216756714d4b"
+    },
+    {
+      "snapshot": {
         "id": 497,
         "razon": "Reduce fricción en dispositivos ya verificados sin convertir la cookie en autenticador ni persistir el secreto de confianza en base de datos.",
         "codigo": "B2B-RULE-AUTH-040",
@@ -1608,5 +1664,6 @@
     "B2B-RULE-AUTH-026",
     "B2B-RULE-AUTH-047"
   ],
-  "never_update_state_rule": "B2B-RULE-STATE-001"
+  "never_update_state_rule": "B2B-RULE-STATE-001",
+  "snapshot_note": "Added AUTH039 VIGENTE only for isolated option-C rollback; live value unchanged"
 }
