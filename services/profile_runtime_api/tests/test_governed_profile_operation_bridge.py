@@ -446,5 +446,96 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         )
 
 
+
+class Step50PgDualIsolatedSimulation(unittest.TestCase):
+    """Real PostgreSQL 17.6/18.7 engines, simulated RUN, rollback; NOT real writer."""
+    def test_step50_sequence_rollback_pg176_pg187(self) -> None:
+        import shutil
+        import subprocess
+        import time
+        import uuid
+
+        self.assertIsNotNone(shutil.which("docker"), "NOT_TESTED_NO_DOCKER")
+        labels = [
+            (0, "init_execution"), (10, "router"), (20, "profile_resolve"),
+            (30, "profile_source_read"), (40, "input_validate"),
+            (45, "context_admission"), (47, "research_baseline_freeze"),
+            (50, "execute_profile"), (60, "output_validate"),
+            (70, "semantic_judge"), (80, "report_output"),
+        ]
+        expected = [f"{n}|{key}|STEP_PASS_WITH_EVIDENCE" for n, key in labels]
+        for image, version in (("postgres:17.6", "17.6"), ("postgres:18.7", "18.7")):
+            name = "lf-step50-simulation-" + uuid.uuid4().hex[:12]
+            proc = subprocess.run([
+                "docker", "run", "-d", "--rm", "--name", name,
+                "-e", "POSTGRES_PASSWORD=step50-isolated-fixture", image,
+            ], capture_output=True, text=True, timeout=240)
+            self.assertEqual(proc.returncode, 0, "PG_IMAGE_START_FAILED:" + proc.stderr[:400])
+            try:
+                for _ in range(60):
+                    ready = subprocess.run(["docker", "exec", name, "pg_isready", "-U", "postgres"],
+                                          capture_output=True, text=True, timeout=10)
+                    if ready.returncode == 0:
+                        break
+                    time.sleep(1)
+                else:
+                    self.fail("PG_ISOLATED_START_TIMEOUT")
+                sql = """\\set ON_ERROR_STOP on
+SELECT 'PG_VERSION=' || current_setting('server_version');
+BEGIN;
+CREATE TEMP TABLE lf_step50_simulated_steps(
+  execution_id text NOT NULL, step_order integer PRIMARY KEY,
+  step_id text UNIQUE NOT NULL, status text NOT NULL,
+  evidence_payload jsonb NOT NULL
+) ON COMMIT DROP;
+INSERT INTO lf_step50_simulated_steps
+SELECT 'EXEC-STEP50-SIMULATED-NO-LIVE-WRITER', n, code,
+       'STEP_PASS_WITH_EVIDENCE',
+       jsonb_build_object('simulation',true,'evidence_ref','fixture://isolated')
+FROM (VALUES
+  (0,'init_execution'),(10,'router'),(20,'profile_resolve'),
+  (30,'profile_source_read'),(40,'input_validate'),
+  (45,'context_admission'),(47,'research_baseline_freeze')
+) AS src(n,code);
+DO $pre$
+BEGIN
+ IF (SELECT count(*) FROM lf_step50_simulated_steps)<>7 OR
+    NOT EXISTS(SELECT 1 FROM lf_step50_simulated_steps WHERE step_id='context_admission' AND status='STEP_PASS_WITH_EVIDENCE') OR
+    NOT EXISTS(SELECT 1 FROM lf_step50_simulated_steps WHERE step_id='research_baseline_freeze' AND status='STEP_PASS_WITH_EVIDENCE') THEN
+   RAISE EXCEPTION 'STEP50_SIM_PREDECESSORS_NOT_READY';
+ END IF;
+END $pre$;
+INSERT INTO lf_step50_simulated_steps
+VALUES ('EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',50,'execute_profile',
+        'STEP_PASS_WITH_EVIDENCE',
+        '{"simulation":true,"profile_output":{"traceability":{"producer":"OPENAI_RESPONSES_API","source":"fixture","model_response_id":"simulated-only"}}}'::jsonb);
+INSERT INTO lf_step50_simulated_steps
+SELECT 'EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',n,code,
+       'STEP_PASS_WITH_EVIDENCE',jsonb_build_object('simulation',true)
+FROM (VALUES (60,'output_validate'),(70,'semantic_judge'),(80,'report_output')) AS src(n,code);
+SELECT step_order || '|' || step_id || '|' || status
+ FROM lf_step50_simulated_steps ORDER BY step_order;
+ROLLBACK;
+SELECT 'ROLLBACK_EMPTY=' ||
+ CASE WHEN to_regclass('pg_temp.lf_step50_simulated_steps') IS NULL THEN 'true' ELSE 'false' END;
+"""
+                run = subprocess.run(
+                    ["docker", "exec", "-i", name, "psql", "-X", "-A", "-t",
+                     "-U", "postgres", "-d", "postgres"],
+                    input=sql, capture_output=True, text=True, timeout=180,
+                )
+                self.assertEqual(run.returncode, 0, "PG_ISOLATED_TEST_FAILED:" + run.stderr[-600:])
+                values = [s.strip() for s in run.stdout.splitlines() if s.strip()]
+                self.assertTrue(any(s.startswith("PG_VERSION=" + version) for s in values), values[:8])
+                actual = [s for s in values if s.startswith(tuple(str(n) + "|" for n, _ in labels))]
+                self.assertEqual(actual, expected)
+                self.assertIn("ROLLBACK_EMPTY=true", values)
+                print(f"PASS_STEP50_SIMULATED_PG_{version} 11/11 ROLLBACK_EMPTY=true", flush=True)
+                for step in actual:
+                    print(f"PG_{version}_STEP {step}", flush=True)
+            finally:
+                subprocess.run(["docker", "rm", "-f", name], capture_output=True, timeout=30)
+
+
 if __name__ == "__main__":
     unittest.main()
