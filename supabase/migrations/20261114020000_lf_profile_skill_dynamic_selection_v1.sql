@@ -32,6 +32,28 @@ CREATE TABLE IF NOT EXISTS public.lf_skill_selector_policy_v1 (
   CHECK(cardinality(allowed_effects)>0 AND allowed_effects <@ ARRAY['READ_ONLY','PROPOSE_ONLY','WRITE_GOVERNED'])
 );
 
+-- IG is a CANDIDATE, NOT a READY skill: its real handler/authority remains NO-GO.
+INSERT INTO public.lf_skill_catalog_v1
+(skill_code,description,required_operation,handler_fn,effect,input_required,status,opener_fn,child_caller)
+VALUES ('INPUT_GOVERNANCE_CONTEXT_PACK',
+        'Input Governance context readiness via profile-owned governed dependency (candidate; handler unverified)',
+        'EJECUCION_PERFIL_LF','lf_skill_h_input_governance_context_pack_v1',
+        'READ_ONLY',ARRAY['request_text','profile_code','scope','consumer'],'DRAFT',NULL,NULL)
+ON CONFLICT (skill_code) DO NOTHING;
+
+INSERT INTO public.lf_skill_selection_registry_v1
+(skill_code,descriptor,source_kind,source_ref,source_revision,descriptor_status,stale_reason)
+VALUES ('INPUT_GOVERNANCE_CONTEXT_PACK',
+ jsonb_build_object(
+   'schema_version','LF_SKILL_SELECTION_DESCRIPTOR_V1',
+   'description','Resuelve preparación y evidencia de Input Governance solo cuando la política de perfil lo permite',
+   'selection_evidence',jsonb_build_array(
+      jsonb_build_object('kind','PURPOSE','value','context readiness y autoridad de entrada del perfil','source_section','INPUT_GOVERNANCE_EXECUTION_CONTRACT'),
+      jsonb_build_object('kind','BOUNDARY','value','no crear segundo RUN de perfil, no escribir ni declarar CURRENT sin readback','source_section','EKB/7'))),
+ 'SUPABASE_CONTRACT','supabase://public.lf_activos/INPUT_GOVERNANCE_EXECUTION_CONTRACT',
+ 'CANDIDATE_SOURCE_NOT_ATTESTED','STALE_SOURCE_CHANGED','SOURCE_AND_HANDLER_NOT_ATTESTED')
+ON CONFLICT (skill_code) DO NOTHING;
+
 -- Candidate policy is provisioned for EVERY CURRENT profile in the SAME canonical
 -- registry used by ACT-0001; no profile-specific branch in Step40/Step50.
 -- All rows remain disabled: they are proposals, not implicit owner approvals.
@@ -101,28 +123,6 @@ BEGIN
    RAISE EXCEPTION 'CANDIDATE_POLICY_PROFILE_COVERAGE_NOT_ATTESTED:n=%,missing=%',n,missing;
  END IF;
 END $candidate_profile_policy_coverage$;
-
--- IG is a CANDIDATE, NOT a READY skill: its real handler/authority remains NO-GO.
-INSERT INTO public.lf_skill_catalog_v1
-(skill_code,description,required_operation,handler_fn,effect,input_required,status,opener_fn,child_caller)
-VALUES ('INPUT_GOVERNANCE_CONTEXT_PACK',
-        'Input Governance context readiness via profile-owned governed dependency (candidate; handler unverified)',
-        'EJECUCION_PERFIL_LF','lf_skill_h_input_governance_context_pack_v1',
-        'READ_ONLY',ARRAY['request_text','profile_code','scope','consumer'],'DRAFT',NULL,NULL)
-ON CONFLICT (skill_code) DO NOTHING;
-
-INSERT INTO public.lf_skill_selection_registry_v1
-(skill_code,descriptor,source_kind,source_ref,source_revision,descriptor_status,stale_reason)
-VALUES ('INPUT_GOVERNANCE_CONTEXT_PACK',
- jsonb_build_object(
-   'schema_version','LF_SKILL_SELECTION_DESCRIPTOR_V1',
-   'description','Resuelve preparación y evidencia de Input Governance solo cuando la política de perfil lo permite',
-   'selection_evidence',jsonb_build_array(
-      jsonb_build_object('kind','PURPOSE','value','context readiness y autoridad de entrada del perfil','source_section','INPUT_GOVERNANCE_EXECUTION_CONTRACT'),
-      jsonb_build_object('kind','BOUNDARY','value','no crear segundo RUN de perfil, no escribir ni declarar CURRENT sin readback','source_section','EKB/7'))),
- 'SUPABASE_CONTRACT','supabase://public.lf_activos/INPUT_GOVERNANCE_EXECUTION_CONTRACT',
- 'CANDIDATE_SOURCE_NOT_ATTESTED','STALE_SOURCE_CHANGED','SOURCE_AND_HANDLER_NOT_ATTESTED')
-ON CONFLICT (skill_code) DO NOTHING;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_skill_selection_prepare_v1(
  p_profile_code text, p_channel text, p_semantic_decision jsonb DEFAULT NULL)
