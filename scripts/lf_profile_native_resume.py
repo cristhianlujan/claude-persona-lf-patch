@@ -1058,26 +1058,10 @@ def main():
     if isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
         source_request["skill_semantic_decision"] = request["skill_semantic_decision"]
     code, source = call_json(EDGE_URL, source_request, headers)
-    if (code == 200 and source.get("outcome") == "SKILL_SEMANTIC_SELECTION_REQUIRED"
-        and source.get("execution_id") == execution_id):
-        semantic_packet = {
-            "schema_version":"LF_PROFILE_NATIVE_SKILL_SEMANTIC_SELECTION_V1",
-            "execution_id":execution_id,
-            "profile_code":source.get("profile_code"),
-            "semantic_candidates":source.get("semantic_candidates"),
-            "required_skills":source.get("required_skills"),
-            "transport":"EXISTING_GITHUB_ISSUE_OIDC_EDGE",
-            "next_action":"NATIVE_CHAT_SELECT_ONE_SKILL_AND_RESUME_SAME_EXECUTION",
-        }
-        (Path.cwd() / "profile-native-skill-semantic.json").write_text(
-            json.dumps(semantic_packet, ensure_ascii=False, sort_keys=True, indent=2)+"\n",
-            encoding="utf-8")
-        record_incomplete_continuation(
-            execution_id, source.get("profile_code"), "SKILL_SEMANTIC_SELECTION_REQUIRED",
-            "skill_selection", "ONE_GROUNDED_SKILL_SEMANTIC_DECISION")
-        print(json.dumps({"phase":"SKILL_SEMANTIC_SELECTION_REQUIRED",
-          "execution_id":execution_id,"status":"CONTINUATION_REQUIRED_NOT_COMPLETE"}))
-        return 1
+    # Optional skill omission is a finding on the SAME execution, never
+    # a reason to stop the Router-admitted profile at step 30.
+    # The authoritative plan is returned with the current RUN context and
+    # selected_skill_codes (0..2); a judge may submit later by governed Issue.
     if code != 200 or source.get("outcome") != "SOURCE_BINDING_REQUIRED":
         print(json.dumps({"phase": "SOURCE_BIND", "status": code, "code": source.get("code")}))
         return 1
