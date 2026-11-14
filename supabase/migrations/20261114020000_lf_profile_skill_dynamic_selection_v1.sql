@@ -119,7 +119,7 @@ BEGIN
  (SELECT 1 FROM public.lf_skill_selector_policy_v1 p
   WHERE p.profile_code=r.profile_code AND p.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
     AND p.required_operation='EJECUCION_PERFIL_LF');
- IF n<>10 OR missing<>0 THEN
+ IF n<10 OR missing<>0 THEN
    RAISE EXCEPTION 'CANDIDATE_POLICY_PROFILE_COVERAGE_NOT_ATTESTED:n=%,missing=%',n,missing;
  END IF;
 END $candidate_profile_policy_coverage$;
