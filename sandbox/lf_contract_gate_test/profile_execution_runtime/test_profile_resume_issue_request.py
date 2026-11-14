@@ -46,6 +46,16 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         with patch.dict(os.environ, self.env, clear=True):
             return self.get_request()
 
+    def _mock_operation_plan(self, profile_code):
+        # Transport-only fixture; DB resolution is independently tested in PG.
+        return {
+            "status": "READY", "operation_code": "EJECUCION_PERFIL_LF",
+            "profile_code": profile_code,
+            "steps": [{"step_order": i * 10, "step_id": "fixture_step_" + str(i)}
+                      for i in range(11)],
+            "skills": [],
+        }
+
     def _blocked_ig_edge_reply(self):
         execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
         profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
@@ -109,7 +119,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                 return 200, {
                     "outcome": "SOURCE_BINDING_REQUIRED", "execution_id": execution_id,
                     "source_revision_required": "a" * 40, "target_repo": "test-owner/test-repo",
-                    "target_path": "profiles/test_profile/SKILL.md", "profile_code": profile_code,
+                    "target_path": "profiles/test_profile/SKILL.md", "profile_code": profile_code, "operation_plan": self._mock_operation_plan(profile_code),
                 }
             if "profile_output" in body:
                 return 200, {"phase": "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "profile_code": profile_code}
@@ -183,7 +193,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                         "source_revision_required": "a" * 40,
                         "target_repo": "test-owner/test-repo",
                         "target_path": "profiles/product_director_lf/SKILL.md",
-                        "profile_code": profile_code,
+                        "profile_code": profile_code, "operation_plan": self._mock_operation_plan(profile_code),
                     }
                 return 409, blocked
             # Issue request references the same execution, not a new BEGIN.
