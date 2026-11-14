@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-ig-v58-recuration-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114051000_lf_ig_v58_recuration_finding_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-v58-recuration-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
