@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-ig-family956-reuse-map-20261114",
+  "paths": {
+    "supabase/migrations/20261114210000_lf_input_family_reuse_map_run956_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_input_family_reuse_run956_pgdual_v1.py": "RUNTIME_TESTING",
+    "docs/input-governance/lf_ig_956_reuse_source_select_snapshot_20261114.json": "INPUT_GOVERNANCE",
+    "docs/input-governance/lf_ig_956_17_partial_reuse_and_policy_links_20261114.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-family956-reuse-map-20261114.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_optional_skill_stage1_pgdual_rollback_v1.py": "RUNTIME_TESTING"
+  }
+}

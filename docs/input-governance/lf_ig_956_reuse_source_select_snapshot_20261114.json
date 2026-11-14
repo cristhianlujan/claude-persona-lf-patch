@@ -1,0 +1,1819 @@
+{
+  "schema_version": "LF_IG_FAMILY_REUSE_SOURCE_SELECT_956_V1",
+  "source": "Supabase sandbox read-only SELECT 2026-11-14; no rules, promotions or policy bindings changed",
+  "source_run_id": 956,
+  "pantalla_id": 44,
+  "version_id": 19,
+  "policy_links_screen44": 0,
+  "source_coverage_status": "17_PARTIAL_30_COMPLETE",
+  "transversal_vigente_count": 127,
+  "policy_catalog_total": 49,
+  "assessment_sources": [
+    {
+      "id": 37656,
+      "run_id": 956,
+      "family_code": "API_DATA_CONTRACT",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "API_OPERATION_SCHEMA_SOURCE_INCOMPLETE",
+      "blocker_probe": {
+        "pantalla_id": 44,
+        "implementation_gate": "NOT_READY_SOURCE_INCOMPLETE",
+        "resolution_contract": "API_CONTRACT_RESOLUTION_V2",
+        "has_behavioral_contract": true,
+        "behavioral_contract_rules": [
+          {
+            "title": "Rate limiting a nivel de API gateway",
+            "config": {
+              "respuesta": "429_con_retry_after_header",
+              "publico_por_ip": "100/min",
+              "autenticado_por_jwt": "300/min"
+            },
+            "status": "VIGENTE",
+            "rule_id": 217,
+            "rule_code": "REG_API_005",
+            "description": "El API gateway aplica rate limiting independiente del frontend: 100 req/min por IP para endpoints públicos, 300 req/min por JWT para endpoints autenticados. Respuesta 429 con header Retry-After.",
+            "pending_detail": null,
+            "pending_decision": false
+          },
+          {
+            "title": "Niubiz como gateway de pago principal",
+            "config": {
+              "gateway": "Niubiz",
+              "mercado": "Peru",
+              "otros_gateways_mvp": false
+            },
+            "status": "VIGENTE",
+            "rule_id": 225,
+            "rule_code": "REG_NIU_001",
+            "description": "Niubiz es el gateway de pago principal del producto para el mercado peruano. Toda transacción de pago pasa por Niubiz. No se implementan otros gateways en el MVP.",
+            "pending_detail": null,
+            "pending_decision": false
+          }
+        ],
+        "broken_contract_ref_count": 0,
+        "executable_contract_count": 0,
+        "materialized_contract_refs": [],
+        "logical_schema_contract_count": 0,
+        "behavioral_contract_rule_count": 2,
+        "materialized_contract_ref_count": 0,
+        "has_executable_binding_authority": false,
+        "defined_fail_closed_contract_count": 0,
+        "has_resolvable_operation_schema_authority": false
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "6a21d133f755e2df1aa2f936efe559285112655df0244eea0271f5e55828a114"
+    },
+    {
+      "id": 37655,
+      "run_id": 956,
+      "family_code": "ASSETS_ICONS",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "component_count": 3,
+        "resolution_contract": "ASSET_ICON_SEMANTIC_RESOLUTION_V1",
+        "required_element_count": 27,
+        "required_semantic_pending_count": 1,
+        "required_missing_component_count": 1,
+        "required_semantic_resolved_count": 26,
+        "referential_integrity_failure_count": 0,
+        "required_semantic_not_applicable_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "ea34f084b38c4f24fdfd77380c07c571d4eb93248308f9e6eda92dd4af96fc65"
+    },
+    {
+      "id": 37645,
+      "run_id": 956,
+      "family_code": "AUDIT",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "AUDIT_CANONICAL_SOURCE_INCOMPLETE",
+      "blocker_probe": {
+        "resolution_contract": "AUDIT_SEMANTIC_RESOLUTION_V1",
+        "semantic_rule_count": 1,
+        "candidate_rule_count": 0,
+        "resolved_sink_rule_count": 1,
+        "correlation_contract_count": 1,
+        "immutability_contract_count": 1,
+        "required_action_contract_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "b928c6050f72b21b9ec6413d013863002d424985872b6408c47cbee9d3b41c97"
+    },
+    {
+      "id": 37662,
+      "run_id": 956,
+      "family_code": "BROWSER_PLATFORM",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "count": 5,
+        "vigente_count": 4,
+        "candidate_count": 1,
+        "pending_marker_count": 1,
+        "pending_decision_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "10b1ee405691a682c9e84145a8f7fb941909f79cb41a41d57152563a7b7f9b4c"
+    },
+    {
+      "id": 37654,
+      "run_id": 956,
+      "family_code": "DESIGN_SYSTEM",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "DESIGN_BINDING_INCOMPLETE",
+      "blocker_probe": {
+        "summary": {
+          "field_count": 73,
+          "variant_count": 6,
+          "semantic_gap_contract": "DESIGN_ELEMENT_BINDING_SEMANTICS_V1",
+          "element_required_count": 27,
+          "element_inventory_count": 27,
+          "variant_layout_binding_count": 6,
+          "variant_layout_missing_count": 0,
+          "field_component_binding_count": 8,
+          "field_component_missing_count": 65,
+          "element_component_binding_count": 26,
+          "referential_integrity_failure_count": 0,
+          "field_semantic_component_pending_count": 0,
+          "element_required_semantic_pending_count": 1,
+          "element_required_missing_component_count": 1,
+          "element_required_semantic_resolved_count": 26,
+          "element_semantic_component_pending_count": 1,
+          "element_required_semantic_unresolved_count": 1,
+          "element_required_semantic_not_applicable_count": 0
+        },
+        "design_system": {
+          "name": "Libertad Financiera Design System",
+          "status": "CANDIDATO_OPERATIVO",
+          "version": "v1.3",
+          "design_system_id": 1,
+          "design_system_code": "LF_DS_V1"
+        }
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "0299da5c6997871a5257aa6c5a877f3f708f2d2e3b594712097ee6cdaef45672"
+    },
+    {
+      "id": 37658,
+      "run_id": 956,
+      "family_code": "IDEMPOTENCY_CONCURRENCY",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "count": 6,
+        "vigente_count": 5,
+        "candidate_count": 1,
+        "pending_marker_count": 0,
+        "pending_decision_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "fdc634416aa0668b93ccf025f8825443c517f98a2911ca85b42366b5127985fa"
+    },
+    {
+      "id": 37657,
+      "run_id": 956,
+      "family_code": "LOADING_EMPTY_ERROR_STATES",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "LOADING_EMPTY_ERROR_STATES_SOURCE_INCOMPLETE",
+      "blocker_probe": {
+        "count": 4,
+        "error_count": 37,
+        "vigente_count": 2,
+        "candidate_count": 2,
+        "pending_marker_count": 1,
+        "pending_decision_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "323552de261f753ef33bf5c81bc1cb26eb387266fd0c26f5a3b6f988a1f28137"
+    },
+    {
+      "id": 37647,
+      "run_id": 956,
+      "family_code": "OBSERVABILITY",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "OBSERVABILITY_RUNTIME_PROVIDER_NOT_READY",
+      "blocker_probe": {
+        "resolution_contract": "OBSERVABILITY_SEMANTIC_RESOLUTION_V1",
+        "semantic_rule_count": 3,
+        "candidate_rule_count": 0,
+        "provider_registry_count": 8,
+        "dimensions_contract_count": 1,
+        "runtime_ready_provider_count": 0,
+        "activation_gate_contract_count": 1
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "ac89f386a5b548884833f9615c79dfaa61df1ebe9615e0cdc38b9b5330f56642"
+    },
+    {
+      "id": 37644,
+      "run_id": 956,
+      "family_code": "PRIVACY_PII",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "count": 37,
+        "vigente_count": 32,
+        "candidate_count": 5,
+        "pending_marker_count": 3,
+        "pending_decision_count": 1
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "4bc2f434c76cbe3e5e80ed665c610995708fbcf4c235b3ac42aa7327bee4e157"
+    },
+    {
+      "id": 37640,
+      "run_id": 956,
+      "family_code": "RATE_LIMIT",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "count": 8,
+        "vigente_count": 8,
+        "candidate_count": 0,
+        "pending_marker_count": 0,
+        "pending_decision_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "12f54f8d43781b4c7485eba0b051e0f9f7e60ced84f323a062efd94affbf4076"
+    },
+    {
+      "id": 37642,
+      "run_id": 956,
+      "family_code": "SECURITY",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "SECURITY_SEMANTIC_DEPTH_REVIEW_REQUIRED",
+      "blocker_probe": {
+        "threat_count": 30,
+        "subject_count": 73,
+        "capability_profile": {
+          "profile": "UNRESOLVED",
+          "pantalla_id": 44,
+          "authority_rule": null,
+          "classification_mode": "POSITIVE_LINKED_RULE"
+        },
+        "resolution_contract": "SECURITY_SEMANTIC_DEPTH_V1",
+        "threat_incomplete_count": 27,
+        "subject_incomplete_count": 50
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "1a4ca1a42fac732c65ec3530ffca1e285f3027dae861ef949580a715d90c2582"
+    },
+    {
+      "id": 37639,
+      "run_id": 956,
+      "family_code": "SESSION",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "SESSION_CANONICAL_SOURCE_INCOMPLETE",
+      "blocker_probe": {
+        "policy_code": "SESSION-CLIENT-DEFAULT",
+        "resolution_contract": "SESSION_SEMANTIC_RESOLUTION_V1",
+        "policy_resolved_vigente": true,
+        "session_context_contract": null,
+        "session_context_resolved": false,
+        "reused_session_rule_count": 0,
+        "direct_semantic_rule_count": 1,
+        "direct_vigente_semantic_rule_count": 1
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "37519c6df36e024844be25f92c5a2db7f4fc83c00a079d3a057de74b629c82f8"
+    },
+    {
+      "id": 37661,
+      "run_id": 956,
+      "family_code": "TESTING_OBLIGATIONS",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "count": 12,
+        "vigente_count": 11,
+        "candidate_count": 1,
+        "pending_marker_count": 5,
+        "pending_decision_count": 1
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "4abcab4486bc09b6f655e946726b7ea8cac62b2ea60e7a9b9523d8dc04cbe938"
+    },
+    {
+      "id": 37641,
+      "run_id": 956,
+      "family_code": "TIMEOUT_RETRY",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "NOT_READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "TIMING_RECONCILIATION_REQUIRED",
+      "blocker_probe": {
+        "retry_rule_count": 13,
+        "timeout_rule_count": 16,
+        "resolution_contract": "TIMEOUT_RETRY_SEMANTIC_RESOLUTION_V1"
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "6aafee2fa0e0b9b8a67ea0e899e8a0eec892f76a4c34bd70c720658763f3fe97"
+    },
+    {
+      "id": 37633,
+      "run_id": 956,
+      "family_code": "TRANSITIONS",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "BLOCKED",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "CANONICAL_TRANSITIONS_INSUFFICIENT",
+      "blocker_probe": {
+        "count": 2,
+        "vigente_count": 2,
+        "candidate_count": 0,
+        "pending_marker_count": 0,
+        "canonical_state_count": 12,
+        "pending_decision_count": 0
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_STATE_SET",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "a4ab09d15f44e4535f146bbf74cbe5807020868f4bfc1c677d9a9fc043f50582"
+    },
+    {
+      "id": 37630,
+      "run_id": 956,
+      "family_code": "VALIDATIONS",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "BLOCKED",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "field_count": 73,
+        "required_fields_without_validations": 7
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "9642bf6ec2fa76ec05288e3f1b39e6dbbaa35637edee9291a9ffb2f66e475523"
+    },
+    {
+      "id": 37664,
+      "run_id": 956,
+      "family_code": "VISUAL_EVIDENCE",
+      "coverage_status": "PARTIAL",
+      "implementation_ready_status": "READY",
+      "qa_ready_status": "BLOCKED",
+      "blocker_code": "CURRENT_VISUAL_EVIDENCE_PARTIAL",
+      "blocker_probe": {
+        "current_count": 8,
+        "artifact_count": 9
+      },
+      "source_refs": [
+        {
+          "kind": "SCREEN_CANONICAL_GRAPH",
+          "pantalla_id": 44
+        },
+        {
+          "kind": "CURRENT_VISUAL_ARTIFACT",
+          "pantalla_id": 44
+        }
+      ],
+      "curator_sha256": "e8c0728aeb2cd6acadb6ef33e7c2b9c2332c04b04b890f135b79f009a933a08e"
+    }
+  ],
+  "transversal_inventory": [
+    {
+      "id": 21,
+      "codigo": "REG_SEG_003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "seguridad",
+      "titulo": "DNI no se expone en logs ni analytics"
+    },
+    {
+      "id": 24,
+      "codigo": "REG_SEG_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "seguridad",
+      "titulo": "Token de sesión no viaja en URL"
+    },
+    {
+      "id": 25,
+      "codigo": "REG_SEG_007",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "seguridad",
+      "titulo": "Validación de formato antes de consultar base de datos"
+    },
+    {
+      "id": 37,
+      "codigo": "REG_AUD_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "auditoria",
+      "titulo": "PII excluido de logs y eventos de auditoría"
+    },
+    {
+      "id": 46,
+      "codigo": "REG_ACC_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "accesibilidad",
+      "titulo": "Mensajes de error en lenguaje claro sin tecnicismos"
+    },
+    {
+      "id": 49,
+      "codigo": "REG_ACC_005",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "accesibilidad",
+      "titulo": "Tamaño mínimo de área táctil en CTAs"
+    },
+    {
+      "id": 62,
+      "codigo": "REG_SEG_008",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "seguridad",
+      "titulo": "OTP no se expone en respuesta de API"
+    },
+    {
+      "id": 85,
+      "codigo": "REG_ACC_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "accesibilidad",
+      "titulo": "CTA principal mínimo 44px en mobile"
+    },
+    {
+      "id": 87,
+      "codigo": "REG_ANL_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "analytics",
+      "titulo": "PII prohibido en GA4"
+    },
+    {
+      "id": 91,
+      "codigo": "REG_ANL_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "analytics",
+      "titulo": "Atribución UTM obligatoria desde primer clic"
+    },
+    {
+      "id": 93,
+      "codigo": "REG_ANL_008",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "analytics",
+      "titulo": "Eventos de error sin detalle técnico crudo"
+    },
+    {
+      "id": 94,
+      "codigo": "REG_OBS_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "observabilidad",
+      "titulo": "Herramienta de error tracking"
+    },
+    {
+      "id": 95,
+      "codigo": "REG_OBS_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "observabilidad",
+      "titulo": "PII prohibido en Sentry"
+    },
+    {
+      "id": 97,
+      "codigo": "REG_OBS_004",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "observabilidad",
+      "titulo": "Performance monitoring — Core Web Vitals"
+    },
+    {
+      "id": 101,
+      "codigo": "REG_TAG_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tageo",
+      "titulo": "Data Layer obligatorio antes de cualquier tag"
+    },
+    {
+      "id": 102,
+      "codigo": "REG_TAG_003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tageo",
+      "titulo": "Estructura estándar del dataLayer"
+    },
+    {
+      "id": 103,
+      "codigo": "REG_TAG_004",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tageo",
+      "titulo": "Variables GTM permitidas y prohibidas"
+    },
+    {
+      "id": 104,
+      "codigo": "REG_TAG_005",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tageo",
+      "titulo": "Preview y debug obligatorio antes de publicar"
+    },
+    {
+      "id": 105,
+      "codigo": "REG_TAG_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tageo",
+      "titulo": "Versioning de contenedor GTM"
+    },
+    {
+      "id": 106,
+      "codigo": "REG_HMP_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "heatmap",
+      "titulo": "Herramienta de heatmap y session recording"
+    },
+    {
+      "id": 107,
+      "codigo": "REG_HMP_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "heatmap",
+      "titulo": "Masking obligatorio de campos PII en Clarity"
+    },
+    {
+      "id": 115,
+      "codigo": "REG_ALR_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "alertas",
+      "titulo": "Canal de alertas por severidad"
+    },
+    {
+      "id": 135,
+      "codigo": "REG_ATQ_015",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ataques",
+      "titulo": "Supabase no expuesto directamente a internet público"
+    },
+    {
+      "id": 139,
+      "codigo": "REG_ATQ_019",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ataques",
+      "titulo": "JWT almacenado en httpOnly cookie, no en localStorage"
+    },
+    {
+      "id": 146,
+      "codigo": "REG_OFR_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Oferta representa deuda independiente"
+    },
+    {
+      "id": 147,
+      "codigo": "REG_OFR_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Modalidades no son ofertas"
+    },
+    {
+      "id": 148,
+      "codigo": "REG_OFR_003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Mostrar solo modalidades disponibles"
+    },
+    {
+      "id": 149,
+      "codigo": "REG_OFR_004",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Autoselección con modalidad única"
+    },
+    {
+      "id": 150,
+      "codigo": "REG_OFR_005",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Sin autoselección con ambas modalidades"
+    },
+    {
+      "id": 151,
+      "codigo": "REG_OFR_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Monto en cuotas puede ser mayor"
+    },
+    {
+      "id": 152,
+      "codigo": "REG_OFR_007",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Bloqueo de checkout sin modalidad"
+    },
+    {
+      "id": 154,
+      "codigo": "REG_OFR_009",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "oferta",
+      "titulo": "Persistencia de modalidad por oferta"
+    },
+    {
+      "id": 155,
+      "codigo": "REG_CHK_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "checkout",
+      "titulo": "Checkout consolidado"
+    },
+    {
+      "id": 156,
+      "codigo": "REG_CHK_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "checkout",
+      "titulo": "Total consolidado"
+    },
+    {
+      "id": 161,
+      "codigo": "REG_CUO_005",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Redondeo de cuotas hacia arriba"
+    },
+    {
+      "id": 162,
+      "codigo": "REG_DAT_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Base de cálculo del porcentaje de ahorro en cuotas"
+    },
+    {
+      "id": 163,
+      "codigo": "REG_DAT_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Formato de montos en soles"
+    },
+    {
+      "id": 179,
+      "codigo": "REG_TEC_003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tecnico",
+      "titulo": "Estructura de respuesta de API"
+    },
+    {
+      "id": 180,
+      "codigo": "REG_TEC_004",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tecnico",
+      "titulo": "Códigos de error de negocio propios"
+    },
+    {
+      "id": 182,
+      "codigo": "REG_TEC_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tecnico",
+      "titulo": "Skeleton screens en cargas mayores a 300ms"
+    },
+    {
+      "id": 186,
+      "codigo": "REG_TEC_010",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tecnico",
+      "titulo": "No exponer stack traces al cliente"
+    },
+    {
+      "id": 188,
+      "codigo": "REG_TEC_012",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "tecnico",
+      "titulo": "Logs estructurados en JSON"
+    },
+    {
+      "id": 189,
+      "codigo": "REG_ERR_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "error_states",
+      "titulo": "Anatomía de un mensaje de error al usuario"
+    },
+    {
+      "id": 199,
+      "codigo": "REG_UI_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "estados_ui",
+      "titulo": "Estados base de todo componente interactivo"
+    },
+    {
+      "id": 200,
+      "codigo": "REG_UI_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "estados_ui",
+      "titulo": "Estado del botón CTA principal"
+    },
+    {
+      "id": 201,
+      "codigo": "REG_UI_003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "estados_ui",
+      "titulo": "Estado de campo de formulario"
+    },
+    {
+      "id": 206,
+      "codigo": "REG_UI_008",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "estados_ui",
+      "titulo": "Transiciones entre estados con animación suave"
+    },
+    {
+      "id": 213,
+      "codigo": "REG_API_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "api",
+      "titulo": "Versionado de API desde el inicio"
+    },
+    {
+      "id": 217,
+      "codigo": "REG_API_005",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "api",
+      "titulo": "Rate limiting a nivel de API gateway"
+    },
+    {
+      "id": 218,
+      "codigo": "REG_API_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "api",
+      "titulo": "CORS configurado explícitamente"
+    },
+    {
+      "id": 219,
+      "codigo": "REG_NOT_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "notificaciones",
+      "titulo": "Canal principal de notificaciones"
+    },
+    {
+      "id": 225,
+      "codigo": "REG_NIU_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "niubiz",
+      "titulo": "Niubiz como gateway de pago principal"
+    },
+    {
+      "id": 231,
+      "codigo": "REG_B2B_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "b2b",
+      "titulo": "El aliado B2B define los términos de la oferta"
+    },
+    {
+      "id": 237,
+      "codigo": "REG_B2B_007",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "b2b",
+      "titulo": "Prototipos usan datos placeholder para aliados"
+    },
+    {
+      "id": 241,
+      "codigo": "REG_CUO_007",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Ahorro en planes de cuotas siempre positivo o ausente"
+    },
+    {
+      "id": 246,
+      "codigo": "REG_PRI_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Precio final incluye todos los costos desde el inicio"
+    },
+    {
+      "id": 247,
+      "codigo": "REG_PRI_002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Fórmula de cálculo del precio final"
+    },
+    {
+      "id": 248,
+      "codigo": "REG_PRI_003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Ahorro real calculado sobre deuda original vs precio final"
+    },
+    {
+      "id": 249,
+      "codigo": "REG_PRI_004",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "copy",
+      "titulo": "Copy del bloque de precio final"
+    },
+    {
+      "id": 251,
+      "codigo": "REG_PRI_006",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "copy",
+      "titulo": "Mensaje de seguridad SSL en pantalla de oferta"
+    },
+    {
+      "id": 253,
+      "codigo": "REG_PRI_007",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Desglose del precio calculado por backend"
+    },
+    {
+      "id": 254,
+      "codigo": "REG_PRI_008",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "datos",
+      "titulo": "Labels del desglose en el modal"
+    },
+    {
+      "id": 277,
+      "codigo": "REG_CHK_014",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "checkout",
+      "titulo": "Cancelación del plan sin penalidades"
+    },
+    {
+      "id": 314,
+      "codigo": "REG_CHK_024",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ux",
+      "titulo": "Estado transitorio no depende de mantener la ventana abierta"
+    },
+    {
+      "id": 360,
+      "codigo": "UX-TOKEN-CONSOLIDACION-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ux",
+      "titulo": "Consolidación: hero_subtitle_text deprecado, usar slate_text_strong"
+    },
+    {
+      "id": 361,
+      "codigo": "UX-TOKEN-CONSOLIDACION-02",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ux",
+      "titulo": "slate_text_strong: alcance ampliable a otros bloques Home, no exclusivo Hero"
+    },
+    {
+      "id": 362,
+      "codigo": "NEG-GOBERNANZA-PROVENANCE-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Todo asset visual registrado en lf_decisiones_gov debe declarar su método de generación"
+    },
+    {
+      "id": 363,
+      "codigo": "NEG-GOBERNANZA-UPDATED-AT-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "public.lf_decisiones_gov no tiene trigger de updated_at: debe fijarse a mano en cada UPDATE"
+    },
+    {
+      "id": 365,
+      "codigo": "NEG-PROCESO-COMPOSICION-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Assets Golden/LOCKED nunca se piden dentro de un render de canvas completo"
+    },
+    {
+      "id": 366,
+      "codigo": "NEG-PROCESO-ITERACION-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Una sola variable por iteración de diseño, no varias a la vez"
+    },
+    {
+      "id": 368,
+      "codigo": "NEG-RESPALDO-SIN-CAJAS-VACIAS-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Prohibido mostrar aliados/prensa no verificados o slots vacios en Home publica"
+    },
+    {
+      "id": 370,
+      "codigo": "NEG-GOBERNANZA-VISUAL-CONFIRM-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Ninguna especificacion visual/UI se marca VIGENTE, CANDIDATO_APROBADO o Golden sin render/mockup revisado"
+    },
+    {
+      "id": 373,
+      "codigo": "UX-RUTA-MODELO-2CAPAS-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ux",
+      "titulo": "Ruta de Claridad: modelo de 2 capas en cada nodo (educativo genérico + cierre LF)"
+    },
+    {
+      "id": 379,
+      "codigo": "NEG-RUTA-ELEGIBILIDAD-B2B-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "negocio",
+      "titulo": "Ruta de Claridad debe reflejar si el usuario tiene oferta de aliado o no"
+    },
+    {
+      "id": 380,
+      "codigo": "LEGAL-CESION-DEUDA-NOTIFICACION-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "legal",
+      "titulo": "Cesion de deuda: notificacion valida aunque contacto desactualizado"
+    },
+    {
+      "id": 381,
+      "codigo": "LEGAL-COBRANZA-LIMITES-01",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "legal",
+      "titulo": "Limites legales a empresas de cobranza (proteccion al consumidor)"
+    },
+    {
+      "id": 387,
+      "codigo": "B2B-RULE-DESIGN-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "DESIGN",
+      "titulo": "Referencias semánticas y promoción transversal de tokens"
+    },
+    {
+      "id": 388,
+      "codigo": "B2B-RULE-DESIGN-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "DESIGN",
+      "titulo": "Sin valores visuales duros"
+    },
+    {
+      "id": 389,
+      "codigo": "B2B-RULE-THEME-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "THEME",
+      "titulo": "Modo claro y modo noche"
+    },
+    {
+      "id": 391,
+      "codigo": "B2B-RULE-RESP-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "RESPONSIVE",
+      "titulo": "Tres breakpoints funcionales"
+    },
+    {
+      "id": 392,
+      "codigo": "B2B-RULE-RESP-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "RESPONSIVE",
+      "titulo": "Sidebar adaptativo"
+    },
+    {
+      "id": 393,
+      "codigo": "B2B-RULE-RESP-003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "RESPONSIVE",
+      "titulo": "Tablas móviles adaptativas"
+    },
+    {
+      "id": 394,
+      "codigo": "B2B-RULE-A11Y-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ACCESSIBILITY",
+      "titulo": "Interacción accesible"
+    },
+    {
+      "id": 395,
+      "codigo": "B2B-RULE-A11Y-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ACCESSIBILITY",
+      "titulo": "Contraste y color"
+    },
+    {
+      "id": 396,
+      "codigo": "B2B-RULE-AUTH-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "SECURITY",
+      "titulo": "Denegar por defecto"
+    },
+    {
+      "id": 397,
+      "codigo": "B2B-RULE-AUTH-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "SECURITY",
+      "titulo": "Aislamiento por empresa"
+    },
+    {
+      "id": 398,
+      "codigo": "B2B-RULE-AUTH-003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "SECURITY",
+      "titulo": "MFA según políticas centrales de perfil y acción"
+    },
+    {
+      "id": 399,
+      "codigo": "B2B-RULE-SESSION-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "SESSION",
+      "titulo": "Inactividad controlada"
+    },
+    {
+      "id": 400,
+      "codigo": "B2B-RULE-SESSION-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "SESSION",
+      "titulo": "Rotación y concurrencia gobernadas por políticas centrales"
+    },
+    {
+      "id": 408,
+      "codigo": "B2B-RULE-ERROR-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ERROR",
+      "titulo": "Identificador numérico y código canónico de error"
+    },
+    {
+      "id": 409,
+      "codigo": "B2B-RULE-ERROR-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ERROR",
+      "titulo": "Trazabilidad de ocurrencia"
+    },
+    {
+      "id": 410,
+      "codigo": "B2B-RULE-ERROR-003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ERROR",
+      "titulo": "Mensaje seguro al usuario"
+    },
+    {
+      "id": 411,
+      "codigo": "B2B-RULE-PRIVACY-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "PRIVACY",
+      "titulo": "PII prohibida en telemetría"
+    },
+    {
+      "id": 412,
+      "codigo": "B2B-RULE-OBS-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "OBSERVABILITY",
+      "titulo": "Correlación transversal"
+    },
+    {
+      "id": 413,
+      "codigo": "B2B-RULE-OBS-002",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "OBSERVABILITY",
+      "titulo": "Integraciones honestas"
+    },
+    {
+      "id": 414,
+      "codigo": "B2B-RULE-ANALYTICS-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ANALYTICS",
+      "titulo": "GA4 mediante GTM"
+    },
+    {
+      "id": 415,
+      "codigo": "B2B-RULE-CRASH-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "OBSERVABILITY",
+      "titulo": "Crashlytics solo nativo"
+    },
+    {
+      "id": 416,
+      "codigo": "B2B-RULE-AUDIT-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "AUDIT",
+      "titulo": "Auditoría inmutable"
+    },
+    {
+      "id": 417,
+      "codigo": "B2B-RULE-TIMEOUT-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "RESILIENCE",
+      "titulo": "Timeout y reintentos centralizados"
+    },
+    {
+      "id": 418,
+      "codigo": "B2B-RULE-RATE-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "SECURITY",
+      "titulo": "Límites por recurso"
+    },
+    {
+      "id": 419,
+      "codigo": "B2B-RULE-PERF-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "PERFORMANCE",
+      "titulo": "Core Web Vitals"
+    },
+    {
+      "id": 420,
+      "codigo": "B2B-RULE-LOGO-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "BRAND",
+      "titulo": "Logo oficial no recreado"
+    },
+    {
+      "id": 423,
+      "codigo": "B2B-RULE-RETENTION-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "RETENTION",
+      "titulo": "Retención gobernada por política central pendiente"
+    },
+    {
+      "id": 424,
+      "codigo": "B2B-RULE-PROD-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Producción bloqueada"
+    },
+    {
+      "id": 456,
+      "codigo": "REG_AUTH_PHONE_OWNERSHIP_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "seguridad",
+      "titulo": "OTP verifica control del celular, no identidad de la persona"
+    },
+    {
+      "id": 463,
+      "codigo": "B2B-RULE-STORY-READINESS-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Readiness obligatorio de familias de input antes de crear historias"
+    },
+    {
+      "id": 465,
+      "codigo": "B2B-RULE-A11Y-003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ACCESSIBILITY",
+      "titulo": "Preferencia de movimiento reducido"
+    },
+    {
+      "id": 466,
+      "codigo": "B2B-RULE-A11Y-004",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ACCESSIBILITY",
+      "titulo": "Forced colors y alto contraste sin pérdida funcional"
+    },
+    {
+      "id": 474,
+      "codigo": "B2B-RULE-CONTEXT-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Context Pack mínimo y retrieval on demand"
+    },
+    {
+      "id": 477,
+      "codigo": "B2B-RULE-THEME-003",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "THEME",
+      "titulo": "Resolución de tema System sin flash ni valores visuales duplicados"
+    },
+    {
+      "id": 509,
+      "codigo": "REG_RISK_PHONE_MULTI_DNI_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "seguridad",
+      "titulo": "Múltiples DNI o cuentas exploradas desde un mismo celular verificado"
+    },
+    {
+      "id": 537,
+      "codigo": "REG_CLIENT_AUTH_HEADER_CAPABILITY_GATING_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "navegacion",
+      "titulo": "Header autenticado Cliente muestra solo capacidades canónicas disponibles"
+    },
+    {
+      "id": 550,
+      "codigo": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "contenido",
+      "titulo": "Claims externos de Ruta de Claridad requieren fuente, vigencia y fallback"
+    },
+    {
+      "id": 556,
+      "codigo": "REG_CLIENT_PUBLIC_LEGAL_NAV_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "legal",
+      "titulo": "Destinos legales públicos Cliente no requieren autenticación ni rutas B2B"
+    },
+    {
+      "id": 589,
+      "codigo": "REG_CLIENT_AUTH_NAVIGATION_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "navegacion",
+      "titulo": "Navegación permanente y lenguaje simple del Cliente autenticado"
+    },
+    {
+      "id": 592,
+      "codigo": "REG_LF_BENEFITS_DEV_ACTIVATION_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Desarrollo separado de activación comercial para Beneficios LF"
+    },
+    {
+      "id": 593,
+      "codigo": "REG_LF_BENEFITS_REVERSIBILITY_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "PRODUCT_GOVERNANCE",
+      "titulo": "Beneficios desacoplados y reversibles"
+    },
+    {
+      "id": 594,
+      "codigo": "REG_LF_BENEFITS_CONFIG_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "CONFIGURATION",
+      "titulo": "Parámetros de Beneficios LF no se hardcodean"
+    },
+    {
+      "id": 595,
+      "codigo": "REG_LF_BENEFITS_SURFACE_RESOLUTION_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "UX_RUNTIME",
+      "titulo": "Pantallas consumen beneficios resueltos por configuración y elegibilidad"
+    },
+    {
+      "id": 596,
+      "codigo": "REG_LF_BENEFITS_CHANGE_CONTROL_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Cambios de activación y configuración de beneficios requieren trazabilidad"
+    },
+    {
+      "id": 597,
+      "codigo": "REG_LF_BENEFITS_B2B_CAMPAIGN_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "COMMERCIAL_CAMPAIGN",
+      "titulo": "Campañas especiales de descuento aportadas por empresa B2B"
+    },
+    {
+      "id": 599,
+      "codigo": "REG_CLIENT_HOME_LIFECYCLE_ORCHESTRATION_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "flujo",
+      "titulo": "Home autenticado orquesta el ciclo de vida completo del cliente"
+    },
+    {
+      "id": 600,
+      "codigo": "REG_CLIENT_HOME_PRIMARY_ACTION_PRIORITY_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "flujo",
+      "titulo": "Prioridad de la siguiente acción principal del Home autenticado"
+    },
+    {
+      "id": 601,
+      "codigo": "REG_CLIENT_HOME_DYNAMIC_BLOCK_COMPOSITION_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "ux",
+      "titulo": "Composición dinámica de bloques del Home autenticado"
+    },
+    {
+      "id": 625,
+      "codigo": "REG_CLIENT_PAYMENT_REFUND_POLICY_001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "pago",
+      "titulo": "Devoluciones Cliente retornan dinero y no crean saldo LF"
+    },
+    {
+      "id": 661,
+      "codigo": "INPUT-GOV-RECURATION-AUTHORIZED-SCREENS-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Pantallas autorizadas para recuración gobernada de Input Governance"
+    },
+    {
+      "id": 677,
+      "codigo": "EXTERNAL-BASELINE-SYNC-POLICY-001",
+      "estado": "VIGENTE",
+      "es_transversal": true,
+      "categoria": "GOVERNANCE",
+      "titulo": "Política de sincronización gobernada de baseline externo repo/edge"
+    }
+  ],
+  "policy_inventory": [
+    {
+      "kind": "OTP",
+      "code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+      "status": "CANDIDATO",
+      "source_id": "2"
+    },
+    {
+      "kind": "OTP",
+      "code": "OTP_POL_DEFAULT",
+      "status": "ACTIVO",
+      "source_id": "1"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-API-READ",
+      "status": "CANDIDATO",
+      "source_id": "5"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-APPROVAL",
+      "status": "CANDIDATO",
+      "source_id": "3"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-DOWNLOAD",
+      "status": "CANDIDATO",
+      "source_id": "4"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-LOGIN",
+      "status": "VIGENTE",
+      "source_id": "1"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-NEW-DEVICE-OTP",
+      "status": "CANDIDATO",
+      "source_id": "8"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-PASSWORD-RECOVERY-OTP",
+      "status": "CANDIDATO",
+      "source_id": "7"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-SESSION-REFRESH",
+      "status": "CANDIDATO",
+      "source_id": "6"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-B2B-UPLOAD",
+      "status": "CANDIDATO",
+      "source_id": "2"
+    },
+    {
+      "kind": "RATE_LIMIT",
+      "code": "RATE-CLIENT-OTP-PHONE-CROSSSESSION",
+      "status": "VIGENTE",
+      "source_id": "9"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-AUDIT-IMMUTABLE",
+      "status": "CANDIDATO",
+      "source_id": "8"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-AUTH-ABUSE-PROTECTION",
+      "status": "CANDIDATO",
+      "source_id": "22"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-AUTH-FAIL-CLOSED",
+      "status": "VIGENTE",
+      "source_id": "18"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-AUTH-PROVIDER-ARCHITECTURE",
+      "status": "CANDIDATO",
+      "source_id": "23"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-BACKUP-RECOVERY",
+      "status": "CANDIDATO",
+      "source_id": "16"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-CSRF-XSS",
+      "status": "CANDIDATO",
+      "source_id": "12"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-EMERGENCY-ACCESS",
+      "status": "CANDIDATO",
+      "source_id": "21"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-ENCRYPTION",
+      "status": "CANDIDATO",
+      "source_id": "10"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-IDEMPOTENCY",
+      "status": "CANDIDATO",
+      "source_id": "9"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-LEAST-PRIVILEGE",
+      "status": "CANDIDATO",
+      "source_id": "4"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-LOGIN-ANTIBOT",
+      "status": "VIGENTE",
+      "source_id": "17"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-MFA",
+      "status": "VIGENTE",
+      "source_id": "3"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+      "status": "CANDIDATO",
+      "source_id": "19"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-MFA-RECOVERY",
+      "status": "CANDIDATO",
+      "source_id": "20"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-NO-PII-TELEMETRY",
+      "status": "CANDIDATO",
+      "source_id": "5"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-PASSWORD-CREDENTIAL",
+      "status": "CANDIDATO",
+      "source_id": "24"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-RBAC",
+      "status": "CANDIDATO",
+      "source_id": "2"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-RETENTION",
+      "status": "CANDIDATO",
+      "source_id": "15"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-SECRETS",
+      "status": "CANDIDATO",
+      "source_id": "13"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-SESSION-FIXATION",
+      "status": "VIGENTE",
+      "source_id": "14"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-STORAGE-PRIVATE",
+      "status": "CANDIDATO",
+      "source_id": "6"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-TENANT-ISOLATION",
+      "status": "VIGENTE",
+      "source_id": "1"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-TRUSTED-DEVICE",
+      "status": "CANDIDATO",
+      "source_id": "25"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-UPLOAD-HARDENING",
+      "status": "CANDIDATO",
+      "source_id": "7"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-B2B-WEB-HEADERS",
+      "status": "CANDIDATO",
+      "source_id": "11"
+    },
+    {
+      "kind": "SECURITY",
+      "code": "SEC-LF-IDV-FACEPHI-OPTIONAL",
+      "status": "CANDIDATO",
+      "source_id": "26"
+    },
+    {
+      "kind": "SESSION",
+      "code": "SESSION-B2B-DEFAULT",
+      "status": "VIGENTE",
+      "source_id": "1"
+    },
+    {
+      "kind": "SESSION",
+      "code": "SESSION-CLIENT-DEFAULT",
+      "status": "VIGENTE",
+      "source_id": "2"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-API-READ",
+      "status": "CANDIDATO",
+      "source_id": "1"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-APPROVAL",
+      "status": "CANDIDATO",
+      "source_id": "7"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-AUTH-LOGIN",
+      "status": "VIGENTE",
+      "source_id": "10"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-DOWNLOAD",
+      "status": "CANDIDATO",
+      "source_id": "3"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-EXPORT",
+      "status": "CANDIDATO",
+      "source_id": "6"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-MALWARE-SCAN",
+      "status": "CANDIDATO",
+      "source_id": "9"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-PROCESSING",
+      "status": "CANDIDATO",
+      "source_id": "5"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-SESSION-REFRESH",
+      "status": "CANDIDATO",
+      "source_id": "8"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-UPLOAD",
+      "status": "CANDIDATO",
+      "source_id": "2"
+    },
+    {
+      "kind": "TIMEOUT",
+      "code": "TIMEOUT-B2B-VALIDATION",
+      "status": "CANDIDATO",
+      "source_id": "4"
+    }
+  ],
+  "nontransversal_existing_rules": [
+    {
+      "id": 403,
+      "codigo": "B2B-RULE-IDEMP-001",
+      "estado": "CANDIDATO",
+      "es_transversal": false
+    },
+    {
+      "id": 404,
+      "codigo": "B2B-RULE-STATE-001",
+      "estado": "VIGENTE",
+      "es_transversal": false
+    },
+    {
+      "id": 581,
+      "codigo": "B2B-RULE-LOAD-WIZARD-001",
+      "estado": "CANDIDATO",
+      "es_transversal": false
+    }
+  ],
+  "screen_policy_link_distribution": [
+    {
+      "pantalla_id": 51,
+      "n": 13
+    }
+  ],
+  "classification_contract": "11 PARTIAL transversal base inheritance, 4 existing policies with proposed records, 2 rule candidate/case-review, zero complete closures; 0 owner new decision invented"
+}
