@@ -38,7 +38,10 @@ class TestQ11GovernedCopy(unittest.TestCase):
     self.assertEqual(p.returncode,0,"LAB_SQL_ERROR:"+p.stderr[-1500:])
     return [a.strip() for a in p.stdout.splitlines() if a.strip()]
    for _ in range(90):
-    if subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],capture_output=True,timeout=10).returncode==0: break
+    if subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],capture_output=True,timeout=10).returncode==0:
+      logs=subprocess.run(["docker","logs",name],capture_output=True,text=True,timeout=8)
+      if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+       break
     time.sleep(1)
    self.assertEqual(sql("show server_version_num;"),[version])
    ddl=["CREATE SCHEMA extensions;","CREATE SCHEMA lf_ops;","CREATE SCHEMA lf_design;",

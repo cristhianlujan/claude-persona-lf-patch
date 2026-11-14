@@ -77,7 +77,10 @@ class JudgeIndependencePgDualRollback(unittest.TestCase):
             for _ in range(70):
                 h=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
                     capture_output=True,text=True,timeout=8)
-                if h.returncode==0:break
+                if h.returncode==0:
+                    logs=subprocess.run(["docker","logs",name],capture_output=True,text=True,timeout=8)
+                    if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                        break
                 time.sleep(1)
             else:self.fail("POSTGRES_NOT_READY")
             def execute(sql, expect_failure=False):
