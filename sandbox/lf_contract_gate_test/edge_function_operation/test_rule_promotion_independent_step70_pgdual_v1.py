@@ -170,7 +170,7 @@ SELECT 'AFTER_APPLY='||estado FROM lf_ops.reglas WHERE codigo='RULE-CAND-001';
                         self.assertIn(check,ok.stdout,check+"\n"+ok.stdout)
 
                     altered=psql("BEGIN;\nCREATE OR REPLACE FUNCTION "
-                         "public.lf_rule_promotion_request_v1(text,text,text) "
+                         "public.lf_rule_promotion_request_v1(p_execution_id text,p_rule_code text,p_reason text) "
                          "RETURNS jsonb LANGUAGE sql AS $$ SELECT '{}'::jsonb $$;\n"
                          +lab+"\nROLLBACK;",good=False)
                     self.assertIn("LF_PROMOTION_REQUEST_SOURCE_STATE_DRIFT",altered.stderr)
