@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - "supabase/functions/lf-profiles-governance-caller-v1/**"
+      - "supabase/functions/_shared/lf_ig_transport_guard_v1*.ts"
+      - "supabase/functions/input-governance-agent-v1/**"
+      - "supabase/functions/input-governance-curator-v1/**"
+      - "supabase/functions/input-governance-validator-v1/**"
       - ".github/workflows/lf-input-governance-recurate.yml"
       - ".github/workflows/lf-input-governance-recurate-dispatch.yml"
       - ".github/workflows/ig-m105-cp2-oidc-bridge-tests.yml"
@@ -20,8 +24,13 @@ jobs:
       - name: Check exact OIDC caller and isolated Edge bridge types
         run: |
           deno check supabase/functions/lf-profiles-governance-caller-v1/caller.ts
+          deno check supabase/functions/_shared/lf_ig_transport_guard_v1_test.ts
+          deno check supabase/functions/input-governance-agent-v1/index.ts
+          deno check supabase/functions/input-governance-curator-v1/index.ts
+          deno check supabase/functions/input-governance-validator-v1/index.ts
           deno check supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
       - name: Verify exact OIDC identity negatives and CP2 Edge bridge positive/negative behavior
         run: |
           deno test --filter '^CP2:' supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts
           deno test supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
+          deno test supabase/functions/_shared/lf_ig_transport_guard_v1_test.ts
