@@ -241,10 +241,12 @@ SET search_path TO 'pg_catalog','public','extensions'
 AS $selected_invoker$
 DECLARE e record; v_plan jsonb; v_skill jsonb; v_out jsonb; v_receipt jsonb;
 BEGIN
- SELECT target_code,status,operation_code INTO e FROM public.lf_operation_execution
+ SELECT target_code,status,operation_code,manifest INTO e FROM public.lf_operation_execution
  WHERE execution_id=p_execution_id;
  IF NOT FOUND OR e.status<>'IN_PROGRESS' OR e.operation_code<>'EJECUCION_PERFIL_LF' THEN
   RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_PARENT_RUN_NOT_ACTIVE'); END IF;
+ IF e.manifest#>>'{router_profile_handoff,channel}' IS DISTINCT FROM p_channel THEN
+  RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_CHANNEL_NOT_BOUND_TO_PARENT_RUN'); END IF;
  v_plan:=public.lf_profile_execution_plan_v1(e.target_code,p_channel,p_semantic_decision);
  IF v_plan->>'status'<>'READY' THEN
   RETURN jsonb_build_object('status','BLOCKED',
