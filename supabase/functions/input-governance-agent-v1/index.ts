@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {validateLfIgTransport, IG_RPC_REQUIRED, IG_RUNTIME_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -28,6 +29,8 @@ async function requireServiceRole(req: Request): Promise<boolean> {
 }
 
 async function rpc(name: string, args: Record<string, unknown>) {
+  const fieldFault=validateLfIgTransport("IG_RPC:"+name,args,IG_RPC_REQUIRED[name] ?? []);
+  if(fieldFault) throw new Error(fieldFault.code+":"+fieldFault.field);
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
@@ -45,6 +48,8 @@ async function rpc(name: string, args: Record<string, unknown>) {
 }
 
 async function callRuntime(slug: string, body: Record<string, unknown>) {
+  const fieldFault=validateLfIgTransport("IG_EDGE:"+slug,body,IG_RUNTIME_REQUIRED[slug] ?? []);
+  if(fieldFault) throw new Error(fieldFault.code+":"+fieldFault.field);
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, {
     method: "POST",
     headers: {
@@ -73,6 +78,9 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json();
+    const preflight=validateLfIgTransport("IG_EDGE_REQUEST",body,["pantalla_id","consumer","ticket"]);
+    if(preflight) return Response.json({error:preflight.code,field:preflight.field,
+      downstream_call_attempted:false}, {status:400});
     const pantallaId = Number(body?.pantalla_id);
     const consumer = typeof body?.consumer === "string" ? body.consumer : "STORY_CREATOR";
     if (!Number.isInteger(pantallaId) || pantallaId < 1) return Response.json({ error: "PANTALLA_ID_INVALID" }, { status: 400 });
