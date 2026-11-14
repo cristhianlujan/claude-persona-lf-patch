@@ -96,7 +96,13 @@ def normalize_when_unverified(review):
     enforce that restriction. The original attempted receipt stays in the
     separate, optional audit artifact; do not claim provider provenance.
     """
-    r=assess_separate_call_receipt(review)
+    try:
+        r=assess_separate_call_receipt(review)
+    except ValueError as exc:
+        r={"status":"JUDGE_INDEPENDENCE_NOT_PROVEN",
+           "producer_independence_proven":False,
+           "receipt_contract_error":str(exc),
+           "content_continuation_allowed":True}
     if r["status"]=="JUDGE_INDEPENDENCE_NOT_PROVEN" or not r["producer_independence_proven"]:
         safe=dict(review)
         safe["review_mode"]="CURRENT_CONTEXT_REVIEW"
