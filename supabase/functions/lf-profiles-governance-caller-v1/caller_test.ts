@@ -381,7 +381,7 @@ const predecisionBlockedIg = {
         security_policy:"SEC-B2B-AUTH-ABUSE-PROTECTION",question_owner:false},
     ]},
 };
-Deno.test("profile ticket: 3 IG predecision findings are returned intact for server-authorized read-only report",async()=>{
+Deno.test("CP2: profile ticket: 3 IG predecision findings are returned intact for server-authorized read-only report",async()=>{
   const h=harness({agentResult:predecisionBlockedIg,agentRequiresTicket:true});
   const {response,payload}=await invokeRuntime(h,{
     action:"input_readiness_context_pack_runtime_v1",
@@ -397,7 +397,7 @@ Deno.test("profile ticket: 3 IG predecision findings are returned intact for ser
   assertEquals(payload.result.result.predecision_crosscheck.deterministic_findings,predecisionBlockedIg.predecision_crosscheck.deterministic_findings);
   assertEquals(h.calls.filter(c=>c.url.includes("/rest/v1/lf_operation_execution?")).length,1);
 });
-Deno.test("profile ticket: IG blocked cannot continue under write-capable RUN",async()=>{
+Deno.test("CP2: profile ticket: IG blocked cannot continue under write-capable RUN",async()=>{
   const h=harness({agentResult:predecisionBlockedIg,
     executionOverrides:{manifest:{executor_mode:"GPT_NATIVE",
       executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:false,
@@ -413,7 +413,7 @@ Deno.test("profile ticket: IG blocked cannot continue under write-capable RUN",a
   assertEquals(payload.outcome,"BLOCKED");
   assertEquals(payload.code,"IG_CONTEXT_PACK_BLOCKED");
 });
-Deno.test("profile ticket: no canonical findings is still BLOCKED and never reportable",async()=>{
+Deno.test("CP2: profile ticket: no canonical findings is still BLOCKED and never reportable",async()=>{
   const h=harness({inputStatus:"BLOCKED"});
   const {response,payload}=await invokeRuntime(h,{
     action:"input_readiness_context_pack_runtime_v1",
