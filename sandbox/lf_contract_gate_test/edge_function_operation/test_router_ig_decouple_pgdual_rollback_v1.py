@@ -15,9 +15,10 @@ MIGRATION=ROOT/"supabase/migrations/20261114190000_lf_router_ig_skill_policy_onl
 ROUTER="public.lf_router_resolve_core_v1"
 DERIVE="programacion.fn_lf_router_input_governance_derive_v1"
 ADAPTER="programacion.fn_lf_profile_adapter_input_governance_resolve_v1"
+PROFILE_RESOLVER="programacion.fn_lf_profile_input_governance_resolve_v1"
 
 def func_source(fn):
- return "(SELECT pg_get_functiondef(to_regprocedure('"+fn+"("+("text,text,text,text,text" if fn==ROUTER else "text,jsonb,text")+ ")')))"
+ return "(SELECT pg_get_functiondef(to_regprocedure('"+fn+"("+("text,text,text,text,text" if fn==ROUTER else "text,text,jsonb,text" if fn==PROFILE_RESOLVER else "text,jsonb,text")+ ")')))"
 
 class RouterIgPolicyPgDual(unittest.TestCase):
  def run_pg(self,tag,version):
@@ -43,7 +44,7 @@ class RouterIgPolicyPgDual(unittest.TestCase):
    self.assertTrue(query("SHOW server_version_num;").startswith(version))
    fixture=BASE.read_text(encoding="utf-8")
    # The source fixture is from pg_get_functiondef, not fabricated PLpgSQL.
-   self.assertEqual(fixture.count("CREATE OR REPLACE FUNCTION"),3)
+   self.assertEqual(fixture.count("CREATE OR REPLACE FUNCTION"),4)
    query(fixture)
    sql=MIGRATION.read_text(encoding="utf-8")
    self.assertIn("LF_ROUTER_IG_SOURCE_DEPENDENCY_REMAINED",sql)
@@ -66,8 +67,15 @@ SELECT CASE WHEN
   AND position('''decision'',''FINDING'',''continuation_allowed'',true' in """+func_source(DERIVE)+""")>0
   AND position('BLOCK_INPUT_GOVERNANCE_EFFECT_AUTHORITY' in """+func_source(ADAPTER)+""")>0
   AND position('''continuation_allowed'',false' in """+func_source(ADAPTER)+""")>0
+  AND position('lf_activo_relaciones' in ${func_source(PROFILE_RESOLVER)})=0
+  AND position('lf_skill_selector_policy_v1' in ${func_source(PROFILE_RESOLVER)})>0
+  AND position('''continuation_allowed'',false' in ${func_source(PROFILE_RESOLVER)})>0
   THEN 'PASS_IG_CONTENT_FAIL_OPEN_AUTHORITY_FAIL_CLOSED'
   ELSE 'FAIL_IG_CONTENT_OR_FLOW_CLASSIFICATION' END;
+SELECT programacion.fn_lf_profile_input_governance_resolve_v1(
+ 'regla de carga','ACT-0051','{}'::jsonb,'CONTEXT_PACK')->>'blocking_code';
+SELECT programacion.fn_lf_profile_input_governance_resolve_v1(
+ 'regla de carga','ACT-0051','{}'::jsonb,'CONSUMER_NOT_ALLOWED')->>'blocking_code';
 ROLLBACK;
 SELECT md5("""+func_source(ROUTER)+""");
 SELECT count(*) FILTER (WHERE selection_mode='DETERMINISTIC_REQUIRED')||':'||
@@ -77,7 +85,9 @@ SELECT count(*) FILTER (WHERE selection_mode='DETERMINISTIC_REQUIRED')||':'||
    out=query(test_sql).splitlines()
    for marker in ("PASS_ROUTER_SOURCE_NO_IG","10:10:10",
                   "PASS_IG_CONTENT_FAIL_OPEN_AUTHORITY_FAIL_CLOSED",
-                  "9:1",before):
+                  "9:1",before,
+                  "BLOCK_PROFILE_INPUT_GOVERNANCE_SCREEN_NOT_SEMANTICALLY_RESOLVED",
+                  "BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED"):
      self.assertIn(marker,out,out)
    # Policy preimage drift must fail closed with no writes.
    corrupt="BEGIN; UPDATE public.lf_skill_selector_policy_v1 SET selection_mode='SEMANTIC_OPTIONAL' WHERE profile_code='ACT-0051';\n"+inner
