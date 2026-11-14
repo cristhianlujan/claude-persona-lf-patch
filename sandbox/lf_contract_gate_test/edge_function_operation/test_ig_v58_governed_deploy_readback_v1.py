@@ -15,7 +15,6 @@ WORKFLOW=(ROOT/".github/workflows/lf-edge-deploy-credential-readback.yml").read_
 class IgV58GovernedEdgeReadbackTests(unittest.TestCase):
     def sample(self,slug,source="const agent = 1;",version=20):
         return {"slug":slug,"status":"ACTIVE","verify_jwt":True,"version":version,
-                "files":[{"name":"index.ts","content":source}],
                 "ezbr_sha256":"a"*64}
 
     def test_validator_and_agent_hash_readback(self):
@@ -23,7 +22,7 @@ class IgV58GovernedEdgeReadbackTests(unittest.TestCase):
                             ("input-governance-agent-v1","CURATOR_RECURATION_SUCCESSOR")):
             source="const marker = '"+marker+"';"
             digest=hashlib.sha256(source.encode()).hexdigest()
-            got=module.inspect_metadata(self.sample(slug,source),slug,digest,19)
+            got=module.inspect_metadata(self.sample(slug,source),slug,source.encode(),digest,19)
             self.assertEqual(got["source_sha256"],digest)
             self.assertEqual(got["version"],20)
             self.assertTrue(got["verify_jwt"])
@@ -34,14 +33,14 @@ class IgV58GovernedEdgeReadbackTests(unittest.TestCase):
         for corrupted in (
             {**good,"verify_jwt":False},
             {**good,"version":18},
-            {**good,"files":[]},
+            {**good,"status":"BLOCKED"},
             {**good,"status":"DELETING"},
             {**good,"slug":"unrelated-function"},
         ):
             with self.assertRaises(module.ReadbackBlocked):
-                module.inspect_metadata(corrupted,slug,"b"*64,19)
+                module.inspect_metadata(corrupted,slug,b"CURATOR_RECURATION_SUCCESSOR","b"*64,19)
         with self.assertRaises(module.ReadbackBlocked):
-            module.inspect_metadata(good,slug,"c"*64,19)
+            module.inspect_metadata(good,slug,b"CURATOR_RECURATION_SUCCESSOR","c"*64,19)
 
     def test_deploy_workflow_is_owned_by_issue_label_and_exact_sandbox(self):
         block=WORKFLOW.split("  deploy-ig-v58-runtime:",1)[1]
