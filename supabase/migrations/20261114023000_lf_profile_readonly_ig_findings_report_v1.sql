@@ -139,8 +139,6 @@ BEGIN
         'execution_id',p_execution_id,
         'profile_code',e.target_code,
         'no_write_performed',true,
-        'ig_findings',v_report_findings,
-        'ig_findings_reported',v_report_findings IS NOT NULL,
         'candidate_sha256',v_candidate,
         'scope_packet_sha256',v_scope,
         'semantic_review_receipt_ref',v_semantic_receipt,
@@ -148,7 +146,10 @@ BEGIN
           when v_semantic.evidence_payload#>>'{semantic_judge_result,review_mode}'='CURRENT_CONTEXT_REVIEW' then null
           else v_semantic_receipt end,
         'next_gate','RETURN_TO_ROUTER'
-      ),
+      ) || CASE WHEN v_report_findings IS NOT NULL
+           THEN jsonb_build_object('ig_findings',v_report_findings,
+                                   'ig_findings_reported',true)
+           ELSE '{}'::jsonb END,
       v_actor
     );
     IF coalesce(v_step->>'status',v_step->>'step_status') IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE' THEN
