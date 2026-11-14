@@ -38,7 +38,10 @@ class Policy19Lab(unittest.TestCase):
         try:
             for _ in range(60):
                 r=subprocess.run(["docker","exec",self.container,"pg_isready","-U","postgres"],capture_output=True,timeout=10)
-                if r.returncode==0: break
+                if r.returncode==0:
+                    logs=subprocess.run(["docker","logs",self.container],capture_output=True,text=True,timeout=8)
+                    if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                        break
                 time.sleep(1)
             else: self.fail("POSTGRES_READY_TIMEOUT")
             self.assertEqual(self.sql("SHOW server_version_num;"),version)
