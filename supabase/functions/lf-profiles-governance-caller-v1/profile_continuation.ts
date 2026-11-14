@@ -36,6 +36,7 @@ type Execution = {
   target_code: string;
   target_repo: string;
   target_path: string;
+  created_at: string;
   manifest: Record<string, unknown>;
 };
 type Payload = Record<string, unknown>;
@@ -51,6 +52,24 @@ function blocked(code: string, status = 409): Response {
   return respond({ outcome: "BLOCKED", code }, status);
 }
 
+function selectedSkillDecision(e: Execution, body: Payload): { value: Payload | null; error?: Response } {
+  const modern = Object.prototype.hasOwnProperty.call(body, "skill_selection_decision");
+  const legacy = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision");
+  if (modern && legacy) return {value:null,error:blocked("SKILL_SELECTION_DUAL_FIELD_FORBIDDEN",400)};
+  // The old name is accepted solely on RUNs created before the governed
+  // 20261114195500 skill selector migration. A missing timestamp is NOT evidence.
+  if (legacy && (typeof e.created_at !== "string" ||
+      !Number.isFinite(Date.parse(e.created_at)) ||
+      Date.parse(e.created_at) >= Date.parse("2026-11-14T19:55:00Z"))) {
+    return {value:null,error:blocked("SKILL_SELECTION_LEGACY_ONLY_EXISTING_RUN",409)};
+  }
+  const value = modern ? body.skill_selection_decision : legacy ? body.skill_semantic_decision : null;
+  if (value !== null && (typeof value !== "object" || Array.isArray(value))) {
+    return {value:null,error:blocked("SKILL_SELECTION_DECISION_INVALID",400)};
+  }
+  return {value:value as Payload | null};
+}
+
 async function parseResponse(response: Response): Promise<unknown> {
   try { return await response.json(); } catch { return null; }
 }
@@ -63,7 +82,7 @@ async function authorizedExecution(
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]{10,127}$/.test(executionId)) {
     return { error: blocked("PROFILE_CONTINUATION_EXECUTION_ID_INVALID", 400) };
   }
-  const endpoint = `${config.supabaseUrl}/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,status,operation_code,target_type,target_code,target_repo,target_path,manifest`;
+  const endpoint = `${config.supabaseUrl}/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,status,operation_code,target_type,target_code,target_repo,target_path,created_at,manifest`;
   let response: Response;
   try {
     response = await fetchFn(endpoint, {
@@ -312,12 +331,11 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
   // against DB policy+CURRENT descriptor before calling the EXISTING SQL invoker.
   const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
   const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
-  const semantic = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision")
-    ? body.skill_semantic_decision : null;
+  const chosen = selectedSkillDecision(e,body);
+  if (chosen.error) return chosen.error;
+  const semantic = chosen.value;
   if (!["PRODUCTO", "PROGRAMACION", "OPERACIONES"].includes(channel))
     return blocked("PROFILE_SKILL_ROUTER_CHANNEL_UNRESOLVED", 409);
-  if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
-    return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
   let response: Response;
   try {
     response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_invoke_selected_v1`, {
@@ -688,10 +706,9 @@ export async function handleProfileContinuation(
     // skill lists or step order from a request, chat prompt or Router payload.
     const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
     const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
-    const semantic = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision")
-      ? body.skill_semantic_decision : null;
-    if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
-      return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
+    const chosen = selectedSkillDecision(e,body);
+    if (chosen.error) return chosen.error;
+    const semantic = chosen.value;
     const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_for_run_v1", {
       p_execution_id: e.execution_id, p_decision: semantic,
     });
