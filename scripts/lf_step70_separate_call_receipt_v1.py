@@ -76,6 +76,17 @@ def assess_separate_call_receipt(review, *, execution_id=None):
               "STEP70_REVIEW_NOT_SOURCE_BOUND")
     _required(r["provider_attestation"] in (False,True),
               "STEP70_PROVIDER_ATTESTATION_UNREADABLE")
+    from lf_step70_same_llm_eval_v1 import evaluate as evaluate_step70
+    reviewer_raw={"schema_id":r["schema_id"],"execution_id":r["execution_id"],
+        "candidate_sha256":r["candidate_sha256"],
+        "scope_packet_sha256":r["scope_packet_sha256"],
+        "verdict":r["decision_body"].get("verdict"),
+        "decision_body":r["decision_body"],
+        "source_refs":review.get("source_refs",[])}
+    local_eval=evaluate_step70(reviewer_raw,r["execution_id"],
+        r["candidate_sha256"],r["scope_packet_sha256"])
+    _required(local_eval["eval_status"]=="PASS",
+        "STEP70_SEPARATE_EVALUATOR_NOT_PASS")
     # A request payload's 'provider_attestation': true is SELF-ASSERTED.
     # Until a trusted provider-side witness confirms this exact model_call_id,
     # do NOT set reviewer_is_producer=false or independence_proven=true.
@@ -86,6 +97,8 @@ def assess_separate_call_receipt(review, *, execution_id=None):
             "receipt_ref_unverified":r["receipt_ref"],
             "model_call_id_unverified":r["model_call_id"],
             "schema_id":r["schema_id"],"eval_id":r["eval_id"],
+            "evaluator_status":local_eval["eval_status"],
+            "evaluator_raw_sha256":local_eval["review_raw_sha256"],
             "content_continuation_allowed":True}
 
 
