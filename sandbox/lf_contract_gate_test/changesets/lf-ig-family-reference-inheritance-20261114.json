@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-ig-family-reference-inheritance-20261114",
+  "paths": {
+    "supabase/migrations/20261114230000_lf_input_family_inheritance_reference_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_family_reference_runtime_source_preimages_20261114.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_family_reference_inheritance_pgdual_v1.py": "RUNTIME_TESTING",
+    "docs/input-governance/lf_ig_family_reference_catalog_v1_20261114.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-family-reference-inheritance-20261114.json": "CHANGESET_MANIFEST"
+  }
+}
