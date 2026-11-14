@@ -23,7 +23,10 @@ class PgIgTransportFlowRollback(unittest.TestCase):
             for _ in range(90):
                 x=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
                     capture_output=True,text=True,timeout=5)
-                if x.returncode==0:break
+                if x.returncode==0:
+                    logs=subprocess.run(["docker","logs",name],capture_output=True,text=True,timeout=8)
+                    if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                        break
                 time.sleep(.8)
             else:self.fail("PG_READY_TIMEOUT")
             db=subprocess.run(["docker","exec","-i",name,"psql","-X","-Atq",
