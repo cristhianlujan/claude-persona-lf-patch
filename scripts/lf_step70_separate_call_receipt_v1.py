@@ -78,7 +78,10 @@ def assess_separate_call_receipt(review, *, execution_id=None):
               "STEP70_REVIEW_NOT_SOURCE_BOUND")
     _required(r["provider_attestation"] in (False,True),
               "STEP70_PROVIDER_ATTESTATION_UNREADABLE")
-    from lf_step70_same_llm_eval_v1 import evaluate as evaluate_step70
+    try:
+        from lf_step70_same_llm_eval_v1 import evaluate as evaluate_step70
+    except ModuleNotFoundError:
+        from scripts.lf_step70_same_llm_eval_v1 import evaluate as evaluate_step70
     reviewer_raw={"schema_id":r["schema_id"],"execution_id":r["execution_id"],
         "candidate_sha256":r["candidate_sha256"],
         "scope_packet_sha256":r["scope_packet_sha256"],
