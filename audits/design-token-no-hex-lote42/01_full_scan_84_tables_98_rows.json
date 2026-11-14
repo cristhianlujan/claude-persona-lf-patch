@@ -1,0 +1,4453 @@
+{
+  "schema": "LF_L42_ALL_BASE_TABLE_COLOR_LITERALS_EXACT_EVIDENCE_V1",
+  "scope": "84 lf_ops/lf_design base tables + private reusable policy registry; policies SEC/RATE included",
+  "statement": "Canonical color_tokens.hex_value/rgb_value retain values; historical evidence remains immutable. Proposed consumer text uses token names.",
+  "regex_types": [
+    "HEX3",
+    "HEX6",
+    "HEX8",
+    "RGB",
+    "RGBA",
+    "HSL",
+    "HSLA"
+  ],
+  "scanned_tables_count": 84,
+  "matching_rows": 98,
+  "nonzero_tables": 15,
+  "private_policy_registry_matches": 0,
+  "security_and_rate_policy_matches": 0,
+  "records": [
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(1,10)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "0df0b52327d622006abdf480df88c01ae879c8da2c2984ea730596c928300fef",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(1,11)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "756d6662f70214c1f52e558dcc3fd307fdff158562b5c56e1511b4faf5df9bc6",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(1,9)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "87501c9ccbecf3497f84320d2401ac3ee0d4805995d023aaff5afc2edb9fd17e",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(2,7)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "70d3351a7c85e8b2b094441a5afb1808fdab3c2b1d600e4d50006e2aee688fbc",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(2,8)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "54c14835020e8ba4f020a8d6371a5aecfee69bffe19426590237b3a9d9105125",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,1)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "e787fb7745c60808fedd4e5b2a662eb0111495ab48df0f02aaece7ace0e02e64",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,2)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "34bd37ddbbdeb88fa233f7c6343e5a64ee615bfc17e8288435a3bcd48714b1d4",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,3)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "15c02b123d2e70f488135274d0af449aaa6d2726035712b10457123026c70b17",
+      "fields": {
+        "metadata": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,4)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "79d69c16b63f960ee24d5bdd0b6bde7abf0c4591e77a610dc311cfaca5bd90c6",
+      "fields": {
+        "metadata": [
+          "#0F172A",
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,5)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "03a491acb7f9137929b842fb68ed8becfdb7e47c01c0465b13d32c1b9ef8d27a",
+      "fields": {
+        "metadata": [
+          "#0F172A",
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,6)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "48d9f7ccf41e336bb94fbd3f1310b97d913ce00fcfb62351d0869578dd604b2a",
+      "fields": {
+        "metadata": [
+          "#0F172A",
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.brand_assets",
+      "row_code": "(3,7)",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "c7be388ad783a9a099b295be1764d02d4fc1cf48072f02a019825193952b7500",
+      "fields": {
+        "metadata": [
+          "#0F172A",
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "IMAGE_ASSET_METADATA_REFERENCE_NO_RUNTIME_TOKEN_CHANGE"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "blue_brand_accent",
+      "status": "VIGENTE",
+      "source_sha": "67d5a1abfe69e12ee122805d52c242629cbff740b37737ea06a3c7d141c84732",
+      "fields": {
+        "hex_value": [
+          "#2563EB"
+        ],
+        "rgb_value": [
+          "rgb(37,99,235)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#2563EB",
+          "normalized": "#2563EB",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "blue_brand_accent",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(37,99,235)",
+          "normalized": "#2563EB",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "blue_brand_accent",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "border_soft",
+      "status": "VIGENTE",
+      "source_sha": "cd4293d550ec6e7a11f2301583c7487cd0d65b1acd4a43bac57582088f015454",
+      "fields": {
+        "hex_value": [
+          "#E2E8F0"
+        ],
+        "rgb_value": [
+          "rgb(226,232,240)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#E2E8F0",
+          "normalized": "#E2E8F0",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "border_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(226,232,240)",
+          "normalized": "#E2E8F0",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "border_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "card_surface",
+      "status": "VIGENTE",
+      "source_sha": "277003d0b5f640e67ae27301376efd65b053f316498f06e8e76a18b233de09cb",
+      "fields": {
+        "hex_value": [
+          "#FFFFFF"
+        ],
+        "rgb_value": [
+          "rgb(255,255,255)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "color_completed",
+      "status": "VIGENTE",
+      "source_sha": "c22749361dcf701f11c4dd6724036bf38a792fd050afdcc0918373578669483f",
+      "fields": {
+        "hex_value": [
+          "#0A6639"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0A6639",
+          "normalized": "#0A6639",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "color_completed",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "divider_soft",
+      "status": "VIGENTE",
+      "source_sha": "3d232fc8456cbd707973a3d944cdcf2fb7f152284a4cc38442b58b2fbd87d215",
+      "fields": {
+        "hex_value": [
+          "#E5E7EB"
+        ],
+        "rgb_value": [
+          "rgb(229,231,235)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#E5E7EB",
+          "normalized": "#E5E7EB",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "divider_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(229,231,235)",
+          "normalized": "#E5E7EB",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "divider_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "error_bg",
+      "status": "VIGENTE",
+      "source_sha": "db185b91a5e1110032f528dacf9c073a8a6b7b72bd33e405e8c81ebf695a7f1c",
+      "fields": {
+        "hex_value": [
+          "#FEE2E2"
+        ],
+        "rgb_value": [
+          "rgb(254,226,226)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FEE2E2",
+          "normalized": "#FEE2E2",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "error_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(254,226,226)",
+          "normalized": "#FEE2E2",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "error_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "error_text",
+      "status": "VIGENTE",
+      "source_sha": "4762dc6b0fb71dfd32229d1237801b62945c65ed7a3449fdc055fb69bfd4a87c",
+      "fields": {
+        "hex_value": [
+          "#991B1B"
+        ],
+        "rgb_value": [
+          "rgb(153,27,27)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#991B1B",
+          "normalized": "#991B1B",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "error_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(153,27,27)",
+          "normalized": "#991B1B",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "error_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "gold_reward",
+      "status": "VIGENTE",
+      "source_sha": "39ba88c010629bee6d3afd2b44be631ff5982937c70b481730028340aceb0f9f",
+      "fields": {
+        "hex_value": [
+          "#B7791F"
+        ],
+        "rgb_value": [
+          "rgb(183,121,31)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#B7791F",
+          "normalized": "#B7791F",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "gold_reward",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(183,121,31)",
+          "normalized": "#B7791F",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "gold_reward",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "green_action",
+      "status": "VIGENTE",
+      "source_sha": "641e3d829c225e2eefe1ea1ee544ea2fa74c655463826ce2e76541db663f0286",
+      "fields": {
+        "hex_value": [
+          "#109044"
+        ],
+        "rgb_value": [
+          "rgb(16,144,68)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(16,144,68)",
+          "normalized": "#109044",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "green_action_border",
+      "status": "VIGENTE",
+      "source_sha": "22bac707668295b7004b760fd94a3ec4bdc4c92430599cf427b52f63e7d94cb5",
+      "fields": {
+        "hex_value": [
+          "#99cdb2"
+        ],
+        "rgb_value": [
+          "rgb(153,205,178)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#99cdb2",
+          "normalized": "#99CDB2",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action_border",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(153,205,178)",
+          "normalized": "#99CDB2",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action_border",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "green_action_disabled",
+      "status": "VIGENTE",
+      "source_sha": "7be90279b486b05cc44eeddd4963f694a40908e439fd6cf42601d3101619e399",
+      "fields": {
+        "hex_value": [
+          "#87c4a3"
+        ],
+        "rgb_value": [
+          "rgb(135,196,163)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#87c4a3",
+          "normalized": "#87C4A3",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action_disabled",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(135,196,163)",
+          "normalized": "#87C4A3",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action_disabled",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "green_action_hover",
+      "status": "VIGENTE",
+      "source_sha": "bb37b705c3a7448a9f396cc1a399aa23630b60bb5cb030c3627536607b597e6b",
+      "fields": {
+        "hex_value": [
+          "#0d7336"
+        ],
+        "rgb_value": [
+          "rgb(13,115,54)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0d7336",
+          "normalized": "#0D7336",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action_hover",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(13,115,54)",
+          "normalized": "#0D7336",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action_hover",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "green_action_soft_bg",
+      "status": "VIGENTE",
+      "source_sha": "a497ece1a98544f9451afcbabdce010d53795b9642b1df04d0a480fc6ad51816",
+      "fields": {
+        "hex_value": [
+          "#e8f5ee"
+        ],
+        "rgb_value": [
+          "rgb(232,245,238)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#e8f5ee",
+          "normalized": "#E8F5EE",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action_soft_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(232,245,238)",
+          "normalized": "#E8F5EE",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action_soft_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "green_surface",
+      "status": "VIGENTE",
+      "source_sha": "4f9546aa785ef0f2c10afae47ae46878c8bab6b61ed6f6551e6bfb89c497664e",
+      "fields": {
+        "hex_value": [
+          "#D1FAE5"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#D1FAE5",
+          "normalized": "#D1FAE5",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "hero_subtitle_text",
+      "status": "DEPRECADO",
+      "source_sha": "47fe7408ccef88e847c1649dc595b1855f1e6eddce529fcf549fb8f4e3848a6b",
+      "fields": {
+        "hex_value": [
+          "#5A6480"
+        ],
+        "rgb_value": [
+          "rgb(90,100,128)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#5A6480",
+          "normalized": "#5A6480",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "hero_subtitle_text",
+              "status": "DEPRECADO"
+            },
+            {
+              "name": "slate_text_strong",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(90,100,128)",
+          "normalized": "#5A6480",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "hero_subtitle_text",
+              "status": "DEPRECADO"
+            },
+            {
+              "name": "slate_text_strong",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "navy_core",
+      "status": "VIGENTE",
+      "source_sha": "080f67b67c40dde3b25528d8e47dd4bcb7c8631e91b6b63c16471d3121a072e4",
+      "fields": {
+        "hex_value": [
+          "#0F172A"
+        ],
+        "rgb_value": [
+          "rgb(15,23,42)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(15,23,42)",
+          "normalized": "#0F172A",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "navy_muted",
+      "status": "VIGENTE",
+      "source_sha": "3fa041a515cf78a4c9d566a8b3253c74d8bc646a3a0f369e8c283223587a5527",
+      "fields": {
+        "hex_value": [
+          "#334155"
+        ],
+        "rgb_value": [
+          "rgb(51,65,85)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#334155",
+          "normalized": "#334155",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_muted",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(51,65,85)",
+          "normalized": "#334155",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "navy_muted",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "navy_soft",
+      "status": "VIGENTE",
+      "source_sha": "8c1b54943791aae0c3d0aa722c7dc4b8916c70549e2e6a25548763e09a30b651",
+      "fields": {
+        "hex_value": [
+          "#1E293B"
+        ],
+        "rgb_value": [
+          "rgb(30,41,59)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#1E293B",
+          "normalized": "#1E293B",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(30,41,59)",
+          "normalized": "#1E293B",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "navy_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "purple_accent",
+      "status": "VIGENTE",
+      "source_sha": "50fdd372b728d0e6d1fa8df4fa0d0bc0e94ad05943fa6d4ce1bcb61f58edef53",
+      "fields": {
+        "hex_value": [
+          "#6D4DF7"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#6D4DF7",
+          "normalized": "#6D4DF7",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "purple_accent",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "slate_text",
+      "status": "VIGENTE",
+      "source_sha": "bf3ae9b5b60c060a4166df81df237ad5d373cf83987f17889a5c1af99ae07c69",
+      "fields": {
+        "hex_value": [
+          "#66708F"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#66708F",
+          "normalized": "#66708F",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "slate_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "slate_text_strong",
+      "status": "VIGENTE",
+      "source_sha": "330630eefd0d72c00f701932538ef40012b760e442ce76c0cdb3de6d31391940",
+      "fields": {
+        "hex_value": [
+          "#5A6480"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#5A6480",
+          "normalized": "#5A6480",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "hero_subtitle_text",
+              "status": "DEPRECADO"
+            },
+            {
+              "name": "slate_text_strong",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "success_bg",
+      "status": "VIGENTE",
+      "source_sha": "1cc64dadb4c272c5cebc6b7eb8ffca7cb69ec71b01107e5ad2ef66345cdaf166",
+      "fields": {
+        "hex_value": [
+          "#DCFCE7"
+        ],
+        "rgb_value": [
+          "rgb(220,252,231)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#DCFCE7",
+          "normalized": "#DCFCE7",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "success_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(220,252,231)",
+          "normalized": "#DCFCE7",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "success_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "success_text",
+      "status": "VIGENTE",
+      "source_sha": "7829a2b458050114612bdb607fe3c6fd9bb678990e573856729913fe72f3fee5",
+      "fields": {
+        "hex_value": [
+          "#109044"
+        ],
+        "rgb_value": [
+          "rgb(16,144,68)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(16,144,68)",
+          "normalized": "#109044",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "terrain_label_bronze",
+      "status": "VIGENTE",
+      "source_sha": "cc0470a4bbbfe764fb4dc2fc9ffe941fd67d8164f38b96e29a2db1b193015594",
+      "fields": {
+        "hex_value": [
+          "#7C5F3E"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#7C5F3E",
+          "normalized": "#7C5F3E",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "terrain_label_bronze",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "text_muted_inactive",
+      "status": "VIGENTE",
+      "source_sha": "5ced62e18b297ad82ddca2dfcfaa7d0197b4cf585994b41ebaf4712d37d8bdf4",
+      "fields": {
+        "hex_value": [
+          "#7C8AA6"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#7C8AA6",
+          "normalized": "#7C8AA6",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_muted_inactive",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "text_secondary_warm",
+      "status": "VIGENTE",
+      "source_sha": "ec5281d4e7d0dd80679faced7ade0d61a650c006f6fead9c310e8a4ebc8764c0",
+      "fields": {
+        "notes": [
+          "#FDFCFA"
+        ],
+        "hex_value": [
+          "#756B62"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#756B62",
+          "normalized": "#756B62",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_secondary_warm",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "trust_icon_blue",
+      "status": "VIGENTE",
+      "source_sha": "ee1f23e08c467ff6dc4127b426ef93e1e3eb05aab9405ee766b4900c7842496c",
+      "fields": {
+        "hex_value": [
+          "#93C5FD"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#93C5FD",
+          "normalized": "#93C5FD",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "trust_icon_blue",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "warm_surface",
+      "status": "VIGENTE",
+      "source_sha": "787c38baba645e546aea2fc4977ed8265a3aecc0438d62711bdbc9c5e52b9fb6",
+      "fields": {
+        "notes": [
+          "#FDFCFA"
+        ],
+        "hex_value": [
+          "#FDFCFA"
+        ],
+        "rgb_value": [
+          "rgb(253,252,250)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "warning_bg",
+      "status": "VIGENTE",
+      "source_sha": "d3fe4f6bf103be9a9a675482da719d66eedd10f93e77fe658093d265c9f88cc5",
+      "fields": {
+        "hex_value": [
+          "#FEF3C7"
+        ],
+        "rgb_value": [
+          "rgb(254,243,199)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FEF3C7",
+          "normalized": "#FEF3C7",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warning_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(254,243,199)",
+          "normalized": "#FEF3C7",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warning_bg",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.color_tokens",
+      "row_code": "warning_text",
+      "status": "VIGENTE",
+      "source_sha": "ccf186d649382618447a01e3bfd2129cedad01343f6e5ce4b01d6a3029c59ee1",
+      "fields": {
+        "hex_value": [
+          "#92400E"
+        ],
+        "rgb_value": [
+          "rgb(146,64,14)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#92400E",
+          "normalized": "#92400E",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warning_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "rgb(146,64,14)",
+          "normalized": "#92400E",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warning_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "CANONICAL_COLOR_VALUE_REGISTRY_KEEP_LITERAL"
+    },
+    {
+      "source": "lf_design.component_tokens",
+      "row_code": "client_auth_header_band",
+      "status": "DEPRECADO",
+      "source_sha": "13547f941c25863d521ac30b7c536b63c50afaca1a8ce2cf8319a84cdff4af14",
+      "fields": {
+        "notes": [
+          "#FFFFFF",
+          "#FDFCFA",
+          "#E2E8F0"
+        ],
+        "token_bindings": [
+          "#FFFFFF"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#E2E8F0",
+          "normalized": "#E2E8F0",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "border_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "ONE_VIGENTE_STAGED_ONE_BLOCKED_ONE_DEPRECADO_HISTORICAL"
+    },
+    {
+      "source": "lf_design.component_tokens",
+      "row_code": "client_auth_watermark",
+      "status": "VIGENTE",
+      "source_sha": "4e7e5f6e2a1f339dfab927ebe861a4e2a22e060919d43cbbd766d053971e068d",
+      "fields": {
+        "blocked_usage": [
+          "#F1F7F1"
+        ],
+        "token_bindings": [
+          "#F4F8F3",
+          "#F7F9F6"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#F1F7F1",
+          "normalized": "#F1F7F1",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_legacy_tint",
+          "flag": null
+        },
+        {
+          "original": "#F4F8F3",
+          "normalized": "#F4F8F3",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_low",
+          "flag": null
+        },
+        {
+          "original": "#F7F9F6",
+          "normalized": "#F7F9F6",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_high",
+          "flag": null
+        }
+      ],
+      "classification": "ONE_VIGENTE_STAGED_ONE_BLOCKED_ONE_DEPRECADO_HISTORICAL"
+    },
+    {
+      "source": "lf_design.component_tokens",
+      "row_code": "link_inline_default",
+      "status": "VIGENTE",
+      "source_sha": "e0970f10e5293f28dab3ac3b6d265a6ec191b78dd2cf52f29717229fe7cb5e3f",
+      "fields": {
+        "notes": [
+          "#2563EB"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#2563EB",
+          "normalized": "#2563EB",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "blue_brand_accent",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "ONE_VIGENTE_STAGED_ONE_BLOCKED_ONE_DEPRECADO_HISTORICAL"
+    },
+    {
+      "source": "lf_design.spacing_tokens",
+      "row_code": "shadow_card_elevation",
+      "status": "VIGENTE",
+      "source_sha": "d79f23a81a117018c6d7f420eb31cb99a50a5dea7bab13a1a249a2619a3f37f1",
+      "fields": {
+        "notes": [
+          "rgba(15,23,42,0.10)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "rgba(15,23,42,0.10)",
+          "normalized": "#0F172A",
+          "kind": "RGBA_ALPHA",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": "ALPHA_NOT_SAME_AS_OPAQUE_TOKEN"
+        }
+      ],
+      "classification": "AUTHORITATIVE_SHADOW_TOKEN_VALUE_KEEP_ALPHA_UNTIL_REDESIGN"
+    },
+    {
+      "source": "lf_design.spacing_tokens",
+      "row_code": "shadow_panel_deep",
+      "status": "VIGENTE",
+      "source_sha": "77764ef8abed89e186ad0361c9b76e189752f0bdcf27267fee2788c89d11590d",
+      "fields": {
+        "notes": [
+          "rgba(15,23,42,0.08)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "rgba(15,23,42,0.08)",
+          "normalized": "#0F172A",
+          "kind": "RGBA_ALPHA",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": "ALPHA_NOT_SAME_AS_OPAQUE_TOKEN"
+        }
+      ],
+      "classification": "AUTHORITATIVE_SHADOW_TOKEN_VALUE_KEEP_ALPHA_UNTIL_REDESIGN"
+    },
+    {
+      "source": "lf_design.spacing_tokens",
+      "row_code": "shadow_soft_ambient",
+      "status": "VIGENTE",
+      "source_sha": "65f8fc50a5bd766689cbcdfb66442f6441b4a74fbb838dcf0a20d0331a44288b",
+      "fields": {
+        "notes": [
+          "rgba(15,23,42,0.08)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "rgba(15,23,42,0.08)",
+          "normalized": "#0F172A",
+          "kind": "RGBA_ALPHA",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": "ALPHA_NOT_SAME_AS_OPAQUE_TOKEN"
+        }
+      ],
+      "classification": "AUTHORITATIVE_SHADOW_TOKEN_VALUE_KEEP_ALPHA_UNTIL_REDESIGN"
+    },
+    {
+      "source": "lf_design.typography_tokens",
+      "row_code": "text_button_primary",
+      "status": "VIGENTE",
+      "source_sha": "22f9f0a725cecf4c25ef39a9026d415c4f560a2586bd7a2b6acd57c85341f0a9",
+      "fields": {
+        "notes": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "ONE_VIGENTE_STAGED"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "LF-B2B-VIS-AUTH-006",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "5d79e3ac3d1d20d7e213c71a4d312f1f1563294921a3f5443e41e8fa937132fa",
+      "fields": {
+        "pending_reason": [
+          "#F8FAFC",
+          "RGB(248,250,252)",
+          "RGB(252,250,251)",
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        },
+        {
+          "original": "RGB(248,250,252)",
+          "normalized": "#F8FAFC",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        },
+        {
+          "original": "RGB(252,250,251)",
+          "normalized": "#FCFAFB",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "soft_rose_cool_surface",
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "LF-BRAND-LOGO-VARIANTS-001",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "c952d7333ca72c6eea618ee8b92ca2a28f629d5df829615f2ca9dba9060cdabb",
+      "fields": {
+        "decision_detail": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_CLIENT_AUTH_FULL_CANVAS_SURFACE_20260820",
+      "status": "VIGENTE",
+      "source_sha": "c274e786ce019246586a507ebc796f75423ab9fb755c63ca3766f6f14ab67659",
+      "fields": {
+        "decision_detail": [
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_CLIENT_AUTH_STEPPER_3_20260820",
+      "status": "VIGENTE",
+      "source_sha": "d43cee4a25c30d7347366e021e92169a228c2ea3dceefff19f68c56f090da794",
+      "fields": {
+        "decision_detail": [
+          "#0A6639",
+          "#109044",
+          "#E2E8F0"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0A6639",
+          "normalized": "#0A6639",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "color_completed",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#E2E8F0",
+          "normalized": "#E2E8F0",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "border_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_CLIENT_AUTH_WATERMARK_20260819",
+      "status": "VIGENTE",
+      "source_sha": "6d480a3a8004f95c1f58f095d1f072bdc674ed575e037f21bec27295a55e73c6",
+      "fields": {
+        "decision_detail": [
+          "#F1F7F1",
+          "#F4F8F3",
+          "#F7F9F6"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#F1F7F1",
+          "normalized": "#F1F7F1",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_legacy_tint",
+          "flag": null
+        },
+        {
+          "original": "#F4F8F3",
+          "normalized": "#F4F8F3",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_low",
+          "flag": null
+        },
+        {
+          "original": "#F7F9F6",
+          "normalized": "#F7F9F6",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_high",
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_CLIENT_ONB_001_CELL_FIRST_20260815",
+      "status": "VIGENTE",
+      "source_sha": "f0c700a2c3058b2404f14b1deb6990e49de80a7e93d3e18ae33180ad574e6f0a",
+      "fields": {
+        "decision_detail": [
+          "#109044",
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_CLIENT_ONB003_WEB_V03_20260820",
+      "status": "VIGENTE",
+      "source_sha": "4f6d6b8b7436db17e49c3a13553ae7d0060f7d2f62181596482fc5ab0c06a769",
+      "fields": {
+        "decision_detail": [
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_COLOR_GREEN_ACTION_001",
+      "status": "VIGENTE",
+      "source_sha": "b803931bdf728580d2fb6ed117639eb5aef4abedf67de7c5022e9aa227a022e1",
+      "fields": {
+        "decision_title": [
+          "#109044"
+        ],
+        "decision_detail": [
+          "#0a6639"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#0a6639",
+          "normalized": "#0A6639",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "color_completed",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_LF_CTA_PRIMARY_CONTRAST_20260820",
+      "status": "VIGENTE",
+      "source_sha": "aad8da1ee8b4e316e2b3976ec1bec18666541923570ba4f8974f130eeaf5f85c",
+      "fields": {
+        "decision_detail": [
+          "#109044",
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_design.visual_decisions",
+      "row_code": "VD_SLATE_TEXT_STRONG_001",
+      "status": "VIGENTE",
+      "source_sha": "f8b23b13f6d13adb027b0a8464767df559259c707f057b34df567e488911fc8e",
+      "fields": {
+        "decision_detail": [
+          "#5A6480",
+          "#F7F5F0"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#5A6480",
+          "normalized": "#5A6480",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "hero_subtitle_text",
+              "status": "DEPRECADO"
+            },
+            {
+              "name": "slate_text_strong",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#F7F5F0",
+          "normalized": "#F7F5F0",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "warm_surface_legacy_variant",
+          "flag": null
+        }
+      ],
+      "classification": "HISTORICAL_DESIGN_DECISION_PRESERVE_EVIDENCE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-001-TABLET-LIGHT-CANDIDATO-VISUAL-V05-R2-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "2f5be9f201510a3fef8bf72f06ed2c0454b39d0538ea4635192611f0e1cc3f8f",
+      "fields": {
+        "notes": [
+          "RGB(253,252,250)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-002-APP-LIGHT-CANDIDATO-VISUAL-V01-R2-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "398ec583c82e45b5d6f518632f2fa8208918ba48a8361ee5fd00fdb5ffa23296",
+      "fields": {
+        "notes": [
+          "#F8FAFC",
+          "RGB(252,250,251)"
+        ],
+        "storage_metadata": [
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        },
+        {
+          "original": "RGB(252,250,251)",
+          "normalized": "#FCFAFB",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "soft_rose_cool_surface",
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-002-TABLET-LIGHT-CANDIDATO-VISUAL-V01-R3-LOGIN-MASTER-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "688590e1311645bb9684b51ab813776d514939c162523940826a89f5aaa1b460",
+      "fields": {
+        "notes": [
+          "RGB(253,252,250)"
+        ],
+        "storage_metadata": [
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-003-APP-LIGHT-CANDIDATO-VISUAL-V01-R2-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "cf1f1a7c6b99fc664452ebce24b5632e980c6609686ecfebc99a11b84831c259",
+      "fields": {
+        "notes": [
+          "#F8FAFC",
+          "RGB(252,250,251)"
+        ],
+        "storage_metadata": [
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        },
+        {
+          "original": "RGB(252,250,251)",
+          "normalized": "#FCFAFB",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "soft_rose_cool_surface",
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-003-TABLET-LIGHT-CANDIDATO-VISUAL-V01-R3-LOGIN-MASTER-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "b1fa121959a7305f6b9b794d4f228b053f0821bb58cd1788c80dd75879a31a98",
+      "fields": {
+        "notes": [
+          "RGB(253,252,250)"
+        ],
+        "storage_metadata": [
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-004-TABLET-LIGHT-CANDIDATO-VISUAL-V02-R2-LOGIN-MASTER",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "c4787623eb4a1e361f8bc353f56051375d542d01c33d269c9fe32d4851801d95",
+      "fields": {
+        "notes": [
+          "RGB(253,252,250)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-006-APP-LIGHT-CANDIDATO-VISUAL-V01-R2-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "683d21a6f77df66f26558054990779a9d5fec7e9a2899867350c2d066e94fb77",
+      "fields": {
+        "notes": [
+          "#F8FAFC",
+          "RGB(252,250,251)"
+        ],
+        "storage_metadata": [
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        },
+        {
+          "original": "RGB(252,250,251)",
+          "normalized": "#FCFAFB",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "soft_rose_cool_surface",
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-AUTH-006-TABLET-LIGHT-CANDIDATO-VISUAL-V01-R3-LOGIN-MASTER-BG",
+      "status": "CANDIDATO_VISUAL",
+      "source_sha": "076d27303619b791db3244b9b6357fe3f62b2366510e67af803a213fec569637",
+      "fields": {
+        "notes": [
+          "RGB(253,252,250)"
+        ],
+        "storage_metadata": [
+          "#F8FAFC"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "B2B-CARGA-001-HISTORIAL-DESKTOP-LIGHT-V0-1-CANDIDATO-20260901",
+      "status": "CANDIDATO",
+      "source_sha": "182f708d5f2206474f7f4c9aca952b3d007486a06bec3004c46f63750ba25fba",
+      "fields": {
+        "notes": [
+          "#402"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#402",
+          "normalized": "#440022",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_001-WEB-VIGENTE-V12",
+      "status": "DEPRECADO",
+      "source_sha": "e5f41003c9999ae5c0377d45053f4633800804751ab9801a3a36f33a01a426a0",
+      "fields": {
+        "storage_metadata": [
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_001-WEB-VIGENTE-V13",
+      "status": "DEPRECADO",
+      "source_sha": "a61516f0ec6e16ca848ff89cced7286cc8b34721adef7ebf6a9f139b94ca5ae3",
+      "fields": {
+        "storage_metadata": [
+          "RGB(16,144,68)",
+          "RGB(255,255,255)",
+          "RGB(255,255,255)",
+          "RGB(255,255,255)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)",
+          "#FFFFFF"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(16,144,68)",
+          "normalized": "#109044",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_001-WEB-VIGENTE-V14",
+      "status": "DEPRECADO",
+      "source_sha": "dceb8ccedac779bca04ca520166d2891220aa418627b7512a8097f9d2e2d279d",
+      "fields": {
+        "storage_metadata": [
+          "RGB(16,144,68)",
+          "RGB(255,255,255)",
+          "RGB(244,248,243)",
+          "#F4F8F3",
+          "#F7F9F6",
+          "RGB(244,248,243)",
+          "#F4F8F3",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(16,144,68)",
+          "normalized": "#109044",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(244,248,243)",
+          "normalized": "#F4F8F3",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_low",
+          "flag": null
+        },
+        {
+          "original": "#F4F8F3",
+          "normalized": "#F4F8F3",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_low",
+          "flag": null
+        },
+        {
+          "original": "#F7F9F6",
+          "normalized": "#F7F9F6",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_high",
+          "flag": null
+        },
+        {
+          "original": "RGB(244,248,243)",
+          "normalized": "#F4F8F3",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_low",
+          "flag": null
+        },
+        {
+          "original": "#F4F8F3",
+          "normalized": "#F4F8F3",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "client_watermark_composite_low",
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_003-WEB-VIGENTE-V03-A-NORMAL",
+      "status": "VIGENTE",
+      "source_sha": "387985f455b61aee4e3cc881ef8bc784508c8cc1f86aeebf889d412dec47f731",
+      "fields": {
+        "storage_metadata": [
+          "#FDFCFA",
+          "#FEFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FEFCFA",
+          "normalized": "#FEFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "warm_surface_nearwhite_variant",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_003-WEB-VIGENTE-V03-B-ERROR",
+      "status": "VIGENTE",
+      "source_sha": "663c4b2dfb9926a11d9825fb6a8fea1428e9b75136274b2b211dc02591f1c71c",
+      "fields": {
+        "storage_metadata": [
+          "#991B1B",
+          "#FDFCFA",
+          "#FEFCFA",
+          "#FEFDFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#991B1B",
+          "normalized": "#991B1B",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "error_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FEFCFA",
+          "normalized": "#FEFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "warm_surface_nearwhite_variant",
+          "flag": null
+        },
+        {
+          "original": "#FEFDFA",
+          "normalized": "#FEFDFA",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "warm_surface_soft_variant",
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_004-WEB-VIGENTE-V01-A-NORMAL",
+      "status": "VIGENTE",
+      "source_sha": "eef6acdd5783b5ef13be1b33d55d574e1018f24d206efcad9e94f0cf47a4fbc6",
+      "fields": {
+        "storage_metadata": [
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "row_code": "ONB_004-WEB-VIGENTE-V01-B-ERROR",
+      "status": "VIGENTE",
+      "source_sha": "f2d83875905ae019d5961ba027c423197765c810e428cd330519d38e8fb73f7b",
+      "fields": {
+        "storage_metadata": [
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.pantalla_elementos",
+      "row_code": "ONB003_FRAME",
+      "status": "VIGENTE",
+      "source_sha": "431ac0f792ca51adafcfb150cf9724b1799ca9a1f5bb097e201b007f731a4040",
+      "fields": {
+        "source_refs": [
+          "#FDFCFA"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "SOURCE_REFERENCE_NOT_STYLE_DECLARATION"
+    },
+    {
+      "source": "lf_ops.qa_auditorias",
+      "row_code": "(0,11)",
+      "status": "FAILED",
+      "source_sha": "76d32f615014fb0cf8841daf3212cb0468f842ff6432d276c4fce7e97bd93631",
+      "fields": {
+        "summary": [
+          "RGB(255,255,255)",
+          "RGB(16,144,68)",
+          "RGB(247-248,249-250,245-246)",
+          "RGB(255,255,255)",
+          "RGB(255,255,255)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)",
+          "RGB(253,252,250)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(16,144,68)",
+          "normalized": "#109044",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(247-248,249-250,245-246)",
+          "normalized": null,
+          "kind": "RGB_RANGE_OR_INVALID",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(253,252,250)",
+          "normalized": "#FDFCFA",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "QA_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.qa_auditorias",
+      "row_code": "(1,3)",
+      "status": "PASSED_WITH_OBSERVATIONS",
+      "source_sha": "0ea73b6eeb3ea737a84967c01829245fa0380ea8678b565df1a8c7278ca28c63",
+      "fields": {
+        "summary": [
+          "#FDFCFA",
+          "#756B62"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#756B62",
+          "normalized": "#756B62",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_secondary_warm",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "QA_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.qa_hallazgos",
+      "row_code": "(0,3)",
+      "status": "OPEN",
+      "source_sha": "7a0823c70c98fdc83e0906f2379d082d8f4a1da168d7441f45b964acea9847a0",
+      "fields": {
+        "description": [
+          "#0a6639",
+          "#109044"
+        ],
+        "evidence_query": [
+          "#109044",
+          "#0a6639"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#0a6639",
+          "normalized": "#0A6639",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "color_completed",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#0a6639",
+          "normalized": "#0A6639",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "color_completed",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "QA_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.qa_hallazgos",
+      "row_code": "(2,15)",
+      "status": "RESOLVED",
+      "source_sha": "f57fca1d42f83dbbef9043d0e4ce01ca04cd16aa975a2a3bd937830628ccf300",
+      "fields": {
+        "description": [
+          "#FFFFFF"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "QA_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.qa_hallazgos",
+      "row_code": "(3,1)",
+      "status": "RESOLVED",
+      "source_sha": "20dff1acc00a416b5ebfb0bfbefb46771502ea50812ebd9ba05ba359fd777aa3",
+      "fields": {
+        "description": [
+          "#FDFCFA",
+          "RGB(255,255,255)"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#FDFCFA",
+          "normalized": "#FDFCFA",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "warm_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "RGB(255,255,255)",
+          "normalized": "#FFFFFF",
+          "kind": "RGB",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "QA_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.qa_hallazgos",
+      "row_code": "(3,2)",
+      "status": "RESOLVED",
+      "source_sha": "78f3c682afbbc7d041f390dc6b50e7a57018f2b8b8417a391db38e894edca901",
+      "fields": {
+        "description": [
+          "RGB(221,226,232)",
+          "#E2E8F0"
+        ]
+      },
+      "literals": [
+        {
+          "original": "RGB(221,226,232)",
+          "normalized": "#DDE2E8",
+          "kind": "RGB",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_border_qa_reference",
+          "flag": null
+        },
+        {
+          "original": "#E2E8F0",
+          "normalized": "#E2E8F0",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "border_soft",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "QA_EVIDENCE_PRESERVE"
+    },
+    {
+      "source": "lf_ops.reglas",
+      "row_code": "UX-GAMIF-TERMOMETRO-01",
+      "status": "CANDIDATO",
+      "source_sha": "98f46ed7d660ff5be5db1a146882c960ad8e6e31ad022ac53f833c92da239dde",
+      "fields": {
+        "valor_config": [
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "FOUR_RULES_STAGED_2_CANDIDATO_2_VIGENTE"
+    },
+    {
+      "source": "lf_ops.reglas",
+      "row_code": "UX-RUTA-ACCESIBILIDAD-01",
+      "status": "VIGENTE",
+      "source_sha": "8993d92ad768454f67965e1387ff37bce9b31d53207f86fe2106a1b7a7d2cb22",
+      "fields": {
+        "valor_config": [
+          "#7C8AA6"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#7C8AA6",
+          "normalized": "#7C8AA6",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_muted_inactive",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "FOUR_RULES_STAGED_2_CANDIDATO_2_VIGENTE"
+    },
+    {
+      "source": "lf_ops.reglas",
+      "row_code": "UX-RUTA-ESTADOS-01",
+      "status": "CANDIDATO",
+      "source_sha": "30a525854f4ed492b1dc02108c26fa07917cb469c45eddb1387e669cf68ea08e",
+      "fields": {
+        "valor_config": [
+          "#D7DEE8",
+          "#109044",
+          "#B7791F",
+          "#FFFFFF",
+          "#B7791F",
+          "#B7791F",
+          "#109044",
+          "#109044",
+          "#109044",
+          "#FFFFFF",
+          "#7C8AA6",
+          "#FFFFFF",
+          "#7C8AA6",
+          "#D7DEE8",
+          "#0F172A",
+          "#B7791F",
+          "#109044",
+          "#F8FAFC",
+          "#7C8AA6",
+          "#0F172A",
+          "#FFFFFF",
+          "#109044"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#D7DEE8",
+          "normalized": "#D7DEE8",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "route_future_segment_soft",
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#B7791F",
+          "normalized": "#B7791F",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "gold_reward",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#B7791F",
+          "normalized": "#B7791F",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "gold_reward",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#B7791F",
+          "normalized": "#B7791F",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "gold_reward",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#7C8AA6",
+          "normalized": "#7C8AA6",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_muted_inactive",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#7C8AA6",
+          "normalized": "#7C8AA6",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_muted_inactive",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#D7DEE8",
+          "normalized": "#D7DEE8",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "route_future_segment_soft",
+          "flag": null
+        },
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#B7791F",
+          "normalized": "#B7791F",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "gold_reward",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#F8FAFC",
+          "normalized": "#F8FAFC",
+          "kind": "HEX6",
+          "existing_tokens": [],
+          "proposed_token_missing": "cool_surface_soft",
+          "flag": null
+        },
+        {
+          "original": "#7C8AA6",
+          "normalized": "#7C8AA6",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "text_muted_inactive",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#0F172A",
+          "normalized": "#0F172A",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "navy_core",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#FFFFFF",
+          "normalized": "#FFFFFF",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "card_surface",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#109044",
+          "normalized": "#109044",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "green_action",
+              "status": "VIGENTE"
+            },
+            {
+              "name": "success_text",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "FOUR_RULES_STAGED_2_CANDIDATO_2_VIGENTE"
+    },
+    {
+      "source": "lf_ops.reglas",
+      "row_code": "UX-TOKEN-CONSOLIDACION-01",
+      "status": "VIGENTE",
+      "source_sha": "56a4818a9285bd458574dff0a47fadb79fa9b0607191aadda011425b7e772f95",
+      "fields": {
+        "descripcion": [
+          "#5A6480"
+        ],
+        "valor_config": [
+          "#5A6480"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#5A6480",
+          "normalized": "#5A6480",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "hero_subtitle_text",
+              "status": "DEPRECADO"
+            },
+            {
+              "name": "slate_text_strong",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        },
+        {
+          "original": "#5A6480",
+          "normalized": "#5A6480",
+          "kind": "HEX6",
+          "existing_tokens": [
+            {
+              "name": "hero_subtitle_text",
+              "status": "DEPRECADO"
+            },
+            {
+              "name": "slate_text_strong",
+              "status": "VIGENTE"
+            }
+          ],
+          "proposed_token_missing": null,
+          "flag": null
+        }
+      ],
+      "classification": "FOUR_RULES_STAGED_2_CANDIDATO_2_VIGENTE"
+    },
+    {
+      "source": "lf_ops.reglas_pantallas",
+      "row_code": "9463",
+      "status": "UNKNOWN",
+      "source_sha": "31479a61dff7925db3109c3e7d562e6761b55ef87fdb28f56d9c8827904af172",
+      "fields": {
+        "nota": [
+          "#114"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#114",
+          "normalized": "#111144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.reglas_pantallas",
+      "row_code": "9464",
+      "status": "UNKNOWN",
+      "source_sha": "714f9d38abae12029416e2b1be5a5a06823c0f4106df3df981b75a5b7e9e43a1",
+      "fields": {
+        "nota": [
+          "#114"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#114",
+          "normalized": "#111144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "row_code": "(4,5)",
+      "status": "UNKNOWN",
+      "source_sha": "85e7e8d2151bbb0e677258fb6f5539f19517b5bd5868e749ffd4dba839cbeee5",
+      "fields": {
+        "compact_summary": [
+          "#414"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "row_code": "(5,1)",
+      "status": "UNKNOWN",
+      "source_sha": "6d4530c33ecc1d3a8f7a5ee37b70948d1c0806169afe1455298c5277b2ba1fca",
+      "fields": {
+        "compact_summary": [
+          "#414"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "row_code": "(5,3)",
+      "status": "UNKNOWN",
+      "source_sha": "2c9f568a4b08fecfc09679e43a8524239cd4140f913ee36e3ead0f8065fe104f",
+      "fields": {
+        "compact_summary": [
+          "#414"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "row_code": "(7,5)",
+      "status": "UNKNOWN",
+      "source_sha": "e04be2d8b60c64bc365d8b949c3e86c39398fceeac82611bd08dfde1fa68bf5f",
+      "fields": {
+        "compact_summary": [
+          "#440"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#440",
+          "normalized": "#444400",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_queue",
+      "row_code": "(1,30)",
+      "status": "BLOCKED",
+      "source_sha": "4caf51b12b235ff243205ed2fac93812da18ccfc649bffbf91dd18656bf9e06f",
+      "fields": {
+        "asset_ref": [
+          "#425"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#425",
+          "normalized": "#442255",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_queue",
+      "row_code": "(1,31)",
+      "status": "VERIFIED",
+      "source_sha": "3ee830053013ffdc133b00b804504cc27000d62617606d75ebcac8f21d898fcf",
+      "fields": {
+        "asset_ref": [
+          "#418"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#418",
+          "normalized": "#441188",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "row_code": "(11,3)",
+      "status": "UNKNOWN",
+      "source_sha": "a6231ff500e8bd058192c8a63075d9fe67629730ba306fd663df3b458f252b0f",
+      "fields": {
+        "metrics": [
+          "#414",
+          "#411",
+          "#414"
+        ],
+        "report_md": [
+          "#414"
+        ],
+        "verification": [
+          "#408",
+          "#413"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        },
+        {
+          "original": "#411",
+          "normalized": "#441111",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        },
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        },
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        },
+        {
+          "original": "#408",
+          "normalized": "#440088",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        },
+        {
+          "original": "#413",
+          "normalized": "#441133",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "row_code": "(12,1)",
+      "status": "UNKNOWN",
+      "source_sha": "a60b9076868b4a98528c464cb2fb7f35bdd39e9926ac52f19fa5c90810a1c923",
+      "fields": {
+        "report_md": [
+          "#414"
+        ],
+        "scope_summary": [
+          "#414"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        },
+        {
+          "original": "#414",
+          "normalized": "#441144",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "row_code": "(5,1)",
+      "status": "UNKNOWN",
+      "source_sha": "3ceb7a7df0dffb30b6b414bf615008fa8d4665ea0353061fd6d8aa018432c02a",
+      "fields": {
+        "actions_taken": [
+          "#827"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#827",
+          "normalized": "#882277",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "row_code": "(7,2)",
+      "status": "UNKNOWN",
+      "source_sha": "4610de268231f9afa33b490c95c5f0d0916cd9bfdda2af1637978cb7a887d451",
+      "fields": {
+        "report_md": [
+          "#370"
+        ]
+      },
+      "literals": [
+        {
+          "original": "#370",
+          "normalized": "#337700",
+          "kind": "HEX3",
+          "existing_tokens": [],
+          "proposed_token_missing": null,
+          "flag": "NON_COLOR_REFERENCE_ID"
+        }
+      ],
+      "classification": "AUDIT_REFERENCE_ID_NOT_COLOR"
+    }
+  ],
+  "unmapped_color_values": [
+    "#D7DEE8",
+    "#DDE2E8",
+    "#F1F7F1",
+    "#F4F8F3",
+    "#F7F5F0",
+    "#F7F9F6",
+    "#F8FAFC",
+    "#FCFAFB",
+    "#FEFCFA",
+    "#FEFDFA"
+  ],
+  "proposed_token_names_not_created": {
+    "#D7DEE8": "route_future_segment_soft",
+    "#F8FAFC": "cool_surface_soft",
+    "#F4F8F3": "client_watermark_composite_low",
+    "#F7F9F6": "client_watermark_composite_high",
+    "#F1F7F1": "client_watermark_legacy_tint",
+    "#F7F5F0": "warm_surface_legacy_variant",
+    "#FEFCFA": "warm_surface_nearwhite_variant",
+    "#FEFDFA": "warm_surface_soft_variant",
+    "#FCFAFB": "soft_rose_cool_surface",
+    "#DDE2E8": "cool_border_qa_reference"
+  },
+  "identity_verified": false,
+  "live_writes": 0,
+  "scanned_tables": [
+    "lf_design.brand_assets",
+    "lf_design.clean_handoffs",
+    "lf_design.color_tokens",
+    "lf_design.component_tokens",
+    "lf_design.design_systems",
+    "lf_design.icon_catalog",
+    "lf_design.responsive_tokens",
+    "lf_design.spacing_tokens",
+    "lf_design.theme_bindings",
+    "lf_design.typography_tokens",
+    "lf_design.visual_decisions",
+    "lf_ops.analytics_eventos_definicion",
+    "lf_ops.analytics_eventos_parametros",
+    "lf_ops.analytics_pantallas",
+    "lf_ops.app_shells",
+    "lf_ops.aprobaciones_registros",
+    "lf_ops.auditoria_eventos",
+    "lf_ops.b2b_corporate_group_companies",
+    "lf_ops.b2b_corporate_groups",
+    "lf_ops.b2b_user_company_assignments",
+    "lf_ops.b2b_user_company_permissions",
+    "lf_ops.b2b_user_company_profiles",
+    "lf_ops.campos",
+    "lf_ops.campos_pantallas",
+    "lf_ops.campos_validaciones",
+    "lf_ops.cargas_archivos",
+    "lf_ops.cargas_lotes",
+    "lf_ops.dispositivos_confiables",
+    "lf_ops.empresa_usuarios",
+    "lf_ops.empresa_usuarios_perfiles",
+    "lf_ops.empresa_usuarios_permisos",
+    "lf_ops.empresas",
+    "lf_ops.entidades_b2b",
+    "lf_ops.errores_catalogo",
+    "lf_ops.errores_ocurrencias",
+    "lf_ops.errores_pantallas",
+    "lf_ops.estados_catalogo",
+    "lf_ops.estados_transiciones",
+    "lf_ops.mensajes_pantallas",
+    "lf_ops.mensajes_ui",
+    "lf_ops.menu_items",
+    "lf_ops.menu_items_permisos",
+    "lf_ops.modelos_priorizacion",
+    "lf_ops.modelos_priorizacion_historial",
+    "lf_ops.modulos",
+    "lf_ops.observabilidad_alertas",
+    "lf_ops.observabilidad_proveedores",
+    "lf_ops.otp_entrega_eventos",
+    "lf_ops.otp_operaciones",
+    "lf_ops.otp_politicas",
+    "lf_ops.pantalla_artefactos",
+    "lf_ops.pantalla_elementos",
+    "lf_ops.pantalla_variantes",
+    "lf_ops.pantallas",
+    "lf_ops.pantallas_estados",
+    "lf_ops.pantallas_perfiles",
+    "lf_ops.pantallas_permisos",
+    "lf_ops.pantallas_politicas",
+    "lf_ops.pantallas_politicas_reglas",
+    "lf_ops.perfiles",
+    "lf_ops.perfiles_permisos",
+    "lf_ops.permisos",
+    "lf_ops.politicas_aprobacion",
+    "lf_ops.politicas_rate_limit",
+    "lf_ops.politicas_seguridad",
+    "lf_ops.politicas_sesion",
+    "lf_ops.politicas_timeout",
+    "lf_ops.qa_auditorias",
+    "lf_ops.qa_hallazgos",
+    "lf_ops.reglas",
+    "lf_ops.reglas_pantallas",
+    "lf_ops.relacion_tipos",
+    "lf_ops.relaciones_b2b",
+    "lf_ops.rutas",
+    "lf_ops.soporte_canales",
+    "lf_ops.system_audit_campaigns",
+    "lf_ops.system_audit_findings",
+    "lf_ops.system_audit_human_decisions",
+    "lf_ops.system_audit_messages",
+    "lf_ops.system_audit_premises",
+    "lf_ops.system_audit_queue",
+    "lf_ops.system_audit_runs",
+    "lf_ops.telemetria_dispatch_log",
+    "lf_ops.validacion_incidencias"
+  ],
+  "reusable_policy_registry_rows": 1,
+  "reusable_policy_registry_matches": 0,
+  "hex3_reference_ids_not_colors": [
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "ref": "B2B-CARGA-001-HISTORIAL-DESKTOP-LIGHT-V0-1-CANDIDATO-20260901",
+      "literals": [
+        "#402"
+      ]
+    },
+    {
+      "source": "lf_ops.reglas_pantallas",
+      "ref": "9463",
+      "literals": [
+        "#114"
+      ]
+    },
+    {
+      "source": "lf_ops.reglas_pantallas",
+      "ref": "9464",
+      "literals": [
+        "#114"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(4,5)",
+      "literals": [
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(5,1)",
+      "literals": [
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(5,3)",
+      "literals": [
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(7,5)",
+      "literals": [
+        "#440"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_queue",
+      "ref": "(1,30)",
+      "literals": [
+        "#425"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_queue",
+      "ref": "(1,31)",
+      "literals": [
+        "#418"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(11,3)",
+      "literals": [
+        "#414",
+        "#411",
+        "#414",
+        "#414",
+        "#408",
+        "#413"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(12,1)",
+      "literals": [
+        "#414",
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(5,1)",
+      "literals": [
+        "#827"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(7,2)",
+      "literals": [
+        "#370"
+      ]
+    }
+  ]
+}
