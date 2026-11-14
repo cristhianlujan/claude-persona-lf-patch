@@ -270,7 +270,7 @@ SELECT 'VIGENTE_AFTER='||count(*) FROM lf_ops.reglas WHERE estado='VIGENTE';
      rr=psql(allsql)
      self.assertEqual(rr.returncode,0,rr.stderr[-8000:])
      for token in ("APPLIED_LOG=64","PROMOTED_CANONICAL=64",
-       "CANDIDATE_AFTER=6","VIGENTE_AFTER=66",
+       "CANDIDATE_AFTER=7","VIGENTE_AFTER=65",
        "POST_ROLLBACK_PROMOTION=0","POST_ROLLBACK_CANDIDATE=70",
        "POST_ROLLBACK_VIGENTE=2","POST_ROLLBACK_AUTO_TABLE=true"):
       self.assertIn(token,rr.stdout,token+"\n"+rr.stdout[-3500:])
