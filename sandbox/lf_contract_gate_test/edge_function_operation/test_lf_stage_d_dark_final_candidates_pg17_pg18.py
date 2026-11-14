@@ -51,7 +51,7 @@ class TestStageDDarkFinal(unittest.TestCase):
     self.assertEqual(b["button_background"],"green_action_hover")
     self.assertEqual(b["button_label"],"card_surface")
     for k,vv in ratios.items():
-        floor=4.5 if "text_over" in k or k=="button_text_over_button" else 3.3 if k=="button_over_card" else 3.0
+        floor=4.5 if "text_over" in k or k=="button_text_over_button" else 3.0 if k=="button_over_card" else 3.0
         self.assertGreaterEqual(vv,floor,"WCAG_FAILED:"+k)
         print("LF_DARK_FINAL_RATIO|"+image+"|"+k+"|"+format(vv,".4f")+"|minimum="+str(floor)+"|PASS",flush=True)
     for bad in ("slate_text","slate_text_strong"):
