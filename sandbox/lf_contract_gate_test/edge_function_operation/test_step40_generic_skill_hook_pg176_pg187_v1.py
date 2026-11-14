@@ -17,7 +17,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20261114153500_lf_step40_generic_skill_hook_failopen_readonly_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20261114155757_lf_step40_generic_skill_hook_failopen_readonly_v1.sql"
 FIXTURE = Path(__file__).with_name("fixture_step40_live_bridge_preimage_pgdual.sql")
 NATIVE = ROOT / "scripts/lf_profile_native_resume.py"
 CALLER = ROOT / "supabase/functions/lf-profiles-governance-caller-v1/caller.ts"
@@ -119,12 +119,12 @@ class BoundedSkillTransport(unittest.TestCase):
             mod=importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
         with patch.object(mod.urllib.request,"urlopen",side_effect=TimeoutError("synthetic timeout")):
-            code,response=mod.call_json("https://mock.invalid",{"action":"profile_skill_runtime_v1"},timeout_seconds=18)
+            code,response=mod.call_json("https://mock.invalid",{"action":"profile_skill_runtime_v1","execution_id":"EXEC-TEST-READONLY","skill_code":"PROFILE_UPDATE_APPLY"},timeout_seconds=18)
             self.assertEqual(code,0)
             self.assertEqual(response["code"],"SKILL_RUNTIME_NETWORK_OR_DEADLINE")
             self.assertFalse(response["production_authorized"])
             with self.assertRaises(TimeoutError):
-                mod.call_json("https://mock.invalid",{"action":"profile_native_continue_v1"})
+                mod.call_json("https://mock.invalid",{"action":"profile_native_continue_v1","execution_id":"EXEC-TEST-READONLY","source_revision":"test-revision","source_digest":"test-digest"})
         self.assertIn("timeout_seconds=18",NATIVE.read_text("utf-8"))
     def test_bounded_edge_and_sql_hook_keep_readonly(self):
         ts=CALLER.read_text("utf-8")
