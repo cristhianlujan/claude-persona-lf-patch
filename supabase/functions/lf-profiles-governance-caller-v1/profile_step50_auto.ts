@@ -18,7 +18,7 @@ function object(x: unknown): x is Dict {
   return x !== null && typeof x === "object" && !Array.isArray(x);
 }
 function sha256(bytes: Uint8Array): Promise<string> {
-  return crypto.subtle.digest("SHA-256", bytes).then(b =>
+  return crypto.subtle.digest("SHA-256", new Uint8Array(bytes)).then(b =>
     [...new Uint8Array(b)].map(n => n.toString(16).padStart(2, "0")).join(""));
 }
 const sha = (v: string) => sha256(new TextEncoder().encode(v));
