@@ -115,7 +115,7 @@ class Skill14SourceFirstPgDual(unittest.TestCase):
                 self.assertEqual(ready.returncode,0)
                 def exec_sql(sql):
                     return subprocess.run(["docker","exec","-i",name,"psql",
-                       "-X","-A","-t","-U","postgres","-d","postgres"],
+                       "-v","ON_ERROR_STOP=1","-X","-A","-t","-U","postgres","-d","postgres"],
                        input=sql,capture_output=True,text=True,timeout=240)
                 a=exec_sql(SETUP+"\n"+HASH_SQL)
                 self.assertEqual(a.returncode,0,a.stderr[-3000:])
