@@ -693,7 +693,7 @@ export async function handleProfileContinuation(
     if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
       return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
     const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_for_run_v1", {
-      p_execution_id: e.execution_id, p_decision: semantic,
+      p_execution_id: e.execution_id, p_skill_selection: semantic,
     });
     if (planned.error) return planned.error;
     const plan = planned.result;
@@ -701,12 +701,12 @@ export async function handleProfileContinuation(
     // immutable RUN context; no extra Router pass, privilege or ticket is needed.
     // Explicit choices (0..2) are validated and immutably bound by SQL.
     if (semantic !== null) {
-      const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_run_bind_v1", {
-        p_execution_id:e.execution_id, p_decision:semantic,
+      const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_bind_for_run_v1", {
+        p_execution_id:e.execution_id, p_selection:semantic,
         p_actor_execution_id:e.execution_id,
       });
       if (bound.error) return bound.error;
-      if (!["BOUND","ALREADY_BOUND"].includes(String(bound.result?.status??""))) {
+      if (!bound.result?.status === "BOUND") {
         return respond({outcome:"BLOCKED",phase:"SKILL_SELECTION_CONTRACT",
           code:String(bound.result?.blocking_code??"SKILL_SELECTION_BIND_INVALID"),
           execution_id:e.execution_id},409);
@@ -730,12 +730,13 @@ export async function handleProfileContinuation(
       source_revision_required: callerRevision,
       operation_plan: plan,
       skill_selection_request:{
-        status:plan?.skill_selection_status??"SKILL_SELECTION_REQUESTED",
-        finding_code:(plan?.selection_receipt as Payload|undefined)?.content_findings,
-        selected_skill_codes:plan?.selected_skill_codes??[],
+        status:(plan?.selection_receipt as Payload|undefined)?.finding_status??"READY",
+        finding_code:plan?.finding_code??null,
+        selected_skill_codes:(plan?.skills as Payload[]).map(x=>String(x.skill_code??"")),
         skill_candidates:plan?.skill_candidates??[],
         continuation_allowed:true,
-        next_action:"SUBMIT_SKILL_SELECTION",
+        next_action:plan?.next_action??"CONTINUE_PROFILE",
+        run_context:plan?.skill_selection_context??null,
         input_required_filter:"RUN_BOUND_CURRENT_STEP",
       },
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
