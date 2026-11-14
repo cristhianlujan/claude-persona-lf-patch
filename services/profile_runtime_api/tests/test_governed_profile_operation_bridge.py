@@ -557,6 +557,109 @@ ROLLBACK;
 SELECT 'ROLLBACK_EMPTY=' ||
  CASE WHEN to_regclass('pg_temp.lf_step50_simulated_steps') IS NULL THEN 'true' ELSE 'false' END;
 """
+                # The minimal user string supplies NO step IDs or skill names.
+                # Candidate operation SQL resolves both from isolated PostgreSQL tables
+                # seeded with the exact 11-step SELECT readback (not the user prompt).
+                minimum = "Ejecuta EJECUCION_PERFIL_LF para <solicitud + contexto>"
+                self.assertNotIn("step 40", minimum)
+                self.assertNotIn("IG_CONTEXT_PACK", minimum)
+                migration = Path(__file__).resolve().parents[3] / (
+                    "supabase/migrations/20261114020000_lf_profile_step40_ig_profile_owned_v1.sql")
+                operation_sql = migration.read_text(encoding="utf-8")
+                operation_sql = operation_sql.replace("\nBEGIN;\n", "\n").replace("\nCOMMIT;\n", "\n")
+                generic_setup = r"""
+BEGIN;
+CREATE TABLE public.lf_activos(
+ codigo_activo text, tipo_activo text, archived_at timestamptz, metadata jsonb
+);
+CREATE TABLE public.lf_operation_steps(
+ operation_code text, step_order integer, step_id text, active boolean,
+ required boolean, resolver_ref text
+);
+CREATE TABLE public.lf_operation_step_contracts(
+ operation_code text, step_id text, status text, resolver_ref text,
+ required_evidence_keys jsonb, next_if_pass text, next_if_blocked text
+);
+CREATE TABLE public.lf_activo_relaciones(
+ id integer GENERATED ALWAYS AS IDENTITY, codigo_activo text,
+ relacionado_codigo text, relacion_tipo text
+);
+CREATE TABLE public.lf_skill_catalog_v1(
+ skill_code text, required_operation text, handler_fn text, effect text, status text
+);
+INSERT INTO public.lf_activos VALUES
+ ('PERFIL-IG-TEST','PERFIL',NULL,'{"input_governance_binding_mode":"DIRECT_PROFILE"}'),
+ ('PERFIL-OTRA-SKILL-TEST','PERFIL',NULL,'{}');
+-- Exact 11 row STEP ORDER/NAME read from active canonical DB via SELECT.
+INSERT INTO public.lf_operation_steps VALUES
+ ('EJECUCION_PERFIL_LF',0,'init_execution',true,true,'public.lf_profile_execution_begin_v1'),
+ ('EJECUCION_PERFIL_LF',10,'router',true,true,'public.lf_router_resolve_v1'),
+ ('EJECUCION_PERFIL_LF',20,'profile_resolve',true,true,'CANONICAL_PROFILE_ASSET_RESOLUTION'),
+ ('EJECUCION_PERFIL_LF',30,'profile_source_read',true,true,'EXACT_PROFILE_SOURCE_READBACK'),
+ ('EJECUCION_PERFIL_LF',40,'input_validate',true,true,'OPERATION_BOUND_INPUT_VALIDATE'),
+ ('EJECUCION_PERFIL_LF',45,'context_admission',true,true,'OPERATION_CONTEXT_ADMISSION'),
+ ('EJECUCION_PERFIL_LF',47,'research_baseline_freeze',true,true,'OPERATION_RESEARCH_BASELINE'),
+ ('EJECUCION_PERFIL_LF',50,'execute_profile',true,true,'SELECTED_PROFILE_MODEL_RUNTIME'),
+ ('EJECUCION_PERFIL_LF',60,'output_validate',true,true,'BOUND_PROFILE_OUTPUT_VALIDATOR'),
+ ('EJECUCION_PERFIL_LF',70,'semantic_judge',true,true,'BOUND_SEMANTIC_JUDGE'),
+ ('EJECUCION_PERFIL_LF',80,'report_output',true,true,'DETERMINISTIC_REPORT_OUTPUT');
+INSERT INTO public.lf_operation_step_contracts
+ SELECT operation_code,step_id,'ACTIVE_ENFORCEMENT',resolver_ref,'["fixture_only"]'::jsonb,
+        lead(step_id) OVER (PARTITION BY operation_code ORDER BY step_order),NULL
+ FROM public.lf_operation_steps;
+INSERT INTO public.lf_skill_catalog_v1 VALUES
+ ('IG_CONTEXT_PACK','EJECUCION_PERFIL_LF','mock_readonly_ig','READ_ONLY','READY'),
+ ('OTRA_SKILL_FICTICIA','EJECUCION_PERFIL_LF','mock_readonly_other','READ_ONLY','READY');
+"""
+                generic_verify = r"""
+SELECT 'BLOCKED_LEGACY=' || (public.lf_profile_execution_plan_v1('PERFIL-IG-TEST')->>'blocking_code');
+INSERT INTO public.lf_activo_relaciones(codigo_activo,relacionado_codigo,relacion_tipo) VALUES
+ ('PERFIL-IG-TEST','IG_CONTEXT_PACK','USA_SKILL'),
+ ('PERFIL-OTRA-SKILL-TEST','OTRA_SKILL_FICTICIA','USA_SKILL');
+SELECT 'PLAN_IG=' || (p->>'status') || '|' ||
+       jsonb_array_length(p->'steps') || '|' || (p#>>'{skills,0,skill_code}')
+ FROM (SELECT public.lf_profile_execution_plan_v1('PERFIL-IG-TEST') AS p) x;
+SELECT 'PLAN_OTHER=' || (p->>'status') || '|' ||
+       jsonb_array_length(p->'steps') || '|' || (p#>>'{skills,0,skill_code}')
+ FROM (SELECT public.lf_profile_execution_plan_v1('PERFIL-OTRA-SKILL-TEST') AS p) x;
+CREATE TEMP TABLE simulated_operation_ledger(
+ run_id text, step_order int, step_id text, status text
+) ON COMMIT DROP;
+INSERT INTO simulated_operation_ledger
+ SELECT pr.run_id, (step->>'step_order')::int,step->>'step_id','STEP_PASS_WITH_EVIDENCE'
+ FROM (VALUES ('SIM-IG','PERFIL-IG-TEST'),('SIM-OTHER','PERFIL-OTRA-SKILL-TEST'))
+ pr(run_id,profile_code)
+ CROSS JOIN LATERAL public.lf_profile_execution_plan_v1(pr.profile_code) plan
+ CROSS JOIN LATERAL jsonb_array_elements(plan->'steps') step;
+DO $generic_check$
+DECLARE r record; p jsonb; n int;
+BEGIN
+ FOR r IN (SELECT * FROM (VALUES('SIM-IG','PERFIL-IG-TEST','IG_CONTEXT_PACK'),
+                        ('SIM-OTHER','PERFIL-OTRA-SKILL-TEST','OTRA_SKILL_FICTICIA'))
+           AS x(run_id,profile_code,expected_skill)) LOOP
+   p:=public.lf_profile_execution_plan_v1(r.profile_code);
+   SELECT count(*) INTO n FROM simulated_operation_ledger WHERE run_id=r.run_id;
+   IF n<>11 OR jsonb_array_length(p->'skills')<>1
+      OR p#>>'{skills,0,skill_code}' IS DISTINCT FROM r.expected_skill
+      OR p->>'operation_code' IS DISTINCT FROM 'EJECUCION_PERFIL_LF'
+      OR (p->>'model_external_api')::boolean IS DISTINCT FROM false
+      OR EXISTS(SELECT 1 FROM
+         (SELECT step->>'next_if_pass' next_id,
+           lead(step->>'step_id') OVER(ORDER BY ord) expected_next
+          FROM jsonb_array_elements(p->'steps') WITH ORDINALITY AS z(step,ord)) c
+        WHERE c.next_id IS DISTINCT FROM c.expected_next)
+   THEN RAISE EXCEPTION 'GENERIC_DB_PLAN_NOT_VERIFIED:%',r.run_id; END IF;
+ END LOOP;
+END $generic_check$;
+SELECT 'GENERIC_DB_PLAN_PASS='||run_id||'|'||count(*)||'/11' FROM simulated_operation_ledger
+ GROUP BY run_id ORDER BY run_id;
+ROLLBACK;
+SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
+ CASE WHEN to_regclass('public.lf_operation_steps') IS NULL
+     AND to_regclass('pg_temp.simulated_operation_ledger') IS NULL THEN 'true' ELSE 'false' END;
+"""
+                sql += "\n" + generic_setup + "\n" + operation_sql + "\n" + generic_verify
+
                 for readiness_attempt in range(25):
                     run = subprocess.run(
                         ["docker", "exec", "-i", name, "psql", "-X", "-A", "-t",
@@ -582,6 +685,13 @@ SELECT 'ROLLBACK_EMPTY=' ||
                 actual = [s for s in values if s.startswith(tuple(str(n) + "|" for n, _ in labels))]
                 self.assertEqual(actual, expected)
                 self.assertIn("ROLLBACK_EMPTY=true", values)
+                self.assertIn("BLOCKED_LEGACY=PROFILE_LEGACY_DEPENDENCY_NOT_EXECUTABLE", values)
+                self.assertIn("PLAN_IG=READY|11|IG_CONTEXT_PACK", values)
+                self.assertIn("PLAN_OTHER=READY|11|OTRA_SKILL_FICTICIA", values)
+                self.assertIn("GENERIC_DB_PLAN_PASS=SIM-IG|11/11", values)
+                self.assertIn("GENERIC_DB_PLAN_PASS=SIM-OTHER|11/11", values)
+                self.assertIn("ROLLBACK_GENERIC_EMPTY=true", values)
+                print(f"PASS_GENERIC_DB_PLAN_PG_{version} IG=11/11 OTHER=11/11 ROLLBACK=true", flush=True)
                 print(f"PASS_STEP50_SIMULATED_PG_{version} 11/11 ROLLBACK_EMPTY=true", flush=True)
                 for step in actual:
                     print(f"PG_{version}_STEP {step}", flush=True)
