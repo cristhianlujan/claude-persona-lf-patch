@@ -566,7 +566,7 @@ SELECT 'ROLLBACK_EMPTY=' ||
                 migration = Path(__file__).resolve().parents[3] / (
                     "supabase/migrations/20261114020000_lf_profile_skill_dynamic_selection_v1.sql")
                 operation_sql = migration.read_text(encoding="utf-8")
-                operation_sql = operation_sql.replace("\nBEGIN;\n", "\n").replace("\nCOMMIT;\n", "\n")
+                operation_sql = operation_sql.split("-- INTEGRATED_OFFICIAL_STEP80_REPORT_V1_SINGLE_TRANSACTION", 1)[0]\n                operation_sql = operation_sql.replace("\nBEGIN;\n", "\n").replace("\nCOMMIT;\n", "\n")
                 generic_setup = r"""
 BEGIN;
 CREATE ROLE anon NOLOGIN;
@@ -882,7 +882,7 @@ class IgBlockedFindingsReportPg17Pg18(unittest.TestCase):
         import time
         import uuid
         self.assertIsNotNone(shutil.which("docker"), "NOT_TESTED_NO_DOCKER")
-        report_path = ROOT / "supabase/migrations/20261114023000_lf_profile_readonly_ig_findings_report_v1.sql"
+        report_path = ROOT / "supabase/migrations/20261114020000_lf_profile_skill_dynamic_selection_v1.sql"
         candidate = report_path.read_text(encoding="utf-8")
         self.assertIn("cafaaff15eb0751a9af0cfb67db3c30b", candidate)
         report_ddl = candidate[candidate.index("CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_record_report_v1("):
