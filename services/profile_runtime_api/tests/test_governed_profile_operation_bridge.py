@@ -1445,5 +1445,142 @@ class UiArchitectBoundCliStdoutRegression(unittest.TestCase):
         self.assertEqual(receipt["validator_exit_code"], 0)
         self.assertEqual(receipt["validator_errors"], [])
 
+
+class ProfileSelectedStep40SyntaxPg17Pg18(unittest.TestCase):
+    """Apply every new A SQL function to PG17.6 and PG18.7 in an isolated rollback.
+    This intentionally tests FUNCTION BODY parsing, which existing PASE did not.
+    Real Router/IG runtime E2E must remain a separate gate, not implied here.
+    """
+    def test_a_new_sql_functions_parse_and_rollback(self):
+        import hashlib
+        import re
+        import shutil
+        import subprocess
+        import time
+        import uuid
+
+        self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED_FOR_PG")
+        migration = (ROOT / "supabase/migrations/"
+            "20261114050000_lf_profile_skill_step40_policy_v1.sql").read_text()
+        rx = re.compile(
+            r"(?ms)^CREATE OR REPLACE FUNCTION\s+(.+?)\nAS \$(?P<tag>\w+)\$"
+            r"(?P<body>.*?)\$(?P=tag)\$;"
+        )
+        # The function signature may have a newline before RETURNS; use the
+        # exact PostgreSQL dollar-quoted definition, not a SQL token guess.
+        definitions = []
+        start_re = re.compile(r"(?m)^CREATE OR REPLACE FUNCTION ")
+        offsets = [m.start() for m in start_re.finditer(migration)]
+        for i, at in enumerate(offsets):
+            segment = migration[at:offsets[i + 1] if i + 1 < len(offsets)
+                                else len(migration)]
+            delim = re.search(r"\bAS \$([A-Za-z_][A-Za-z0-9_]*)\$", segment)
+            self.assertIsNotNone(delim, segment[:250])
+            tag = delim.group(1)
+            close = segment.find("$" + tag + "$;", delim.end())
+            self.assertGreater(close, 0, segment[:250])
+            definitions.append(segment[:close + len(tag) + 3])
+        self.assertGreaterEqual(len(definitions), 7)
+        for func in definitions:
+            self.assertIn("CREATE OR REPLACE FUNCTION", func)
+
+        table_begin = migration.index(
+            "CREATE TABLE private.lf_profile_skill_runtime_ticket_v1 (")
+        table_end = migration.index("\n);", table_begin) + len("\n);")
+        ticket_ddl = migration[table_begin:table_end]
+        self.assertIn("SKILL_RUNTIME_CATALOG_SLUG_MISMATCH", migration)
+        self.assertIn("ALTER TABLE public.lf_skill_catalog_v1 ADD COLUMN", migration)
+        self.assertNotIn("!~ '^[a-z0-9][a-z0-9-]{0,62}\n", migration)
+
+        setup = """
+\\set ON_ERROR_STOP on
+CREATE SCHEMA IF NOT EXISTS private;
+CREATE SCHEMA IF NOT EXISTS programacion;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+CREATE TABLE public.lf_operation_execution(
+ execution_id text, operation_code text, target_type text, target_code text,
+ status text, manifest jsonb, request_sha256 text,
+ created_by_execution_id text, created_at timestamptz DEFAULT now()
+);
+CREATE TABLE public.lf_skill_invocation_v1(
+ skill_run_id text, skill_code text, parent_execution_id text, profile_code text,
+ status text, blocking_code text, input_sha256 text, output jsonb,
+ evidence_ref text, child_execution_id text
+);
+CREATE TABLE public.lf_skill_catalog_v1(
+ skill_code text, status text, required_operation text, handler_fn text,
+ effect text, input_required text[], opener_fn text
+);
+CREATE TABLE public.lf_profile_skill_selection_receipt_v1(
+ skill_run_id text, parent_execution_id text, skill_code text, profile_code text,
+ channel text, selection_mode text, selection_evidence jsonb,
+ selection_sha256 text
+);
+"""
+        setup += ticket_ddl + "\n"
+        fn_names = (
+            "lf_profile_execution_input_validate_v1",
+            "lf_skill_h_input_governance_context_pack_v1",
+            "lf_skill_invoke_v1",
+            "lf_profile_skill_invoke_selected_v1",
+            "lf_profile_native_bridge_prepare_v1",
+            "lf_profile_skill_runtime_ticket_issue_v1",
+            "lf_profile_skill_runtime_ticket_consume_v1",
+        )
+        for name in fn_names:
+            self.assertIn("FUNCTION public." + name + "(", migration)
+
+        before = "CASE WHEN count(*)=0 THEN 'EMPTY' ELSE 'NOT_EMPTY' END"
+        name_filter = ",".join("'" + name + "'" for name in fn_names)
+        query = " FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname IN (" + name_filter + ")"
+        for image, version in (("postgres:17.6", "17.6"),
+                               ("postgres:18.7", "18.7")):
+            name = "lf-step40-sql-" + uuid.uuid4().hex[:12]
+            started = subprocess.run(
+                ["docker", "run", "-d", "--rm", "--name", name,
+                 "-e", "POSTGRES_PASSWORD=local-fixture-only", image],
+                capture_output=True, text=True, timeout=240
+            )
+            self.assertEqual(started.returncode, 0, started.stderr[-700:])
+            try:
+                for _ in range(90):
+                    ready = subprocess.run(
+                        ["docker", "exec", name, "pg_isready", "-U", "postgres"],
+                        capture_output=True, timeout=10
+                    )
+                    if ready.returncode == 0:
+                        break
+                    time.sleep(1)
+                self.assertEqual(ready.returncode, 0, "PG_NOT_READY")
+                statement = (
+                    setup + "\n"
+                    + "SELECT 'PRE='||" + before + query + ";\n"
+                    + "BEGIN;\n"
+                    + "\n".join(definitions) + "\n"
+                    + "SELECT 'DURING='||count(*)::text" + query + ";\n"
+                    + "ROLLBACK;\n"
+                    + "SELECT 'AFTER='||" + before + query + ";\n"
+                )
+                result = subprocess.run(
+                    ["docker", "exec", "-i", name, "psql", "-X", "-A",
+                     "-t", "-U", "postgres", "-d", "postgres"],
+                    input=statement, capture_output=True, text=True, timeout=240
+                )
+                self.assertEqual(result.returncode, 0,
+                    "PG" + version + "\n" + result.stderr[-5500:] +
+                    "\nOUTPUT\n" + result.stdout[-2400:])
+                lines = [x.strip() for x in result.stdout.splitlines()]
+                self.assertIn("PRE=EMPTY", lines)
+                self.assertIn("DURING=" + str(len(fn_names)), lines)
+                self.assertIn("AFTER=EMPTY", lines)
+                print("PASS_PROFILE_STEP40_SYNTAX_PG_" + version
+                    + " functions=" + str(len(fn_names))
+                    + " ROLLBACK=true", flush=True)
+            finally:
+                subprocess.run(["docker", "rm", "-f", name],
+                    capture_output=True, timeout=45)
+
+
 if __name__ == "__main__":
     unittest.main()
