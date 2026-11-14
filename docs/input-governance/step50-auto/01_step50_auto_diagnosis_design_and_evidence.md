@@ -31,14 +31,14 @@
 
 ## Matriz candidata: 10 perfiles canónicos (SELECT, sin autoridad adicional)
 El SELECT del 14-nov-2026 observó **10 perfiles CURRENT** en
-\`lf_profile_selection_registry_v1\`; canales recuperados de
-\`lf_profile_selector_policy_v1\`. Esta política **no se activa**:
-\`lf_skill_selector_policy_v1.enabled=false\` y
-\`owner_decision_required=true\` en cada asociación nueva.
-\`INPUT_GOVERNANCE_CONTEXT_PACK\` permanece catálogo DRAFT y descriptor STALE.
+`lf_profile_selection_registry_v1`; canales recuperados de
+`lf_profile_selector_policy_v1`. Esta política **no se activa**:
+`lf_skill_selector_policy_v1.enabled=false` y
+`owner_decision_required=true` en cada asociación nueva.
+`INPUT_GOVERNANCE_CONTEXT_PACK` permanece catálogo DRAFT y descriptor STALE.
 La selección determinista de IG se permite únicamente después de que la
 aplicabilidad oficial de cada solicitud sea positiva; el histórico
-\`NOT_REQUIRED\` nunca se transforma automáticamente en una ejecución.
+`NOT_REQUIRED` nunca se transforma automáticamente en una ejecución.
 
 | Perfil observado | Canal(es) vigente(s) | IG candidata | Otras skills candidatas según rol/fuentes |
 |---|---|---|---|
@@ -54,10 +54,10 @@ aplicabilidad oficial de cada solicitud sea positiva; el histórico
 | PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531 | PRODUCTO | Condicional, decisión humana | SCREEN_RULES_SNAPSHOT, semántica si hay pantalla autorizada |
 
 **Fuente de decisiones**: los descriptores de roles y políticas por canal están CURRENT
-en el selector de perfiles. \`SCREEN_RULES_SNAPSHOT\` es la única skill del
-catálogo vivo con \`required_operation='EJECUCION_PERFIL_LF'\`, \`READ_ONLY\`,
-\`READY\`, con entrada \`pantalla_codigo\`. \`PROFILE_UPDATE_APPLY\` exige
-\`ACTUALIZACION_PERFIL_LF\`, \`WRITE_GOVERNED\` y las autorizaciones existentes.
+en el selector de perfiles. `SCREEN_RULES_SNAPSHOT` es la única skill del
+catálogo vivo con `required_operation='EJECUCION_PERFIL_LF'`, `READ_ONLY`,
+`READY`, con entrada `pantalla_codigo`. `PROFILE_UPDATE_APPLY` exige
+`ACTUALIZACION_PERFIL_LF`, `WRITE_GOVERNED` y las autorizaciones existentes.
 No se deriva permiso de escritura de un descriptor ni del Router.
 Todo uso de IG en los otros 9 perfiles, y la activación de las skills opcionales,
 está sujeto a **DECISIÓN HUMANA** con evidencia de aplicabilidad y fuentes actuales.
@@ -69,13 +69,13 @@ está sujeto a **DECISIÓN HUMANA** con evidencia de aplicabilidad y fuentes act
 - PRODUCT-DIRECTOR 17 completados: **16 DIRECT_PROFILE** (13 IG READY,
   3 IG BLOCKED) y **1 NOT_REQUIRED**. No afirmar 17 invocaciones materiales.
 - Baseline real **solo lectura**:
-  \`EXEC-PROFILE-GATE2-EA0514AD005350958C4D6E9C\` →
-  \`COMPLETED\`, 11/11 STEP_PASS_WITH_EVIDENCE, IG \`READY\`,
-  \`CONTEXT_PACK\`, \`B2B-AUTH-001\`, IG run \`949\`, MD5 JSONB canónico
-  \`d9c0ac3a8e917fb67c7d24e7d8d2bf7d\`.
+  `EXEC-PROFILE-GATE2-EA0514AD005350958C4D6E9C` →
+  `COMPLETED`, 11/11 STEP_PASS_WITH_EVIDENCE, IG `READY`,
+  `CONTEXT_PACK`, `B2B-AUTH-001`, IG run `949`, MD5 JSONB canónico
+  `d9c0ac3a8e917fb67c7d24e7d8d2bf7d`.
 - PG17.6 y PG18.7: baseline copiado a transacción aislada; el plan genérico
   obtiene los once pasos y conserva sin cambios el MD5 de evidencia previo;
-  resultado \`SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED\`. Es una
+  resultado `SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED`. Es una
   **comparación de transferencia documental y estructura**, **no** una
   re-ejecución del resolver/handler ni una equivalencia funcional E2E.
   La función desplegada todavía tiene la lógica fija de IG en input_validate;
@@ -86,16 +86,16 @@ está sujeto a **DECISIÓN HUMANA** con evidencia de aplicabilidad y fuentes act
   IG por política determinista 10/10; FICTICIA_SEMANTICA por descriptor 10/10;
   ambigüedad bloqueada 10/10 y stale bloqueado 10/10; 20 RUN
   **simulados** × 11 pasos = 220 por motor, con ROLLBACK. Los fixtures
-  simulan \`enabled=true\` y \`owner_decision_required=false\` **solo dentro
+  simulan `enabled=true` y `owner_decision_required=false` **solo dentro
   de la transacción de laboratorio**, nunca como decisión real.
 
 ### Decisiones humanas fuera del lote
 - Determinar aplicabilidad y perfiles autorizados para IG por canal y operación
-  (y cómo conservar el caso histórico \`NOT_REQUIRED\`).
+  (y cómo conservar el caso histórico `NOT_REQUIRED`).
 - Aceptar o rechazar las asociaciones SCREEN_RULES_SNAPSHOT y
   PROFILE_UPDATE_APPLY propuestas; exigir entrada autorizada y origen actual.
 - Aprobar fuente, handler, descriptor y política de IG antes de cambiar
-  \`DRAFT\`/\`STALE\` a READY/CURRENT; sin autorización, no invocar.
+  `DRAFT`/`STALE` a READY/CURRENT; sin autorización, no invocar.
 - Validar en una copia íntegra el resolver fijo y el handler genérico sobre
   **el mismo** contexto fuente/vigencia para acreditar igualdad de evidencia,
   el RUN 0→80 y el recibo terminal.
