@@ -304,13 +304,23 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
     if (resolved.error) return resolved.error;
     skillInput = { ...cleanInput, _trusted: resolved.context };
   }
+  // The authenticated RUN owns channel+profile. Resolve and attest the skill
+  // against DB policy+CURRENT descriptor before calling the EXISTING SQL invoker.
+  const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
+  const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
+  const semantic = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision")
+    ? body.skill_semantic_decision : null;
+  if (!["PRODUCTO", "PROGRAMACION", "OPERACIONES"].includes(channel))
+    return blocked("PROFILE_SKILL_ROUTER_CHANNEL_UNRESOLVED", 409);
+  if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
+    return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
   let response: Response;
   try {
-    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_skill_invoke_v1`, {
+    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_invoke_selected_v1`, {
       method: "POST",
       headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`, "content-type": "application/json" },
-      // The parent is always the authenticated, read-only profile execution, never a caller-supplied id.
-      body: JSON.stringify({ p_skill: skill, p_execution_id: e.execution_id, p_input: skillInput }),
+      body: JSON.stringify({ p_execution_id: e.execution_id, p_channel: channel,
+        p_skill_code: skill, p_input: skillInput, p_semantic_decision: semantic }),
       signal: AbortSignal.timeout(30_000),
     });
   } catch { return blocked("PROFILE_SKILL_INVOKE_TRANSPORT_FAILED", 502); }
@@ -319,6 +329,13 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
     // The invoker raises explicit, human-readable block reasons (what is missing and where): pass them on.
     const detail = typeof data?.message === "string" ? data.message.slice(0, 400) : null;
     return respond({ outcome: "BLOCKED", code: "PROFILE_SKILL_INVOKE_REJECTED", skill_code: skill, execution_id: e.execution_id, detail }, 409);
+  }
+  // Official SQL invoker can fail closed with HTTP 200 + status BLOCKED/FAILED.
+  // Never convert that response into a successful profile skill invocation.
+  if (!data || data.status === "BLOCKED" || data.status === "FAILED") {
+    return respond({outcome:"BLOCKED",
+      code:typeof data?.blocking_code==="string" ? data.blocking_code : "PROFILE_SKILL_INVOKER_NOT_COMPLETED",
+      skill_code:skill,execution_id:e.execution_id},409);
   }
   return respond({ outcome: "SKILL_INVOKED", skill_code: skill, execution_id: e.execution_id, profile_code: e.target_code, result: data });
 }
@@ -663,6 +680,36 @@ export async function handleProfileContinuation(
   const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId);
   if (error || !e) return error ?? blocked("PROFILE_CONTINUATION_EXECUTION_NOT_FOUND");
   if (action === PROFILE_SOURCE_BIND_ACTION) {
+    // Operation-owned DB plan. Router supplies selected profile ONLY: never trust
+    // skill lists or step order from a request, chat prompt or Router payload.
+    const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
+    const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
+    const semantic = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision")
+      ? body.skill_semantic_decision : null;
+    if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
+      return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
+    const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_v1", {
+      p_profile_code: e.target_code, p_channel: channel, p_semantic_decision: semantic,
+    });
+    if (planned.error) return planned.error;
+    const plan = planned.result;
+    if (plan?.status === "SEMANTIC_SELECTION_REQUIRED" && plan?.profile_code === e.target_code) {
+      const selection = plan.selection_receipt as Payload | undefined;
+      return respond({outcome:"SKILL_SEMANTIC_SELECTION_REQUIRED",
+        execution_id:e.execution_id,profile_code:e.target_code,
+        semantic_candidates:selection?.semantic_candidates,
+        required_skills:selection?.required_skills,
+        next_action:"NATIVE_PROFILE_JUDGE_SKILL_AND_RESUME_SAME_EXECUTION"});
+    }
+    if (plan?.status !== "READY" || plan?.operation_code !== "EJECUCION_PERFIL_LF" ||
+        plan?.profile_code !== e.target_code || !Array.isArray(plan?.steps) ||
+        plan.steps.length !== 11 || !Array.isArray(plan?.skills)) {
+      return respond({
+        outcome: "BLOCKED", phase: "OPERATION_PLAN",
+        code: String(plan?.blocking_code ?? "PROFILE_OPERATION_DB_PLAN_NOT_READY"),
+        execution_id: e.execution_id, profile_code: e.target_code,
+      }, 409);
+    }
     return respond({
       outcome: "SOURCE_BINDING_REQUIRED",
       execution_id: e.execution_id,
@@ -670,6 +717,7 @@ export async function handleProfileContinuation(
       target_repo: e.target_repo,
       target_path: e.target_path,
       source_revision_required: callerRevision,
+      operation_plan: plan,
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
     });
   }
@@ -903,6 +951,13 @@ export async function handleProfileContinuation(
   // or 10/11 execution. Read canonical step states and hand off the next gate.
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
   if (postModel) return postModel;
+
+  // GPT_NATIVE/CLAUDE_NATIVE Step 50 belongs to the model in the SAME owning
+  // conversation. Edge MUST NOT call a paid/external model or mint fake RAW.
+  // The owning chat submits real RAW + optional grounded V3 through the
+  // existing governed Issue/OIDC/Edge continuation for this execution_id.
+  // The source-bound canonical validator and bridge record Steps 50 and 60.
+  // The SAME governed runner can immediately record 70 and 80 when V3 is present.
 
   // Post-model submission is accepted only from this already-authorized OIDC
   // continuation transport. The model supplies only its RAW profile output;

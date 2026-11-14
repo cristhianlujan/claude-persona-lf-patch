@@ -114,14 +114,18 @@ def governed_request():
     # A read-only profile invokes a governed skill through its own route. The server uses the
     # authenticated execution as the parent and the skill invoker checks authority and inputs.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
-        if set(data) != {"schema_version", "execution_id", "skill_code", "input"}:
+        if set(data) - {"schema_version", "execution_id", "skill_code", "input", "skill_semantic_decision"} or not {"schema_version", "execution_id", "skill_code", "input"}.issubset(data):
             raise ValueError("PROFILE_SKILL_INVOKE_SCHEMA_INVALID")
         execution_id, skill, skill_input = data["execution_id"], data["skill_code"], data["input"]
         if (not isinstance(execution_id, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
                 or not isinstance(skill, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]{2,63}", skill)
                 or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
             raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
-        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
+        semantic = data.get("skill_semantic_decision")
+        if semantic is not None and (not isinstance(semantic, dict) or len(json.dumps(semantic)) > 12000):
+            raise ValueError("PROFILE_SKILL_INVOKE_SEMANTIC_INVALID")
+        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill,
+                "input": skill_input, "skill_semantic_decision": semantic}
     # Reuse the SAME profile Issue/OIDC/Edge lane for one bounded,
     # sequential batch of the ALREADY OPENED governed skill-update child.
     # This never opens another RUN and cannot provide signer/role credentials.
@@ -181,12 +185,23 @@ def governed_request():
             seen.add(key)
         return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review",
+        "skill_semantic_decision"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
     if not isinstance(execution_id, str):
         raise ValueError("PROFILE_GOVERNED_ISSUE_EXECUTION_ID_INVALID")
+    # Semantic skill selection is a continuation of the SAME profile RUN.
+    # It comes from the native chat, not from the Router and not from an API producer.
+    skill_decision = data.get("skill_semantic_decision")
+    if skill_decision is not None:
+        if (not isinstance(skill_decision, dict) or
+            len(json.dumps(skill_decision, ensure_ascii=False)) > 12000 or
+            not set(data).issubset({"schema_version", "execution_id", "skill_semantic_decision"})):
+            raise ValueError("PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID")
+        return {"kind": "SKILL_SEMANTIC_CONTINUATION", "execution_id": execution_id,
+                "skill_semantic_decision": skill_decision}
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
@@ -206,7 +221,7 @@ def record_incomplete_continuation(execution_id, profile_code, phase, next_step,
     owns the review must supply real V3 evidence via the existing OIDC bridge.
     """
     if next_step not in {
-        "screen_selection", "input_governance", "execute_profile", "semantic_judge",
+        "screen_selection", "skill_selection", "input_governance", "execute_profile", "semantic_judge",
     }:
         raise ValueError("PROFILE_NATIVE_CONTINUATION_UNRECOGNIZED_STEP")
     checkpoint = {
@@ -652,6 +667,72 @@ def build_semantic_receipt(review):
     }
 
 
+def complete_native_profile_semantic_and_report(execution_id, source, semantic_review, source_revision, digest, headers):
+    """Same EJECUCION_PERFIL_LF run; validated Step50/60 must precede recorded V3/80."""
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED"
+    if semantic_review is None:
+        return record_incomplete_continuation(
+            execution_id, source.get("profile_code"), phase,
+            "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+        )
+    if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
+        from lf_semantic_fail_feedback import persist_feedback
+        try:
+            feedback = persist_feedback(
+                semantic_review, execution_id, source.get("profile_code"),
+                Path.cwd() / "profile-semantic-judge.json",
+            )
+        except (ValueError, TypeError) as exc:
+            print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
+            return 1
+        print(json.dumps({
+            "phase": feedback["phase"], "outcome": feedback["outcome"],
+            "verdict": feedback["verdict"],
+            "execution_id": feedback["execution_id"],
+            "next_action": feedback["next_action"],
+        }, ensure_ascii=False))
+        return 1
+    try:
+        validate_independent_semantic_review(semantic_review)
+    except ValueError as exc:
+        print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+        return 1
+    semantic_path = Path.cwd() / "profile-semantic-judge.json"
+    semantic_path.write_text(
+        json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+    repository = os.environ["GITHUB_REPOSITORY"]
+    artifact = f"profile-native-output-{run_id}"
+    semantic_ref = (
+        f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
+    )
+    submit = {
+        "action": "profile_native_continue_v1",
+        "execution_id": execution_id,
+        "source_revision": source_revision,
+        "source_digest": digest,
+        "semantic_judge_result": build_semantic_receipt(semantic_review),
+        "semantic_evidence_ref": semantic_ref,
+    }
+    code, closed = call_json(EDGE_URL, submit, headers)
+    if code != 200:
+        print(json.dumps({
+            "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
+            "code":closed.get("code"),
+        }))
+        return 1
+    print(json.dumps({
+        "execution_id": execution_id,
+        "profile_code": closed.get("profile_code"),
+        "phase": closed.get("phase"),
+        "next_gate": closed.get("next_gate"),
+    }, ensure_ascii=False))
+    return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
+
+
+
 def main():
     request = governed_request()
     token = oidc()
@@ -747,6 +828,7 @@ def main():
             "execution_id": request["execution_id"],
             "skill_code": request["skill_code"],
             "input": request["input"],
+            "skill_semantic_decision": request.get("skill_semantic_decision"),
         }, headers)
         result = invoked.get("result") if isinstance(invoked.get("result"), dict) else {}
         ok = code == 200 and invoked.get("outcome") == "SKILL_INVOKED"
@@ -786,16 +868,58 @@ def main():
             "execution_id":execution_id,
             "profile_code":result.get("profile_code"),
             "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
+    elif isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
+        execution_id = request["execution_id"]
+        raw_draft, profile_output, semantic_review = "", None, None
     else:
         execution_id, raw_draft, profile_output, semantic_review = request
 
-    code, source = call_json(EDGE_URL, {
-        "action": "profile_native_source_bind_v1",
-        "execution_id": execution_id,
-    }, headers)
+    source_request = {"action":"profile_native_source_bind_v1", "execution_id":execution_id}
+    if isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
+        source_request["skill_semantic_decision"] = request["skill_semantic_decision"]
+    code, source = call_json(EDGE_URL, source_request, headers)
+    if (code == 200 and source.get("outcome") == "SKILL_SEMANTIC_SELECTION_REQUIRED"
+        and source.get("execution_id") == execution_id):
+        semantic_packet = {
+            "schema_version":"LF_PROFILE_NATIVE_SKILL_SEMANTIC_SELECTION_V1",
+            "execution_id":execution_id,
+            "profile_code":source.get("profile_code"),
+            "semantic_candidates":source.get("semantic_candidates"),
+            "required_skills":source.get("required_skills"),
+            "transport":"EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+            "next_action":"NATIVE_CHAT_SELECT_ONE_SKILL_AND_RESUME_SAME_EXECUTION",
+        }
+        (Path.cwd() / "profile-native-skill-semantic.json").write_text(
+            json.dumps(semantic_packet, ensure_ascii=False, sort_keys=True, indent=2)+"\n",
+            encoding="utf-8")
+        record_incomplete_continuation(
+            execution_id, source.get("profile_code"), "SKILL_SEMANTIC_SELECTION_REQUIRED",
+            "skill_selection", "ONE_GROUNDED_SKILL_SEMANTIC_DECISION")
+        print(json.dumps({"phase":"SKILL_SEMANTIC_SELECTION_REQUIRED",
+          "execution_id":execution_id,"status":"CONTINUATION_REQUIRED_NOT_COMPLETE"}))
+        return 1
     if code != 200 or source.get("outcome") != "SOURCE_BINDING_REQUIRED":
         print(json.dumps({"phase": "SOURCE_BIND", "status": code, "code": source.get("code")}))
         return 1
+    # The owning profile must consume its operation definition from DB, not
+    # a user-written step list or a Router-selected skill name.
+    plan = source.get("operation_plan")
+    if (not isinstance(plan, dict) or plan.get("status") != "READY"
+        or plan.get("operation_code") != "EJECUCION_PERFIL_LF"
+        or plan.get("profile_code") != source.get("profile_code")
+        or not isinstance(plan.get("steps"), list) or len(plan["steps"]) != 11
+        or not isinstance(plan.get("skills"), list)):
+        print("PROFILE_OPERATION_DB_PLAN_NOT_READY")
+        return 1
+    (Path.cwd() / "profile-native-operation-plan.json").write_text(
+        json.dumps(plan, ensure_ascii=False, sort_keys=True, indent=2) + "\\n",
+        encoding="utf-8",
+    )
+    print(json.dumps({"phase":"OPERATION_DB_PLAN_BOUND",
+        "execution_id":execution_id,
+        "step_count":len(plan["steps"]),
+        "skill_count":len(plan["skills"]),
+        "skill_invocation_complete":False},ensure_ascii=False))
     target_path = source.get("target_path")
     if (source.get("execution_id") != execution_id
         or source.get("source_revision_required") != source_revision
@@ -844,10 +968,11 @@ def main():
                           else result.get("code") if isinstance(result, dict) else "UNKNOWN"}))
         return 1
 
-    # Input Governance is a runtime concern, not a profile/Router bypass.
-    # Reinvoke only on an explicit DIRECT_EDGE_INVOCATION ticket and READY.
-    # Each 202 consumes its ticket. Refresh the bridge before continuing.
-    # Four directly chained invocations, never a queue or polling worker.
+    # No second IG route: the already-deployed Step40 SQL resolver decides
+    # whether a BLOCKED security finding is reportable in READ_ONLY scope.
+    # Edge's historical HTTP409 remains untouched. At most one canonical
+    # prepare replay after a verified terminal BLOCKED (same execution_id).
+    ig_blocked_replayed = False
     for _ in range(4):
         if result.get("phase") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
             break
@@ -873,7 +998,44 @@ def main():
                 }))
                 return 1
             continue
-        if ig_code != 200 or ig.get("outcome") != "TERMINAL" or ig.get("terminal_status") != "READY":
+
+        # IG BLOCKED at the ticket/transport boundary is NOT an authorization
+        # decision about read-only profile analysis. Retry the existing SQL
+        # input_validate once; it already knows READ_ONLY_WITH_IG_FINDINGS.
+        # This permits no writes, overrides no step, and invents no IG result.
+        governed = ig.get("result", {}).get("result") if isinstance(ig.get("result"), dict) else None
+        predecision = governed.get("predecision_crosscheck") if isinstance(governed, dict) else None
+        blocked_terminal = (
+            not ig_blocked_replayed
+            and ig_code == 409
+            and ig.get("outcome") == "BLOCKED"
+            and ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
+            and ig.get("terminal_status") == "BLOCKED"
+            and ig.get("execution_id") == execution_id
+            and ig.get("pantalla_id") == body.get("pantalla_id")
+            and ig.get("consumer") == "CONTEXT_PACK"
+            and isinstance(governed, dict)
+            and governed.get("status") == "BLOCKED"
+            and governed.get("consumer") == "CONTEXT_PACK"
+            and governed.get("pantalla_id") == body.get("pantalla_id")
+            and governed.get("remediation_state") == "INTERNAL_REMEDIATION_REQUIRED"
+            and governed.get("owner_interruption_required") is False
+            and governed.get("promotion_authorized") is False
+            and governed.get("production_authorized") is False
+            and governed.get("execution_mode") == "REUSE_COMPLETED_CURRENT_RUN"
+            and isinstance(governed.get("output_sha256"), str)
+            and bool(re.fullmatch(r"[0-9a-f]{64}", governed["output_sha256"]))
+            and isinstance(predecision, dict)
+            and predecision.get("status") == "CANONICAL_READBACK_ONLY"
+            and predecision.get("run_id") == governed.get("run_id")
+            and isinstance(predecision.get("deterministic_finding_count"), int)
+            and predecision["deterministic_finding_count"] > 0
+        )
+        normal_ready = (
+            ig_code == 200 and ig.get("outcome") == "TERMINAL"
+            and ig.get("terminal_status") == "READY"
+        )
+        if not (normal_ready or blocked_terminal):
             print(json.dumps({
                 "phase": "INPUT_GOVERNANCE", "status": ig_code,
                 "outcome": ig.get("outcome"), "code": ig.get("code"),
@@ -882,8 +1044,27 @@ def main():
         payload.pop("screen_selection_draft", None)
         code, result = call_json(EDGE_URL, payload, headers)
         if code != 200:
-            print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code, "code": result.get("code")}))
+            print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code,
+                              "code": result.get("code")}))
             return 1
+        if blocked_terminal:
+            ig_blocked_replayed = True
+            bridge = result.get("result") if isinstance(result.get("result"), dict) else {}
+            result_ig = bridge.get("input_governance") if isinstance(bridge.get("input_governance"), dict) else {}
+            if (result.get("phase") != "NATIVE_MODEL_INPUT_READY"
+                or result.get("execution_id") != execution_id
+                or result.get("profile_code") != source.get("profile_code")
+                or bridge.get("execution_write_mode") != "READ_ONLY"
+                or result_ig.get("status") != "BLOCKED"
+                or result_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
+                or not isinstance(result_ig.get("governance_result"), dict)
+                or result_ig["governance_result"].get("run_id") != governed.get("run_id")
+                or result_ig["governance_result"].get("output_sha256") != governed.get("output_sha256")):
+                print("PROFILE_CANONICAL_STEP40_READONLY_IG_FINDINGS_NOT_ATTESTED")
+                return 1
+            # Only source-bound Step40 output flows to Step50; no invented PASS.
+            print(json.dumps({"phase":"CANONICAL_STEP40_IG_FINDINGS_ACCEPTED",
+              "execution_id":execution_id,"ig_security_state":"BLOCKED"}))
 
     if result.get("phase") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
         print("PROFILE_INPUT_GOVERNANCE_BOUNDED_RESUME_EXHAUSTED")
@@ -898,66 +1079,9 @@ def main():
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
     if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
-        if semantic_review is None:
-            return record_incomplete_continuation(
-                execution_id, source.get("profile_code"), phase,
-                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
-            )
-        if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
-            from lf_semantic_fail_feedback import persist_feedback
-            try:
-                feedback = persist_feedback(
-                    semantic_review, execution_id, source.get("profile_code"),
-                    Path.cwd() / "profile-semantic-judge.json",
-                )
-            except (ValueError, TypeError) as exc:
-                print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
-                return 1
-            print(json.dumps({
-                "phase": feedback["phase"], "outcome": feedback["outcome"],
-                "verdict": feedback["verdict"],
-                "execution_id": feedback["execution_id"],
-                "next_action": feedback["next_action"],
-            }, ensure_ascii=False))
-            return 1
-        try:
-            validate_independent_semantic_review(semantic_review)
-        except ValueError as exc:
-            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
-            return 1
-        semantic_path = Path.cwd() / "profile-semantic-judge.json"
-        semantic_path.write_text(
-            json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
-            encoding="utf-8",
+        return complete_native_profile_semantic_and_report(
+            execution_id, source, semantic_review, source_revision, digest, headers,
         )
-        run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
-        repository = os.environ["GITHUB_REPOSITORY"]
-        artifact = f"profile-native-output-{run_id}"
-        semantic_ref = (
-            f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
-        )
-        submit = {
-            "action": "profile_native_continue_v1",
-            "execution_id": execution_id,
-            "source_revision": source_revision,
-            "source_digest": digest,
-            "semantic_judge_result": build_semantic_receipt(semantic_review),
-            "semantic_evidence_ref": semantic_ref,
-        }
-        code, closed = call_json(EDGE_URL, submit, headers)
-        if code != 200:
-            print(json.dumps({
-                "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
-                "code":closed.get("code"),
-            }))
-            return 1
-        print(json.dumps({
-            "execution_id": execution_id,
-            "profile_code": closed.get("profile_code"),
-            "phase": closed.get("phase"),
-            "next_gate": closed.get("next_gate"),
-        }, ensure_ascii=False))
-        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
 
     if phase == "REPORT_OUTPUT_REQUIRED":
         submit = {
@@ -1020,9 +1144,11 @@ def main():
             "next_action": recorded.get("next_action"),
         }, ensure_ascii=False))
         if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
-            return record_incomplete_continuation(
-                execution_id, source.get("profile_code"), recorded["phase"],
-                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+            # A single already-governed resume payload can carry BOTH authentic
+            # native RAW and source-supported V3. Edge records 50/60 first;
+            # only then this call records 70/80 on the SAME execution_id.
+            return complete_native_profile_semantic_and_report(
+                execution_id, source, semantic_review, source_revision, digest, headers,
             )
         return 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):

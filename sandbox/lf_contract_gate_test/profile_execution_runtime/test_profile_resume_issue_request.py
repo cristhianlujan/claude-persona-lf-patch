@@ -46,6 +46,16 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         with patch.dict(os.environ, self.env, clear=True):
             return self.get_request()
 
+    def _mock_operation_plan(self, profile_code):
+        # Transport-only fixture; DB resolution is independently tested in PG.
+        return {
+            "status": "READY", "operation_code": "EJECUCION_PERFIL_LF",
+            "profile_code": profile_code,
+            "steps": [{"step_order": i * 10, "step_id": "fixture_step_" + str(i)}
+                      for i in range(11)],
+            "skills": [],
+        }
+
     def _blocked_ig_edge_reply(self):
         execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
         profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
@@ -85,6 +95,184 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                 },
             },
         }
+
+    def test_semantic_skill_resume_payload_requires_one_bounded_decision(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        decision = {"selected_skill_code": "FICTICIA_SEMANTICA",
+                    "reason": "source-bound", "evidence_refs": ["fixture://source/a"],
+                    "descriptor_revision": "fixture-sem-1",
+                    "review_mode": "CURRENT_CONTEXT_REVIEW"}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+        })
+        self.assertEqual(self.check(), {
+            "kind": "SKILL_SEMANTIC_CONTINUATION",
+            "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+        })
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision, "profile_output": {"forged": True},
+        })
+        with self.assertRaisesRegex(ValueError, "PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID"):
+            self.check()
+
+    def test_native_skill_semantic_candidates_checkpoint_same_run(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+        })
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        calls = []
+        def fake_call(_url, body, _headers):
+            calls.append(body.copy())
+            return 200, {
+                "outcome": "SKILL_SEMANTIC_SELECTION_REQUIRED",
+                "execution_id": execution_id,
+                "profile_code": "PERFIL-TEST",
+                "semantic_candidates": [{"skill_code": "FICTICIA_SEMANTICA",
+                                         "source_revision": "fixture-sem-1",
+                                         "descriptor": {"description": "synthetic"}}],
+                "required_skills": [],
+            }
+        env = {**self.env, "GITHUB_SHA": "a" * 40}
+        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            main = runpy.run_path(str(SCRIPT), run_name="native_skill_semantic_test")["main"]
+            with patch.dict(main.__globals__, {"oidc": lambda: "opaque-oidc", "call_json": fake_call}):
+                self.assertEqual(main(), 1)
+        self.assertEqual([x["action"] for x in calls], ["profile_native_source_bind_v1"])
+        self.assertEqual(calls[0]["execution_id"], execution_id)
+        checkpoint = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        selection = json.loads((Path(self.tmp.name) / "profile-native-skill-semantic.json").read_text())
+        self.assertEqual(checkpoint["next_step"], "skill_selection")
+        self.assertEqual(checkpoint["execution_id"], selection["execution_id"])
+        self.assertEqual(selection["semantic_candidates"][0]["skill_code"], "FICTICIA_SEMANTICA")
+        self.assertFalse(checkpoint["last_run_completed"])
+
+    def test_readonly_ig_blocked_ticket_continues_only_after_step40_readback(self):
+        # Transport-only fixture: server makes the real Step40 admission decision.
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id})
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        p = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        p.parent.mkdir(parents=True)
+        p.write_text("# profile test source\n", encoding="utf-8")
+        calls = []
+        def fake_call(_url, data, headers):
+            calls.append((data.copy(), headers.copy()))
+            if data["action"] == "profile_native_source_bind_v1":
+                return 200, {"outcome": "SOURCE_BINDING_REQUIRED",
+                    "execution_id": execution_id, "profile_code": profile_code,
+                    "source_revision_required": "a" * 40,
+                    "target_repo": "test-owner/test-repo",
+                    "target_path": "profiles/test_profile/SKILL.md",
+                    "operation_plan": self._mock_operation_plan(profile_code)}
+            if data["action"] == "input_readiness_context_pack_runtime_v1":
+                return 409, {"outcome":"BLOCKED",
+                    "code":"IG_CONTEXT_PACK_BLOCKED",
+                    "terminal_status":"BLOCKED",
+                    "execution_id":execution_id,"pantalla_id":51,"consumer":"CONTEXT_PACK",
+                    "result":{"result":{"status":"BLOCKED","consumer":"CONTEXT_PACK",
+                        "pantalla_id":51,"run_id":951,
+                        "remediation_state":"INTERNAL_REMEDIATION_REQUIRED",
+                        "owner_interruption_required":False,
+                        "promotion_authorized":False,
+                        "production_authorized":False,
+                        "execution_mode":"REUSE_COMPLETED_CURRENT_RUN",
+                        "output_sha256":"5"*64,
+                        "predecision_crosscheck":{
+                            "status":"CANONICAL_READBACK_ONLY","run_id":951,
+                            "deterministic_finding_count":3}}}}
+            if data["action"] == "profile_native_continue_v1":
+                if sum(k[0]["action"] == "profile_native_continue_v1" for k in calls) == 1:
+                    return 200, {"outcome":"CONTINUATION_REQUIRED",
+                        "phase":"INPUT_GOVERNANCE_RUNTIME_REQUIRED",
+                        "result":{"input_governance_runtime_request":{
+                            "transport":"DIRECT_EDGE_INVOCATION",
+                            "queue_required":False,"polling_required":False,
+                            "request_headers":{"X-LF-Profile-Runtime-Ticket":"fixture-ticket"},
+                            "request_body":{"action":"input_readiness_context_pack_runtime_v1",
+                                            "execution_id":execution_id,"pantalla_id":51}}}}
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY",
+                    "execution_id":execution_id,"profile_code":profile_code,
+                    "result":{"execution_write_mode":"READ_ONLY",
+                        "input_governance":{"status":"BLOCKED",
+                            "analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
+                            "governance_result":{"run_id":951,
+                                "output_sha256":"5"*64,
+                                "predecision_crosscheck":{
+                                    "deterministic_finding_count":3}}}}}
+            raise AssertionError("unrecognized mocked Edge action")
+        env = {**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"42"}
+        with patch.dict(os.environ,env,clear=True), patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)):
+            main = runpy.run_path(str(SCRIPT),run_name="read_only_ticket_test")["main"]
+            with patch.dict(main.__globals__, {"oidc":lambda:"opaque-oidc",
+                                                  "call_json":fake_call}):
+                self.assertEqual(main(),1)
+        steps=[x[0]["action"] for x in calls]
+        self.assertEqual(steps,["profile_native_source_bind_v1",
+                                "profile_native_continue_v1",
+                                "input_readiness_context_pack_runtime_v1",
+                                "profile_native_continue_v1"])
+        checkpoint=json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["execution_id"],execution_id)
+        self.assertEqual(checkpoint["next_step"],"execute_profile")
+        self.assertFalse(checkpoint["last_run_completed"])
+
+    def test_native_profile_single_resume_automatically_chains_50_60_70_80(self):
+        """One Issue carries native RAW+V3; mock only transport, never claim live SQL."""
+        import hashlib
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-TEST"
+        native_raw = {"result": "fixture-native-output"}
+        review = {"verdict": "PASS_REVIEWED_CURRENT_CONTEXT"}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "profile_output": native_raw, "semantic_judge_review": review,
+        })
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        self.assertEqual(self.check()[2:], (native_raw, review))
+        path = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Test native source\\n", encoding="utf-8")
+        steps = []
+        def fake_call(_url, body, _headers):
+            steps.append((body["action"], body.copy()))
+            if body["action"] == "profile_native_source_bind_v1":
+                return 200, {
+                    "outcome": "SOURCE_BINDING_REQUIRED", "execution_id": execution_id,
+                    "source_revision_required": "a" * 40, "target_repo": "test-owner/test-repo",
+                    "target_path": "profiles/test_profile/SKILL.md", "profile_code": profile_code, "operation_plan": self._mock_operation_plan(profile_code),
+                }
+            if "profile_output" in body:
+                return 200, {"phase": "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "profile_code": profile_code}
+            if "semantic_judge_result" in body:
+                return 200, {"phase": "PROFILE_EXECUTION_COMPLETED", "profile_code": profile_code}
+            return 200, {"phase": "NATIVE_MODEL_INPUT_READY", "profile_code": profile_code}
+        env = {**self.env, "GITHUB_SHA": "a" * 40, "GITHUB_RUN_ID": "12345"}
+        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            module = runpy.run_path(str(SCRIPT), run_name="same_run_test")
+            main = module["main"]
+            with patch.dict(main.__globals__, {
+                "oidc": lambda: "fake-oidc-not-sent", "call_json": fake_call,
+                "run_bound_validator": lambda *_: (
+                    {"schema": "PROFILE_OUTPUT_VALIDATION_RESULT_V1"}, "actions://raw", "actions://validator"),
+                "validate_independent_semantic_review": lambda _: None,
+                "build_semantic_receipt": lambda _: {"status": "PASS", "verdict": review["verdict"]},
+            }):
+                self.assertEqual(main(), 0)
+        self.assertEqual([a for a, _ in steps], [
+            "profile_native_source_bind_v1", "profile_native_continue_v1",
+            "profile_native_continue_v1", "profile_native_continue_v1",
+        ])
+        self.assertEqual(steps[2][1]["profile_output"], native_raw)
+        self.assertEqual(steps[3][1]["semantic_judge_result"]["verdict"], review["verdict"])
+        self.assertEqual({body["execution_id"] for _, body in steps}, {execution_id})
+        self.assertTrue((Path(self.tmp.name) / "profile-semantic-judge.json").is_file())
 
     def test_blocked_ig_records_only_bound_hash_receipt_and_remains_nonpass(self):
         execution_id, profile_code, response = self._blocked_ig_edge_reply()
@@ -132,7 +320,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                         "source_revision_required": "a" * 40,
                         "target_repo": "test-owner/test-repo",
                         "target_path": "profiles/product_director_lf/SKILL.md",
-                        "profile_code": profile_code,
+                        "profile_code": profile_code, "operation_plan": self._mock_operation_plan(profile_code),
                     }
                 return 409, blocked
             # Issue request references the same execution, not a new BEGIN.
@@ -510,7 +698,8 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
 
     def test_cli_no_longer_returns_zero_on_missing_v3_or_raw(self):
         source = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn('if semantic_review is None:\n            return record_incomplete_continuation(', source)
+        self.assertIn('def complete_native_profile_semantic_and_report(', source)
+        self.assertIn('if semantic_review is None:\n        return record_incomplete_continuation(', source)
         self.assertIn('if profile_output is None:\n            return record_incomplete_continuation(', source)
         self.assertNotIn('print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")\n            return 0', source)
         self.assertNotIn('print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")\n            return 0', source)

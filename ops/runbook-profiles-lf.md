@@ -3,6 +3,17 @@
 ## Scope
 Operate Profiles LF in this repository and the authorized LF Supabase sandbox. Non-production only. Reconstruct current state from GitHub, Supabase and EKB on every run; conversation context is not operational evidence.
 
+## EJECUCION_PERFIL_LF — interfaz única (PR #3845, DRAFT NO-GO)
+**Disparo del dueño:** `Ejecuta EJECUCION_PERFIL_LF para <solicitud + contexto>`.
+
+El Router selecciona PERFIL y transporta Gate2 intacto. Nunca selecciona skills. El perfil es dueño del RUN y de toda la operación. Leer el plan dinámico desde `lf_operation_steps` + `lf_operation_step_contracts`; aplicar `lf_skill_selector_policy_v1` (perfil, canal autenticado, operación requerida, efectos y obligatoriedad) y `lf_skill_selection_registry_v1` (`LF_SKILL_SELECTION_DESCRIPTOR_V1` con fuente, versión, evidencias y CURRENT). Usar `lf_profile_execution_plan_v1` como candidato SQL para resolver secuencia/skills sin codificar IG en 40/50.
+
+Antes de invocar: status READY del catálogo, autorización de perfil/operación, función handler real, input_required y descriptor CURRENT. Para skills SEMANTIC_OPTIONAL, el mismo chat nativo debe evaluar los descriptores permitidos en el contexto vigente, entregar elección **única** y justificación con evidencia+revisión del descriptor; el servidor bloquea ambigüedad/stale o selección ajena a la política, sin fingir independencia. Para obligatorias, `DETERMINISTIC_REQUIRED` selecciona por política verificada. La función candidata `lf_profile_skill_invoke_selected_v1` vuelve a resolver y llama la función oficial `lf_skill_invoke_v1`, cuyo ledger `lf_skill_invocation_v1` conserva el RUN padre; el recibo adicional enlaza selección, motivo, `skill_run_id` y `execution_id`.
+
+El transporte del chat nativo existente es GitHub Issue `lf-profile-resume-governed` → Actions/OIDC → Edge; `profile_native_source_bind_v1` obtiene plan; `profile_native_skill_invoke_v1` llama al wrapper gobernado. RAW/V3 del mismo chat y ejecución 50→60→70→80 vía bridges oficiales. Sin modelos externos/API ni secretos visibles.
+
+**Estado medido:** `lf_skill_catalog_v1` = 8 y `lf_skill_invocation_v1` = 14 en Supabase actual; IG ausente del catálogo. En el PR la IG queda CANDIDATO `DRAFT`, descriptor `STALE_SOURCE_CHANGED` hasta fuente y handler acreditados. La asociación no proviene de `lf_activo_relaciones`; el diagnóstico previo se corrige. NO-GO de ejecución real hasta selector/handlers integrados, autoridad verificada y E2E nativo probado; no confundir fixture 11/11 con cierre operativo.
+
 ## Evidence
 Evidence is tool output produced during the current run. Report unqueried fields as `NO_EJECUTADO`. Record identifiers, receipts, SHAs, CI states and query results only when observed in current-run tool output.
 

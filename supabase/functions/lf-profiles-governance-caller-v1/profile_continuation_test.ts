@@ -26,10 +26,15 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
       target_type:"PERFIL",target_code:"PROFILE-A",target_repo:repo,
       target_path:"profiles/profile_a/SKILL.md",
       manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
-        router_profile_handoff:{profile_code:"PROFILE-A",router_authorization_receipt:{
+        router_profile_handoff:{profile_code:"PROFILE-A",channel:"PRODUCTO",router_authorization_receipt:{
           profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}},
       ...overrides,
     }];
+    else if(url.endsWith("/lf_profile_execution_plan_v1")){
+      out={status:"READY",operation_code:"EJECUCION_PERFIL_LF",profile_code:"PROFILE-A",
+        steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+        skills:[{skill_code:"SKILL_FROM_DB",handler_fn:"fixture_readonly",effect:"READ_ONLY"}]};
+    }
     else if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))out={status:state,next_action:"RETRY_BRIDGE"};
     else if(url.endsWith("/lf_profile_screen_selector_semantic_submit_v1")){
       out={status:selectStatus};if(selectStatus==="BOUND")state="NATIVE_MODEL_INPUT_READY";
@@ -59,7 +64,10 @@ Deno.test("continuation: profile path bound dynamically, never selected in code"
   for(const target_path of ["profiles/profile_a/SKILL.md","profiles/profile_b/SKILL.md"]){
     const n=network({target_path});
     const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
-    const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,1);
+    const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,2);
+    eq(b.operation_plan?.steps?.length,11);
+    eq(b.operation_plan?.skills?.[0]?.skill_code,"SKILL_FROM_DB");
+    eq(n.calls[1].body?.p_profile_code,"PROFILE-A");
   }
 });
 Deno.test("continuation: screen semantic handoff preserves ordering and source",async()=>{
@@ -316,7 +324,7 @@ Deno.test("continuation: fail-closed role, source, and semantic decision",async(
 
 function manifestFor(mode:string|undefined,provider:string|undefined){
   const m:Record<string,unknown>={read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
-    router_profile_handoff:{profile_code:"PROFILE-A",router_authorization_receipt:{
+    router_profile_handoff:{profile_code:"PROFILE-A",channel:"PRODUCTO",router_authorization_receipt:{
       profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}};
   if(mode!==undefined)m.executor_mode=mode;
   if(provider!==undefined)m.executor_provider=provider;
@@ -451,7 +459,7 @@ function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;
       }
       if(url.includes("/contents/"))return new Response(JSON.stringify(gh.dir?[{name:"a"}]:{sha:blobSha,type:"file"}),{status:200});
     }
-    if(url.endsWith("/lf_skill_invoke_v1")){
+    if(url.endsWith("/lf_profile_skill_invoke_selected_v1")){
       n.calls.push({url,body:typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null});
       return new Response(JSON.stringify(invoke.body),{status:invoke.status});
     }
@@ -469,15 +477,15 @@ Deno.test("skill invoke: parent is the authenticated execution, never caller-sup
     execution_id:id,parent_execution_id:"EXEC-ATTACKER-0000000000",p_execution_id:"EXEC-ATTACKER-0000000000",
     skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
   const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");eq(b.result.child_execution_id,"EXEC-SKILL-0123456789ABCDEF");
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
-  eq(call?.body,{p_skill:"PROFILE_UPDATE_APPLY",p_execution_id:id,p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}}});
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
+  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"PROFILE_UPDATE_APPLY",p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}},p_semantic_decision:null});
 });
 Deno.test("skill invoke: invalid skill code or input never reaches the invoker",async()=>{
   for(const bad of [{skill_code:"profile_update_apply",input:skillInput},{skill_code:"X; DROP",input:skillInput},
     {skill_code:"PROFILE_UPDATE_APPLY",input:"text"},{skill_code:"PROFILE_UPDATE_APPLY",input:[1]},{skill_code:"PROFILE_UPDATE_APPLY"},{input:skillInput}]){
     const n=skillNetwork();
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,...bad},config,n.fetchFn,sha,callerId);
-    eq(out.status,400);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(out.status,400);eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
 Deno.test("skill invoke: execution that is not a governed read-only profile run is refused before the invoker",async()=>{
@@ -485,9 +493,19 @@ Deno.test("skill invoke: execution that is not a governed read-only profile run 
     {manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:false,no_write:false,no_promotion:true,governed_repair_write:true}}]){
     const n=skillNetwork(o);
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
-    eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
+Deno.test("skill invoke: SQL BLOCKED 200 never becomes SKILL_INVOKED",async()=>{
+  const n=skillNetwork({},{status:200,body:{status:"BLOCKED",
+    blocking_code:"SKILL_SEMANTIC_SELECTION_AMBIGUOUS"}});
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  const body=await out.json();
+  eq(out.status,409);eq(body.outcome,"BLOCKED");
+  eq(body.code,"SKILL_SEMANTIC_SELECTION_AMBIGUOUS");
+});
+
 Deno.test("skill invoke: invoker block reason is passed on, truncated, and is not a success",async()=>{
   const reason="SKILL_AUTHORITY_MISSING: el perfil no tiene autoridad para ACTUALIZACION_PERFIL_LF. "+"x".repeat(900);
   const n=skillNetwork({},{status:400,body:{code:"P0001",message:reason}});
@@ -500,7 +518,7 @@ Deno.test("skill invoke: caller-supplied _trusted is discarded and replaced by r
   const n=skillNetwork();
   const forged={main_sha:"e".repeat(40),target_blob_sha:"f".repeat(40),caller:{method:"FORGED"}};
   await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:{...skillInput,_trusted:forged}},config,n.fetchFn,sha,callerId);
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
   eq((call?.body?.p_input as Record<string,unknown>)._trusted,{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId});
 });
 Deno.test("skill invoke: unresolved main, directory target, bad path or missing identity never reach the invoker",async()=>{
@@ -514,7 +532,7 @@ Deno.test("skill invoke: unresolved main, directory target, bad path or missing 
     const n=skillNetwork();
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input},config,n.fetchFn,sha,withId?callerId:undefined);
     if(out.status<400)throw Error("NOT_BLOCKED "+name);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
   gh.fail=false;gh.dir=false;
 });
@@ -525,9 +543,9 @@ Deno.test("skill invoke: SKILL_UPDATE_APPLY resolves exact skills file with trus
   const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input},config,n.fetchFn,sha,callerId);
   const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
-  eq(call?.body,{p_skill:"SKILL_UPDATE_APPLY",p_execution_id:id,
-    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}}});
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
+  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"SKILL_UPDATE_APPLY",
+    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}},p_semantic_decision:null});
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py?ref=")),true);
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/README.md?ref=")),true);
 });
@@ -539,7 +557,7 @@ Deno.test("skill invoke: only SKILL_UPDATE_APPLY can resolve skills paths",async
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
       execution_id:id,skill_code:code,input},config,n.fetchFn,sha,callerId);
     eq(out.status,400);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
 
@@ -554,7 +572,7 @@ Deno.test("skill invoke: skill update fails closed on directories and traversal"
       execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{target_code:"ACT-0045",target_path}
     },config,n.fetchFn,sha,callerId);
     eq(out.status,400);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
 
@@ -565,14 +583,14 @@ Deno.test("skill invoke: skill update still discards caller forgery and rejects 
   await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{...input,_trusted:forged}
   },config,n.fetchFn,sha,callerId);
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
   eq((call?.body?.p_input as Record<string,unknown>)._trusted,
     {main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof});
   const missing=skillNetwork();
   const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input
   },config,missing.fetchFn,sha,undefined);
-  eq(out.status,500);eq(missing.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  eq(out.status,500);eq(missing.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
 });
 
 Deno.test("skill invoke: current README owner mismatch or absence stops before SQL",async()=>{
@@ -588,7 +606,7 @@ Deno.test("skill invoke: current README owner mismatch or absence stops before S
     },config,n.fetchFn,sha,callerId);
     const body=await out.json();
     eq(out.status,409);eq(body.code,expected);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
   gh.ownerValid=true; gh.ownerMissing=false;
 });
@@ -668,7 +686,7 @@ Deno.test("skill step: 6-step ordered batch records via exactly one canonical RP
  eq(records[0].body?.p_server_context,{
    main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof,
  });
- eq(n.calls.filter(c=>c.url.endsWith("/lf_skill_invoke_v1")).length,0);
+ eq(n.calls.filter(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")).length,0);
  eq(n.calls.filter(c=>c.url.includes("/lf_operation_execution_steps?")).length,1);
 });
 
