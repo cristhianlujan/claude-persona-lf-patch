@@ -154,6 +154,12 @@ BEGIN
       AND p_channel=ANY(p.channels))
  THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SELECTION_PROFILE_SOURCE_OR_CHANNEL_NOT_CURRENT'); END IF;
 
+ -- 'enabled' alone is not owner authorization in a candidate row.
+ IF EXISTS (SELECT 1 FROM public.lf_skill_selector_policy_v1 p
+   WHERE p.profile_code=p_profile_code AND p.enabled
+     AND p_channel=ANY(p.channels) AND p.owner_decision_required) THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_OWNER_DECISION_REQUIRED');
+ END IF;
  SELECT count(*) INTO v_n FROM public.lf_skill_selector_policy_v1 p
  WHERE p.profile_code=p_profile_code AND p.enabled AND p_channel=ANY(p.channels);
  IF v_n=0 THEN
