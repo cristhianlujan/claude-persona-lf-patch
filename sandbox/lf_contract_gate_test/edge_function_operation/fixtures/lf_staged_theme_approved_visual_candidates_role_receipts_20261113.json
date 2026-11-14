@@ -1,9 +1,9 @@
 {
-  "schema": "LF_STAGE_D_THEME_DARK_FINAL_OWNER_DESIGN_CANDIDATE_V1",
+  "schema": "LF_STAGE_E_OWNER_2255_DARK_CORRECTED_CANDIDATES_V1",
   "status": "PROPOSAL_ONLY_NOT_APPROVED_CANONICAL",
-  "owner_acceptance": "button green_action_hover with card_surface white label; adjust card for 3.3 component margin and secondary text contrast >=4.5",
+  "owner_acceptance": "Owner 22:55 retained dark_mode_card #141627; replace previous rejected #00050A; use dark_mode_text for primary and secondary (>=4.5) and existing border_soft for visible surface/card separation. Other decisions unchanged.",
   "provenance": {
-    "owner_decision": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+    "owner_decision": "OWNER_UI_DARK_CARD_RESTORED_2026_11_13_22_55",
     "identity_verified": false,
     "source": "Supabase SELECT only + owner's documented comparison A/B/C",
     "profile_identified": "PERFIL-UI-ARCHITECT",
@@ -11,7 +11,7 @@
     "profile_execution_id": null,
     "skill_reference": "profiles/ui_architect/SKILL.md",
     "design_skill_contract": "profiles/ui_architect/contracts/lf_visual_governance.md",
-    "routing_execution_status": "NOT_STARTED_NO_LIVE_WRITES_ALLOWED"
+    "routing_execution_status": "NOT_STARTED_NO_LIVE_WRITES_ALLOWED_AND_TRANSITION_SOURCE_ALREADY_TARGET"
   },
   "source_token_policy": "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1",
   "role_approval_receipts": [
@@ -19,31 +19,32 @@
       "receipt_ref": "THEME002_DARK_ROLE_RECEIPT_CANDIDATE_1",
       "token_name": "dark_mode_surface",
       "design_system_code": "LF_DS_V1",
-      "proposal_hex": "#0F1720",
+      "proposal_hex": "#030712",
       "status": "CANDIDATE_PROPOSED_PENDING_ROLE_AND_AA_QA",
       "source_value_status": "PENDIENTE_DECISION_FINAL",
       "role_approval_actor": null,
       "role_verified": false,
       "qa_visual_verified": false,
-      "decision_ref": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+      "decision_ref": "OWNER_UI_DARK_CARD_RESTORED_2026_11_13_22_55",
       "identity_verified": false,
-      "usage": "page_background"
+      "usage": "page_background",
+      "reason": "Darker page canvas than card, ~1.125:1 separation; visible card outline supplied by existing border_soft token, 14.512:1 against card."
     },
     {
       "receipt_ref": "THEME002_DARK_ROLE_RECEIPT_CANDIDATE_2",
       "token_name": "dark_mode_card",
       "design_system_code": "LF_DS_V1",
-      "proposal_hex": "#00050A",
+      "proposal_hex": "#141627",
       "status": "CANDIDATE_PROPOSED_PENDING_ROLE_AND_AA_QA",
       "source_value_status": "PENDIENTE_DECISION_FINAL",
       "role_approval_actor": null,
       "role_verified": false,
       "qa_visual_verified": false,
-      "decision_ref": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+      "decision_ref": "OWNER_UI_DARK_CARD_RESTORED_2026_11_13_22_55",
       "identity_verified": false,
       "usage": "content_surface",
-      "supersedes_candidate": "#141627",
-      "reason": "required 3.3:1 button/card margin; prior 3.001:1 insufficient"
+      "reason": "Owner 22:55 mandated retaining accepted card; button/card is 3.001:1, WCAG passes 3.0 narrowly, below desired 3.3 margin.",
+      "replaces_candidate": "#00050A"
     },
     {
       "receipt_ref": "THEME002_DARK_ROLE_RECEIPT_CANDIDATE_3",
@@ -55,9 +56,10 @@
       "role_approval_actor": null,
       "role_verified": false,
       "qa_visual_verified": false,
-      "decision_ref": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+      "decision_ref": "OWNER_UI_DARK_CARD_RESTORED_2026_11_13_22_55",
       "identity_verified": false,
-      "usage": "primary_and_secondary_text"
+      "usage": "primary_and_secondary_text",
+      "reason": "Primary and secondary typography use same accessible token with hierarchy by typography; contrast on card 16.670:1, native slate_text/slate_text_strong fail 4.5."
     }
   ],
   "binding_proposal_tokens_only": {
@@ -70,25 +72,41 @@
     "input_border": "border_soft",
     "focus_ring": "green_action_border",
     "hover_background": "green_action_hover",
-    "hover_visual_state": "existing green_action_border outline/shadow; no new color token"
+    "hover_visual_state": "existing green_action_border outline/shadow; no new color token",
+    "card_separation_border": "border_soft",
+    "card_separation_method": "DARKER_PAGE_SURFACE_PLUS_VIGENTE_BORDER_SOFT_OUTLINE"
   },
   "constraints": {
     "aa_text_min": 4.5,
     "aa_component_min": 3,
-    "button_card_owner_margin_min": 3.3,
+    "button_card_owner_margin_min": 3,
     "no_hex_in_rules": true,
     "hex_only_role_receipts_or_lf_design_candidate": true,
     "no_live_writes": true,
     "no_role_approval_performed": true,
     "no_new_design_tokens": true,
-    "not_promotable_until_real_role_and_visual_qa": true
+    "not_promotable_until_real_role_and_visual_qa": true,
+    "button_card_margin_note": "WCAG boundary 3.001074:1, PASS narrowly, NO 3.3 safety margin; explicit owner restoration takes precedence",
+    "card_surface_separation_requirements": "Card lighter than surface 1.125415:1; non-text decorative surface contrast not WCAG AA itself. Visible border_soft card outline 14.512334:1."
   },
   "previous_secondary_unsafe": {
-    "slate_text": "BELOW_4_5",
-    "slate_text_strong": "BELOW_4_5",
+    "slate_text": "3.645630_BELOW_4.5",
+    "slate_text_strong": "3.040797_BELOW_4.5",
     "replacement": "dark_mode_text"
   },
   "linkage_to_prior_stage_c": "lf_stagec_theme_token_policy_patch_20261113.json",
   "unchanged_scope": "Prior nine auth/other theme proposals unchanged; no modification to official LF policy or any source in live Supabase.",
-  "new_demo_image": "in-chat visual only; not an official profile run"
+  "new_demo_image": "NOT_REQUESTED_NO_IMAGES",
+  "contrast_evidence_computed": {
+    "wcag_formula": "(Llighter+0.05)/(Ldarker+0.05), sRGB linear 0.04045",
+    "primary_text_card": 16.669914,
+    "secondary_text_card": 16.669914,
+    "button_card": 3.001074,
+    "button_text": 5.961379,
+    "border_card": 14.512334,
+    "focus_card": 9.993023,
+    "card_surface": 1.125415,
+    "slate_text_rejected": 3.64563,
+    "slate_text_strong_rejected": 3.040797
+  }
 }
