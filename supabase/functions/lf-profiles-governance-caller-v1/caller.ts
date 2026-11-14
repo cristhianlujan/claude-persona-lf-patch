@@ -388,36 +388,6 @@ async function consumeProfileRuntimeTicket(
   return await parseJsonObject(response, "PROFILE_RUNTIME_TICKET_RPC_RESPONSE_INVALID");
 }
 
-// Only the authenticated parent RUN can authorize reporting blocked IG findings.
-// The caller never converts IG BLOCKED into IG READY nor records a profile step.
-async function readIgFindingsReportAuthority(
-  config: CallerConfig, deps: RuntimeDeps, executionId: string,
-): Promise<boolean> {
-  let res: Response;
-  try {
-    res = await deps.fetchFn(
-      `${config.supabaseUrl}/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,status,operation_code,target_type,target_code,manifest`,
-      { method: "GET", headers: {
-        apikey: config.serviceRoleKey,
-        authorization: `Bearer ${config.serviceRoleKey}`,
-      }, signal: AbortSignal.timeout(15_000) },
-    );
-  } catch { return false; }
-  if (!res.ok) return false;
-  let rows: unknown;
-  try { rows = await res.json(); } catch { return false; }
-  if (!Array.isArray(rows) || rows.length !== 1) return false;
-  const e = rows[0] as Record<string, unknown>;
-  const m = e.manifest as Record<string, unknown> | undefined;
-  const h = m?.router_profile_handoff as Record<string, unknown> | undefined;
-  return e.execution_id === executionId && e.status === "IN_PROGRESS" &&
-    e.operation_code === "EJECUCION_PERFIL_LF" && e.target_type === "PERFIL" &&
-    typeof e.target_code === "string" && h?.profile_code === e.target_code &&
-    m?.read_only === true && m?.no_write === true && m?.no_promotion === true &&
-    m?.automatic_impact === false && m?.governed_repair_write === false &&
-    h?.effect_authority === false;
-}
-
 async function callRuntime(
   config: CallerConfig,
   deps: RuntimeDeps,
@@ -628,47 +598,6 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             transport: "DIRECT_EDGE_INVOCATION",
             result,
           }, 409);
-        }
-
-        // Governance findings are reportable only within the server-verified
-        // read-only profile scope. This is not IG clearance or authority to write.
-        // The subsequent native bridge must re-resolve and validate every field
-        // before the canonical writer can record input_validate.
-        if (terminalStatus === "BLOCKED" &&
-            governed.consumer === CONTEXT_PACK_CONSUMER &&
-            governed.pantalla_id === pantallaId &&
-            Number.isInteger(governed.run_id) &&
-            typeof governed.output_sha256 === "string" &&
-            /^[0-9a-f]{64}$/.test(governed.output_sha256) &&
-            governed.remediation_state === "INTERNAL_REMEDIATION_REQUIRED" &&
-            governed.owner_interruption_required === false &&
-            governed.promotion_authorized === false &&
-            governed.production_authorized === false &&
-            governed.execution_mode === "REUSE_COMPLETED_CURRENT_RUN" &&
-            typeof governed.predecision_crosscheck === "object" &&
-            governed.predecision_crosscheck !== null &&
-            (governed.predecision_crosscheck as Record<string, unknown>).status === "CANONICAL_READBACK_ONLY" &&
-            (governed.predecision_crosscheck as Record<string, unknown>).run_id === governed.run_id &&
-            Number((governed.predecision_crosscheck as Record<string, unknown>).deterministic_finding_count) > 0 &&
-            await readIgFindingsReportAuthority(config, deps, executionId)) {
-          return json({
-            outcome: "TERMINAL_WITH_FINDINGS",
-            code: "IG_CONTEXT_PACK_BLOCKED_REPORTABLE_READ_ONLY",
-            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
-            analysis_scope: "READ_ONLY_WITH_IG_FINDINGS",
-            ig_security_state: "BLOCKED",
-            ig_security_clearance: false,
-            write_authorized: false,
-            continuation_allowed_for_effects: false,
-            caller,
-            execution_id: executionId,
-            pantalla_id: pantallaId,
-            consumer: CONTEXT_PACK_CONSUMER,
-            terminal_status: "BLOCKED",
-            transport: "DIRECT_EDGE_INVOCATION",
-            next_action: "REINVOKE_SAME_PROFILE_NATIVE_BRIDGE_PREPARE",
-            result,
-          });
         }
 
         if (terminalStatus !== "READY") {
