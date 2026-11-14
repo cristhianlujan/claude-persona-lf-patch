@@ -21,6 +21,7 @@ const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
 const PROFILE_EXECUTION_BEGIN_ACTION = "profile_execution_begin_from_router_context_v1";
 const PROFILE_NATIVE_BEGIN_ACTION = "profile_native_begin_from_context_v1";
+const PROFILE_PHRASE_BEGIN_ACTION = "profile_native_begin_from_phrase_v1";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -717,7 +718,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
       const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
       const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
-      const isProfileNativeBeginAction = action === PROFILE_NATIVE_BEGIN_ACTION;
+      const isProfileNativeBeginAction = action === PROFILE_NATIVE_BEGIN_ACTION || action === PROFILE_PHRASE_BEGIN_ACTION;
       if (isNativeContinuationIdentity && !isNativeContinuationAction && !isProfileNativeBeginAction) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
       }
@@ -1001,14 +1002,72 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         }, readyCount === PILOT_SCREENS.length ? 200 : 409);
       }
 
-      if (action === PROFILE_NATIVE_BEGIN_ACTION) {
+      if (action === PROFILE_NATIVE_BEGIN_ACTION || action === PROFILE_PHRASE_BEGIN_ACTION) {
         // Profile-owned operation only. Router transports context and never calls
         // this action. The OIDC bearer authorizes the trusted existing workflow.
         // The service-role key stays in this Edge and is never put into the context.
         if (!isNativeContinuationIdentity) {
           return json({outcome:"BLOCKED",code:"PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED"},403);
         }
-        const context = body.context;
+        let context: unknown = body.context;
+        if (action === PROFILE_PHRASE_BEGIN_ACTION) {
+          // One Issue contains a literal phrase and *model-authored* bounded
+          // semantic decisions. Only the canonical Router V2 functions derive
+          // Gate2 here. No Gate2 is accepted or transported in the Issue.
+          const requestText = body.request_text;
+          const stage1 = body.stage1_decision;
+          const semantic = body.profile_semantic_decision;
+          if (typeof requestText !== "string" || !requestText.trim() ||
+              requestText.length > 8000 ||
+              !stage1 || typeof stage1 !== "object" || Array.isArray(stage1) ||
+              !semantic || typeof semantic !== "object" || Array.isArray(semantic)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_INPUT_INVALID"},400);
+          }
+          const stage = stage1 as Record<string,unknown>;
+          const judge = semantic as Record<string,unknown>;
+          if (stage.schema_version !== "LF_ROUTER_STAGE1_V2" ||
+              stage.texto_original !== requestText ||
+              stage.downstream_execution_allowed !== false ||
+              stage.negocio_codigo !== "LF" ||
+              stage.es_operacion !== true ||
+              judge.decision !== "SELECTED" ||
+              typeof judge.selected_profile_code !== "string" ||
+              !judge.selected_profile_code) {
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_SEMANTIC_INPUT_INVALID"},400);
+          }
+          const rpcRoute = async (fn:string, input:Record<string,unknown>) => {
+            const response = await deps.fetchFn(
+              `${config.supabaseUrl}/rest/v1/rpc/${fn}`,{
+                method:"POST",
+                headers:{apikey:config.serviceRoleKey,
+                  authorization:`Bearer ${config.serviceRoleKey}`,
+                  "content-type":"application/json"},
+                body:JSON.stringify(input),signal:AbortSignal.timeout(15_000)
+              });
+            if (!response.ok) return null;
+            return await parseJsonObject(response,"PROFILE_PHRASE_ROUTER_RPC_RESPONSE_INVALID");
+          };
+          const r0 = await rpcRoute("lf_router_pipeline_context_begin_v2",
+            {p_request_text:requestText});
+          if (!r0 || r0.status !== "STAGE1_REQUIRED" ||
+              typeof r0.context_token !== "string")
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_ROUTER_BEGIN_NOT_READY"},409);
+          const r1 = await rpcRoute("lf_router_pipeline_context_stage1_submit_v2",
+            {p_context_token:r0.context_token,p_stage1:stage});
+          if (!r1 || r1.status !== "NEXT_TRANSITION_READY" ||
+              typeof r1.context_token !== "string" ||
+              (r1.stage1_validation as Record<string,unknown>|undefined)?.valid !== true)
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_STAGE1_NOT_VALID"},409);
+          const r2 = await rpcRoute("lf_router_pipeline_context_profile_semantic_submit_v2",
+            {p_context_token:r1.context_token,p_raw:JSON.stringify(judge)});
+          if (!r2 || r2.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION" ||
+              r2.transport_mode !== "CONTEXT_TRANSPORT" ||
+              (r2.semantic_validation as Record<string,unknown>|undefined)?.status !== "VALID" ||
+              (r2.semantic_validation as Record<string,unknown>|undefined)?.selected_profile_code !== judge.selected_profile_code) {
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_GATE2_NOT_VALID"},409);
+          }
+          context = r2;
+        }
         if (!context || typeof context !== "object" || Array.isArray(context)) {
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CONTEXT_REQUIRED" }, 400);
         }
