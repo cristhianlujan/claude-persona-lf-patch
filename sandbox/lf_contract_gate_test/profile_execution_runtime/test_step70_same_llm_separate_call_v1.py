@@ -22,7 +22,8 @@ def fixture():
     body={"verdict":"PASS_INDEPENDENT_SEMANTIC","decision_checks":checks,
           "unsupported_claims":[],"blocking_codes":[],
           "reason":"Las doce comprobaciones están respaldadas por fuentes vigentes"}
-    receipt={"receipt_ref":"actions://reviewer/run/200/artifact/receipt",
+    receipt={"schema_version":"LF_STEP70_SAME_LLM_SEPARATE_CALL_RECEIPT_V1",
+         "receipt_ref":"actions://reviewer/run/200/artifact/receipt",
          "execution_id":RUN,"model_id":"GPT-6",
          "model_call_id":"different-native-model-call-0002",
          "producer_call_ref":"actions://producer/run/100/artifact/raw",
