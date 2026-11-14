@@ -428,6 +428,92 @@ BEGIN
  'actual_independent_receipt_required',true);
 END $fn$;
 
+-- Helpers for Step60/70/80. Claims come from the native profile's own
+-- output and the *resolved* Step40 screen, not from a fabricated Run 956.
+CREATE FUNCTION public.lf_input_family_claims_gate_for_run_v1(
+ p_execution_id text,p_profile_output jsonb)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','lf_ops'
+AS $fn$
+DECLARE v_screen_id integer;v_claims jsonb;
+BEGIN
+ v_claims:=p_profile_output#>'{traceability,family_reuse_claims}';
+ IF v_claims IS NULL THEN RETURN jsonb_build_object(
+  'schema_version','LF_FAMILY_REUSE_CLAIMS_V1',
+  'status','NOT_APPLICABLE','continuation_allowed',true,
+  'automatic_rule_creation',false); END IF;
+ SELECT p.id INTO v_screen_id
+ FROM public.lf_operation_execution_steps s
+ JOIN lf_ops.pantallas p ON p.codigo=s.evidence_payload#>>'{resolved_scope,resolved_screen_code}'
+ WHERE s.execution_id=p_execution_id AND s.step_id='input_validate'
+ AND s.status='STEP_PASS_WITH_EVIDENCE' LIMIT 1;
+ IF v_screen_id IS NULL THEN RETURN jsonb_build_object('status','RETURN_TO_WORKER',
+  'code','V1_SCREEN_SCOPE_NOT_VERIFIED','continuation_allowed',true); END IF;
+ RETURN public.lf_input_family_reuse_claims_gate_v1(v_screen_id,v_claims);
+END $fn$;
+
+CREATE FUNCTION public.lf_input_family_semantic_transfer_eval_for_run_v1(
+ p_execution_id text,p_judge jsonb)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','lf_ops'
+AS $fn$
+DECLARE v_screen_id integer;v_claims jsonb;
+BEGIN
+ SELECT e.evidence_payload#>'{profile_output,traceability,family_reuse_claims}'
+ INTO v_claims FROM public.lf_operation_execution_steps e
+ WHERE e.execution_id=p_execution_id AND e.step_id='execute_profile'
+ AND e.status='STEP_PASS_WITH_EVIDENCE';
+ IF v_claims IS NULL THEN RETURN jsonb_build_object(
+  'schema_version','LF_FAMILY_REUSE_INDEPENDENT_JUDGE_V1',
+  'status','NOT_APPLICABLE'); END IF;
+ SELECT p.id INTO v_screen_id
+ FROM public.lf_operation_execution_steps s
+ JOIN lf_ops.pantallas p ON p.codigo=s.evidence_payload#>>'{resolved_scope,resolved_screen_code}'
+ WHERE s.execution_id=p_execution_id AND s.step_id='input_validate'
+ AND s.status='STEP_PASS_WITH_EVIDENCE' LIMIT 1;
+ IF v_screen_id IS NULL THEN RETURN jsonb_build_object(
+  'schema_version','LF_FAMILY_REUSE_INDEPENDENT_JUDGE_V1',
+  'status','RETURN_TO_WORKER','code','V1_SCREEN_SCOPE_NOT_VERIFIED',
+  'continuation_allowed',true); END IF;
+ RETURN public.lf_input_family_semantic_transfer_eval_v1(v_screen_id,v_claims,p_judge);
+END $fn$;
+
+CREATE FUNCTION public.lf_input_family_catalog_receipts_for_run_v1(p_execution_id text)
+RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','programacion','lf_ops'
+AS $fn$
+WITH claims AS(
+ SELECT e.evidence_payload#>'{profile_output,traceability,family_reuse_claims}' q
+ FROM public.lf_operation_execution_steps e
+ WHERE e.execution_id=p_execution_id AND e.step_id='execute_profile'
+   AND e.status='STEP_PASS_WITH_EVIDENCE'
+), screen AS (
+ SELECT p.id FROM public.lf_operation_execution_steps s
+ JOIN lf_ops.pantallas p ON p.codigo=s.evidence_payload#>>'{resolved_scope,resolved_screen_code}'
+ WHERE s.execution_id=p_execution_id AND s.step_id='input_validate'
+ AND s.status='STEP_PASS_WITH_EVIDENCE'
+), matched AS (
+ SELECT v.source_id,v.family_code,v.source_kind,v.rule_id,
+  v.rate_limit_policy_id,v.timeout_policy_id,v.session_policy_id,v.security_policy_id,
+  v.source_hash
+ FROM claims q JOIN screen s ON true
+ CROSS JOIN LATERAL jsonb_array_elements(
+    CASE WHEN jsonb_typeof(q.q)='array' THEN q.q ELSE '[]'::jsonb END) item(value)
+ JOIN public.v_lf_input_family_coverage_by_screen_v1 v
+ ON v.pantalla_id=s.id AND v.family_code=item.value->>'family_code'
+ AND v.source_id::text=item.value->>'source_catalog_id'
+ AND v.source_hash=item.value->>'source_hash'
+ AND v.scope_applies AND v.freshness='CURRENT' AND v.catalog_status='ACTIVE'
+ WHERE item.value->>'action'='REUSE_REFERENCE'
+)
+SELECT coalesce(jsonb_agg(jsonb_build_object(
+ 'source_id',source_id,'family_code',family_code,'source_kind',source_kind,
+ 'rule_id',rule_id,'rate_limit_policy_id',rate_limit_policy_id,
+ 'timeout_policy_id',timeout_policy_id,'session_policy_id',session_policy_id,
+ 'security_policy_id',security_policy_id,'source_hash',source_hash)
+ ORDER BY family_code,source_id),'[]'::jsonb) FROM matched
+$fn$;
+
 -- Service-only reader, public view still subject to ACL.
 REVOKE ALL ON programacion.input_family_inheritable_sources_v1 FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON programacion.input_family_inheritable_members_v1 FROM PUBLIC,anon,authenticated;
@@ -446,4 +532,11 @@ GRANT EXECUTE ON FUNCTION public.lf_input_family_catalog_context_v1(integer) TO 
 GRANT EXECUTE ON FUNCTION public.lf_input_family_catalog_context_for_run_v1(text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.lf_input_family_reuse_claims_gate_v1(integer,jsonb) TO service_role;
 GRANT EXECUTE ON FUNCTION public.lf_input_family_semantic_transfer_eval_v1(integer,jsonb,jsonb) TO service_role;
+
+REVOKE ALL ON FUNCTION public.lf_input_family_claims_gate_for_run_v1(text,jsonb) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.lf_input_family_semantic_transfer_eval_for_run_v1(text,jsonb) FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.lf_input_family_catalog_receipts_for_run_v1(text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_input_family_claims_gate_for_run_v1(text,jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.lf_input_family_semantic_transfer_eval_for_run_v1(text,jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.lf_input_family_catalog_receipts_for_run_v1(text) TO service_role;
 COMMIT;
