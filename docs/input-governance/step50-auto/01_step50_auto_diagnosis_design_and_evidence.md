@@ -181,7 +181,7 @@ gobernada de autoridad y pruebas de regresión antes de promoción.
 - El SQL ya desplegado `lf_profile_native_bridge_prepare_v1` transporta
   a Step50 el `input_governance` de Step40, por lo que no necesita otra
   vía. El candidato SQL
-  `20261114023000_lf_profile_readonly_ig_findings_report_v1.sql`
+  `20261114020000_lf_profile_skill_dynamic_selection_v1.sql` (sección `INTEGRATED_OFFICIAL_STEP80_REPORT_V1_SINGLE_TRANSACTION`)
   **solo extiende el escritor de informe oficial Step80**, con guard
   de preimagen MD5 `cafaaff15eb0751a9af0cfb67db3c30b`; agrega
   hallazgos íntegros de Step40 y la decisión real de Step50, sin
@@ -219,3 +219,11 @@ por la ruta de GitHub Actions/OIDC existente. **No requiere modificar ni
 re-desplegar `lf-profiles-governance-caller-v1`** para corregir el 409.
 La regla previa de EKB `BLOCKED: no avanzar` requiere reconciliación
 documental gobernada. Hasta superar ese gate, NO-GO.
+
+### Cierre PASE del lote 02:12 — source-first en una migración
+- El contrato confiable `_classify_source_first_pending` de `lf_migration_source_parity_ci_context.py` exige `len(local_only)==1` y `migration_changed==[expected_path]`. El Train `lf-migration-merge-train.yml` rechaza más de una migración (`FAIL_MIGRATION_MULTIPLE_PER_PR`).
+- Se consolidó íntegramente la SQL de las dos candidatas originales en **una** transacción `BEGIN/COMMIT` y **un** archivo nuevo: `20261114020000_lf_profile_skill_dynamic_selection_v1.sql`. El guard de preimagen de `lf_profile_native_bridge_record_report_v1` sigue exacto; la antigua `20261114023000` fue eliminada de PR y manifiesto.
+- Readback de CI exacto HEAD `9c6916fd1e47c1e3c87d18c038c3960e278dab47`: `PASE Merge Gate` run 43570065116 con **pase-merge-gate PASS** y **migration-source-parity PASS**; `PASS_LF_MIGRATION_SOURCE_FIRST_PENDING version=20261114020000 scope=EXACT_ONE_NEW_MIGRATION_PR remote_ahead=false`. `FAIL_LF_MIGRATION_LEGACY_ATTESTATION` aparece como **caso negativo deliberado del self-test**, seguido de `PASS_LF_MIGRATION_SOURCE_FIRST_SELFTEST=7/7` y resultado de job exitoso; no es otro bloqueo activo.
+- Esta conformidad **no autoriza** despliegue: PR DRAFT, `ready-to-merge` ausente, revisión integrada y decisión humana pendientes. El archivo candidato solo podría aplicarse vía Train gobernado, nunca SQL directo de inspección.
+- GitHub Train (main actual): label `ready-to-merge` por actor GitHub autenticado `cristhianlujan` o `paulozterra` (o allowlist de variable `LF_MIGRATION_TRAIN_ALLOWED_ACTORS`), PR no DRAFT contra main, checks exact HEAD, entorno `lf-merge-train`, identidad bot GitHub App firmando sus operaciones. **No existe firma documental suficiente desde este chat**: `lf_ig_project_owner_v2` observado `TEMP_DOCUMENTARY_ACTIVE/UNVERIFIED_CHAT_DECLARATION`; owner `identity_verified=false` no satisface identidad probada. Protección efectiva de environment/reviewer no fue leída.
+- Para registrar Step40 del RUN existente sin ruta nueva: chat **nativo ejecutor de producto** por el Issue/workflow OIDC protegido, mismo `execution_id`; RPC `public.lf_profile_native_bridge_prepare_v1(p_execution_id,p_source_revision,p_source_digest,p_actor_execution_id)` (SECURITY DEFINER, EXECUTE service_role) invoca `lf_profile_execution_input_validate_v1` y `lf_record_profile_execution_step_v1`. Solo la ruta autenticada puede ejercer la autoridad `service_role`; el SQL inspector y el chat de arquitectura no deben escribir directamente. Si retorna `INPUT_GOVERNANCE_RUNTIME_REQUIRED`, usar el ticket existente y reintentar bridge; si se obtiene IG BLOCKED en análisis read-only, respetar el veredicto SQL vigente. No afirmar el paso 40 real registrado sin SELECT.
