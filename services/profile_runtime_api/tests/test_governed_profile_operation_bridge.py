@@ -1461,7 +1461,7 @@ class ProfileSelectedStep40SyntaxPg17Pg18(unittest.TestCase):
 
         self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED_FOR_PG")
         migration = (ROOT / "supabase/migrations/"
-            "20261114050000_lf_profile_skill_step40_policy_v1.sql").read_text()
+            "20261114105801_lf_profile_skill_step40_policy_v1.sql").read_text()
         rx = re.compile(
             r"(?ms)^CREATE OR REPLACE FUNCTION\s+(.+?)\nAS \$(?P<tag>\w+)\$"
             r"(?P<body>.*?)\$(?P=tag)\$;"
@@ -1580,6 +1580,103 @@ CREATE TABLE public.lf_profile_skill_selection_receipt_v1(
             finally:
                 subprocess.run(["docker", "rm", "-f", name],
                     capture_output=True, timeout=45)
+
+
+
+class IgBoundedStep40TicketFindingPgDual(unittest.TestCase):
+    """PG17/18: two consumed tickets yield a real BLOCKED skill finding; no third issue."""
+    def test_ig_two_ticket_cap_and_handler_pg17_pg18(self):
+        import re,shutil,subprocess,time,uuid
+        self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
+        path=(ROOT/"supabase/migrations"/
+            "20261114130500_lf_ig_step40_bounded_retry_finding_v1.sql")
+        src=path.read_text(encoding="utf-8")
+        self.assertIn("SOURCE_STATE_DRIFT:skill_ticket_issuer",src)
+        self.assertIn("SKILL_IG_RUNTIME_ATTEMPTS_EXHAUSTED_AS_FINDING",src)
+        self.assertIn("SKILL_RUNTIME_TICKET_CAP_EXHAUSTED",src)
+        at=[m.start() for m in re.finditer(r"(?m)^CREATE OR REPLACE FUNCTION ",src)]
+        self.assertEqual(len(at),2)
+        definitions=[]
+        for j,start in enumerate(at):
+            chunk=src[start:at[j+1] if j+1<len(at) else len(src)]
+            end=chunk.find("$function$;",chunk.find("AS $function$")+len("AS $function$"))
+            self.assertGreater(end,0)
+            definitions.append(chunk[:end+len("$function$;")])
+        fixture=r"""
+\set ON_ERROR_STOP on
+CREATE SCHEMA private;
+CREATE SCHEMA programacion;
+CREATE SCHEMA extensions;
+CREATE EXTENSION pgcrypto WITH SCHEMA extensions;
+CREATE TABLE public.lf_operation_execution(
+  execution_id text PRIMARY KEY,operation_code text,target_type text,
+  target_code text,status text,manifest jsonb);
+CREATE TABLE private.lf_profile_skill_runtime_ticket_v1(
+  ticket_id uuid,execution_id text,skill_code text,runtime_slug text,
+  request_body jsonb,request_sha256 text,issued_at timestamptz DEFAULT now(),
+  expires_at timestamptz,consumed_at timestamptz,consumed_by text);
+CREATE TABLE public.lf_skill_catalog_v1(
+  skill_code text,status text,effect text,runtime_slug text);
+CREATE FUNCTION public.lf_profile_execution_plan_v1(text,text,jsonb)
+RETURNS jsonb LANGUAGE sql AS $mock$
+SELECT '{"status":"READY","skills":[{"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK","effect":"READ_ONLY"}]}'::jsonb
+$mock$;
+CREATE FUNCTION public.lf_profile_skill_invoke_selected_v1(text,text,text,jsonb,jsonb)
+RETURNS jsonb LANGUAGE sql AS $mock$
+SELECT '{"status":"RUNTIME_REQUIRED","runtime_request":{"runtime_slug":"input-governance-agent-v1","transport":"DIRECT_EDGE_INVOCATION","request_body":{"pantalla_id":44,"consumer":"CONTEXT_PACK"},"legacy_ticket_adapter":"INPUT_GOVERNANCE_CONTEXT_PACK_V1"}}'::jsonb
+$mock$;
+CREATE FUNCTION programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)
+RETURNS jsonb LANGUAGE sql AS $mock$
+SELECT '{"status":"INPUT_GOVERNANCE_REQUIRED","pantalla_id":44}'::jsonb
+$mock$;
+INSERT INTO public.lf_operation_execution VALUES
+('RUN-TEST-01','EJECUCION_PERFIL_LF','PERFIL','PERFIL-TEST','IN_PROGRESS',
+ '{"router_profile_handoff":{"channel":"PRODUCTO"}}');
+INSERT INTO public.lf_skill_catalog_v1 VALUES
+('INPUT_GOVERNANCE_CONTEXT_PACK','READY','READ_ONLY','input-governance-agent-v1');
+INSERT INTO private.lf_profile_skill_runtime_ticket_v1(
+ ticket_id,execution_id,skill_code,runtime_slug,request_body,
+ request_sha256,expires_at,consumed_at)
+SELECT gen_random_uuid(),'RUN-TEST-01','INPUT_GOVERNANCE_CONTEXT_PACK',
+ 'input-governance-agent-v1','{"pantalla_id":44,"consumer":"CONTEXT_PACK"}',
+ repeat('a',64),now()+interval '5 minutes',now() FROM generate_series(1,2);
+"""
+        input_json='{"execution_id":"RUN-TEST-01","profile_code":"PERFIL-TEST","consumer":"CONTEXT_PACK","request_text":"wizard","scope":{"resolution_status":"RESOLVED"}}'
+        checks=(
+            "\nSELECT 'HANDLER='||(public.lf_skill_h_input_governance_context_pack_v1('"+
+            input_json+"'::jsonb)->>'blocking_code');"
+            "\nSELECT 'ISSUER='||(public.lf_profile_skill_runtime_ticket_issue_v1("
+            "'RUN-TEST-01','INPUT_GOVERNANCE_CONTEXT_PACK','"+input_json+
+            "'::jsonb)->>'code');"
+            "\nSELECT 'TICKETS='||count(*) FROM private.lf_profile_skill_runtime_ticket_v1;"
+        )
+        for image,version in (("postgres:17.6","17.6"),("postgres:18.7","18.7")):
+            name="lf-ig-ticket-"+uuid.uuid4().hex[:10]
+            p=subprocess.run(["docker","run","-d","--rm","--name",name,
+                "-e","POSTGRES_PASSWORD=fixture",image],
+                capture_output=True,text=True,timeout=240)
+            self.assertEqual(p.returncode,0,p.stderr[-800:])
+            try:
+                for _ in range(90):
+                    ready=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
+                        capture_output=True,timeout=10)
+                    if ready.returncode==0: break
+                    time.sleep(1)
+                self.assertEqual(ready.returncode,0)
+                q=fixture+"\nBEGIN;\n"+"\n".join(definitions)+checks+"\nROLLBACK;\n"
+                done=subprocess.run(["docker","exec","-i",name,"psql","-X","-A","-t",
+                    "-U","postgres","-d","postgres"],input=q,capture_output=True,
+                    text=True,timeout=240)
+                self.assertEqual(done.returncode,0,
+                    "PG"+version+"\n"+done.stderr[-5000:]+"\n"+done.stdout[-2200:])
+                output=done.stdout.splitlines()
+                self.assertIn("HANDLER=SKILL_IG_RUNTIME_ATTEMPTS_EXHAUSTED_AS_FINDING",output)
+                self.assertIn("ISSUER=SKILL_RUNTIME_TICKET_CAP_EXHAUSTED",output)
+                self.assertIn("TICKETS=2",output)
+                print("PASS_IG_TICKET_CAP_PG_"+version+" tickets=2 finding=BLOCKED ROLLBACK=true",flush=True)
+            finally:
+                subprocess.run(["docker","rm","-f",name],capture_output=True,timeout=45)
+
 
 
 if __name__ == "__main__":
