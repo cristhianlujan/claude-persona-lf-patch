@@ -687,10 +687,11 @@ export async function handleProfileContinuation(
     if (planned.error) return planned.error;
     const plan = planned.result;
     if (plan?.status === "SEMANTIC_SELECTION_REQUIRED" && plan?.profile_code === e.target_code) {
+      const selection = plan.selection_receipt as Payload | undefined;
       return respond({outcome:"SKILL_SEMANTIC_SELECTION_REQUIRED",
         execution_id:e.execution_id,profile_code:e.target_code,
-        semantic_candidates:plan.selection_receipt?.semantic_candidates,
-        required_skills:plan.selection_receipt?.required_skills,
+        semantic_candidates:selection?.semantic_candidates,
+        required_skills:selection?.required_skills,
         next_action:"NATIVE_PROFILE_JUDGE_SKILL_AND_RESUME_SAME_EXECUTION"});
     }
     if (plan?.status !== "READY" || plan?.operation_code !== "EJECUCION_PERFIL_LF" ||
