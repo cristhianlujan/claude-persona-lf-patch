@@ -3,7 +3,7 @@
   "paths": {
     "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
     "supabase/functions/lf-profiles-governance-caller-v1/caller.ts": "SUPABASE_FUNCTION",
-    "supabase/migrations/20261114020000_lf_profile_step40_ig_profile_owned_v1.sql": "MIGRATION",
+    "supabase/migrations/20261114020000_lf_profile_skill_dynamic_selection_v1.sql": "MIGRATION",
     "services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py": "SERVICE_RUNTIME",
     "docs/input-governance/step50-auto/01_step50_auto_diagnosis_design_and_evidence.md": "DOCUMENTATION",
     "sandbox/lf_contract_gate_test/changesets/lf-step50-autonomous-profile-draft-v1.json": "CHANGESET_MANIFEST",
