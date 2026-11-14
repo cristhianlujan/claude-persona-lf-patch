@@ -157,6 +157,15 @@ BEGIN
    'continuation_allowed',true,'automatic_rule_creation',false,
    'source_discovery_required',true,'closure_verified',false);
  END IF;
+ -- A new run supersedes this evidentiary map; never silently reuse old 956 mapping.
+ IF EXISTS(SELECT 1 FROM programacion.input_readiness_runs newer
+           WHERE newer.pantalla_id=v.pantalla_id AND newer.id>v.source_run_id) THEN
+   RETURN jsonb_build_object('status','STALE_IG_RUN_RECURATE',
+     'source_run_id',v.source_run_id,'screen_id',v.pantalla_id,'family',v.family_code,
+     'continuation_allowed',true,'automatic_rule_creation',false,
+     'closure_verified',false,'policy_link_written',false,
+     'next_action','RECURATE_AND_REBUILD_FAMILY_REUSE_MAPPING');
+ END IF;
  v_live_valid:=CASE
   WHEN v.resolution_path='HEREDAR' THEN EXISTS(
     SELECT 1 FROM lf_ops.reglas r WHERE r.id=v.transversal_regla_id
