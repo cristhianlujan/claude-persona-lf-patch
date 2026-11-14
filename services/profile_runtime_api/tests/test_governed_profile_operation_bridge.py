@@ -566,7 +566,8 @@ SELECT 'ROLLBACK_EMPTY=' ||
                 migration = Path(__file__).resolve().parents[3] / (
                     "supabase/migrations/20261114020000_lf_profile_skill_dynamic_selection_v1.sql")
                 operation_sql = migration.read_text(encoding="utf-8")
-                operation_sql = operation_sql.split("-- INTEGRATED_OFFICIAL_STEP80_REPORT_V1_SINGLE_TRANSACTION", 1)[0]\n                operation_sql = operation_sql.replace("\nBEGIN;\n", "\n").replace("\nCOMMIT;\n", "\n")
+                operation_sql = operation_sql.split("-- INTEGRATED_OFFICIAL_STEP80_REPORT_V1_SINGLE_TRANSACTION", 1)[0]
+                operation_sql = operation_sql.replace("\nBEGIN;\n", "\n").replace("\nCOMMIT;\n", "\n")
                 generic_setup = r"""
 BEGIN;
 CREATE ROLE anon NOLOGIN;
