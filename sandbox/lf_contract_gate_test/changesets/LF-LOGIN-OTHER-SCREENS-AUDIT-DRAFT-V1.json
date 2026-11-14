@@ -1,6 +1,5 @@
 {
   "solution_ref": "LF-LOGIN-OTHER-SCREENS-AUDIT-DRAFT-V1",
-  "policy": "DRAFT_ONLY_NO_SUPABASE_EFFECT",
   "paths": {
     "audits/login-other-screens-20261113/01_inventario_regla_estado_choca_texto.csv": "INPUT_GOVERNANCE",
     "audits/login-other-screens-20261113/02_decisiones_humanas.json": "INPUT_GOVERNANCE",
