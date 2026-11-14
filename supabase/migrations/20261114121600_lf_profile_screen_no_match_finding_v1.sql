@@ -208,6 +208,6 @@ BEGIN
      'router_reentry_required',false
   );
 END
-$function$
+$function$;
 
 COMMIT;
