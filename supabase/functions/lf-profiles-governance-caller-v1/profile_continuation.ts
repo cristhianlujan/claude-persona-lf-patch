@@ -330,6 +330,13 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
     const detail = typeof data?.message === "string" ? data.message.slice(0, 400) : null;
     return respond({ outcome: "BLOCKED", code: "PROFILE_SKILL_INVOKE_REJECTED", skill_code: skill, execution_id: e.execution_id, detail }, 409);
   }
+  // Official SQL invoker can fail closed with HTTP 200 + status BLOCKED/FAILED.
+  // Never convert that response into a successful profile skill invocation.
+  if (!data || data.status === "BLOCKED" || data.status === "FAILED") {
+    return respond({outcome:"BLOCKED",
+      code:typeof data?.blocking_code==="string" ? data.blocking_code : "PROFILE_SKILL_INVOKER_NOT_COMPLETED",
+      skill_code:skill,execution_id:e.execution_id},409);
+  }
   return respond({ outcome: "SKILL_INVOKED", skill_code: skill, execution_id: e.execution_id, profile_code: e.target_code, result: data });
 }
 
