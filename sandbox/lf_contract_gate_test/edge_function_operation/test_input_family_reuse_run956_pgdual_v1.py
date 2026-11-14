@@ -121,6 +121,8 @@ SELECT 'ANON_DENIED='||(NOT has_function_privilege('anon',
  'public.lf_input_family_reuse_before_propose_v1(integer,text,bigint)','EXECUTE'))::text;
 UPDATE lf_ops.politicas_rate_limit SET status='INACTIVO' WHERE policy_code='RATE-B2B-UPLOAD';
 SELECT 'DRIFT_DETECTED='||(public.lf_input_family_reuse_before_propose_v1(44,'RATE_LIMIT',956)->>'status');
+INSERT INTO programacion.input_readiness_runs VALUES(957,44,19);
+SELECT 'STALE_RUN='||(public.lf_input_family_reuse_before_propose_v1(44,'AUDIT',956)->>'status');
 """
      txn="BEGIN;\n"+inner+"\n"+check+"\nROLLBACK;\n"
      txn+="SELECT 'POST_ROLLBACK_MAP='||(to_regclass('programacion.input_family_reuse_map_v1') IS NULL)::text;\n"
@@ -132,7 +134,7 @@ SELECT 'DRIFT_DETECTED='||(public.lf_input_family_reuse_before_propose_v1(44,'RA
        "NO_FAKE_CLOSURE=17","POLICY_LINKS=0","RULES=13","RUN_PARTIAL=17",
        "REUSE_OK=REUSE_PROPOSAL_WITH_FINDINGS","POLICY_ROW=1","SESSION_IS_VIGENTE=VIGENTE",
        "NO_RULE_CREATION=false","FLOW_CONTINUES=true","NOT_MAPPED=NOT_MAPPED_REVIEW_SOURCE",
-       "SERVICE_GRANT=true","ANON_DENIED=true","DRIFT_DETECTED=SOURCE_DRIFT_REVIEW",
+       "SERVICE_GRANT=true","ANON_DENIED=true","DRIFT_DETECTED=SOURCE_DRIFT_REVIEW","STALE_RUN=STALE_IG_RUN_RECURATE",
        "POST_ROLLBACK_MAP=true","POST_ROLLBACK_FUNC=true","POLICY_UNCHANGED=CANDIDATO"):
       self.assertIn(required,rr.stdout,required+"\n"+rr.stdout[-2800:])
      # A missing referenced policy must abort the exact migration; no fake mapping.
