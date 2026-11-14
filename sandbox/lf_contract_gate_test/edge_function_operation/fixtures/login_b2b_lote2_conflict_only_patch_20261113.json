@@ -1,0 +1,457 @@
+{
+  "schema": "LF_LOGIN_B2B_LOTE2_CONFLICT_ONLY_V1",
+  "scope_codes": [
+    "B2B-RULE-AUTH-004",
+    "B2B-RULE-AUTH-005",
+    "B2B-RULE-AUTH-006",
+    "B2B-RULE-AUTH-007",
+    "B2B-RULE-AUTH-011",
+    "B2B-RULE-AUTH-012",
+    "B2B-RULE-AUTH-013",
+    "B2B-RULE-AUTH-014",
+    "B2B-RULE-AUTH-017",
+    "B2B-RULE-AUTH-023",
+    "B2B-RULE-AUTH-024",
+    "B2B-RULE-AUTH-025",
+    "B2B-RULE-AUTH-027",
+    "B2B-RULE-AUTH-028",
+    "B2B-RULE-AUTH-029",
+    "B2B-RULE-AUTH-030",
+    "B2B-RULE-AUTH-031",
+    "B2B-RULE-AUTH-032",
+    "B2B-RULE-AUTH-033",
+    "B2B-RULE-AUTH-034",
+    "B2B-RULE-AUTH-035",
+    "B2B-RULE-AUTH-036",
+    "B2B-RULE-AUTH-037",
+    "B2B-RULE-AUTH-038",
+    "B2B-RULE-AUTH-040",
+    "B2B-RULE-AUTH-041",
+    "B2B-RULE-AUTH-042",
+    "B2B-RULE-AUTH-043",
+    "B2B-RULE-AUTH-044",
+    "B2B-RULE-AUTH-045",
+    "B2B-RULE-AUTH-048",
+    "B2B-RULE-STATE-001"
+  ],
+  "checked_count": 32,
+  "candidate_count": 31,
+  "conflict_codes": [
+    "B2B-RULE-AUTH-013",
+    "B2B-RULE-AUTH-030",
+    "B2B-RULE-AUTH-033",
+    "B2B-RULE-AUTH-034",
+    "B2B-RULE-AUTH-043"
+  ],
+  "protected_codes": [
+    "B2B-RULE-AUTH-018",
+    "B2B-RULE-AUTH-019",
+    "B2B-RULE-AUTH-020",
+    "B2B-RULE-AUTH-021",
+    "B2B-RULE-AUTH-026",
+    "B2B-RULE-AUTH-047"
+  ],
+  "excluded_state_rule": "B2B-RULE-STATE-001",
+  "status": "DOCUMENTARY_PROPOSALS_ONLY_NO_LIVE_WRITES",
+  "model": "PR3844_DOCKER_PG17_6_PG18_7_JSONB_POPULATE_ROW_SHA256_UPDATE_ROLLBACK",
+  "dependency": {
+    "pr3844_head": "980c203d67df6469161cf44bbb457861cc32c065",
+    "policy19": "DOC_PR3844",
+    "policy20": "DOC_PR3844",
+    "password_failure_policy": "AUTH_LOGIN_FAILED_PASSWORD_NEW_POLICY_NOT_IN_LIVE",
+    "mfa_otp_general_rate_policy": "PENDING_TECHNICAL_REGISTRY_HOMOLOGATION"
+  },
+  "proposals": [
+    {
+      "code": "B2B-RULE-AUTH-013",
+      "source_status": "CANDIDATO",
+      "source_sha256": "913048734e534b21eba79a7338715b9acf824749470421d95aeb6dafa4935f26",
+      "original_description": "El Login se comunica exclusivamente con una capa de autenticación controlada por LF del lado servidor. Esa capa puede delegar la verificación a un IdP/proveedor confiable, pero el navegador no debe verificar credenciales por sí mismo ni depender directamente del contrato particular del proveedor. Si la identidad no puede verificarse válidamente, no se crea sesión ni se concede acceso.",
+      "proposed_description": "El Login usa exclusivamente LF_AUTH_BOUNDARY del lado servidor. LF valida el usuario y contraseña sin exponer al navegador credenciales, secretos ni contratos particulares del IdP. Cuando SEC-B2B-MFA exige segundo factor para los perfiles 1 a 6 por 30 días sin uso o 3 meses calendario sin cambio de contraseña, LF verifica OTP por correo Brevo antes de AUTHENTICATED; no se exige Google Workspace, SAML, FIDO2, passkeys ni llaves de seguridad. La selección o integración real del proveedor de identidad principal sigue PENDING_ADR_003_M1_SPIKE y no se presume implementada. Si la identidad o el segundo factor exigido no pueden validarse, no se crea sesión ni permisos.",
+      "config_patch": {
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "admin_identity_provider_status": "NOT_SELECTED_NOT_GOOGLE_SAML",
+        "identity_primary_method": "USERNAME_PASSWORD_SERVER_VALIDATED",
+        "mfa_factor_source": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+        "mfa_factor_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "google_saml_required": false,
+        "fido2_passkey_required": false
+      },
+      "reason": "valor_config.admin_identity_provider=GOOGLE_WORKSPACE contradice la eliminación de Google Workspace/SAML como método del Login.",
+      "owner_decisions": [
+        "a"
+      ],
+      "changes_applied_in_live": false
+    },
+    {
+      "code": "B2B-RULE-AUTH-030",
+      "source_status": "CANDIDATO",
+      "source_sha256": "6b82d5d7cb56f0318f3870437e0d7ec0e486c27b955bd29dd2fc34924a3df6d5",
+      "original_description": "B2B-AUTH-003 solo puede actualizar la contraseña después de AUTH-029. El servidor valida la nueva credencial contra security_policy_id=24, comprueba la coincidencia exacta de los dos campos y delega la actualización a el proveedor OIDC que resulte del spike M1 de ADR-003. La UI muestra una guía dinámica derivada de la política, pero no mantiene una copia independiente de sus umbrales ni requisitos.",
+      "proposed_description": "B2B-AUTH-003 permite actualizar contraseña solo después de AUTH-029 con contexto temporal PASSWORD_UPDATE_ONLY, O como final de recuperación asistida aprobada por soporte conforme AUTH-020 y política central 20. La vía asistida exige DNI escaneado, permisos por perfil de lf_ops.b2b_recovery_profile_permissions, approvers_required configurable 1 o 2 (inicial 1), aviso al contacto anterior, auditoría y espera de 48 horas; después emite una clave temporal de un solo uso al correo designado y obliga a renovar clave y correo antes de cualquier sesión operativa. La clave temporal no sustituye MFA del siguiente acceso. El servidor valida contraseña nueva y coincidencia de campos contra security_policy_id=24; la UI solo muestra guía dinámica y no duplica umbrales. La actualización se efectúa exclusivamente por la frontera de identidad LF con proveedor primario pendiente ADR-003/M1; ningún flujo de recuperación concede acceso operativo por sí solo.",
+      "config_patch": {
+        "recovery_allowed_entry_paths": [
+          "AUTH029_PASSWORD_UPDATE_ONLY",
+          "AUTH020_ASSISTED_SUPPORT_APPROVED_48H_ONE_TIME_KEY"
+        ],
+        "assisted_recovery_policy_id": 20,
+        "approvers_required_source": "lf_ops.politicas_seguridad.SEC-B2B-MFA-RECOVERY.policy_config.approvers_required",
+        "approvers_required_allowed": [
+          1,
+          2
+        ],
+        "approvers_required_initial": 1,
+        "recovery_permission_source": "lf_ops.b2b_recovery_profile_permissions",
+        "assisted_recovery_wait_hours": 48,
+        "assisted_previous_contact_notice": "REQUIRED",
+        "assisted_audit": "REQUIRED",
+        "assisted_temp_key": "ONE_TIME_ONLY",
+        "assisted_force_password_and_email_change": true,
+        "assisted_session_before_completion": "DENY"
+      },
+      "reason": "«solo después de AUTH-029» excluye la recuperación asistida autorizada sin correo/celular previo.",
+      "owner_decisions": [
+        "d"
+      ],
+      "changes_applied_in_live": false
+    },
+    {
+      "code": "B2B-RULE-AUTH-033",
+      "source_status": "CANDIDATO",
+      "source_sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b",
+      "original_description": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega.",
+      "proposed_description": "Tras validar usuario y contraseña en LF_AUTH_BOUNDARY, la política central SEC-B2B-MFA evalúa de forma server-side únicamente dos disparadores: 30 días sin uso o 3 meses calendario sin cambiar contraseña, aplicables a perfiles 1, 2, 3, 4, 5 y 6. Si ninguno aplica, el estado de reconocimiento del dispositivo no impone OTP adicional; si aplica cualquiera, la respuesta es MFA_REQUIRED y se abre un contexto transitorio para B2B-AUTH-004 antes de AUTHENTICATED o permisos. El segundo factor se envía primero por OTP al correo registrado mediante Brevo. SMS Intico se permite solo si, tras actualizar correo, el usuario informa por llamada a soporte que el correo OTP no llega y un operador con permiso can_enable_sms_contingency habilita y audita manualmente la contingencia; sin fallback automático. La confianza o revocación de un dispositivo es señal server-side y no omite MFA exigido ni sustituye usuario y contraseña. B2B-AUTH-004 no es pública: se deniega navegación directa sin contexto válido; el cliente no decide factor, proveedor ni autenticación.",
+      "config_patch": {
+        "factor_source": "LF_EMAIL_OTP_BREVO_IF_POLICY3_MFA_REQUIRED",
+        "mfa_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "non_admin_second_factor": "LF_EMAIL_OTP_BREVO_IF_POLICY3_MFA_REQUIRED",
+        "recognized_device_outcome": "DEFER_TO_POLICY3_30D_OR_3_MONTHS",
+        "unrecognized_device_outcome": "DEFER_TO_POLICY3_30D_OR_3_MONTHS",
+        "mfa_decision_authority": "SEC-B2B-MFA_SECURITY_POLICY_ID_3",
+        "mfa_trigger_device_recognition": "DENY",
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_EMAIL_UPDATE_FAILED_DELIVERY_AND_USER_CALL",
+        "sms_support_permission": "can_enable_sms_contingency",
+        "sms_automatic_fallback": "DENY",
+        "fido2_passkey_requirement": "DENY"
+      },
+      "reason": "MFA se decide por dispositivo reconocido/no reconocido y solo para perfiles no administradores; contradice la condición 30d/3m y cobertura 1–6.",
+      "owner_decisions": [
+        "a",
+        "b",
+        "c"
+      ],
+      "changes_applied_in_live": false
+    },
+    {
+      "code": "B2B-RULE-AUTH-034",
+      "source_status": "CANDIDATO",
+      "source_sha256": "7556b0412ca1cabb5b2eadef82e4c3f8884ad6f3f8cc91e81a47e0fc4c8d0147",
+      "original_description": "B2B-AUTH-004 solicita un código OTP únicamente después de que AUTH-033 determine que corresponde el segundo control por correo. LF genera el desafío del lado servidor, entrega el código mediante Brevo al correo registrado y valida el valor antes de continuar. El código, credenciales de Brevo y respuesta cruda del proveedor no se registran ni se exponen a analytics o al cliente.",
+      "proposed_description": "B2B-AUTH-004 presenta desafío OTP únicamente tras usuario y contraseña validados y cuando la política central SEC-B2B-MFA exija MFA a cualquier perfil 1–6 (30 días sin uso o 3 meses sin cambiar contraseña). LF genera OTP en servidor, lo entrega primero por correo Brevo registrado y valida el valor antes de AUTHENTICATED. Un dispositivo nuevo o reconocido no es por sí mismo disparador ni excepción de MFA. Cuando el usuario actualizó su correo y aún no recibe el OTP, solo soporte, tras solicitud telefónica y comprobación, puede habilitar de forma auditada SMS Intico con can_enable_sms_contingency; nunca fallback automático ni selección del cliente. El OTP SMS se verifica también en servidor. No registrar ni exponer OTP, credenciales Brevo/Intico o payload crudo; el rate limit del OTP MFA es distinto de RATE-B2B-LOGIN por IP, con recurso canónico pendiente de homologar.",
+      "config_patch": {
+        "mfa_applicability_policy_id": 3,
+        "mfa_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mfa_challenge_trigger": "SEC_B2B_MFA_ONLY_30D_IDLE_OR_3_MONTHS_PASSWORD",
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_mode": "SUPPORT_MANUAL_WITH_PERMISSION_AND_AUDIT",
+        "sms_support_permission": "can_enable_sms_contingency",
+        "sms_automatic_fallback": "DENY",
+        "new_device_rate_limit_rule_id": null,
+        "new_device_rate_limit_policy_id": null,
+        "new_device_rate_limit_resource": null,
+        "general_mfa_otp_rate_limit_mapping": "PENDING_HOMOLOGATION_NOT_YET_VIGENTE",
+        "separate_login_ip_rate_limit_code": "RATE-B2B-LOGIN"
+      },
+      "reason": "Los atributos OTP y rate limit dicen «dispositivo nuevo» como ámbito del segundo factor, que ahora depende solo de la política 3.",
+      "owner_decisions": [
+        "a",
+        "b",
+        "c"
+      ],
+      "changes_applied_in_live": false
+    },
+    {
+      "code": "B2B-RULE-AUTH-043",
+      "source_status": "CANDIDATO",
+      "source_sha256": "3e15341ff449f436f3c8cef077be20f9282f260465e738468a76cecac5fbcea7",
+      "original_description": "La solicitud inicial y los reenvíos del OTP para dispositivo no reconocido comparten únicamente el contador de AUTH_NEW_DEVICE_OTP_SEND. El contador no consume ni bloquea PASSWORD_RECOVERY ni correos transaccionales. La IP es una señal preventiva de riesgo: puede elevar evaluación de abuso o anti-bot, pero no bloquea por sí sola. Mientras el OTP siga vigente y tenga intentos disponibles, Reenviar entrega el mismo código; la emisión de un código nuevo solo procede al vencer o agotar intentos y siempre queda sujeta a la política de rate limit de esta operación.",
+      "proposed_description": "El envío inicial y los reenvíos del OTP de segundo factor comparten un contador aislado de la operación MFA por correo, exigida solo por la política central SEC-B2B-MFA tras 30 días sin uso o 3 meses sin cambiar contraseña, para perfiles 1–6, sin depender del reconocimiento de dispositivo. El contador no consume ni bloquea PASSWORD_RECOVERY, correos transaccionales o el control de contraseña fallida AUTH_LOGIN_FAILED_PASSWORD. RATE-B2B-LOGIN por IP es independiente. La IP en esta operación OTP es señal preventiva de abuso/anti-bot, no bloquea por sí sola. Mientras el OTP esté vigente y conserve intentos, Reenviar entrega el mismo código sin ampliar expires_at ni intentos; un nuevo código solo al vencer o agotar intentos, sujeto a rate limit OTP. El recurso y la política de rate limit canónicos para OTP MFA condicional requieren homologación técnica antes de ejecución o promoción; no reutilizar sin verificar la configuración exclusiva de NEW_DEVICE.",
+      "config_patch": {
+        "resource_code": "PENDING_CANONICAL_MFA_EMAIL_OTP_RESOURCE",
+        "rate_limit_policy_id": null,
+        "legacy_new_device_resource_code": "AUTH_NEW_DEVICE_OTP_SEND",
+        "legacy_new_device_rate_limit_policy_id": 8,
+        "rate_limit_contract_status": "PENDING_CANONICAL_GENERAL_MFA_OTP_RATE_LIMIT",
+        "mfa_applicability_policy_id": 3,
+        "mfa_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "device_is_mfa_trigger": "DENY",
+        "password_login_rate_limit_policy": "AUTH_LOGIN_FAILED_PASSWORD",
+        "ip_login_rate_limit_policy": "RATE-B2B-LOGIN",
+        "ip_login_counter_interference": "DENY"
+      },
+      "reason": "Rate limit OTP se restringe a dispositivo no reconocido; debe abarcar OTP por MFA condicional y separarse del rate limit de Login por IP.",
+      "owner_decisions": [
+        "b",
+        "e"
+      ],
+      "changes_applied_in_live": false
+    }
+  ],
+  "audit": [
+    {
+      "code": "B2B-RULE-AUTH-004",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "b10bf7eb9addb06a58d2daa71bcfab6e37a6ba16f7c65b7690a06e01b42922fc"
+    },
+    {
+      "code": "B2B-RULE-AUTH-005",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "2e4f645570d8df662e03ce154c3cd3a21ffe82772872e8c004b76b5de110193d"
+    },
+    {
+      "code": "B2B-RULE-AUTH-006",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "1da087312eeea6ede10390d7faeab3f5f052116ea10da39b371df12a6aba7bf8"
+    },
+    {
+      "code": "B2B-RULE-AUTH-007",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "609d022ebafb893769b72235bf770e16bfae8da2ed7c32d6b7c8210f384f8cd5"
+    },
+    {
+      "code": "B2B-RULE-AUTH-011",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "7452c3fd2ea1cada745f2ab460f056f140d6c799362f46448a93df2623a1b58f"
+    },
+    {
+      "code": "B2B-RULE-AUTH-012",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "8f541b13bd896d9f75f1c6743659dde062af856b14ab430eb825b39a142c6e9e"
+    },
+    {
+      "code": "B2B-RULE-AUTH-013",
+      "source_status": "CANDIDATO",
+      "conflict": true,
+      "reason": "valor_config.admin_identity_provider=GOOGLE_WORKSPACE contradice la eliminación de Google Workspace/SAML como método del Login.",
+      "source_sha256": "913048734e534b21eba79a7338715b9acf824749470421d95aeb6dafa4935f26"
+    },
+    {
+      "code": "B2B-RULE-AUTH-014",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "3010c71c3512e0e90da5e29415529d7114814a515ea85d6e9852299b6572a01f"
+    },
+    {
+      "code": "B2B-RULE-AUTH-017",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "8957d0abeb7ee9b910ca892b9f5272ea934a9bdaef4b94a06219f1afae06cbb3"
+    },
+    {
+      "code": "B2B-RULE-AUTH-023",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "e54821523d81449d071e39e88a429ab0ed981ae72f61690b43527796ec2f0d34"
+    },
+    {
+      "code": "B2B-RULE-AUTH-024",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "91c623da4e2b9171d07e8bd880bece170f4b7321817877bd4e98d1acbfc08973"
+    },
+    {
+      "code": "B2B-RULE-AUTH-025",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "55f34cb570a459af96980e094d687eb2303e02230e91e844e988ab59891e9ace"
+    },
+    {
+      "code": "B2B-RULE-AUTH-027",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "80a4aea599825851683319dbe1a1c1b1423ed385aa947246aaa7d3de6288929d"
+    },
+    {
+      "code": "B2B-RULE-AUTH-028",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "2beb33b121801853f68a2d6d7b841f518a5fec0300e8bda1587469f82ae76d7f"
+    },
+    {
+      "code": "B2B-RULE-AUTH-029",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "f7b59a0fc9768ffed87b7c22a5eb681c73571f83610e994b4891972e68c43c9b"
+    },
+    {
+      "code": "B2B-RULE-AUTH-030",
+      "source_status": "CANDIDATO",
+      "conflict": true,
+      "reason": "«solo después de AUTH-029» excluye la recuperación asistida autorizada sin correo/celular previo.",
+      "source_sha256": "6b82d5d7cb56f0318f3870437e0d7ec0e486c27b955bd29dd2fc34924a3df6d5"
+    },
+    {
+      "code": "B2B-RULE-AUTH-031",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "3417b84fdb889fd66a2b627c5f6417d215905b40825817b71fd42a43975a797d"
+    },
+    {
+      "code": "B2B-RULE-AUTH-032",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "f341263beac26ded75269678bc248a0a5c0aee1348c8c251212e1f40a7216106"
+    },
+    {
+      "code": "B2B-RULE-AUTH-033",
+      "source_status": "CANDIDATO",
+      "conflict": true,
+      "reason": "MFA se decide por dispositivo reconocido/no reconocido y solo para perfiles no administradores; contradice la condición 30d/3m y cobertura 1–6.",
+      "source_sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b"
+    },
+    {
+      "code": "B2B-RULE-AUTH-034",
+      "source_status": "CANDIDATO",
+      "conflict": true,
+      "reason": "Los atributos OTP y rate limit dicen «dispositivo nuevo» como ámbito del segundo factor, que ahora depende solo de la política 3.",
+      "source_sha256": "7556b0412ca1cabb5b2eadef82e4c3f8884ad6f3f8cc91e81a47e0fc4c8d0147"
+    },
+    {
+      "code": "B2B-RULE-AUTH-035",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "2faefb424ef2fbc447350a068324d93e7039fc1a98a1219953d5a13a3a35eec6"
+    },
+    {
+      "code": "B2B-RULE-AUTH-036",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "1e0f92bff3060d3f7b2361b96828e08864edb59a7bfcf45e67b3c2888465b83e"
+    },
+    {
+      "code": "B2B-RULE-AUTH-037",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "b845bb8fe2f4cb700450caea55534b6561287eba9e7ad0c54978a79f6e72ee9a"
+    },
+    {
+      "code": "B2B-RULE-AUTH-038",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "481ebfde98e2fc5ca2a709cb739579d79f85a5a582e98d26153386c98b2df0ca"
+    },
+    {
+      "code": "B2B-RULE-AUTH-040",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "7f0256dcbae7c1f233301793e596bd4de785f4bdbafe9b033a80e29cbe746a89"
+    },
+    {
+      "code": "B2B-RULE-AUTH-041",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "17005985437ac51d1b1dc467c1e748e93073a20f31140d401a80a7dd841b8c07"
+    },
+    {
+      "code": "B2B-RULE-AUTH-042",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "20ba67e22439a6526b80d9c4fab232f671b1c951b48b9dd465a9cc81f0159521"
+    },
+    {
+      "code": "B2B-RULE-AUTH-043",
+      "source_status": "CANDIDATO",
+      "conflict": true,
+      "reason": "Rate limit OTP se restringe a dispositivo no reconocido; debe abarcar OTP por MFA condicional y separarse del rate limit de Login por IP.",
+      "source_sha256": "3e15341ff449f436f3c8cef077be20f9282f260465e738468a76cecac5fbcea7"
+    },
+    {
+      "code": "B2B-RULE-AUTH-044",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "5db7e9d1f25faab2aab97a67ab46e890e36f2f1479aad6e5c42e18064580f043"
+    },
+    {
+      "code": "B2B-RULE-AUTH-045",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "7e8aaf186a077a29d38a865e6ffc5291267fe3e8b5621d3a8f6b903d8f611dd2"
+    },
+    {
+      "code": "B2B-RULE-AUTH-048",
+      "source_status": "CANDIDATO",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "507cb33dbf34afe361cc37417ad1e0e43cf0b7867560bea8326b56bc8bdffcd2"
+    },
+    {
+      "code": "B2B-RULE-STATE-001",
+      "source_status": "VIGENTE",
+      "conflict": false,
+      "reason": "No contradicción directa: conservar sin edición",
+      "source_sha256": "5dc84de39a3a780bb2340f584b23995ee8b43713b9d760c1c9ffdb0c270d2764"
+    }
+  ],
+  "identity_verified": false,
+  "supabase_writes": 0
+}
