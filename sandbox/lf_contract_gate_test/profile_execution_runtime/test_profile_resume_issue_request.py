@@ -171,14 +171,21 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                     "target_path": "profiles/test_profile/SKILL.md",
                     "operation_plan": self._mock_operation_plan(profile_code)}
             if data["action"] == "input_readiness_context_pack_runtime_v1":
-                return 200, {"outcome":"TERMINAL_WITH_FINDINGS",
-                    "code":"IG_CONTEXT_PACK_BLOCKED_REPORTABLE_READ_ONLY",
-                    "terminal_status":"BLOCKED","analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
-                    "ig_security_state":"BLOCKED","ig_security_clearance":False,
-                    "write_authorized":False,"continuation_allowed_for_effects":False,
-                    "execution_id":execution_id,
-                    "result":{"result":{"status":"BLOCKED","predecision_crosscheck":{
-                        "deterministic_finding_count":3}}}}
+                return 409, {"outcome":"BLOCKED",
+                    "code":"IG_CONTEXT_PACK_BLOCKED",
+                    "terminal_status":"BLOCKED",
+                    "execution_id":execution_id,"pantalla_id":51,"consumer":"CONTEXT_PACK",
+                    "result":{"result":{"status":"BLOCKED","consumer":"CONTEXT_PACK",
+                        "pantalla_id":51,"run_id":951,
+                        "remediation_state":"INTERNAL_REMEDIATION_REQUIRED",
+                        "owner_interruption_required":False,
+                        "promotion_authorized":False,
+                        "production_authorized":False,
+                        "execution_mode":"REUSE_COMPLETED_CURRENT_RUN",
+                        "output_sha256":"5"*64,
+                        "predecision_crosscheck":{
+                            "status":"CANONICAL_READBACK_ONLY","run_id":951,
+                            "deterministic_finding_count":3}}}}
             if data["action"] == "profile_native_continue_v1":
                 if sum(k[0]["action"] == "profile_native_continue_v1" for k in calls) == 1:
                     return 200, {"outcome":"CONTINUATION_REQUIRED",
@@ -191,11 +198,14 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                                             "execution_id":execution_id,"pantalla_id":51}}}}
                 return 200, {"outcome":"CONTINUATION_REQUIRED",
                     "phase":"NATIVE_MODEL_INPUT_READY",
+                    "execution_id":execution_id,"profile_code":profile_code,
                     "result":{"execution_write_mode":"READ_ONLY",
                         "input_governance":{"status":"BLOCKED",
                             "analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
-                            "governance_result":{"predecision_crosscheck":{
-                                "deterministic_finding_count":3}}}}}
+                            "governance_result":{"run_id":951,
+                                "output_sha256":"5"*64,
+                                "predecision_crosscheck":{
+                                    "deterministic_finding_count":3}}}}}
             raise AssertionError("unrecognized mocked Edge action")
         env = {**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"42"}
         with patch.dict(os.environ,env,clear=True), patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)):
