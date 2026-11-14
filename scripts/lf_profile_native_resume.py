@@ -353,12 +353,24 @@ def governed_request():
     # It comes from the native chat, not from the Router and not from an API producer.
     skill_decision = data.get("skill_semantic_decision")
     if skill_decision is not None:
+        screen_draft = data.get("screen_selection_draft")
         if (not isinstance(skill_decision, dict) or
             len(json.dumps(skill_decision, ensure_ascii=False)) > 12000 or
-            not set(data).issubset({"schema_version", "execution_id", "skill_semantic_decision"})):
+            not set(data).issubset({"schema_version", "execution_id", "skill_semantic_decision",
+                                    "screen_selection_draft"}) or
+            ("screen_selection_draft" in data and (
+                not isinstance(screen_draft, dict) or
+                len(json.dumps(screen_draft, ensure_ascii=False)) > 12000 or
+                any(k in screen_draft for k in ("schema_version","request_sha256","catalog_sha256",
+                    "candidate_screen_count","semantic_receipt_sha256","operation_code",
+                    "route_authority","effect_authority","downstream_execution_allowed"))))):
             raise ValueError("PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID")
+        # Both independent semantic decisions belong to the SAME Router-admitted
+        # execution. The Edge validates each against current DB descriptors/catalog.
         return {"kind": "SKILL_SEMANTIC_CONTINUATION", "execution_id": execution_id,
-                "skill_semantic_decision": skill_decision}
+                "skill_semantic_decision": skill_decision,
+                **({"screen_selection_draft": screen_draft}
+                   if "screen_selection_draft" in data else {})}
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
@@ -1034,7 +1046,11 @@ def main():
             "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
     elif isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
         execution_id = request["execution_id"]
-        raw_draft, profile_output, semantic_review = "", None, None
+        # Source-bind carries skill decision; native-continue separately carries
+        # the screen draft, never its hashes or an authority claim.
+        raw_draft = (json.dumps(request["screen_selection_draft"], ensure_ascii=False)
+                     if "screen_selection_draft" in request else "")
+        profile_output, semantic_review = None, None
     else:
         execution_id, raw_draft, profile_output, semantic_review = request
 

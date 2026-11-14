@@ -192,6 +192,30 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             "execution_id": execution_id,
             "skill_semantic_decision": decision,
         })
+        screen = {"decision":"SELECTED","selected_screen_code":"B2B-CARGA-002",
+                  "ambiguous_screen_codes":[],"material_ambiguities":[],
+                  "reason":"Literal matches screen and wizard name against three current candidates",
+                  "evidence_refs":[{"screen_code":"B2B-CARGA-002","evidence_field":"match"}]}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+            "screen_selection_draft": screen,
+        })
+        self.assertEqual(self.check(), {
+            "kind": "SKILL_SEMANTIC_CONTINUATION",
+            "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+            "screen_selection_draft": screen,
+        })
+        for forbidden in ("schema_version","request_sha256","catalog_sha256",
+                          "semantic_receipt_sha256","effect_authority","operation_code"):
+            self.event["issue"]["body"] = json.dumps({
+                "schema_version": SCHEMA, "execution_id": execution_id,
+                "skill_semantic_decision": decision,
+                "screen_selection_draft": {**screen,forbidden:"FORGED"},
+            })
+            with self.assertRaisesRegex(ValueError,"PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID"):
+                self.check()
         self.event["issue"]["body"] = json.dumps({
             "schema_version": SCHEMA, "execution_id": execution_id,
             "skill_semantic_decision": decision, "profile_output": {"forged": True},
