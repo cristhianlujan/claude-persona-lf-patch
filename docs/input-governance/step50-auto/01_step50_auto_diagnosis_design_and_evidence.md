@@ -10,7 +10,7 @@
 - `public.lf_skill_invoke_v1` ya impone perfil y operación autorizada, READY, inputs obligatorios, handler y replay; escribe la tabla oficial de invocación. No reemplazarlo.
 
 ## SQL candidato (sin DDL/DML vivo)
-`supabase/migrations/20261114020000_lf_profile_step40_ig_profile_owned_v1.sql`:
+`supabase/migrations/20261114020000_lf_profile_skill_dynamic_selection_v1.sql`:
 1. `lf_skill_selector_policy_v1`: asociación perfil+skill+operación requerida, canales, efectos autorizados y `DETERMINISTIC_REQUIRED` o `SEMANTIC_OPTIONAL`; solo el perfil ejecutor decide sus skills, Router no participa.
 2. `lf_skill_selection_registry_v1`: descriptor `LF_SKILL_SELECTION_DESCRIPTOR_V1`, evidencia, fuente, revisión y `CURRENT/STALE_SOURCE_CHANGED`. Se rechazan entradas stale o catálogo no READY.
 3. `lf_profile_skill_selection_prepare_v1`: filtra deterministicamente perfil/canal, operación, efecto, READY, autoridad de escritura gobernada y descriptor CURRENT; obligatorias se seleccionan por política. Para opcionales, entrega `SEMANTIC_SELECTION_REQUIRED` y candidatos al mismo chat nativo. La decisión semántica exige exactamente una skill habilitada, razón, evidencia, source_revision y modo `CURRENT_CONTEXT_REVIEW`; ambigüedad o stale => `BLOCKED`.
