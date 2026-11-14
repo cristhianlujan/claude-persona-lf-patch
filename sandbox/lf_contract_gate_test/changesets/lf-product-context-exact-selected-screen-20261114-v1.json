@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-product-context-exact-selected-screen-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114122100_lf_product_context_selected_screen_read_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-product-context-exact-selected-screen-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
