@@ -5,6 +5,8 @@ One invocation follows the existing execution until the next governed semantic,
 Input Governance, or native model boundary. It cannot modify product records.
 """
 import hashlib
+import datetime as dt
+import time
 import json
 import os
 import re
@@ -968,47 +970,53 @@ def main():
                           else result.get("code") if isinstance(result, dict) else "UNKNOWN"}))
         return 1
 
-    # No second IG route: the already-deployed Step40 SQL resolver decides
-    # whether a BLOCKED security finding is reportable in READ_ONLY scope.
-    # Edge's historical HTTP409 remains untouched. At most one canonical
-    # prepare replay after a verified terminal BLOCKED (same execution_id).
-    ig_blocked_replayed = False
-    for _ in range(4):
-        if result.get("phase") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
+    # Selected skills own Step40. Runtime dispatch stays in the current
+    # Issue/OIDC/Edge lane; a failed worker only affects READ_ONLY findings.
+    # No runtime ticket, timeout or authority is accepted from the Issue body.
+    runtime_deadline = None
+    terminal_blocked_replayed = False
+    for attempt in range(64):
+        if result.get("phase") not in ("SKILL_RUNTIME_REQUIRED",
+                                        "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
             break
         runtime = result.get("result", {}).get("input_governance_runtime_request", {})
         ticket = runtime.get("request_headers", {}).get("X-LF-Profile-Runtime-Ticket")
         body = runtime.get("request_body")
+        expiry = runtime.get("ticket_expires_at")
         if (runtime.get("transport") != "DIRECT_EDGE_INVOCATION"
             or runtime.get("queue_required") is not False
             or runtime.get("polling_required") is not False
             or not isinstance(ticket, str) or not isinstance(body, dict)
             or body.get("action") != "input_readiness_context_pack_runtime_v1"
-            or body.get("execution_id") != execution_id):
-            print("PROFILE_INPUT_GOVERNANCE_TICKET_INVALID")
+            or body.get("execution_id") != execution_id
+            or not isinstance(expiry, str)):
+            print("PROFILE_SELECTED_SKILL_RUNTIME_TICKET_INVALID")
             return 1
-        ig_code, ig = call_json(EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
-        if is_direct_validator_continuation(ig_code, ig):
-            payload.pop("screen_selection_draft", None)
-            code, result = call_json(EDGE_URL, payload, headers)
-            if code != 200 or result.get("outcome") != "CONTINUATION_REQUIRED":
-                print(json.dumps({
-                    "phase": "REPREPARE_AFTER_IG_202", "status": code,
-                    "outcome": result.get("outcome"), "code": result.get("code"),
-                }))
-                return 1
-            continue
-
-        # IG BLOCKED at the ticket/transport boundary is NOT an authorization
-        # decision about read-only profile analysis. Retry the existing SQL
-        # input_validate once; it already knows READ_ONLY_WITH_IG_FINDINGS.
-        # This permits no writes, overrides no step, and invents no IG result.
+        try:
+            expires_at = dt.datetime.fromisoformat(expiry.replace("Z","+00:00"))
+            if expires_at.tzinfo is None:
+                raise ValueError("ticket timezone absent")
+        except ValueError:
+            print("PROFILE_SELECTED_SKILL_DB_TIMEOUT_INVALID")
+            return 1
+        # The FIRST ticket expiry is authoritative: repeated issue never extends
+        # the same RUN's bounded automatic retry horizon.
+        if runtime_deadline is None:
+            runtime_deadline = expires_at
+        else:
+            runtime_deadline = min(runtime_deadline, expires_at)
+        now = dt.datetime.now(dt.timezone.utc)
+        if now < runtime_deadline:
+            ig_code, ig = call_json(EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
+        else:
+            ig_code, ig = 0, {"outcome":"RUNTIME_TICKET_DEADLINE"}
+        # The worker may legitimately be CURATING/VALIDATING, or fail during
+        # validation. NEVER fabricate a terminal IG READY or production grant.
         governed = ig.get("result", {}).get("result") if isinstance(ig.get("result"), dict) else None
         predecision = governed.get("predecision_crosscheck") if isinstance(governed, dict) else None
         blocked_terminal = (
-            not ig_blocked_replayed
-            and ig_code == 409
-            and ig.get("outcome") == "BLOCKED"
+            not terminal_blocked_replayed
+            and ig_code == 409 and ig.get("outcome") == "BLOCKED"
             and ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
             and ig.get("terminal_status") == "BLOCKED"
             and ig.get("execution_id") == execution_id
@@ -1035,39 +1043,43 @@ def main():
             ig_code == 200 and ig.get("outcome") == "TERMINAL"
             and ig.get("terminal_status") == "READY"
         )
+        if not (normal_ready or blocked_terminal or
+                is_direct_validator_continuation(ig_code,ig)):
+            # The full worker error may contain sensitive source; do not log it.
+            print(json.dumps({"phase":"SKILL_RUNTIME_RETRY",
+                "execution_id":execution_id,"attempt":attempt+1,
+                "http_status":ig_code,
+                "outcome":ig.get("outcome"),
+                "code":str(ig.get("code") or "")[:120],
+                "production_authorized":False}))
         if not (normal_ready or blocked_terminal):
-            print(json.dumps({
-                "phase": "INPUT_GOVERNANCE", "status": ig_code,
-                "outcome": ig.get("outcome"), "code": ig.get("code"),
-            }))
-            return 1
-        payload.pop("screen_selection_draft", None)
-        code, result = call_json(EDGE_URL, payload, headers)
+            remaining = (runtime_deadline-dt.datetime.now(dt.timezone.utc)).total_seconds()
+            if remaining>0:
+                time.sleep(min(10.0,remaining))
+        payload.pop("screen_selection_draft",None)
+        code, result = call_json(EDGE_URL,payload,headers)
         if code != 200:
-            print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code,
-                              "code": result.get("code")}))
+            print(json.dumps({"phase":"SELECTED_SKILL_PREPARE_RETRY",
+                "http_status":code,"code":result.get("code")}))
             return 1
         if blocked_terminal:
-            ig_blocked_replayed = True
-            bridge = result.get("result") if isinstance(result.get("result"), dict) else {}
-            result_ig = bridge.get("input_governance") if isinstance(bridge.get("input_governance"), dict) else {}
+            terminal_blocked_replayed = True
+            bridge_result = result.get("result") if isinstance(result.get("result"), dict) else {}
+            result_ig = bridge_result.get("input_governance") if isinstance(bridge_result.get("input_governance"), dict) else {}
             if (result.get("phase") != "NATIVE_MODEL_INPUT_READY"
                 or result.get("execution_id") != execution_id
-                or result.get("profile_code") != source.get("profile_code")
-                or bridge.get("execution_write_mode") != "READ_ONLY"
+                or bridge_result.get("execution_write_mode") != "READ_ONLY"
                 or result_ig.get("status") != "BLOCKED"
                 or result_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
                 or not isinstance(result_ig.get("governance_result"), dict)
                 or result_ig["governance_result"].get("run_id") != governed.get("run_id")
                 or result_ig["governance_result"].get("output_sha256") != governed.get("output_sha256")):
-                print("PROFILE_CANONICAL_STEP40_READONLY_IG_FINDINGS_NOT_ATTESTED")
+                print("PROFILE_SELECTED_SKILL_BLOCKED_TERMINAL_NOT_ATTESTED")
                 return 1
-            # Only source-bound Step40 output flows to Step50; no invented PASS.
-            print(json.dumps({"phase":"CANONICAL_STEP40_IG_FINDINGS_ACCEPTED",
-              "execution_id":execution_id,"ig_security_state":"BLOCKED"}))
-
-    if result.get("phase") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
-        print("PROFILE_INPUT_GOVERNANCE_BOUNDED_RESUME_EXHAUSTED")
+            print(json.dumps({"phase":"SKILL_BLOCKED_AS_FINDING",
+                "execution_id":execution_id,"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK"}))
+    if result.get("phase") in ("SKILL_RUNTIME_REQUIRED","INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
+        print("PROFILE_SELECTED_SKILL_DB_BOUNDED_RETRY_EXHAUSTED")
         return 1
 
     phase = result.get("phase")
