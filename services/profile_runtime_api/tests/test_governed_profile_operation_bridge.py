@@ -574,6 +574,22 @@ CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE service_role NOLOGIN;
 CREATE SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+CREATE TEMP TABLE profile_fixture(
+ profile_code text PRIMARY KEY,canonical_profile_key text,channel text,channels text[]
+) ON COMMIT DROP;
+-- Readback of the 10 CURRENT profile registry rows and legal channels (not a
+-- list embedded in either operation Step40 or Step50).
+INSERT INTO profile_fixture VALUES
+ ('ACT-0051','frontend_prototype_architect_lf','PRODUCTO',ARRAY['PRODUCTO','PROGRAMACION']),
+ ('PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING','customer_financial_ux_decisioning','PRODUCTO',ARRAY['PRODUCTO']),
+ ('PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531','cx_trust_experience_architect_lf','PRODUCTO',ARRAY['PRODUCTO']),
+ ('PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF','evidence_lineage_reviewer_lf','OPERACIONES',ARRAY['OPERACIONES']),
+ ('PERFIL-GAMIFICATION-SYSTEM-ARCHITECT','gamification_system_architect','PRODUCTO',ARRAY['PRODUCTO']),
+ ('PERFIL-PRODUCT-DIRECTOR-LF','product_director_lf','PRODUCTO',ARRAY['PRODUCTO']),
+ ('PERFIL-QUALITY-PACK','quality_pack','PRODUCTO',ARRAY['PRODUCTO','PROGRAMACION','OPERACIONES']),
+ ('PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF','systemic_root_cause_repair_lf','OPERACIONES',ARRAY['PRODUCTO','PROGRAMACION','OPERACIONES']),
+ ('PERFIL-UI-ARCHITECT','ui_architect','PRODUCTO',ARRAY['PRODUCTO','PROGRAMACION']),
+ ('PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531','ux_product_experience_architect_lf','PRODUCTO',ARRAY['PRODUCTO']);
 CREATE TABLE public.lf_operation_steps (
  operation_code text,step_order integer,step_id text,active boolean,required boolean,resolver_ref text
 );
@@ -582,7 +598,7 @@ CREATE TABLE public.lf_operation_step_contracts (
  next_if_pass text,next_if_blocked text
 );
 CREATE TABLE public.lf_profile_selection_registry_v1 (
- profile_code text PRIMARY KEY,descriptor_status text
+ profile_code text PRIMARY KEY,canonical_profile_key text,descriptor_status text
 );
 CREATE TABLE public.lf_profile_selector_policy_v1 (
  profile_code text PRIMARY KEY,channels text[]
@@ -599,14 +615,11 @@ CREATE TABLE public.lf_skill_invocation_v1 (
  profile_code text,status text,input_sha256 text,output jsonb,evidence_ref text
 );
 CREATE TABLE public.lf_operation_execution (
- execution_id text PRIMARY KEY, target_code text,status text,operation_code text,manifest jsonb
+ execution_id text PRIMARY KEY,target_code text,status text,operation_code text,manifest jsonb
 );
 INSERT INTO public.lf_profile_selection_registry_v1
- VALUES ('PERFIL-IG-TEST','CURRENT'),('PERFIL-OTHER-TEST','CURRENT'),
-        ('PERFIL-AMBIG-TEST','CURRENT'),('PERFIL-STALE-TEST','CURRENT');
-INSERT INTO public.lf_profile_selector_policy_v1
- VALUES ('PERFIL-IG-TEST',ARRAY['PRODUCTO']),('PERFIL-OTHER-TEST',ARRAY['PRODUCTO']),
-        ('PERFIL-AMBIG-TEST',ARRAY['PRODUCTO']),('PERFIL-STALE-TEST',ARRAY['PRODUCTO']);
+ SELECT profile_code,canonical_profile_key,'CURRENT' FROM profile_fixture;
+INSERT INTO public.lf_profile_selector_policy_v1 SELECT profile_code,channels FROM profile_fixture;
 INSERT INTO public.lf_operation_steps VALUES
  ('EJECUCION_PERFIL_LF',0,'init_execution',true,true,'public.lf_profile_execution_begin_v1'),
  ('EJECUCION_PERFIL_LF',10,'router',true,true,'public.lf_router_resolve_v1'),
@@ -624,22 +637,36 @@ INSERT INTO public.lf_operation_step_contracts
         '["fixture_only"]'::jsonb,
         lead(step_id) OVER(PARTITION BY operation_code ORDER BY step_order),NULL
  FROM public.lf_operation_steps;
+-- Two real catalog codes are needed for the candidate seeded OPTIONAL policies;
+-- both remain DISABLED and are never called by this laboratory.
+INSERT INTO public.lf_skill_catalog_v1
+ (skill_code,description,required_operation,handler_fn,effect,input_required,status)
+VALUES ('SCREEN_RULES_SNAPSHOT','read screen rules','EJECUCION_PERFIL_LF',
+        'lf_skill_h_screen_rules_snapshot_v1','READ_ONLY',ARRAY['pantalla_codigo'],'READY'),
+       ('PROFILE_UPDATE_APPLY','governed profile update','ACTUALIZACION_PERFIL_LF',
+        'lf_skill_h_profile_update_propose_v1','WRITE_GOVERNED',
+        ARRAY['target_code','target_path'],'READY');
 """
                 generic_verify = r"""
--- IG is DRAFT as shipped; this isolated fixture simulates an authorized future READY state.
+-- All TEN real registered profile codes must have the candidate binding.
+SELECT 'POLICY_10_COVERAGE='||count(*) FROM public.lf_skill_selector_policy_v1
+ WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
+SELECT 'POLICY_ENABLED_BEFORE_APPROVAL='||count(*) FROM public.lf_skill_selector_policy_v1
+ WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK' AND enabled;
 SELECT 'IG_CATALOG_CANDIDATE='||status FROM public.lf_skill_catalog_v1
  WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
+-- Only in ROLLBACK laboratory: simulate approved source, handler and policy.
 UPDATE public.lf_skill_catalog_v1 SET status='READY'
  WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
-INSERT INTO public.lf_skill_catalog_v1
-(skill_code,description,required_operation,handler_fn,effect,input_required,status)
-VALUES ('FICTICIA_SEMANTICA','Ficticia','EJECUCION_PERFIL_LF','lf_skill_h_fake_semantic_v1',
-        'READ_ONLY',ARRAY['request_text'],'READY'),
-       ('FICTICIA_ALTERNA','Alterna','EJECUCION_PERFIL_LF','lf_skill_h_fake_alternate_v1',
-        'READ_ONLY',ARRAY['request_text'],'READY');
 UPDATE public.lf_skill_selection_registry_v1
  SET descriptor_status='CURRENT',source_revision='fixture-ig-current',stale_reason=NULL
  WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
+INSERT INTO public.lf_skill_catalog_v1
+(skill_code,description,required_operation,handler_fn,effect,input_required,status)
+VALUES ('FICTICIA_SEMANTICA','semantica','EJECUCION_PERFIL_LF','lf_skill_h_fake_semantic_v1',
+        'READ_ONLY',ARRAY['request_text'],'READY'),
+       ('FICTICIA_ALTERNA','alternativa','EJECUCION_PERFIL_LF','lf_skill_h_fake_alternate_v1',
+        'READ_ONLY',ARRAY['request_text'],'READY');
 INSERT INTO public.lf_skill_selection_registry_v1
 (skill_code,descriptor,source_kind,source_ref,source_revision,descriptor_status)
 SELECT v.code,
@@ -647,100 +674,128 @@ SELECT v.code,
    'description',v.code,
    'selection_evidence',jsonb_build_array(
       jsonb_build_object('kind','PURPOSE','value',v.code,'source_section','fixture'))),
- 'FIXTURE','fixture://descriptor/'||v.code,v.revision,v.status
-FROM(VALUES ('FICTICIA_SEMANTICA','fixture-sem-1','CURRENT'),
-            ('FICTICIA_ALTERNA','fixture-alt-1','CURRENT'))v(code,revision,status);
+ 'FIXTURE','fixture://descriptor/'||v.code,v.revision,'CURRENT'
+FROM(VALUES ('FICTICIA_SEMANTICA','fixture-sem-1'),
+            ('FICTICIA_ALTERNA','fixture-alt-1'))v(code,revision);
 INSERT INTO public.lf_skill_selector_policy_v1
-(profile_code,skill_code,channels,required_operation,allowed_effects,selection_mode)
-VALUES
- ('PERFIL-IG-TEST','INPUT_GOVERNANCE_CONTEXT_PACK',ARRAY['PRODUCTO'],
-  'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],'DETERMINISTIC_REQUIRED'),
- ('PERFIL-OTHER-TEST','FICTICIA_SEMANTICA',ARRAY['PRODUCTO'],
-  'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],'SEMANTIC_OPTIONAL'),
- ('PERFIL-AMBIG-TEST','FICTICIA_SEMANTICA',ARRAY['PRODUCTO'],
-  'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],'SEMANTIC_OPTIONAL'),
- ('PERFIL-AMBIG-TEST','FICTICIA_ALTERNA',ARRAY['PRODUCTO'],
-  'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],'SEMANTIC_OPTIONAL'),
- ('PERFIL-STALE-TEST','FICTICIA_ALTERNA',ARRAY['PRODUCTO'],
-  'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],'DETERMINISTIC_REQUIRED');
-SELECT 'PLAN_IG='||(p->>'status')||'|'||jsonb_array_length(p->'steps')||'|'||
- (p#>>'{skills,0,skill_code}')||'|'||(p#>>'{skills,0,selection_mode}')
-FROM(SELECT public.lf_profile_execution_plan_v1('PERFIL-IG-TEST','PRODUCTO') p)x;
-SELECT 'SEMANTIC_PREPARE='||(public.lf_profile_execution_plan_v1(
- 'PERFIL-OTHER-TEST','PRODUCTO')->>'status');
-SELECT 'PLAN_OTHER='||(p->>'status')||'|'||jsonb_array_length(p->'steps')||'|'||
- (p#>>'{skills,0,skill_code}')||'|'||(p#>>'{skills,0,selection_mode}')
-FROM(SELECT public.lf_profile_execution_plan_v1(
- 'PERFIL-OTHER-TEST','PRODUCTO',
- '{"selected_skill_code":"FICTICIA_SEMANTICA","reason":"request context matches documented PURPOSE",
-   "evidence_refs":["fixture://source/decision"],"descriptor_revision":"fixture-sem-1",
-   "review_mode":"CURRENT_CONTEXT_REVIEW"}'::jsonb) p)x;
-SELECT 'BLOCK_AMBIG='||(public.lf_profile_skill_selection_prepare_v1(
- 'PERFIL-AMBIG-TEST','PRODUCTO',
- '{"selected_skill_codes":["FICTICIA_SEMANTICA","FICTICIA_ALTERNA"]}'::jsonb)->>'blocking_code');
-UPDATE public.lf_skill_selection_registry_v1 SET descriptor_status='STALE_SOURCE_CHANGED'
- WHERE skill_code='FICTICIA_ALTERNA';
-SELECT 'BLOCK_STALE='||(public.lf_profile_skill_selection_prepare_v1(
- 'PERFIL-STALE-TEST','PRODUCTO')->>'blocking_code');
-CREATE TEMP TABLE simulated_operation_ledger(
- run_id text,step_order int,step_id text,status text
+(profile_code,skill_code,channels,required_operation,allowed_effects,selection_mode,
+ enabled,owner_decision_required,policy_evidence_ref)
+SELECT f.profile_code,x.skill_code,f.channels,'EJECUCION_PERFIL_LF',
+       ARRAY['READ_ONLY'],'SEMANTIC_OPTIONAL',false,true,
+       'fixture://profile/'||f.profile_code
+ FROM profile_fixture f
+ CROSS JOIN (VALUES('FICTICIA_SEMANTICA'),('FICTICIA_ALTERNA'))x(skill_code);
+-- Negative: merely enabling the candidate without owner approval must BLOCK.
+UPDATE public.lf_skill_selector_policy_v1 SET enabled=true
+ WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
+SELECT 'OWNER_BLOCK='||(public.lf_profile_execution_plan_v1(
+ 'PERFIL-PRODUCT-DIRECTOR-LF','PRODUCTO')->>'blocking_code');
+-- Simulated owner admission ONLY inside ROLLBACK, never a live decision.
+UPDATE public.lf_skill_selector_policy_v1
+ SET owner_decision_required=false
+ WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
+CREATE TEMP TABLE dynamic_10_profile_matrix(
+ profile_code text PRIMARY KEY, deterministic text, semantic text,
+ ambiguous text, stale text
 ) ON COMMIT DROP;
-INSERT INTO simulated_operation_ledger
-SELECT t.run_id,(step->>'step_order')::int,step->>'step_id','STEP_PASS_WITH_EVIDENCE'
-FROM(VALUES
- ('SIM-IG','PERFIL-IG-TEST',NULL::jsonb),
- ('SIM-OTHER','PERFIL-OTHER-TEST',
- '{"selected_skill_code":"FICTICIA_SEMANTICA","reason":"documented scope matches",
-   "evidence_refs":["fixture://source/decision"],"descriptor_revision":"fixture-sem-1",
-   "review_mode":"CURRENT_CONTEXT_REVIEW"}'::jsonb)
-)t(run_id,profile_code,semantic_decision)
-CROSS JOIN LATERAL public.lf_profile_execution_plan_v1(t.profile_code,'PRODUCTO',t.semantic_decision) plan
-CROSS JOIN LATERAL jsonb_array_elements(plan->'steps') step
-WHERE plan->>'status'='READY';
-DO $generic_verify$
-DECLARE r record; v_json jsonb; n int;
+CREATE TEMP TABLE simulated_operation_ledger(
+ run_id text,profile_code text,step_order int,step_id text,status text,
+ PRIMARY KEY(run_id,step_order)
+) ON COMMIT DROP;
+DO $ten_profile_dynamic$
+DECLARE r record; det jsonb; sem jsonb; bad jsonb; old jsonb;
+ decision jsonb; state_det text;state_sem text;state_amb text;state_stale text;
 BEGIN
- FOR r IN (SELECT * FROM(VALUES('SIM-IG','PERFIL-IG-TEST','INPUT_GOVERNANCE_CONTEXT_PACK'),
-                               ('SIM-OTHER','PERFIL-OTHER-TEST','FICTICIA_SEMANTICA'))
-           x(run_id,profile_code,skill_code)) LOOP
-   SELECT count(*) INTO n FROM simulated_operation_ledger WHERE run_id=r.run_id;
-   IF n<>11 OR (SELECT count(DISTINCT step_order) FROM simulated_operation_ledger
-     WHERE run_id=r.run_id)<>11 THEN RAISE EXCEPTION 'GENERIC_DB_PLAN_COUNT_FAIL:%',r.run_id; END IF;
+ FOR r IN (SELECT * FROM profile_fixture ORDER BY profile_code) LOOP
+   det:=public.lf_profile_execution_plan_v1(r.profile_code,r.channel);
+   IF det->>'status'<>'READY' OR jsonb_array_length(det->'steps')<>11
+      OR jsonb_array_length(det->'skills')<>1
+      OR det#>>'{skills,0,skill_code}'<>'INPUT_GOVERNANCE_CONTEXT_PACK'
+      OR det#>>'{skills,0,selection_mode}'<>'DETERMINISTIC_POLICY'
+   THEN RAISE EXCEPTION 'TEN_PROFILE_DETERMINISTIC_FAIL:%:%',r.profile_code,det::text; END IF;
+   INSERT INTO simulated_operation_ledger
+   SELECT 'DET-'||r.profile_code,r.profile_code,
+          (step->>'step_order')::integer,step->>'step_id','STEP_PASS_WITH_EVIDENCE'
+   FROM jsonb_array_elements(det->'steps') step;
+   state_det:='11/11 PASS';
+   UPDATE public.lf_skill_selector_policy_v1 SET enabled=true,owner_decision_required=false
+    WHERE profile_code=r.profile_code AND skill_code IN('FICTICIA_SEMANTICA','FICTICIA_ALTERNA');
+   IF public.lf_profile_execution_plan_v1(r.profile_code,r.channel)->>'status'
+      <>'SEMANTIC_SELECTION_REQUIRED'
+   THEN RAISE EXCEPTION 'TEN_PROFILE_SEMANTIC_REQUIRED_MISSING:%',r.profile_code; END IF;
+   decision:=jsonb_build_object('selected_skill_code','FICTICIA_SEMANTICA',
+       'reason','fixture documented PURPOSE for scope',
+       'evidence_refs',jsonb_build_array('fixture://source/'||r.profile_code),
+       'descriptor_revision','fixture-sem-1','review_mode','CURRENT_CONTEXT_REVIEW');
+   sem:=public.lf_profile_execution_plan_v1(r.profile_code,r.channel,decision);
+   IF sem->>'status'<>'READY' OR jsonb_array_length(sem->'skills')<>2
+      OR sem#>>'{skills,1,skill_code}'<>'FICTICIA_SEMANTICA'
+      OR sem#>>'{skills,1,selection_mode}'<>'SEMANTIC_DESCRIPTOR'
+   THEN RAISE EXCEPTION 'TEN_PROFILE_SEMANTIC_FAIL:%:%',r.profile_code,sem::text; END IF;
+   INSERT INTO simulated_operation_ledger
+   SELECT 'SEM-'||r.profile_code,r.profile_code,
+          (step->>'step_order')::integer,step->>'step_id','STEP_PASS_WITH_EVIDENCE'
+   FROM jsonb_array_elements(sem->'steps') step;
+   state_sem:='11/11 PASS';
+   bad:=public.lf_profile_execution_plan_v1(r.profile_code,r.channel,
+     '{"selected_skill_codes":["FICTICIA_SEMANTICA","FICTICIA_ALTERNA"]}'::jsonb);
+   IF bad->>'blocking_code'<>'SKILL_SEMANTIC_SELECTION_AMBIGUOUS'
+   THEN RAISE EXCEPTION 'TEN_PROFILE_AMBIG_NOT_BLOCKED:%',r.profile_code; END IF;
+   state_amb:='BLOCK';
+   UPDATE public.lf_skill_selection_registry_v1
+      SET descriptor_status='STALE_SOURCE_CHANGED' WHERE skill_code='FICTICIA_ALTERNA';
+   old:=public.lf_profile_execution_plan_v1(r.profile_code,r.channel,decision);
+   IF old->>'blocking_code'<>'SKILL_DESCRIPTOR_STALE_OR_MISSING'
+   THEN RAISE EXCEPTION 'TEN_PROFILE_STALE_NOT_BLOCKED:%',r.profile_code; END IF;
+   state_stale:='BLOCK';
+   UPDATE public.lf_skill_selection_registry_v1
+      SET descriptor_status='CURRENT' WHERE skill_code='FICTICIA_ALTERNA';
+   UPDATE public.lf_skill_selector_policy_v1 SET enabled=false,owner_decision_required=true
+    WHERE profile_code=r.profile_code AND skill_code IN('FICTICIA_SEMANTICA','FICTICIA_ALTERNA');
+   INSERT INTO dynamic_10_profile_matrix VALUES(r.profile_code,state_det,state_sem,state_amb,state_stale);
  END LOOP;
- IF (SELECT count(*) FROM simulated_operation_ledger)<>22 THEN
-    RAISE EXCEPTION 'GENERIC_DB_PLAN_NOT_22_ROWS'; END IF;
-END $generic_verify$;
-SELECT 'GENERIC_DB_PLAN_PASS='||run_id||'|'||count(*)||'/11'
- FROM simulated_operation_ledger GROUP BY run_id ORDER BY run_id;
--- Isolated mock invoker verifies same RUN + selection reason are persisted to a linked
--- invocation receipt. Production invokes the EXISTING lf_skill_invoke_v1 instead.
-CREATE OR REPLACE FUNCTION public.lf_skill_invoke_v1(p_skill text,p_execution_id text,p_input jsonb)
-RETURNS jsonb LANGUAGE plpgsql AS $mock_invoker$
-DECLARE v_id text:='TEST-'||p_execution_id;
+ IF (SELECT count(*) FROM dynamic_10_profile_matrix)<>10 OR
+    (SELECT count(*) FROM simulated_operation_ledger)<>220 OR
+    (SELECT count(DISTINCT run_id) FROM simulated_operation_ledger)<>20 OR
+    EXISTS(SELECT 1 FROM simulated_operation_ledger WHERE status<>'STEP_PASS_WITH_EVIDENCE')
+ THEN RAISE EXCEPTION 'TEN_PROFILE_0_80_LEDGER_NOT_CLEAN'; END IF;
+END $ten_profile_dynamic$;
+SELECT 'TEN_PROFILE_TEST|'||profile_code||'|'||deterministic||'|'||
+ semantic||'|'||ambiguous||'|'||stale FROM dynamic_10_profile_matrix ORDER BY profile_code;
+SELECT 'TEN_PROFILE_MATRIX_PASS='||count(*)||'/10' FROM dynamic_10_profile_matrix;
+SELECT 'TEN_PROFILE_SIMULATED_RUNS='||count(DISTINCT run_id)||'|STEPS='||count(*)
+ FROM simulated_operation_ledger;
+-- PROD-DIRECTOR source-bound evidence preservation test.
+-- Representative completed live RUN was read by SELECT, NOT mutated or re-executed.
+-- This does NOT prove a real new IG handler returned the same RAW.
+CREATE TEMP TABLE pd_legacy_copy(
+ original_execution_id text,legacy_ig_md5 text,legacy_status text,
+ consumer text,screen_code text,ig_run_id int
+) ON COMMIT DROP;
+INSERT INTO pd_legacy_copy VALUES
+ ('EXEC-PROFILE-GATE2-EA0514AD005350958C4D6E9C',
+  'd9c0ac3a8e917fb67c7d24e7d8d2bf7d','READY','CONTEXT_PACK','B2B-AUTH-001',949);
+CREATE TEMP TABLE pd_generic_compat_receipt AS
+ SELECT l.*,p.profile_code AS copied_profile_code,
+  (p->'steps') AS copied_steps,
+  l.legacy_ig_md5 AS carried_original_ig_md5,
+  'SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED'::text AS evidence_limit
+ FROM pd_legacy_copy l
+ CROSS JOIN LATERAL public.lf_profile_execution_plan_v1(
+ 'PERFIL-PRODUCT-DIRECTOR-LF','PRODUCTO') p
+ WHERE p->>'status'='READY';
+DO $pd_compare$
 BEGIN
- INSERT INTO public.lf_skill_invocation_v1
- (skill_run_id,skill_code,parent_execution_id,profile_code,status)
- SELECT v_id,p_skill,p_execution_id,target_code,'COMPLETED'
- FROM public.lf_operation_execution WHERE execution_id=p_execution_id;
- RETURN jsonb_build_object('status','COMPLETED','skill_run_id',v_id);
-END;
-$mock_invoker$;
-INSERT INTO public.lf_operation_execution VALUES
- ('EXEC-IG-TEST','PERFIL-IG-TEST','IN_PROGRESS','EJECUCION_PERFIL_LF',
-  '{"router_profile_handoff":{"channel":"PRODUCTO"}}'::jsonb),
- ('EXEC-OTHER-TEST','PERFIL-OTHER-TEST','IN_PROGRESS','EJECUCION_PERFIL_LF',
-  '{"router_profile_handoff":{"channel":"PRODUCTO"}}'::jsonb);
-SELECT public.lf_profile_skill_invoke_selected_v1('EXEC-IG-TEST','PRODUCTO',
- 'INPUT_GOVERNANCE_CONTEXT_PACK','{}'::jsonb);
-SELECT public.lf_profile_skill_invoke_selected_v1('EXEC-OTHER-TEST','PRODUCTO',
- 'FICTICIA_SEMANTICA','{}'::jsonb,
- '{"selected_skill_code":"FICTICIA_SEMANTICA","reason":"documented scope matches",
-   "evidence_refs":["fixture://source/decision"],"descriptor_revision":"fixture-sem-1",
-   "review_mode":"CURRENT_CONTEXT_REVIEW"}'::jsonb);
-SELECT 'INVOCATION_TRACE_PASS='||count(*) FROM public.lf_profile_skill_selection_receipt_v1
- WHERE parent_execution_id IN ('EXEC-IG-TEST','EXEC-OTHER-TEST');
-SELECT 'BLOCK_CHANNEL='||(public.lf_profile_skill_invoke_selected_v1('EXEC-IG-TEST','PROGRAMACION',
- 'INPUT_GOVERNANCE_CONTEXT_PACK','{}'::jsonb)->>'blocking_code');
+ IF NOT EXISTS(SELECT 1 FROM pd_generic_compat_receipt
+  WHERE copied_profile_code='PERFIL-PRODUCT-DIRECTOR-LF'
+    AND jsonb_array_length(copied_steps)=11
+    AND carried_original_ig_md5=legacy_ig_md5
+    AND legacy_status='READY' AND consumer='CONTEXT_PACK'
+    AND screen_code='B2B-AUTH-001' AND ig_run_id=949)
+ THEN RAISE EXCEPTION 'PD_LEGACY_EVIDENCE_COPIED_NOT_PRESERVED'; END IF;
+END $pd_compare$;
+SELECT 'PD_SOURCE_COMPATIBILITY_COPY_PASS=11/11|IG_MD5='||legacy_ig_md5||
+ '|LIMIT='||evidence_limit FROM pd_generic_compat_receipt;
 ROLLBACK;
 SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
  CASE WHEN to_regclass('public.lf_operation_steps') IS NULL
@@ -773,18 +828,21 @@ SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
                 actual = [s for s in values if s.startswith(tuple(str(n) + "|" for n, _ in labels))]
                 self.assertEqual(actual, expected)
                 self.assertIn("ROLLBACK_EMPTY=true", values)
+                self.assertIn("POLICY_10_COVERAGE=10", values)
+                self.assertIn("POLICY_ENABLED_BEFORE_APPROVAL=0", values)
                 self.assertIn("IG_CATALOG_CANDIDATE=DRAFT", values)
-                self.assertIn("PLAN_IG=READY|11|INPUT_GOVERNANCE_CONTEXT_PACK|DETERMINISTIC_POLICY", values)
-                self.assertIn("PLAN_OTHER=READY|11|FICTICIA_SEMANTICA|SEMANTIC_DESCRIPTOR", values)
-                self.assertIn("SEMANTIC_PREPARE=SEMANTIC_SELECTION_REQUIRED", values)
-                self.assertIn("BLOCK_AMBIG=SKILL_SEMANTIC_SELECTION_AMBIGUOUS", values)
-                self.assertIn("BLOCK_STALE=SKILL_DESCRIPTOR_STALE_OR_MISSING", values)
-                self.assertIn("INVOCATION_TRACE_PASS=2", values)
-                self.assertIn("BLOCK_CHANNEL=SKILL_CHANNEL_NOT_BOUND_TO_PARENT_RUN", values)
-                self.assertIn("GENERIC_DB_PLAN_PASS=SIM-IG|11/11", values)
-                self.assertIn("GENERIC_DB_PLAN_PASS=SIM-OTHER|11/11", values)
+                self.assertIn("OWNER_BLOCK=SKILL_OWNER_DECISION_REQUIRED", values)
+                self.assertIn("TEN_PROFILE_MATRIX_PASS=10/10", values)
+                self.assertIn("TEN_PROFILE_SIMULATED_RUNS=20|STEPS=220", values)
+                matrices = [s for s in values if s.startswith("TEN_PROFILE_TEST|")]
+                self.assertEqual(len(matrices), 10, matrices)
+                for row in matrices:
+                    self.assertEqual(row.split("|")[2:], ["11/11 PASS","11/11 PASS","BLOCK","BLOCK"])
+                    print(f"PG_{version}_{row}", flush=True)
+                self.assertTrue(any(s.startswith("PD_SOURCE_COMPATIBILITY_COPY_PASS=11/11|IG_MD5=d9c0ac3a8e917fb67c7d24e7d8d2bf7d|LIMIT=SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED") for s in values))
                 self.assertIn("ROLLBACK_GENERIC_EMPTY=true", values)
-                print(f"PASS_GENERIC_DB_PLAN_PG_{version} IG=11/11 OTHER=11/11 AMBIG_BLOCK STALE_BLOCK ROLLBACK=true", flush=True)
+                print(f"PASS_PROFILE_MATRIX_PG_{version} 10/10 DET=10 SEM=10 AMBIG_BLOCK=10 STALE_BLOCK=10 SIMULATED=20x11 ROLLBACK=true", flush=True)
+                print(f"PASS_PD_COMPAT_COPY_PG_{version} 11/11 SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED", flush=True)
                 print(f"PASS_STEP50_SIMULATED_PG_{version} 11/11 ROLLBACK_EMPTY=true", flush=True)
                 for step in actual:
                     print(f"PG_{version}_STEP {step}", flush=True)
