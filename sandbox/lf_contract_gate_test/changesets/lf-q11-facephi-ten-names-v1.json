@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-q11-facephi-ten-names-v1",
+  "paths": {
+    "audits/lf-q11-facephi-tokens10/01_decision_catalog_readback_20261114.md": "TRANSVERSAL_ASSETS",
+    "sandbox/lf_contract_gate_test/changesets/lf-q11-facephi-ten-names-v1.json": "CHANGESET_MANIFEST"
+  }
+}
