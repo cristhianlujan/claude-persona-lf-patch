@@ -142,7 +142,6 @@ class RealPgFlowRollback(unittest.TestCase):
             }
             self.assertTrue(expected_lines.issubset(set(tested.splitlines())),tested)
             self.assertEqual(sql("SELECT count(*) FROM transversal.error_knowledge;"),"0")
-            self.assertEqual(sql("SELECT (programacion.fn_lf_profile_input_governance_resolve_v1('x','y','{}'::jsonb,'CONTEXT_PACK')->>'status');"),None if False else "{}" ) if False else None
             original=sql("SELECT position('SELECT ' IN pg_get_functiondef('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure))>0;")
             self.assertEqual(original,"t")
             print("PASS_IG_FLOW_CONTENT_ROLLBACK_"+image.replace(":","_"),flush=True)
