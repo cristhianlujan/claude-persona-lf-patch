@@ -44,7 +44,7 @@ CREATE FUNCTION public.lf_rule_promotion_request_v1(text,text,text)
 CREATE FUNCTION public.sample_real_backend_handler()
  RETURNS boolean LANGUAGE sql STABLE AS $$SELECT true$$;
 INSERT INTO lf_ops.reglas VALUES
- (101,'BACKEND_TABLE','INTEGRITY','INTEGRITY',
+ (101,'BACKEND_TABLE','CANDIDATO','INTEGRITY',
    '{"tabla_afectada":"lf_ops.real_business_table"}',false,'backend table',false,NULL),
  (102,'BACKEND_UNKNOWN','CANDIDATO','SECURITY',
    '{"scope_hint":"BACKEND"}',false,'not bound yet',false,NULL),
