@@ -8,6 +8,6 @@
     "docs/input-governance/step50-auto/01_step50_auto_diagnosis_design_and_evidence.md": "DOCUMENTATION",
     "sandbox/lf_contract_gate_test/changesets/lf-step50-autonomous-profile-draft-v1.json": "CHANGESET_MANIFEST",
     "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
-    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "SERVICE_RUNTIME"
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING"
   }
 }
