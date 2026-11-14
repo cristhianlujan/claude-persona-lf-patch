@@ -1,0 +1,1619 @@
+{
+  "schema_version": "LF_RULE_PROMOTION_FIVE_CRITERIA_READONLY_RECONSTRUCTION_20261114",
+  "source": "read-only SELECT from lf_ops.reglas and reglas_pantallas; mirrors function programacion.fn_t_remed_rule_promotion_verdicts_v1(5,NULL), which returns 42501 to inspection role",
+  "not_official_function_receipt": true,
+  "as_of_date": "2026-11-14",
+  "min_screens": 5,
+  "candidate_count": 166,
+  "pass_count": 0,
+  "hold_count": 166,
+  "failed_criterion_counts": {
+    "NO_PENDING_MARKER": 65,
+    "NO_PENDING_DECISION": 57,
+    "USED_BY_ENOUGH_SCREENS": 148,
+    "HAS_STATED_REASON": 3
+  },
+  "rows": [
+    {
+      "rule_id": 13,
+      "rule_code": "REG_HOME_001",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 35,
+      "rule_code": "REG_FLUJO_005",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 69,
+      "rule_code": "REG_FLU_004",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 86,
+      "rule_code": "REG_ANL_001",
+      "linked_screens": 24,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 100,
+      "rule_code": "REG_TAG_001",
+      "linked_screens": 24,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 116,
+      "rule_code": "REG_ABT_001",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 133,
+      "rule_code": "REG_ATQ_013",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION"
+      ]
+    },
+    {
+      "rule_id": 176,
+      "rule_code": "REG_OFR_010",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION"
+      ]
+    },
+    {
+      "rule_id": 187,
+      "rule_code": "REG_TEC_011",
+      "linked_screens": 24,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 232,
+      "rule_code": "REG_B2B_002",
+      "linked_screens": 22,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 250,
+      "rule_code": "REG_PRI_005",
+      "linked_screens": 21,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 274,
+      "rule_code": "REG_CHK_011",
+      "linked_screens": 8,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 282,
+      "rule_code": "REG_CHK_019",
+      "linked_screens": 20,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION"
+      ]
+    },
+    {
+      "rule_id": 286,
+      "rule_code": "REG_CHK_CUO_003",
+      "linked_screens": 8,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 324,
+      "rule_code": "REG_SUC_001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 325,
+      "rule_code": "REG_SUC_002",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 326,
+      "rule_code": "REG_SUC_003",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 327,
+      "rule_code": "REG_SUC_004",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 328,
+      "rule_code": "REG_SUC_005",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 329,
+      "rule_code": "REG_SUC_006",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 330,
+      "rule_code": "REG_SUC_007",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 331,
+      "rule_code": "REG_SUC_008",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 332,
+      "rule_code": "REG_SUC_009",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 333,
+      "rule_code": "REG_ERR_011",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 334,
+      "rule_code": "REG_ERR_012",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 335,
+      "rule_code": "REG_ERR_013",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 336,
+      "rule_code": "REG_ERR_014",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 337,
+      "rule_code": "REG_ERR_015",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 338,
+      "rule_code": "REG_ERR_016",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 347,
+      "rule_code": "LEGAL-RECLAMOS-01",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 348,
+      "rule_code": "LEGAL-RECLAMOS-02",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 349,
+      "rule_code": "LEGAL-RECLAMOS-03",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 350,
+      "rule_code": "LEGAL-RECLAMOS-04",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 351,
+      "rule_code": "LEGAL-RECLAMOS-05",
+      "linked_screens": 6,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 352,
+      "rule_code": "LEGAL-RECLAMOS-06",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 353,
+      "rule_code": "LEGAL-RECLAMOS-07",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 354,
+      "rule_code": "LEGAL-RECLAMOS-08",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 355,
+      "rule_code": "UX-HOME-CAPABILITY-01",
+      "linked_screens": 4,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 356,
+      "rule_code": "UX-HOME-CAPABILITY-02",
+      "linked_screens": 4,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 358,
+      "rule_code": "NEG-GAMIF-ETICA-01",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 359,
+      "rule_code": "UX-GAMIF-TERMOMETRO-01",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 367,
+      "rule_code": "UX-RESPALDO-VARIANTES-01",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 371,
+      "rule_code": "LEGAL-CONSENTIMIENTO-DATOS-01",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 372,
+      "rule_code": "LEGAL-INCIDENTES-48H-01",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 374,
+      "rule_code": "EDU-NODO-01-DIAGNOSTICO",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 375,
+      "rule_code": "EDU-NODO-02-EXPLORA",
+      "linked_screens": 4,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 378,
+      "rule_code": "EDU-NODO-05-RECUPERA",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 390,
+      "rule_code": "B2B-RULE-THEME-002",
+      "linked_screens": 13,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION"
+      ]
+    },
+    {
+      "rule_id": 401,
+      "rule_code": "B2B-RULE-STORAGE-001",
+      "linked_screens": 8,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 402,
+      "rule_code": "B2B-RULE-STORAGE-002",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 403,
+      "rule_code": "B2B-RULE-IDEMP-001",
+      "linked_screens": 4,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 405,
+      "rule_code": "B2B-RULE-APPROVAL-001",
+      "linked_screens": 4,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 407,
+      "rule_code": "B2B-RULE-APPROVAL-003",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 421,
+      "rule_code": "B2B-RULE-LEGAL-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 422,
+      "rule_code": "B2B-RULE-INSTALLMENT-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 425,
+      "rule_code": "B2B-RULE-AUTH-004",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 426,
+      "rule_code": "B2B-RULE-AUTH-005",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 427,
+      "rule_code": "B2B-RULE-AUTH-006",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 428,
+      "rule_code": "B2B-RULE-AUTH-007",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 430,
+      "rule_code": "B2B-RULE-AUTH-011",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 431,
+      "rule_code": "B2B-RULE-AUTH-012",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 432,
+      "rule_code": "B2B-RULE-AUTH-013",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 433,
+      "rule_code": "B2B-RULE-AUTH-014",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 436,
+      "rule_code": "B2B-RULE-AUTH-017",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 437,
+      "rule_code": "B2B-RULE-AUTH-018",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 438,
+      "rule_code": "B2B-RULE-AUTH-019",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 439,
+      "rule_code": "B2B-RULE-AUTH-020",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 440,
+      "rule_code": "B2B-RULE-AUTH-021",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 442,
+      "rule_code": "B2B-RULE-AUTH-023",
+      "linked_screens": 3,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 443,
+      "rule_code": "B2B-RULE-AUTH-024",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 444,
+      "rule_code": "B2B-RULE-AUTH-025",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 445,
+      "rule_code": "B2B-RULE-AUTH-026",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 446,
+      "rule_code": "B2B-RULE-AUTH-027",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 447,
+      "rule_code": "B2B-RULE-AUTH-028",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 448,
+      "rule_code": "B2B-RULE-AUTH-029",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 449,
+      "rule_code": "B2B-RULE-AUTH-030",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 450,
+      "rule_code": "B2B-RULE-AUTH-031",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 451,
+      "rule_code": "B2B-RULE-AUTH-032",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 452,
+      "rule_code": "B2B-RULE-AUTH-033",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 453,
+      "rule_code": "B2B-RULE-AUTH-034",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 454,
+      "rule_code": "B2B-RULE-AUTH-035",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 458,
+      "rule_code": "REG_IDV_PROGRESSIVE_001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 459,
+      "rule_code": "REG_RISK_ONB_TELEMETRY_001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 460,
+      "rule_code": "REG_REC_PHONE_001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 461,
+      "rule_code": "UX-RUTA-COMPLETADO-01",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 462,
+      "rule_code": "UX-RUTA-ESTADOS-01",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 464,
+      "rule_code": "B2B-RULE-NAV-LEGAL-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 467,
+      "rule_code": "B2B-RULE-COMPAT-001",
+      "linked_screens": 5,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER"
+      ]
+    },
+    {
+      "rule_id": 468,
+      "rule_code": "B2B-RULE-CONTEXT-FRESHNESS-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 469,
+      "rule_code": "B2B-RULE-AUTH-036",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 470,
+      "rule_code": "B2B-RULE-UISTATE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 471,
+      "rule_code": "B2B-RULE-DEPENDENCY-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 472,
+      "rule_code": "B2B-RULE-TEST-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 473,
+      "rule_code": "B2B-RULE-SOURCE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 475,
+      "rule_code": "B2B-RULE-EVIDENCE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 476,
+      "rule_code": "B2B-RULE-RUNTIME-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 489,
+      "rule_code": "REG_ONB002_TRUST_CLAIMS_001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 490,
+      "rule_code": "REG_ONB003_DNI_ONLY_001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 493,
+      "rule_code": "B2B-RULE-AUTH-037",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 494,
+      "rule_code": "B2B-RULE-AUTH-038",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 497,
+      "rule_code": "B2B-RULE-AUTH-040",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 498,
+      "rule_code": "B2B-RULE-AUTH-041",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 501,
+      "rule_code": "B2B-RULE-AUTH-042",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 503,
+      "rule_code": "B2B-RULE-AUTH-043",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "HAS_STATED_REASON",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 505,
+      "rule_code": "B2B-RULE-AUTH-044",
+      "linked_screens": 3,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 506,
+      "rule_code": "B2B-RULE-AUTH-045",
+      "linked_screens": 3,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 577,
+      "rule_code": "B2B-RULE-AUTH-047",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 580,
+      "rule_code": "B2B-RULE-AUTH-048",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 581,
+      "rule_code": "B2B-RULE-LOAD-WIZARD-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 582,
+      "rule_code": "B2B-RULE-LOAD-REPROCESS-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 583,
+      "rule_code": "B2B-RULE-COMPANY-LIFECYCLE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 584,
+      "rule_code": "B2B-RULE-USER-LIFECYCLE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 585,
+      "rule_code": "B2B-RULE-APPROVAL-POLICY-LIFECYCLE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 586,
+      "rule_code": "B2B-RULE-SCOPE-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 587,
+      "rule_code": "B2B-RULE-SCOPE-002",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 590,
+      "rule_code": "B2B-RULE-SCOPE-003",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 591,
+      "rule_code": "B2B-RULE-SHELL-STATE-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 602,
+      "rule_code": "B2B-RULE-PORTAL-BOUNDARY-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 603,
+      "rule_code": "B2B-RULE-DASHBOARD-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 604,
+      "rule_code": "B2B-RULE-PAYMENT-FLOW-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 605,
+      "rule_code": "B2B-RULE-PAYMENT-LEDGER-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 606,
+      "rule_code": "B2B-RULE-SETTLEMENT-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 607,
+      "rule_code": "B2B-RULE-RECONCILIATION-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 608,
+      "rule_code": "B2B-RULE-PORTAL-TREE-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 609,
+      "rule_code": "B2B-RULE-CONFIG-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "HAS_STATED_REASON",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 610,
+      "rule_code": "B2B-RULE-PAGE-HEADER-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "HAS_STATED_REASON",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 611,
+      "rule_code": "B2B-RULE-PORTFOLIO-BAJAS-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 612,
+      "rule_code": "B2B-RULE-OFFER-UPDATE-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 613,
+      "rule_code": "B2B-RULE-PORTFOLIO-MAINTENANCE-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 614,
+      "rule_code": "B2B-RULE-SHELL-SCROLL-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 615,
+      "rule_code": "B2B-RULE-SHELL-OVERLAY-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 616,
+      "rule_code": "B2B-RULE-SHELL-BODY-STATES-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 617,
+      "rule_code": "B2B-RULE-INSTALLMENT-PLAN-001",
+      "linked_screens": 3,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 618,
+      "rule_code": "B2B-RULE-IMPORT-SOURCE-MAPPING-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 619,
+      "rule_code": "B2B-RULE-LOW-FRICTION-LOAD-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 620,
+      "rule_code": "B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 623,
+      "rule_code": "B2B-RULE-LOAD-NAMING-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 624,
+      "rule_code": "B2B-RULE-VALIDATION-VALID-ONLY-001",
+      "linked_screens": 3,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 626,
+      "rule_code": "B2B-RULE-SIMULA-SOURCE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 628,
+      "rule_code": "B2B-RULE-SIMULA-AGE-BASIS-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 629,
+      "rule_code": "B2B-RULE-SIMULA-FILE-CONTRACT-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 630,
+      "rule_code": "B2B-RULE-LOAD-HISTORY-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 641,
+      "rule_code": "B2B-RULE-SIMULA-COGNITIVE-FLOW-001",
+      "linked_screens": 4,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 642,
+      "rule_code": "B2B-RULE-SIMULA-TIERS-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 643,
+      "rule_code": "B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 644,
+      "rule_code": "B2B-RULE-SIMULA-REVENUE-OBJECTIVE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 645,
+      "rule_code": "B2B-RULE-SIMULA-PLUS-MOTORS-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 646,
+      "rule_code": "B2B-RULE-SIMULA-LEARNING-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 647,
+      "rule_code": "B2B-RULE-SIMULA-INTELLIGENCE-BOUNDARY-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 648,
+      "rule_code": "B2B-RULE-LOAD-DEBT-TEMPORAL-BASIS-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 649,
+      "rule_code": "B2B-RULE-CAMPAIGN-ARCHITECTURE-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 650,
+      "rule_code": "B2B-RULE-NEGOTIATION-BANDS-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 651,
+      "rule_code": "B2B-RULE-SIMULA-PLUS-NEGOTIATION-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 652,
+      "rule_code": "B2B-RULE-LOAD-DETAIL-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 653,
+      "rule_code": "B2B-RULE-SHELL-NAV-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 654,
+      "rule_code": "B2B-RULE-LOAD-MULTI-OFFER-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 655,
+      "rule_code": "B2B-RULE-AUTH-STATE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 657,
+      "rule_code": "B2B-RULE-SECURITY-BASELINE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 679,
+      "rule_code": "B2B-RULE-LOAD-RESULT-FINAL-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 680,
+      "rule_code": "B2B-RULE-OFFER-ASSIGNMENT-SCREEN-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 681,
+      "rule_code": "B2B-RULE-SIMULA-SEGMENT-LIFECYCLE-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 682,
+      "rule_code": "B2B-RULE-SIMULA-SEGMENT-MEMBERSHIP-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 683,
+      "rule_code": "B2B-RULE-SIMULA-OFFER-EXCEPTION-001",
+      "linked_screens": 2,
+      "verdict": "HOLD",
+      "failed": [
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 684,
+      "rule_code": "B2B-RULE-OFFER-SEGMENT-DECISION-001",
+      "linked_screens": 1,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 685,
+      "rule_code": "B2B-RULE-REPORTS-EXTRACTION-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    },
+    {
+      "rule_id": 686,
+      "rule_code": "LF-RULE-SUPPORT-CONTACTS-001",
+      "linked_screens": 0,
+      "verdict": "HOLD",
+      "failed": [
+        "NO_PENDING_DECISION",
+        "NO_PENDING_MARKER",
+        "USED_BY_ENOUGH_SCREENS"
+      ]
+    }
+  ]
+}
