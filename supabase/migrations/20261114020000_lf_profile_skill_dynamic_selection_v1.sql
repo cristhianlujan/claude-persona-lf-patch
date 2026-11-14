@@ -61,7 +61,7 @@ ON CONFLICT (skill_code) DO NOTHING;
 -- already returned applicable=true; historical NOT_REQUIRED must remain skipped.
 ALTER TABLE public.lf_skill_selector_policy_v1
   ADD COLUMN IF NOT EXISTS applicability_contract jsonb NOT NULL DEFAULT
-    '{"evaluation":"EXISTING_PROFILE_INPUT_APPLICABILITY","only_if_applicable":true,"not_required_skips":true}'::jsonb,
+    '{"evaluation":"INPUT_REQUIRED_CONTRACT","only_if_applicable":false}'::jsonb,
   ADD COLUMN IF NOT EXISTS policy_evidence_ref text,
   ADD COLUMN IF NOT EXISTS owner_decision_required boolean NOT NULL DEFAULT true;
 
@@ -72,7 +72,7 @@ INSERT INTO public.lf_skill_selector_policy_v1
 SELECT r.profile_code,'INPUT_GOVERNANCE_CONTEXT_PACK',p.channels,
        'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],
        'DETERMINISTIC_REQUIRED',false,
-       '{"evaluation":"EXISTING_PROFILE_INPUT_APPLICABILITY","only_if_applicable":true,"not_required_skips":true}'::jsonb,
+       '{"evaluation":"EVIDENCE_PAYLOAD","only_if_applicable":true,"evidence_step_id":"input_validate","evidence_json_path":["input_governance","applicable"],"positive_literal":"true","not_required_skips":true}'::jsonb,
        'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
 FROM public.lf_profile_selection_registry_v1 r
 JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
@@ -316,6 +316,8 @@ RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','extensions'
 AS $selected_invoker$
 DECLARE e record; v_plan jsonb; v_skill jsonb; v_out jsonb; v_receipt jsonb;
+ v_app_contract jsonb; v_app_evidence jsonb; v_app_path text[];
+ v_app_value text;
 BEGIN
  SELECT target_code,status,operation_code,manifest INTO e FROM public.lf_operation_execution
  WHERE execution_id=p_execution_id;
@@ -331,6 +333,45 @@ BEGIN
  WHERE x->>'skill_code'=p_skill_code;
  IF v_skill IS NULL THEN
   RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_NOT_SELECTED_BY_DB_POLICY'); END IF;
+ -- Generic, policy-bound applicability; no skill/IG/profile name is encoded
+ -- in the invoker or in the Step40/50 operation contract. A legacy NOT_REQUIRED
+ -- receipt MUST NOT trigger a skill invocation.
+ SELECT applicability_contract INTO v_app_contract
+ FROM public.lf_skill_selector_policy_v1
+ WHERE profile_code=e.target_code AND skill_code=p_skill_code
+   AND required_operation=v_skill->>'required_operation'
+   AND enabled AND p_channel=ANY(channels);
+ IF v_app_contract IS NULL THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_POLICY_NOT_FOUND');
+ END IF;
+ IF coalesce((v_app_contract->>'only_if_applicable')::boolean,false) THEN
+   IF v_app_contract->>'evaluation'<>'EVIDENCE_PAYLOAD' OR
+      coalesce(v_app_contract->>'evidence_step_id','')='' OR
+      jsonb_typeof(v_app_contract->'evidence_json_path')<>'array' THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_POLICY_INVALID');
+   END IF;
+   SELECT array_agg(path_element ORDER BY ord) INTO v_app_path
+   FROM jsonb_array_elements_text(v_app_contract->'evidence_json_path')
+       WITH ORDINALITY AS path(path_element,ord);
+   IF v_app_path IS NULL OR cardinality(v_app_path)<1 THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_PATH_INVALID');
+   END IF;
+   SELECT evidence_payload INTO v_app_evidence
+   FROM public.lf_operation_execution_steps
+   WHERE execution_id=p_execution_id
+     AND step_id=v_app_contract->>'evidence_step_id'
+     AND status='STEP_PASS_WITH_EVIDENCE';
+   IF v_app_evidence IS NULL THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_EVIDENCE_NOT_READY');
+   END IF;
+   v_app_value:=jsonb_extract_path_text(v_app_evidence,VARIADIC v_app_path);
+   IF v_app_value IS DISTINCT FROM v_app_contract->>'positive_literal' THEN
+     RETURN jsonb_build_object('status','BLOCKED',
+       'blocking_code',case when v_app_value='false'
+             then 'SKILL_NOT_REQUIRED_BY_INPUT_VALIDATE'
+             else 'SKILL_APPLICABILITY_NOT_ATTESTED' end);
+   END IF;
+ END IF;
  v_receipt:=jsonb_build_object('execution_id',p_execution_id,'skill_code',p_skill_code,
      'selection_mode',v_skill->>'selection_mode',
      'selection_evidence',v_skill->'selection_evidence','channel',p_channel);
