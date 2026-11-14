@@ -203,7 +203,7 @@ INSERT INTO public.lf_skill_selector_policy_v1
                 "SELECT 'POST='||count(*) FROM public.lf_skill_selector_policy_v1 "
                 f"WHERE enabled AND NOT owner_decision_required AND policy_evidence_ref='{OWNER_REF}';"
                 "\nSELECT 'STEP40='||status||':'||"
-                "evidence_payload#>>'{input_governance,status}' "
+                "(evidence_payload #>> '{input_governance,status}') "
                 "FROM public.lf_operation_execution_steps WHERE execution_id='TEST-STEP40';"
                 "\nSELECT 'PREPARE='||"
                 "public.lf_profile_skill_selection_prepare_v1("
