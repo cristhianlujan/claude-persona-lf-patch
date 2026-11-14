@@ -34,7 +34,7 @@ BEGIN
  FROM public.lf_operation_steps s
  LEFT JOIN public.lf_operation_step_contracts c
    ON c.operation_code=s.operation_code AND c.step_id=s.step_id
-      AND c.status='VIGENTE'
+      AND c.status='ACTIVE_ENFORCEMENT'
  WHERE s.operation_code='EJECUCION_PERFIL_LF' AND s.active AND s.required;
  IF v_count<>11 OR v_invalid<>0 THEN
    RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROFILE_OPERATION_STEP_CONTRACTS_INCOMPLETE',
