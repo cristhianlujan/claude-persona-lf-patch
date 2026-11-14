@@ -1,0 +1,94 @@
+{
+  "schema": "LF_STAGE_D_THEME_DARK_FINAL_OWNER_DESIGN_CANDIDATE_V1",
+  "status": "PROPOSAL_ONLY_NOT_APPROVED_CANONICAL",
+  "owner_acceptance": "button green_action_hover with card_surface white label; adjust card for 3.3 component margin and secondary text contrast >=4.5",
+  "provenance": {
+    "owner_decision": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+    "identity_verified": false,
+    "source": "Supabase SELECT only + owner's documented comparison A/B/C",
+    "profile_identified": "PERFIL-UI-ARCHITECT",
+    "profile_runtime_enabled": false,
+    "profile_execution_id": null,
+    "skill_reference": "profiles/ui_architect/SKILL.md",
+    "design_skill_contract": "profiles/ui_architect/contracts/lf_visual_governance.md",
+    "routing_execution_status": "NOT_STARTED_NO_LIVE_WRITES_ALLOWED"
+  },
+  "source_token_policy": "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1",
+  "role_approval_receipts": [
+    {
+      "receipt_ref": "THEME002_DARK_ROLE_RECEIPT_CANDIDATE_1",
+      "token_name": "dark_mode_surface",
+      "design_system_code": "LF_DS_V1",
+      "proposal_hex": "#0F1720",
+      "status": "CANDIDATE_PROPOSED_PENDING_ROLE_AND_AA_QA",
+      "source_value_status": "PENDIENTE_DECISION_FINAL",
+      "role_approval_actor": null,
+      "role_verified": false,
+      "qa_visual_verified": false,
+      "decision_ref": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+      "identity_verified": false,
+      "usage": "page_background"
+    },
+    {
+      "receipt_ref": "THEME002_DARK_ROLE_RECEIPT_CANDIDATE_2",
+      "token_name": "dark_mode_card",
+      "design_system_code": "LF_DS_V1",
+      "proposal_hex": "#00050A",
+      "status": "CANDIDATE_PROPOSED_PENDING_ROLE_AND_AA_QA",
+      "source_value_status": "PENDIENTE_DECISION_FINAL",
+      "role_approval_actor": null,
+      "role_verified": false,
+      "qa_visual_verified": false,
+      "decision_ref": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+      "identity_verified": false,
+      "usage": "content_surface",
+      "supersedes_candidate": "#141627",
+      "reason": "required 3.3:1 button/card margin; prior 3.001:1 insufficient"
+    },
+    {
+      "receipt_ref": "THEME002_DARK_ROLE_RECEIPT_CANDIDATE_3",
+      "token_name": "dark_mode_text",
+      "design_system_code": "LF_DS_V1",
+      "proposal_hex": "#F5F7FA",
+      "status": "CANDIDATE_PROPOSED_PENDING_ROLE_AND_AA_QA",
+      "source_value_status": "PENDIENTE_DECISION_FINAL",
+      "role_approval_actor": null,
+      "role_verified": false,
+      "qa_visual_verified": false,
+      "decision_ref": "OWNER_UI_DARK_ACCEPTANCE_ADJUSTMENT_2026_11_13_22_21",
+      "identity_verified": false,
+      "usage": "primary_and_secondary_text"
+    }
+  ],
+  "binding_proposal_tokens_only": {
+    "background_card": "dark_mode_card",
+    "background_page": "dark_mode_surface",
+    "primary_text": "dark_mode_text",
+    "secondary_text": "dark_mode_text",
+    "button_background": "green_action_hover",
+    "button_label": "card_surface",
+    "input_border": "border_soft",
+    "focus_ring": "green_action_border",
+    "hover_background": "green_action_hover",
+    "hover_visual_state": "existing green_action_border outline/shadow; no new color token"
+  },
+  "constraints": {
+    "aa_text_min": 4.5,
+    "aa_component_min": 3,
+    "button_card_owner_margin_min": 3.3,
+    "no_hex_in_rules": true,
+    "hex_only_role_receipts_or_lf_design_candidate": true,
+    "no_live_writes": true,
+    "no_role_approval_performed": true,
+    "no_new_design_tokens": true,
+    "not_promotable_until_real_role_and_visual_qa": true
+  },
+  "previous_secondary_unsafe": {
+    "slate_text": "BELOW_4_5",
+    "slate_text_strong": "BELOW_4_5",
+    "replacement": "dark_mode_text"
+  },
+  "linkage_to_prior_stage_c": "lf_stagec_theme_token_policy_patch_20261113.json",
+  "unchanged_scope": "Prior nine auth/other theme proposals unchanged; no modification to official LF policy or any source in live Supabase.",
+  "new_demo_image": "in-chat visual only; not an official profile run"
+}
