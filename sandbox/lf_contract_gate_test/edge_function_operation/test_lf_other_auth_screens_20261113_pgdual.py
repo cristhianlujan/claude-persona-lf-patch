@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LF other auth screens: source SHA, 10 UPDATE + 6 INSERT (9 links) and ROLLBACK.
+"""LF other auth screens: source SHA, 11 UPDATE + 9 INSERT (12 links) and ROLLBACK.
 PostgreSQL 17.6 / 18.7 disposable Docker only. NEVER connects to Supabase live.
 """
 from __future__ import annotations
@@ -28,24 +28,36 @@ class OtherAuthScreenAudit(unittest.TestCase):
         doc=json.loads(DATA.read_text(encoding="utf8"))
         self.assertEqual(doc["schema"],"LF_OTHER_LOGIN_SCREENS_AUDIT_V1")
         self.assertEqual(sum(x["vinculos"] for x in doc["scope"]),344)
-        self.assertEqual(len(doc["updates"]),10)
-        self.assertEqual(len(doc["inserts"]),6)
-        self.assertEqual(sum(len(x["screens"]) for x in doc["inserts"]),9)
+        self.assertEqual(len(doc["updates"]),11)
+        self.assertEqual(len(doc["inserts"]),9)
+        self.assertEqual(sum(len(x["screens"]) for x in doc["inserts"]),12)
         owner=doc["owner_decision"]
         self.assertFalse(owner["identity_verified"])
         self.assertFalse(owner["signed"])
-        self.assertEqual(owner["decisions"][0]["outcome"],"CLOSED_SELFIE_NOT_ACTIVE")
-        self.assertEqual(owner["decisions"][2]["outcome"],"CLOSED_WAIT_AFTER_APPROVALS_AND_CONFIRMED_PREVIOUS_DELIVERY")
+        self.assertTrue(owner["supersedes_client_wait_48h_for_entry"])
+        self.assertEqual(owner["actual_config_source"],"SEC-CLIENT-RECOVERY-LIMITED-ACCESS")
         bycode={x["codigo"]:x for x in doc["updates"]}
-        self.assertEqual(len(bycode),10)
-        for code in ("B2B-RULE-AUTH-028","B2B-RULE-AUTH-029","B2B-RULE-AUTH-037","B2B-RULE-AUTH-038","REG_CLIENT_RECOVERY_IDV_STEPUP_001","REG_CLIENT_RECOVERY_REBIND_ATOMIC_001"):
-            self.assertIn("ENTREGADO",bycode[code]["texto_nuevo"])
-            self.assertIn("48 horas",bycode[code]["texto_nuevo"])
-        self.assertEqual(bycode["REG_CLIENT_RECOVERY_IDV_STEPUP_001"]["config_nueva"]["selfie"],"DISABLED_OWNER_DECISION")
-        self.assertEqual(bycode["REG_CLIENT_RECOVERY_REBIND_ATOMIC_001"]["config_nueva"]["old_notifications_required_delivered"],["PHONE","EMAIL"])
+        self.assertEqual(len(bycode),11)
+        candidate_rec=[x for x in doc["updates"] if x["codigo"].startswith("REG_CLIENT_RECOVERY")]
+        self.assertEqual(len(candidate_rec),5)
+        self.assertTrue(all(x["estado"]=="VIGENTE" and x["estado_nuevo"]=="CANDIDATO" for x in candidate_rec))
+        self.assertFalse(any("48 horas" in x["texto_nuevo"] for x in candidate_rec))
+        self.assertIn("INMEDIATA",bycode["REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001"]["texto_nuevo"])
+        self.assertEqual(bycode["REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001"]["config_nueva"]["success_outcome"],"LIMITED_ACTIVE")
+        self.assertEqual(bycode["REG_CLIENT_RECOVERY_REBIND_ATOMIC_001"]["config_nueva"]["require_window_elapsed_for_limited_access"],False)
         self.assertEqual({x["codigo"] for x in doc["inserts"] if "B2B-AUTH-004" in x["screens"]},{"B2B-RULE-RECOVERY-MFA-SEPARATION-001"})
+        self.assertEqual({x["codigo"] for x in doc["inserts"] if x["codigo"].startswith("REG_CLIENT_RECOVERY") and "REC_001" in x["screens"]},
+                         {"REG_CLIENT_RECOVERY_SUPPORT_Q11_001","REG_CLIENT_RECOVERY_ALTERNATE_CONTACT_001","REG_CLIENT_RECOVERY_LIMITED_SESSION_001","REG_CLIENT_RECOVERY_WINDOW_GUARD_001","REG_CLIENT_RECOVERY_OWNER_OBJECTION_001"})
         self.assertTrue(all(x["valor_config"].get("identity_verified") is False for x in doc["inserts"]))
-        self.assertIn("PENDING_HUMAN_DECISION",next(x for x in doc["inserts"] if x["codigo"]=="REG_CLIENT_RECOVERY_ALTERNATE_CONTACT_001")["valor_config"]["secondary_contact_qualifies"])
+        policy=doc["policy_proposal"]["record"]
+        self.assertEqual(policy["status"],"CANDIDATO")
+        self.assertEqual(policy["policy_config"]["approvers_allowed"],[1,2])
+        self.assertEqual(policy["policy_config"]["session_mode"],"LIMITED_ACTIVE")
+        self.assertEqual(policy["policy_config"]["notification_channel_for_change"]["PHONE"],"PREVIOUS_VERIFIED_EMAIL")
+        self.assertEqual(policy["policy_config"]["notification_channel_for_change"]["EMAIL"],"PREVIOUS_VERIFIED_PHONE")
+        self.assertTrue(policy["policy_config"]["alternate_contact_optional_for_onboarding"])
+        self.assertGreater(policy["policy_config"]["security_window_hours"],0)
+        self.assertIn("NO_DEBT_LETTER_DELIVERY",policy["policy_config"]["limited_blocked_actions"])
         protected=set(doc["protected_codes"])
         self.assertFalse(protected & {x["codigo"] for x in doc["updates"]})
         self.assertFalse(protected & {x["codigo"] for x in doc["inserts"]})
@@ -95,6 +107,7 @@ class OtherAuthScreenAudit(unittest.TestCase):
                 self.assertEqual(before,x["before_sha256"],"SOURCE_FULLROW_SHA_DRIFT:"+x["codigo"])
                 change=("UPDATE lf_ops.reglas AS r SET titulo="+quote(x["titulo_nuevo"])+
                         ",descripcion="+quote(x["texto_nuevo"])+
+                        ",estado="+quote(x.get("estado_nuevo",x["estado"]))+
                         ",valor_config="+qjson(x["config_nueva"])+
                         " WHERE r.codigo="+quote(x["codigo"])+
                         " AND r.id="+str(x["id"])+
@@ -103,9 +116,15 @@ class OtherAuthScreenAudit(unittest.TestCase):
                         quote(before)+";")
                 lines=sql("BEGIN;\n"+change+"\nSELECT 'DURING|'||"+
                     "encode(pg_catalog.sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') "
-                    "FROM lf_ops.reglas r WHERE codigo="+quote(x["codigo"])+";\nROLLBACK;\n"+
+                    "FROM lf_ops.reglas r WHERE codigo="+quote(x["codigo"])+";\n"+
+                    "SELECT 'DURING_STATE|'||estado FROM lf_ops.reglas WHERE codigo="+quote(x["codigo"])+";\nROLLBACK;\n"+
                     "SELECT 'AFTER|'||encode(pg_catalog.sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') "
                     "FROM lf_ops.reglas r WHERE codigo="+quote(x["codigo"])+";")
+                if x.get("estado_nuevo") == "CANDIDATO":
+                    cand=sql("SELECT estado FROM lf_ops.reglas WHERE codigo="+quote(x["codigo"])+";")
+                    self.assertEqual(cand,["VIGENTE"],"ROLLBACK_CANDIDATE_STATE_MISMATCH:"+x["codigo"])
+                during_state=[v.split("|",1)[1] for v in lines if v.startswith("DURING_STATE|")]
+                self.assertEqual(during_state,[x.get("estado_nuevo",x["estado"])],"INSIDE_CANDIDATE_STATUS_MISMATCH:"+x["codigo"])
                 during=[v.split("|",1)[1] for v in lines if v.startswith("DURING|")]
                 after=[v.split("|",1)[1] for v in lines if v.startswith("AFTER|")]
                 self.assertEqual(len(during),1)
@@ -142,7 +161,7 @@ class OtherAuthScreenAudit(unittest.TestCase):
                 self.assertEqual(links,[len(x["screens"])])
                 self.assertEqual(sql("SELECT count(*) FROM lf_ops.reglas WHERE codigo="+quote(code)+";"),["0"])
                 print("SHA_INSERT|"+image+"|"+code+"|"+before+"|"+during[0]+"|"+after[0]+"|PASS",flush=True)
-            print("PASS_OTHER_AUTH_10_UPDATES_6_INSERTS_9_LINKS_ROLLBACK_"+image.replace(":","_"),flush=True)
+            print("PASS_OTHER_AUTH_11_UPDATES_9_INSERTS_12_LINKS_ROLLBACK_"+image.replace(":","_"),flush=True)
         finally:
             subprocess.run(["docker","rm","-f",cid],capture_output=True,text=True,timeout=60)
     def test_pg176(self):self.exercise("postgres:17.6","170006")

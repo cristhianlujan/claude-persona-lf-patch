@@ -1,24 +1,38 @@
 [
   {
     "id": "H02",
-    "asunto": "Proveedor IDV para recuperación Cliente",
-    "propuesta": "Proveedor IDV sin elegir; mantener PENDING_CANONICAL_IDV_PROVIDER y bloqueo de IDV automático hasta selección, seguridad y QA.",
-    "tipo": "DECISION_HUMANA",
-    "estado": "PENDIENTE"
+    "tipo": "GATE_EXTERNO",
+    "estado": "PENDIENTE",
+    "asunto": "Proveedor IDV",
+    "propuesta": "No seleccionar ahora; selfie inactiva. Mantener ruta automática cerrada hasta selección/QA, el soporte Q11 se mantiene separado."
   },
   {
     "id": "H04A",
     "tipo": "DECISION_HUMANA",
     "estado": "PENDIENTE",
-    "asunto": "Qué contacto alterno puede sustituir el aviso anterior ENTREGADO",
-    "propuesta": "Proponer únicamente correo secundario o celular secundario ligado y verificado en registro canónico ANTES del inicio de recuperación, misma identidad y recibo DELIVERED; no se halló evidencia de registro de verificación de estos contactos. Sin aceptación expresa del dueño y esquema verificado, ni esos contactos satisfacen el gate ni reinician reloj."
+    "asunto": "Ruta alternativa cuando no existe el otro canal anterior verificado",
+    "propuesta": "Soporte mantiene acceso bloqueado y expediente auditado; definir prueba independiente y autoridad para contactar al titular si no existe un canal histórico verificable. No reemplazar por datos recién capturados."
   },
   {
     "id": "H04B",
     "tipo": "DECISION_HUMANA",
     "estado": "PENDIENTE",
-    "asunto": "Excepción si ambos canales históricos son inaccesibles",
-    "propuesta": "No admitir contacto nuevo proporcionado durante el expediente, aprobador, familiar ni tercero como destinatario equivalente; mantener bloqueo hasta especificación expresa de responsable alterno, prueba independiente de titularidad y autoridad de notificación."
+    "asunto": "Sustitución por contacto secundario ante rebote",
+    "propuesta": "Contacto secundario es opcional para onboarding y no prueba por sí mismo control del canal anterior. Exigir evidencia canónica previa y aprobación explícita si se pretende usar como notificación sustitutiva."
+  },
+  {
+    "id": "H06",
+    "tipo": "GATE_TECNICO",
+    "estado": "PENDIENTE",
+    "asunto": "Parametrización + identidad para acceso limitado",
+    "propuesta": "Crear y verificar la política Cliente CANDIDATO en lf_ops.politicas_seguridad mediante escritor oficial; registrar sesión LIMITADA, auditoría, rechazo por acción y revocación verificada. Sin permisos reales, NO-GO."
+  },
+  {
+    "id": "H07",
+    "tipo": "GATE_DE_PRODUCTO",
+    "estado": "PENDIENTE",
+    "asunto": "UI de cambio de contacto y medio de pago guardado",
+    "propuesta": "No aparecen pantallas Cliente canónicas de gestión de correo/celular/contraseña ni de modificación de medio guardado; registrar historias/rutas antes de habilitarlas. ONB_004 es alta, no cambio."
   },
   {
     "id": "H05",

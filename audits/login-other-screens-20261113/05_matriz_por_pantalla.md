@@ -1,17 +1,18 @@
-# Auditoría PR #3847 — decisiones dueño 22:03 Lima (solo propuesta)
-**Autoridad**: documental, identity_verified=false; ninguna migración ni Supabase DML. EKB 1.4 consultada. Los 344 vínculos de origen siguen congelados como preimagen.
-## Matriz por pantalla — regla | ajuste | texto nuevo
-| Pantalla | Regla | Ajuste documental |
+# Matriz LF #3847 — alcance autenticación B2B y Cliente (DRAFT)
+**Fuente**: SELECT lf_ops.pantallas / reglas_pantallas / reglas. Inventario 344 vínculos originales; EKB LF V1.4. **Autoridad vigente para Cliente REC_001**: decisión documental 23:38 Lima, identity_verified=false (09_owner_documentary_decision_2338.json), reemplaza solo la espera para entrar propuesta en 22:03 (06 histórico). **No confundir propuesta con estado VIGENTE vivo.**
+
+| Pantalla | Regla/propuesta | Diagnóstico y texto candidato |
 |---|---|---|
-| B2B-AUTH-002 | AUTH-028/042 + RECOVERY-ALTERNATE-CONTACT | Solicitud soporte, no inicia espera; 48h solo tras aprobaciones requeridas y aviso ENTREGADO; rebote bloquea/pausa; alternos no aprobados |
-| B2B-AUTH-003 | AUTH-029 + RECOVERY-SUPPORT | PASSWORD_UPDATE_ONLY solo por clave temporal de uso único después de los 48h elegibles; no MFA ni sesión |
-| B2B-AUTH-004 | nuevo RECOVERY-MFA-SEPARATION (CANDIDATO) | Recuperación y avisos no satisfacen MFA; mantener reglas protegidas OTP correo Brevo sin cambios |
-| B2B-AUTH-005 | ninguna | REEMPLAZADO/inactiva, 21 vínculos a reglas VIGENTE históricos sin ejecutar aquí |
-| B2B-AUTH-006 | AUTH-029/037/038 + RECOVERY-ALTERNATE-CONTACT | Vigilar estado DELIVERED real del aviso previo, aprobaciones política 20, 48h + pausa/bloqueo en rebote |
-| ONB_001 | ninguna | Sin cambio; no inventar autorización por OTP del celular actual |
-| ONB_002 | UI_STATES + SMS_SUPPORT_GATE | SMS Intico solo contingencia aprobada por soporte; OTP actual no inicia 48h Q11; sin selfie |
-| REC_001 | IDV_STEPUP/IDV_OUTCOME/PHONE_CONTROL/REBIND_ATOMIC + SUPPORT_Q11 + ALTERNATE_CONTACT | Dos personas distintas, aviso ENTREGADO tanto al celular como al correo anterior, 48h de reloj gobernado; selfie NO, IDV por elegir |
-## Decisiones humanas abiertas
-Proveedor IDV H02; H04A/B quién puede sustituir al contacto anterior cuando ningún canal histórico alcanza DELIVERED. El bloqueo/pausa y no liberación ya son decisión del dueño, NO se reabren.
-## Riesgos y límites
-`lf_ops.politicas_seguridad` política 20 todavía es CANDIDATO y no presenta `approvers_required` en SELECT; referenciarlo aquí no lo implementa. Reglas #3844/#3846, políticas 19/20/23/25, AUTH_LOGIN_FAILED_PASSWORD, contratos compartidos AUTH-041/044/045, REG_ALR_003 y REG_UNI_002 quedan intocados. Por cada mutación propuesta test aislado PG17.6/18.7 con SHA antes/dentro/tras rollback; NO-GO producción.
+| B2B-AUTH-002 | AUTH-028/042 + RECOVERY-ALTERNATE-CONTACT | Recuperación B2B por soporte/clave temporal; gates de aprobación/aviso, tiempo B2B del contrato anterior. No modificar políticas B2B protegidas. |
+| B2B-AUTH-003 | AUTH-029 + RECOVERY-SUPPORT | Contraseña después de expediente B2B y clave temporal. Sin sesión operativa automática. |
+| B2B-AUTH-004 | nuevo RECOVERY-MFA-SEPARATION | MFA OTP correo Brevo si corresponde; recuperación no acredita MFA. |
+| B2B-AUTH-005 | ninguno | REEMPLAZADO/inactiva. Mantiene vínculos históricos a reglas VIGENTE sin autorización de ejecución. |
+| B2B-AUTH-006 | AUTH-029/037/038 | Recuperación B2B asistida por soporte, sin OTP automático de recuperación. |
+| ONB_001 | ninguno | Continúa ingreso celular; contacto secundario opcional no bloquea onboarding. |
+| ONB_002 | UI_STATES + SMS_SUPPORT_GATE | OTP acredita control del celular, no identidad; contingencia SMS Intico solo por soporte. |
+| ONB_004 | NO MODIFICADA | Alta Cliente exige email primario; no es formulario de cambio de correo ni exige contacto secundario para recuperación. |
+| REC_001 | ACCESS_AFTER_REBIND, IDV_STEPUP, IDV_OUTCOME, PHONE_CONTROL, REBIND_ATOMIC (5 VIGENTE fuente → 5 CANDIDATO propuestos) | Tras aprobaciones según policy_config y aviso DELIVERED al OTRO canal histórico verificado, concede LIMITED_ACTIVE **inmediato**; duración de ventana y acciones bloqueadas leídas exclusivamente de política central Cliente; rebote impide sesión, objeción verificada la revoca. |
+
+**Cambios de este PR (23:38):** 11 UPDATE de reglas con fuente SHA256; 9 reglas INSERT CANDIDATO / 12 vínculos; una política seguridad Cliente INSERT CANDIDATO (no existe en vivo), sin DML live. La política propone 48 horas como ventana (antes aprobada) solo en policy_config, **no 48 horas de espera para ingresar**. La autorización operativa exige backend, session gate y QA; no se inventa pantalla de cambio de contacto o medio de pago guardado.
+
+**Pendientes:** sin canal histórico previamente verificado/no entrega no habilitar limitado, soporte alternativo gobernado pendiente de prueba independiente; IDV pendiente, selfie NO, política central propuesta no instalada, CI y autoridad de promoción por verificar. Las reglas B2B #3844/#3846, políticas 19/20/23/25 y compartidos REG_ALR_003/REG_UNI_002 sin cambios.

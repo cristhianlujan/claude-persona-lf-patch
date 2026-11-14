@@ -1,7 +1,7 @@
 {
   "schema": "LF_OTHER_LOGIN_SCREENS_AUDIT_V1",
   "base_sha": "f9d20b3add2418ddae3f3372ccc0b0a49e3a9f6f",
-  "source": "Supabase SELECT, solo lectura; propuestas revisadas por decisión dueño 22:03; SIN escrituras vivas",
+  "source": "Supabase SELECT, solo lectura; propuestas revisadas por decisión dueño 22:03; SIN escrituras vivas; nueva decisión dueño 23:38 supersede espera de acceso Cliente; ventana central candidate-only",
   "scope": [
     {
       "pantalla": "B2B-AUTH-002",
@@ -710,8 +710,8 @@
         "pendiente_detalle": "Pendiente catalogar mensajes/errores Cliente y mapearlos a la futura pantalla de recuperación; no reutilizar errores B2B por código aunque sus patrones sean equivalentes.",
         "pendiente_decision": true
       },
-      "titulo_nuevo": "Resultado IDV y comprobante manual Q11 distintos",
-      "texto_nuevo": "Un resultado automático IDV VERIFIED solo procede del proveedor integrado y verificado, nunca de una simulación ni del DNI solo. En forma separada, soporte Q11 emite comprobante server-side tras escaneo DNI, creador distinto del aprobador, avisos a celular y correo anteriores, auditoría y 48 horas de espera. Ni falla, ni falta de proveedor, ni caso en revisión autoriza reasignación o acceso. La UI no ve respuestas crudas de proveedor ni documentos. El comprobante manual Q11 se valida con aprobador diferente, dos avisos ENTREGADOS y 48 horas de espera elegible; falta de entrega o rechazo mantiene DENY. No confundir un expediente de soporte con el outcome externo VERIFIED. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "titulo_nuevo": "CANDIDATO — Resultados normalizados del step-up de recuperación Cliente",
+      "texto_nuevo": "La recuperación Cliente por soporte presenta prueba MANUAL_Q11_APPROVED separada de cualquier resultado IDV externo; el proveedor IDV sigue pendiente y selfie está NO ACTIVA. Una prueba manual válida se obtiene solo tras DNI escaneado, creador distinto de los aprobadores configurados y entrega confirmada al otro canal histórico verificado; habilita únicamente LIMITED_ACTIVE, nunca AUTHENTICATED_FULL. Si aviso rebota/no se entrega, falta aprobador o existe objeción del dueño real, el resultado es DENY/REVOKE. No se presenta VERIFIED del proveedor sin integración y QA.",
       "config_nueva": {
         "flow": "RECOVERY_FLOW",
         "front": "CLIENTE",
@@ -758,14 +758,16 @@
         "provider_result_normalization": "SERVER_SIDE_REQUIRED",
         "provider_raw_payload_to_client": "DENY",
         "provider_specific_reason_to_client": "DENY",
-        "q11_manual_proof": "Q11_TWO_DISTINCT_APPROVERS_48H",
-        "manual_approval_not_provider_verified": true,
-        "selfie": "INACTIVE",
-        "manual_q11_release_gate": "TWO_DISTINCT_PEOPLE_OLD_PHONE_AND_EMAIL_DELIVERED_48H",
-        "idv_provider": "PENDING_SELECTION",
-        "identity_verified_by_selfie": false,
-        "owner_identity_verified": false
-      }
+        "support_proof": "MANUAL_Q11_APPROVED_AND_OTHER_CHANNEL_DELIVERED",
+        "verified_outcome_scope": "LIMITED_ACTIVE_ONLY",
+        "provider_status": "PENDING_SELECTION",
+        "selfie": "INACTIVE_OWNER_DECISION",
+        "notification_failed_outcome": "DENY",
+        "owner_objection_outcome": "REVOKED",
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "identity_verified": false
+      },
+      "estado_nuevo": "CANDIDATO"
     },
     {
       "codigo": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
@@ -854,8 +856,8 @@
         "pendiente_detalle": "La pantalla/route de recuperación ya existen (REC_001 / CLIENT_RECOVERY). Persiste exclusivamente la selección y validación del proveedor/mecanismo canónico de IDV step-up, sus límites operativos/costo y evidencia visual antes de producción.",
         "pendiente_decision": true
       },
-      "titulo_nuevo": "Step-up Cliente con soporte Q11 e IDV sin seleccionar",
-      "texto_nuevo": "REC_001 permite, sin celular anterior, la ruta Q11 con DNI escaneado, dos personas distintas (una registra y otra aprueba), notificación a celular y correo anteriores, auditoría y 48 horas de espera. El celular actual debe seguir verificado en ONB_002, sin que su OTP sustituya identidad. El proveedor IDV no está elegido y selfie no está decidida: ninguno se presume implementado. Riesgo HIGH conserva bloqueo y revisión. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Para Q11 la aprobación requiere dos personas diferentes: operador creador y operador aprobador; ambos avisos al celular y correo anteriores deben quedar ENTREGADOS con evidencia; si falla uno, el reloj no empieza o queda en PAUSED. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "titulo_nuevo": "CANDIDATO — Step-up de identidad para recuperación Cliente sin factor anterior",
+      "texto_nuevo": "REC_001 exige soporte Q11 con DNI escaneado para recuperar sin control del celular anterior: creador diferente de aprobador(es), approvers_required 1 o 2 según política Cliente, y aviso ENTREGADO al OTRO canal histórico ya verificado. Cambia celular: notificar al correo anterior verificado; cambia correo: notificar al celular anterior verificado. Cumplidos estos gates, entrada inmediata exclusivamente LIMITADA; la ventana de seguridad empieza entonces y sus parámetros residen en SEC-CLIENT-RECOVERY-LIMITED-ACCESS.policy_config. Sin entrega, NO acceso limitado: ruta alternativa de soporte gobernada/auditada, sin bypass. Selfie no operativa, IDV sin seleccionar; contacto alterno opcional, no obstaculiza onboarding.",
       "config_nueva": {
         "flow": "RECOVERY_FLOW",
         "front": "CLIENTE",
@@ -875,7 +877,7 @@
           103,
           104
         ],
-        "required_identity_outcome": "IDV_VERIFIED_OR_Q11_MANUAL_PROOF",
+        "required_identity_outcome": "SUPPORT_MANUAL_APPROVED_WITH_DELIVERED_NOTICE",
         "provider_agnostic_contract": true,
         "current_phone_control_source": "ONB_002_SAME_SERVER_SESSION",
         "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
@@ -887,27 +889,18 @@
         "operational_access_before_verified": "DENY",
         "current_phone_control_alone_sufficient": false,
         "email_otp_approved_as_client_recovery_factor": false,
-        "support_q11_path": "TWO_PERSON_DNI_48H",
-        "support_approvers_required": 2,
-        "previous_contact_notice": [
-          "PHONE",
-          "EMAIL"
-        ],
-        "hold_hours": 48,
-        "selfie": "DISABLED_OWNER_DECISION",
-        "selfie_operational_rules": "NONE",
+        "manual_recovery_path": "SUPPORT_Q11_IMMEDIATE_LIMITED",
+        "support_approvers_source": "CLIENT_RECOVERY_POLICY_CONFIG_APPROVERS_REQUIRED",
+        "creator_approver_separation": "REQUIRED",
+        "delivery_channel_by_change": "OTHER_PREVIOUS_VERIFIED_CHANNEL",
+        "notification_requirement": "DELIVERED",
+        "selfie": "INACTIVE",
         "idv_provider": "PENDING_SELECTION",
-        "q11_approval_separation": "CREATOR_NE_APPROVER",
-        "previous_contacts_required": [
-          "OLD_PHONE",
-          "OLD_EMAIL"
-        ],
-        "previous_contacts_delivery": "ALL_DELIVERED",
-        "hold_start": "AFTER_APPROVAL_AND_ALL_DELIVERED",
-        "hold_invalid_delivery": "BLOCK_OR_PAUSE",
-        "alternate_acceptance": "PENDING_HUMAN_DECISION",
-        "owner_identity_verified": false
-      }
+        "alternate_contact_onboarding": "OPTIONAL",
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "identity_verified": false
+      },
+      "estado_nuevo": "CANDIDATO"
     },
     {
       "codigo": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001",
@@ -974,8 +967,8 @@
         "pendiente_detalle": "Pantalla funcional y ruta ya canónicas: REC_001 / CLIENT_RECOVERY. Persiste el gap del mecanismo/proveedor IDV step-up y su referencia visual final cuando el celular anterior no está disponible.",
         "pendiente_decision": true
       },
-      "titulo_nuevo": "Celular actual verificado y recuperación Q11 sin el anterior",
-      "texto_nuevo": "REC_001 reutiliza el celular actual verificado en ONB_002 mientras la misma sesión siga válida. Si el anterior está disponible, verificar su OTP por la ruta existente; si no, pasar a soporte Q11 con DNI escaneado, dos personas distintas, avisos a celular/correo anteriores, auditoría y 48 horas. Ningún camino permite reasociación antes del comprobante válido ni revela existencia de cuenta. El OTP al celular nuevo NO inicia recuperación. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Q11 exige evidencia ENTREGADO en celular y correo anteriores o bloqueo; contacto alterno no sustituye automáticamente sin decisión humana. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "titulo_nuevo": "CANDIDATO — Recuperación Cliente reutiliza el celular actual ya verificado",
+      "texto_nuevo": "El celular candidato verificado en ONB_002 prueba su control, no identidad, y no abre acceso por sí solo. En recuperación sin celular anterior se requiere expediente Q11, aprobadores configurables y aviso ENTREGADO al correo anterior verificado (canal independiente); para cambio de correo el aviso corresponde al celular anterior verificado. No forzar un contacto secundario durante ONB_004: es opcional para onboarding, aunque recuperar sin canal histórico verificado queda fail-closed con soporte alternativo auditado. Tras gates puede abrirse sesión LIMITED_ACTIVE inmediata, no sesión plena. El cambio posterior de correo/celular se rige por policy_config durante la ventana.",
       "config_nueva": {
         "source_state": "RECOVERY_FLOW",
         "source_screen": "ONB_003",
@@ -986,7 +979,7 @@
         "ask_old_phone_access": true,
         "old_phone_accessible": "VERIFY_OLD_PHONE_OTP",
         "old_phone_otp_channel": "whatsapp",
-        "old_phone_unavailable": "SUPPORT_Q11_DNI_TWO_PERSON_48H",
+        "old_phone_unavailable": "SUPPORT_Q11_IMMEDIATE_LIMITED_WITH_EMAIL_NOTICE",
         "target_screen_mapping": "REC_001",
         "source_decision_number": 103,
         "old_phone_otp_operation": "OTP_OP_RECUPERAR_CLAVE",
@@ -996,17 +989,14 @@
         "current_verified_phone_source": "ONB_001_PLUS_ONB_002",
         "identity_validation_rule_code": "REG_IDV_PROGRESSIVE_001",
         "same_session_binding_required": true,
-        "previous_contact_notice": [
-          "PHONE",
-          "EMAIL"
-        ],
-        "manual_q11_distinct_people": true,
-        "new_phone_otp_starts_48h": false,
-        "old_contacts_delivery_gate": "PHONE_AND_EMAIL_DELIVERED",
-        "hold_start": "AFTER_APPROVAL_AND_DELIVERED",
-        "selfie": "NO_NOT_ACTIVE",
-        "owner_identity_verified": false
-      }
+        "phone_recovery_previous_notice": "PREVIOUS_VERIFIED_EMAIL",
+        "email_recovery_previous_notice": "PREVIOUS_VERIFIED_PHONE",
+        "alternate_contact_required_onboarding": false,
+        "session_after_recovery": "LIMITED_ACTIVE",
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "identity_verified": false
+      },
+      "estado_nuevo": "CANDIDATO"
     },
     {
       "codigo": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
@@ -1091,8 +1081,8 @@
         "pendiente_detalle": null,
         "pendiente_decision": false
       },
-      "titulo_nuevo": "Reasignación Cliente atómica e idempotente tras comprobante Q11",
-      "texto_nuevo": "Solo reasociar celular a cuenta Cliente con sesión ONB_002 válida, verificación de unicidad y una prueba aprobada. Sin celular anterior, admitir comprobante Q11 server-side tras DNI escaneado, creación y aprobación por personas distintas, aviso a celular/correo anteriores, auditoría y espera 48 horas. Selfie no autorizada; IDV externo no elegido. Antes de commit revalidar riesgo HIGH y revocar acceso y sesiones del principal anterior; evitar escrituras parciales o dobles vínculos. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Para Q11 verificar creador distinto del aprobador, DNI escaneado y entrega efectiva al antiguo celular y correo, y esperar 48 horas elegibles con readback del estado no PAUSED inmediatamente antes del commit. Ni aceptación del proveedor ni aviso no entregado permiten rebind. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "titulo_nuevo": "CANDIDATO — Reasignación de celular de cuenta Cliente atómica e idempotente",
+      "texto_nuevo": "En REC_001 la reasignación gobernada y atómica para habilitar entrada limitada puede proceder inmediatamente tras DNI escaneado, aprobaciones configurables (creador distinto de los aprobadores), OTP de celular nuevo en sesión ONB_002 vigente y aviso DELIVERED al otro contacto anterior verificado. No aguarda la expiración de ventana para crear una sesión LIMITADA, pero NO autoriza cambios nuevos de datos de contacto desde esa sesión. Antes del commit confirmar unicidad, ausencia de objeción del dueño real y entrega/auditoría; fallo no modifica vínculos ni crea acceso. La ventana y restricciones se resuelven desde política Cliente en lf_ops.politicas_seguridad, no valores escritos en la regla. Revocar sesión y tokens ante objeción verificada.",
       "config_nueva": {
         "idempotency": "REQUIRED",
         "atomic_commit": "REQUIRED",
@@ -1109,7 +1099,7 @@
         "accepted_recovery_proofs": [
           "OLD_PHONE_OTP_VERIFIED",
           "IDENTITY_VALIDATION_VERIFIED",
-          "SUPPORT_Q11_TWO_PERSON_DNI_48H_APPROVED"
+          "SUPPORT_Q11_APPROVED_DELIVERED_LIMITED"
         ],
         "current_phone_otp_source": "ONB_002_SAME_SERVER_SESSION",
         "precommit_risk_rule_code": "REG_RISK_PHONE_MULTI_DNI_001",
@@ -1123,23 +1113,14 @@
         "old_principal_session_revocation": "SERVER_SIDE_REQUIRED",
         "operational_access_before_commit": "DENY",
         "invalidate_previous_phone_binding": true,
-        "manual_q11_hold_hours": 48,
-        "manual_q11_distinct_approver": true,
-        "manual_q11_previous_notifications": [
-          "PHONE",
-          "EMAIL"
-        ],
-        "selfie": "UNDECIDED",
-        "q11_hold_start": "LATEST_APPROVAL_COMPLETED_AND_REQUIRED_NOTIFICATIONS_DELIVERED",
-        "old_notifications_required_delivered": [
-          "PHONE",
-          "EMAIL"
-        ],
-        "no_release_if_paused": true,
-        "server_clock_only": true,
-        "secondary_contact_cannot_substitute_without_owner_decision": true,
-        "owner_identity_verified": false
-      }
+        "manual_support_commit_gate": "APPROVED_AND_OTHER_PREVIOUS_VERIFIED_CHANNEL_DELIVERED",
+        "rebind_success_session": "LIMITED_ACTIVE",
+        "restricted_window_parameter_source": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "require_window_elapsed_for_limited_access": false,
+        "owner_objection_revokes_session": true,
+        "identity_verified": false
+      },
+      "estado_nuevo": "CANDIDATO"
     },
     {
       "codigo": "REG_ONB002_UI_STATES_001",
@@ -1293,6 +1274,144 @@
         "idv_provider_status": "PENDING_SELECTION",
         "owner_identity_verified": false
       }
+    },
+    {
+      "codigo": "REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001",
+      "id": 513,
+      "estado": "VIGENTE",
+      "estado_nuevo": "CANDIDATO",
+      "titulo_anterior": "Acceso Cliente después de recuperación y reasignación exitosa",
+      "descripcion_anterior": "Después de una recuperación válida, el acceso operativo solo se habilita cuando REG_CLIENT_RECOVERY_REBIND_ATOMIC_001 consolida el vínculo del celular actual y el principal Supabase Auth de la misma sesión ONB_002 pasa a ser el principal vigente de la entidad Cliente. El principal anterior pierde inmediatamente la asociación de negocio y sus sesiones deben revocarse server-side. No se repite OTP del celular actual si la misma sesión verificada sigue válida; un recovery parcial o pendiente nunca obtiene acceso Cliente.",
+      "config_anterior": {
+        "flow": "RECOVERY_FLOW",
+        "front": "CLIENTE",
+        "rebind_model": "ATOMIC_BUSINESS_CLIENT_AUTH_PRINCIPAL_REBIND",
+        "auth_provider": "SUPABASE_AUTH",
+        "post_auth_route": "CLIENT_HOME_ENTRY",
+        "success_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+        "phone_binding_store": "lf_client.client_phone_bindings",
+        "client_session_policy": "SESSION-CLIENT-DEFAULT",
+        "business_client_entity": "lf_client.client_accounts",
+        "invalid_session_action": "RESTART_FROM_ONB_001",
+        "invalid_session_states": [
+          "EXPIRED",
+          "BLOCKED",
+          "UNVERIFIED",
+          "PHONE_BINDING_CHANGED"
+        ],
+        "required_rebind_outcome": "REBIND_COMMITTED",
+        "source_decision_numbers": [
+          71,
+          103,
+          104
+        ],
+        "session_context_contract": "public.fn_lf_client_session_context",
+        "required_rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+        "session_must_remain_valid": true,
+        "current_phone_proof_source": "ONB_002_SAME_SERVER_SESSION",
+        "session_creation_authority": "SERVER_ONLY",
+        "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+        "old_principal_business_access": "REVOKE_IMMEDIATELY",
+        "old_principal_session_revocation": "SERVER_SIDE_REQUIRED",
+        "post_auth_home_resolver_rule_code": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+        "partial_recovery_session_promotion": "DENY",
+        "repeat_current_phone_otp_after_successful_rebind": false
+      },
+      "before_sha256": "77689e352c330caa41e9355d6f5606483d19159485ab76ad60e34434fe60778a",
+      "source_row": {
+        "id": 513,
+        "razon": "Evitar fricción duplicada después de una recuperación exitosa sin permitir promoción de sesiones parciales o expiradas.",
+        "codigo": "REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-RECOVERY-PHONE-CONTROL-001",
+        "titulo": "Acceso Cliente después de recuperación y reasignación exitosa",
+        "categoria": "autenticacion",
+        "created_at": "2026-08-19T17:28:15.140453+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-AUTH-20260819-01",
+        "updated_at": "2026-08-19T22:48:34.803054+00:00",
+        "descripcion": "Después de una recuperación válida, el acceso operativo solo se habilita cuando REG_CLIENT_RECOVERY_REBIND_ATOMIC_001 consolida el vínculo del celular actual y el principal Supabase Auth de la misma sesión ONB_002 pasa a ser el principal vigente de la entidad Cliente. El principal anterior pierde inmediatamente la asociación de negocio y sus sesiones deben revocarse server-side. No se repite OTP del celular actual si la misma sesión verificada sigue válida; un recovery parcial o pendiente nunca obtiene acceso Cliente.",
+        "valor_config": {
+          "flow": "RECOVERY_FLOW",
+          "front": "CLIENTE",
+          "rebind_model": "ATOMIC_BUSINESS_CLIENT_AUTH_PRINCIPAL_REBIND",
+          "auth_provider": "SUPABASE_AUTH",
+          "post_auth_route": "CLIENT_HOME_ENTRY",
+          "success_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+          "phone_binding_store": "lf_client.client_phone_bindings",
+          "client_session_policy": "SESSION-CLIENT-DEFAULT",
+          "business_client_entity": "lf_client.client_accounts",
+          "invalid_session_action": "RESTART_FROM_ONB_001",
+          "invalid_session_states": [
+            "EXPIRED",
+            "BLOCKED",
+            "UNVERIFIED",
+            "PHONE_BINDING_CHANGED"
+          ],
+          "required_rebind_outcome": "REBIND_COMMITTED",
+          "source_decision_numbers": [
+            71,
+            103,
+            104
+          ],
+          "session_context_contract": "public.fn_lf_client_session_context",
+          "required_rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+          "session_must_remain_valid": true,
+          "current_phone_proof_source": "ONB_002_SAME_SERVER_SESSION",
+          "session_creation_authority": "SERVER_ONLY",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "old_principal_business_access": "REVOKE_IMMEDIATELY",
+          "old_principal_session_revocation": "SERVER_SIDE_REQUIRED",
+          "post_auth_home_resolver_rule_code": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+          "partial_recovery_session_promotion": "DENY",
+          "repeat_current_phone_otp_after_successful_rebind": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "titulo_nuevo": "CANDIDATO — Acceso inmediato limitado tras recuperación gobernada",
+      "texto_nuevo": "REC_001, tras expediente de soporte con DNI escaneado, aprobaciones requeridas y aviso ENTREGADO al otro canal previamente verificado, permite entrada INMEDIATA en sesión LIMITADA emitida y autorizada por servidor. Nunca concede una sesión plena por la mera reasignación. Acciones permitidas, acciones temporalmente bloqueadas y duración de ventana se consultan exclusivamente desde SEC-CLIENT-RECOVERY-LIMITED-ACCESS.policy_config. El cliente puede ver deuda/cuotas y pagar obligaciones existentes (cuotas o pago único); no puede cambiar credenciales/contactos, aceptar ofertas o planes nuevos, recibir/solicitar Carta de No Adeudo ni modificar medio de pago guardado hasta fin de ventana. Una objeción autenticada del dueño real revoca la sesión y tokens. Ausencia de entrega bloquea totalmente el acceso limitado y deriva a soporte.",
+      "config_nueva": {
+        "flow": "RECOVERY_FLOW",
+        "front": "CLIENTE",
+        "rebind_model": "ATOMIC_BUSINESS_CLIENT_AUTH_PRINCIPAL_REBIND",
+        "auth_provider": "SUPABASE_AUTH",
+        "post_auth_route": "CLIENT_HOME_ENTRY_GATED_BY_LIMITED_POLICY",
+        "success_outcome": "LIMITED_ACTIVE",
+        "phone_binding_store": "lf_client.client_phone_bindings",
+        "client_session_policy": "SESSION-CLIENT-DEFAULT",
+        "business_client_entity": "lf_client.client_accounts",
+        "invalid_session_action": "RESTART_FROM_ONB_001",
+        "invalid_session_states": [
+          "EXPIRED",
+          "BLOCKED",
+          "UNVERIFIED",
+          "PHONE_BINDING_CHANGED"
+        ],
+        "required_rebind_outcome": "REBIND_COMMITTED",
+        "source_decision_numbers": [
+          71,
+          103,
+          104
+        ],
+        "session_context_contract": "public.fn_lf_client_session_context",
+        "required_rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+        "session_must_remain_valid": true,
+        "current_phone_proof_source": "ONB_002_SAME_SERVER_SESSION",
+        "session_creation_authority": "SERVER_ONLY",
+        "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+        "old_principal_business_access": "REVOKE_IMMEDIATELY",
+        "old_principal_session_revocation": "SERVER_SIDE_REQUIRED",
+        "post_auth_home_resolver_rule_code": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+        "partial_recovery_session_promotion": "DENY",
+        "repeat_current_phone_otp_after_successful_rebind": false,
+        "session_permission_mode": "LIMITED_ACTIVE",
+        "restricted_window_policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "full_session_after_rebind": "DENY",
+        "owner_objection_action": "REVOKE_SESSION",
+        "failed_notification": "DENY_LIMITED",
+        "identity_verified": false
+      }
     }
   ],
   "inserts": [
@@ -1327,24 +1446,21 @@
         "REC_001"
       ],
       "categoria": "RECOVERY",
-      "titulo": "Recuperación Cliente Q11 por dos personas",
-      "descripcion": "Sin celular anterior, soporte registra DNI escaneado y una segunda persona distinta aprueba. Avisar al celular y correo anteriores; conservar auditoría y bloquear 48 horas antes de emitir comprobante apto para rebind atómico del celular verificado en ONB_002. Selfie y proveedor IDV quedan sin decidir; no fingir evidencia ni liberar cuenta antes de completar el proceso. El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. Q11 exige ENTREGADO en celular y correo anteriores. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "titulo": "CANDIDATO — Recuperación Cliente Q11: entrada limitada inmediata",
+      "descripcion": "REC_001 recibe solicitud de soporte con DNI escaneado; la creación del expediente y su aprobación corresponden a personas distintas. Número de aprobadores conforme a approvers_required en la política Cliente central. El aviso al contacto anterior usa el OTRO canal previamente verificado y requiere DELIVERED. Si entrega y aprobaciones son válidas, conceder LIMITED_ACTIVE inmediatamente, sin esperar la ventana de seguridad. Acción y duración restringidas proceden de policy_config; objeción del dueño real revoca sesión. Selfie no activa, IDV sin seleccionar.",
       "valor_config": {
-        "approvers_required": 2,
-        "hold_hours": 48,
-        "scanned_dni": true,
-        "notifications": [
-          "PREVIOUS_PHONE",
-          "PREVIOUS_EMAIL"
-        ],
-        "creator_differs_from_approver": true,
-        "selfie": "NO_NOT_ACTIVE",
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "required_support_dni": true,
+        "creator_different_from_approvers": true,
+        "approvers_required_source": "POLICY_CONFIG",
+        "other_previous_contact_required": true,
+        "delivery": "DELIVERED",
+        "session_grant": "LIMITED_ACTIVE_IMMEDIATE",
+        "wait_to_enter": false,
+        "blocked_actions_source": "POLICY_CONFIG",
+        "selfie": "NO",
         "idv": "PENDING_SELECTION",
-        "state": "PROPOSED_NOT_ACTIVE",
-        "hold_start": "AFTER_CREATOR_APPROVER_SEPARATION_AND_PHONE_EMAIL_DELIVERED",
-        "delivery_failure": "BLOCK_OR_PAUSE",
-        "idv_provider": "PENDING_SELECTION",
-        "alternate_contacts": "PENDING_HUMAN_DECISION",
+        "status": "CANDIDATO",
         "identity_verified": false
       }
     },
@@ -1410,20 +1526,68 @@
         "REC_001"
       ],
       "categoria": "RECOVERY",
-      "titulo": "Notificaciones previas Cliente Q11 y ruta alternativa bloqueada",
-      "descripcion": "El reloj de 48 horas NO empieza con la solicitud. Solo el servidor lo inicia cuando (i) terminaron todas las aprobaciones requeridas según la política aplicable y (ii) cada aviso obligatorio al contacto anterior tiene evidencia de estado ENTREGADO, no solo ACCEPTED/QUEUED/SENT; inicio efectivo = instante del último de esos eventos. Rebote, entrega no confirmada o revocación posterior: estado BLOCKED o PAUSED, sin emisión de clave temporal, reasignación ni sesión; una reanudación exige nueva evidencia de entrega y readback auditado. En Q11 se exige que el celular y correo anteriores reciban aviso ENTREGADO; si falla cualquiera, no liberar, pausar y conservar audit trail. Ante aviso fallido, soporte puede abrir una ruta alternativa gobernada y auditada, sin desbloqueo automático. Contactos candidatos exclusivamente: otro correo o celular previamente registrado y verificado de la misma cuenta antes de iniciar la recuperación, con prueba histórica de titularidad, operación de notificación idempotente y confirmación ENTREGADO; se admite reintento al contacto anterior original. No aceptar nuevos datos declarados durante la solicitud, contactos de un aprobador, terceros ni destinatarios no acreditados. Un contacto secundario NO sustituye por sí solo la notificación obligatoria anterior: la equivalencia y autoridad de sustitución siguen PENDING_HUMAN_DECISION y bloquean el reloj/la liberación hasta aprobación explícita. Selfie: NO_AUTORIZADA_POR_AHORA, no implementada, sin reglas operativas, sin captura ni envío; proveedor IDV PENDING_SELECTION y sin atribución de VERIFIED automático.",
+      "titulo": "CANDIDATO — Aviso al otro canal histórico y contingencia auditada",
+      "descripcion": "Al cambiar celular, aviso al correo ANTERIOR previamente verificado; al cambiar correo, aviso al celular ANTERIOR previamente verificado. No exigir contacto alterno en onboarding; registrar uno es opcional. Si el canal histórico falta o el aviso rebota/no está DELIVERED, no conceder acceso LIMITED_ACTIVE; soporte abre incidencia gobernada y auditada, sin habilitación automática ni sustitución tácita. Contactos alternos solo tras autoridad verificable y decisión gobernada.",
       "valor_config": {
-        "hold_hours": 48,
-        "approvers": "TWO_DISTINCT_PEOPLE",
-        "old_notification_channels": [
-          "OLD_PHONE",
-          "OLD_EMAIL"
-        ],
-        "delivery": "ALL_DELIVERED",
-        "failure": "BLOCK_OR_PAUSE",
-        "secondary_contact_qualifies": "PENDING_HUMAN_DECISION",
-        "selfie": "NOT_ACTIVE",
-        "idv_provider": "PENDING_SELECTION",
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "notify_phone_change": "PREVIOUS_VERIFIED_EMAIL",
+        "notify_email_change": "PREVIOUS_VERIFIED_PHONE",
+        "optional_other_contact_onboarding": true,
+        "failed_delivery": "BLOCK_LIMITED_AND_SUPPORT_ALTERNATE",
+        "secondary_contact_substitution": "PENDING_HUMAN_DECISION",
+        "status": "CANDIDATO",
+        "identity_verified": false
+      }
+    },
+    {
+      "codigo": "REG_CLIENT_RECOVERY_LIMITED_SESSION_001",
+      "screens": [
+        "REC_001"
+      ],
+      "categoria": "autenticacion",
+      "titulo": "CANDIDATO — Sesión Cliente limitada inmediata tras gate de soporte",
+      "descripcion": "El backend crea sesión LIMITADA inmediatamente después de recibir todas las aprobaciones requeridas y comprobante DELIVERED de aviso al contacto histórico del otro canal previamente verificado. Las capacidades de lectura de deuda/cuotas y pago de obligaciones existentes se autorizan solo por el resolver server-side contra la política central. Prohibido convertir esta sesión en acceso completo o permitir operaciones fuera de policy_config. Sin entrega no se concede ninguna sesión limitada.",
+      "valor_config": {
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "gate": "APPROVALS_AND_DELIVERED_OTHER_PREVIOUS_CONTACT",
+        "mode": "LIMITED_ACTIVE",
+        "permission_source": "LF_OPS_POLITICAS_SEGURIDAD",
+        "state": "CANDIDATO",
+        "identity_verified": false
+      }
+    },
+    {
+      "codigo": "REG_CLIENT_RECOVERY_WINDOW_GUARD_001",
+      "screens": [
+        "REC_001"
+      ],
+      "categoria": "autenticacion",
+      "titulo": "CANDIDATO — Bloqueo de operaciones durante ventana configurable",
+      "descripcion": "Durante la ventana de seguridad de recuperación, el backend permite consultar deuda/cuotas y pagar cuotas o deuda existente en pago único, y deniega cambios de correo, celular, contraseña, aceptación de ofertas o planes nuevos, solicitud/entrega de Carta de No Adeudo y cambios/alta/eliminación de medios de pago guardados. Duración de ventana, allowlist y denylist se resuelven exclusivamente de lf_ops.politicas_seguridad.policy_config; ni UI, ni regla, ni token cliente pueden reemplazar la evaluación server-side. Al finalizar la ventana, reevaluar permisos normales, identidad y auditoría.",
+      "valor_config": {
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "window_source": "POLICY_CONFIG",
+        "allowed_actions_source": "POLICY_CONFIG",
+        "blocked_actions_source": "POLICY_CONFIG",
+        "payment_scope": "EXISTING_DEBT_ONLY",
+        "state": "CANDIDATO",
+        "identity_verified": false
+      }
+    },
+    {
+      "codigo": "REG_CLIENT_RECOVERY_OWNER_OBJECTION_001",
+      "screens": [
+        "REC_001"
+      ],
+      "categoria": "autenticacion",
+      "titulo": "CANDIDATO — Objeción de titular verificado revoca sesión limitada",
+      "descripcion": "Una objeción verificada y auditada del titular real ante el aviso de recuperación revoca inmediatamente la sesión LIMITADA y sus tokens; backend bloquea todas las operaciones en curso e impide nuevo acceso basado en el mismo expediente. No confundir un contacto no verificado con objeción autenticada; el comprobante del evento es obligatorio. Ningún soporte puede reactivar la sesión revocada sin nuevo caso gobernado.",
+      "valor_config": {
+        "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+        "trigger": "REAL_OWNER_OBJECTION_VERIFIED",
+        "action": "REVOKE_LIMITED_SESSION",
+        "server_session_termination": "REQUIRED",
+        "state": "CANDIDATO",
         "identity_verified": false
       }
     }
@@ -1461,24 +1625,38 @@
   "human": [
     {
       "id": "H02",
-      "asunto": "Proveedor IDV para recuperación Cliente",
-      "propuesta": "Proveedor IDV sin elegir; mantener PENDING_CANONICAL_IDV_PROVIDER y bloqueo de IDV automático hasta selección, seguridad y QA.",
-      "tipo": "DECISION_HUMANA",
-      "estado": "PENDIENTE"
+      "tipo": "GATE_EXTERNO",
+      "estado": "PENDIENTE",
+      "asunto": "Proveedor IDV",
+      "propuesta": "No seleccionar ahora; selfie inactiva. Mantener ruta automática cerrada hasta selección/QA, el soporte Q11 se mantiene separado."
     },
     {
       "id": "H04A",
       "tipo": "DECISION_HUMANA",
       "estado": "PENDIENTE",
-      "asunto": "Qué contacto alterno puede sustituir el aviso anterior ENTREGADO",
-      "propuesta": "Proponer únicamente correo secundario o celular secundario ligado y verificado en registro canónico ANTES del inicio de recuperación, misma identidad y recibo DELIVERED; no se halló evidencia de registro de verificación de estos contactos. Sin aceptación expresa del dueño y esquema verificado, ni esos contactos satisfacen el gate ni reinician reloj."
+      "asunto": "Ruta alternativa cuando no existe el otro canal anterior verificado",
+      "propuesta": "Soporte mantiene acceso bloqueado y expediente auditado; definir prueba independiente y autoridad para contactar al titular si no existe un canal histórico verificable. No reemplazar por datos recién capturados."
     },
     {
       "id": "H04B",
       "tipo": "DECISION_HUMANA",
       "estado": "PENDIENTE",
-      "asunto": "Excepción si ambos canales históricos son inaccesibles",
-      "propuesta": "No admitir contacto nuevo proporcionado durante el expediente, aprobador, familiar ni tercero como destinatario equivalente; mantener bloqueo hasta especificación expresa de responsable alterno, prueba independiente de titularidad y autoridad de notificación."
+      "asunto": "Sustitución por contacto secundario ante rebote",
+      "propuesta": "Contacto secundario es opcional para onboarding y no prueba por sí mismo control del canal anterior. Exigir evidencia canónica previa y aprobación explícita si se pretende usar como notificación sustitutiva."
+    },
+    {
+      "id": "H06",
+      "tipo": "GATE_TECNICO",
+      "estado": "PENDIENTE",
+      "asunto": "Parametrización + identidad para acceso limitado",
+      "propuesta": "Crear y verificar la política Cliente CANDIDATO en lf_ops.politicas_seguridad mediante escritor oficial; registrar sesión LIMITADA, auditoría, rechazo por acción y revocación verificada. Sin permisos reales, NO-GO."
+    },
+    {
+      "id": "H07",
+      "tipo": "GATE_DE_PRODUCTO",
+      "estado": "PENDIENTE",
+      "asunto": "UI de cambio de contacto y medio de pago guardado",
+      "propuesta": "No aparecen pantallas Cliente canónicas de gestión de correo/celular/contraseña ni de modificación de medio guardado; registrar historias/rutas antes de habilitarlas. ONB_004 es alta, no cambio."
     },
     {
       "id": "H05",
@@ -1489,29 +1667,99 @@
     }
   ],
   "owner_decision": {
-    "reference": "OWNER_LF_2026-11-13_22_03_LIMA_PR3847",
+    "reference": "OWNER_LF_2026-11-13_23_38_LIMA_PR3847",
     "source": "CONVERSATION_OWNER_DOCUMENTARY",
     "identity_verified": false,
     "signed": false,
-    "decisions": [
-      {
-        "id": "H01",
-        "outcome": "CLOSED_SELFIE_NOT_ACTIVE",
-        "operational_rule_created": false
-      },
-      {
-        "id": "H02",
-        "outcome": "IDV_PROVIDER_PENDING_SELECTION"
-      },
-      {
-        "id": "H03",
-        "outcome": "CLOSED_WAIT_AFTER_APPROVALS_AND_CONFIRMED_PREVIOUS_DELIVERY"
-      },
-      {
-        "id": "H04",
-        "outcome": "FAILED_DELIVERY_BLOCK_OR_PAUSE_ALTERNATIVE_GOVERNED_WITH_CONTACT_EQUIVALENCE_PENDING"
-      }
+    "applies_to": "CLIENT_SUPPORT_RECOVERY_REC_001",
+    "supersedes_client_wait_48h_for_entry": true,
+    "allowed_as_limited": [
+      "DEBT_READ",
+      "INSTALLMENTS_READ",
+      "PAY_EXISTING_INSTALLMENT",
+      "PAY_EXISTING_DEBT_SINGLE"
     ],
-    "not_implemented": true
+    "blocked_until_policy_window": [
+      "EMAIL_CHANGE",
+      "PHONE_CHANGE",
+      "PASSWORD_CHANGE",
+      "ACCEPT_NEW_OFFER",
+      "ACCEPT_NEW_INSTALLMENT_PLAN",
+      "NO_DEBT_LETTER_REQUEST",
+      "NO_DEBT_LETTER_DELIVERY",
+      "SAVED_PAYMENT_METHOD_CHANGE"
+    ],
+    "actual_config_source": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+    "production_authorized": false
+  },
+  "policy_proposal": {
+    "table": "lf_ops.politicas_seguridad",
+    "operation": "INSERT_CANDIDATO_ONLY",
+    "source_live_match_count": 0,
+    "source_live_absence_verified": true,
+    "record": {
+      "security_policy_id": 900001,
+      "policy_code": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+      "category": "CLIENT_RECOVERY",
+      "enforcement_level": "REQUIRED",
+      "status": "CANDIDATO",
+      "description": "Acceso Cliente inmediato pero LIMITADO por recuperación asistida tras aprobaciones y aviso ENTREGADO por el otro canal previamente verificado. Autoridad de sesión, derechos de lectura y pagos y restricciones por ventana de seguridad se resuelven únicamente desde policy_config; ante error de entrega, falta de canal válido u objeción verificada, fail-closed y revocación de la sesión. El contacto secundario es opcional y no bloquea onboarding.",
+      "policy_config": {
+        "schema_version": "LF_CLIENT_RECOVERY_LIMITED_ACCESS_POLICY_V1",
+        "candidate_only": true,
+        "implementation_status": "PENDING_RUNTIME_GOVERNANCE_AND_QA",
+        "recovery_screen_code": "REC_001",
+        "session_mode": "LIMITED_ACTIVE",
+        "approvers_required": 1,
+        "approvers_allowed": [
+          1,
+          2
+        ],
+        "creator_must_differ_from_approvers": true,
+        "approval_authority": "SUPPORT_GOVERNED_AUDITED",
+        "scanned_dni_required": true,
+        "access_start_gate": [
+          "REQUIRED_APPROVALS_COMPLETED",
+          "OTHER_PREVIOUS_VERIFIED_CHANNEL_NOTICE_DELIVERED"
+        ],
+        "notification_channel_for_change": {
+          "PHONE": "PREVIOUS_VERIFIED_EMAIL",
+          "EMAIL": "PREVIOUS_VERIFIED_PHONE"
+        },
+        "delivery_proof_required": "DELIVERED",
+        "delivery_failure": "NO_LIMITED_ACCESS_GOVERNED_SUPPORT_ALTERNATIVE",
+        "alternate_contact_optional_for_onboarding": true,
+        "alternate_contact_runtime_default": "NOT_REQUIRED",
+        "security_window_hours": 48,
+        "security_window_start": "LATEST_APPROVAL_AND_DELIVERED_TIMESTAMP",
+        "limited_allowed_actions": [
+          "DEBT_READ",
+          "INSTALLMENTS_READ",
+          "PAY_EXISTING_INSTALLMENT",
+          "PAY_EXISTING_DEBT_SINGLE"
+        ],
+        "limited_blocked_actions": [
+          "EMAIL_CHANGE",
+          "PHONE_CHANGE",
+          "PASSWORD_CHANGE",
+          "ACCEPT_NEW_OFFER",
+          "ACCEPT_NEW_INSTALLMENT_PLAN",
+          "NO_DEBT_LETTER_REQUEST",
+          "NO_DEBT_LETTER_DELIVERY",
+          "SAVED_PAYMENT_METHOD_CHANGE",
+          "SAVED_PAYMENT_METHOD_ADD",
+          "SAVED_PAYMENT_METHOD_DELETE"
+        ],
+        "payment_must_be_existing_debt": true,
+        "offer_or_new_plan_creation_during_limited": "DENY",
+        "no_debt_letter_document_creation_if_settled": "MAY_REMAIN_INTERNAL_PENDING_NO_REQUEST_OR_DELIVERY",
+        "objection_event": "REAL_OWNER_OBJECTION_VERIFIED",
+        "objection_action": "REVOKE_LIMITED_SESSION_AND_INVALIDATE_TOKENS",
+        "unknown_action": "DENY",
+        "runtime_clock": "SERVER_SIDE_ONLY",
+        "identity_verified": false
+      }
+    },
+    "source_live_absence_query": "SELECT count(*) FROM lf_ops.politicas_seguridad WHERE policy_code='SEC-CLIENT-RECOVERY-LIMITED-ACCESS'; -- readback 0"
   }
 }
