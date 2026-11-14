@@ -999,6 +999,12 @@ $function$;
 
 
 
+-- The runtime_slug is sourced from the canonical skill catalog.
+ALTER TABLE public.lf_skill_catalog_v1 ADD COLUMN IF NOT EXISTS runtime_slug text;
+UPDATE public.lf_skill_catalog_v1
+SET runtime_slug='input-governance-agent-v1'
+WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
+  AND status='READY' AND effect='READ_ONLY' AND runtime_slug IS NULL;
 -- Generic skill runtime ticket, selected by the current profile policy.
 -- Existing IG token remains a backward-compatible worker adapter only.
 CREATE TABLE private.lf_profile_skill_runtime_ticket_v1 (
@@ -1028,6 +1034,7 @@ AS $issue$
 DECLARE
  v_e public.lf_operation_execution%rowtype;
  v_plan jsonb;v_invoked jsonb;v_req jsonb;
+ v_catalog_runtime_slug text;
  v_id uuid:=extensions.gen_random_uuid();
  v_exp timestamptz:=clock_timestamp()+interval '5 minutes';
  v_screen integer;
@@ -1053,9 +1060,98 @@ BEGIN
     p_execution_id,v_e.manifest#>>'{router_profile_handoff,channel}',
     p_skill_code,p_input,NULL);
  v_req:=v_invoked->'runtime_request';
- IF v_invoked->>'status'<>'RUNTIME_REQUIRED'
+ SELECT c.runtime_slug INTO v_catalog_runtime_slug
+ FROM public.lf_skill_catalog_v1 c
+ WHERE c.skill_code=p_skill_code AND c.status='READY' AND c.effect='READ_ONLY';
+ IF coalesce(v_catalog_runtime_slug,'') !~ '^[a-z0-9][a-z0-9-]{0,62} IF v_invoked->>'status'<>'RUNTIME_REQUIRED'
     OR v_req->>'transport'<>'DIRECT_EDGE_INVOCATION'
-    OR coalesce(v_req->>'runtime_slug','') !~ '^[a-z0-9][a-z0-9-]{0,62}
+    OR coalesce(v_req->>'runtime_slug','') !~ '^[a-z0-9][a-z0-9-]{0,62}    OR jsonb_typeof(v_req->'request_body')<>'object' THEN
+    RETURN jsonb_build_object('status','BLOCKED','code','SKILL_TICKET_RUNTIME_NOT_ATTESTED',
+      'skill_status',v_invoked->>'status');
+ END IF;
+ INSERT INTO private.lf_profile_skill_runtime_ticket_v1(
+   ticket_id,execution_id,skill_code,runtime_slug,request_body,
+   request_sha256,expires_at
+ ) VALUES (
+   v_id,p_execution_id,p_skill_code,v_req->>'runtime_slug',v_req->'request_body',
+   encode(extensions.digest(convert_to(p_input::text,'UTF8'),'sha256'),'hex'),v_exp
+ );
+ IF v_req->>'legacy_ticket_adapter'='INPUT_GOVERNANCE_CONTEXT_PACK_V1' THEN
+   v_screen:=nullif(v_req#>>'{request_body,pantalla_id}','')::integer;
+   IF p_skill_code<>'INPUT_GOVERNANCE_CONTEXT_PACK'
+     OR v_screen IS NULL OR v_screen<1
+     OR v_req#>>'{request_body,consumer}'<>'CONTEXT_PACK' THEN
+     RAISE EXCEPTION 'SKILL_IG_ADAPTER_SCOPE_INVALID';
+   END IF;
+   INSERT INTO private.lf_profile_input_governance_runtime_ticket_v1(
+     ticket_id,execution_id,pantalla_id,consumer,
+     router_handoff_fingerprint,expires_at
+   ) VALUES(
+     v_id,p_execution_id,v_screen,'CONTEXT_PACK',
+     v_e.manifest#>>'{router_profile_handoff,fingerprint_sha256}',v_exp
+   );
+ END IF;
+ RETURN jsonb_build_object('status','AUTHORIZED','ticket',v_id::text,
+   'execution_id',p_execution_id,'skill_code',p_skill_code,
+   'runtime_slug',v_req->>'runtime_slug',
+   'expires_at',v_exp,'transport','DIRECT_EDGE_INVOCATION');
+END
+$issue$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)
+ TO service_role;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(
+ p_ticket uuid,p_execution_id text,p_skill_code text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private'
+AS $consume$
+DECLARE
+ v_r private.lf_profile_skill_runtime_ticket_v1%rowtype;
+ v_old jsonb;v_plan jsonb;v_profile text;v_channel text;
+BEGIN
+ SELECT e.target_code,e.manifest#>>'{router_profile_handoff,channel}'
+ INTO v_profile,v_channel FROM public.lf_operation_execution e
+ WHERE e.execution_id=p_execution_id AND e.operation_code='EJECUCION_PERFIL_LF'
+  AND e.target_type='PERFIL' AND e.status='IN_PROGRESS';
+ IF v_profile IS NULL THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_PARENT_NOT_ACTIVE'); END IF;
+ v_plan:=public.lf_profile_execution_plan_v1(v_profile,v_channel,NULL);
+ IF v_plan->>'status'<>'READY' OR NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(v_plan->'skills') sk
+    WHERE sk->>'skill_code'=p_skill_code AND sk->>'effect'='READ_ONLY'
+ ) THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_POLICY_NOT_CURRENT'); END IF;
+ UPDATE private.lf_profile_skill_runtime_ticket_v1 r
+ SET consumed_at=clock_timestamp(),consumed_by='LF_PROFILES_GOVERNANCE_CALLER_V1'
+ WHERE r.ticket_id=p_ticket AND r.execution_id=p_execution_id
+   AND r.skill_code=p_skill_code AND r.consumed_at IS NULL
+   AND r.expires_at>clock_timestamp()
+ RETURNING r.* INTO v_r;
+ IF NOT FOUND THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_EXPIRED_INVALID_OR_REPLAY'); END IF;
+ IF v_r.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
+   AND v_r.request_body->>'consumer'='CONTEXT_PACK' THEN
+   v_old:=public.lf_profile_input_governance_runtime_ticket_consume_v1(
+     p_ticket,p_execution_id,(v_r.request_body->>'pantalla_id')::integer,'CONTEXT_PACK');
+   IF coalesce((v_old->>'authorized')::boolean,false) IS NOT TRUE THEN
+     RAISE EXCEPTION 'SKILL_LEGACY_IG_TICKET_NOT_AUTHORIZED';
+   END IF;
+ END IF;
+ RETURN jsonb_build_object('authorized',true,
+   'execution_id',v_r.execution_id,'skill_code',v_r.skill_code,
+   'runtime_slug',v_r.runtime_slug,'request_body',v_r.request_body,
+   'expires_at',v_r.expires_at);
+END
+$consume$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(uuid,text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(uuid,text,text)
+ TO service_role;
+
+COMMIT;
+
     OR jsonb_typeof(v_req->'request_body')<>'object' THEN
     RETURN jsonb_build_object('status','BLOCKED','code','SKILL_TICKET_RUNTIME_NOT_ATTESTED',
       'skill_status',v_invoked->>'status');
@@ -1122,6 +1218,189 @@ BEGIN
  RETURNING r.* INTO v_r;
  IF NOT FOUND THEN RETURN jsonb_build_object(
     'authorized',false,'code','SKILL_TICKET_EXPIRED_INVALID_OR_REPLAY'); END IF;
+ IF v_r.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
+   AND v_r.request_body->>'consumer'='CONTEXT_PACK' THEN
+   v_old:=public.lf_profile_input_governance_runtime_ticket_consume_v1(
+     p_ticket,p_execution_id,(v_r.request_body->>'pantalla_id')::integer,'CONTEXT_PACK');
+   IF coalesce((v_old->>'authorized')::boolean,false) IS NOT TRUE THEN
+     RAISE EXCEPTION 'SKILL_LEGACY_IG_TICKET_NOT_AUTHORIZED';
+   END IF;
+ END IF;
+ RETURN jsonb_build_object('authorized',true,
+   'execution_id',v_r.execution_id,'skill_code',v_r.skill_code,
+   'runtime_slug',v_r.runtime_slug,'request_body',v_r.request_body,
+   'expires_at',v_r.expires_at);
+END
+$consume$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(uuid,text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(uuid,text,text)
+ TO service_role;
+
+COMMIT;
+
+    OR v_catalog_runtime_slug IS DISTINCT FROM v_req->>'runtime_slug' THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','SKILL_RUNTIME_CATALOG_SLUG_MISMATCH');
+ END IF;
+ IF v_invoked->>'status'<>'RUNTIME_REQUIRED'
+    OR v_req->>'transport'<>'DIRECT_EDGE_INVOCATION'
+    OR coalesce(v_req->>'runtime_slug','') !~ '^[a-z0-9][a-z0-9-]{0,62}    OR jsonb_typeof(v_req->'request_body')<>'object' THEN
+    RETURN jsonb_build_object('status','BLOCKED','code','SKILL_TICKET_RUNTIME_NOT_ATTESTED',
+      'skill_status',v_invoked->>'status');
+ END IF;
+ INSERT INTO private.lf_profile_skill_runtime_ticket_v1(
+   ticket_id,execution_id,skill_code,runtime_slug,request_body,
+   request_sha256,expires_at
+ ) VALUES (
+   v_id,p_execution_id,p_skill_code,v_req->>'runtime_slug',v_req->'request_body',
+   encode(extensions.digest(convert_to(p_input::text,'UTF8'),'sha256'),'hex'),v_exp
+ );
+ IF v_req->>'legacy_ticket_adapter'='INPUT_GOVERNANCE_CONTEXT_PACK_V1' THEN
+   v_screen:=nullif(v_req#>>'{request_body,pantalla_id}','')::integer;
+   IF p_skill_code<>'INPUT_GOVERNANCE_CONTEXT_PACK'
+     OR v_screen IS NULL OR v_screen<1
+     OR v_req#>>'{request_body,consumer}'<>'CONTEXT_PACK' THEN
+     RAISE EXCEPTION 'SKILL_IG_ADAPTER_SCOPE_INVALID';
+   END IF;
+   INSERT INTO private.lf_profile_input_governance_runtime_ticket_v1(
+     ticket_id,execution_id,pantalla_id,consumer,
+     router_handoff_fingerprint,expires_at
+   ) VALUES(
+     v_id,p_execution_id,v_screen,'CONTEXT_PACK',
+     v_e.manifest#>>'{router_profile_handoff,fingerprint_sha256}',v_exp
+   );
+ END IF;
+ RETURN jsonb_build_object('status','AUTHORIZED','ticket',v_id::text,
+   'execution_id',p_execution_id,'skill_code',p_skill_code,
+   'runtime_slug',v_req->>'runtime_slug',
+   'expires_at',v_exp,'transport','DIRECT_EDGE_INVOCATION');
+END
+$issue$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)
+ TO service_role;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(
+ p_ticket uuid,p_execution_id text,p_skill_code text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private'
+AS $consume$
+DECLARE
+ v_r private.lf_profile_skill_runtime_ticket_v1%rowtype;
+ v_old jsonb;v_plan jsonb;v_profile text;v_channel text;
+BEGIN
+ SELECT e.target_code,e.manifest#>>'{router_profile_handoff,channel}'
+ INTO v_profile,v_channel FROM public.lf_operation_execution e
+ WHERE e.execution_id=p_execution_id AND e.operation_code='EJECUCION_PERFIL_LF'
+  AND e.target_type='PERFIL' AND e.status='IN_PROGRESS';
+ IF v_profile IS NULL THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_PARENT_NOT_ACTIVE'); END IF;
+ v_plan:=public.lf_profile_execution_plan_v1(v_profile,v_channel,NULL);
+ IF v_plan->>'status'<>'READY' OR NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(v_plan->'skills') sk
+    WHERE sk->>'skill_code'=p_skill_code AND sk->>'effect'='READ_ONLY'
+ ) THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_POLICY_NOT_CURRENT'); END IF;
+ UPDATE private.lf_profile_skill_runtime_ticket_v1 r
+ SET consumed_at=clock_timestamp(),consumed_by='LF_PROFILES_GOVERNANCE_CALLER_V1'
+ WHERE r.ticket_id=p_ticket AND r.execution_id=p_execution_id
+   AND r.skill_code=p_skill_code AND r.consumed_at IS NULL
+   AND r.expires_at>clock_timestamp()
+ RETURNING r.* INTO v_r;
+ IF NOT FOUND THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_EXPIRED_INVALID_OR_REPLAY'); END IF;
+ IF v_r.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
+   AND v_r.request_body->>'consumer'='CONTEXT_PACK' THEN
+   v_old:=public.lf_profile_input_governance_runtime_ticket_consume_v1(
+     p_ticket,p_execution_id,(v_r.request_body->>'pantalla_id')::integer,'CONTEXT_PACK');
+   IF coalesce((v_old->>'authorized')::boolean,false) IS NOT TRUE THEN
+     RAISE EXCEPTION 'SKILL_LEGACY_IG_TICKET_NOT_AUTHORIZED';
+   END IF;
+ END IF;
+ RETURN jsonb_build_object('authorized',true,
+   'execution_id',v_r.execution_id,'skill_code',v_r.skill_code,
+   'runtime_slug',v_r.runtime_slug,'request_body',v_r.request_body,
+   'expires_at',v_r.expires_at);
+END
+$consume$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(uuid,text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(uuid,text,text)
+ TO service_role;
+
+COMMIT;
+
+    OR jsonb_typeof(v_req->'request_body')<>'object' THEN
+    RETURN jsonb_build_object('status','BLOCKED','code','SKILL_TICKET_RUNTIME_NOT_ATTESTED',
+      'skill_status',v_invoked->>'status');
+ END IF;
+ INSERT INTO private.lf_profile_skill_runtime_ticket_v1(
+   ticket_id,execution_id,skill_code,runtime_slug,request_body,
+   request_sha256,expires_at
+ ) VALUES (
+   v_id,p_execution_id,p_skill_code,v_req->>'runtime_slug',v_req->'request_body',
+   encode(extensions.digest(convert_to(p_input::text,'UTF8'),'sha256'),'hex'),v_exp
+ );
+ IF v_req->>'legacy_ticket_adapter'='INPUT_GOVERNANCE_CONTEXT_PACK_V1' THEN
+   v_screen:=nullif(v_req#>>'{request_body,pantalla_id}','')::integer;
+   IF p_skill_code<>'INPUT_GOVERNANCE_CONTEXT_PACK'
+     OR v_screen IS NULL OR v_screen<1
+     OR v_req#>>'{request_body,consumer}'<>'CONTEXT_PACK' THEN
+     RAISE EXCEPTION 'SKILL_IG_ADAPTER_SCOPE_INVALID';
+   END IF;
+   INSERT INTO private.lf_profile_input_governance_runtime_ticket_v1(
+     ticket_id,execution_id,pantalla_id,consumer,
+     router_handoff_fingerprint,expires_at
+   ) VALUES(
+     v_id,p_execution_id,v_screen,'CONTEXT_PACK',
+     v_e.manifest#>>'{router_profile_handoff,fingerprint_sha256}',v_exp
+   );
+ END IF;
+ RETURN jsonb_build_object('status','AUTHORIZED','ticket',v_id::text,
+   'execution_id',p_execution_id,'skill_code',p_skill_code,
+   'runtime_slug',v_req->>'runtime_slug',
+   'expires_at',v_exp,'transport','DIRECT_EDGE_INVOCATION');
+END
+$issue$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)
+ TO service_role;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_skill_runtime_ticket_consume_v1(
+ p_ticket uuid,p_execution_id text,p_skill_code text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private'
+AS $consume$
+DECLARE
+ v_r private.lf_profile_skill_runtime_ticket_v1%rowtype;
+ v_old jsonb;v_plan jsonb;v_profile text;v_channel text;
+BEGIN
+ SELECT e.target_code,e.manifest#>>'{router_profile_handoff,channel}'
+ INTO v_profile,v_channel FROM public.lf_operation_execution e
+ WHERE e.execution_id=p_execution_id AND e.operation_code='EJECUCION_PERFIL_LF'
+  AND e.target_type='PERFIL' AND e.status='IN_PROGRESS';
+ IF v_profile IS NULL THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_PARENT_NOT_ACTIVE'); END IF;
+ v_plan:=public.lf_profile_execution_plan_v1(v_profile,v_channel,NULL);
+ IF v_plan->>'status'<>'READY' OR NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(v_plan->'skills') sk
+    WHERE sk->>'skill_code'=p_skill_code AND sk->>'effect'='READ_ONLY'
+ ) THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_POLICY_NOT_CURRENT'); END IF;
+ UPDATE private.lf_profile_skill_runtime_ticket_v1 r
+ SET consumed_at=clock_timestamp(),consumed_by='LF_PROFILES_GOVERNANCE_CALLER_V1'
+ WHERE r.ticket_id=p_ticket AND r.execution_id=p_execution_id
+   AND r.skill_code=p_skill_code AND r.consumed_at IS NULL
+   AND r.expires_at>clock_timestamp()
+ RETURNING r.* INTO v_r;
+ IF NOT FOUND THEN RETURN jsonb_build_object(
+    'authorized',false,'code','SKILL_TICKET_EXPIRED_INVALID_OR_REPLAY'); END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.lf_skill_catalog_v1 c
+     WHERE c.skill_code=v_r.skill_code AND c.status='READY'
+       AND c.effect='READ_ONLY' AND c.runtime_slug=v_r.runtime_slug)
+ THEN RAISE EXCEPTION 'SKILL_RUNTIME_CATALOG_SOURCE_DRIFT'; END IF;
  IF v_r.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
    AND v_r.request_body->>'consumer'='CONTEXT_PACK' THEN
    v_old:=public.lf_profile_input_governance_runtime_ticket_consume_v1(
