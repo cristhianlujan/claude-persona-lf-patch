@@ -1040,7 +1040,10 @@ def main():
     # No runtime ticket, timeout or authority is accepted from the Issue body.
     runtime_deadline = None
     terminal_blocked_replayed = False
-    for attempt in range(64):
+    # Two independent, one-use DB tickets MAX per parent+skill. The DB
+    # handler records an IG finding after exhaustion, instead of keeping
+    # the native workflow running until the short-lived OIDC token expires.
+    for attempt in range(2):
         if result.get("phase") not in ("SKILL_RUNTIME_REQUIRED",
                                         "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
             break
@@ -1132,6 +1135,16 @@ def main():
                 time.sleep(min(10.0,remaining))
         payload.pop("screen_selection_draft",None)
         code, result = call_json(EDGE_URL,payload,headers)
+        if code == 401:
+            # Refresh only through the existing GitHub OIDC identity. No
+            # API key/service-role fallback; one re-auth attempt, fail closed.
+            try:
+                headers = {"authorization": f"Bearer {oidc()}"}
+                code, result = call_json(EDGE_URL,payload,headers)
+            except (KeyError, OSError, urllib.error.URLError) as exc:
+                print(json.dumps({"phase":"SELECTED_SKILL_OIDC_REFRESH_BLOCKED",
+                    "error_type":type(exc).__name__}))
+                return 1
         if code != 200:
             print(json.dumps({"phase":"SELECTED_SKILL_PREPARE_RETRY",
                 "http_status":code,"code":result.get("code")}))
