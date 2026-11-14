@@ -405,7 +405,7 @@ begin
   v_ev := 'SKILLRUN:'||v_run||':'||encode(extensions.digest(convert_to(v_out::text,'UTF8'),'sha256'),'hex');
   insert into public.lf_skill_invocation_v1(skill_run_id,skill_code,parent_execution_id,profile_code,status,input_sha256,output,evidence_ref) values(v_run,p_skill,p_execution_id,v_prof,'COMPLETED',v_in,v_out,v_ev);
   return jsonb_build_object('status','COMPLETED','skill_run_id',v_run,'output',v_out,'evidence_ref',v_ev,'next_action','CONTINUE_PROFILE');
-end $function$
+end $function$;
 
 
 CREATE OR REPLACE FUNCTION public.lf_profile_skill_invoke_selected_v1(p_execution_id text, p_channel text, p_skill_code text, p_input jsonb, p_semantic_decision jsonb DEFAULT NULL::jsonb)
@@ -508,7 +508,7 @@ BEGIN
  RETURN v_out||jsonb_build_object('parent_execution_id',p_execution_id,
      'selection_mode',v_skill->>'selection_mode','selection_receipt',v_receipt);
 END;
-$function$
+$function$;
 
 
 -- Source-first selection: only 4 profiles actually GOBERNADOS_POR IG today,
@@ -1005,7 +1005,7 @@ BEGIN
     'router_reentry_required',false
   );
 END
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_input_governance_runtime_ticket_issue_v1(p_execution_id text, p_input_literal text, p_input_evidence_ref text, p_handoff jsonb)
  RETURNS jsonb
@@ -1124,5 +1124,5 @@ BEGIN
     'router_reentry_required',false
   );
 END
-$function$
+$function$;
 COMMIT;
