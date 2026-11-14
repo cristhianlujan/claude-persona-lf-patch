@@ -90,11 +90,30 @@ Deno.test("continuation: explicit empty skill selection binds same RUN before so
     return base.fetchFn(input,init);
   };
   const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
-    execution_id:id,skill_semantic_decision:{selected_skill_codes:[],
+    execution_id:id,skill_selection_decision:{selected_skill_codes:[],
       reason:"Ninguna skill tiene contexto suficiente"}},config,fetchFn,sha);
   eq(out.status,200);
   eq(requests.some(x=>x.endsWith("/lf_profile_skill_selection_run_bind_v1")),true);
   eq((await out.json()).outcome,"SOURCE_BINDING_REQUIRED");
+});
+Deno.test("continuation: legacy skill field accepted ONLY on verified old RUN",async()=>{
+  const old=network({created_at:"2026-11-14T18:30:00Z"});
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BOUND",execution_id:id}),{status:200});
+    return old.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id,skill_semantic_decision:{selected_skill_codes:[],
+      reason:"Old RUN with explicit no optional skill"}},config,fetchFn,sha);
+  eq(out.status,200);
+  const newRun=network({created_at:"2026-11-14T20:00:00Z"});
+  const blocked=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id,skill_semantic_decision:{selected_skill_codes:[],
+      reason:"Must not accept old name on new RUN"}},config,newRun.fetchFn,sha);
+  eq(blocked.status,409);
+  eq((await blocked.json()).code,"SKILL_SELECTION_LEGACY_ONLY_EXISTING_RUN");
 });
 Deno.test("continuation: screen semantic handoff preserves ordering and source",async()=>{
   const n=network();const draft={decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"};
