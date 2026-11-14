@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
 BASE=ROOT/"sandbox/lf_contract_gate_test/edge_function_operation/fixture_router_ig_preimage_pgdual_v1.sql"
-MIGRATION=ROOT/"supabase/migrations/20261114190000_lf_router_ig_skill_policy_only_v1.sql"
+MIGRATION=ROOT/"supabase/migrations/20261114182712_lf_router_ig_skill_policy_only_v1.sql"
 ROUTER="public.lf_router_resolve_core_v1"
 DERIVE="programacion.fn_lf_router_input_governance_derive_v1"
 ADAPTER="programacion.fn_lf_profile_adapter_input_governance_resolve_v1"
