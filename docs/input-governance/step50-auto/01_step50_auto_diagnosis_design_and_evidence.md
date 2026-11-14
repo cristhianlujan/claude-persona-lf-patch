@@ -159,7 +159,8 @@ gobernada de autoridad y pruebas de regresión antes de promoción.
   observada. No crea otra función escritora ni promueve acciones.
 - `caller_test.ts` incorpora casos 200 lectura, 409 escritura,
   409 sin evidencia; en workflow
-  `ig-m105-cp2-oidc-bridge-tests.yml` se ejecuta ahora el caller completo.
+  `ig-m105-cp2-oidc-bridge-tests.yml` sin modificar el workflow protegido;
+  las tres pruebas nuevas se incluyen en el filtro OIDC existente `^CP2:`.
   `test_profile_resume_issue_request.py` verifica continuación OIDC
   del mismo RUN y step40 verificado antes de step50.
 
