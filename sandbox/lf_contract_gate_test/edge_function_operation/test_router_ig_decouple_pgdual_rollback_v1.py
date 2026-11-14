@@ -76,6 +76,61 @@ SELECT programacion.fn_lf_profile_input_governance_resolve_v1(
  'regla de carga','ACT-0051','{}'::jsonb,'CONTEXT_PACK')->>'blocking_code';
 SELECT programacion.fn_lf_profile_input_governance_resolve_v1(
  'regla de carga','ACT-0051','{}'::jsonb,'CONSUMER_NOT_ALLOWED')->>'blocking_code';
+DO $lf_each_path$
+DECLARE
+ r record; src text; spot integer; segment text; seen boolean; cnt integer:=0;
+BEGIN
+ FOR r IN SELECT * FROM (VALUES
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_ADAPTER_METADATA_INVALID',false),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED',false),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_ADAPTER_CONTRACT_INVALID',false),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_EFFECT_AUTHORITY',false),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_EVALUATION_FAILED',false),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_SUBJECT_UNRESOLVED',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_SUBJECT_AMBIGUOUS',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_RECEIPT_REQUIRED',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_RECEIPT_STALE',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_RUNTIME_REQUIRED',true),
+  ('programacion.fn_lf_profile_adapter_input_governance_resolve_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_CONTENT_EXCEPTION',true),
+  ('programacion.fn_lf_router_input_governance_derive_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_ADAPTER_METADATA_INVALID',false),
+  ('programacion.fn_lf_router_input_governance_derive_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_PROFILE_ONLY',false),
+  ('programacion.fn_lf_router_input_governance_derive_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED',false),
+  ('programacion.fn_lf_router_input_governance_derive_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_ADAPTER_CONTRACT_INVALID',false),
+  ('programacion.fn_lf_router_input_governance_derive_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_SUBJECT_UNRESOLVED',true),
+  ('programacion.fn_lf_router_input_governance_derive_v1(text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_SUBJECT_AMBIGUOUS',true),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_PROFILE_INPUT_GOVERNANCE_SCREEN_NOT_SEMANTICALLY_RESOLVED',false),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_PROFILE_INPUT_GOVERNANCE_SCREEN_SEMANTIC_RECEIPT_INVALID',false),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_EFFECT_AUTHORITY',false),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED',false),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_PROFILE_INPUT_GOVERNANCE_RUNTIME_REQUIRED',true),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_PROFILE_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED',true),
+  ('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure,'BLOCK_PROFILE_INPUT_GOVERNANCE',true)
+ ) t(fn,code,expected_continuation)
+ LOOP
+   SELECT pg_get_functiondef(r.fn) INTO src;
+   spot:=strpos(src,'''blocking_code'', '''||r.code||'''');
+   IF spot=0 THEN RAISE EXCEPTION 'IG_PATH_CODE_ABSENT:%',r.code; END IF;
+   segment:=substr(src,spot,440);
+   IF strpos(segment,'''continuation_allowed'',true')>0
+      OR strpos(segment,'''continuation_allowed'', true')>0 THEN
+     seen:=true;
+   ELSIF strpos(segment,'''continuation_allowed'',false')>0
+      OR strpos(segment,'''continuation_allowed'', false')>0 THEN
+     seen:=false;
+   ELSE RAISE EXCEPTION 'IG_PATH_CONTINUATION_ABSENT:%',r.code;
+   END IF;
+   IF seen IS DISTINCT FROM r.expected_continuation THEN
+     RAISE EXCEPTION 'IG_PATH_WRONG_CLASSIFICATION:%,expected=%,observed=%',
+       r.code,r.expected_continuation,seen;
+   END IF;
+   cnt:=cnt+1;
+ END LOOP;
+ IF cnt<>26 THEN RAISE EXCEPTION 'IG_PATH_COUNT_MISMATCH:%',cnt; END IF;
+ RAISE NOTICE 'PASS_IG_BLOCK_AND_FINDING_SOURCE_PATHS_%',cnt;
+END $lf_each_path$;
+SELECT 'PASS_IG_BLOCK_AND_FINDING_SOURCE_PATHS_26';
 ROLLBACK;
 SELECT md5("""+func_source(ROUTER)+""");
 SELECT count(*) FILTER (WHERE selection_mode='DETERMINISTIC_REQUIRED')||':'||
@@ -87,7 +142,8 @@ SELECT count(*) FILTER (WHERE selection_mode='DETERMINISTIC_REQUIRED')||':'||
                   "PASS_IG_CONTENT_FAIL_OPEN_AUTHORITY_FAIL_CLOSED",
                   "9:1",before,
                   "BLOCK_PROFILE_INPUT_GOVERNANCE_SCREEN_NOT_SEMANTICALLY_RESOLVED",
-                  "BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED"):
+                  "BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED",
+                  "PASS_IG_BLOCK_AND_FINDING_SOURCE_PATHS_26"):
      self.assertIn(marker,out,out)
    # Policy preimage drift must fail closed with no writes.
    corrupt="BEGIN; UPDATE public.lf_skill_selector_policy_v1 SET selection_mode='SEMANTIC_OPTIONAL' WHERE profile_code='ACT-0051';\n"+inner
