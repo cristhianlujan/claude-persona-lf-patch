@@ -1,0 +1,2935 @@
+{
+  "schema": "LF_L41_RULES_FROZEN_SELECT_V1",
+  "scope": "READ_ONLY_LF_OPS",
+  "slice": 1,
+  "order": "r.codigo",
+  "count": 65,
+  "source_rows": [
+    {
+      "source_row": {
+        "id": 622,
+        "razon": "Materializa la decisión humana DEC-INPUT-GOV-512-HUMAN-001 sin promover propuestas ni autorizar producción.",
+        "codigo": "B2B-RULE-INPUT-APPLICABILITY-001",
+        "estado": "VIGENTE",
+        "origen": "OWNER_DECISION_INPUT_GOV_5_12",
+        "titulo": "Aplicabilidad explícita de Feature Flags e I18N en autenticación B2B",
+        "categoria": "GOVERNANCE",
+        "created_at": "2026-08-23T04:44:45.541717+00:00",
+        "created_by": "CHAT-LF-INPUT-GOV-20260822-HUMAN-DECISION",
+        "updated_at": "2026-08-23T04:44:45.541717+00:00",
+        "descripcion": "Para las pantallas activas del módulo B2B_AUTENTICACION, FEATURE_FLAGS se excluye del alcance funcional actual e I18N_FORMATS se excluye mientras el alcance permanezca single-locale. La ausencia de tablas o reglas no constituye por sí sola autoridad: esta regla materializa la decisión explícita del owner. Si aparece una fuente canónica de feature flags, se amplía el alcance de autenticación o se requiere multi-locale, la exclusión correspondiente debe reabrirse y revalidarse.",
+        "valor_config": {
+          "decision_id": "DEC-INPUT-GOV-512-HUMAN-001",
+          "module_code": "B2B_AUTENTICACION",
+          "screen_codes": [
+            "B2B-AUTH-001",
+            "B2B-AUTH-002",
+            "B2B-AUTH-003",
+            "B2B-AUTH-004",
+            "B2B-AUTH-006"
+          ],
+          "decision_number": 123,
+          "merge_authorized": false,
+          "contract_revision": "5.12",
+          "absence_is_authority": false,
+          "promotion_authorized": false,
+          "production_authorized": false,
+          "input_family_exclusions": {
+            "I18N_FORMATS": {
+              "status": "EXCLUDED_CURRENT_SINGLE_LOCALE_SCOPE",
+              "authority": "OWNER_DECISION",
+              "reopen_when": [
+                "MULTI_LOCALE_REQUIRED",
+                "LOCALE_SOURCE_INTRODUCED"
+              ]
+            },
+            "FEATURE_FLAGS": {
+              "status": "EXCLUDED_CURRENT_SCOPE",
+              "authority": "OWNER_DECISION",
+              "reopen_when": [
+                "FEATURE_FLAG_SOURCE_INTRODUCED",
+                "AUTH_SCOPE_EXPANDS"
+              ]
+            }
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "14036afa2c17a484d5dce1f2f80f62c0417b4465866ce0e8ddc1d700ee7c0769",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 420,
+        "razon": "Preservar fidelidad exacta de marca, evitar reinterpretaciones del generador y mantener trazabilidad entre decisión visual, binario, hash y almacenamiento canónico.",
+        "codigo": "B2B-RULE-LOGO-001",
+        "estado": "VIGENTE",
+        "origen": "LF_BACKOFFICE_AUTH_VISUAL_20260815",
+        "titulo": "Logo oficial no recreado",
+        "categoria": "BRAND",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-16T04:46:15.299819+00:00",
+        "descripcion": "El Login usa únicamente activos oficiales actuales registrados en lf_design.brand_assets mediante brand_asset_id numérico. Para la superficie light de B2B-AUTH-001 se usa la variante 2 líneas LF_BRAND_LOGO_2L_LIGHT_TRANSPARENT (brand_asset_id 7). La variante dark equivalente es brand_asset_id 6 y solo aplica sobre fondo oscuro autorizado. Los assets legacy 1, 2 y 3 permanecen deprecados y no deben consumirse. El logo no se redibuja ni se genera. El binario canónico se conserva en Google Drive y Supabase mantiene el catálogo operativo con Drive file ID, checksum, dimensiones, variante y estado.",
+        "valor_config": {
+          "source": "lf_design.brand_assets",
+          "storage": "GOOGLE_DRIVE",
+          "redraw_allowed": false,
+          "brand_asset_ids": [
+            6,
+            7
+          ],
+          "checksum_required": true,
+          "dark_brand_asset_id": 6,
+          "required_is_current": true,
+          "light_brand_asset_id": 7,
+          "binary_reference_source": "lf_design.brand_assets.storage_object_path",
+          "deprecated_brand_asset_ids": [
+            1,
+            2,
+            3
+          ],
+          "login_light_brand_asset_id": 7
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "91ffae69eea27c4d93c62f343d28c234db3b3c4d3f1527c87587b8717aef488e",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 464,
+        "razon": "Evitar enlaces huérfanos, rutas inventadas y reutilización accidental de contenido legal o soporte de otro frente LF.",
+        "codigo": "B2B-RULE-NAV-LEGAL-001",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_INPUT_REMEDIATION_2026_08_17",
+        "titulo": "Destinos canónicos para legales y soporte en Login",
+        "categoria": "LEGAL",
+        "created_at": "2026-08-18T04:12:31.471411+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-19T10:56:07.161812+00:00",
+        "descripcion": "El Login B2B conserva accesos visibles a Términos y Condiciones, Política de Privacidad y Soporte. Los tres destinos son rutas B2B canónicas, accesibles sin iniciar sesión y separadas del frente público; no se reutilizan automáticamente documentos B2C ni URLs externas hardcodeadas.",
+        "valor_config": {
+          "blocks_story": false,
+          "destinations": {
+            "PRIVACY_POLICY": {
+              "route_id": 16,
+              "route_code": "B2B_ROUTE_LEGAL_PRIVACY",
+              "authentication_required": false
+            },
+            "CONTACT_SUPPORT": {
+              "route_id": 17,
+              "route_code": "B2B_ROUTE_SUPPORT",
+              "authentication_required": false
+            },
+            "TERMS_AND_CONDITIONS": {
+              "route_id": 15,
+              "route_code": "B2B_ROUTE_LEGAL_TERMS",
+              "authentication_required": false
+            }
+          },
+          "required_links": [
+            "TERMS_AND_CONDITIONS",
+            "PRIVACY_POLICY",
+            "CONTACT_SUPPORT"
+          ],
+          "route_registry": "lf_ops.rutas",
+          "blocks_production": false,
+          "public_front_reuse": "DENY",
+          "route_target_status": "APPROVED_B2B_CANONICAL",
+          "blocks_implementation": false,
+          "current_b2b_route_ids": [
+            15,
+            16,
+            17
+          ],
+          "hardcoded_external_url": "DENY",
+          "create_route_without_approved_target": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "64682858a0a36c199b78e8880a7d82927846c07007b803919d8fa2a598dd3535",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 412,
+        "razon": "Reconstruir la operación de extremo a extremo.",
+        "codigo": "B2B-RULE-OBS-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Correlación transversal",
+        "categoria": "OBSERVABILITY",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "Frontend, backend, archivos, auditoría y proveedores comparten correlation_id.",
+        "valor_config": {
+          "dimensions": [
+            "correlation_id",
+            "trace_code",
+            "anonymous_tenant_id",
+            "load_id",
+            "screen_code",
+            "operation",
+            "status",
+            "duration_ms",
+            "error_category",
+            "severity",
+            "retry_number"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "0b85a215abf48736ccd65e9ad73998d31bf68e75dc43a9f80d388dc02eb9043f",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 413,
+        "razon": "Evitar falsa evidencia de observabilidad.",
+        "codigo": "B2B-RULE-OBS-002",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Integraciones honestas",
+        "categoria": "OBSERVABILITY",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "Ningún proveedor externo se marca activo sin credenciales, implementación y QA.",
+        "valor_config": {
+          "qa_required": true,
+          "credentials_required": true,
+          "required_status_before_active": [
+            "READY_FOR_QA"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4f1196e0e140d71e755e855f7eb97ad25e9430766e22ce483824b5d92bb7cec5",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 419,
+        "razon": "Controlar rendimiento real.",
+        "codigo": "B2B-RULE-PERF-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Core Web Vitals",
+        "categoria": "PERFORMANCE",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "Medir LCP, INP, CLS y TTFB sin datos personales.",
+        "valor_config": {
+          "metrics": [
+            "LCP",
+            "INP",
+            "CLS",
+            "TTFB"
+          ],
+          "provider": "CORE_WEB_VITALS"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "5e97619f3450987aadc8a5e661f57ccce13ad13b318096f33889d93c52fde7de",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 602,
+        "razon": "Evitar mezclar el portal autoservicio del cliente B2B con funciones administrativas privilegiadas de LF y preservar separación de responsabilidades.",
+        "codigo": "B2B-RULE-PORTAL-BOUNDARY-001",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_DECISION_2026-08-22",
+        "titulo": "Frontera entre Portal Empresa y Administración LF",
+        "categoria": "AUTHORIZATION",
+        "created_at": "2026-08-22T19:40:03.252131+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-22T19:40:03.252131+00:00",
+        "descripcion": "El usuario de empresa consume capacidades operativas y financieras de su propia empresa o conjunto autorizado de empresas. La creación de empresas, creación/invitación/desactivación de usuarios, asignación de perfiles/permisos y operaciones privilegiadas de MFA/seguridad son funciones de Administración LF y no forman parte del Portal Empresa. La visibilidad y ejecución final continúan sujetas a permisos efectivos server-side.",
+        "valor_config": {
+          "admin_lf_authority": "REQUIRED_FOR_EXCLUDED_CAPABILITIES",
+          "portal_empresa_focus": [
+            "DASHBOARD",
+            "LOADS_OR_PORTFOLIO",
+            "PAYMENTS",
+            "SETTLEMENTS",
+            "CONTROVERSIES",
+            "APPROVALS_IF_APPLICABLE"
+          ],
+          "portal_empresa_excludes": [
+            "COMPANY_CREATE",
+            "COMPANY_ACTIVATE",
+            "COMPANY_SUSPEND",
+            "USER_INVITE",
+            "USER_DISABLE",
+            "USER_ASSIGN_ROLE",
+            "AUTH_FACTOR_RESET",
+            "TRUSTED_DEVICE_ADMIN"
+          ],
+          "current_profile_matrix_conflict": "B2B_ADMIN_EMPRESA_HAS_CANDIDATE_ADMIN_PERMISSIONS_REQUIRES_RECONCILIATION_BEFORE_FREEZE",
+          "server_side_effective_permission_required": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Reconciliar la matriz B2B_ADMIN_EMPRESA y navegación después de cerrar el Árbol Funcional Empresa; no retirar permisos parcialmente antes de completar la cascada.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "9218844f8de871061b531fcd4c59113104d366c80fa290ccfa3e0d9eb5782473",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 608,
+        "razon": "Separar navegación del cliente empresa de la administración interna de LF y evitar congelar un sidebar construido desde las pantallas históricas existentes en vez de las necesidades del usuario empresarial.",
+        "codigo": "B2B-RULE-PORTAL-TREE-001",
+        "estado": "CANDIDATO",
+        "origen": "CURRENT_CHAT_PORTAL_TREE_REVIEW_20260822",
+        "titulo": "Árbol funcional maestro del Portal Empresa",
+        "categoria": "BUSINESS",
+        "created_at": "2026-08-22T20:25:37.866301+00:00",
+        "created_by": "chatgpt",
+        "updated_at": "2026-10-15T12:23:41.912864+00:00",
+        "descripcion": "El sidebar de B2B_APP_SHELL representa exclusivamente capacidades del Portal Empresa. Árbol de navegación aprobado por el owner: Inicio; Cartera con Cargas y detalle contextual; Simulador como nodo raíz con flujo interno Nueva simulación → Segmentación → Estrategia → Resultados; Aprobaciones como nodo raíz independiente condicionado por permiso; Ofertas; Recaudación; Liquidaciones; Reportes como centro de extracción histórica y transversal; Controversias; y Configuración. Inicio conserva el Dashboard gerencial y no sustituye Reportes.",
+        "valor_config": {
+          "offers_design": "ROOT_NODE_REUSING_LOAD_OFFER_SOURCE",
+          "sidebar_nodes": [
+            {
+              "family": "DASHBOARD",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PARTIAL",
+              "nav_class": "NAV_VISIBLE",
+              "label_candidate": "Inicio"
+            },
+            {
+              "family": "PORTFOLIO",
+              "status": "SOURCE_BOUND_EXISTING",
+              "children": [
+                "LOADS",
+                "LOAD_DETAIL_CONTEXTUAL"
+              ],
+              "nav_class": "NAV_VISIBLE",
+              "primary_action": "NEW_LOAD_IN_PAGE_HEADER",
+              "label_candidate": "Cartera"
+            },
+            {
+              "family": "SIMULATOR",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PARTIAL",
+              "nav_class": "NAV_VISIBLE",
+              "module_code": "B2B_SIMULA",
+              "internal_flow": [
+                "B2B-SIMULA-001",
+                "B2B-SIMULA-002",
+                "B2B-SIMULA-003",
+                "B2B-SIMULA-004"
+              ],
+              "label_candidate": "Simulador",
+              "navigation_semantic": "ROOT_NODE_WITH_INTERNAL_FLOW_NOT_SUBMENU"
+            },
+            {
+              "family": "APPROVALS",
+              "status": "SOURCE_BOUND_EXISTING",
+              "children": [
+                "APPROVAL_QUEUE",
+                "APPROVAL_DETAIL_CONTEXTUAL",
+                "APPROVE",
+                "RETURN",
+                "REJECT"
+              ],
+              "nav_class": "NAV_VISIBLE_CONDITIONAL_PERMISSION",
+              "label_candidate": "Aprobaciones",
+              "alert_visibility": "DIRECT_NO_PARENT_EXPANSION_REQUIRED",
+              "work_queue_pattern": "ROOT_LEVEL_BADGE_WHEN_CANONICAL_COUNTER_EXISTS"
+            },
+            {
+              "family": "OFFERS",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PARTIAL",
+              "children": [
+                "OFFER_CATALOG_AND_VALIDITY",
+                "INSTALLMENT_PLANS"
+              ],
+              "nav_class": "NAV_VISIBLE",
+              "label_candidate": "Ofertas",
+              "source_boundary": "REUSE_LOAD_OFFER_DATA_NO_PARALLEL_SOURCE"
+            },
+            {
+              "family": "COLLECTIONS",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PENDING",
+              "nav_class": "NAV_VISIBLE",
+              "label_candidate": "Recaudación",
+              "entity_detail_label": "Pago"
+            },
+            {
+              "family": "SETTLEMENTS",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PENDING",
+              "nav_class": "NAV_VISIBLE",
+              "label_candidate": "Liquidaciones"
+            },
+            {
+              "role": "HISTORICAL_AND_BULK_EXTRACTION_CENTER",
+              "family": "REPORTS",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PARTIAL",
+              "nav_class": "NAV_VISIBLE",
+              "module_code": "B2B_REPORTES",
+              "data_authority": "REUSE_OWNING_DOMAIN_CANONICAL_SOURCE",
+              "label_candidate": "Reportes"
+            },
+            {
+              "family": "CONTROVERSIES",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PENDING",
+              "nav_class": "NAV_VISIBLE",
+              "module_code": "B2B_CONTROVERSIAS",
+              "label_candidate": "Controversias",
+              "work_queue_pattern": "ROOT_LEVEL_BADGE_WHEN_CANONICAL_COUNTER_EXISTS"
+            },
+            {
+              "family": "CONFIGURATION",
+              "status": "BUSINESS_CONFIRMED_SOURCE_PARTIAL",
+              "children": [
+                "COMPANY_DATA",
+                "COMMERCIAL_CONDITIONS"
+              ],
+              "nav_class": "NAV_VISIBLE",
+              "label_candidate": "Configuración",
+              "excluded_children": [
+                "USERS_AND_PROFILES",
+                "APPROVAL_POLICY"
+              ]
+            }
+          ],
+          "menu_gap_audit": {
+            "audit": "LOAD_AUDIT_CONTEXTUAL_GLOBAL_AUDIT_REMAINS_ADMIN_LF",
+            "status": "REVIEWED_NO_NEW_ROOT_FAMILY_REQUIRED",
+            "support": "SHELL_GLOBAL_ROUTE_NOT_SIDEBAR_MODULE",
+            "campaigns": "UNDER_OFFERS_OR_COMMERCIAL_CONDITIONS_NOT_ROOT",
+            "documents": "NO_B2B_ROOT_MODULE_EVIDENCE",
+            "integrations": "CONFIGURATION_CANDIDATE_ONLY_IF_CANONICAL_PROFILE_REGISTRY_AND_COMPANY_USE_CASE_ARE_CONFIRMED",
+            "reports_exports": "HYBRID_CONTEXTUAL_CURRENT_OR_PREVIOUS_CALENDAR_MONTH_AND_REPORTS_FOR_PRIOR_HISTORY"
+          },
+          "navigation_scope": "PORTAL_EMPRESA_ONLY",
+          "tree_owner_decision": "APPROVED",
+          "approvals_navigation": "ROOT_PEER_CONDITIONAL_BY_PERMISSION_WITH_DIRECT_ALERT_VISIBILITY",
+          "collections_semantic": "TOP_LEVEL_BUSINESS_VIEW_RECAUDACION_DETAIL_ENTITY_REMAINS_PAYMENT",
+          "configuration_rehome": {
+            "approval_policy": "PENDING_LOCATION_NOT_APPROVED_IN_PORTAL_TREE",
+            "users_and_profiles": "EXCLUDED_PORTAL_EMPRESA"
+          },
+          "portfolio_navigation": {
+            "load_detail": "CONTEXTUAL_ROUTE_NOT_MENU",
+            "loads_label": "Cargas",
+            "loads_semantic": "LIST_IS_HISTORY_NO_SEPARATE_HISTORY_MENU",
+            "new_load_label": "Nueva carga",
+            "new_load_navigation": "PRIMARY_ACTION_IN_PAGE_HEADER_NOT_SIDEBAR",
+            "page_header_action_label": "Nueva carga"
+          },
+          "route_scope_contract": {
+            "url_authority": "DENY",
+            "canonical_rule": "B2B-RULE-SCOPE-003",
+            "company_id_in_url": "MAY_EXIST_ONLY_AS_NON_AUTHORITATIVE_ASSERTION",
+            "server_validation_required": true
+          },
+          "configuration_boundary": {
+            "allowed": [
+              "COMPANY_DATA",
+              "COMMERCIAL_CONDITIONS"
+            ],
+            "excluded": [
+              "USER_ADMINISTRATION",
+              "PROFILE_PERMISSION_ADMINISTRATION",
+              "MFA_SECURITY_ADMINISTRATION"
+            ],
+            "company_data_editability": "PENDING_FIELD_BY_FIELD_DECISION",
+            "commercial_conditions_editability": "PENDING_FIELD_BY_FIELD_DECISION"
+          },
+          "tree_owner_approved_at": "2026-08-22T21:17:57.61565+00:00",
+          "pending_screen_fallback": "PAGE_UNDER_CONSTRUCTION",
+          "physical_creation_policy": "DO_NOT_CREATE_MODULES_SCREENS_ROUTES_OR_PERMISSIONS_UNTIL_TREE_REVIEW_COMPLETE_AND_SOURCE_GAPS_CLOSED",
+          "installment_plans_navigation": "UNDER_OFFERS",
+          "pending_screen_fallback_rule": "B2B-RULE-SHELL-BODY-STATES-001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "ÁRBOL DE NAVEGACIÓN RECONCILIADO. Los nodos aprobados sin pantalla canónica utilizan PAGE_UNDER_CONSTRUCTION como landing temporal. Inicio mantiene Dashboard; Reportes mantiene rol de extracción histórica; Nueva carga sigue como CTA; Aprobaciones permanece raíz.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "8bcb5221affc7a8b2f44411afa280a0fc6b1a755077efaaa5cabd59fb14f8a2b",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 411,
+        "razon": "Cumplir privacidad y minimizar exposición.",
+        "codigo": "B2B-RULE-PRIVACY-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "PII prohibida en telemetría",
+        "categoria": "PRIVACY",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "Analytics, logs, replay y errores no reciben PII.",
+        "valor_config": {
+          "database_trigger": true,
+          "redaction_required": true,
+          "analytics_pii_allowed": false
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "95fdb9c29d2da2e94bbc5a8ce04810c743b52932d64ac09bc96982b34f740dd0",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 424,
+        "razon": "Mantener el paquete como candidato controlado.",
+        "codigo": "B2B-RULE-PROD-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Producción bloqueada",
+        "categoria": "GOVERNANCE",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T06:32:11.874639+00:00",
+        "descripcion": "Ningún activo B2B pasa a vigente, producción o Golden sin QA, revisión de seguridad, aprobación explícita y controles de acceso efectivos. Para RLS, habilitar la opción no basta: deben existir políticas aplicables y pasar pruebas negativas cross-tenant.",
+        "valor_config": {
+          "required_gates": [
+            "QA_PASSED",
+            "SECURITY_REVIEW",
+            "OWNER_APPROVAL",
+            "EXTERNAL_CREDENTIALS",
+            "RLS_POLICIES_VERIFIED"
+          ],
+          "production_authorized": false,
+          "rls_security_policy_id": 1,
+          "cross_tenant_negative_test": "REQUIRED",
+          "rls_enabled_without_policy": "FAIL_GATE"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "bd2a276fb3e395911dbfbe8f7ed0b3344311778357c9edf5d8941328e20a3002",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 418,
+        "razon": "Centralizar cantidades operativas, permitir reutilización y evitar mantener el mismo umbral en múltiples reglas o pantallas.",
+        "codigo": "B2B-RULE-RATE-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Límites por recurso",
+        "categoria": "SECURITY",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T03:45:04.453522+00:00",
+        "descripcion": "Todo límite de frecuencia o cantidad de solicitudes se obtiene de lf_ops.politicas_rate_limit. Las reglas y pantallas solo referencian la política aplicable mediante rate_limit_policy_id numérico y no duplican ventanas, máximos ni burst limits.",
+        "valor_config": {
+          "error_id": 26,
+          "registry": "lf_ops.politicas_rate_limit",
+          "relation_key": "rate_limit_policy_id",
+          "threshold_source": "POLICY_REGISTRY_ONLY",
+          "relation_key_type": "NUMERIC_ID",
+          "reuse_before_create": "REQUIRED",
+          "duplicate_window_in_rules": "DENY",
+          "duplicate_request_counts_in_rules": "DENY"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "547194f6a14d73045cb2f644f715958f43648cc7e1a1ba8463f29ab93fc516ed",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "RATE"
+    },
+    {
+      "source_row": {
+        "id": 391,
+        "razon": "Evitar que responsive sea solo reducción visual.",
+        "codigo": "B2B-RULE-RESP-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Tres breakpoints funcionales",
+        "categoria": "RESPONSIVE",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "Todas las pantallas tienen variantes desktop, tablet y móvil.",
+        "valor_config": {
+          "breakpoints": [
+            "viewport_desktop",
+            "viewport_tablet",
+            "viewport_mobile"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "622f650877f8bb8546ae359a2a36638d701976ed75bc9bed3a390ca25a2b75c7",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 423,
+        "razon": "Evitar tiempos duplicados o divergentes y no convertir una regla transversal en repositorio de umbrales operativos.",
+        "codigo": "B2B-RULE-RETENTION-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Retención gobernada por política central pendiente",
+        "categoria": "RETENTION",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T06:31:24.031857+00:00",
+        "descripcion": "Los plazos de retención, eliminación y conservación no se almacenan en reglas ni pantallas. Deben provenir de una política central reutilizable y validada legal/operativamente. Hasta que exista un destino especializado autorizado, la regla no define cantidades candidatas.",
+        "valor_config": {
+          "reuse_before_create": "REQUIRED",
+          "legal_validation_required": true,
+          "numeric_thresholds_in_rule": "DENY",
+          "operational_validation_required": true,
+          "retention_policy_registry_status": "BLOCKED_NO_DESTINATION"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "BLOCKED_NO_DESTINATION: la regla funcional está cerrada: las cantidades de retención no viven en reglas/pantallas. Falta crear o autorizar, en un lote transversal de gobierno, el destino especializado de políticas de retención y sus valores legalmente validados.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "7f39aa14d12960a2c0214c9d38852eeb41875dcd56c8e7b76550903519010f7e",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 476,
+        "razon": "Evitar hardcodear configuración runtime y evitar declarar integraciones activas solo porque la regla existe.",
+        "codigo": "B2B-RULE-RUNTIME-001",
+        "estado": "CANDIDATO",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_47_FAMILIES",
+        "titulo": "Configuración runtime separada de reglas y secretos",
+        "categoria": "GOVERNANCE",
+        "created_at": "2026-08-18T05:11:44.911943+00:00",
+        "created_by": "CHATGPT_LF_BACKOFFICE",
+        "updated_at": "2026-08-18T05:11:44.911943+00:00",
+        "descripcion": "Las reglas funcionales declaran capacidades y referencias; credenciales, secretos y valores de proveedor viven fuera de reglas. El estado operativo de analytics, observabilidad, autenticación y performance se obtiene de sus registros especializados y debe permanecer pendiente mientras falten credenciales, implementación o QA.",
+        "valor_config": {
+          "active_requires": [
+            "CONFIGURED",
+            "IMPLEMENTED",
+            "QA_VERIFIED"
+          ],
+          "secrets_in_rules": "DENY",
+          "pending_is_active": false,
+          "provider_registry": "lf_ops.observabilidad_proveedores",
+          "auth_policy_registry": "lf_ops.politicas_seguridad",
+          "credentials_in_rules": "DENY"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f6d61a608467199fdc47536e0bdbe907f24b4a5eb48181e4c1891627381b4019",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 590,
+        "razon": "Evitar escalamiento horizontal y desacoplar navegación/bookmarks de la autoridad de tenant.",
+        "codigo": "B2B-RULE-SCOPE-003",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_APPROVAL_2026-08-21",
+        "titulo": "Scope corporativo no autoritativo desde URL o cliente",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-22T01:53:14.022765+00:00",
+        "created_by": "assistant_on_owner_approval",
+        "updated_at": "2026-08-22T19:09:50.909659+00:00",
+        "descripcion": "Las rutas canónicas del Backoffice permanecen orientadas a pantalla/recurso y no convierten grupo_id o company_id enviados por navegador en autoridad de tenant. Grupo corporativo y empresa activa son contexto operativo resuelto y validado server-side. Un parámetro, header, body o URL de cliente nunca puede ampliar ni cambiar el scope por sí mismo. El cambio de grupo/empresa requiere validación contra el scope efectivo y revalidación de permisos, menú y recurso antes de continuar.",
+        "valor_config": {
+          "bookmark_semantic": "SCREEN_ROUTE_REQUIRES_SERVER_SCOPE_RESOLUTION",
+          "url_scope_authority": "DENY",
+          "body_scope_authority": "DENY",
+          "active_scope_contract": {
+            "logical_fields": [
+              "user",
+              "corporate_group",
+              "company",
+              "effective_permissions"
+            ],
+            "physical_storage": "PENDING_FUNCTIONAL_DEFINITION",
+            "server_authoritative": true,
+            "switch_requires_server_confirmation_before_dependent_actions": true,
+            "frontend_must_not_depend_on_current_empresa_usuarios_company_id": true
+          },
+          "current_route_registry": "lf_ops.rutas",
+          "header_scope_authority": "DENY",
+          "server_scope_authority": "REQUIRED",
+          "initial_scope_resolution": "PENDING_FUNCTIONAL_DEFINITION",
+          "current_route_scope_model": "SCOPE_AGNOSTIC",
+          "physical_active_scope_store": "PENDING_FUNCTIONAL_DEFINITION",
+          "future_scope_identifier_in_url": "ALLOW_ONLY_AS_NON_AUTHORITATIVE_ASSERTION_WITH_SERVER_VALIDATION",
+          "scope_switch_menu_recalculation": "REQUIRED",
+          "current_company_or_group_in_route": "DENY",
+          "implementation_preparation_status": "INTERFACE_READY_STORAGE_PENDING",
+          "scope_switch_authorization_recheck": "REQUIRED"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "PENDING_FUNCTIONAL_DEFINITION: falta definir persistencia/contexto físico de grupo y empresa activos y resolución inicial cuando el usuario posee múltiples scopes; no crear tabla o sesión nueva por inferencia.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "25a966c6dbe848e0bfbdac4005cc78819f4a55f5f793c7a2519214601da6147e",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 657,
+        "razon": "Cerrar la cobertura semántica de amenazas del Login sin confundir definición con implementación.",
+        "codigo": "B2B-RULE-SECURITY-BASELINE-001",
+        "estado": "CANDIDATO",
+        "origen": "LF_INPUT_GOV_B2B_AUTH_CRITICAL_READINESS_V1",
+        "titulo": "Baseline técnico de seguridad del Login B2B",
+        "categoria": "SECURITY",
+        "created_at": "2026-09-29T15:18:00.943286+00:00",
+        "created_by": "INPUT_GOVERNANCE_REMEDIATION",
+        "updated_at": "2026-09-29T15:18:00.943286+00:00",
+        "descripcion": "El Login B2B debe aplicar defensa contra DDoS y resource exhaustion, validación server-side contra injection con prepared statements/parameterized queries, mitigación XSS, SSRF, clickjacking, control CORS, TLS y security headers, replay protection, controles de supply chain/SBOM y límites de request payload. La definición es canónica; la implementación y QA permanecen pendientes.",
+        "valor_config": {
+          "xss": "DENY_UNTRUSTED_SCRIPT_EXECUTION",
+          "cors": "EXPLICIT_ORIGIN_POLICY_REQUIRED",
+          "sbom": "REQUIRED",
+          "ssrf": "DENY_USER_CONTROLLED_BACKEND_FETCH_TARGETS",
+          "transport": "HTTPS_REQUIRED",
+          "anti_replay": "REQUIRED_FOR_SESSION_OR_TOKEN_REUSE_PATHS",
+          "clickjacking": "DENY",
+          "ddos_control": "WAF_RATE_AND_RESOURCE_EXHAUSTION_GUARD_REQUIRED",
+          "edge_runtime": [
+            "CLOUDFRONT_WAF",
+            "ALB_WAF"
+          ],
+          "supply_chain": "SBOM_AND_DEPENDENCY_VULNERABILITY_CONTROL_REQUIRED",
+          "allowed_origin": "SAME_ORIGIN_OR_EXPLICIT_ALLOWLIST_ONLY",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "frame-ancestors": "DENY_EMBEDDING",
+          "output_encoding": "CONTEXT_AWARE_REQUIRED",
+          "x-frame-options": "DENY",
+          "source_authority": "SUPABASE_GOVERNED_CANONICAL_RULE",
+          "replay_protection": "REQUIRED",
+          "max_payload_source": "EDGE_AND_BACKEND_RUNTIME_CONFIG",
+          "prepared_statement": "REQUIRED",
+          "request_body_limit": "REQUIRED",
+          "parameterized_query": "REQUIRED",
+          "resource_exhaustion": "DENY_UNBOUNDED_REQUEST_PROCESSING",
+          "implementation_status": "PENDING_IMPLEMENTATION_QA",
+          "production_authorized": false,
+          "server_input_injection": "DENY",
+          "x-content-type-options": "nosniff",
+          "content-security-policy": "REQUIRED",
+          "security_control_contract": "B2B_LOGIN_SECURITY_BASELINE_V1",
+          "strict-transport-security": "REQUIRED",
+          "numeric_thresholds_in_rule": "DENY",
+          "dependency_vulnerability_scan": "REQUIRED",
+          "user_controlled_backend_fetch_target": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f514c796dc966fc0ff2e4dac67fe1cb2a99c4060c44c3582ab38f15f39d6a100",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SEC"
+    },
+    {
+      "source_row": {
+        "id": 399,
+        "razon": "Mantener tiempos de sesión en una única política reutilizable y mensajes en su catálogo canónico.",
+        "codigo": "B2B-RULE-SESSION-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Inactividad controlada",
+        "categoria": "SESSION",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T06:01:40.364274+00:00",
+        "descripcion": "La advertencia y finalización por inactividad se ejecutan según lf_ops.politicas_sesion. Esta regla no almacena tiempos; referencia la política de sesión y los mensajes canónicos mediante IDs numéricos.",
+        "valor_config": {
+          "message_source": "lf_ops.mensajes_ui",
+          "session_policy_id": 1,
+          "expired_message_id": 2,
+          "warning_message_id": 1,
+          "session_parameter_source": "lf_ops.politicas_sesion",
+          "numeric_thresholds_in_rule": "DENY"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "07aab1126c05b4dabfa87181bfeca1e45f684a73a5011dbe9c4b16d234bab64d",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 400,
+        "razon": "Evitar divergencia entre la regla y las políticas especializadas de sesión y seguridad.",
+        "codigo": "B2B-RULE-SESSION-002",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Rotación y concurrencia gobernadas por políticas centrales",
+        "categoria": "SESSION",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T06:01:40.364274+00:00",
+        "descripcion": "La rotación de sesión, refresh y límites de concurrencia se obtienen de lf_ops.politicas_sesion y de la política de prevención de session fixation. La regla no almacena cantidades de sesiones ni tiempos.",
+        "valor_config": {
+          "session_policy_id": 1,
+          "rotation_policy_source": "lf_ops.politicas_seguridad",
+          "session_parameter_source": "lf_ops.politicas_sesion",
+          "numeric_thresholds_in_rule": "DENY",
+          "session_fixation_security_policy_id": 14
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "ca1a88dc27ad109026dd70030d02730d3602e69b362a5334fedaa73a44d6412a",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 591,
+        "razon": "Evitar que cada pantalla implemente de forma distinta estados de sesión, autorización y cambio de scope.",
+        "codigo": "B2B-RULE-SHELL-STATE-001",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_APPROVAL_2026-08-21",
+        "titulo": "Estados globales del B2B_APP_SHELL",
+        "categoria": "UX",
+        "created_at": "2026-08-22T01:53:14.022765+00:00",
+        "created_by": "assistant_on_owner_approval",
+        "updated_at": "2026-10-07T22:33:42.276585+00:00",
+        "descripcion": "El shell resuelve de forma común los estados globales que no pertenecen al contenido particular de una pantalla. Sesión por vencer/expirada y acceso no autorizado reutilizan políticas, mensajes y errores canónicos. Durante un cambio de scope el shell entra en estado transitorio no-dominio y bloquea acciones dependientes del scope hasta que el servidor confirme la nueva empresa y permisos. Los estados de empresa restringida solo se habilitan cuando el lifecycle de empresa tenga comportamiento canónico cerrado.",
+        "valor_config": {
+          "user_menu": {
+            "items": [
+              {
+                "label": "Perfil",
+                "order": 1,
+                "scope": "CURRENT_AUTHENTICATED_USER_ONLY",
+                "route_code": "B2B_ROUTE_PROFILE",
+                "route_pattern": "/b2b/perfil",
+                "screen_status": "PENDING_FUNCTIONAL_DEFINITION",
+                "fallback_state": "PAGE_UNDER_CONSTRUCTION",
+                "user_administration": "DENY"
+              },
+              {
+                "label": "Cerrar sesión",
+                "order": 2,
+                "action": "LOGOUT",
+                "authority_rule": "B2B-RULE-AUTH-039",
+                "session_effect": "TERMINATE_OPERATIONAL_SESSION",
+                "trusted_device_effect": "PRESERVE"
+              }
+            ],
+            "display_source": "lf_ops.empresa_usuarios.full_name",
+            "show_global_role": false
+          },
+          "shell_code": "B2B_APP_SHELL",
+          "contact_support": {
+            "items": [
+              "EMAIL",
+              "WHATSAPP",
+              "PHONE"
+            ],
+            "label": "Contáctanos",
+            "area_code": "SOPORTE_USUARIO",
+            "interaction": "OPEN_CONTACT_CHANNEL_MENU",
+            "source_rule": "LF-RULE-SUPPORT-CONTACTS-001",
+            "runtime_source": "lf_ops.soporte_canales",
+            "hardcoded_values": "DENY",
+            "availability_badge": "HIDE_UNTIL_GOVERNED",
+            "runtime_source_status": "PENDING_GIT_MIGRATION",
+            "full_support_route_code": "B2B_ROUTE_SUPPORT",
+            "full_support_route_pattern": "/b2b/soporte"
+          },
+          "header_user_role": "HIDE_UNTIL_COMPANY_SCOPED_PROFILE_MODEL_IS_CANONICAL",
+          "notification_bell": {
+            "visibility": "HIDE_UNTIL_SCOPE_CONTRACT_DEFINED",
+            "badge_source": "CANONICAL_COUNTER_REQUIRED",
+            "pending_decision": "ACTIVE_COMPANY_VS_CROSS_COMPANY_SCOPE"
+          },
+          "global_message_region": {
+            "priority": [
+              "SESSION_SECURITY_ACTION_REQUIRED",
+              "GLOBAL_RECOVERABLE_ERROR",
+              "WARNING"
+            ],
+            "placement": "BELOW_TOPBAR_BEFORE_BREADCRUMB",
+            "max_visible": 1,
+            "banner_states": [
+              "SESSION_WARNING",
+              "GLOBAL_RECOVERABLE_ERROR"
+            ],
+            "component_name": "b2b_global_message_banner",
+            "body_blocking_states": [
+              "SESSION_EXPIRED",
+              "ACCESS_DENIED"
+            ],
+            "visual_decision_code": "LF-B2B-VIS-GLOBAL-MESSAGE-BANNER-001",
+            "error_component_token": "b2b_global_message_banner_error",
+            "excluded_screen_states": [
+              "PAGE_UNDER_CONSTRUCTION",
+              "LOADING",
+              "EMPTY",
+              "LOAD_ERROR"
+            ],
+            "actionable_auto_dismiss": "DENY",
+            "mandatory_close_control": "DENY",
+            "warning_component_token": "b2b_global_message_banner_warning",
+            "transient_confirmation_surface": "FUTURE_TOAST_NOT_SHELL_BANNER"
+          },
+          "future_capability_slots": {
+            "dark_mode": "DEFAULT_OFF_USE_B2B_RULE_THEME_002",
+            "command_palette": "DEFAULT_OFF_PENDING_PRODUCT_DECISION",
+            "keyboard_shortcuts": "DEFAULT_OFF_PENDING_PRODUCT_DECISION",
+            "company_context_status": "DEFAULT_OFF_PENDING_COMPANY_LIFECYCLE",
+            "menu_item_accessory_badge": "DEFAULT_OFF_PENDING_CANONICAL_COUNTER",
+            "company_context_scoped_role": "DEFAULT_OFF_PENDING_MULTI_COMPANY_PROFILE_SCOPE",
+            "company_context_workload_summary": "DEFAULT_OFF_PENDING_CANONICAL_METRIC"
+          },
+          "scope_switch_processing": {
+            "type": "EPHEMERAL_UI",
+            "domain_state": false,
+            "client_success_authority": "DENY",
+            "actions_dependent_on_scope": "DISABLED_UNTIL_SERVER_CONFIRMATION"
+          },
+          "company_restricted_state": "PENDING_B2B-RULE-COMPANY-LIFECYCLE-001",
+          "capability_storage_policy": "NO_GENERIC_FEATURE_FLAG_STORAGE_UNTIL_CANONICAL_DESTINATION_EXISTS",
+          "scope_context_presentation": {
+            "owner_decision": "APPROVED",
+            "single_company": "SHOW_FIXED_COMPANY_CONTEXT_WITHOUT_REDUNDANT_SELECTOR",
+            "product_context_label": "PORTAL EMPRESA",
+            "company_identity_fields": [
+              "LOGO_ASSET_CODE",
+              "TRADE_OR_LEGAL_NAME"
+            ],
+            "super_admin_multi_group": "SHOW_GROUP_SELECTOR_THEN_DEPENDENT_COMPANY_SELECTOR",
+            "server_authority_required": true,
+            "single_group_multi_company": "SHOW_COMPANY_SELECTOR_WITH_GROUP_CONTEXT",
+            "group_selector_profile_code": "B2B_ADMIN_LF",
+            "group_selector_for_non_super_admin": "DENY_SHOW_FIXED_GROUP_CONTEXT_IF_APPLICABLE"
+          },
+          "session_expired_error_code": "LF-B2B-AUTH-002",
+          "session_warning_source_rule": "B2B-RULE-SESSION-001",
+          "global_banner_region_required": true,
+          "authorization_denied_error_code": "LF-B2B-AUTH-001",
+          "cross_company_denied_error_code": "LF-B2B-SEC-001",
+          "screen_specific_empty_loading_error_states": "OWNED_BY_SCREEN_NOT_SHELL"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "PENDING_FUNCTIONAL_DEFINITION: empresa suspendida/inactiva/read-only depende de cerrar B2B-RULE-COMPANY-LIFECYCLE-001; el mecanismo físico del switch depende de B2B-RULE-SCOPE-001/002/003.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "de3f87de98975309cb8c59df66828014deb633cf25af61e05c38fb5f4ee5cadd",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 641,
+        "razon": "Reducir carga cognitiva y evitar que cada etapa obligue al usuario a reiniciar su razonamiento o recorrer pasos artificiales.",
+        "codigo": "B2B-RULE-SIMULA-COGNITIVE-FLOW-001",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_CONCEPTUAL_LF_SIMULA_2026-09-13",
+        "titulo": "Flujo cognitivo progresivo de LF Simula",
+        "categoria": "BUSINESS",
+        "created_at": "2026-09-13T22:34:15.903201+00:00",
+        "created_by": "EXEC-CREACION-REGLA-LF-aa94f114-3d98-4c1d-8a32-143300f8c9e9",
+        "updated_at": "2026-09-22T14:58:50.941098+00:00",
+        "descripcion": "LF Simula organiza la experiencia como Carga → Entender → Segmentar → Estrategia → Simular → Resultado → Operación → Aprendizaje. Cada etapa responde una pregunta humana y hereda contexto de la anterior. Los momentos cognitivos internos no equivalen automáticamente a pantallas ni wizards; la UI puede compactarlos en una misma superficie cuando preserve comprensión, trazabilidad y recuperación.",
+        "valor_config": {
+          "context_modes": {
+            "SIMULATION": {
+              "purpose": "BUILD_COMPARE_AND_SELECT_RECOVERY_SCENARIOS",
+              "data_authority": "SNAPSHOT_ONLY",
+              "operational_mutation": "DENY"
+            },
+            "OPERATIONAL_PREPARATION": {
+              "purpose": "TAKE_SELECTED_SCENARIO_OUTPUT_AS_PREPOPULATED_PROPOSAL_FOR_GOVERNED_OPERATIONAL_FLOW",
+              "automatic_activation": "DENY",
+              "requires_explicit_company_decision": true
+            }
+          },
+          "ux_reuse_rule": "DO_NOT_BUILD_PARALLEL_SIMULA_AND_OPERATIONAL_SCREENS_WHEN_THE_BUSINESS_CAPABILITY_IS_THE_SAME",
+          "owner_decision": "APPROVED_2026-09-22_V1",
+          "preferred_flow": [
+            "SOURCE",
+            "SEGMENTATION",
+            "STRATEGY_AND_OFFER_CONFIGURATION",
+            "SIMULATION_RESULT",
+            "SCENARIO_COMPARISON",
+            "SCENARIO_SELECTION",
+            "GOVERNED_OPERATIONAL_APPLICATION"
+          ],
+          "architecture_model": "REUSE_SAME_FUNCTIONAL_CAPABILITIES_ACROSS_SIMULATION_AND_OPERATION",
+          "shared_capabilities": [
+            "SEGMENTATION_MATRIX_AND_SEGMENT_BUILDING",
+            "STRATEGY_CONFIGURATION",
+            "OFFER_AND_INSTALLMENT_PLAN_CONFIGURATION"
+          ],
+          "application_contract": {
+            "status": "FUNCTIONAL_CONTRACT_DEFINED_PHYSICAL_DESTINATION_BLOCKED",
+            "approval": {
+              "reason": "lf_ops.aprobaciones_registros is structurally load-bound because load_id is required",
+              "status": "PENDING_FUNCTIONAL_DEFINITION",
+              "automatic_bypass": "DENY",
+              "load_approval_registry_reuse": "DENY_AS_IS",
+              "company_policy_may_be_reused_conceptually": "YES_AFTER_GENERIC_OR_OFFER_APPROVAL_BINDING_EXISTS"
+            },
+            "versioning": {
+              "source_rule": "B2B-RULE-OFFER-UPDATE-001",
+              "new_governed_version_required": true,
+              "overwrite_existing_current_offer": "DENY",
+              "preserve_selected_scenario_snapshot": true
+            },
+            "state_model": {
+              "new_offer_application_states": "PENDING_FUNCTIONAL_DEFINITION",
+              "existing_strategy_lifecycle_found": [
+                "STRATEGY_PLANNED",
+                "STRATEGY_ACTIVE",
+                "STRATEGY_SUPERSEDED",
+                "STRATEGY_CLOSED"
+              ],
+              "reuse_for_operational_offer_application": "NOT_ASSUMED"
+            },
+            "target_module": "B2B_OFERTAS",
+            "business_effect": "PREPARE_GOVERNED_OPERATIONAL_CHANGE_FOR_REVIEW_OR_ACTIVATION",
+            "owner_continuation": "APPROVED_2026-09-22",
+            "required_carryover": [
+              "COMPANY_SCOPE",
+              "SOURCE_SNAPSHOT_REFERENCE",
+              "SELECTED_SCENARIO_REFERENCE_AND_VERSION",
+              "SEGMENTATION_DEFINITION_AND_VERSION",
+              "STRATEGY_REFERENCE_AND_VERSION",
+              "OFFER_AND_PLAN_CONFIGURATION_SNAPSHOT",
+              "SOURCE_BASELINE_VERSION_OR_EQUIVALENT",
+              "ACTOR",
+              "TIMESTAMP",
+              "CORRELATION_ID"
+            ],
+            "automatic_activation": "DENY",
+            "physical_destination": {
+              "status": "BLOCKED_NO_DESTINATION",
+              "finding": "No canonical lf_ops simulation/scenario/offer/plan persistence table was found in the verified inventory",
+              "next_required_step": "RESOLVE_CANONICAL_OPERATIONAL_OFFER_MODEL_AND_GENERIC_APPROVAL_BINDING_BEFORE_DDL",
+              "do_not_create_ad_hoc_table": true
+            },
+            "apply_action_semantic": "CREATE_OPERATIONAL_PROPOSAL_FROM_SELECTED_SIMULATION_SCENARIO",
+            "staleness_and_conflict": {
+              "last_write_wins": "DENY",
+              "baseline_changed_since_simulation": "REQUIRE_EXPLICIT_CONFLICT_REVIEW_OR_RECALCULATION",
+              "historical_snapshot_as_current_truth": "DENY",
+              "revalidate_against_current_operational_baseline_before_apply": true
+            },
+            "automatic_mutation_of_current_offers": "DENY"
+          },
+          "pending_application_contract": "DEFINE_OBJECT_STATE_APPROVAL_VERSIONING_AND_HANDOFF_TO_B2B_OFERTAS",
+          "result_comparison_screen_contract": {
+            "status": "FUNCTIONAL_STRUCTURE_DEFINED_VISUAL_PENDING",
+            "handoff": {
+              "semantic": "PREPOPULATE_OPERATIONAL_PROPOSAL_FROM_SELECTED_SCENARIO",
+              "target_screen": "B2B-OFERTA-001",
+              "automatic_activation": "DENY",
+              "application_contract_path": "application_contract",
+              "reconfiguration_from_scratch": "DENY_WHEN_SELECTED_SCENARIO_ALREADY_CONTAINS_CONFIGURATION"
+            },
+            "purpose": "UNDERSTAND_COMPARE_SELECT_THEN_PREPARE_OPERATIONAL_PROPOSAL",
+            "screen_code": "B2B-SIMULA-004",
+            "metric_policy": {
+              "rule": "SHOW_ONLY_METRICS_SUPPORTED_BY_CURRENT_TIER_AND_AVAILABLE_EVIDENCE",
+              "fixed_metric_set": "DENY",
+              "revenue_orientation_rule": "B2B-RULE-SIMULA-REVENUE-OBJECTIVE-001",
+              "unsupported_prediction_claims": "DENY",
+              "illustrative_values_as_runtime": "DENY"
+            },
+            "visual_status": "PENDING_UX_UI",
+            "cognitive_rule": "RESULT_COMPARE_SELECT_IN_ONE_SURFACE_TO_AVOID_ARTIFICIAL_MULTI_SCREEN_FLOW",
+            "required_blocks": [
+              "SELECTED_SOURCE_AND_POPULATION_CONTEXT",
+              "SCENARIO_SUMMARY",
+              "SCENARIO_COMPARISON_WHEN_MORE_THAN_ONE",
+              "SEGMENT_AND_STRATEGY_TRACEABILITY",
+              "AVAILABLE_RESULT_METRICS_BY_TIER_AND_EVIDENCE",
+              "EXPLICIT_SCENARIO_SELECTION",
+              "PREPARE_FOR_APPLICATION_ACTION"
+            ],
+            "selection_policy": {
+              "source_rule": "B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001",
+              "lf_auto_decides": "DENY",
+              "company_explicit_selection_required": true
+            },
+            "ui_consolidation": {
+              "SIMULATION_RESULT": "SAME_SCREEN",
+              "SCENARIO_SELECTION": "SAME_SCREEN",
+              "SCENARIO_COMPARISON": "SAME_SCREEN",
+              "GOVERNED_OPERATIONAL_APPLICATION": "HANDOFF_TO_B2B_OFERTA_001_NOT_SEPARATE_SIMULA_SCREEN"
+            },
+            "owner_continuation": "2026-09-22"
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "GOVERNED_CANDIDATE_REQUIRES_REVIEW",
+        "pendiente_decision": true
+      },
+      "source_sha256": "1bd13a850c0e4a74d5fd35d38ae320c6899c68ba9f025decf86e2d80bf1bea9e",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 645,
+        "razon": "Permitir evolución progresiva del producto Premium y evitar tratar toda la inteligencia predictiva como una sola caja negra.",
+        "codigo": "B2B-RULE-SIMULA-PLUS-MOTORS-001",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_CONCEPTUAL_LF_SIMULA_2026-09-13",
+        "titulo": "Plus separa Motor de Potencial y Motor de Precio/Oferta",
+        "categoria": "BUSINESS",
+        "created_at": "2026-09-13T22:34:45.906161+00:00",
+        "created_by": "EXEC-CREACION-REGLA-LF-5b5888c6-f9ea-4f66-8aba-a076b7274a49",
+        "updated_at": "2026-09-13T22:34:45.906161+00:00",
+        "descripcion": "LF Simula Plus puede separar dos capacidades conectadas: un Motor de Potencial que estima qué clientes, cuentas o segmentos presentan mayor posibilidad de recuperación; y un Motor de Precio/Oferta que evalúa qué monto, descuento, modalidad o condiciones podrían maximizar la recaudación esperada. Ambos motores pueden alcanzar madurez en momentos distintos. Si la evidencia es insuficiente para uno de ellos, LF debe mantener disponible solo la capacidad respaldada y comunicar la limitación en lugar de fabricar una predicción. Toda salida sigue siendo recomendación no vinculante.",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": "GOVERNED_CANDIDATE_REQUIRES_REVIEW",
+        "pendiente_decision": true
+      },
+      "source_sha256": "bc9819ee653439b7d5921f8705c418a96654db137ff31309f3d1aed20990c73c",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 473,
+        "razon": "Aplicar ADR-EKB-033 y evitar que el artefacto generado construya su propio universo de validación.",
+        "codigo": "B2B-RULE-SOURCE-001",
+        "estado": "CANDIDATO",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_47_FAMILIES",
+        "titulo": "Autoridad de fuente y provenance independientes del candidato",
+        "categoria": "GOVERNANCE",
+        "created_at": "2026-08-18T05:11:44.911943+00:00",
+        "created_by": "CHATGPT_LF_BACKOFFICE",
+        "updated_at": "2026-08-18T05:11:44.911943+00:00",
+        "descripcion": "La historia y su Context Pack no son autoridad de sí mismos. Cada input material debe conservar source_ref, identificador/version o digest y schema de origen; la precedencia es lf_ops → lf_design → transversal → programacion. Los conflictos se detienen y se registran; no se resuelven tomando silenciosamente el valor del candidato.",
+        "valor_config": {
+          "conflict_status": "BLOCK",
+          "source_precedence": [
+            "lf_ops",
+            "lf_design",
+            "transversal",
+            "programacion"
+          ],
+          "source_ref_required": true,
+          "source_authority_adr": "ADR-EKB-033",
+          "candidate_as_own_authority": "DENY",
+          "silent_conflict_resolution": "DENY",
+          "version_or_digest_required": true
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "fafc8f4eeefb60222e2cfdd17991fcccee314de4174f5c659a063dd97637211b",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 463,
+        "razon": "Evitar que el Story Creator o el Programming Agent completen gaps por inferencia y convertir la cobertura de inputs en un requisito verificable y reutilizable para todas las pantallas B2B.",
+        "codigo": "B2B-RULE-STORY-READINESS-001",
+        "estado": "VIGENTE",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_HANDOFF_47_FAMILIES",
+        "titulo": "Readiness obligatorio de familias de input antes de crear historias",
+        "categoria": "GOVERNANCE",
+        "created_at": "2026-08-18T04:09:03.952244+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "Toda pantalla o funcionalidad de LF Backoffice Empresa debe evaluar explícitamente el universo canónico de familias de input antes de considerarse Story Ready. Ninguna familia puede omitirse silenciosamente: cada una debe resolverse como COMPLETE, PARTIAL, MISSING, NOT_APPLICABLE, PENDING o BLOCKED, con fuente y razón. Un P0 aplicable abierto bloquea Story Ready.",
+        "valor_config": {
+          "families": [
+            "SCREEN_IDENTITY",
+            "OBJECTIVE_OUTCOMES",
+            "FIELDS",
+            "VALIDATIONS",
+            "ACTIONS",
+            "STATES",
+            "TRANSITIONS",
+            "ROUTING_NAVIGATION",
+            "PROFILES",
+            "PERMISSIONS",
+            "ERRORS",
+            "UI_MESSAGES",
+            "SESSION",
+            "RATE_LIMIT",
+            "TIMEOUT_RETRY",
+            "SECURITY",
+            "MFA_OTP_SSO",
+            "PRIVACY_PII",
+            "AUDIT",
+            "ANALYTICS",
+            "OBSERVABILITY",
+            "PERFORMANCE",
+            "RESPONSIVE",
+            "THEME_LIGHT_DARK_SYSTEM",
+            "FORCED_COLORS_CONTRAST",
+            "REDUCED_MOTION",
+            "ACCESSIBILITY",
+            "DESIGN_SYSTEM",
+            "ASSETS_ICONS",
+            "API_DATA_CONTRACT",
+            "LOADING_EMPTY_ERROR_STATES",
+            "IDEMPOTENCY_CONCURRENCY",
+            "FEATURE_FLAGS",
+            "DEPENDENCIES",
+            "TESTING_OBLIGATIONS",
+            "BROWSER_PLATFORM",
+            "I18N_FORMATS",
+            "VISUAL_EVIDENCE",
+            "EKB",
+            "RUNTIME_CONFIG",
+            "ROLLOUT_PRODUCTION_GATES",
+            "SOURCE_AUTHORITY_PROVENANCE",
+            "FRESHNESS_INVALIDATION",
+            "NEGATIVE_REQUIREMENTS",
+            "CONFLICT_PRECEDENCE",
+            "APPLICABILITY_READINESS",
+            "CONTEXT_BUDGET_RETRIEVAL_POLICY"
+          ],
+          "shell_code": "B2B_APP_SHELL",
+          "family_count": 47,
+          "no_invention": true,
+          "severity_model": {
+            "P0": "STORY_UNSAFE",
+            "P1": "IMPLEMENTATION_UNSAFE",
+            "P2": "QA_UNSAFE",
+            "P3": "PRODUCTION_UNSAFE",
+            "P4": "FUTURE"
+          },
+          "allowed_statuses": [
+            "COMPLETE",
+            "PARTIAL",
+            "MISSING",
+            "NOT_APPLICABLE",
+            "PENDING",
+            "BLOCKED"
+          ],
+          "applicability_v1": {
+            "all": [],
+            "any": [
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "screen",
+                  "id"
+                ],
+                "values": [
+                  51
+                ]
+              }
+            ],
+            "status": "ACTIVE",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "story_ready_rule": "NO_STORY_STAGE_OPEN",
+          "readback_required": true,
+          "source_precedence": [
+            "lf_ops",
+            "lf_design",
+            "transversal",
+            "programacion"
+          ],
+          "no_silent_omission": true,
+          "normalization_note": "La investigación original indicaba 46 familias pero contenía CONTEXT_BUDGET_RETRIEVAL_POLICY adicional sin numerar; se conserva como familia 47 hasta normalización formal.",
+          "missing_destination": "BLOCKED_NO_DESTINATION",
+          "element_depth_required": true,
+          "no_silent_threat_omission": true,
+          "missing_functional_definition": "PENDING_FUNCTIONAL_DEFINITION",
+          "security_threat_matrix_required": true,
+          "complete_requires_all_required_subject_checks": true
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "14a47daf05f11b7604ef28282f7fa5853a48c0a15060cef3b5d5c0971f28015c",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 472,
+        "razon": "Convertir reglas de seguridad y UX en obligaciones verificables sin mantener una suite paralela dentro de la pantalla.",
+        "codigo": "B2B-RULE-TEST-001",
+        "estado": "CANDIDATO",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_47_FAMILIES",
+        "titulo": "Obligaciones de prueba derivadas antes de QA",
+        "categoria": "TESTING",
+        "created_at": "2026-08-18T05:11:44.911943+00:00",
+        "created_by": "CHATGPT_LF_BACKOFFICE",
+        "updated_at": "2026-08-18T05:11:44.911943+00:00",
+        "descripcion": "Las pruebas obligatorias de una historia B2B se derivan de sus reglas aplicables y negativos, y se materializan en programacion.test_contracts cuando exista task/historia ejecutable. Para Login deben cubrir autenticación válida e inválida, no enumeración, single-flight, fail-closed, timeout, rate limit/anti-bot, MFA, sesión, rutas autorizadas, privacidad/telemetría y accesibilidad. No se declara QA PASS solo por exit code.",
+        "valor_config": {
+          "criteria_source": "APPLICABLE_RULES_AND_NEGATIVES",
+          "exit_code_only_pass": "DENY",
+          "semantic_verification": "REQUIRED",
+          "required_test_families": [
+            "AUTH_SUCCESS",
+            "INVALID_CREDENTIALS_NON_ENUMERATION",
+            "SINGLE_FLIGHT",
+            "FAIL_CLOSED",
+            "TIMEOUT",
+            "RATE_LIMIT_ANTIBOT",
+            "MFA_GATE",
+            "SESSION_CREATION",
+            "AUTHORIZED_ROUTING",
+            "NO_PII_TELEMETRY",
+            "KEYBOARD_FOCUS",
+            "FORCED_COLORS",
+            "REDUCED_MOTION",
+            "BROWSER_PLATFORM"
+          ],
+          "test_contract_registry": "programacion.test_contracts",
+          "qa_without_test_contract": "DENY"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "7f3789bb9abc844f5cadcb0e3d9cce94fc8c4a2b81090477a4dcc73595da131f",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 389,
+        "razon": "Mantener consistencia por ruta y preferencia de usuario.",
+        "codigo": "B2B-RULE-THEME-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Modo claro y modo noche",
+        "categoria": "THEME",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "Cada pantalla B2B debe disponer de variantes LIGHT y DARK.",
+        "valor_config": {
+          "dark": "LF_B2B_THEME_DARK",
+          "light": "LF_B2B_THEME_LIGHT",
+          "persist_preference": true,
+          "respect_system_preference": true
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "b25401d68ef474d61b775b0902df48f21ff805522ff16dee982260900d024578",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "THEME"
+    },
+    {
+      "source_row": {
+        "id": 390,
+        "razon": "Los tokens dark_mode permanecen pendientes de decisión final.",
+        "codigo": "B2B-RULE-THEME-002",
+        "estado": "CANDIDATO",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Gate de modo noche",
+        "categoria": "THEME",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-07-21T15:59:54.024242+00:00",
+        "descripcion": "El tema nocturno no puede pasar a vigente hasta aprobar contraste y tokens dark_mode.",
+        "valor_config": {
+          "required_qa": [
+            "contrast",
+            "focus",
+            "status_badges",
+            "tables",
+            "modals"
+          ],
+          "blocked_until_tokens_vigente": true
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "Aprobar dark_mode_surface, dark_mode_card y dark_mode_text.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "7cc0bb4657d122c3d7eac3f3169b84b7e9ee7e85f9bc8b7c8d2f54af53e667aa",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "THEME"
+    },
+    {
+      "source_row": {
+        "id": 477,
+        "razon": "Completa el contrato System/precedence/first-paint reutilizando los theme bindings y la política de persistencia ya existentes. No crea un tercer set de tokens ni convierte DARK en vigente.",
+        "codigo": "B2B-RULE-THEME-003",
+        "estado": "VIGENTE",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_REMEDIATION",
+        "titulo": "Resolución de tema System sin flash ni valores visuales duplicados",
+        "categoria": "THEME",
+        "created_at": "2026-08-18T05:35:15.737237+00:00",
+        "created_by": "GPT_EXECUTOR_2026_08_18",
+        "updated_at": "2026-08-18T05:35:15.737237+00:00",
+        "descripcion": "El Backoffice B2B resuelve el tema efectivo antes de mostrar la interfaz. Una preferencia explícita persistida del usuario prevalece; si no existe, se respeta la preferencia de color del sistema; si ninguna señal puede resolverse, se usa LIGHT como fallback. El resultado efectivo siempre referencia los theme bindings canónicos LIGHT o DARK y no duplica colores ni medidas. DARK conserva su gate de QA antes de promoción.",
+        "valor_config": {
+          "scope": "B2B_APP_SHELL",
+          "theme_flash": "DENY",
+          "system_signal": "prefers-color-scheme",
+          "effective_modes": [
+            "LIGHT",
+            "DARK"
+          ],
+          "resolution_order": [
+            "EXPLICIT_USER_PREFERENCE",
+            "SYSTEM_PREFERENCE",
+            "LIGHT_FALLBACK"
+          ],
+          "implementation_status": "PENDING_IMPLEMENTATION_QA",
+          "first_paint_resolution": "RESOLVE_BEFORE_VISIBLE_APP_PAINT",
+          "theme_binding_registry": "lf_design.theme_bindings",
+          "dark_theme_binding_code": "LF_B2B_THEME_DARK",
+          "light_theme_binding_code": "LF_B2B_THEME_LIGHT",
+          "dark_promotion_gate_rule_id": 390,
+          "numeric_visual_values_in_rule": "DENY",
+          "persist_explicit_user_preference": true,
+          "system_preference_used_when_user_preference_absent": true
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "PENDING_IMPLEMENTATION_QA: verificar first-paint, persistencia, cambio de preferencia del sistema y ausencia de flash; DARK no se promueve hasta cumplir B2B-RULE-THEME-002.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "ffe486d47de8e4b080d412c6e396e2573ebbb349e9b873ccaaa70dd5520788d3",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "THEME"
+    },
+    {
+      "source_row": {
+        "id": 417,
+        "razon": "Mantener tiempos y cantidades en un único punto reutilizable y evitar divergencias entre módulos y pantallas.",
+        "codigo": "B2B-RULE-TIMEOUT-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Timeout y reintentos centralizados",
+        "categoria": "RESILIENCE",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T03:45:04.453522+00:00",
+        "descripcion": "Toda operación que requiera timeout o reintentos referencia una política central de lf_ops.politicas_timeout mediante timeout_policy_id numérico. Los segundos, cantidades de reintentos y estrategia de backoff viven únicamente en el registro de política y no se duplican en reglas o pantallas.",
+        "valor_config": {
+          "registry": "lf_ops.politicas_timeout",
+          "relation_key": "timeout_policy_id",
+          "threshold_source": "POLICY_REGISTRY_ONLY",
+          "relation_key_type": "NUMERIC_ID",
+          "reuse_before_create": "REQUIRED",
+          "duplicate_backoff_in_rules": "DENY",
+          "duplicate_seconds_in_rules": "DENY",
+          "duplicate_retry_counts_in_rules": "DENY"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "532987652bdf4043f872faddab5d8ba471df423d834de27757c5b207796a6e65",
+      "screen_links": [
+        "B2B-AUTH-001",
+        "B2B-AUTH-002",
+        "B2B-AUTH-003",
+        "B2B-AUTH-004",
+        "B2B-AUTH-005",
+        "B2B-AUTH-006"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 470,
+        "razon": "Cerrar Loading/Error States reutilizando las fuentes existentes y evitando mezclar UI state con AUTH_FLOW.",
+        "codigo": "B2B-RULE-UISTATE-001",
+        "estado": "CANDIDATO",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_47_FAMILIES",
+        "titulo": "Estados efímeros de interfaz derivados sin duplicar estados de dominio",
+        "categoria": "UX",
+        "created_at": "2026-08-18T05:11:44.911943+00:00",
+        "created_by": "CHATGPT_LF_BACKOFFICE",
+        "updated_at": "2026-08-21T03:04:25.447006+00:00",
+        "descripcion": "Los estados efímeros de la interfaz del Login se derivan de validaciones, solicitud en vuelo, outcomes y rutas existentes; no se registran como estados de negocio en lf_ops.estados_catalogo. El Login debe distinguir reposo/entrada, procesamiento bloqueado, error de validación, error de autenticación recuperable y resolución de MFA sin crear una segunda máquina de estados.",
+        "valor_config": {
+          "derived_behaviors": [
+            {
+              "source": "fields_validations",
+              "behavior": "INPUT_READY"
+            },
+            {
+              "behavior": "PROCESSING_DISABLED",
+              "source_rule_id": 431
+            },
+            {
+              "behavior": "FIELD_VALIDATION_ERROR",
+              "validation_ids": [
+                90,
+                91
+              ]
+            },
+            {
+              "behavior": "AUTH_ERROR_RECOVERABLE",
+              "source_rule_ids": [
+                433,
+                444
+              ]
+            },
+            {
+              "behavior": "MFA_ROUTE_RESOLUTION",
+              "source_rule_ids": [
+                437,
+                452
+              ]
+            },
+            {
+              "behavior": "PROGRESSIVE_DISCLOSURE_LOCAL",
+              "domain_state": false,
+              "network_effect": "NONE_UNTIL_FINAL_SUBMIT",
+              "source_rule_code": "B2B-RULE-AUTH-048"
+            }
+          ],
+          "duplicate_domain_states": "DENY",
+          "empty_state_applicability": "NOT_APPLICABLE",
+          "ephemeral_ui_state_is_domain_state": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4b19c0ae022d7860a3bd690e2de217cce22d1b8591dda141f4d66c64f1aa9c08",
+      "screen_links": [
+        "B2B-AUTH-001"
+      ],
+      "source_cohort": "SCREEN_LINK"
+    },
+    {
+      "source_row": {
+        "id": 584,
+        "razon": "Evitar que invitación, deshabilitación o reactivación se implementen como escrituras libres de estado.",
+        "codigo": "B2B-RULE-USER-LIFECYCLE-001",
+        "estado": "CANDIDATO",
+        "origen": "READBACK_B2B_ADMIN_002_2026-08-21",
+        "titulo": "Lifecycle de usuario e invitación pendiente de matriz de transiciones",
+        "categoria": "WORKFLOW",
+        "created_at": "2026-08-21T06:05:23.926215+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-21T06:05:23.926215+00:00",
+        "descripcion": "lf_ops.empresa_usuarios define status INVITED/ACTIVE/DISABLED/LOCKED e invitation_status PENDING/SENT/ACCEPTED/EXPIRED/CANCELLED. B2B-ADMIN-002 expone INVITE, UPDATE, DISABLE y ASSIGN_ROLE, pero no existe una matriz autoritativa de transiciones y guards. DISABLE sí debe integrar el efecto de seguridad definido en B2B-RULE-AUTH-039 sobre sesiones y dispositivos confiables.",
+        "valor_config": {
+          "table": "lf_ops.empresa_usuarios",
+          "screen_id": 49,
+          "permissions": [
+            30,
+            31,
+            32,
+            33
+          ],
+          "user_status_values": [
+            "INVITED",
+            "ACTIVE",
+            "DISABLED",
+            "LOCKED"
+          ],
+          "client_status_authority": "DENY",
+          "canonical_disable_status": "DISABLED",
+          "disable_security_rule_id": 496,
+          "invitation_status_values": [
+            "PENDING",
+            "SENT",
+            "ACCEPTED",
+            "EXPIRED",
+            "CANCELLED"
+          ],
+          "transition_registry_status": "PENDING_FUNCTIONAL_DEFINITION"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "PENDING_FUNCTIONAL_DEFINITION: definir transiciones de invitación/activación/deshabilitación/lock y guards; DISABLED debe ejecutar los efectos de AUTH-039.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "b1afb1ba2d4458dcb5a264d70a753358e6e6b42fbd52ed9447cca2dc6332ff90",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 371,
+        "razon": "Ley 29733 Art. 5 y 18, Reglamento D.S. N 016-2024-JUS Art. 7 y 12 (reemplaza al reglamento 2013-JUS, derogado) + Investigacion externa 2026-07-09: D.S. 016-2024-JUS (nuevo reglamento Ley 29733), articulo sobre consentimiento demostrable y prohibicion de checkboxes premarcados.",
+        "codigo": "LEGAL-CONSENTIMIENTO-DATOS-01",
+        "estado": "CANDIDATO",
+        "origen": "research_externo_ley_29733",
+        "titulo": "Checkbox de consentimiento de datos: requisitos exactos Ley 29733 + Reglamento 2024",
+        "categoria": "legal",
+        "created_at": "2026-07-05T18:07:58.708295+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-08-20T23:55:18.688488+00:00",
+        "descripcion": "El consentimiento de tratamiento de datos del onboarding Cliente se presenta en ONB_003 antes de enviar/resolver el documento. Debe iniciar desmarcado y ser libre, previo, expreso, informado, inequívoco y demostrable conforme al marco vigente. La UI muestra copy breve con enlace inline a un modal de detalle sin abandonar la pantalla. La evidencia debe quedar ligada a versión del texto y sesión. La ubicación funcional queda resuelta; el copy legal completo/modal y el registro canónico de evidencia requieren validación antes de producción.",
+        "valor_config": {
+          "prechecked": false,
+          "premarcado": false,
+          "spec_aplicable": {
+            "figura_requerida": "Oficial de Datos Personales (ODP) - puede ser funcion interna no exclusiva",
+            "registro_requerido": [
+              "timestamp",
+              "ip",
+              "version_texto_aceptado"
+            ],
+            "ubicacion_pantalla": "ONB_003_PRE_DOCUMENT_RESOLUTION",
+            "estado_inicial_checkbox": "desmarcado_obligatorio"
+          },
+          "mecanismo_valido": "tap_o_clic",
+          "reglamento_vigente": "D.S. 016-2024-JUS",
+          "inline_detail_modal": true,
+          "reglamento_derogado": "D.S. 003-2013-JUS",
+          "inline_link_component": "link_inline_default",
+          "source_decision_number": 108,
+          "canonical_consent_store": "PENDING_CANONICAL_REGISTRY",
+          "campos_obligatorios_en_texto": [
+            "titular_banco_datos",
+            "finalidad",
+            "destinatarios",
+            "almacenamiento"
+          ],
+          "fecha_validacion_investigacion": "2026-07-09"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "RESUELTA la discrepancia de ubicación: consentimiento de datos vive en ONB_003 antes de resolver documento. PENDIENTE antes de producción: revisión Legal del texto/modal exactos y arquitectura del registro versionado/demostrable de evidencia; no crear storage ad hoc.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "fabd276225424c854f2c691d6e5eff02361eb92b756870008a01e70be69e079f",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 348,
+        "razon": "DS 011-2011-PCM, Anexo I",
+        "codigo": "LEGAL-RECLAMOS-02",
+        "estado": "CANDIDATO",
+        "origen": "research_externo_ley_32495",
+        "titulo": "Constancia electronica inmediata",
+        "categoria": "legal",
+        "created_at": "2026-07-02T03:31:55.665024+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-02T03:31:55.665024+00:00",
+        "descripcion": "Al momento del reclamo (no al dia siguiente ni diferido) se debe entregar constancia electronica al consumidor con todos los campos del HRP oficial: identificacion, descripcion del hecho, peticion, fecha, codigo, RUC y sede.",
+        "valor_config": {
+          "momento": "inmediato_al_registrar",
+          "canal_entrega": [
+            "email",
+            "sms",
+            "descarga_directa"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "52df645e2e21ba96f09c8c664cfbaf9985ac45269f45775befa8306c5d6356a4",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 362,
+        "razon": "Se detecto que el asset del terreno de Ruta de Claridad fue registrado con un JSON completo sin que quedara claro si la imagen final se genero puramente desde ese JSON o fue una edicion local — genero confusion en la auditoria hasta que se aclaro manualmente. Esta regla previene que se repita con el hito Recupera, la ruta completa, u otros assets futuros.",
+        "codigo": "NEG-GOBERNANZA-PROVENANCE-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "Todo asset visual registrado en lf_decisiones_gov debe declarar su método de generación",
+        "categoria": "negocio",
+        "created_at": "2026-07-02T07:45:04.519787+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "Cualquier decision en public.lf_decisiones_gov que registre un asset visual (imagen, render, JSON de generacion) debe incluir en su raw_payload un campo de procedencia con al menos: generation_method (pure_json_generation | controlled_local_edit_from_previous_candidate | manual_upload | other), final_reviewed_file, y una nota explicita de si el JSON describe fielmente el archivo final o es un contrato de gobernanza sobre una edicion manual.",
+        "valor_config": {
+          "aplica_a": "toda decision de lf_decisiones_gov que registre imagen/render/asset visual",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "campo_obligatorio": "provenance_o_generation_method",
+          "ejemplo_de_referencia": "DEC-HOME-CLARITY-TERRAIN-BACKGROUND-V6-JSON-001.raw_payload.final_asset_provenance_clarification"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "316a3675210d51adef8a44a63941be77aee76a1bd2762b1e47db070050d0c0b3",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 363,
+        "razon": "Se detecto que una correccion real (v0_4_corrected_by_claude, profile_gate_v0_4) quedo invisible para una auditoria externa porque el timestamp no reflejaba el cambio, generando una conclusion falsa de \"no hay nada nuevo registrado\" pese a que el contenido si estaba actualizado.",
+        "codigo": "NEG-GOBERNANZA-UPDATED-AT-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "public.lf_decisiones_gov no tiene trigger de updated_at: debe fijarse a mano en cada UPDATE",
+        "categoria": "negocio",
+        "created_at": "2026-07-02T08:58:41.870024+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "La tabla public.lf_decisiones_gov no cuenta con ningun trigger automatico que actualice el campo updated_at al modificar raw_payload. Cualquier UPDATE sobre esta tabla (Claude, GPT o manual) debe incluir explicitamente SET updated_at = now(), o el campo queda congelado en la fecha de insercion original aunque el contenido cambie.",
+        "valor_config": {
+          "tabla_afectada": "public.lf_decisiones_gov",
+          "accion_requerida": "SET updated_at = now() explicito en cada UPDATE",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "riesgo_si_se_omite": "auditorias externas concluyen falsamente que no hubo cambios",
+          "tiene_trigger_automatico": false
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "1f6ba03a3a0862b821b275a2353c971c9367816113e6e83eeead1b25750c1ed1",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 370,
+        "razon": "Practica que se venia siguiendo de forma informal toda la sesion (ej. rechazo de sugerencias sobre Ruta de Claridad antes de tener imagen real). El owner lo pidio explicito: \"No cierres nada sin confirmacion visual\".",
+        "codigo": "NEG-GOBERNANZA-VISUAL-CONFIRM-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260704",
+        "titulo": "Ninguna especificacion visual/UI se marca VIGENTE, CANDIDATO_APROBADO o Golden sin render/mockup revisado",
+        "categoria": "negocio",
+        "created_at": "2026-07-04T05:39:18.46575+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "Toda propuesta de layout, componente o variante visual (ej. mobile variant de Ruta de Claridad) debe quedar registrada como PROPUESTA/borrador hasta que exista una imagen real (mockup, render o captura) que el owner haya visto y confirmado. No se escribe a Supabase como decision cerrada solo a partir de una descripcion textual, sin importar cuan detallada sea.",
+        "valor_config": {
+          "regla": "sin_mockup_no_hay_cierre",
+          "aplica_a": "cualquier especificacion visual/UI/layout nueva",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "estados_permitidos_sin_mockup": [
+            "PROPUESTA",
+            "BORRADOR",
+            "EN_DISCUSION"
+          ],
+          "estados_que_requieren_mockup_visto": [
+            "CANDIDATO_APROBADO",
+            "VIGENTE",
+            "GOLDEN"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "7f3beed07d6ed93dfd4b31857856d65b3aff51978addff48c2f2f3fb38de9991",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 365,
+        "razon": "Se detecto 3 veces en la misma sesion que un render combinado termino regenerando/alterando un asset ya aprobado (terreno, nodos, forma del hito Recupera) pese a instrucciones explicitas de no tocarlo. El patron de fallo es estructural (limitacion del generador de imagenes ante prompts largos y compuestos), no un error de redaccion del prompt.",
+        "codigo": "NEG-PROCESO-COMPOSICION-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "Assets Golden/LOCKED nunca se piden dentro de un render de canvas completo",
+        "categoria": "negocio",
+        "created_at": "2026-07-03T23:31:37.869699+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "Una vez que un asset visual (ej. terreno de Ruta de Claridad) queda aprobado/LOCKED, no debe volver a pedirse como parte de un prompt de render que tambien genera otros elementos nuevos (ej. panel izquierdo). Se debe pedir SOLO el elemento nuevo, como imagen independiente con fondo transparente si aplica, y componerlo por codigo (HTML/CSS) junto al asset ya aprobado. No se debe depender de que el generador de imagenes respete instrucciones de \"no modificar\" dentro de un mismo render compuesto.",
+        "valor_config": {
+          "regla": "renders_separados_por_elemento_nuevo",
+          "prohibido": "pedir un canvas completo que incluya un asset ya LOCKED/Golden junto con elementos nuevos en el mismo prompt",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "composicion_final": "por codigo (HTML/CSS/absolute positioning), no por generacion de imagen unica"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "ae6dfdf51d57b1d953a0b7fd53fbe53c8f38fd53dc2bcac6df565c44aa753282",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 366,
+        "razon": "Se detecto en v0.6.3 y v0.7.0 de Ruta de Claridad que mover varias variables a la vez impidio comparar si cada cambio individual mejoraba o empeoraba el resultado, y el feedback del owner fue explicito: \"esta empeorando en cada iteracion; las cards ya deberian quedar fijas y solo se mueva el camino\".",
+        "codigo": "NEG-PROCESO-ITERACION-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260704",
+        "titulo": "Una sola variable por iteración de diseño, no varias a la vez",
+        "categoria": "negocio",
+        "created_at": "2026-07-04T05:09:34.758984+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "Al iterar un asset visual con multiples componentes (cards, nodos, ruta, fondo), cambiar solo UNA categoria de elemento por iteracion (ej. solo la ruta, o solo el tamano de una card). No mover cards + nodos + ruta simultaneamente en el mismo render.",
+        "valor_config": {
+          "regla": "una_variable_por_iteracion",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "ejemplo_correcto": "v0.7.1 solo ajusto route_svg_path_only con cards y nodos congelados",
+          "ejemplo_violacion": "v0.7.0 movio cards+nodos+ruta a la vez"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "c6c502ad5cc4eb2a696f164586fa76791711eadc862cc0c89ae26f53b1b6f3e7",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 379,
+        "razon": "Confirmado por el owner: LF solo atiende deudas ya vendidas a entidad cobradora con convenio, que comparte datos+oferta con LF. Conecta con REG_B2B_001, REG_B2B_003, REG_B2B_006 ya existentes.",
+        "codigo": "NEG-RUTA-ELEGIBILIDAD-B2B-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260704",
+        "titulo": "Ruta de Claridad debe reflejar si el usuario tiene oferta de aliado o no",
+        "categoria": "negocio",
+        "created_at": "2026-07-08T17:24:07.15521+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "El nodo 02 Explora NO debe instruir al usuario a \"contactar su banco\" como camino principal -- si la deuda esta con un aliado B2B de LF (REG_B2B_001/003/006), LF ya tiene la oferta sin que el usuario haga nada. El contenido de \"contactar al acreedor\" aplica solo como contexto de respaldo para el caso Home sin oferta (HOME_003/PASO3_SIN_OFERTA).",
+        "valor_config": {
+          "applicability_v1": {
+            "all": [],
+            "any": [
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "screen",
+                  "id"
+                ],
+                "values": [
+                  41
+                ]
+              }
+            ],
+            "status": "ACTIVE",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "con_oferta_aliado": "LF ya tiene la oferta, no requiere gestion externa del usuario",
+          "sin_oferta_home_003": "contenido de contactar acreedor aplica como respaldo educativo"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "7beb9d836e25ad9da5c631fbda53bb8840d03bb9924cf5ee440df96bff8ea793",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 119,
+        "razon": "Estos puntos tienen mayor probabilidad de impactar tasa de completado del onboarding.",
+        "codigo": "REG_ABT_004",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Experimentos candidatos prioritarios para onboarding",
+        "categoria": "ab_testing",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Experimentos de mayor impacto potencial identificados: (1) Orden de campos en Paso 1. (2) Copy del CTA de verificación. (3) Tiempo del countdown OTP (45s vs 60s). (4) Mostrar vs ocultar campo de correo por defecto.",
+        "valor_config": {
+          "experimentos_candidatos": [
+            "orden_campos_paso1",
+            "copy_cta_verificar",
+            "countdown_otp_segundos",
+            "visibilidad_campo_email"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "79a6dc992d2af60f75c6e6538f9cbf0eb3bb1297c813e4f095bbca286ce905fa",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 45,
+        "razon": "El segmento NSE B-/C opera principalmente desde móvil. Reducir fricción de ingreso.",
+        "codigo": "REG_ACC_001",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "Teclado numérico automático en campos de número",
+        "categoria": "accesibilidad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Los campos DNI, celular y OTP deben activar el teclado numérico en móvil (inputmode=numeric o type=tel).",
+        "valor_config": {
+          "campos": [
+            "CAMPO_NRO_DOC",
+            "CAMPO_CELULAR",
+            "CAMPO_OTP_CODE",
+            "CAMPO_CELULAR_NUEVO"
+          ],
+          "atributo": "inputmode=numeric"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "0d7231ad034eef7866a50dd9ad79ca7249cfe0f55006826ffa6649ec5758ed20",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 48,
+        "razon": "Seguridad y evitar que el browser complete datos incorrectos en campos de identidad.",
+        "codigo": "REG_ACC_004",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Autocompletado habilitado solo en campos seguros",
+        "categoria": "accesibilidad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Nombre y email pueden tener autocomplete habilitado. DNI, celular y OTP deben tener autocomplete=off para evitar que el browser sugiera datos de terceros.",
+        "valor_config": {
+          "autocomplete_on": [
+            "full_name",
+            "email"
+          ],
+          "autocomplete_off": [
+            "dni",
+            "phone_number",
+            "otp_code"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "182e3c60235c10ad2421a385d5140221bb5c4cd3587106e3b9a5414c7fb92244",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 110,
+        "razon": "Una caída sostenida indica fallo en el canal WhatsApp o Meta Cloud API.",
+        "codigo": "REG_ALR_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Alerta: tasa de OTP verificados cae bajo umbral",
+        "categoria": "alertas",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Si la tasa otp_verified / otp_sent cae por debajo del 60% en una ventana de 30 minutos, se activa alerta inmediata al equipo técnico.",
+        "valor_config": {
+          "metrica": "otp_verification_rate",
+          "canal_alerta": "slack_tecnico",
+          "umbral_minimo": 0.6,
+          "ventana_minutos": 30
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "e007df46e0d9be44de06b8bde692b27ae1e076793467b0d2c3d8970b00ae5301",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 112,
+        "razon": "Fallo en el webhook = ningún usuario puede verificar OTP = funnel completamente bloqueado.",
+        "codigo": "REG_ALR_003",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Alerta: fallo en webhook n8n → Meta",
+        "categoria": "alertas",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Si el webhook de n8n falla 3 veces consecutivas al intentar enviar OTP, se activa alerta crítica inmediata.",
+        "valor_config": {
+          "condicion": "3_fallos_consecutivos",
+          "severidad": "critica",
+          "canal_alerta": [
+            "slack_tecnico",
+            "email_responsable"
+          ],
+          "accion_inmediata": "activar_fallback_sms"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "411333fe2c24f8f5a2b9c3eb007694f1b0060a0c4118a0d00ce96787a618d200",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 114,
+        "razon": "LCP degradado impacta directamente la tasa de inicio del funnel, especialmente en conexiones móviles lentas.",
+        "codigo": "REG_ALR_005",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Alerta: LCP supera 4 segundos en más del 20% de sesiones",
+        "categoria": "alertas",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Si el LCP promedio supera 4 segundos en más del 20% de sesiones en una hora, alerta a técnico y producto.",
+        "valor_config": {
+          "metrica": "LCP",
+          "umbral_ms": 4000,
+          "canal_alerta": "slack_tecnico",
+          "ventana_horas": 1,
+          "porcentaje_sesiones": 0.2
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "2ab17b6d099d77c80a592176beda7cea0d04113fa38fff736b3f54b9d51c386c",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 89,
+        "razon": "Medir tasa de verificación, abandono por OTP y uso del cambio inline.",
+        "codigo": "REG_ANL_004",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Eventos mínimos GA4 por pantalla — ONB_002",
+        "categoria": "analytics",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Eventos a disparar en Paso 2: otp_screen_viewed, otp_attempt, otp_attempt_failed, otp_verified, otp_resend_clicked, number_change_inline_started, number_change_inline_completed, otp_blocked_max_attempts.",
+        "valor_config": {
+          "eventos": [
+            "otp_screen_viewed",
+            "otp_attempt",
+            "otp_attempt_failed",
+            "otp_verified",
+            "otp_resend_clicked",
+            "number_change_inline_started",
+            "number_change_inline_completed",
+            "otp_blocked_max_attempts"
+          ],
+          "pantalla": "ONB_002"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f395106d7f14da297b6d5016e797e079881ae2f35bac205a2b900be2243a8845",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 90,
+        "razon": "Medir tasa de completado y distribución de variantes del Home.",
+        "codigo": "REG_ANL_005",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB003-DNI-POSTOTP-001",
+        "titulo": "Eventos mínimos de analytics — ONB_003 identificación",
+        "categoria": "analytics",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T17:21:59.242799+00:00",
+        "descripcion": "Eventos mínimos de ONB_003: identity_screen_viewed, dni_submit_attempt, dni_submit_error y dni_resolution_completed. Ningún evento contiene DNI, celular ni resultado que revele explícitamente la existencia de una cuenta.",
+        "valor_config": {
+          "pii": "DENY",
+          "eventos": [
+            "identity_screen_viewed",
+            "dni_submit_attempt",
+            "dni_submit_error",
+            "dni_resolution_completed"
+          ],
+          "pantalla": "ONB_003",
+          "account_existence_outcome": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "6074a7dd511c771b625c7a894c2b6e84412970f508059815afc0a56c83252689",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 92,
+        "razon": "Medir tasa de abandono entre pasos y detectar dónde se pierde más.",
+        "codigo": "REG_ANL_007",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Funnel de conversión definido en GA4",
+        "categoria": "analytics",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "El funnel principal tiene 3 pasos: onboarding_started → otp_verified → onboarding_funnel_completed. GA4 debe tener este funnel configurado como exploración de embudo.",
+        "valor_config": {
+          "tipo": "closed_funnel",
+          "funnel": [
+            "onboarding_started",
+            "otp_verified",
+            "onboarding_funnel_completed"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "8a59fcb8dc60b379784da31ea85ca674b2ab6f9ab3449656744362f1d8749cc0",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 214,
+        "razon": "Definir los endpoints antes de construir evita inconsistencias de naming entre frontend y backend.",
+        "codigo": "REG_API_002",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Endpoints mínimos del onboarding",
+        "categoria": "api",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Endpoints requeridos para el flujo de onboarding: POST /api/v1/onboarding/start, POST /api/v1/onboarding/verify-otp, POST /api/v1/onboarding/resend-otp, PATCH /api/v1/onboarding/update-phone, GET /api/v1/onboarding/home-variant.",
+        "valor_config": {
+          "endpoints": [
+            "POST /api/v1/onboarding/start",
+            "POST /api/v1/onboarding/verify-otp",
+            "POST /api/v1/onboarding/resend-otp",
+            "PATCH /api/v1/onboarding/update-phone",
+            "GET /api/v1/onboarding/home-variant"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "b11f91da948046dc829ca1bad606346a8f98b0c106727df42ff37a73d7fbd537",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 216,
+        "razon": "No todos los endpoints requieren JWT. Exigir JWT antes de completar el onboarding bloquea el flujo.",
+        "codigo": "REG_API_004",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Autenticación de endpoints por tipo",
+        "categoria": "api",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Endpoints públicos (sin auth): /onboarding/start. Endpoints semi-públicos (con session_id): /onboarding/verify-otp, /onboarding/resend-otp. Endpoints autenticados (con JWT): todos los de /offers y /checkout.",
+        "valor_config": {
+          "publicos": [
+            "/onboarding/start"
+          ],
+          "autenticados_jwt": [
+            "/offers",
+            "/checkout",
+            "/carta-no-adeudo"
+          ],
+          "semi_publicos_session_id": [
+            "/onboarding/verify-otp",
+            "/onboarding/resend-otp",
+            "/onboarding/update-phone"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "a3bc8a8e009fc9e1c121347b0c9d78b57c46b4c4faa58d8c4f6cdceeafc79f80",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 122,
+        "razon": "Para el segmento NSE B-/C en mobile, un CAPTCHA visible en cada intento genera abandono medible. Solo escalar cuando haya señal real de bot.",
+        "codigo": "REG_ATQ_002",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "CAPTCHA visible solo como escalada",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El CAPTCHA visible (desafío de imágenes o checkbox) solo se activa si Turnstile invisible falla o si el score supera el umbral de sospecha. No se muestra por defecto.",
+        "valor_config": {
+          "condicion_activacion": "score_sospechoso_o_turnstile_fallo",
+          "max_escaladas_antes_bloqueo": 2
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "e82f504fb87ee481c9eca55b8cfdd0474c18ab3ccfb8f4772e9b69768296f270",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 123,
+        "razon": "El OTP ya prueba posesión del número. CAPTCHA adicional no agrega seguridad real pero sí agrega fricción.",
+        "codigo": "REG_ATQ_003",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "CAPTCHA no aplica al campo OTP",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El Paso 2 de verificación OTP no tiene CAPTCHA adicional. El OTP mismo es el mecanismo de verificación. Agregar CAPTCHA en ese punto genera doble fricción innecesaria.",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "e3ff3e4d82cf8cc478d3acc89d8595be1c81875eb0427af7cb94bcd0eea39d44",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 124,
+        "razon": "El webhook de n8n es el punto más abusable. Sin autenticación, cualquiera que descubra la URL puede generar miles de mensajes WhatsApp a números reales.",
+        "codigo": "REG_ATQ_004",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Autenticación del webhook OTP en n8n",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El webhook de n8n que despacha el OTP solo acepta peticiones que incluyan un header de autenticación interno válido (API key interna o Bearer token de Supabase). Peticiones sin header válido son rechazadas con 401.",
+        "valor_config": {
+          "valor": "token_rotativo_configurable",
+          "header": "X-LF-Internal-Token",
+          "metodo": "header_autenticacion",
+          "rechazo": "401_sin_detalle"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "60f1d30bbb203656c108ce02c79a19791084084c164f789fd0eb8352f07c1007",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 125,
+        "razon": "Previene que alguien que capture el header de autenticación pueda reenviar peticiones modificadas (replay attack).",
+        "codigo": "REG_ATQ_005",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Firma HMAC en peticiones al endpoint OTP",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "Cada petición al webhook OTP incluye una firma HMAC-SHA256 del payload usando un secreto compartido. El webhook verifica la firma antes de procesar. Peticiones con firma inválida son rechazadas silenciosamente.",
+        "valor_config": {
+          "secreto": "configurable_sin_hardcode",
+          "algoritmo": "HMAC-SHA256",
+          "incluir_timestamp": true,
+          "ventana_validez_segundos": 30
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "7d9ef3340a73a2cb6055dcb9156ea4f3f79f2e5c49108213b9941da321550042",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 126,
+        "razon": "Evitar que alguien abuse del webhook enviando session_ids reales pero ya verificados o bloqueados.",
+        "codigo": "REG_ATQ_006",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Validación de estado antes de despachar OTP",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "Antes de llamar a Meta Cloud API, el webhook verifica en Supabase que: el session_id existe, otp_verified=false, otp_resend_count < otp_resend_max, y otp_resend_blocked_until es null o pasado. Si alguna condición falla, no se despacha el OTP.",
+        "valor_config": {
+          "validaciones_previas": [
+            "session_id_existe",
+            "otp_verified=false",
+            "resend_count_bajo_max",
+            "no_bloqueado"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "ecc40f56a7c34fae27dfef18ea08d7c4faf8495197c25b9122a0a88d0f227db9",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 127,
+        "razon": "El rate limiting del frontend es bypasseable. El límite real debe estar en el servidor.",
+        "codigo": "REG_ATQ_007",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Rate limiting en el endpoint OTP independiente del frontend",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El endpoint OTP tiene su propio rate limiting a nivel de API/webhook, independiente del rate limiting del frontend. Máximo 10 peticiones por minuto por session_id, máximo 50 por minuto por IP.",
+        "valor_config": {
+          "accion": "429_con_retry_after",
+          "por_ip": {
+            "max": 50,
+            "ventana_minutos": 1
+          },
+          "por_session_id": {
+            "max": 10,
+            "ventana_minutos": 1
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "8f8d75a1de189d18a2ba15963aa0fb18313f002110cafa9abe5bf0ec8ce31777",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 130,
+        "razon": "Si el backend responde en 5ms para un DNI inexistente y 50ms para uno existente, esa diferencia es medible y explotable.",
+        "codigo": "REG_ATQ_010",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Tiempo de respuesta constante ante errores de validación",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "Las respuestas de error del backend tienen un tiempo mínimo constante de 200ms independiente de si el error ocurrió rápido o lento. Evita timing attacks que revelan si el DNI existe.",
+        "valor_config": {
+          "aplica_a": [
+            "validacion_dni",
+            "validacion_celular",
+            "verificacion_otp"
+          ],
+          "tiempo_minimo_respuesta_ms": 200
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "462ea3a47d398393c3f9c724018e1323aca10f9f8bea909abed9f302d6873929",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 131,
+        "razon": "Con respuesta inmediata en todos los intentos, un bot puede probar los 10.000 combinaciones posibles (dígitos 2-9, 6 posiciones) en segundos.",
+        "codigo": "REG_ATQ_011",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Backoff progresivo en intentos OTP fallidos",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El tiempo de respuesta del backend aumenta progresivamente con cada intento OTP fallido: intento 1=inmediato, intento 2=1s, intento 3=2s, intento 4=4s, intento 5=bloqueo. Esto dificulta la automatización.",
+        "valor_config": {
+          "backoff": {
+            "intento_1": "inmediato",
+            "intento_2": "1s",
+            "intento_3": "2s",
+            "intento_4": "4s",
+            "intento_5": "bloqueo"
+          },
+          "aplica_servidor": true,
+          "no_solo_frontend": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "756c420a00a5d7be906e31de9b06d786c44c66fb2b14d9e1f14d51cb1bcbcdaa",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 132,
+        "razon": "Evitar que un atacante agote intentos, solicite nuevo OTP y siga probando indefinidamente en el mismo session_id.",
+        "codigo": "REG_ATQ_012",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-OTP-ATTEMPT-CYCLE-001",
+        "titulo": "Protección del session_id al agotar ciclos OTP",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T07:45:43.217455+00:00",
+        "descripcion": "El session_id no se bloquea permanentemente al agotar los primeros 5 intentos. Cada OTP agotado se invalida y aplica cooldown de 2 minutos. Solo después de agotar los 5 intentos del tercer reenvío el session_id queda BLOCKED y el usuario debe iniciar un nuevo onboarding desde ONB_001.",
+        "valor_config": {
+          "max_resends": 3,
+          "continuacion": "NEW_ONBOARDING_SESSION",
+          "estado_final": "BLOCKED",
+          "desbloqueo_frontend": false,
+          "max_attempts_per_otp": 5,
+          "registro_en_auditoria": true,
+          "source_decision_number": 87,
+          "cooldown_after_exhaustion_seconds": 120
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "a99ddf700a5a1c2cf816fe0f6ef26d4a6b894dad05516bf3cb97caf4852f4369",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 136,
+        "razon": "Credential stuffing usa bases de datos filtradas de DNIs y celulares reales. El patrón es volumen alto con variación de identidades.",
+        "codigo": "REG_ATQ_016",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Detección de patrones de credential stuffing",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El sistema monitorea: más de 20 DNIs distintos desde la misma IP en 10 minutos, o el mismo DNI desde más de 5 IPs distintas en 10 minutos. Al detectar el patrón, bloqueo de IP por 1 hora y alerta.",
+        "valor_config": {
+          "accion": "bloqueo_ip_1h_y_alerta",
+          "patron_1": {
+            "ventana_minutos": 10,
+            "dni_distintos_por_ip": 20
+          },
+          "patron_2": {
+            "ips_por_dni": 5,
+            "ventana_minutos": 10
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "c11bda592f7cf77fe2496a5b0e7bba45d36e5afcd62dd930eb0776add31c04c1",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 138,
+        "razon": "Tokens sin expiración son un riesgo permanente si son interceptados.",
+        "codigo": "REG_ATQ_018",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+        "titulo": "Expiración de JWT post-onboarding",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-19T22:48:08.452376+00:00",
+        "descripcion": "La sesión Cliente separa el TTL del access token del ciclo de sesión: access token de 1 hora, inactividad máxima de 24 horas y ventana absoluta de 30 días con rotación de refresh. Al superar la inactividad o ventana absoluta se exige reautenticación. La autoridad es Supabase Auth bajo SESSION-CLIENT-DEFAULT.",
+        "valor_config": {
+          "rotacion_refresh": true,
+          "session_policy_code": "SESSION-CLIENT-DEFAULT",
+          "idle_timeout_seconds": 86400,
+          "refresh_token_max_days": 30,
+          "source_decision_number": 105,
+          "absolute_timeout_seconds": 2592000,
+          "access_token_ttl_seconds": 3600
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4c17822e04dde752cca7ecccf9d03bd6332bb8115aafb0fbb3e1adb377c2cda1",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 139,
+        "razon": "localStorage es accesible desde JavaScript. Un ataque XSS puede robar el token. httpOnly previene ese vector.",
+        "codigo": "REG_ATQ_019",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "JWT almacenado en httpOnly cookie, no en localStorage",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "El JWT de sesión se almacena en cookie httpOnly y Secure. No se almacena en localStorage ni sessionStorage. CONFIRMADO 2026-07-04: estandar de oro 2026 (OWASP, Auth0, Clerk, Supabase) es token de acceso en memoria (variable JS) + refresh token en cookie httpOnly/Secure/SameSite. Implementacion con Supabase: usar el paquete @supabase/ssr (no el cliente base), que ya viene configurado con flujo PKCE y maneja el guardado en cookies automaticamente.",
+        "valor_config": {
+          "atributos": [
+            "Secure",
+            "SameSite=Strict"
+          ],
+          "prohibido": [
+            "localStorage",
+            "sessionStorage"
+          ],
+          "almacenamiento": "httpOnly_cookie",
+          "applicability_v1": {
+            "all": [],
+            "any": [
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "module",
+                  "module_code"
+                ],
+                "values": [
+                  "CLIENT_HOME"
+                ]
+              },
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "screen",
+                  "id"
+                ],
+                "values": [
+                  7,
+                  8,
+                  10,
+                  12,
+                  13,
+                  15,
+                  16,
+                  17,
+                  21,
+                  24,
+                  25,
+                  27,
+                  28,
+                  30,
+                  33,
+                  34
+                ]
+              }
+            ],
+            "status": "ACTIVE",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          }
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "7157b670bd431339524967276301237cec54320db869590964e78b66353a5b45",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 36,
+        "razon": "Trazabilidad del funnel para diagnóstico, soporte y métricas.",
+        "codigo": "REG_AUD_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Eventos mínimos a registrar en onboarding",
+        "categoria": "auditoria",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "El sistema debe registrar: onboarding_started, paso1_submitted, otp_sent, otp_attempt_failed, otp_verified, onboarding_completed, onboarding_abandoned, onboarding_blocked, number_changed_inline.",
+        "valor_config": {
+          "eventos": [
+            "onboarding_started",
+            "paso1_submitted",
+            "otp_sent",
+            "otp_attempt_failed",
+            "otp_verified",
+            "onboarding_completed",
+            "onboarding_abandoned",
+            "onboarding_blocked",
+            "number_changed_inline"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "1ec58870f7896bcf7a444fd02b0e6cec9bd2ad886f9805479a0ac7570ab77ed7",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 38,
+        "razon": "Balance entre trazabilidad operativa y minimización de datos.",
+        "codigo": "REG_AUD_003",
+        "estado": "VIGENTE",
+        "origen": "legal",
+        "titulo": "Retención de logs de onboarding",
+        "categoria": "auditoria",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Los logs de sesiones completadas se retienen 2 años. Los logs de sesiones abandonadas, bloqueadas o expiradas se retienen 90 días.",
+        "valor_config": {
+          "retencion_completado_dias": 730,
+          "retencion_no_completado_dias": 90
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "0d76637263b690dde5183113582b473dd892eb75d430a54aac52abe7df6f0e07",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 40,
+        "razon": "Diagnóstico de abandono y detección de ataques. No guardar el código ingresado evita exposición.",
+        "codigo": "REG_AUD_005",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Auditoría de intentos OTP fallidos",
+        "categoria": "auditoria",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Cada intento fallido registra: timestamp, otp_attempts resultante y estado de bloqueo. No registra el código ingresado.",
+        "valor_config": {
+          "registrar": [
+            "timestamp",
+            "otp_attempts",
+            "blocked_status"
+          ],
+          "no_registrar": [
+            "codigo_ingresado"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4e2391727ddbd7b359f0dec9c8745531859a0f14d69637392bfa397cdcef7ac4",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 456,
+        "razon": "Evitar que un celular nuevo se convierta automáticamente en prueba de identidad o permita secuestro de cuenta.",
+        "codigo": "REG_AUTH_PHONE_OWNERSHIP_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "OTP verifica control del celular, no identidad de la persona",
+        "categoria": "seguridad",
+        "created_at": "2026-08-15T07:32:00.473307+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "Un OTP correcto demuestra control del número ingresado, pero no acredita por sí solo la identidad civil ni autoriza a reasignar una cuenta existente.",
+        "valor_config": {
+          "otp_proves": "PHONE_CONTROL",
+          "otp_field_code": "CAMPO_OTP_CODE",
+          "applicability_v1": {
+            "all": [],
+            "any": [
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "screen",
+                  "id"
+                ],
+                "values": [
+                  1,
+                  2
+                ]
+              }
+            ],
+            "status": "ACTIVE",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "phone_field_code": "CAMPO_CELULAR",
+          "otp_does_not_prove": "PERSON_IDENTITY",
+          "source_decision_number": 71,
+          "account_reassignment_by_new_phone_otp": "DENY"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "b3d54813bc12676441edd79beb0b7228fb11e18a92aa76ad94c00492fff2c15b",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    }
+  ],
+  "live_writes": 0
+}
