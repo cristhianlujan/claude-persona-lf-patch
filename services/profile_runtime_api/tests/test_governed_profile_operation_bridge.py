@@ -871,5 +871,263 @@ SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
                 subprocess.run(["docker", "rm", "-f", name], capture_output=True, timeout=30)
 
 
+class IgBlockedFindingsReportPg17Pg18(unittest.TestCase):
+    """Profile RUN copy only: exact three observed findings, report SQL candidate,
+    no live RUN modification, no model invocation, same transaction ROLLBACK."""
+
+    def test_copied_run_read_only_write_and_no_findings_pg17_pg18(self):
+        import hashlib
+        import shutil
+        import subprocess
+        import time
+        import uuid
+        self.assertIsNotNone(shutil.which("docker"), "NOT_TESTED_NO_DOCKER")
+        report_path = ROOT / "supabase/migrations/20261114023000_lf_profile_readonly_ig_findings_report_v1.sql"
+        candidate = report_path.read_text(encoding="utf-8")
+        self.assertIn("cafaaff15eb0751a9af0cfb67db3c30b", candidate)
+        report_ddl = candidate[candidate.index("CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_record_report_v1("):
+                              candidate.rindex("COMMIT;")]
+        self.assertIn("'ig_findings',v_report_findings", report_ddl)
+        sql_prefix = r"""
+\set ON_ERROR_STOP on
+SELECT 'PG_VERSION='||current_setting('server_version');
+-- Source metadata is copied from LIVE READ-ONLY SELECT; findings are exact,
+-- unaltered canonical deterministic_findings 1..3 of IG RUN 951.
+-- The affected RUN 95DF... has only 0..30, so its Step40 is never fabricated.
+CREATE TEMP TABLE copied_profile_run_source(
+ execution_id text PRIMARY KEY, evidence jsonb NOT NULL
+) ON COMMIT PRESERVE ROWS;
+INSERT INTO copied_profile_run_source VALUES(
+ 'EXEC-PROFILE-GATE2-95DFBB22762787B8824EB013',
+ '{
+  "execution_status":"IN_PROGRESS",
+  "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+  "observed_steps":["init_execution","router","profile_resolve","profile_source_read"],
+  "governed_repair_write":false,
+  "ig_reference_execution_id":"EXEC-PROFILE-GATE2-40471E6F661A53D7CE7A4A1B",
+  "ig_reference_run_id":951,
+  "ig_reference_status":"BLOCKED",
+  "predecision_crosscheck":{
+    "status":"CANONICAL_READBACK_ONLY","run_id":951,
+    "deterministic_finding_count":3,
+    "deterministic_findings":[
+      {"type":"VIGENTE_REFERENCES_CANDIDATO","severity":"INTERNAL_REMEDIATION",
+       "source_id":3,"target_id":19,"relation_key":"factor_security_policy_id",
+       "source_policy":"SEC-B2B-MFA","target_policy":"SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+       "question_owner":false},
+      {"type":"VIGENTE_REFERENCES_CANDIDATO","severity":"INTERNAL_REMEDIATION",
+       "source_id":17,"target_id":22,"relation_key":"abuse_security_policy_id",
+       "source_policy":"SEC-B2B-LOGIN-ANTIBOT",
+       "target_policy":"SEC-B2B-AUTH-ABUSE-PROTECTION","question_owner":false},
+      {"type":"IP_COMPOSITE_SCOPE_REQUIRES_RUNTIME_PROOF",
+       "severity":"ACQUIRE_EVIDENCE","scope_key":"IP_USER",
+       "rate_policy":"RATE-B2B-LOGIN",
+       "security_policy":"SEC-B2B-AUTH-ABUSE-PROTECTION",
+       "question_owner":false}
+    ]
+  }
+ }'::jsonb);
+SELECT 'SHA_BEFORE='||encode(sha256(convert_to(evidence::text,'UTF8')),'hex')
+ FROM copied_profile_run_source;
+BEGIN;
+CREATE TABLE public.lf_operation_execution (
+ execution_id text PRIMARY KEY,operation_code text,target_type text,
+ target_code text,status text,manifest jsonb
+);
+CREATE TABLE public.lf_operation_execution_steps (
+ execution_id text,step_order integer,step_id text,status text,
+ evidence_payload jsonb,evidence_ref text,PRIMARY KEY(execution_id,step_id)
+);
+CREATE OR REPLACE FUNCTION public.lf_record_profile_execution_step_v1(
+ p_execution_id text,p_step_id text,p_evidence_ref text,p_evidence_payload jsonb,
+ p_actor_execution_id text)
+RETURNS jsonb LANGUAGE plpgsql AS $test_recorder$
+BEGIN
+ INSERT INTO public.lf_operation_execution_steps
+ (execution_id,step_order,step_id,status,evidence_payload,evidence_ref)
+ VALUES (p_execution_id,80,p_step_id,'STEP_PASS_WITH_EVIDENCE',p_evidence_payload,p_evidence_ref);
+ IF p_step_id='report_output' THEN
+   UPDATE public.lf_operation_execution SET status='COMPLETED'
+   WHERE execution_id=p_execution_id;
+ END IF;
+ RETURN jsonb_build_object('status','STEP_PASS_WITH_EVIDENCE');
+END $test_recorder$;
+CREATE OR REPLACE FUNCTION public.lf_profile_execution_terminal_authority_receipt_v1(
+ p_execution_id text)
+RETURNS jsonb LANGUAGE sql AS $test_terminal$
+ SELECT jsonb_build_object('status','READY','terminal_authority_receipt_sha256',
+ repeat('c',64));
+$test_terminal$;
+"""
+        sql_tail = r"""
+-- Exercise exact candidate report function. No official SQL writer is replaced
+-- in live database: recorder/terminal are explicitly lab-only stubs.
+INSERT INTO public.lf_operation_execution VALUES
+ ('COPY-READONLY-BLOCKED','EJECUCION_PERFIL_LF','PERFIL','PERFIL-PRODUCT-DIRECTOR-LF',
+  'IN_PROGRESS','{"executor_mode":"GPT_NATIVE","executor_provider":"OPENAI_CHATGPT_NATIVE",
+  "read_only":true,"no_write":true,"no_promotion":true,"automatic_impact":false,
+  "governed_repair_write":false}'::jsonb),
+ ('COPY-WRITE-BLOCKED','EJECUCION_PERFIL_LF','PERFIL','PERFIL-PRODUCT-DIRECTOR-LF',
+  'IN_PROGRESS','{"executor_mode":"GPT_NATIVE","executor_provider":"OPENAI_CHATGPT_NATIVE",
+  "read_only":false,"no_write":false,"no_promotion":true,"automatic_impact":false,
+  "governed_repair_write":true}'::jsonb),
+ ('COPY-NO-FINDINGS','EJECUCION_PERFIL_LF','PERFIL','PERFIL-PRODUCT-DIRECTOR-LF',
+  'IN_PROGRESS','{"executor_mode":"GPT_NATIVE","executor_provider":"OPENAI_CHATGPT_NATIVE",
+  "read_only":true,"no_write":true,"no_promotion":true,"automatic_impact":false,
+  "governed_repair_write":false}'::jsonb);
+-- Steps 0..30 are an exact structural copy of the affected RUN's four steps.
+INSERT INTO public.lf_operation_execution_steps
+SELECT e.execution_id,s.step_order,s.step_id,'STEP_PASS_WITH_EVIDENCE',
+       '{"simulation":true,"source":"RUN-95DF_READBACK"}'::jsonb,
+       'fixture://copy/'||s.step_id
+FROM public.lf_operation_execution e
+CROSS JOIN(VALUES(0,'init_execution'),(10,'router'),
+                 (20,'profile_resolve'),(30,'profile_source_read'))s(step_order,step_id);
+-- The IG BLOCKED fixture is sourced from reference RUN 40471's canonical
+-- predecision findings (3 exact items); never claim this is a fresh IG execution.
+CREATE TEMP TABLE copied_ig_evidence AS
+ SELECT jsonb_build_object(
+   'status','BLOCKED','decision','BLOCKED','applicable',true,
+   'continuation_allowed',false,'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE',
+   'consumer','CONTEXT_PACK','profile_code','PERFIL-PRODUCT-DIRECTOR-LF',
+   'binding_mode','DIRECT_PROFILE','pantalla_id',51,
+   'analysis_scope','READ_ONLY_WITH_IG_FINDINGS',
+   'governance_result',jsonb_build_object(
+     'status','BLOCKED','run_id',951,'consumer','CONTEXT_PACK',
+     'pantalla_id',51,'remediation_state','INTERNAL_REMEDIATION_REQUIRED',
+     'predecision_crosscheck',evidence->'predecision_crosscheck',
+     'execution_mode','REUSE_COMPLETED_CURRENT_RUN',
+     'output_sha256',repeat('5',64))) AS ig
+ FROM copied_profile_run_source;
+INSERT INTO public.lf_operation_execution_steps
+SELECT 'COPY-READONLY-BLOCKED',40,'input_validate','STEP_PASS_WITH_EVIDENCE',
+ jsonb_build_object(
+   'status','READY','analysis_scope','READ_ONLY_WITH_IG_FINDINGS',
+   'input_scope','ROUTER_AUTHORIZED_PROFILE_EXECUTION',
+   'ig_security_clearance',false,'ig_security_state','BLOCKED',
+   'allowed_actions',jsonb_build_array('ANALYZE','PROPOSE','VALIDATE','REPORT'),
+   'input_governance',ig),'fixture://ig/blocked'
+ FROM copied_ig_evidence;
+INSERT INTO public.lf_operation_execution_steps
+ VALUES ('COPY-NO-FINDINGS',40,'input_validate','STEP_PASS_WITH_EVIDENCE',
+ '{"status":"READY","input_governance":{"status":"READY","applicable":true}}'::jsonb,
+ 'fixture://ig/ready');
+-- Simulated canonical predecessors 45,47,50,60,70 only when Step40 has PASS.
+-- Every profile decision is explicitly fixture-only, not made by ChatGPT here.
+INSERT INTO public.lf_operation_execution_steps
+SELECT e.execution_id,s.step_order,s.step_id,'STEP_PASS_WITH_EVIDENCE',
+ CASE WHEN s.step_id='execute_profile'
+   THEN '{"profile_output":{"traceability":{"ig_open_work_resolution":
+   [{"status":"DECISIÓN_REQUERIDA","next_action":"FIXTURE_ONLY_NOT_OWNER_DECISION"}]}}}'::jsonb
+   WHEN s.step_id='semantic_judge'
+   THEN jsonb_build_object('semantic_judge_result',jsonb_build_object(
+       'verdict','PASS_REVIEWED_CURRENT_CONTEXT','review_mode','CURRENT_CONTEXT_REVIEW',
+       'candidate_sha256',repeat('a',64),'scope_packet_sha256',repeat('b',64)),
+       'semantic_review_receipt_ref','fixture://semantic')
+   ELSE '{"simulation":true,"source":"LAB_ONLY"}'::jsonb END,
+ 'fixture://step/'||s.step_id
+FROM public.lf_operation_execution e
+JOIN public.lf_operation_execution_steps q
+ ON q.execution_id=e.execution_id AND q.step_id='input_validate'
+ AND q.status='STEP_PASS_WITH_EVIDENCE'
+CROSS JOIN(VALUES(45,'context_admission'),(47,'research_baseline_freeze'),
+           (50,'execute_profile'),(60,'output_validate'),(70,'semantic_judge'))
+ s(step_order,step_id);
+SELECT 'READONLY_REPORT_STATUS='||(public.lf_profile_native_bridge_record_report_v1(
+ 'COPY-READONLY-BLOCKED','fixture://report','COPY-READONLY-BLOCKED')->>'status');
+SELECT 'NO_FINDINGS_REPORT_STATUS='||(public.lf_profile_native_bridge_record_report_v1(
+ 'COPY-NO-FINDINGS','fixture://report','COPY-NO-FINDINGS')->>'status');
+DO $verify_copies$
+DECLARE n int; a jsonb; b jsonb; dec jsonb;
+BEGIN
+ SELECT count(*) INTO n FROM public.lf_operation_execution_steps
+  WHERE execution_id='COPY-READONLY-BLOCKED' AND status='STEP_PASS_WITH_EVIDENCE';
+ IF n<>11 THEN RAISE EXCEPTION 'READONLY_IG_BLOCKED_NOT_11_11:%',n; END IF;
+ SELECT evidence_payload->'input_governance' INTO a
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id='COPY-READONLY-BLOCKED' AND step_id='input_validate';
+ SELECT evidence_payload#>'{ig_findings,input_governance}' INTO b
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id='COPY-READONLY-BLOCKED' AND step_id='report_output';
+ SELECT evidence_payload#>'{ig_findings,profile_decision_observed}' INTO dec
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id='COPY-READONLY-BLOCKED' AND step_id='report_output';
+ IF a IS DISTINCT FROM b OR b->>'status'<>'BLOCKED' OR
+    jsonb_array_length(b#>'{governance_result,predecision_crosscheck,deterministic_findings}')<>3
+    OR dec#>>'{0,status}'<>'DECISIÓN_REQUERIDA' THEN
+  RAISE EXCEPTION 'IG_FINDINGS_STEP40_TO_80_PARITY_FAILED'; END IF;
+ IF (SELECT count(*) FROM public.lf_operation_execution_steps
+     WHERE execution_id='COPY-WRITE-BLOCKED')<>4
+ OR (SELECT status FROM public.lf_operation_execution
+     WHERE execution_id='COPY-WRITE-BLOCKED')<>'IN_PROGRESS' THEN
+  RAISE EXCEPTION 'WRITE_BLOCKED_NOT_STOPPED_AT_40'; END IF;
+ IF (SELECT count(*) FROM public.lf_operation_execution_steps
+     WHERE execution_id='COPY-NO-FINDINGS')<>11
+ OR (SELECT evidence_payload->'ig_findings' FROM public.lf_operation_execution_steps
+     WHERE execution_id='COPY-NO-FINDINGS' AND step_id='report_output') IS NOT NULL
+ THEN RAISE EXCEPTION 'NO_FINDINGS_COMPAT_FAILED'; END IF;
+END $verify_copies$;
+SELECT 'IG_CASE|IG_BLOCKED_READONLY|CONTINUE_80_AND_REPORT_3|PASS_11_11_3_PRESERVED'
+ WHERE (SELECT count(*) FROM public.lf_operation_execution_steps
+        WHERE execution_id='COPY-READONLY-BLOCKED')=11;
+SELECT 'IG_CASE|IG_BLOCKED_WRITE|STOP_AT_40|PASS_BLOCKED_NO_WRITE'
+ WHERE (SELECT count(*) FROM public.lf_operation_execution_steps
+        WHERE execution_id='COPY-WRITE-BLOCKED')=4;
+SELECT 'IG_CASE|NO_FINDINGS|CONTINUE_UNCHANGED_80|PASS_11_11_NO_FINDINGS'
+ WHERE (SELECT count(*) FROM public.lf_operation_execution_steps
+        WHERE execution_id='COPY-NO-FINDINGS')=11;
+-- Hash of the copied RUN changes only INSIDE ROLLBACK: no live row touched.
+UPDATE copied_profile_run_source
+ SET evidence=jsonb_set(evidence,'{transaction_marker}','"IN_TRANSACTION_ONLY"'::jsonb)
+ WHERE execution_id='EXEC-PROFILE-GATE2-95DFBB22762787B8824EB013';
+SELECT 'SHA_DURING='||encode(sha256(convert_to(evidence::text,'UTF8')),'hex')
+ FROM copied_profile_run_source;
+ROLLBACK;
+SELECT 'SHA_AFTER='||encode(sha256(convert_to(evidence::text,'UTF8')),'hex')
+ FROM copied_profile_run_source;
+SELECT 'ROLLBACK_RUN_COPY_EMPTY='||
+ CASE WHEN to_regclass('public.lf_operation_execution') IS NULL THEN 'true' ELSE 'false' END;
+"""
+        for image, version in (("postgres:17.6","17.6"),("postgres:18.7","18.7")):
+            name = "lf-ig-report-copy-" + uuid.uuid4().hex[:12]
+            launched = subprocess.run(["docker","run","-d","--rm","--name",name,
+               "-e","POSTGRES_PASSWORD=ig-copy-lab",image],
+               capture_output=True,text=True,timeout=240)
+            self.assertEqual(launched.returncode,0,launched.stderr[-450:])
+            try:
+                for _ in range(60):
+                    if subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
+                                      capture_output=True,timeout=10).returncode==0:
+                        break
+                    time.sleep(1)
+                sql = sql_prefix + "\n" + report_ddl + "\n" + sql_tail
+                run = subprocess.run(
+                    ["docker","exec","-i",name,"psql","-X","-A","-t",
+                     "-U","postgres","-d","postgres"],
+                    input=sql,capture_output=True,text=True,timeout=180)
+                self.assertEqual(run.returncode,0,"PG_IG_COPY_FAILED:"+run.stderr[-1000:])
+                vals = [v.strip() for v in run.stdout.splitlines() if v.strip()]
+                expected_cases = [
+                    "IG_CASE|IG_BLOCKED_READONLY|CONTINUE_80_AND_REPORT_3|PASS_11_11_3_PRESERVED",
+                    "IG_CASE|IG_BLOCKED_WRITE|STOP_AT_40|PASS_BLOCKED_NO_WRITE",
+                    "IG_CASE|NO_FINDINGS|CONTINUE_UNCHANGED_80|PASS_11_11_NO_FINDINGS",
+                ]
+                self.assertEqual([v for v in vals if v.startswith("IG_CASE|")],expected_cases)
+                self.assertIn("READONLY_REPORT_STATUS=PROFILE_EXECUTION_COMPLETED",vals)
+                self.assertIn("NO_FINDINGS_REPORT_STATUS=PROFILE_EXECUTION_COMPLETED",vals)
+                before = next(v.split("=",1)[1] for v in vals if v.startswith("SHA_BEFORE="))
+                during = next(v.split("=",1)[1] for v in vals if v.startswith("SHA_DURING="))
+                after = next(v.split("=",1)[1] for v in vals if v.startswith("SHA_AFTER="))
+                self.assertEqual(len(before),64)
+                self.assertEqual(before,after)
+                self.assertNotEqual(before,during)
+                self.assertIn("ROLLBACK_RUN_COPY_EMPTY=true",vals)
+                print(f"PASS_IG_SCOPE_REPORT_PG_{version} 3/3 CASES STEP40_TO_STEP80_SHA_MATCH ROLLBACK=true",flush=True)
+                print(f"PG_{version}_SHA before={before} during={during} after={after}",flush=True)
+                for v in expected_cases: print(f"PG_{version}_{v}",flush=True)
+            finally:
+                subprocess.run(["docker","rm","-f",name],capture_output=True,timeout=30)
+
+
 if __name__ == "__main__":
     unittest.main()
