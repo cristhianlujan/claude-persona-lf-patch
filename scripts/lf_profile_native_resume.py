@@ -157,9 +157,49 @@ def oidc():
 
 
 
+def governed_direct_gate2_dispatch():
+    """The already-governed GitHub workflow_dispatch replaces manual Issue entry.
+
+    GitHub Actions obtains its own OIDC. Nothing here mints authority, changes
+    Router Gate2, or bypasses the Edge's current DB admission.
+    """
+    if os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch":
+        raise ValueError("PROFILE_DIRECT_GATE2_EVENT_INVALID")
+    if os.environ.get("GITHUB_REF") != "refs/heads/main":
+        raise ValueError("PROFILE_DIRECT_GATE2_MAIN_ONLY")
+    event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+    event = json.loads(event_path.read_text(encoding="utf-8"))
+    inputs = event.get("inputs")
+    if (not isinstance(inputs, dict)
+        or inputs.get("action") != "begin-native-profile"
+        or os.environ.get("PROFILE_EXECUTION_ID", "").strip()
+        or inputs.get("execution_id", "").strip()):
+        raise ValueError("PROFILE_DIRECT_GATE2_ACTION_OR_RUN_INVALID")
+    raw = os.environ.get("PROFILE_ROUTER_GATE2_JSON", "").strip()
+    if (not raw or len(raw.encode("utf-8")) > 55000
+        or raw != inputs.get("router_context_json")):
+        raise ValueError("PROFILE_DIRECT_GATE2_SOURCE_BINDING_INVALID")
+    try:
+        ctx = json.loads(raw)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise ValueError("PROFILE_DIRECT_GATE2_JSON_INVALID") from exc
+    if (not isinstance(ctx, dict)
+        or ctx.get("schema_version") != "LF_ROUTER_EXECUTION_PIPELINE_V1"
+        or ctx.get("status") != "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"
+        or ctx.get("transport_mode") != "CONTEXT_TRANSPORT"
+        or ctx.get("next_step") != "HANDOFF_CONTEXT_TO_SELECTED_PROFILE"
+        or ctx.get("effect_authority") not in (False, None)
+        or ctx.get("downstream_execution_allowed") not in (False, None)):
+        raise ValueError("PROFILE_DIRECT_GATE2_CONTRACT_INVALID")
+    return {"kind": "BEGIN", "router_context": ctx, "executor_mode": "GPT_NATIVE"}
+
+
 def governed_request():
     """Accept only explicit, bounded issue data or authorized dispatch inputs."""
-    if os.getenv("LF_PROFILE_RESUME_REQUEST_MODE") != "ISSUE":
+    mode = os.getenv("LF_PROFILE_RESUME_REQUEST_MODE")
+    if mode == "DISPATCH_BEGIN":
+        return governed_direct_gate2_dispatch()
+    if mode == "DISPATCH":
         raw_output = os.getenv("PROFILE_OUTPUT_JSON", "").strip()
         parsed_output = json.loads(raw_output) if raw_output else None
         if parsed_output is not None and not isinstance(parsed_output, dict):
@@ -174,6 +214,8 @@ def governed_request():
             parsed_output,
             parsed_semantic,
         )
+    if mode != "ISSUE":
+        raise ValueError("PROFILE_GOVERNED_REQUEST_MODE_INVALID")
 
     event_path = os.environ["GITHUB_EVENT_PATH"]
     event = json.loads(Path(event_path).read_text(encoding="utf-8"))
@@ -343,7 +385,7 @@ def governed_request():
         return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review",
-        "skill_semantic_decision"
+        "skill_semantic_decision", "skill_selection_decision"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
@@ -351,13 +393,15 @@ def governed_request():
         raise ValueError("PROFILE_GOVERNED_ISSUE_EXECUTION_ID_INVALID")
     # Semantic skill selection is a continuation of the SAME profile RUN.
     # It comes from the native chat, not from the Router and not from an API producer.
-    skill_decision = data.get("skill_semantic_decision")
+    if "skill_semantic_decision" in data and "skill_selection_decision" in data:
+        raise ValueError("SKILL_SELECTION_AMBIGUOUS_FIELD_CONTRACT")
+    skill_decision = data.get("skill_selection_decision", data.get("skill_semantic_decision"))
     if skill_decision is not None:
         screen_draft = data.get("screen_selection_draft")
         if (not isinstance(skill_decision, dict) or
             len(json.dumps(skill_decision, ensure_ascii=False)) > 12000 or
             not set(data).issubset({"schema_version", "execution_id", "skill_semantic_decision",
-                                    "screen_selection_draft"}) or
+                                    "skill_selection_decision", "screen_selection_draft"}) or
             ("screen_selection_draft" in data and (
                 not isinstance(screen_draft, dict) or
                 len(json.dumps(screen_draft, ensure_ascii=False)) > 12000 or
@@ -367,8 +411,10 @@ def governed_request():
             raise ValueError("PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID")
         # Both independent semantic decisions belong to the SAME Router-admitted
         # execution. The Edge validates each against current DB descriptors/catalog.
-        return {"kind": "SKILL_SEMANTIC_CONTINUATION", "execution_id": execution_id,
-                "skill_semantic_decision": skill_decision,
+        return {"kind": "SKILL_SELECTION_CONTINUATION" if "skill_selection_decision" in data
+                else "SKILL_SEMANTIC_CONTINUATION", "execution_id": execution_id,
+                "skill_selection_decision": skill_decision,
+                "legacy_skill_selection_field": "skill_selection_decision" not in data,
                 **({"screen_selection_draft": screen_draft}
                    if "screen_selection_draft" in data else {})}
     selection = data.get("screen_selection_draft")
@@ -997,7 +1043,7 @@ def main():
             "execution_id": request["execution_id"],
             "skill_code": request["skill_code"],
             "input": request["input"],
-            "skill_semantic_decision": request.get("skill_semantic_decision"),
+            "skill_selection_decision": request.get("skill_selection_decision",request.get("skill_semantic_decision")),
         }, headers)
         result = invoked.get("result") if isinstance(invoked.get("result"), dict) else {}
         ok = code == 200 and invoked.get("outcome") == "SKILL_INVOKED"
@@ -1044,7 +1090,7 @@ def main():
             "execution_id":execution_id,
             "profile_code":result.get("profile_code"),
             "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
-    elif isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
+    elif isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
         execution_id = request["execution_id"]
         # Source-bind carries skill decision; native-continue separately carries
         # the screen draft, never its hashes or an authority claim.
@@ -1055,8 +1101,9 @@ def main():
         execution_id, raw_draft, profile_output, semantic_review = request
 
     source_request = {"action":"profile_native_source_bind_v1", "execution_id":execution_id}
-    if isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
-        source_request["skill_semantic_decision"] = request["skill_semantic_decision"]
+    if isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
+        source_request["skill_semantic_decision" if request.get("legacy_skill_selection_field")
+                       else "skill_selection_decision"] = request["skill_selection_decision"]
     code, source = call_json(EDGE_URL, source_request, headers)
     # Optional skill omission is a finding on the SAME execution, never
     # a reason to stop the Router-admitted profile at step 30.
