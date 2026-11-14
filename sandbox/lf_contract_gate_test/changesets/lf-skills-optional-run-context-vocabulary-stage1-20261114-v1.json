@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-skills-optional-run-context-vocabulary-stage1-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114195000_lf_skill_selection_optional_run_context_names_v1.sql": "MIGRATION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "EDGE_FUNCTION",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixture_skill_optional_v2_preimage_pgdual.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_skill_optional_v2_pgdual_rollback.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-skills-optional-run-context-vocabulary-stage1-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}

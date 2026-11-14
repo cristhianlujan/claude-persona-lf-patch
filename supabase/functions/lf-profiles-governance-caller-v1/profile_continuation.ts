@@ -692,18 +692,25 @@ export async function handleProfileContinuation(
       ? body.skill_semantic_decision : null;
     if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
       return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
-    const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_v1", {
-      p_profile_code: e.target_code, p_channel: channel, p_semantic_decision: semantic,
+    const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_for_run_v1", {
+      p_execution_id: e.execution_id, p_skill_selection: semantic,
     });
     if (planned.error) return planned.error;
     const plan = planned.result;
-    if (plan?.status === "SEMANTIC_SELECTION_REQUIRED" && plan?.profile_code === e.target_code) {
-      const selection = plan.selection_receipt as Payload | undefined;
-      return respond({outcome:"SKILL_SEMANTIC_SELECTION_REQUIRED",
-        execution_id:e.execution_id,profile_code:e.target_code,
-        semantic_candidates:selection?.semantic_candidates,
-        required_skills:selection?.required_skills,
-        next_action:"NATIVE_PROFILE_JUDGE_SKILL_AND_RESUME_SAME_EXECUTION"});
+    // Optional skills never block SOURCE_BIND. Candidates contain the current
+    // immutable RUN context; no extra Router pass, privilege or ticket is needed.
+    // Explicit choices (0..2) are validated and immutably bound by SQL.
+    if (semantic !== null) {
+      const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_bind_for_run_v1", {
+        p_execution_id:e.execution_id, p_selection:semantic,
+        p_actor_execution_id:e.execution_id,
+      });
+      if (bound.error) return bound.error;
+      if (!bound.result?.status === "BOUND") {
+        return respond({outcome:"BLOCKED",phase:"SKILL_SELECTION_CONTRACT",
+          code:String(bound.result?.blocking_code??"SKILL_SELECTION_BIND_INVALID"),
+          execution_id:e.execution_id},409);
+      }
     }
     if (plan?.status !== "READY" || plan?.operation_code !== "EJECUCION_PERFIL_LF" ||
         plan?.profile_code !== e.target_code || !Array.isArray(plan?.steps) ||
@@ -722,6 +729,16 @@ export async function handleProfileContinuation(
       target_path: e.target_path,
       source_revision_required: callerRevision,
       operation_plan: plan,
+      skill_selection_request:{
+        status:(plan?.selection_receipt as Payload|undefined)?.finding_status??"READY",
+        finding_code:plan?.finding_code??null,
+        selected_skill_codes:(plan?.skills as Payload[]).map(x=>String(x.skill_code??"")),
+        skill_candidates:plan?.skill_candidates??[],
+        continuation_allowed:true,
+        next_action:plan?.next_action??"CONTINUE_PROFILE",
+        run_context:plan?.skill_selection_context??null,
+        input_required_filter:"RUN_BOUND_CURRENT_STEP",
+      },
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
     });
   }
