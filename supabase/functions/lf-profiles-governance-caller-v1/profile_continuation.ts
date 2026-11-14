@@ -1,3 +1,4 @@
+import {validateLfIgTransport,IG_RPC_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 // Governed, profile-agnostic continuation for an *existing* Router-admitted execution.
 // It deliberately does not select a profile/screen, impersonate a model, or grant
 // write authority. All substantive transitions use existing canonical RPCs.
@@ -94,6 +95,9 @@ async function authorizedExecution(
 }
 
 async function rpc(config: Config, fetchFn: Fetcher, name: string, parameters: Payload): Promise<{ result?: Payload; error?: Response }> {
+  const preflight=validateLfIgTransport("PROFILE_GATE_RPC:"+name,parameters,IG_RPC_REQUIRED[name] ?? []);
+  if(preflight) return {error:respond({outcome:"BLOCKED",code:preflight.code,
+    field:preflight.field,downstream_call_attempted:false},400)};
   let response: Response;
   try {
     response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${name}`, {
