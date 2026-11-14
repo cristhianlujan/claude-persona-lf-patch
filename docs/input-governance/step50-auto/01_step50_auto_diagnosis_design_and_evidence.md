@@ -1,26 +1,30 @@
-# Step 50 autónomo — candidato DRAFT (NO desplegado)
-## Diagnóstico (8 líneas)
-1. Paso 10 Router selecciona perfil y transporta Gate2; no debe resolver IG.
-2. Paso 40 `input_validate` gobierna IG como dependencia/skill del perfil.
-3. Paso 45 `context_admission` debe registrar recibo verificado.
-4. Paso 47 `research_baseline_freeze` debe registrar su baseline.
-5. `lf_profile_native_bridge_prepare_v1` exige 7/7 y entrega `NATIVE_MODEL_INPUT_READY`.
-6. Antes: Edge devuelve handoff al chat/Issue; no invoca un modelo.
-7. Enganche: en `profile_native_continue_v1` tras el READY y antes del branch de `profile_output` manual.
-8. Paso 50 se registra exclusivamente por `lf_profile_native_bridge_record_output_v1` → `lf_record_profile_execution_step_v1`; paso 60 queda en el bridge existente.
+# EJECUCION_PERFIL_LF — disparo único GPT nativo · DRAFT / NO-GO / sin despliegue
 
-## Diseño ejecutable propuesto (sin pasos/gates nuevos)
-- Fuente: Edge existente `lf-profiles-governance-caller-v1/profile_continuation.ts`, bajo OIDC ya autorizado.
-- Disparo: `NATIVE_MODEL_INPUT_READY` exacto; nunca ante 45/47 incompletos; llama `executeStep50Automatically` automáticamente si `LF_PROFILE_STEP50_AUTO=true`.
-- Modelo/producer real: OpenAI Responses API (model ID de secreto `LF_PROFILE_STEP50_OPENAI_MODEL`); **no confundir API con firma de ChatGPT nativo**. No simular `native_model_call_receipt`.
-- Entrada: SKILL.md desde GitHub `source_revision` SHA40 y SHA256 verificado + solicitud + recibos IG/contexto/baseline.
-- Validación: se exige servicio de validador canónico fuente-bound con `PROFILE_OUTPUT_VALIDATION_RESULT_V1`, errores vacíos y SHA-256 literal; sin servicio el flujo BLOQUEA, no emite PASS.
-- Registro: la Edge llama al bridge existente `lf_profile_native_bridge_record_output_v1` con resultado real y `evidence_ref` de API/validador; **no escribe directamente en tablas ni crea otro registrador**.
-- Trazabilidad futura: descarta `step50_status` y `governed_step50_executed` autorreferenciales; añade producer `OPENAI_RESPONSES_API` y model_response_id reales. El estado verdadero sale de `lf_operation_execution_steps`; RUN histórico 40471... intacto.
-- Router: migración candidata con guards md5 elimina `profile_task_intent`/`input_governance_requirement` del binding; `lf_profile_input_governance_requirement_v1` consulta vínculo de skill del PERFIL en paso 40. Default seguro para perfil con vínculo: IG REQUIRED.
-- Los flujos especiales de lectura `READ_PRODUCT_DEFINITION` deben revalidarse contra esta política antes de cualquier integración: no declarar equivalencia de skip IG sin evidencia.
+## Arquitectura efectiva (sin API de modelo ni productores externos)
+- El usuario da **una** instrucción en el chat nativo que ejecuta el perfil. ACT-0001/Router decide perfil y entrega Gate2 íntegro; el **perfil** es dueño del mismo `EJECUCION_PERFIL_LF` 0–80.
+- El paso 40 aplica IG como skill/dependencia del perfil; no se activa desde Router ni como operación padre alternativa.
+- Entrada ya existente: `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1` en Issue etiquetado `lf-profile-resume-governed` → workflow `.github/workflows/lf-edge-deploy-credential-readback.yml` / job `native-profile-resume` → GitHub OIDC → Edge `profile_native_begin_from_context_v1`. **El chat crea y etiqueta el Issue automáticamente; jamás el humano.**
+- El workflow llama `profile_native_source_bind_v1` y `profile_native_continue_v1`; éste llama `lf_profile_native_bridge_prepare_v1` dentro del RUN. Después de 7/7 devuelve `NATIVE_MODEL_INPUT_READY`. No genera RAW de modelo.
+- El **mismo chat** lee source revision y context/baseline; produce `profile_output` real bajo `profiles/<slug>/SKILL.md`, sustentado en fuentes. Produce también la evaluación V3 de 12 controles, distinguiendo `CURRENT_CONTEXT_REVIEW` de independencia no probada.
+- El chat crea y etiqueta **automáticamente** un segundo Issue de transporte con UN `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` que contiene **ambos** campos: `execution_id` original, `profile_output`, `semantic_judge_review`. No crea segundo RUN.
+- El runner **existente**, ahora encadenado en `scripts/lf_profile_native_resume.py`, ejecuta primero `run_bound_validator` fuente-bound; si PASS, llama `profile_native_continue_v1` con RAW y su recibo. Edge usa `lf_profile_native_bridge_record_output_v1` para 50 y 60 (writer `lf_record_profile_execution_step_v1`). Únicamente después del resultado `INDEPENDENT_SEMANTIC_JUDGE_REQUIRED`, el MISMO job llama `complete_native_profile_semantic_and_report`, que usa la acción `profile_native_continue_v1` + `lf_profile_native_bridge_record_semantic_v1` y `lf_profile_native_bridge_record_report_v1` para 70 y 80.
+- No se creó ningún productor de IA. Se eliminó `profile_step50_auto.ts` (Responses API) y sus secrets/config en `caller.ts`/ `profile_continuation.ts`. No se sustituyó por otro modelo/worker.
+- Si no existe V3 sustentado, validador PASS o autoridad, el paso se BLOQUEA; no se fabrica PASS ni independencia ni se avanza a 80.
 
-## Prueba y límite
-- El test anexado al runner existente inicia Docker PostgreSQL 17.6 y 18.7, inserta **RUN simulado 0/10/20/30/40/45/47/50/60/70/80**, obtiene `step_order|step_id|STEP_PASS_WITH_EVIDENCE` y hace `ROLLBACK`; **no ejecuta el writer canónico ni llama modelo**.
-- La prueba de PG en CI y la revisión de respuesta de modelo son independientes: un PASS del fixture no demuestra perfil automático completo.
-- No se desplegó Edge; no se hizo SQL vivo; no se modificó ni cerró RUN existente; no se autoriza merge/Train sin revisar regresiones del Router y configurar productor/validador.
+## Comando exacto del chat (mecanismo GitHub conectado ya disponible)
+1. `tools.mcp__GitHub__create_issue({repository_full_name:REPO,title:UNIQUE_BEGIN_TITLE,body:JSON.stringify({schema_version:"LF_PROFILE_NATIVE_BEGIN_REQUEST_V1",router_context:GATE2_UNMODIFIED,executor_mode:"GPT_NATIVE"})})`.
+2. `tools.mcp__GitHub__add_issue_labels({repository_full_name:REPO,issue_number:BEGIN_ISSUE,labels:["lf-profile-resume-governed"]})` (labeled dispara workflow; prohibido añadir label antes de completar el body).
+3. `tools.mcp__GitHub__fetch({url:"https://api.github.com/repos/"+REPO+"/actions/runs?event=issues&per_page=100"})`: ubicar run de `.github/workflows/lf-edge-deploy-credential-readback.yml`, título único, cronología exacta y evento; comprobar `fetch_workflow_run_jobs`, artifacts y/o logs, y obtener `execution_id` NUEVO que coincida con el Issue/Run. El readback `SELECT` será solo de `lf_operation_execution` y `lf_operation_execution_steps`.
+4. `tools.mcp__GitHub__create_issue({repository_full_name:REPO,title:UNIQUE_RESUME_TITLE,body:JSON.stringify({schema_version:"LF_PROFILE_NATIVE_RESUME_REQUEST_V1",execution_id:NEW_ID,profile_output:REAL_NATIVE_RAW,semantic_judge_review:REAL_GROUNDED_V3})})`.
+5. `tools.mcp__GitHub__add_issue_labels({repository_full_name:REPO,issue_number:RESUME_ISSUE,labels:["lf-profile-resume-governed"]})`; poll del mismo workflow/Issue hasta terminal o bloqueo auténtico. No relabel/recrear simultáneamente (evita doble ejecución).
+6. Readback del **mismo** `execution_id`: `SELECT step_order,step_id,status,evidence_ref FROM public.lf_operation_execution_steps WHERE execution_id=:NEW_ID ORDER BY step_order` y `SELECT public.lf_profile_execution_terminal_authority_receipt_v1(:NEW_ID)`. Declarar cierre SOLO si 11/11 `STEP_PASS_WITH_EVIDENCE`, `lf_operation_execution.status='COMPLETED'` y recibo `READY`.
+7. Si el workflow tarda: mantener cursor `execution_id` + run_id + Issue, repetir GET/fetch sobre esa instancia **en la misma conversación activa**, sin nuevo BEGIN. Si la sesión se termina, no existe modo de revivir GPT nativo en segundo plano sin otra invocación: **NO-GO para autonomía permanente**.
+
+## Guion del ÚNICO disparo (el usuario solo escribe esto)
+> Ejecuta por ACT-0001 y Gate2 el perfil seleccionado para: «<SOLICITUD>». Tú eres el ejecutor nativo y dueño de EJECUCION_PERFIL_LF: haz automáticamente BEGIN, los pasos 0–47, el RAW de 50 y la evaluación V3 real; usa GitHub conectado para crear+etiquetar los Issues de transporte oficial y leer sus workflows hasta que 50/60/70/80 queden registrados en el MISMO execution_id. No me pidas copiar datos, pulsar continuar ni crear Issues. Sigue el perfil, validador fuente-bound y modo de juez honesto. Verifica ledger 11/11, COMPLETED y recibo terminal READY, o reporta bloqueo exacto; jamás inventes pasos, API/modelos externos, permisos ni resultados.
+
+## Prueba acotada y trazabilidad
+- `services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py`: fixture en PostgreSQL 17.6/18.7, 11 pasos 0/10/20/30/40/45/47/50/60/70/80 en transacción y `ROLLBACK`, `ROLLBACK_EMPTY=true`. **SIMULACIÓN**, no acredita ejecución GPT, writer ni E2E.
+- `scripts/lf_profile_native_resume.py`: mismo request de continuación acepta ambos objetos, valida RAW y registra 50/60 antes de 70/80 sin handoff manual.
+- Salidas nuevas no usan `MISSING_NOT_EXECUTED` ni `NOT_OFFICIAL_PROFILE_RUN`; reportan estado canónico medido.
+- Sin SQL vivo, merge, Train ni edición de RUN históricos; `DRAFT` hasta CI y prueba real del flujo completa.
