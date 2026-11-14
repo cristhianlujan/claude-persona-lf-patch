@@ -82,6 +82,7 @@ está sujeto a **DECISIÓN HUMANA** con evidencia de aplicabilidad y fuentes act
   sustituirla sin la copia de integración y readback del mismo resultado está
   **BLOQUEADO**. No se ha demostrado un RUN nuevo real 0→80 con el
   handler genérico.
+- La invocación candidata verifica el `applicability_contract` mediante la ruta de evidencia configurada en política (`input_validate` / `evidence_payload`) **antes de llamar** a `lf_skill_invoke_v1`: sin evidencia → `SKILL_APPLICABILITY_EVIDENCE_NOT_READY`; `applicable=false` → `SKILL_NOT_REQUIRED_BY_INPUT_VALIDATE`. La función no lleva ningún nombre de skill en esta condición. El diseño de **dos fases reales** (primero evidencia de aplicabilidad, después invocación) está pendiente de integración con el Step40 vigente. El antiguo Step40 todavía llama IG fijo y esta prueba NO equivale a sustituirlo.
 - Prueba parametrizada de diez perfiles reales en cada PostgreSQL:
   IG por política determinista 10/10; FICTICIA_SEMANTICA por descriptor 10/10;
   ambigüedad bloqueada 10/10 y stale bloqueado 10/10; 20 RUN
