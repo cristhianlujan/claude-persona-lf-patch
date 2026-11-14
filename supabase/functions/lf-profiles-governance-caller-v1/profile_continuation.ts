@@ -663,6 +663,22 @@ export async function handleProfileContinuation(
   const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId);
   if (error || !e) return error ?? blocked("PROFILE_CONTINUATION_EXECUTION_NOT_FOUND");
   if (action === PROFILE_SOURCE_BIND_ACTION) {
+    // Operation-owned DB plan. Router supplies selected profile ONLY: never trust
+    // skill lists or step order from a request, chat prompt or Router payload.
+    const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_v1", {
+      p_profile_code: e.target_code,
+    });
+    if (planned.error) return planned.error;
+    const plan = planned.result;
+    if (plan?.status !== "READY" || plan?.operation_code !== "EJECUCION_PERFIL_LF" ||
+        plan?.profile_code !== e.target_code || !Array.isArray(plan?.steps) ||
+        plan.steps.length !== 11 || !Array.isArray(plan?.skills)) {
+      return respond({
+        outcome: "BLOCKED", phase: "OPERATION_PLAN",
+        code: String(plan?.blocking_code ?? "PROFILE_OPERATION_DB_PLAN_NOT_READY"),
+        execution_id: e.execution_id, profile_code: e.target_code,
+      }, 409);
+    }
     return respond({
       outcome: "SOURCE_BINDING_REQUIRED",
       execution_id: e.execution_id,
@@ -670,6 +686,7 @@ export async function handleProfileContinuation(
       target_repo: e.target_repo,
       target_path: e.target_path,
       source_revision_required: callerRevision,
+      operation_plan: plan,
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
     });
   }
