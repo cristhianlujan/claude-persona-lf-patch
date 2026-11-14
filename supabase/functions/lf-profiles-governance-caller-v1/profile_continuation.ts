@@ -304,13 +304,23 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
     if (resolved.error) return resolved.error;
     skillInput = { ...cleanInput, _trusted: resolved.context };
   }
+  // The authenticated RUN owns channel+profile. Resolve and attest the skill
+  // against DB policy+CURRENT descriptor before calling the EXISTING SQL invoker.
+  const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
+  const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
+  const semantic = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision")
+    ? body.skill_semantic_decision : null;
+  if (!["PRODUCTO", "PROGRAMACION", "OPERACIONES"].includes(channel))
+    return blocked("PROFILE_SKILL_ROUTER_CHANNEL_UNRESOLVED", 409);
+  if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
+    return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
   let response: Response;
   try {
-    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_skill_invoke_v1`, {
+    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_invoke_selected_v1`, {
       method: "POST",
       headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`, "content-type": "application/json" },
-      // The parent is always the authenticated, read-only profile execution, never a caller-supplied id.
-      body: JSON.stringify({ p_skill: skill, p_execution_id: e.execution_id, p_input: skillInput }),
+      body: JSON.stringify({ p_execution_id: e.execution_id, p_channel: channel,
+        p_skill_code: skill, p_input: skillInput, p_semantic_decision: semantic }),
       signal: AbortSignal.timeout(30_000),
     });
   } catch { return blocked("PROFILE_SKILL_INVOKE_TRANSPORT_FAILED", 502); }
@@ -665,11 +675,24 @@ export async function handleProfileContinuation(
   if (action === PROFILE_SOURCE_BIND_ACTION) {
     // Operation-owned DB plan. Router supplies selected profile ONLY: never trust
     // skill lists or step order from a request, chat prompt or Router payload.
+    const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
+    const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
+    const semantic = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision")
+      ? body.skill_semantic_decision : null;
+    if (semantic !== null && (typeof semantic !== "object" || Array.isArray(semantic)))
+      return blocked("PROFILE_SKILL_SEMANTIC_DECISION_INVALID", 400);
     const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_v1", {
-      p_profile_code: e.target_code,
+      p_profile_code: e.target_code, p_channel: channel, p_semantic_decision: semantic,
     });
     if (planned.error) return planned.error;
     const plan = planned.result;
+    if (plan?.status === "SEMANTIC_SELECTION_REQUIRED" && plan?.profile_code === e.target_code) {
+      return respond({outcome:"SKILL_SEMANTIC_SELECTION_REQUIRED",
+        execution_id:e.execution_id,profile_code:e.target_code,
+        semantic_candidates:plan.selection_receipt?.semantic_candidates,
+        required_skills:plan.selection_receipt?.required_skills,
+        next_action:"NATIVE_PROFILE_JUDGE_SKILL_AND_RESUME_SAME_EXECUTION"});
+    }
     if (plan?.status !== "READY" || plan?.operation_code !== "EJECUCION_PERFIL_LF" ||
         plan?.profile_code !== e.target_code || !Array.isArray(plan?.steps) ||
         plan.steps.length !== 11 || !Array.isArray(plan?.skills)) {
