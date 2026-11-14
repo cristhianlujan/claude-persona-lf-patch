@@ -1,0 +1,12 @@
+{
+  "solution_ref": "LF-B06-B08-NEGATIVE-AUDIT-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b06_replay_project_isolation_pg17_pg18.py": "RUNTIME_TESTING",
+    "audits/ig-lote39-b06-b08/01_b08_run_eligible_and_raw_sha_readonly.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-B06-B08-NEGATIVE-AUDIT-V1.json": "CHANGESET_MANIFEST",
+    "audits/ig-lote39-b06-b08/02_b08_generic_run_patch_sha_select.sql": "INPUT_GOVERNANCE",
+    "audits/ig-lote39-b06-b08/03_b06_recibo_g03_actualizado.json": "INPUT_GOVERNANCE",
+    "audits/ig-lote39-b06-b08/04_b08_procedimiento_post_b09_no_disparar.json": "INPUT_GOVERNANCE",
+    "audits/ig-lote39-b06-b08/05_tablero_final_b06_b08.md": "INPUT_GOVERNANCE"
+  }
+}
