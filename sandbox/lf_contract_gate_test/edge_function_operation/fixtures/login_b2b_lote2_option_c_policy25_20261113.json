@@ -1,0 +1,465 @@
+{
+  "schema": "LF_LOTE2_OPTION_C_POLICY25_ISOLATED_SOURCE_AND_PATCH_V1",
+  "policy_id": 25,
+  "policy_code": "SEC-B2B-TRUSTED-DEVICE",
+  "source_status": "CANDIDATO",
+  "source_preimage_sha256": "b3eb2d4f3ab1a67bd99c58f243f55c7092dd8040e2710c3ce1d28a82d36bbc4c",
+  "source_snapshot": {
+    "status": "CANDIDATO",
+    "category": "AUTHENTICATION",
+    "created_at": "2026-08-19T02:26:20.848648+00:00",
+    "updated_at": "2026-08-19T05:35:12.213614+00:00",
+    "description": "Control de dispositivo confiable para Backoffice Empresa. El OTP por correo se solicita únicamente cuando el login proviene de un dispositivo no reconocido. La duración de confianza es configurable por empresa y no puede ser permanente.",
+    "policy_code": "SEC-B2B-TRUSTED-DEVICE",
+    "policy_config": {
+      "permanent_trust": "DENY",
+      "editable_profiles": [
+        "B2B_ADMIN_LF",
+        "B2B_ADMIN_EMPRESA"
+      ],
+      "read_only_profiles": [
+        "B2B_LECTOR_AUDITOR"
+      ],
+      "company_configurable": true,
+      "device_registry_status": "DEFINED_CANDIDATE",
+      "second_control_channel": "EMAIL_OTP",
+      "second_control_trigger": "UNRECOGNIZED_DEVICE_ONLY",
+      "company_settings_screen": "B2B-ADMIN-001",
+      "manual_revocation_scope": [
+        "SINGLE_DEVICE",
+        "ALL_TRUSTED_DEVICES_FOR_USER"
+      ],
+      "trusted_device_rls_mode": "ENABLED_SERVER_ONLY",
+      "manual_revocation_actions": [
+        "REVOKE_TRUSTED_DEVICE",
+        "REVOKE_ALL_TRUSTED_DEVICES"
+      ],
+      "trust_revocation_triggers": [
+        "TRUST_EXPIRED",
+        "PASSWORD_CHANGED",
+        "USER_SUSPENDED",
+        "MANUAL_REVOCATION"
+      ],
+      "trusted_device_token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+      "trusted_device_cookie_path": "/",
+      "manual_revocation_authority": "SERVER_ONLY",
+      "manual_revocation_next_login": "EMAIL_OTP_REQUIRED",
+      "trusted_device_cookie_domain": "OMIT",
+      "trusted_device_cookie_prefix": "__Host-",
+      "trusted_device_cookie_secure": true,
+      "trusted_device_token_storage": "HASH_ONLY",
+      "trusted_device_cookie_purpose": "DEVICE_RECOGNITION_AFTER_PRIMARY_AUTH",
+      "trusted_device_registry_table": "lf_ops.dispositivos_confiables",
+      "trusted_device_token_rotation": "NEW_TOKEN_AFTER_SUCCESSFUL_EMAIL_OTP",
+      "manual_revocation_confirmation": "REQUIRED",
+      "trusted_device_duration_source": "lf_ops.empresas.trusted_device_duration_days",
+      "trusted_device_registry_status": "DEFINED_CANDIDATE",
+      "logout_preserves_trusted_device": true,
+      "manual_revocation_permission_id": 31,
+      "trusted_device_cookie_http_only": true,
+      "trusted_device_cookie_same_site": "Lax",
+      "trusted_device_expiry_authority": "SERVER",
+      "trusted_device_token_generation": "SERVER_ONLY",
+      "manual_revocation_session_effect": "TERMINATE_AFFECTED_ACTIVE_SESSIONS",
+      "manual_revocation_permission_code": "B2B_USER_UPDATE",
+      "trusted_device_client_direct_access": "DENY",
+      "trusted_device_cookie_expiry_source": "lf_ops.empresas.trusted_device_duration_days",
+      "trusted_device_duration_allowed_days": [
+        7,
+        15,
+        30,
+        60,
+        90
+      ],
+      "trusted_device_duration_default_days": 30,
+      "trusted_device_cookie_contains_identity": "DENY",
+      "trusted_device_cookie_authenticates_user": "DENY",
+      "trusted_device_revoked_token_reactivation": "DENY"
+    },
+    "enforcement_level": "REQUIRED",
+    "security_policy_id": 25,
+    "source_decision_id": null,
+    "parameter_provenance": {},
+    "source_decision_number": null
+  },
+  "columns": [
+    {
+      "col": "policy_code",
+      "typ": "text"
+    },
+    {
+      "col": "category",
+      "typ": "text"
+    },
+    {
+      "col": "description",
+      "typ": "text"
+    },
+    {
+      "col": "enforcement_level",
+      "typ": "text"
+    },
+    {
+      "col": "policy_config",
+      "typ": "jsonb"
+    },
+    {
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "col": "security_policy_id",
+      "typ": "bigint"
+    },
+    {
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "col": "parameter_provenance",
+      "typ": "jsonb"
+    }
+  ],
+  "proposed_description": "SEC-B2B-TRUSTED-DEVICE aplica a perfiles 1 a 6: token opaco aleatorio emitido server-side, solo hash persistido en lf_ops.dispositivos_confiables y cookie __Host- HttpOnly Secure SameSite=Lax Path=/ sin permisos por sí sola. Confianza FIJA de 30 días RENOVABLE desde última actividad autenticada VÁLIDA de ese dispositivo: server actualiza last_used_at y expires_at=last_used_at+30d solo después de login completo con usuario y contraseña y OTP si se exige; mera cookie, fallo o desafío incompleto no renuevan. Dispositivo nuevo, revocado o sin acceso válido en los últimos 30 días requiere OTP Brevo; también si contraseña lleva 3 meses calendario sin cambiar, aunque el dispositivo sea reconocido. Cambio de correo, teléfono y recuperación de acceso siempre exigen OTP. SMS Intico solo contingencia habilitada por soporte autorizado tras actualizar correo sin recibir OTP; sin fallback automático. Todos los tokens se revocan por cambio de contraseña o recuperación de acceso APROBADA, además de usuario DISABLED y revocación manual individual o total, que mantiene confirmación/permisos/sesiones afectadas. Token revocado no se reutiliza. No configurable por empresa, no 7–90 días, no confianza permanente.",
+  "config_patch": {
+    "profile_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "company_configurable": false,
+    "company_settings_screen": null,
+    "editable_profiles": [],
+    "read_only_profiles": [],
+    "permanent_trust": "DENY",
+    "trusted_device_duration_allowed_days": [
+      30
+    ],
+    "trusted_device_duration_default_days": 30,
+    "trusted_device_duration_fixed_days": 30,
+    "trusted_device_duration_source": "SEC_B2B_TRUSTED_DEVICE_FIXED_30D",
+    "trusted_device_cookie_expiry_source": "SEC_B2B_TRUSTED_DEVICE_FIXED_30D",
+    "second_control_trigger": "NEW_REVOKED_OR_30D_INACTIVE_DEVICE_OR_3_MONTHS_PASSWORD",
+    "second_control_channel": "EMAIL_OTP_BREVO",
+    "password_age_otp_override": "3_CALENDAR_MONTHS",
+    "device_inactivity_source": "lf_ops.dispositivos_confiables.last_used_at",
+    "device_activity_update_authority": "SERVER_AFTER_COMPLETED_AUTHENTICATION_ONLY",
+    "device_activity_refresh_mode": "ROLLING_LAST_USED_AT_PLUS_30D",
+    "device_token_unverified_presentation_refresh": "DENY",
+    "always_otp_operations": [
+      "CHANGE_EMAIL",
+      "CHANGE_PHONE",
+      "ACCESS_RECOVERY"
+    ],
+    "trust_revocation_triggers": [
+      "TRUST_EXPIRED_30D",
+      "PASSWORD_CHANGED",
+      "ACCESS_RECOVERY_APPROVED",
+      "USER_DISABLED",
+      "MANUAL_REVOCATION"
+    ],
+    "password_change_revocation_scope": "ALL_TOKENS",
+    "access_recovery_approval_revocation_scope": "ALL_TOKENS",
+    "trusted_device_token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+    "trusted_device_token_storage": "HASH_ONLY",
+    "trusted_device_token_generation": "SERVER_ONLY",
+    "trusted_device_registry_table": "lf_ops.dispositivos_confiables",
+    "trusted_device_cookie_prefix": "__Host-",
+    "trusted_device_cookie_http_only": true,
+    "trusted_device_cookie_secure": true,
+    "trusted_device_cookie_same_site": "Lax",
+    "trusted_device_cookie_path": "/",
+    "trusted_device_token_rotation": "NEW_TOKEN_AFTER_SUCCESSFUL_OTP_FOR_NEW_OR_STALE_DEVICE",
+    "manual_revocation_next_login": "EMAIL_OTP_REQUIRED",
+    "phone_sms_contingency_provider": "INTICO_MANUAL_SUPPORT",
+    "phone_sms_automatic_fallback": "DENY"
+  },
+  "parameter_provenance_patch": {
+    "profile_ids": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "company_configurable": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "company_settings_screen": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "editable_profiles": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "read_only_profiles": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "permanent_trust": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_duration_allowed_days": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_duration_default_days": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_duration_fixed_days": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_duration_source": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_cookie_expiry_source": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "second_control_trigger": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "second_control_channel": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "password_age_otp_override": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "device_inactivity_source": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "device_activity_update_authority": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "device_activity_refresh_mode": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "device_token_unverified_presentation_refresh": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "always_otp_operations": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trust_revocation_triggers": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "password_change_revocation_scope": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "access_recovery_approval_revocation_scope": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_token_form": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_token_storage": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_token_generation": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_registry_table": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_cookie_prefix": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_cookie_http_only": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_cookie_secure": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_cookie_same_site": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_cookie_path": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "trusted_device_token_rotation": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "manual_revocation_next_login": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "phone_sms_contingency_provider": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    },
+    "phone_sms_automatic_fallback": {
+      "origin_type": "LF_PROVISIONAL_DEFAULT",
+      "value_status": "LF_PROVISIONAL",
+      "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+      "origin_reference": "OWNER_CONVERSATION_OPTION_C_20261113_2130_PENDING_SIGNATURE",
+      "identity_verified": false
+    }
+  },
+  "provenance_status": "PROVISIONAL_NO_OWNER_SIGNATURE",
+  "identity_verified": false,
+  "postgres_live_guards": {
+    "functions": [
+      {
+        "proname": "fn_guard_input_parameter_provenance_v1",
+        "ddl": "CREATE OR REPLACE FUNCTION programacion.fn_guard_input_parameter_provenance_v1()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'programacion'\nAS $function$\ndeclare\n  v_new jsonb:=to_jsonb(new);\n  v_old jsonb:=case when tg_op='UPDATE' then to_jsonb(old) else '{}'::jsonb end;\n  v_prov jsonb:=coalesce(v_new->'parameter_provenance','{}'::jsonb);\n  v_old_prov jsonb:=coalesce(v_old->'parameter_provenance','{}'::jsonb);\n  v_keys text[];\n  v_key text;\n  v_changed boolean;\n  v_old_cfg jsonb;\n  v_new_cfg jsonb;\nbegin\n  if not programacion.fn_input_parameter_provenance_valid_v1(v_prov) then\n    raise exception 'PARAMETER_PROVENANCE_INVALID:%',tg_table_name;\n  end if;\n\n  if tg_table_name='politicas_rate_limit' then\n    v_keys:=array['window_seconds','max_requests','burst_limit','scope_key'];\n  elsif tg_table_name='politicas_timeout' then\n    v_keys:=array['timeout_seconds','retry_limit','backoff_strategy'];\n  elsif tg_table_name='politicas_sesion' then\n    v_keys:=array['idle_timeout_seconds','warning_before_timeout_seconds','absolute_timeout_seconds','access_token_ttl_seconds','refresh_rotation_enabled','max_concurrent_sessions','extend_on_user_activity'];\n  elsif tg_table_name='otp_politicas' then\n    v_keys:=array['longitud','digitos_permitidos','expiracion_minutos','max_intentos','max_reenvios','bloqueo_reenvio_min','canal_primario','canal_fallback','fallback_segundos'];\n  elsif tg_table_name='politicas_seguridad' then\n    v_old_cfg:=coalesce(v_old->'policy_config','{}'::jsonb);\n    v_new_cfg:=coalesce(v_new->'policy_config','{}'::jsonb);\n    for v_key in\n      select key from (\n        select jsonb_object_keys(v_old_cfg) key\n        union\n        select jsonb_object_keys(v_new_cfg) key\n      ) q order by key\n    loop\n      v_changed:=tg_op='INSERT' or (v_new_cfg->v_key is distinct from v_old_cfg->v_key);\n      if v_changed then\n        if not (v_prov ? v_key) then\n          raise exception 'PARAMETER_PROVENANCE_REQUIRED:%:%',tg_table_name,v_key;\n        end if;\n        if tg_op='UPDATE' and v_prov->v_key is not distinct from v_old_prov->v_key then\n          raise exception 'PARAMETER_PROVENANCE_REFRESH_REQUIRED:%:%',tg_table_name,v_key;\n        end if;\n      end if;\n    end loop;\n    return new;\n  else\n    raise exception 'PARAMETER_PROVENANCE_TABLE_UNSUPPORTED:%',tg_table_name;\n  end if;\n\n  foreach v_key in array v_keys\n  loop\n    v_changed:=tg_op='INSERT' or (v_new->v_key is distinct from v_old->v_key);\n    if v_changed and jsonb_typeof(v_new->v_key)<>'null' then\n      if not (v_prov ? v_key) then\n        raise exception 'PARAMETER_PROVENANCE_REQUIRED:%:%',tg_table_name,v_key;\n      end if;\n      if tg_op='UPDATE' and v_prov->v_key is not distinct from v_old_prov->v_key then\n        raise exception 'PARAMETER_PROVENANCE_REFRESH_REQUIRED:%:%',tg_table_name,v_key;\n      end if;\n    end if;\n  end loop;\n  return new;\nend;\n$function$\n"
+      },
+      {
+        "proname": "fn_input_parameter_provenance_valid_v1",
+        "ddl": "CREATE OR REPLACE FUNCTION programacion.fn_input_parameter_provenance_valid_v1(p_provenance jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n  r record;\n  v_origin text;\n  v_status text;\n  v_decision text;\n  v_ref text;\n  v_clause text;\n  v_version text;\nbegin\n  if p_provenance is null or jsonb_typeof(p_provenance)<>'object' then\n    return false;\n  end if;\n\n  for r in select key,value from jsonb_each(p_provenance)\n  loop\n    if nullif(btrim(r.key),'') is null or jsonb_typeof(r.value)<>'object' then return false; end if;\n    v_origin:=r.value->>'origin_type';\n    v_status:=r.value->>'value_status';\n    v_decision:=nullif(btrim(coalesce(r.value->>'decision_ref','')),'');\n    v_ref:=nullif(btrim(coalesce(r.value->>'origin_reference','')),'');\n    v_clause:=nullif(btrim(coalesce(r.value->>'origin_clause','')),'');\n    v_version:=nullif(btrim(coalesce(r.value->>'origin_version','')),'');\n\n    if v_origin not in ('LF_CANONICAL','INTERNATIONAL_STANDARD','INDUSTRY_GUIDANCE','LF_PROVISIONAL_DEFAULT','UNCLASSIFIED_LEGACY') then return false; end if;\n    if v_status not in ('LF_CANONICAL','EXTERNAL_REFERENCE','LF_PROVISIONAL','LEGACY_UNCLASSIFIED') then return false; end if;\n\n    if v_origin='LF_CANONICAL' and (v_status<>'LF_CANONICAL' or v_decision is null) then return false; end if;\n    if v_origin='INTERNATIONAL_STANDARD' and (v_ref is null or (v_clause is null and v_version is null)) then return false; end if;\n    if v_origin='INDUSTRY_GUIDANCE' and v_ref is null then return false; end if;\n    if v_origin='LF_PROVISIONAL_DEFAULT' and (\n      v_status<>'LF_PROVISIONAL'\n      or r.value->>'replacement_policy'<>'MUST_BE_RATIFIED_OR_OVERRIDDEN'\n    ) then return false; end if;\n    if v_origin='UNCLASSIFIED_LEGACY' and v_status<>'LEGACY_UNCLASSIFIED' then return false; end if;\n\n    -- External provenance may become LF canonical only through an explicit LF ratification decision.\n    if v_status='LF_CANONICAL' and v_origin<>'LF_CANONICAL' and (\n      coalesce((r.value->>'ratified_by_lf')::boolean,false) is not true\n      or v_decision is null\n    ) then return false; end if;\n  end loop;\n  return true;\nexception when others then\n  return false;\nend;\n$function$\n"
+      }
+    ],
+    "triggers": [
+      {
+        "tgname": "trg_politicas_seguridad_parameter_provenance",
+        "ddl": "CREATE TRIGGER trg_politicas_seguridad_parameter_provenance BEFORE INSERT OR UPDATE ON lf_ops.politicas_seguridad FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_parameter_provenance_v1()"
+      },
+      {
+        "tgname": "trg_politicas_seguridad_touch_updated_at",
+        "ddl": "CREATE TRIGGER trg_politicas_seguridad_touch_updated_at BEFORE UPDATE ON lf_ops.politicas_seguridad FOR EACH ROW EXECUTE FUNCTION lf_ops.touch_updated_at()"
+      }
+    ]
+  },
+  "scope": "PG_LAB_ONLY_NOT_SQL_FOR_SUPABASE",
+  "live_writes": 0
+}
