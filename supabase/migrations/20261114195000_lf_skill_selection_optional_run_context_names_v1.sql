@@ -8,6 +8,7 @@ AS $fn$
 DECLARE
  v_n integer; v_missing integer; v_stale integer; v_required jsonb:='[]'::jsonb;
  v_eligible jsonb:='[]'::jsonb; v_excluded jsonb:='[]'::jsonb;
+ v_deferred jsonb:='[]'::jsonb;
  v_selected jsonb:='[]'::jsonb; v_codes jsonb; v_refs jsonb; v_revs jsonb;
  v_reason text;v_rev text;v_code text;v_ncodes integer;v_row record;v_field text;
  v_ready boolean;v_legacy boolean:=coalesce((p_run_context->>'legacy_run')::boolean,false);
@@ -155,8 +156,24 @@ BEGIN
       ELSE v_revs->>v_code END;
    IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(v_eligible) x
      WHERE x->>'skill_code'=v_code AND x->>'source_revision'=v_rev) THEN
-     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SELECTION_NOT_ELIGIBLE_OR_STALE',
-      'skill_code',v_code);END IF;
+     -- A policy-valid choice may be bound at Step30 before Step40 supplies
+     -- screen/scope input. Defer execution, never pretend input exists.
+     IF EXISTS (SELECT 1 FROM public.lf_skill_selector_policy_v1 p
+        JOIN public.lf_skill_selection_registry_v1 d USING(skill_code)
+        JOIN public.lf_skill_catalog_v1 c USING(skill_code)
+        WHERE p.profile_code=p_profile_code AND p.skill_code=v_code
+        AND p.selection_mode='SEMANTIC_OPTIONAL' AND p.enabled
+        AND NOT p.owner_decision_required AND p_channel=ANY(p.channels)
+        AND d.descriptor_status='CURRENT' AND d.source_revision=v_rev
+        AND c.status='READY') THEN
+       v_deferred:=v_deferred||jsonb_build_array(jsonb_build_object(
+         'skill_code',v_code,'status','SKILL_INPUT_REQUIRED_PENDING',
+         'descriptor_revision',v_rev));
+       CONTINUE;
+     END IF;
+     RETURN jsonb_build_object('status','BLOCKED',
+       'blocking_code','SKILL_SELECTION_NOT_ELIGIBLE_OR_STALE','skill_code',v_code);
+   END IF;
    SELECT v_selected||jsonb_build_array(jsonb_build_object(
      'skill_code',x->>'skill_code','handler_fn',x->>'handler_fn',
      'required_operation',x->>'required_operation','effect',x->>'effect',
@@ -171,7 +188,7 @@ BEGIN
   'skill_candidates',v_eligible,'excluded_skills',v_excluded,
   'skill_selection_context',p_run_context,'profile_code',p_profile_code,'channel',p_channel,
   'selection_mode','SKILL_DESCRIPTOR_SELECTED',
-  'selection_reason',v_reason,
+  'deferred_skills',v_deferred,'selection_reason',v_reason,
   'continuation_allowed',true,'production_authorized',false,
   'next_action','SUBMIT_SKILL_SELECTION');
 END
