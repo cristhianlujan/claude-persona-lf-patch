@@ -652,6 +652,72 @@ def build_semantic_receipt(review):
     }
 
 
+def complete_native_profile_semantic_and_report(execution_id, source, semantic_review, source_revision, digest, headers):
+    """Same EJECUCION_PERFIL_LF run; validated Step50/60 must precede recorded V3/80."""
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED"
+    if semantic_review is None:
+        return record_incomplete_continuation(
+            execution_id, source.get("profile_code"), phase,
+            "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+        )
+    if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
+        from lf_semantic_fail_feedback import persist_feedback
+        try:
+            feedback = persist_feedback(
+                semantic_review, execution_id, source.get("profile_code"),
+                Path.cwd() / "profile-semantic-judge.json",
+            )
+        except (ValueError, TypeError) as exc:
+            print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
+            return 1
+        print(json.dumps({
+            "phase": feedback["phase"], "outcome": feedback["outcome"],
+            "verdict": feedback["verdict"],
+            "execution_id": feedback["execution_id"],
+            "next_action": feedback["next_action"],
+        }, ensure_ascii=False))
+        return 1
+    try:
+        validate_independent_semantic_review(semantic_review)
+    except ValueError as exc:
+        print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+        return 1
+    semantic_path = Path.cwd() / "profile-semantic-judge.json"
+    semantic_path.write_text(
+        json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+    repository = os.environ["GITHUB_REPOSITORY"]
+    artifact = f"profile-native-output-{run_id}"
+    semantic_ref = (
+        f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
+    )
+    submit = {
+        "action": "profile_native_continue_v1",
+        "execution_id": execution_id,
+        "source_revision": source_revision,
+        "source_digest": digest,
+        "semantic_judge_result": build_semantic_receipt(semantic_review),
+        "semantic_evidence_ref": semantic_ref,
+    }
+    code, closed = call_json(EDGE_URL, submit, headers)
+    if code != 200:
+        print(json.dumps({
+            "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
+            "code":closed.get("code"),
+        }))
+        return 1
+    print(json.dumps({
+        "execution_id": execution_id,
+        "profile_code": closed.get("profile_code"),
+        "phase": closed.get("phase"),
+        "next_gate": closed.get("next_gate"),
+    }, ensure_ascii=False))
+    return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
+
+
+
 def main():
     request = governed_request()
     token = oidc()
@@ -898,66 +964,9 @@ def main():
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
     if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
-        if semantic_review is None:
-            return record_incomplete_continuation(
-                execution_id, source.get("profile_code"), phase,
-                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
-            )
-        if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
-            from lf_semantic_fail_feedback import persist_feedback
-            try:
-                feedback = persist_feedback(
-                    semantic_review, execution_id, source.get("profile_code"),
-                    Path.cwd() / "profile-semantic-judge.json",
-                )
-            except (ValueError, TypeError) as exc:
-                print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
-                return 1
-            print(json.dumps({
-                "phase": feedback["phase"], "outcome": feedback["outcome"],
-                "verdict": feedback["verdict"],
-                "execution_id": feedback["execution_id"],
-                "next_action": feedback["next_action"],
-            }, ensure_ascii=False))
-            return 1
-        try:
-            validate_independent_semantic_review(semantic_review)
-        except ValueError as exc:
-            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
-            return 1
-        semantic_path = Path.cwd() / "profile-semantic-judge.json"
-        semantic_path.write_text(
-            json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
-            encoding="utf-8",
+        return complete_native_profile_semantic_and_report(
+            execution_id, source, semantic_review, source_revision, digest, headers,
         )
-        run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
-        repository = os.environ["GITHUB_REPOSITORY"]
-        artifact = f"profile-native-output-{run_id}"
-        semantic_ref = (
-            f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
-        )
-        submit = {
-            "action": "profile_native_continue_v1",
-            "execution_id": execution_id,
-            "source_revision": source_revision,
-            "source_digest": digest,
-            "semantic_judge_result": build_semantic_receipt(semantic_review),
-            "semantic_evidence_ref": semantic_ref,
-        }
-        code, closed = call_json(EDGE_URL, submit, headers)
-        if code != 200:
-            print(json.dumps({
-                "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
-                "code":closed.get("code"),
-            }))
-            return 1
-        print(json.dumps({
-            "execution_id": execution_id,
-            "profile_code": closed.get("profile_code"),
-            "phase": closed.get("phase"),
-            "next_gate": closed.get("next_gate"),
-        }, ensure_ascii=False))
-        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
 
     if phase == "REPORT_OUTPUT_REQUIRED":
         submit = {
@@ -1020,9 +1029,11 @@ def main():
             "next_action": recorded.get("next_action"),
         }, ensure_ascii=False))
         if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
-            return record_incomplete_continuation(
-                execution_id, source.get("profile_code"), recorded["phase"],
-                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+            # A single already-governed resume payload can carry BOTH authentic
+            # native RAW and source-supported V3. Edge records 50/60 first;
+            # only then this call records 70/80 on the SAME execution_id.
+            return complete_native_profile_semantic_and_report(
+                execution_id, source, semantic_review, source_revision, digest, headers,
             )
         return 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
