@@ -703,17 +703,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         return await handleProfileContinuation(
           action,
           body,
-          {
-            ...config,
-            step50Auto: {
-              enabled: deps.getEnv("LF_PROFILE_STEP50_AUTO") === "true",
-              githubToken: deps.getEnv("LF_PROFILE_STEP50_GITHUB_TOKEN"),
-              openaiApiKey: deps.getEnv("LF_PROFILE_STEP50_OPENAI_API_KEY"),
-              openaiModel: deps.getEnv("LF_PROFILE_STEP50_OPENAI_MODEL"),
-              validatorUrl: deps.getEnv("LF_PROFILE_STEP50_VALIDATOR_URL"),
-              validatorToken: deps.getEnv("LF_PROFILE_STEP50_VALIDATOR_TOKEN"),
-            },
-          },
+          config,
           deps.fetchFn,
           String(claims.workflow_sha),
           { method: identity.method, repository: config.repository, workflow_ref: identity.workflowRef, run_id: runId, workflow_sha: workflowSha },
