@@ -16,7 +16,7 @@ for(const field of ["pantalla_id","consumer","ticket"]) {
   }
 }
 for(const field of ["semantic_receipt_sha256","catalog_sha256","request_sha256"]) {
-  for(const rawField of ["raw","raw_payload","raw_output","raw_input","RAW"]) {
+  for(const rawField of ["raw","raw_payload","raw_output","raw_input","RAW","profile_output"]) {
     Deno.test("IG transport: forbid "+field+" in "+rawField,()=>{
       const p={...good,[rawField]:{screen_code:"B2B-CARGA-002",[field]:"forged"}};
       const r=validateLfIgTransport("edge",p,IG_RUNTIME_REQUIRED["input-governance-agent-v1"]);
