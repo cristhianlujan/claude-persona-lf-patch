@@ -1,4 +1,3 @@
-import { executeStep50Automatically, type Step50AutoConfig } from "./profile_step50_auto.ts";
 // Governed, profile-agnostic continuation for an *existing* Router-admitted execution.
 // It deliberately does not select a profile/screen, impersonate a model, or grant
 // write authority. All substantive transitions use existing canonical RPCs.
@@ -25,7 +24,7 @@ const NATIVE_EXECUTOR_PROVIDER_BY_MODE = new Set([
 ]);
 
 type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
-type Config = { supabaseUrl: string; serviceRoleKey: string; repository: string; step50Auto?: Step50AutoConfig };
+type Config = { supabaseUrl: string; serviceRoleKey: string; repository: string };
 // Identity of the authenticated OIDC caller of this route (verified by the Edge function, never by the request body).
 export type CallerIdentity = { method: string; repository: string; workflow_ref: string; run_id: string; workflow_sha: string };
 type Execution = {
@@ -905,39 +904,12 @@ export async function handleProfileContinuation(
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
   if (postModel) return postModel;
 
-  // The profile owns Step 50: invoke a genuine producer after 45+47 (7/7),
-  // then use the EXISTING profile writer. No Issue or GPT-chat output submission.
-  if (result.status === "NATIVE_MODEL_INPUT_READY" && config.step50Auto?.enabled) {
-    const output = await executeStep50Automatically(
-      result, revision, config.repository, e.target_path, config.step50Auto, fetchFn,
-    );
-    if (!output.ok) return blocked(output.code, 409);
-    const recorded = await rpc(config, fetchFn, "lf_profile_native_bridge_record_output_v1", {
-      p_execution_id: e.execution_id,
-      p_profile_output: output.profileOutput,
-      p_validation: {
-        valid: true, errors: [], blocking_codes: [],
-        source_bound_validation: output.validation,
-      },
-      p_raw_evidence_ref: output.modelRef,
-      p_validator_evidence_ref: output.validatorRef,
-      p_actor_execution_id: e.execution_id,
-    });
-    if (recorded.error) return recorded.error;
-    if (recorded.result?.status !== "NATIVE_PRODUCER_VALIDATED") {
-      return respond({ outcome: "BLOCKED", code: recorded.result?.blocking_code ?? "STEP50_CANONICAL_WRITER_REJECTED" }, 409);
-    }
-    // Step 50 and deterministic 60 were recorded by the existing canonical bridge.
-    // Step 70 remains governed separately; do not claim a terminal RUN.
-    return respond({
-      outcome: "CONTINUATION_REQUIRED", phase: "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED",
-      execution_id: e.execution_id, profile_code: e.target_code,
-      next_action: "PRODUCE_EVIDENCED_V3_AND_SUBMIT_GOVERNED_CONTINUATION",
-      step50_recorded_by: "lf_profile_native_bridge_record_output_v1",
-      producer: output.producer,
-      result: recorded.result,
-    });
-  }
+  // GPT_NATIVE/CLAUDE_NATIVE Step 50 belongs to the model in the SAME owning
+  // conversation. Edge MUST NOT call a paid/external model or mint fake RAW.
+  // The owning chat submits real RAW + optional grounded V3 through the
+  // existing governed Issue/OIDC/Edge continuation for this execution_id.
+  // The source-bound canonical validator and bridge record Steps 50 and 60.
+  // The SAME governed runner can immediately record 70 and 80 when V3 is present.
 
   // Post-model submission is accepted only from this already-authorized OIDC
   // continuation transport. The model supplies only its RAW profile output;
