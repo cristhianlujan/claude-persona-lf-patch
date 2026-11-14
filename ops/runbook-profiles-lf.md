@@ -3,6 +3,15 @@
 ## Scope
 Operate Profiles LF in this repository and the authorized LF Supabase sandbox. Non-production only. Reconstruct current state from GitHub, Supabase and EKB on every run; conversation context is not operational evidence.
 
+## EJECUCION_PERFIL_LF — interfaz mínima de la operación (candidato #3845, NO-GO)
+**Única instrucción visible al dueño:** `Ejecuta EJECUCION_PERFIL_LF para <solicitud + contexto>`.
+
+**Definición interna que sigue el ejecutor (no trasladar al usuario):** ACT-0001/Router selecciona perfil y entrega Gate2/contexto. El perfil propietario recupera desde BD el contrato activo y la secuencia ordenada de `public.lf_operation_steps` + `public.lf_operation_step_contracts`. El planificador candidato `public.lf_profile_execution_plan_v1(profile_code_seleccionado)` lee esa secuencia y los vínculos `USA_SKILL` de `public.lf_activo_relaciones` con el catálogo `public.lf_skill_catalog_v1`. El Router nunca elige ni transporta skills. Los pasos `input_validate`/ `execute_profile` reciben el plan genérico sin condiciones codificadas por una skill particular.
+
+**Transporte interno vigente:** el chat nativo de perfil gestiona automáticamente `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1` / `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` por el Issue etiquetado `lf-profile-resume-governed`, con workflow `.github/workflows/lf-edge-deploy-credential-readback.yml`, OIDC y bridges oficiales. El mismo `execution_id` se conserva hasta 80; el juez V3 conserva procedencia real; el cierre exige 11/11 limpios y recibo terminal `READY`. No usar modelo por API o keys externas.
+
+**Límite medido 2026-11-13:** no hay vínculos ejecutables PERFIL→SKILL (0), solo 4 relaciones heredadas PERFIL→contrato IG. Por tanto `lf_profile_execution_plan_v1` está **solo en SQL candidato**, no implantado ni invocado por el runtime vigente; falta vincular skills y entradas autorizadas, y conectar el dispatch del plan en el perfil. Nunca declarar ejecución automática real con el fixture de PostgreSQL como prueba de producción. Sin evidencia, bloquear.
+
 ## Evidence
 Evidence is tool output produced during the current run. Report unqueried fields as `NO_EJECUTADO`. Record identifiers, receipts, SHAs, CI states and query results only when observed in current-run tool output.
 
