@@ -113,6 +113,30 @@ def governed_request():
             or len(json.dumps(context)) > 55000):
             raise ValueError("PROFILE_NATIVE_BEGIN_CONTEXT_INVALID")
         return {"kind": "BEGIN", "router_context": context, "executor_mode": mode}
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_RUN_FROM_PHRASE_V1":
+        # The only Issue entry is the literal owner phrase plus semantic
+        # judgments authored by the native Router context, NOT a Gate2 blob.
+        if set(data) != {"schema_version", "request_text", "stage1_decision",
+                         "profile_semantic_decision", "executor_mode"}:
+            raise ValueError("PROFILE_PHRASE_SCHEMA_INVALID")
+        text = data["request_text"]
+        stage1 = data["stage1_decision"]
+        semantic = data["profile_semantic_decision"]
+        mode = data["executor_mode"]
+        if (not isinstance(text,str) or not 1 <= len(text.strip()) <= 8000
+            or not isinstance(stage1,dict) or len(json.dumps(stage1)) > 12000
+            or stage1.get("schema_version") != "LF_ROUTER_STAGE1_V2"
+            or stage1.get("texto_original") != text
+            or stage1.get("negocio_codigo") != "LF"
+            or stage1.get("downstream_execution_allowed") is not False
+            or not isinstance(semantic,dict) or len(json.dumps(semantic)) > 12000
+            or semantic.get("decision") != "SELECTED"
+            or not isinstance(semantic.get("selected_profile_code"),str)
+            or mode not in {"GPT_NATIVE","CLAUDE_NATIVE"}):
+            raise ValueError("PROFILE_PHRASE_SEMANTIC_INVALID")
+        return {"kind":"PHRASE_BEGIN", "request_text":text,
+            "stage1_decision":stage1, "profile_semantic_decision":semantic,
+            "executor_mode":mode}
     # A read-only profile invokes a governed skill through its own route. The server uses the
     # authenticated execution as the parent and the skill invoker checks authority and inputs.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
@@ -844,15 +868,20 @@ def main():
     # profile-owned skill invocations: OIDC + server-side parent authority
     # already bind the call to an existing execution.
     source_revision = os.environ["GITHUB_SHA"]
-    if isinstance(request, dict) and request.get("kind") == "BEGIN":
+    if isinstance(request, dict) and request.get("kind") in ("BEGIN","PHRASE_BEGIN"):
         # Profile invokes its own existing governed operation. Server-side
         # Edge authenticates OIDC and applies service_role at the canonical
         # writer. No credential is serialized to Router/profile context.
-        code, started = call_json(EDGE_URL, {
-            "action": "profile_native_begin_from_context_v1",
-            "context": request["router_context"],
-            "executor_mode": request["executor_mode"],
-        }, headers)
+        begin_payload = ({"action":"profile_native_begin_from_phrase_v1",
+                          "request_text":request["request_text"],
+                          "stage1_decision":request["stage1_decision"],
+                          "profile_semantic_decision":request["profile_semantic_decision"],
+                          "executor_mode":request["executor_mode"]}
+                         if request["kind"]=="PHRASE_BEGIN" else
+                         {"action":"profile_native_begin_from_context_v1",
+                          "context":request["router_context"],
+                          "executor_mode":request["executor_mode"]})
+        code, started = call_json(EDGE_URL, begin_payload, headers)
         result = started.get("result") if isinstance(started.get("result"), dict) else {}
         execution_id = result.get("execution_id")
         if (code != 200 or started.get("outcome") != "NATIVE_EXECUTION_READY"
