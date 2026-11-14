@@ -71,7 +71,7 @@ begin
  v_sha := public.lf_asset_snapshot_sha_v1('REGLA',p_rule_code);
  insert into public.lf_rule_promotion_v1(rule_code,request_execution_id,requested_by_profile,request_snapshot_sha256,reason) values(p_rule_code,p_execution_id,par.target_code,v_sha,p_reason) returning promotion_id into v_id;
  return jsonb_build_object('status','PENDING_HUMAN_APPROVAL','promotion_id',v_id,'snapshot_sha256',v_sha,'next_action','Una persona debe aprobar con lf_rule_promotion_decide_v1');
-end $function$
+end $function$;
 
 DO $post$ BEGIN
  IF position('PROMOTION_INDEPENDENT_STEP70_NOT_ATTESTED' IN pg_get_functiondef('public.lf_rule_promotion_request_v1(text,text,text)'::regprocedure))=0
