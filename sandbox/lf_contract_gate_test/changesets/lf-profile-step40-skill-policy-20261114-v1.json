@@ -6,6 +6,6 @@
     "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
     "sandbox/lf_contract_gate_test/changesets/lf-profile-step40-skill-policy-20261114-v1.json": "CHANGESET_MANIFEST",
     "services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py": "SERVICE_RUNTIME",
-    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "SERVICE_RUNTIME"
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING"
   }
 }
