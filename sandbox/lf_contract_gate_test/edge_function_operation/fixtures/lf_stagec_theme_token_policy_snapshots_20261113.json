@@ -1,0 +1,565 @@
+{
+  "schema": "LF_STAGEC_THEME_TOKEN_GOVERNANCE_LAB_SNAPSHOTS_V1",
+  "origin": "Supabase SELECT only 2026-11-13, no live writes",
+  "identity_verified": false,
+  "existing_policy": {
+    "snapshot": {
+      "status": "VIGENTE",
+      "priority": 50,
+      "required": true,
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch/main/docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md",
+      "updated_at": "2026-10-25T05:07:31.964753+00:00",
+      "policy_code": "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1",
+      "channel_scope": [
+        "PRODUCTO",
+        "PROGRAMACION"
+      ],
+      "business_scope": [
+        "LF"
+      ],
+      "asset_types_any": [
+        "PANTALLA",
+        "SCREEN",
+        "COMPONENT",
+        "PROTOTYPE",
+        "UI"
+      ],
+      "capabilities_any": [
+        "DESIGN_TOKENS",
+        "VISUAL_DEFINITION",
+        "FRONTEND_IMPLEMENTATION",
+        "UI_BEHAVIOR"
+      ],
+      "action_families_any": [
+        "CREATE",
+        "UPDATE",
+        "REPAIR",
+        "DEFINE",
+        "IMPLEMENT"
+      ],
+      "semantic_descriptor": "Applies when governed visual/UI assets consume Design System values. Preserve canonical token identity instead of persisting resolved literals.",
+      "execution_constraints": [
+        "PERSIST_CANONICAL_TOKEN_NAME_OR_CODE_NOT_LITERAL_VALUE",
+        "FORBID_LITERAL_VISUAL_VALUES_IN_GOVERNED_BINDINGS",
+        "DO_NOT_CREATE_DUPLICATE_VALUE_ALIAS_TOKEN",
+        "VIGENTE_COMPONENT_REQUIRES_VIGENTE_GOVERNED_TOKENS"
+      ]
+    },
+    "sha256": "44258bd382f498f1088e87fa89713ecb98e369bcc02e826f1a9991e26278d3e2"
+  },
+  "theme_rule": {
+    "snapshot": {
+      "id": 390,
+      "razon": "Los tokens dark_mode permanecen pendientes de decisión final.",
+      "codigo": "B2B-RULE-THEME-002",
+      "estado": "CANDIDATO",
+      "origen": "HANDOFF_B2B_v0.3",
+      "titulo": "Gate de modo noche",
+      "categoria": "THEME",
+      "created_at": "2026-07-21T15:59:54.024242+00:00",
+      "created_by": "OpenAI",
+      "updated_at": "2026-07-21T15:59:54.024242+00:00",
+      "descripcion": "El tema nocturno no puede pasar a vigente hasta aprobar contraste y tokens dark_mode.",
+      "valor_config": {
+        "required_qa": [
+          "contrast",
+          "focus",
+          "status_badges",
+          "tables",
+          "modals"
+        ],
+        "blocked_until_tokens_vigente": true
+      },
+      "es_transversal": true,
+      "pendiente_detalle": "Aprobar dark_mode_surface, dark_mode_card y dark_mode_text.",
+      "pendiente_decision": true
+    },
+    "sha256": "7cc0bb4657d122c3d7eac3f3169b84b7e9ee7e85f9bc8b7c8d2f54af53e667aa"
+  },
+  "color_tokens": [
+    {
+      "snapshot": {
+        "notes": "Pendiente contraste AA.",
+        "status": "PENDIENTE_DECISION_FINAL",
+        "hex_value": null,
+        "rgb_value": null,
+        "created_at": "2026-06-30T15:29:59.535141+00:00",
+        "token_name": "dark_mode_card",
+        "updated_at": "2026-06-30T15:29:59.535141+00:00",
+        "requires_qa": true,
+        "token_group": "dark_mode",
+        "allowed_usage": "Cards modo noche cuando exista tema dark validado",
+        "blocked_usage": "Uso sin contraste AA",
+        "semantic_role": "Card modo noche",
+        "color_token_id": 14,
+        "design_system_id": 1,
+        "propagation_scope": [
+          "web",
+          "mobile"
+        ],
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": null,
+        "affected_components": [
+          "card_dark"
+        ],
+        "source_decision_number": null
+      },
+      "sha256": "825cf77474abba18776e0bd31d73a45e38048b28e75dde626b97c00a3b72c68d"
+    },
+    {
+      "snapshot": {
+        "notes": "Pendiente contraste AA.",
+        "status": "PENDIENTE_DECISION_FINAL",
+        "hex_value": null,
+        "rgb_value": null,
+        "created_at": "2026-06-30T15:29:59.535141+00:00",
+        "token_name": "dark_mode_surface",
+        "updated_at": "2026-06-30T15:29:59.535141+00:00",
+        "requires_qa": true,
+        "token_group": "dark_mode",
+        "allowed_usage": "Fondo modo noche cuando exista tema dark validado",
+        "blocked_usage": "Uso sin contraste AA",
+        "semantic_role": "Fondo modo noche",
+        "color_token_id": 13,
+        "design_system_id": 1,
+        "propagation_scope": [
+          "web",
+          "mobile"
+        ],
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": null,
+        "affected_components": [
+          "page_background_dark"
+        ],
+        "source_decision_number": null
+      },
+      "sha256": "bc1288946077723b1bfc3bb1d0e48a3a2514505e80789d98ffb49ce64058eb90"
+    },
+    {
+      "snapshot": {
+        "notes": "Pendiente contraste AA.",
+        "status": "PENDIENTE_DECISION_FINAL",
+        "hex_value": null,
+        "rgb_value": null,
+        "created_at": "2026-06-30T15:29:59.535141+00:00",
+        "token_name": "dark_mode_text",
+        "updated_at": "2026-06-30T15:29:59.535141+00:00",
+        "requires_qa": true,
+        "token_group": "dark_mode",
+        "allowed_usage": "Texto modo noche cuando exista tema dark validado",
+        "blocked_usage": "Uso sin contraste AA",
+        "semantic_role": "Texto modo noche",
+        "color_token_id": 15,
+        "design_system_id": 1,
+        "propagation_scope": [
+          "web",
+          "mobile"
+        ],
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": null,
+        "affected_components": [
+          "text_dark"
+        ],
+        "source_decision_number": null
+      },
+      "sha256": "69f21334a2f709a13e9ef6772286396bcbdd2c4c3234f90055f16d211cb211b2"
+    }
+  ],
+  "binding": {
+    "snapshot": {
+      "mode": "DARK",
+      "notes": "Modo noche condicionado a QA de dark_mode_*",
+      "status": "CANDIDATO",
+      "created_at": "2026-07-21T15:35:38.506456+00:00",
+      "theme_name": "LF B2B Dark",
+      "updated_at": "2026-07-21T15:35:38.506456+00:00",
+      "route_scope": "/b2b",
+      "token_overrides": {
+        "divider": "border_soft",
+        "primary_text": "dark_mode_text",
+        "primary_action": "green_action",
+        "secondary_text": "slate_text",
+        "content_surface": "dark_mode_card",
+        "page_background": "dark_mode_surface"
+      },
+      "design_system_id": 1,
+      "theme_binding_id": 4,
+      "design_system_code": "LF_DS_V1",
+      "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+      "theme_binding_code": "LF_B2B_THEME_DARK",
+      "source_decision_number": 52
+    },
+    "sha256": "f76f652e626490588a0b3fdf6a66a30c978a71823b474d572ae7e312080e9d77"
+  },
+  "columns": [
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "token_name",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "design_system_code",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "hex_value",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "rgb_value",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "token_group",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "semantic_role",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "allowed_usage",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "blocked_usage",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "affected_components",
+      "typ": "jsonb"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "propagation_scope",
+      "typ": "jsonb"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "requires_qa",
+      "typ": "boolean"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "notes",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "color_token_id",
+      "typ": "bigint"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "color_tokens",
+      "col": "design_system_id",
+      "typ": "bigint"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "theme_binding_code",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "design_system_code",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "theme_name",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "mode",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "route_scope",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "token_overrides",
+      "typ": "jsonb"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "notes",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "theme_binding_id",
+      "typ": "bigint"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "schema": "lf_design",
+      "tab": "theme_bindings",
+      "col": "design_system_id",
+      "typ": "bigint"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "id",
+      "typ": "integer"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "codigo",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "categoria",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "titulo",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "descripcion",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "razon",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "valor_config",
+      "typ": "jsonb"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "es_transversal",
+      "typ": "boolean"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "estado",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "origen",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "pendiente_decision",
+      "typ": "boolean"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "pendiente_detalle",
+      "typ": "text"
+    },
+    {
+      "schema": "lf_ops",
+      "tab": "reglas",
+      "col": "created_by",
+      "typ": "text"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "policy_code",
+      "typ": "text"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "business_scope",
+      "typ": "text[]"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "channel_scope",
+      "typ": "text[]"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "capabilities_any",
+      "typ": "text[]"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "action_families_any",
+      "typ": "text[]"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "asset_types_any",
+      "typ": "text[]"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "semantic_descriptor",
+      "typ": "text"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "execution_constraints",
+      "typ": "jsonb"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "source_ref",
+      "typ": "text"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "priority",
+      "typ": "integer"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "schema": "private",
+      "tab": "lf_reusable_policy_registry_v1",
+      "col": "required",
+      "typ": "boolean"
+    }
+  ],
+  "owner_decision_ref": "OWNER_DESIGN_TOKENS_ONLY_2026_11_13_DOCUMENTARY",
+  "canonical_policy_source": "github://cristhianlujan/claude-persona-lf-patch/main/docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md",
+  "canonical_policy_blob_sha": "516932cc70240c1cb0b2383c9b629062b5107454"
+}

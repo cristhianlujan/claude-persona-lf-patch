@@ -1,0 +1,49 @@
+{
+  "schema": "LF_STAGE_D_VIGENTE_COLOR_TOKENS_SELECT_READBACK_V1",
+  "source": "lf_design.color_tokens / LF_DS_V1",
+  "tokens": [
+    {
+      "token_name": "border_soft",
+      "hex_value": "#E2E8F0",
+      "status": "VIGENTE",
+      "semantic_role": "Borde suave",
+      "sha256": "cd4293d550ec6e7a11f2301583c7487cd0d65b1acd4a43bac57582088f015454"
+    },
+    {
+      "token_name": "card_surface",
+      "hex_value": "#FFFFFF",
+      "status": "VIGENTE",
+      "semantic_role": "Superficie de card",
+      "sha256": "277003d0b5f640e67ae27301376efd65b053f316498f06e8e76a18b233de09cb"
+    },
+    {
+      "token_name": "green_action_border",
+      "hex_value": "#99cdb2",
+      "status": "VIGENTE",
+      "semantic_role": "Borde positivo suave",
+      "sha256": "22bac707668295b7004b760fd94a3ec4bdc4c92430599cf427b52f63e7d94cb5"
+    },
+    {
+      "token_name": "green_action_hover",
+      "hex_value": "#0d7336",
+      "status": "VIGENTE",
+      "semantic_role": "Hover de accion principal",
+      "sha256": "bb37b705c3a7448a9f396cc1a399aa23630b60bb5cb030c3627536607b597e6b"
+    },
+    {
+      "token_name": "slate_text",
+      "hex_value": "#66708F",
+      "status": "VIGENTE",
+      "semantic_role": "Texto auxiliar, subtítulos y disclaimers",
+      "sha256": "bf3ae9b5b60c060a4166df81df237ad5d373cf83987f17889a5c1af99ae07c69"
+    },
+    {
+      "token_name": "slate_text_strong",
+      "hex_value": "#5A6480",
+      "status": "VIGENTE",
+      "semantic_role": "secondary_text_reinforced",
+      "sha256": "330630eefd0d72c00f701932538ef40012b760e442ce76c0cdb3de6d31391940"
+    }
+  ],
+  "identity_verified": false
+}

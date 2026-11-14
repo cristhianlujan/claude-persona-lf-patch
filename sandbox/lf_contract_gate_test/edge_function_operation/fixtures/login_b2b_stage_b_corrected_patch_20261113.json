@@ -1,0 +1,309 @@
+{
+  "schema": "LF_LOGIN_B2B_STAGE_B_CORRECTED_PATCH_LAB_V2",
+  "status": "PROPOSAL_ONLY_NO_LIVE_WRITES",
+  "owner_decision_time": "2026-11-13T18:13:00-05:00",
+  "identity_verified": false,
+  "source_refs": [
+    "L16-Q01",
+    "L16-Q11",
+    "L35-OWNER-AUTH019-OPTION-A-001",
+    "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+    "OWNER_MANDATE_2026-11-13_18_13"
+  ],
+  "new_permission_table_proposal": {
+    "schema": "lf_ops",
+    "name": "b2b_recovery_profile_permissions",
+    "state": "OBJECT_NEW_DESIGN_ONLY",
+    "columns": [
+      "permission_id bigint PRIMARY KEY",
+      "profile_id bigint NOT NULL",
+      "screen_id integer",
+      "can_create boolean NOT NULL DEFAULT false",
+      "can_approve boolean NOT NULL DEFAULT false",
+      "enabled boolean NOT NULL DEFAULT true",
+      "source_decision_ref text",
+      "created_at timestamptz NOT NULL",
+      "updated_at timestamptz NOT NULL"
+    ],
+    "semantics": "Connected user profile resolved server-side; eligibility CREATE/APPROVE if allowed by profile permission OR screen access; distinct creators and approvers per case; audit and fail-closed if unauthorized.",
+    "identity_verified": false
+  },
+  "patches": [
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-019",
+      "title": "Segundo factor OTP correo/Brevo según política 19",
+      "description": "El MFA solo se solicita cuando la política central 3 determine un disparador aplicable. Para perfiles 1 a 6, iniciar por usuario y contraseña validados por el servidor; si MFA corresponde, LF_AUTH_BOUNDARY debe emitir y verificar OTP por correo entregado mediante Brevo antes de conceder AUTHENTICATED y permisos. Para perfiles 1 y 2 no exigir Google Workspace/SAML ni FIDO2, WebAuthn o passkeys. SMS vía Intico es contingencia sin fallback automático, pendiente la decisión de quién y cuándo habilita la contingencia. OTP email no se afirma resistente a phishing ni Supabase native AAL2. La elección del IdP primario sigue pendiente de ADR-003/M1.",
+      "pending_detail": "OWNER_DOCUMENTARY_DECISION_IDENTITY_UNVERIFIED; PENDING_IMPLEMENTATION_QA_BREVO_AND_IDP; SMS_INTICO_ACTOR_AND_TRIGGER_TO_DECIDE",
+      "config_set": {
+        "admin_profile_ids": [
+          1,
+          2
+        ],
+        "non_admin_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "admin_method": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "non_admin_method": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "admin_sso_protocol": "NOT_REQUIRED_FOR_ADMIN_FACTOR",
+        "admin_provider_status": "SUPERSEDED_GOOGLE",
+        "admin_phishing_resistant_requirement": "NOT_REQUIRED_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+        "password_only_fallback": "DENY",
+        "admin_local_password_fallback": "DENY_IF_MFA_REQUIRED",
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_mode": "OWNER_ACTOR_TRIGGER_PENDING",
+        "sms_automatic_fallback": "DENY",
+        "mfa_applicability_policy_id": 3,
+        "numeric_thresholds_in_rule": "DENY"
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-020",
+      "title": "Recuperación de segundo factor asistida sin bypass",
+      "description": "La recuperación de cuenta o factor para perfiles 1 a 6 empieza mediante soporte con DNI escaneado o fotografía. El servidor comprueba identidad, perfil conectado y facultad de crear/aprobar por permiso o acceso a pantalla según una tabla nueva de permisos por perfil (solo propuesta). Una persona crea la solicitud y otra persona distinta la aprueba; se registra auditoría de ambos actos y se notifica al celular/correo anterior. Se espera 48 horas antes de aplicar el cambio. Después el servidor genera una clave temporal de un solo uso y la envía a un correo determinado. En el primer ingreso, antes de sesión operativa, el usuario debe cambiar dicha clave y actualizar su correo en el mismo flujo; la clave temporal se invalida. No existe bypass de MFA, ni basta enviar OTP a un correo comprometido. Una selfie es un camino alternativo por decidir y no queda aprobado, el proveedor IDV no está elegido; producción exige integración y QA.",
+      "pending_detail": "OWNER_DOCUMENTARY_Q11_PLUS_18_13_IDENTITY_UNVERIFIED; DNI_SUPPORT_DECIDED; SELFIE_NOT_DECIDED; IDV_PROVIDER_NOT_SELECTED; RECOVERY_PROFILE_PERMISSION_TABLE_NEW_DESIGN",
+      "config_set": {
+        "recovery_flow": "ASSISTED_SUPPORT_DNI_TWO_PERSON_48H_ONE_TIME_KEY",
+        "scope_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "identity_evidence": [
+          "SCAN_DNI",
+          "PHOTO_DNI"
+        ],
+        "selfie_route_status": "NOT_DECIDED",
+        "idv_provider_status": "NOT_SELECTED",
+        "authorization_mode": "CONNECTED_USER_PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+        "permission_table_proposed": "lf_ops.b2b_recovery_profile_permissions",
+        "create_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+        "approve_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+        "creator_and_approver_distinct": "REQUIRED",
+        "notice_previous_contact": [
+          "PHONE",
+          "EMAIL"
+        ],
+        "audit_events": "REQUIRED",
+        "recovery_wait_hours": 48,
+        "temporary_credential": "ONE_TIME_ONLY",
+        "temporary_credential_delivery": "DESIGNATED_EMAIL",
+        "temporary_credential_plaintext_logging": "DENY",
+        "force_password_change_on_first_use": true,
+        "update_email_in_same_first_use_step": true,
+        "operational_session_before_completion": "DENY",
+        "password_only_fallback": "DENY",
+        "admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+        "non_admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+        "current_authorized_recovery_profile_ids": null,
+        "required_assurance_after_reenrollment": "LF_SECOND_FACTOR_VERIFIED_NOT_NATIVE_AAL2",
+        "production_authorized": false,
+        "admin_recovery_profile_ids": [
+          1,
+          2
+        ],
+        "assisted_recovery_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "authorized_recovery_actor_binding": "PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+        "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+        "email_access_recovery_status": "ASSISTED_SUPPORT_DNI_DECIDED_IMPLEMENTATION_PENDING"
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-018",
+      "title": "MFA condicional para perfiles 1–6",
+      "description": "La política MFA central 3 cubre todos los perfiles humanos del Backoffice 1 a 6. En cualquiera de ellos, MFA se exige condicionalmente por 30 días sin uso o tres meses calendario sin cambio de contraseña, y por otros disparadores que solo podrán incorporarse mediante decisión posterior; esos umbrales pertenecen a la política central, no se duplican en valor_config. Si contraseña válida y MFA aplica, LF_AUTH_BOUNDARY responde MFA_REQUIRED, sin sesión AUTHENTICATED ni permisos hasta OTP Brevo verificado en servidor. Configurar y probar cobertura y gate por perfil, sin SAML administrativo.",
+      "pending_detail": "PENDING_IMPLEMENTATION_QA_ALL_PROFILES_1_TO_6; CENTRAL_POLICY_3_TRIGGER_PARAMETERS_TO_ALIGN; DOCUMENTARY_OWNER_DECISION_IDENTITY_UNVERIFIED",
+      "config_set": {
+        "covered_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mfa_known_trigger_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mfa_profile_1_trigger_status": "OWNER_CONFIRMED_SAME_AS_ALL_PROFILES",
+        "mfa_profile_coverage": "ALL_HUMAN_PROFILES",
+        "mfa_activation_mode": "CONDITIONAL_CENTRAL_POLICY",
+        "mfa_applicability_policy_id": 3,
+        "mfa_required_outcome": "MFA_REQUIRED",
+        "numeric_thresholds_in_rule": "DENY",
+        "factor_policy_status": "OWNER_DEFINED_IMPLEMENTATION_QA_PENDING",
+        "production_authorized": false
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-047",
+      "title": "Aviso Bloq Mayús ligado a política de contraseña",
+      "description": "El Login puede advertir Bloq Mayús localmente si el foco está en el campo Contraseña y el navegador lo detecta. Nunca altera, registra ni transmite la contraseña. Su dependencia es la nueva política canónica AUTH_LOGIN_FAILED_PASSWORD, CANDIDATO, con 5 intentos, ventana 900 segundos, burst 5 y alcance USER, procedencia documental por cada parámetro. La distinción consecutivos/ventana móvil, duración del bloqueo y actor liberador sigue pendiente; no promover el aviso sin política, implementación y QA. No cambiar RATE-B2B-LOGIN (IP_USER) sin revisar sus consumidores.",
+      "pending_detail": "PENDING_AUTH_LOGIN_FAILED_PASSWORD_POLICY_CREATE; PENDING_OWNER_FAILED_ATTEMPT_SEMANTICS_LOCK_DURATION_UNLOCK_AUTHORITY; PENDING_IMPLEMENTATION_QA",
+      "config_set": {
+        "dependency": "AUTH_LOGIN_FAILED_PASSWORD",
+        "dependency_status": "PROPOSED_CANDIDATE_NOT_CREATED",
+        "promotion_condition": "DEPENDENCY_CONFIGURED_IMPLEMENTED_QA_VERIFIED",
+        "display_condition": "PASSWORD_FOCUSED_AND_CAPS_LOCK_ON",
+        "credential_value_telemetry": "DENY",
+        "password_value_change": "DENY"
+      }
+    },
+    {
+      "kind": "policy",
+      "id": 20,
+      "description": "La recuperación de cuenta o factor para perfiles 1 a 6 empieza mediante soporte con DNI escaneado o fotografía. El servidor comprueba identidad, perfil conectado y facultad de crear/aprobar por permiso o acceso a pantalla según una tabla nueva de permisos por perfil (solo propuesta). Una persona crea la solicitud y otra persona distinta la aprueba; se registra auditoría de ambos actos y se notifica al celular/correo anterior. Se espera 48 horas antes de aplicar el cambio. Después el servidor genera una clave temporal de un solo uso y la envía a un correo determinado. En el primer ingreso, antes de sesión operativa, el usuario debe cambiar dicha clave y actualizar su correo en el mismo flujo; la clave temporal se invalida. No existe bypass de MFA, ni basta enviar OTP a un correo comprometido. Una selfie es un camino alternativo por decidir y no queda aprobado, el proveedor IDV no está elegido; producción exige integración y QA.",
+      "config_set": {
+        "recovery_flow": "ASSISTED_SUPPORT_DNI_TWO_PERSON_48H_ONE_TIME_KEY",
+        "scope_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "identity_evidence": [
+          "SCAN_DNI",
+          "PHOTO_DNI"
+        ],
+        "selfie_route_status": "NOT_DECIDED",
+        "idv_provider_status": "NOT_SELECTED",
+        "authorization_mode": "CONNECTED_USER_PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+        "permission_table_proposed": "lf_ops.b2b_recovery_profile_permissions",
+        "create_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+        "approve_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+        "creator_and_approver_distinct": "REQUIRED",
+        "notice_previous_contact": [
+          "PHONE",
+          "EMAIL"
+        ],
+        "audit_events": "REQUIRED",
+        "recovery_wait_hours": 48,
+        "temporary_credential": "ONE_TIME_ONLY",
+        "temporary_credential_delivery": "DESIGNATED_EMAIL",
+        "temporary_credential_plaintext_logging": "DENY",
+        "force_password_change_on_first_use": true,
+        "update_email_in_same_first_use_step": true,
+        "operational_session_before_completion": "DENY",
+        "password_only_fallback": "DENY",
+        "admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+        "non_admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+        "current_authorized_recovery_profile_ids": null,
+        "required_assurance_after_reenrollment": "LF_SECOND_FACTOR_VERIFIED_NOT_NATIVE_AAL2",
+        "production_authorized": false,
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "admin_recovery_profile_ids": [
+          1,
+          2
+        ],
+        "assisted_recovery_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "authorized_recovery_actor_binding": "PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+        "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+        "email_access_recovery_status": "ASSISTED_SUPPORT_DNI_DECIDED_IMPLEMENTATION_PENDING",
+        "subscriber_notification_on_recovery": "REQUIRED"
+      }
+    },
+    {
+      "kind": "policy",
+      "id": 23,
+      "description": "Backoffice Next.js static export con Core Spring Boot; LF_AUTH_BOUNDARY valida credenciales y JWT/OIDC (issuer, JWKS, claims). MFA condicional para los seis perfiles: contraseña validada por servidor y segundo factor OTP correo/Brevo cuando aplique. Perfil 1 y 2 no requieren Google Workspace/SAML ni passkeys/FIDO2. SMS Intico es contingencia sin fallback automático, con actor y condición de habilitación pendientes. Amazon Cognito es objetivo AWS, pero IdP local, endpoint, grant y QA ADR-003/M1 siguen pendientes; producción no autorizada.",
+      "config_set": {
+        "admin_mfa_strategy": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "non_admin_mfa_strategy": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "admin_sso_protocol": "NOT_REQUIRED_FOR_ADMIN_MFA",
+        "admin_sso_configuration_status": "SUPERSEDED_GOOGLE_SAML",
+        "admin_phishing_resistant_requirement": "NOT_REQUIRED_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+        "admin_phishing_resistance_strategy": "EMAIL_OTP_NOT_PHISHING_RESISTANT",
+        "admin_idp_status": "PENDING_REAL_IDP_BINDING",
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_mode": "OWNER_ACTOR_TRIGGER_PENDING",
+        "sms_automatic_fallback": "DENY",
+        "provider_binding_status": "PENDING_M1_IDENTITY_SPIKE",
+        "production_authorized": false
+      }
+    },
+    {
+      "kind": "new_rate_policy",
+      "code": "AUTH_LOGIN_FAILED_PASSWORD",
+      "row": {
+        "policy_code": "AUTH_LOGIN_FAILED_PASSWORD",
+        "resource_code": "AUTH_LOGIN_FAILED_PASSWORD",
+        "window_seconds": 900,
+        "max_requests": 5,
+        "burst_limit": 5,
+        "scope_key": "USER",
+        "status": "CANDIDATO",
+        "source_decision_id": null,
+        "parameter_provenance": {
+          "window_seconds": {
+            "origin_type": "OWNER_DOCUMENTARY_DECISION",
+            "decision_ref": "OWNER_MANDATE_2026-11-13_D",
+            "identity_verified": false,
+            "parameter": "window_seconds"
+          },
+          "max_requests": {
+            "origin_type": "OWNER_DOCUMENTARY_DECISION",
+            "decision_ref": "OWNER_MANDATE_2026-11-13_D",
+            "identity_verified": false,
+            "parameter": "max_requests"
+          },
+          "burst_limit": {
+            "origin_type": "OWNER_DOCUMENTARY_DECISION",
+            "decision_ref": "OWNER_MANDATE_2026-11-13_D",
+            "identity_verified": false,
+            "parameter": "burst_limit"
+          },
+          "scope_key": {
+            "origin_type": "OWNER_DOCUMENTARY_DECISION",
+            "decision_ref": "OWNER_MANDATE_2026-11-13_D",
+            "identity_verified": false,
+            "parameter": "scope_key"
+          }
+        }
+      }
+    }
+  ],
+  "only_owner_missing_data": [
+    "SMS_INTICO_ACTOR_AND_TRIGGER",
+    "AUTH047_CONSECUTIVE_VS_ROLLING_WINDOW_BLOCK_DURATION_UNLOCK_AUTHORITY"
+  ],
+  "b07_finalizer_applicability": "NOT_INVOKED_LAB_ONLY; B07 PR3818 DRAFT AND GOVERENED_PARENT_CHILD_RUN_REQUIRED"
+}
