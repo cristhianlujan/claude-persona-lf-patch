@@ -33,13 +33,17 @@ def parse_issue_body(raw):
     return data
 
 
-def call_json(url, payload, headers=None):
+def call_json(url, payload, headers=None, timeout_seconds=90):
+    # Keep the established 3-argument transport contract for existing
+    # callers/tests. A selected skill receives the bounded timeout implicitly.
+    if isinstance(payload, dict) and payload.get("action") == "profile_skill_runtime_v1":
+        timeout_seconds=18 if timeout_seconds == 90 else min(timeout_seconds,18)
     headers = {"content-type": "application/json", **(headers or {})}
     req = urllib.request.Request(
         url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
     )
     try:
-        with urllib.request.urlopen(req, timeout=90) as response:
+        with urllib.request.urlopen(req, timeout=timeout_seconds) as response:
             return response.status, json.load(response)
     except urllib.error.HTTPError as exc:
         try:
@@ -47,6 +51,16 @@ def call_json(url, payload, headers=None):
         except ValueError:
             result = {"code": "NON_JSON_HTTP_FAILURE"}
         return exc.code, result
+    except (TimeoutError, urllib.error.URLError) as exc:
+        # Skill runtime is non-blocking: preserve bounded timeout as a finding
+        # through the existing DB ticket exhaustion bridge. Never claim READY.
+        if timeout_seconds != 90:
+            return 0, {
+                "outcome": "BLOCKED", "code": "SKILL_RUNTIME_NETWORK_OR_DEADLINE",
+                "error_type": type(exc).__name__,
+                "production_authorized": False, "promotion_authorized": False
+            }
+        raise
 
 
 def oidc():
@@ -1076,7 +1090,8 @@ def main():
             runtime_deadline = min(runtime_deadline, expires_at)
         now = dt.datetime.now(dt.timezone.utc)
         if now < runtime_deadline:
-            ig_code, ig = call_json(EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
+            ig_code, ig = call_json(
+                EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
         else:
             ig_code, ig = 0, {"outcome":"RUNTIME_TICKET_DEADLINE"}
         # The worker may legitimately be CURATING/VALIDATING, or fail during
@@ -1131,8 +1146,8 @@ def main():
                 "production_authorized":False}))
         if not (normal_ready or blocked_terminal):
             remaining = (runtime_deadline-dt.datetime.now(dt.timezone.utc)).total_seconds()
-            if remaining>0:
-                time.sleep(min(10.0,remaining))
+            if remaining>0 and ig_code != 0:
+                time.sleep(min(2.0,remaining))
         payload.pop("screen_selection_draft",None)
         code, result = call_json(EDGE_URL,payload,headers)
         if code == 401:
