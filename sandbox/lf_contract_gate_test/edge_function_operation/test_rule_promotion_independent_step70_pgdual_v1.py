@@ -24,9 +24,9 @@ CREATE ROLE authenticated;
 CREATE SCHEMA programacion;
 CREATE FUNCTION programacion.fn_t_remed_rule_promotion_verdicts_v1(integer,bigint)
  RETURNS TABLE(regla_id bigint,regla_codigo text,screens integer,criteria jsonb,
- verdict text,failed text[]) LANGUAGE sql STABLE AS $
+ verdict text,failed text[]) LANGUAGE sql STABLE AS $verdict_fixture$
  SELECT NULL::bigint,NULL::text,0,'{}'::jsonb,'HOLD'::text,ARRAY[]::text[]
- WHERE false $;
+ WHERE false $verdict_fixture$;
 CREATE SCHEMA lf_ops;
 CREATE TABLE public.lf_operation_execution (
  execution_id text PRIMARY KEY,operation_code text,target_code text,status text);
