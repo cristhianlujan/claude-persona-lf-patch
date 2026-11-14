@@ -796,6 +796,24 @@ BEGIN
 END $pd_compare$;
 SELECT 'PD_SOURCE_COMPATIBILITY_COPY_PASS=11/11|IG_MD5='||legacy_ig_md5||
  '|LIMIT='||evidence_limit FROM pd_generic_compat_receipt;
+-- The candidate invoker must preserve the 17th PRODUCT-DIRECTOR NOT_REQUIRED
+-- rather than activating IG just because the profile policy is enabled.
+CREATE TABLE public.lf_operation_execution_steps(
+ execution_id text,step_id text,status text,evidence_payload jsonb
+);
+INSERT INTO public.lf_operation_execution
+(execution_id,target_code,status,operation_code,manifest)
+VALUES ('EXEC-PD-NOT-REQUIRED-COPY','PERFIL-PRODUCT-DIRECTOR-LF','IN_PROGRESS',
+'EJECUCION_PERFIL_LF','{"router_profile_handoff":{"channel":"PRODUCTO"}}'::jsonb);
+SELECT 'PD_MISSING_APPLICABILITY='||(public.lf_profile_skill_invoke_selected_v1(
+ 'EXEC-PD-NOT-REQUIRED-COPY','PRODUCTO','INPUT_GOVERNANCE_CONTEXT_PACK','{}'::jsonb
+ )->>'blocking_code');
+INSERT INTO public.lf_operation_execution_steps VALUES
+('EXEC-PD-NOT-REQUIRED-COPY','input_validate','STEP_PASS_WITH_EVIDENCE',
+ '{"input_governance":{"applicable":false,"status":"NOT_REQUIRED"}}'::jsonb);
+SELECT 'PD_NOT_REQUIRED_BLOCK='||(public.lf_profile_skill_invoke_selected_v1(
+ 'EXEC-PD-NOT-REQUIRED-COPY','PRODUCTO','INPUT_GOVERNANCE_CONTEXT_PACK','{}'::jsonb
+ )->>'blocking_code');
 ROLLBACK;
 SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
  CASE WHEN to_regclass('public.lf_operation_steps') IS NULL
@@ -840,6 +858,8 @@ SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
                     self.assertEqual(row.split("|")[2:], ["11/11 PASS","11/11 PASS","BLOCK","BLOCK"])
                     print(f"PG_{version}_{row}", flush=True)
                 self.assertTrue(any(s.startswith("PD_SOURCE_COMPATIBILITY_COPY_PASS=11/11|IG_MD5=d9c0ac3a8e917fb67c7d24e7d8d2bf7d|LIMIT=SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED") for s in values))
+                self.assertIn("PD_MISSING_APPLICABILITY=SKILL_APPLICABILITY_EVIDENCE_NOT_READY", values)
+                self.assertIn("PD_NOT_REQUIRED_BLOCK=SKILL_NOT_REQUIRED_BY_INPUT_VALIDATE", values)
                 self.assertIn("ROLLBACK_GENERIC_EMPTY=true", values)
                 print(f"PASS_PROFILE_MATRIX_PG_{version} 10/10 DET=10 SEM=10 AMBIG_BLOCK=10 STALE_BLOCK=10 SIMULATED=20x11 ROLLBACK=true", flush=True)
                 print(f"PASS_PD_COMPAT_COPY_PG_{version} 11/11 SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED", flush=True)
