@@ -1018,11 +1018,19 @@ def main():
         blocked_terminal = (
             not terminal_blocked_replayed
             and ig_code == 409 and ig.get("outcome") == "BLOCKED"
-            and ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
+            and ig.get("code") in ("IG_CONTEXT_PACK_BLOCKED",
+                                   "SKILL_RUNTIME_BLOCKED_AS_FINDING")
+            and (ig.get("skill_code") == body.get("skill_code")
+                 if ig.get("code") == "SKILL_RUNTIME_BLOCKED_AS_FINDING"
+                 else True)
             and ig.get("terminal_status") == "BLOCKED"
             and ig.get("execution_id") == execution_id
-            and ig.get("pantalla_id") == body.get("pantalla_id")
-            and ig.get("consumer") == "CONTEXT_PACK"
+            and (ig.get("pantalla_id") == body.get("pantalla_id")
+                 if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
+                 else True)
+            and (ig.get("consumer") == "CONTEXT_PACK"
+                 if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
+                 else True)
             and isinstance(governed, dict)
             and governed.get("status") == "BLOCKED"
             and governed.get("consumer") == "CONTEXT_PACK"
@@ -1071,6 +1079,10 @@ def main():
                 or result.get("execution_id") != execution_id
                 or bridge_result.get("execution_write_mode") != "READ_ONLY"
                 or result_ig.get("status") != "BLOCKED"
+                or not isinstance(bridge_result.get("skill_findings"), list)
+                or not any(
+                    isinstance(f,dict) and f.get("skill_code") == body.get("skill_code")
+                    for f in bridge_result["skill_findings"])
                 or result_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
                 or not isinstance(result_ig.get("governance_result"), dict)
                 or result_ig["governance_result"].get("run_id") != governed.get("run_id")
