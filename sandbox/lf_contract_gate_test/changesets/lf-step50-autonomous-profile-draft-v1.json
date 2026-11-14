@@ -1,5 +1,5 @@
 {
-  "solution_ref": "lf-step50-chat-native-same-operation-draft-v1",
+  "solution_ref": "lf-step50-autonomous-profile-draft-v1",
   "paths": {
     "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
     "supabase/functions/lf-profiles-governance-caller-v1/caller.ts": "SUPABASE_FUNCTION",
