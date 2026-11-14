@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-skill-policy-14-source-first-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114141600_lf_14_skill_policy_source_first_activation_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-skill-policy-14-source-first-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
