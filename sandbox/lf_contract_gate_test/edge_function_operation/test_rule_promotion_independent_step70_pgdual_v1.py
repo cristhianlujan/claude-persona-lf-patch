@@ -111,10 +111,10 @@ class PGIndependentPromotionTest(unittest.TestCase):
                     self.assertIn("LF_PROMOTION_REQUEST_SOURCE_STATE_DRIFT",lab)
 
                     same=psql("BEGIN;\n"+lab+"\n"
-                       "SELECT 'SCHEMA_HIDDEN='||(NOT has_schema_privilege("
-                       "'service_role','programacion','USAGE'));\n"
-                       "SELECT 'WRAPPER_GRANTED='||has_function_privilege("
-                       "'service_role','public.lf_rule_promotion_verdicts_readonly_v1(integer,bigint)','EXECUTE');\n"
+                       "SELECT 'SCHEMA_HIDDEN='||CASE WHEN NOT has_schema_privilege("
+                       "'service_role','programacion','USAGE') THEN 'YES' ELSE 'NO' END;\n"
+                       "SELECT 'WRAPPER_GRANTED='||CASE WHEN has_function_privilege("
+                       "'service_role','public.lf_rule_promotion_verdicts_readonly_v1(integer,bigint)','EXECUTE') THEN 'YES' ELSE 'NO' END;\n"
                        "SET ROLE service_role;\n"
                        "SELECT 'READONLY_WRAPPER='||count(*) FROM "
                        "public.lf_rule_promotion_verdicts_readonly_v1(5,NULL);\n"
@@ -122,7 +122,7 @@ class PGIndependentPromotionTest(unittest.TestCase):
                        "SELECT public.lf_rule_promotion_request_v1("
                        "'PARENT-1','RULE-CAND-001','evidence') AS check_same;\n"
                        "ROLLBACK;")
-                    for proof in ("SCHEMA_HIDDEN=true","WRAPPER_GRANTED=true",
+                    for proof in ("SCHEMA_HIDDEN=YES","WRAPPER_GRANTED=YES",
                                   "READONLY_WRAPPER=0"):
                         self.assertIn(proof,same.stdout,same.stdout)
                     self.assertIn("PROMOTION_INDEPENDENT_STEP70_NOT_ATTESTED",same.stdout)
