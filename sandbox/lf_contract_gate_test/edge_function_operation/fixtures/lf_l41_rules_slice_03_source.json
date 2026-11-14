@@ -1,0 +1,924 @@
+{
+  "schema": "LF_L41_RULES_FROZEN_SELECT_V1",
+  "scope": "READ_ONLY_LF_OPS",
+  "slice": 3,
+  "order": "r.codigo",
+  "count": 31,
+  "source_rows": [
+    {
+      "source_row": {
+        "id": 63,
+        "razon": "Evitar spam al número del usuario.",
+        "codigo": "REG_RL_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Cooldown entre reenvíos OTP",
+        "categoria": "rate_limiting",
+        "created_at": "2026-06-23T19:00:05.066082+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:00:05.066082+00:00",
+        "descripcion": "Reenvío no disponible hasta que el timer de 45 segundos llegue a cero.",
+        "valor_config": {
+          "cooldown_segundos": 45
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f5ce4db5aad2133c401d65c4cc345b72399a22a3b624a786d8f29d15f372b00d",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 64,
+        "razon": "Antifraude sin penalizar permanentemente al usuario legítimo.",
+        "codigo": "REG_RL_002",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Bloqueo temporal al agotar reenvíos",
+        "categoria": "rate_limiting",
+        "created_at": "2026-06-23T19:00:05.066082+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:00:05.066082+00:00",
+        "descripcion": "Al usar los 3 reenvíos, bloqueo de 2 minutos antes de permitir nuevo código.",
+        "valor_config": {
+          "scope": "session_id",
+          "bloqueo_minutos": 2
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "be0a10e9f01c64c7a9dff283e11f1efdda4df4636b0f8b7f96b470efafad0c98",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 65,
+        "razon": "Un usuario legítimo no necesita cambiar el número más de 3 veces en el mismo registro.",
+        "codigo": "REG_RL_003",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Rate limiting en cambio de número inline",
+        "categoria": "rate_limiting",
+        "created_at": "2026-06-23T19:00:05.066082+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:00:05.066082+00:00",
+        "descripcion": "Máximo 3 cambios de número por sesión. Al superar, se bloquea y se muestra soporte.",
+        "valor_config": {
+          "scope": "session_id",
+          "accion": "mostrar_soporte",
+          "max_cambios": 3
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "0bc9fb1a8a624d6a7fbc0f1bc865103355088459988f2a8449ad41e54c0a69be",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 19,
+        "razon": "Prevenir fuerza bruta sobre códigos OTP.",
+        "codigo": "REG_SEG_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-OTP-ATTEMPT-CYCLE-001",
+        "titulo": "Bloqueo temporal tras agotar intentos de un OTP",
+        "categoria": "seguridad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T07:45:43.217455+00:00",
+        "descripcion": "Cada código OTP admite 5 intentos. Al agotarlos, ese OTP se invalida y la sesión entra en cooldown de 2 minutos antes de permitir solicitar un nuevo código. El primer agotamiento no bloquea permanentemente la sesión.",
+        "valor_config": {
+          "campo": "otp_resend_blocked_until",
+          "bloqueo_minutos": 2,
+          "otp_max_attempts": 5,
+          "invalidar_otp_actual": true,
+          "source_decision_number": 87,
+          "bloqueo_permanente_en_primer_ciclo": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "972aaece2a211c8251ffb3336f7374d882d8d1bc6609f6877c206897f980ca5c",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 20,
+        "razon": "Cortar flujos de ataque automatizado que explotan el canal WhatsApp.",
+        "codigo": "REG_SEG_002",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-OTP-ATTEMPT-CYCLE-001",
+        "titulo": "Bloqueo de sesión tras agotar tres reenvíos OTP",
+        "categoria": "seguridad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T07:45:43.217455+00:00",
+        "descripcion": "Se permiten hasta 3 reenvíos después del OTP inicial. Si el usuario agota los 5 intentos del tercer reenvío, la sesión se marca BLOCKED. No requiere soporte humano: para continuar debe reiniciar el onboarding desde ONB_001.",
+        "valor_config": {
+          "accion_usuario": "RESTART_ONBOARDING_FROM_ONB_001",
+          "otp_resend_max": 3,
+          "estado_resultado": "BLOCKED",
+          "requiere_soporte": false,
+          "source_decision_number": 87,
+          "otp_max_attempts_por_codigo": 5
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "e3fb8276a3f1f9315a52d94ec37127184dddbdab26e22102039a9fd8471991f6",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 22,
+        "razon": "Evitar exposición del código si la base de datos es comprometida.",
+        "codigo": "REG_SEG_004",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "OTP no se almacena en texto plano en producción",
+        "categoria": "seguridad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "En producción el otp_code debe almacenarse como hash. En sandbox/proto se permite texto plano solo para facilitar pruebas.",
+        "valor_config": {
+          "ambiente_proto": "texto_plano_permitido",
+          "ambiente_produccion": "hash_obligatorio"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "d5baa201f168b294cc89ce9c4231f9e7f4ba6928e85cfad80fce6c884ca1f1ea",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 23,
+        "razon": "Evitar que alguien use el flujo de cambio de número para probar celulares masivamente.",
+        "codigo": "REG_SEG_005",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Cambio de número inline tiene límite antifraude",
+        "categoria": "seguridad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "phone_update_count no puede superar 3 en la misma sesión. Al alcanzar el límite se bloquea el campo y se requiere iniciar una nueva sesión.",
+        "valor_config": {
+          "accion": "bloquear_campo_y_sesion",
+          "max_cambios": 3
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "09dae024310273b2718bb93995c4ca312360ccb62df9778c91b0bbe4b91b67eb",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 24,
+        "razon": "Prevenir session hijacking por referrer headers o historial del browser.",
+        "codigo": "REG_SEG_006",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Token de sesión no viaja en URL",
+        "categoria": "seguridad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "El session_id nunca debe incluirse como parámetro GET en la URL. Solo viaja en headers o cookies httpOnly.",
+        "valor_config": {
+          "metodo_permitido": "header_o_cookie_httponly"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f34a97dc54a90d871ae200a745d59f348998560d56b3f0df40fb2a4c59791ce7",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 62,
+        "razon": "Evitar interceptación del OTP en tránsito.",
+        "codigo": "REG_SEG_008",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "OTP no se expone en respuesta de API",
+        "categoria": "seguridad",
+        "created_at": "2026-06-23T19:00:05.066082+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:00:05.066082+00:00",
+        "descripcion": "La API nunca devuelve otp_code. Solo confirma si fue enviado o si la verificación fue exitosa/fallida.",
+        "valor_config": null,
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "2c9a226b3a6e8341fa8a308efbc542abaeeec7932e1c61adb678be0033ddeac8",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 14,
+        "razon": "Evita registros zombies que ocupen espacio y confundan métricas de conversión.",
+        "codigo": "REG_SES_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Expiración de sesión de onboarding incompleta",
+        "categoria": "sesion",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Una sesión de onboarding que no completó OTP expira a los 30 minutos desde su creación. Pasado ese tiempo el registro se marca como abandonado y no puede retomarse.",
+        "valor_config": {
+          "estado_resultado": "ABANDONED",
+          "expiracion_minutos": 30
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "e90058c3c267799bfd14bb15d4ef8f2f1e3756bc351996e68187bfd98f35dbf7",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 15,
+        "razon": "Evitar que datos PII queden accesibles en sesiones antiguas.",
+        "codigo": "REG_SES_002",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Sesión no se retoma después de expirar",
+        "categoria": "sesion",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Si la sesión expiró, el usuario debe iniciar el flujo desde el Paso 1. No se precargan datos del intento anterior por seguridad.",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "d38b8975049b50aae1958dc5993e71fa9ef066711952f6aa2a43177f7e55525a",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 16,
+        "razon": "Antifraude. Evita registro masivo automatizado.",
+        "codigo": "REG_SES_003",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Una sesión activa por dispositivo/IP en onboarding",
+        "categoria": "sesion",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "No se permite más de una sesión de onboarding activa simultánea desde el mismo IP en un período de 5 minutos.",
+        "valor_config": {
+          "max_sesiones": 1,
+          "ventana_minutos": 5
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "db073bd282a1738ba0b91614f2b34a60f7915c7ed3291883e20c6db413133976",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 17,
+        "razon": "Reducir fricción de reingreso sin comprometer seguridad del OTP.",
+        "codigo": "REG_SES_004",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "Estado de sesión visible para el usuario",
+        "categoria": "sesion",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Si el usuario regresa a una sesión activa antes de que expire, el sistema mantiene nombre, DNI, email y tipo de documento del Paso 1. El celular se mantiene pero el OTP se reinicia por seguridad.",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "01466176864673cb5db37ab5ae966d6bff0e2d9c9bac5bb6da9589a48c9d537f",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 18,
+        "razon": "Integridad del registro. Evita alteración de datos post-verificación.",
+        "codigo": "REG_SES_005",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Sesión completada es inmutable",
+        "categoria": "sesion",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Una vez que onboarding_completed = true la sesión no puede modificarse. Cualquier cambio posterior requiere flujo autenticado desde Mi Cuenta.",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "3aaebf0f82161033b73c9567af3dc650c4762d3ff0c69f36664333be8d00c211",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 103,
+        "razon": "Evitar captura accidental de PII por variables mal configuradas en GTM.",
+        "codigo": "REG_TAG_004",
+        "estado": "VIGENTE",
+        "origen": "legal",
+        "titulo": "Variables GTM permitidas y prohibidas",
+        "categoria": "tageo",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "GTM puede leer variables del dataLayer, cookies de sesión anónima y parámetros UTM. Prohibido leer campos de formulario, localStorage con PII o cookies con datos personales.",
+        "valor_config": {
+          "permitido": [
+            "dataLayer",
+            "utm_params",
+            "session_cookie_anonima"
+          ],
+          "prohibido": [
+            "form_fields",
+            "localStorage_pii",
+            "cookies_personales"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4d826ab5dfae2c4b13550edf324508f0de11d291f0813abce0bcb02875a00a41",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 177,
+        "razon": "Sin timeouts definidos, dev usa defaults del framework que pueden ser demasiado largos o cortos para cada caso.",
+        "codigo": "REG_TEC_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Timeouts por tipo de operación",
+        "categoria": "tecnico",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Cada operación tiene su propio timeout: submit Paso 1 = 10s, envío OTP = 8s, cruce DNI para home_variant = 5s, carga del Paso 3 = 6s, checkout = 15s. Al superar el timeout se muestra estado de error con opción de reintentar.",
+        "valor_config": {
+          "timeouts_ms": {
+            "checkout": 15000,
+            "cruce_dni": 5000,
+            "envio_otp": 8000,
+            "carga_paso3": 6000,
+            "submit_paso1": 10000
+          },
+          "accion_timeout": "mostrar_error_con_reintento"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "58f8b1ec8194bbb137004f3a432ffa87950889b69a46591f4b6967400534c030",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 178,
+        "razon": "Reintentar un submit puede crear registros duplicados. Reintentar una carga de pantalla es seguro.",
+        "codigo": "REG_TEC_002",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Estrategia de reintentos automáticos",
+        "categoria": "tecnico",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Solo operaciones idempotentes tienen reintento automático: carga de pantalla (3 reintentos), cruce DNI (2 reintentos con backoff 1s-2s). Operaciones no idempotentes como submit formulario y checkout NO tienen reintento automático.",
+        "valor_config": {
+          "backoff_ms": [
+            1000,
+            2000
+          ],
+          "sin_reintento": [
+            "submit_paso1",
+            "checkout",
+            "envio_otp"
+          ],
+          "reintento_automatico": [
+            "carga_pantalla",
+            "cruce_dni"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "239431af6debcbb2fae5c6222e1417c3375740b671664b4c45543cf1bddf2c9e",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 180,
+        "razon": "Los HTTP status codes no distinguen entre tipos de error de negocio. Dev necesita códigos específicos para renderizar el mensaje correcto al usuario.",
+        "codigo": "REG_TEC_004",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Códigos de error de negocio propios",
+        "categoria": "tecnico",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Los errores de negocio usan códigos propios, no solo HTTP status. Códigos mínimos: LF_DNI_DUPLICADO, LF_CELULAR_BLOQUEADO, LF_OTP_EXPIRADO, LF_OTP_INTENTOS_AGOTADOS, LF_SESION_EXPIRADA, LF_OFERTA_VENCIDA, LF_CHECKOUT_FALLIDO, LF_ALIADO_NO_DISPONIBLE.",
+        "valor_config": {
+          "codigos": [
+            "LF_DNI_DUPLICADO",
+            "LF_CELULAR_BLOQUEADO",
+            "LF_OTP_EXPIRADO",
+            "LF_OTP_INTENTOS_AGOTADOS",
+            "LF_SESION_EXPIRADA",
+            "LF_OFERTA_VENCIDA",
+            "LF_CHECKOUT_FALLIDO",
+            "LF_ALIADO_NO_DISPONIBLE",
+            "LF_RATE_LIMIT_EXCEEDED",
+            "LF_VALIDACION_CAMPO"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "9054c4aec3aa5c2fbb25bae092cb94fb2fa9d4947f109917ac69929a845c6379",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 181,
+        "razon": "Sin estrategia de caché definida, dev cachea todo o nada, generando inconsistencias o carga innecesaria.",
+        "codigo": "REG_TEC_005",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Manejo de caché por tipo de dato",
+        "categoria": "tecnico",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Datos estáticos (catálogo tipo_doc, formato montos): caché 24h. Datos de sesión (onboarding_step, otp_verified): sin caché. Datos de oferta: caché máximo 60s con invalidación al detectar cambio de expires_at. Datos del usuario autenticado: caché 5min.",
+        "valor_config": {
+          "cache": {
+            "datos_oferta": "60s_con_invalidacion",
+            "formato_montos": "24h",
+            "catalogo_tipo_doc": "24h",
+            "sesion_onboarding": "no_cache",
+            "usuario_autenticado": "5min"
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "47e8fb46750ed4557bd0cc6d3ead500699d576bbaa9217fc55649131f25545be",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 187,
+        "razon": "Permite activar, desactivar o limitar funcionalidades sin deploy. Esencial para el rollout del programa de referidos y experimentos A/B.",
+        "codigo": "REG_TEC_011",
+        "estado": "CANDIDATO",
+        "origen": "tecnico",
+        "titulo": "Feature flags para rollout progresivo",
+        "categoria": "tecnico",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-15T08:23:55.097895+00:00",
+        "descripcion": "Las funcionalidades nuevas se despliegan mediante feature flags almacenados en lf_ops. Un flag puede estar: activo para todos, activo para porcentaje de usuarios, activo solo para usuarios internos, o desactivado. El frontend consulta los flags al iniciar sesión.",
+        "valor_config": {
+          "consulta": "al_iniciar_sesion",
+          "estados_flag": [
+            "activo_todos",
+            "activo_porcentaje",
+            "activo_internos",
+            "desactivado"
+          ],
+          "storage_status": "PENDING_CANONICAL_STORAGE"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "El mecanismo de feature flag fue aprobado conceptualmente, pero lf_ops.feature_flags no existe. Resolver estructura canónica antes de implementar OFF/RISK_BASED/ALWAYS.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "933a57a12abddf4fab7277baa0227aba3dfc4d92819d333b239cb53415b0a4f4",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 188,
+        "razon": "Logs estructurados son consultables y filtrables en herramientas de observabilidad. Logs de texto libre son inútiles a escala.",
+        "codigo": "REG_TEC_012",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Logs estructurados en JSON",
+        "categoria": "tecnico",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Todos los logs del backend siguen formato JSON con campos: timestamp, level, request_id, user_session_id (anónimo), pantalla, accion, duracion_ms, error_code. Sin texto libre sin estructura.",
+        "valor_config": {
+          "formato": "json",
+          "campos_prohibidos": [
+            "dni",
+            "phone",
+            "email",
+            "otp_code"
+          ],
+          "campos_obligatorios": [
+            "timestamp",
+            "level",
+            "request_id",
+            "session_id_anonimo",
+            "pantalla",
+            "accion",
+            "duracion_ms"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "2e7783bd814474053f52c1a57cc57f46797deb50c0db5a169f1eb9233e2dec4c",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 41,
+        "razon": "Evitar duplicación de cuentas y confusión del usuario.",
+        "codigo": "REG_UNI_001",
+        "estado": "VIGENTE",
+        "origen": "negocio",
+        "titulo": "DNI único por cuenta activa",
+        "categoria": "unicidad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "No puede existir más de una cuenta con onboarding_completed = true para el mismo DNI. Si ya existe cuenta activa con ese DNI, el sistema muestra flujo de recuperación de acceso en lugar de registro nuevo.",
+        "valor_config": {
+          "accion_si_existe": "redirigir_recuperacion_acceso"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "36e79bd515169a7ab777cb6606ee2d653745e156f326643a45a4207d80f2d50d",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 42,
+        "razon": "Evitar que un celular esté asociado a múltiples cuentas activas.",
+        "codigo": "REG_UNI_002",
+        "estado": "VIGENTE",
+        "origen": "negocio",
+        "titulo": "Celular único por cuenta activa verificada",
+        "categoria": "unicidad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-15T08:23:55.097895+00:00",
+        "descripcion": "No puede existir más de una cuenta con otp_verified = true para el mismo número de celular. Si el número ya está verificado en otra cuenta, se informa al usuario y se ofrece recuperación.",
+        "valor_config": {
+          "binding_scope": "ACTIVE_VERIFIED_ACCOUNT",
+          "accion_si_existe": "informar_y_ofrecer_recuperacion",
+          "source_decision_number": 71,
+          "otp_verified_alone_creates_identity": false,
+          "unvalidated_identity_reserves_phone": false,
+          "temporary_or_abandoned_session_reserves_phone": false,
+          "phone_reusable_after_unverified_or_abandoned_session": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "5e633a4a92cf1027f1fb61527c73f8abae368e46667a764c71cdd7fe5d8062e8",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 43,
+        "razon": "Evitar fragmentación del registro del mismo usuario.",
+        "codigo": "REG_UNI_003",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "DNI duplicado en sesión activa no completada",
+        "categoria": "unicidad",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Si existe una sesión activa no completada con el mismo DNI, no se crea una nueva sesión. Se retoma la sesión existente si no expiró.",
+        "valor_config": {
+          "accion": "retomar_sesion_existente_si_activa"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "357b3ec4bec6b3560cc5650f68f738ffdbbaf44549b2b885cf5e1eba479c3e82",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 172,
+        "razon": "Reduce la presión de decidir todo en una sola sesión. Alineado con el principio de no urgencia artificial.",
+        "codigo": "REG_UX_003",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "\"Podrás configurar las demás ofertas después\"",
+        "categoria": "ux",
+        "created_at": "2026-06-24T05:04:56.733702+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T05:04:56.733702+00:00",
+        "descripcion": "El copy bajo el botón Continuar siempre dice \"Podrás configurar las demás ofertas después.\" cuando el usuario tiene ofertas sin seleccionar. Si seleccionó todas, el copy desaparece.",
+        "valor_config": {
+          "mostrar_si": "ofertas_sin_seleccionar > 0",
+          "ocultar_si": "todas_seleccionadas"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4d057badb5e576dc289a7a44ce812696e7b88dd8a5275787b6255cef8e004be1",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 359,
+        "razon": "ACT-0017, seccion 4.2 Componentes UI Recomendados + Octalysis CD4 Propiedad y Posesion + Investigacion externa 2026-07-08: gain-framing vs loss-framing en salud/finanzas conductuales (NBER w29828; iResearchNet Gain-Loss Framing); precedentes de producto: Debt Payoff Planner, Undebt.it.",
+        "codigo": "UX-GAMIF-TERMOMETRO-01",
+        "estado": "CANDIDATO",
+        "origen": "ACT-0017",
+        "titulo": "Patrón \"Termómetro de Libertad\" para el hito Recupera",
+        "categoria": "ux",
+        "created_at": "2026-07-02T04:38:04.057437+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-09T04:39:43.666578+00:00",
+        "descripcion": "El hito final Recupera (gold_reward) debe explorar representarse como progresion visual llenandose de color a medida que se recupera patrimonio, no solo como badge/icono estatico de logro. Cambia el enfoque de perdida (lo que debo) a ganancia (lo que he recuperado). VALIDADO CON INVESTIGACION EXTERNA 2026-07-08: patron \"debt thermometer\"/progress-fill tiene tracción real en productos de pago de deuda (Debt Payoff Planner, Undebt.it) y comunidad de finanzas personales; no es un patron experimental. Gain-framing (recuperado vs pendiente) tiene mejor evidencia en behavioral economics (prospect theory, Kahneman-Tversky) para comportamientos de prevencion/certeza/baja involucracion inicial -- perfil compatible con usuario NSE B-/C en estres financiero que necesita reducir ansiedad, no sumar culpa.",
+        "valor_config": {
+          "fuente": "ACT-0017",
+          "patron": "termometro_libertad",
+          "aplica_a": "hito_recupera_ruta_claridad",
+          "reencuadre": "perdida_a_ganancia",
+          "spec_aplicable": {
+            "color_relleno": "green_action #109044",
+            "copy_direccion": "gain-framing: \"Ya recuperaste S/X\" en vez de \"Te falta S/Y\"",
+            "formula_llenado": "monto_ya_pagado / monto_total_deuda_original",
+            "tramos_visibles": [
+              25,
+              50,
+              75,
+              100
+            ],
+            "restriccion_obligatoria": "debe permanecer desactivable sin penalizacion (NEG-GAMIF-ETICA-01)"
+          },
+          "fecha_validacion_investigacion": "2026-07-08"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Enfoque gain-framing + patron progress-fill VALIDADO por investigacion externa (2026-07-08). Pendiente real: (1) mockup renderizado confirmado (NEG-GOBERNANZA-VISUAL-CONFIRM-01) antes de pasar a VIGENTE, (2) decision UI Architect: termometro reemplaza o complementa el badge dorado ya especificado en ACT-0049 (score 9.7).",
+        "pendiente_decision": true
+      },
+      "source_sha256": "98f46ed7d660ff5be5db1a146882c960ad8e6e31ad022ac53f833c92da239dde",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 355,
+        "razon": "Chunking/carga cognitiva (Miller) + research de apps para baja literacidad digital (usuarios dependen de reconocimiento de icono, no de mas opciones) + overview completo de las 12 secciones del Home donde el cierre ya aparece 2 veces mas adelante",
+        "codigo": "UX-HOME-CAPABILITY-01",
+        "estado": "CANDIDATO",
+        "origen": "analisis_sesion_20260701",
+        "titulo": "Bloque \"Qué podrás hacer\": exactamente 4 tarjetas, no 5",
+        "categoria": "ux",
+        "created_at": "2026-07-02T04:11:15.098131+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-02T04:11:15.098131+00:00",
+        "descripcion": "El bloque debe mantenerse en 4 tarjetas fijas. Se evaluo agregar una 5ta tarjeta de cierre/libertad pero se descarto: ese beat narrativo ya existe en el hito final \"Recupera\" de la Ruta de Claridad (gold_reward) y en el bloque de CTA final. Agregarlo aqui tambien satura innecesariamente para el usuario NSE B-/C.",
+        "valor_config": {
+          "cards": [
+            {
+              "orden": 1,
+              "texto": "Conocer quién gestiona tu deuda",
+              "icon_name": "user_round"
+            },
+            {
+              "orden": 2,
+              "texto": "Revisar una simulación referencial",
+              "icon_name": "calculator",
+              "icon_badge": "shield_check"
+            },
+            {
+              "orden": 3,
+              "texto": "Explorar una posible alternativa",
+              "icon_name": "scale"
+            },
+            {
+              "orden": 4,
+              "texto": "Elegir cómo continuar, sin compromiso",
+              "icon_name": "circle_check"
+            }
+          ],
+          "cards_count_max": 4,
+          "cards_count_locked": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "3b86ca9bcdc82812039a22dac7edd068fb9cf543fce834c64b2ef9c594251fc3",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 356,
+        "razon": "Consistencia de marca entre secciones + investigacion de baja literacidad digital: el circulo no ayuda al reconocimiento, solo agrega un elemento decorativo mas a procesar",
+        "codigo": "UX-HOME-CAPABILITY-02",
+        "estado": "CANDIDATO",
+        "origen": "analisis_sesion_20260701",
+        "titulo": "Sin contenedor circular en íconos (Hero + este bloque)",
+        "categoria": "ux",
+        "created_at": "2026-07-02T04:11:15.098131+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-02T04:11:15.098131+00:00",
+        "descripcion": "Los iconos de trust cards del Hero y del bloque \"Qué podrás hacer\" van sueltos sobre el fondo de la tarjeta, sin circulo de color detras. Verificado contra hero_trust_card_compact (VIGENTE) y contra el render real LF_HOME_HERO_PERSONA_A_MUJER_REFLEXIVA_SANDBOX_v0.1_PRINCIPAL.png en Drive: ambos coinciden, no hay regresion que corregir.",
+        "valor_config": {
+          "verified_sources": [
+            "Supabase:hero_trust_card_compact",
+            "Drive:LF_HOME_HERO_PERSONA_A_MUJER_REFLEXIVA_SANDBOX_v0.1_PRINCIPAL.png"
+          ],
+          "icon_container_shape": "none"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "d46f1ebd2c5382600c15665c387e929daf2c2eab38180b2ddc7d5a575b47e567",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 364,
+        "razon": "Patron confirmado por Telerik/KendoReact Stepper (WAI-ARIA) y USWDS Step Indicator: nav landmark + ol de navegacion, ProgressBar sin ARIA por ser aesthetic-only.",
+        "codigo": "UX-RUTA-ACCESIBILIDAD-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "Ruta de Claridad: estructura nav+ol+link, sin ARIA en el path decorativo",
+        "categoria": "ux",
+        "created_at": "2026-07-03T16:10:14.519988+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-03T16:10:14.519988+00:00",
+        "descripcion": "El contenedor de los 5 hitos debe ser <nav aria-label=\"Ruta de Claridad\"> con <ol> de items, cada uno un <a> o <button> real (no div). El nodo activo lleva aria-current=\"true\". El SVG del path y el terreno de fondo no necesitan ningun atributo ARIA por ser puramente decorativos (aria-hidden=true), consistente con el patron ya usado en el terreno.",
+        "valor_config": {
+          "items": "ol > li > a|button",
+          "path_svg": "aria-hidden=true",
+          "contenedor": "nav[aria-label]",
+          "nodo_activo": "aria-current=true",
+          "nodos_bloqueados": "focusables, NO deshabilitados, texto text_muted_inactive #7C8AA6 bold >=14px"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "8993d92ad768454f67965e1387ff37bce9b31d53207f86fe2106a1b7a7d2cb22",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 360,
+        "razon": "Evitar doble verdad de tokens con mismo hex y nombres distintos; mantener lf_design.color_tokens como fuente unica para valores hex, componentes referencian por nombre",
+        "codigo": "UX-TOKEN-CONSOLIDACION-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "Consolidación: hero_subtitle_text deprecado, usar slate_text_strong",
+        "categoria": "ux",
+        "created_at": "2026-07-02T05:24:32.67766+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "hero_subtitle_text (creado en sesion paralela SESION_MANUAL_2026_07_02) y slate_text_strong (creado en este chat) resultaron ser el mismo hex #5A6480 registrado dos veces. Se consolida en slate_text_strong porque sigue la convencion de familia de color reutilizable ya usada en el sistema (slate_text, green_action, gold_reward), mientras hero_subtitle_text rompia esa convencion al nombrar un token de color por componente especifico. El alcance de uso del subtitulo/disclaimer del Hero se mantiene exactamente igual: slate_text_strong, no slate_text base.",
+        "valor_config": {
+          "hex": "#5A6480",
+          "token_canonico": "slate_text_strong",
+          "token_deprecado": "hero_subtitle_text",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "componentes_que_deben_referenciar_slate_text_strong": [
+            "hero_trust_card_compact.text_color_token si aplica a subtitulo",
+            "Hero H1/subtitulo/disclaimer"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "56a4818a9285bd458574dff0a47fadb79fa9b0607191aadda011425b7e772f95",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 361,
+        "razon": "VD_SLATE_TEXT_STRONG_001 ya registrado VIGENTE en lf_design.visual_decisions con este alcance amplio",
+        "codigo": "UX-TOKEN-CONSOLIDACION-02",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "slate_text_strong: alcance ampliable a otros bloques Home, no exclusivo Hero",
+        "categoria": "ux",
+        "created_at": "2026-07-02T05:24:32.67766+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "slate_text_strong puede usarse en cualquier subtitulo/disclaimer/microcopy legal del Home que necesite margen de contraste sobre slate_text base (4.50:1 limite vs 5.40:1 con margen), no queda restringido solo al Hero. La restriccion de scope-solo-Hero de la sesion paralela quedo resuelta al consolidar en un solo token; el alcance amplio original (registrado en VD_SLATE_TEXT_STRONG_001) sigue vigente.",
+        "valor_config": {
+          "alcance": "cualquier subtitulo/disclaimer/microcopy legal del Home",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "no_exclusivo_hero": true
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "fe8cda1b5c6d8a59f3bba16c0d6ba286b34ed5a39fbcb1785cfae3a3fe1eb4be",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    }
+  ],
+  "live_writes": 0
+}
