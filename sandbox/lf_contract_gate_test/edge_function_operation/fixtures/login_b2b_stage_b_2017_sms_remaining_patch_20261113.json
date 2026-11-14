@@ -1,0 +1,329 @@
+{
+  "schema": "LF_LOGIN_B2B_STAGE_B_OWNER_SMS_2017_PATCH_V1",
+  "owner_decision_at": "2026-11-13T20:17:00-05:00",
+  "identity_verified": false,
+  "status": "PROPOSAL_ONLY_NO_LIVE_WRITES",
+  "scope": "7 source rows; PG17.6/18.7 UPDATE and ROLLBACK only",
+  "patches": [
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-019",
+      "title": "Selección de factor por política central: Brevo primero; Intico solo soporte",
+      "description": "El Login no elige dinámicamente el segundo factor: aplica las políticas centrales 3 y 19. Para los perfiles 1 a 6 el login empieza con credenciales primarias validadas en servidor y, solo si MFA aplica, OTP por correo Brevo verificado por LF_AUTH_BOUNDARY. Para administradores 1 y 2 Google Workspace/SAML y passkeys no son requisitos del segundo factor. El segundo factor se envía SIEMPRE primero por OTP al correo registrado mediante Brevo, verificándose del lado servidor antes de AUTHENTICATED. SMS Intico es únicamente contingencia MANUAL: tras actualizar su correo, si el usuario no recibe el OTP, llama a soporte y solicita atención. Un operador de soporte con perfil conectado y permiso explícito can_enable_sms_contingency=true en la tabla propuesta lf_ops.b2b_recovery_profile_permissions comprueba la solicitud, que el correo fue actualizado y el fallo de recepción, registra trazabilidad y habilita excepcionalmente un envío de OTP por SMS Intico. No hay fallback automático ni selección de canal desde cliente. El OTP SMS también requiere verificación server-side; no concede sesión ni permisos por sí solo. No declarar OTP correo resistente a phishing ni Supabase native AAL2. Binding IdP primario sigue pendiente ADR-003/M1.",
+      "pending_detail": "DECISION_SMS_INTICO_RESUELTA_OWNER_DOCUMENTARY_20_17_IDENTITY_UNVERIFIED; PENDING_LAB_QA_NO_PRODUCTION",
+      "config_set": {
+        "admin_method": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "non_admin_method": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "admin_profile_ids": [
+          1,
+          2
+        ],
+        "non_admin_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "admin_sso_protocol": "NOT_REQUIRED_FOR_ADMIN_MFA",
+        "admin_provider_status": "SUPERSEDED_GOOGLE_AS_SECOND_FACTOR",
+        "admin_phishing_resistant_requirement": "NOT_REQUIRED_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+        "password_only_fallback": "DENY",
+        "non_admin_delivery_provider": "BREVO",
+        "non_admin_delivery_channel": "EMAIL",
+        "sms_contingency_record": {
+          "identity_verified": false,
+          "owner_decision": "OWNER_DOCUMENTARY_2026-11-13_20_17",
+          "audit_fields": [
+            "support_actor_id",
+            "connected_profile_id",
+            "recovery_case_ref",
+            "email_updated_event_ref",
+            "user_request_ref",
+            "failed_email_delivery_ref",
+            "sms_activation_timestamp",
+            "sms_attempt_id",
+            "sms_verification_outcome"
+          ],
+          "method": "SUPPORT_MANUAL_ONLY"
+        },
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_priority": "ONLY_AFTER_BREVO_EMAIL_ATTEMPT",
+        "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_USER_CALL_EMAIL_UPDATED_AND_NON_DELIVERY",
+        "sms_support_permission_source": "lf_ops.b2b_recovery_profile_permissions",
+        "sms_support_permission_key": "can_enable_sms_contingency",
+        "sms_support_authorizer": "AUTHORIZED_SUPPORT_PROFILE_ONLY",
+        "sms_support_requires_connected_user_profile": true,
+        "sms_requires_user_reported_email_not_received": true,
+        "sms_requires_previous_email_update": true,
+        "sms_requires_support_call": true,
+        "sms_requires_audit": true,
+        "sms_automatic_fallback": "DENY",
+        "sms_client_self_selection": "DENY",
+        "sms_otp_server_verification": "REQUIRED",
+        "sms_permission_design_status": "PROPOSED_NOT_CREATED"
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-018",
+      "title": "MFA condicional 1–6, primero Brevo y contingencia manual autorizada",
+      "description": "SEC-B2B-MFA (política 3) cubre todos los perfiles humanos 1–6. MFA se exige condicionalmente a los 30 días sin uso o 3 meses calendario sin cambiar clave; ambos disparadores aplican también a perfil 1. Si corresponde, LF_AUTH_BOUNDARY devuelve MFA_REQUIRED y no concede AUTHENTICATED ni permisos hasta completar OTP. El segundo factor se envía SIEMPRE primero por OTP al correo registrado mediante Brevo, verificándose del lado servidor antes de AUTHENTICATED. SMS Intico es únicamente contingencia MANUAL: tras actualizar su correo, si el usuario no recibe el OTP, llama a soporte y solicita atención. Un operador de soporte con perfil conectado y permiso explícito can_enable_sms_contingency=true en la tabla propuesta lf_ops.b2b_recovery_profile_permissions comprueba la solicitud, que el correo fue actualizado y el fallo de recepción, registra trazabilidad y habilita excepcionalmente un envío de OTP por SMS Intico. No hay fallback automático ni selección de canal desde cliente. El OTP SMS también requiere verificación server-side; no concede sesión ni permisos por sí solo. Sin bypass por dispositivo, cliente o contraseña sola. Disparadores y umbrales se almacenan en política central, no en esta regla.",
+      "pending_detail": "OWNER_DECISION_ALL_PROFILES_AND_MANUAL_SMS_DOCUMENTARY_IDENTITY_UNVERIFIED; IMPLEMENTATION_AND_QA_PENDING",
+      "config_set": {
+        "covered_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mfa_known_trigger_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mfa_profile_1_trigger_status": "OWNER_CONFIRMED_SAME_AS_ALL_PROFILES",
+        "mfa_activation_mode": "CONDITIONAL_CENTRAL_POLICY",
+        "mfa_applicability_policy_id": 3,
+        "primary_mfa_factor": "BREVO_EMAIL_OTP",
+        "fallback_sms_factor": "INTICO_SUPPORT_ENABLED_ONLY",
+        "sms_contingency_record": {
+          "identity_verified": false,
+          "owner_decision": "OWNER_DOCUMENTARY_2026-11-13_20_17",
+          "audit_fields": [
+            "support_actor_id",
+            "connected_profile_id",
+            "recovery_case_ref",
+            "email_updated_event_ref",
+            "user_request_ref",
+            "failed_email_delivery_ref",
+            "sms_activation_timestamp",
+            "sms_attempt_id",
+            "sms_verification_outcome"
+          ],
+          "method": "SUPPORT_MANUAL_ONLY"
+        },
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_priority": "ONLY_AFTER_BREVO_EMAIL_ATTEMPT",
+        "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_USER_CALL_EMAIL_UPDATED_AND_NON_DELIVERY",
+        "sms_support_permission_source": "lf_ops.b2b_recovery_profile_permissions",
+        "sms_support_permission_key": "can_enable_sms_contingency",
+        "sms_support_authorizer": "AUTHORIZED_SUPPORT_PROFILE_ONLY",
+        "sms_support_requires_connected_user_profile": true,
+        "sms_requires_user_reported_email_not_received": true,
+        "sms_requires_previous_email_update": true,
+        "sms_requires_support_call": true,
+        "sms_requires_audit": true,
+        "sms_automatic_fallback": "DENY",
+        "sms_client_self_selection": "DENY",
+        "sms_otp_server_verification": "REQUIRED",
+        "sms_permission_design_status": "PROPOSED_NOT_CREATED",
+        "production_authorized": false
+      }
+    },
+    {
+      "kind": "policy",
+      "id": 19,
+      "description": "La política 19 selecciona factor cuando la política 3 exige MFA; no altera disparadores ni umbrales. Perfiles humanos 1 a 6 empiezan con usuario y contraseña verificados por servidor y requieren OTP por correo/Brevo cuando corresponda. No se exigen Google Workspace SAML ni FIDO2/passkeys para perfiles 1–2. El segundo factor se envía SIEMPRE primero por OTP al correo registrado mediante Brevo, verificándose del lado servidor antes de AUTHENTICATED. SMS Intico es únicamente contingencia MANUAL: tras actualizar su correo, si el usuario no recibe el OTP, llama a soporte y solicita atención. Un operador de soporte con perfil conectado y permiso explícito can_enable_sms_contingency=true en la tabla propuesta lf_ops.b2b_recovery_profile_permissions comprueba la solicitud, que el correo fue actualizado y el fallo de recepción, registra trazabilidad y habilita excepcionalmente un envío de OTP por SMS Intico. No hay fallback automático ni selección de canal desde cliente. El OTP SMS también requiere verificación server-side; no concede sesión ni permisos por sí solo. Se rechaza OTP inválido, vencido o sin verificación. Email OTP no es resistente a phishing ni Supabase native AAL2; riesgo documental aceptado con identity_verified=false. Brevo, IdP ADR-003/M1 y QA reales pendientes.",
+      "config_set": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "admin_primary_method": "USERNAME_PASSWORD_SERVER_VALIDATED",
+        "admin_method": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "non_admin_method": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "non_admin_delivery_provider": "BREVO",
+        "non_admin_delivery_channel": "EMAIL",
+        "admin_sso_protocol": "NOT_REQUIRED_FOR_ADMIN_MFA",
+        "admin_method_status": "OWNER_DOCUMENTARY_SELECTED_QA_PENDING",
+        "admin_phishing_resistant_requirement": "NOT_REQUIRED_FOR_PROFILES_1_2_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+        "sms_contingency_record": {
+          "identity_verified": false,
+          "owner_decision": "OWNER_DOCUMENTARY_2026-11-13_20_17",
+          "audit_fields": [
+            "support_actor_id",
+            "connected_profile_id",
+            "recovery_case_ref",
+            "email_updated_event_ref",
+            "user_request_ref",
+            "failed_email_delivery_ref",
+            "sms_activation_timestamp",
+            "sms_attempt_id",
+            "sms_verification_outcome"
+          ],
+          "method": "SUPPORT_MANUAL_ONLY"
+        },
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_priority": "ONLY_AFTER_BREVO_EMAIL_ATTEMPT",
+        "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_USER_CALL_EMAIL_UPDATED_AND_NON_DELIVERY",
+        "sms_support_permission_source": "lf_ops.b2b_recovery_profile_permissions",
+        "sms_support_permission_key": "can_enable_sms_contingency",
+        "sms_support_authorizer": "AUTHORIZED_SUPPORT_PROFILE_ONLY",
+        "sms_support_requires_connected_user_profile": true,
+        "sms_requires_user_reported_email_not_received": true,
+        "sms_requires_previous_email_update": true,
+        "sms_requires_support_call": true,
+        "sms_requires_audit": true,
+        "sms_automatic_fallback": "DENY",
+        "sms_client_self_selection": "DENY",
+        "sms_otp_server_verification": "REQUIRED",
+        "sms_permission_design_status": "PROPOSED_NOT_CREATED"
+      }
+    },
+    {
+      "kind": "policy",
+      "id": 23,
+      "description": "Arquitectura Backoffice Next.js static export y Core Spring Boot REST con frontera LF_AUTH_BOUNDARY, autenticación JWT/OIDC y validación issuer/JWKS/claims. Amazon Cognito es objetivo AWS, no IdP local aprobado; ADR-003/M1 sigue pendiente. Perfiles 1 a 6 con credenciales primarias y MFA condicional: OTP correo/Brevo como vía inicial, sin Google/SAML ni passkeys administrativos obligatorios. El segundo factor se envía SIEMPRE primero por OTP al correo registrado mediante Brevo, verificándose del lado servidor antes de AUTHENTICATED. SMS Intico es únicamente contingencia MANUAL: tras actualizar su correo, si el usuario no recibe el OTP, llama a soporte y solicita atención. Un operador de soporte con perfil conectado y permiso explícito can_enable_sms_contingency=true en la tabla propuesta lf_ops.b2b_recovery_profile_permissions comprueba la solicitud, que el correo fue actualizado y el fallo de recepción, registra trazabilidad y habilita excepcionalmente un envío de OTP por SMS Intico. No hay fallback automático ni selección de canal desde cliente. El OTP SMS también requiere verificación server-side; no concede sesión ni permisos por sí solo. Integraciones y QA siguen pendientes; producción no autorizada.",
+      "config_set": {
+        "admin_mfa_strategy": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "non_admin_mfa_strategy": "LF_EMAIL_OTP_BREVO_IF_MFA_REQUIRED",
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "admin_sso_protocol": "NOT_REQUIRED_FOR_ADMIN_MFA",
+        "admin_sso_configuration_status": "SUPERSEDED_GOOGLE_SAML_FOR_FACTOR",
+        "admin_phishing_resistant_requirement": "NOT_REQUIRED_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+        "admin_phishing_resistance_strategy": "EMAIL_OTP_NOT_PHISHING_RESISTANT",
+        "admin_idp_status": "PENDING_REAL_IDP_BINDING",
+        "provider_binding_status": "PENDING_M1_IDENTITY_SPIKE",
+        "sms_contingency_record": {
+          "identity_verified": false,
+          "owner_decision": "OWNER_DOCUMENTARY_2026-11-13_20_17",
+          "audit_fields": [
+            "support_actor_id",
+            "connected_profile_id",
+            "recovery_case_ref",
+            "email_updated_event_ref",
+            "user_request_ref",
+            "failed_email_delivery_ref",
+            "sms_activation_timestamp",
+            "sms_attempt_id",
+            "sms_verification_outcome"
+          ],
+          "method": "SUPPORT_MANUAL_ONLY"
+        },
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_priority": "ONLY_AFTER_BREVO_EMAIL_ATTEMPT",
+        "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_USER_CALL_EMAIL_UPDATED_AND_NON_DELIVERY",
+        "sms_support_permission_source": "lf_ops.b2b_recovery_profile_permissions",
+        "sms_support_permission_key": "can_enable_sms_contingency",
+        "sms_support_authorizer": "AUTHORIZED_SUPPORT_PROFILE_ONLY",
+        "sms_support_requires_connected_user_profile": true,
+        "sms_requires_user_reported_email_not_received": true,
+        "sms_requires_previous_email_update": true,
+        "sms_requires_support_call": true,
+        "sms_requires_audit": true,
+        "sms_automatic_fallback": "DENY",
+        "sms_client_self_selection": "DENY",
+        "sms_otp_server_verification": "REQUIRED",
+        "sms_permission_design_status": "PROPOSED_NOT_CREATED",
+        "production_authorized": false
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-021",
+      "title": "Protección y riesgo con umbral central de BD",
+      "description": "Antes de permitir autenticación, el servidor aplica rate limit, anti-bot y protección contra abuso mediante las políticas centrales; combina señales de cuenta, IP, patrón y automatización sin bloqueo permanente por una señal aislada. El umbral de riesgo inicial aprobado es 5, almacenado como parámetro en BD (no duplicado en valor_config) y administrable desde pantalla de mantenimiento con autorización por perfil, auditoría de cambios y aplicación controlada. RATE-B2B-LOGIN permanece IP_USER hasta reconciliar consumidores; AUTH_LOGIN_FAILED_PASSWORD es política separada de fallos de contraseña. No registrar valores numéricos de control en esta regla.",
+      "pending_detail": "OWNER_DECISION_INITIAL_RISK_THRESHOLD_FIVE_DOCUMENTARY; DB_PARAMETER_AND_MAINTENANCE_SCREEN_DESIGN_NOT_IMPLEMENTED; QA_PENDING",
+      "config_set": {
+        "rate_limit_registry": "lf_ops.politicas_rate_limit",
+        "abuse_security_policy_id": 22,
+        "anti_bot_security_policy_id": 17,
+        "risk_threshold_source": "DB_CENTRAL_AUTH_RISK_PARAMETER",
+        "risk_threshold_parameter_code": "B2B_LOGIN_RISK_THRESHOLD",
+        "risk_threshold_maintenance_screen": "REQUIRED_WITH_PROFILE_PERMISSIONS_AND_AUDIT",
+        "risk_threshold_parameter_design_status": "OBJECT_NEW_DESIGN_ONLY",
+        "risk_threshold_change_audit": "REQUIRED",
+        "numeric_thresholds_in_rule": "DENY",
+        "single_signal_permanent_lockout": "DENY",
+        "rate_login_scope_change": "BLOCKED_UNTIL_CONSUMER_VERIFICATION",
+        "production_authorized": false
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-AUTH-026",
+      "title": "OIDC/JWT desacoplado; binding M1 no vigente aún",
+      "description": "El Login B2B consume LF_AUTH_BOUNDARY sin acoplarse a un IdP concreto. El Backoffice Next.js static export no ejecuta autenticación server-side; Core Spring Boot valida issuer, JWKS y claims del JWT/OIDC. Amazon Cognito es objetivo AWS, y el IdP local, issuer, grant, endpoints y credenciales se definen únicamente tras ADR-003/M1 y pruebas. Readback SELECT del 13/11/2026 mantiene provider_binding=PENDING_M1_IDENTITY_SPIKE y local_identity_provider=PENDING_M1_IDENTITY_SPIKE; no existe evidencia de cierre QA M1 en auditorías consultadas. No confundir despliegues OIDC del motor IG/PG01 con selección de IdP del Login B2B. El OTP correo/Brevo no completa el binding ni habilita producción.",
+      "pending_detail": "OIDC_BINDING_PENDING_AS_VERIFIED_BY_SELECT; NO_CLAIM_OF_OBSOLESCENCE_OR_IMPLEMENTATION; M1_ADR003_QA_PENDING",
+      "config_set": {
+        "provider_binding": "PENDING_M1_IDENTITY_SPIKE",
+        "local_identity_provider": "PENDING_M1_IDENTITY_SPIKE",
+        "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+        "identity_protocol": "OIDC_JWT",
+        "consumer_contract": "LF_AUTH_BOUNDARY",
+        "core_token_validation": "ISSUER_PLUS_JWKS_PLUS_CLAIMS",
+        "binding_readback_status": "PENDING_BY_SUPABASE_SELECT_2026_11_13",
+        "implementation_validation_status": "PENDING_M1_IDENTITY_SPIKE",
+        "production_authorized": false
+      }
+    },
+    {
+      "kind": "rule",
+      "code": "B2B-RULE-THEME-002",
+      "title": "Gate de modo oscuro dependiente de tokens y QA",
+      "description": "El tema DARK se mantiene CANDIDATO hasta aprobar y dejar VIGENTES los tokens lf_design.color_tokens dark_mode_surface, dark_mode_card y dark_mode_text y el binding LF_B2B_THEME_DARK, y verificar en QA contraste, foco visible, badges de estado, tablas y modales. SELECT 13/11/2026 confirma los tres tokens PENDIENTE_DECISION_FINAL sin HEX y binding DARK CANDIDATO. No inventar colores ni duplicar valores CSS. El modo LIGHT y resolución System mantienen sus contratos vigentes; no promover el modo noche mientras falte el readback.",
+      "pending_detail": "TOKENS_DARK_AND_QA_PENDING_SOURCE_CURRENT; NO_INVENTED_HEX; NO_PROMOTION",
+      "config_set": {
+        "required_tokens": [
+          "dark_mode_surface",
+          "dark_mode_card",
+          "dark_mode_text"
+        ],
+        "required_qa": [
+          "contrast",
+          "focus",
+          "status_badges",
+          "tables",
+          "modals"
+        ],
+        "dark_theme_binding_code": "LF_B2B_THEME_DARK",
+        "dark_theme_binding_status_readback": "CANDIDATO",
+        "required_token_status": "VIGENTE_BEFORE_PROMOTION",
+        "blocked_until_tokens_vigente": true,
+        "implementation_qa_status": "BLOCKED_PENDING_TOKENS",
+        "numeric_visual_values_in_rule": "DENY"
+      }
+    }
+  ],
+  "closed_missing_data": [
+    "SMS_INTICO_WHO_ENABLES_AND_WHEN"
+  ],
+  "open_missing_data": [
+    "AUTH047_CONSECUTIVE_OR_ROLLING_WINDOW_LOCK_DURATION_UNLOCK_AUTHORITY",
+    "AUTH020_WILL_TWO_PERSON_CONTROL_REMAIN"
+  ],
+  "new_permission_table_proposal": {
+    "schema": "lf_ops",
+    "name": "b2b_recovery_profile_permissions",
+    "state": "OBJECT_NEW_DESIGN_ONLY",
+    "new_column": "can_enable_sms_contingency boolean NOT NULL DEFAULT false",
+    "role_scope": "SUPPORT_ROLE_MAPPED_TO_CONNECTED_PROFILE_WITH_EXPLICIT_PERMISSION",
+    "evidence_required": [
+      "user_called_support",
+      "email_previously_updated",
+      "user_reports_brevo_email_not_delivered",
+      "support_actor_authorized",
+      "sms_enabled_audited"
+    ],
+    "note": "No create/alter table in live or Docker for this scope; only proposal"
+  },
+  "new_risk_parameter_proposal": {
+    "name": "B2B_LOGIN_RISK_THRESHOLD",
+    "initial_value": 5,
+    "source": "OWNER_DOCUMENTARY_DECISION_Q12",
+    "storage": "DB_CENTRAL_PARAMETER_TO_DESIGN",
+    "ui": "MAINTENANCE_SCREEN_PERMISSIONED_AUDITED",
+    "status": "NEW_DESIGN_NOT_INSTALLED"
+  }
+}
