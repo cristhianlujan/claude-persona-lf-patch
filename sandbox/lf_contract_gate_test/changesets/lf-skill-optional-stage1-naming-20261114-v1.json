@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-skill-optional-stage1-naming-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114195500_lf_skill_optional_context_sticky_stage1_bounded_v1.sql": "MIGRATION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixture_optional_skills_stage1_live_preimage_v1.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_optional_skill_stage1_pgdual_rollback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-skill-optional-stage1-naming-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
