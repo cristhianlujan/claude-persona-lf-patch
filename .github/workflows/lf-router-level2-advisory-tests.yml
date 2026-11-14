@@ -748,6 +748,7 @@ jobs:
       - name: Execute RW1-05 C2 semantic consumer and Profile Runtime bridge tests
         run: |
           set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'jsonschema==4.25.1'
           python3 -m py_compile services/router_semantic_runtime/semantic_consumer.py
           python3 -m unittest -v services.router_semantic_runtime.tests.test_semantic_consumer
           python3 services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py

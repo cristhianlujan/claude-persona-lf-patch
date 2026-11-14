@@ -1364,5 +1364,86 @@ SELECT 'CASE|ENABLED_STALE|BLOCKED_STALE|PASS_BLOCKED';
 
 
 
+
+class UiArchitectBoundCliStdoutRegression(unittest.TestCase):
+    """#3859: before the CLI fix the JSON_FILE_ARGUMENT runner got empty stdout."""
+
+    def setUp(self):
+        self.adapter = ROOT / "profiles/ui_architect/validators/runtime_validate.py"
+        self.fixture = ROOT / "profiles/ui_architect/examples/runtime_valid_v6.json"
+
+    def test_valid_v6_cli_emits_json_and_exit_zero(self):
+        import json
+        import subprocess
+        proc = subprocess.run(
+            [sys.executable, str(self.adapter), str(self.fixture)],
+            capture_output=True, text=True, timeout=20, check=False,
+        )
+        self.assertTrue(proc.stdout.strip(), "Historical failure: adapter prints no JSON stdout")
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        self.assertEqual(json.loads(proc.stdout), {"valid": True, "errors": []})
+
+    def test_invalid_schema_cli_emits_json_and_nonzero(self):
+        import json
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            invalid = Path(temp) / "invalid_ui.json"
+            invalid.write_text('{"worker":"UI_ARCHITECT","output_type":"PRODUCTION_UI_SPEC"}', encoding="utf-8")
+            proc = subprocess.run(
+                [sys.executable, str(self.adapter), str(invalid)],
+                capture_output=True, text=True, timeout=20, check=False,
+            )
+        self.assertNotEqual(proc.returncode, 0)
+        result = json.loads(proc.stdout)
+        self.assertIs(result["valid"], False)
+        self.assertTrue(result["errors"])
+
+    def test_missing_argument_fails_closed_as_json(self):
+        import json
+        import subprocess
+        proc = subprocess.run(
+            [sys.executable, str(self.adapter)],
+            capture_output=True, text=True, timeout=20, check=False,
+        )
+        self.assertNotEqual(proc.returncode, 0)
+        result = json.loads(proc.stdout)
+        self.assertIs(result["valid"], False)
+        self.assertEqual(result["errors"][0]["code"], "VALIDATOR_CLI_INPUT_INVALID")
+
+    def test_bound_runner_parity_uses_exact_ui_source_digests(self):
+        import hashlib
+        import runpy
+        bindings = {
+            "runtime_binding": "profiles/ui_architect/contracts/runtime_binding.json",
+            "schema": "profiles/ui_architect/schemas/ui_production_spec.schema.json",
+            "validator": "profiles/ui_architect/validators/runtime_validate.py",
+            "raw_output": "profiles/ui_architect/examples/runtime_valid_v6.json",
+        }
+        def digest(key):
+            return hashlib.sha256((ROOT / bindings[key]).read_bytes()).hexdigest()
+        packet = {
+            "schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1",
+            "operation_code": "EJECUCION_PERFIL_LF",
+            "profile_slug": "ui_architect",
+            "validator_transport": "JSON_FILE_ARGUMENT",
+            "expected_valid": True,
+            "runtime_binding_sha256": digest("runtime_binding"),
+            "schema_ref": bindings["schema"],
+            "schema_sha256": digest("schema"),
+            "validator_ref": bindings["validator"],
+            "validator_sha256": digest("validator"),
+            "raw_output_ref": bindings["raw_output"],
+            "raw_output_sha256": digest("raw_output"),
+        }
+        runner = ROOT / "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py"
+        receipt = runpy.run_path(str(runner), run_name="ui_bound_runner_test")["validate_bound_output"](
+            ROOT, packet
+        )
+        self.assertEqual(receipt["status"], "CANDIDATE_OUTPUT_PARITY_OBSERVED", receipt)
+        self.assertTrue(receipt["profile_validator_executed"])
+        self.assertEqual(receipt["validator_exit_code"], 0)
+        self.assertEqual(receipt["validator_errors"], [])
+
 if __name__ == "__main__":
     unittest.main()
