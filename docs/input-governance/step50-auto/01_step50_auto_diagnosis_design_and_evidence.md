@@ -136,35 +136,59 @@ gobernada de autoridad y pruebas de regresión antes de promoción.
   (iii) `RATE-B2B-LOGIN` requiere prueba de IP_USER composite scope
   bajo `SEC-B2B-AUTH-ABUSE-PROTECTION`. Ninguno se da por resuelto.
 
-### Candidato implementado (sin alterar el RUN)
-- `caller.ts`: si IG BLOCKED aporta evidencia canónica y el manifest
-  del mismo RUN leído de Supabase autoriza exclusivamente lectura,
-  devolver `TERMINAL_WITH_FINDINGS`, HTTP200, `terminal_status=BLOCKED`
-  (nunca READY). Fuera de read-only o sin evidencia: el HTTP409 se mantiene.
-- `scripts/lf_profile_native_resume.py`: solo acepta esa respuesta
-  restringida; reinvoca el bridge oficial y **exige** Step40 registrado
-  / Step50 `NATIVE_MODEL_INPUT_READY` con IG original
-  `BLOCKED` + `READ_ONLY_WITH_IG_FINDINGS`; si falla, bloquea.
-  No transporta el hallazgo sensible a logs.
-- La SQL vigente `lf_profile_native_bridge_prepare_v1` ya incluye
-  Step40 `input_governance` íntegro para el contexto del paso 50.
-- Candidato SQL en
-  `20261114023000_lf_profile_readonly_ig_findings_report_v1.sql`:
-  preserva función oficial `lf_profile_native_bridge_record_report_v1`,
-  exige MD5 preimagen exacta `cafaaff15eb0751a9af0cfb67db3c30b`
-  (readback `pg_get_functiondef`), conserva Step80 histórico sin cambios
-  para READY/no findings y añade únicamente cuando aplica
-  `ig_findings.input_governance` completo + decisión RAW
-  `profile_output.traceability.ig_open_work_resolution` realmente
-  observada. No crea otra función escritora ni promueve acciones.
-- `caller_test.ts` contiene casos de lectura/escritura/sin evidencia.
-  `cp2_edge_bridge_test.ts` ejecuta esas **tres regresiones directamente**
-  en la suite Edge no filtrada del workflow existente
-  `ig-m105-cp2-oidc-bridge-tests.yml`; no se cambió su YAML protegido.
-  El filtro `^CP2:` sobre caller_test no ejecuta tests (observado en logs);
-  no se contabiliza como evidencia de estas pruebas.
-  `test_profile_resume_issue_request.py` verifica continuación OIDC
-  del mismo RUN y step40 verificado antes de step50.
+### Contraste explícito de los dos RUN — sin regresión de código post-13
+| Evidencia | RUN 40471E6F | RUN 95DFBB22 |
+|---|---|---|
+| Creación UTC | 2026-11-13 01:47:31 | 2026-11-14 05:35:11 |
+| Autoridad manifest | read_only=true, no_write=true, no_promotion=true, automatic_impact=false, governed_repair_write=false | **idéntica** |
+| Perfil source blob SHA GitHub | c9501679bdcd08d80cebf4a107a6a9a5282084d0 | **mismo SHA** |
+| Step40 | PASS 2026-11-13 01:50:00 UTC; IG BLOCKED, IG run951, predecision deterministic_findings=3, remediation_state INTERNAL_REMEDIATION_REQUIRED, no_human_required_count=0, internal_remediation_count=0 | **NO STEP40**; el error IG 409 proviene de la respuesta Edge del ticket, no de una fila SQL |
+| Transporte comprobado | SQL `lf_profile_execution_input_validate_v1` → escritor oficial → 11/11 | `input_readiness_context_pack_runtime_v1` → HTTP409 `IG_CONTEXT_PACK_BLOCKED` → resume aborta antes de recomprobar SQL |
+
+- Consulta de historial main del repo: último commit de `caller.ts` antes de este lote fue
+  `45f731532741e6f37c20529f8e2d345338fe3f13` (2026-11-06 02:51 UTC,
+  solo forward del ticket); último `scripts/lf_profile_native_resume.py`
+  `a67176a0b7b381dcbabf6c6e6ce587a8078e2e25` (2026-11-10 01:42 UTC).
+  El guard de 409 del runner ya existía en
+  `26e26dd5c43d89fe57c73cc718845eff7c1a2bd5` del 8-nov.
+  **No hay cambio post-13 de esos archivos en main**. No se atribuye
+  falsamente a un PR reciente. La versión Edge desplegada no fue
+  certificada por readback de su bundle; certificarla requiere evidencia de despliegue.
+- **Tampoco cambió la razón de IG**: el RUN 40471 ya tenía los tres
+  hallazgos `VIGENTE_REFERENCES_CANDIDATO` (2) y
+  `IP_COMPOSITE_SCOPE_REQUIRES_RUNTIME_PROOF` (1), con
+  `INTERNAL_REMEDIATION_REQUIRED` y 3 deterministic findings.
+  `internal_remediation_count=0` es otro contador del crosscheck,
+  no prueba ausencia de hallazgos. El RUN nuevo no registró Step40;
+  no se presume idéntico payload interno sin el Edge response original.
+- La divergencia fue de **ruta de transporte**, latente en el runtime:
+  el caller ya emitía 409 para BLOCKED; SQL directo ya lo admitía como
+  análisis `READ_ONLY_WITH_IG_FINDINGS`. El runner no repetía
+  `lf_profile_native_bridge_prepare_v1` tras 409 del **ticket**.
+- **Se descartó y revirtió** la nueva respuesta Edge 200
+  `TERMINAL_WITH_FINDINGS`; `caller.ts` / tests se restablecieron idénticos
+  a main. No se añade una autorización alternativa, RPC nuevo,
+  doble escritor, nuevo status Edge ni segundo RUN.
+- **Corrección acotada** en `scripts/lf_profile_native_resume.py`:
+  identifica HTTP409 terminal ya existente con hallazgos canónicos
+  (identidad del mismo execution_id, pantalla, consumidor, run_id,
+  output_sha256, predecision positivo) y reintenta **una sola vez** el
+  **bridge SQL canónico existente**. Solo acepta resultado
+  `NATIVE_MODEL_INPUT_READY` tras Step40 oficialmente registrado,
+  perfil/execution_id exactos, `execution_write_mode=READ_ONLY`, IG
+  `BLOCKED` + `READ_ONLY_WITH_IG_FINDINGS` y mismo RUN/hash IG.
+  Si el bridge no admite, se detiene; no eleva IG a READY.
+- El SQL ya desplegado `lf_profile_native_bridge_prepare_v1` transporta
+  a Step50 el `input_governance` de Step40, por lo que no necesita otra
+  vía. El candidato SQL
+  `20261114023000_lf_profile_readonly_ig_findings_report_v1.sql`
+  **solo extiende el escritor de informe oficial Step80**, con guard
+  de preimagen MD5 `cafaaff15eb0751a9af0cfb67db3c30b`; agrega
+  hallazgos íntegros de Step40 y la decisión real de Step50, sin
+  alteración si no hay hallazgos. No es nueva vía de continuación.
+- Pruebas: `test_profile_resume_issue_request.py` valida el retry
+  acotado por HTTP409; `test_governed_profile_operation_bridge.py`
+  mantiene laboratorio PG17.6/18.7 con tres escenarios y ROLLBACK.
 
 ### Laboratorio: PG17.6 + PG18.7 con ROLLBACK
 El fixture copia **identidad/estado 0–30** del RUN afectado; los tres
@@ -190,7 +214,8 @@ descartada y ningún RUN vivo tocado.
 **Despliegue:** PR DRAFT → revisión fuente/authority EKB/contratos,
 source-first migration parity y pruebas en clon integrado →
 ready-to-merge en HEAD exacto → LF Migration Merge Train →
-aplicar la migración de `report_output` y desplegar
-`lf-profiles-governance-caller-v1` por el flujo OIDC/Edge oficial.
+aplicar la migración de `report_output` si se aprueba y actualizar el runner nativo
+por la ruta de GitHub Actions/OIDC existente. **No requiere modificar ni
+re-desplegar `lf-profiles-governance-caller-v1`** para corregir el 409.
 La regla previa de EKB `BLOCKED: no avanzar` requiere reconciliación
 documental gobernada. Hasta superar ese gate, NO-GO.
