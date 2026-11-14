@@ -74,6 +74,11 @@ BEGIN
   FROM public.lf_operation_execution_steps
   WHERE execution_id=p_execution_id AND step_id='input_validate'
     AND status='STEP_PASS_WITH_EVIDENCE';
+  IF v_input#>>'{input_governance,status}'='BLOCKED'
+     AND v_input->>'analysis_scope' IS DISTINCT FROM 'READ_ONLY_WITH_IG_FINDINGS' THEN
+    RETURN jsonb_build_object('status','BLOCKED',
+      'blocking_code','BLOCK_REPORT_IG_FINDINGS_WRITE_SCOPE');
+  END IF;
   IF v_input->>'analysis_scope'='READ_ONLY_WITH_IG_FINDINGS' THEN
     IF e.manifest->>'read_only'<>'true'
        OR e.manifest->>'no_write'<>'true'
