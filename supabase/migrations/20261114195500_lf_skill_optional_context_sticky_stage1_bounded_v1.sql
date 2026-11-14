@@ -2,19 +2,19 @@
 -- Compatibility for preexisting RUNs is isolated in one helper; source/drift fail-closed.
 BEGIN;
 DO $checks$ BEGIN
- IF md5(pg_get_functiondef('public.lf_profile_execution_plan_v1(text,text,jsonb'::regprocedure))<>'14e045fe02c9c635c166f8cced7ee4d8' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_execution_plan_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_profile_native_bridge_prepare_v1(text,text,text,text'::regprocedure))<>'bc85d57f8509728527efa62b2b6bd124' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_native_bridge_prepare_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_profile_skill_invoke_selected_v1(text,text,text,jsonb,jsonb'::regprocedure))<>'ddf9f81751512a956c8027c79f966642' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_skill_invoke_selected_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb'::regprocedure))<>'3b3fffdb37780f543546263cf732ab5d' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_skill_runtime_ticket_issue_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_profile_skill_selection_prepare_v1(text,text,jsonb'::regprocedure))<>'24850ec585cecca9a54fe87e3d1ad2da' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_skill_selection_prepare_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_pipeline_context_profile_semantic_prepare_v2(text'::regprocedure))<>'2d7b39fe0f89bfdf3ceef705588a1911' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_context_profile_semantic_prepare_v2'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_pipeline_context_profile_semantic_submit_v2(text,text'::regprocedure))<>'269c144458c84beaa30ae8ffbf734186' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_context_profile_semantic_submit_v2'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_pipeline_context_stage1_submit_v2(text,jsonb'::regprocedure))<>'db6767852494edcf725829e719096fd6' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_context_stage1_submit_v2'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_pipeline_profile_semantic_prepare_v1(text'::regprocedure))<>'905b9dba6f033c78783ab513cc451a8d' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_profile_semantic_prepare_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_pipeline_profile_semantic_submit_v1(text,text'::regprocedure))<>'9b0eef4e0cffab64a551ed27d33d823f' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_profile_semantic_submit_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_pipeline_stage1_submit_v1(text,jsonb'::regprocedure))<>'82747605ce694ecb3b2ddee405d8bff7' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_stage1_submit_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_route_v1(jsonb,jsonb,boolean'::regprocedure))<>'8a74d20e7ad65f1fb3f80f1cc4bbb313' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_route_v1'; END IF;
- IF md5(pg_get_functiondef('public.lf_router_stage1_validate_v2(jsonb'::regprocedure))<>'b9b8f68bc4cf02af657830857a80bfc2' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_stage1_validate_v2'; END IF;
+ IF md5(pg_get_functiondef('public.lf_profile_execution_plan_v1(text,text,jsonb)'::regprocedure))<>'14e045fe02c9c635c166f8cced7ee4d8' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_execution_plan_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_profile_native_bridge_prepare_v1(text,text,text,text)'::regprocedure))<>'bc85d57f8509728527efa62b2b6bd124' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_native_bridge_prepare_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_profile_skill_invoke_selected_v1(text,text,text,jsonb,jsonb)'::regprocedure))<>'ddf9f81751512a956c8027c79f966642' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_skill_invoke_selected_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_profile_skill_runtime_ticket_issue_v1(text,text,jsonb)'::regprocedure))<>'3b3fffdb37780f543546263cf732ab5d' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_skill_runtime_ticket_issue_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_profile_skill_selection_prepare_v1(text,text,jsonb)'::regprocedure))<>'24850ec585cecca9a54fe87e3d1ad2da' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_profile_skill_selection_prepare_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_pipeline_context_profile_semantic_prepare_v2(text)'::regprocedure))<>'2d7b39fe0f89bfdf3ceef705588a1911' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_context_profile_semantic_prepare_v2'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_pipeline_context_profile_semantic_submit_v2(text,text)'::regprocedure))<>'269c144458c84beaa30ae8ffbf734186' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_context_profile_semantic_submit_v2'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_pipeline_context_stage1_submit_v2(text,jsonb)'::regprocedure))<>'db6767852494edcf725829e719096fd6' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_context_stage1_submit_v2'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_pipeline_profile_semantic_prepare_v1(text)'::regprocedure))<>'905b9dba6f033c78783ab513cc451a8d' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_profile_semantic_prepare_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_pipeline_profile_semantic_submit_v1(text,text)'::regprocedure))<>'9b0eef4e0cffab64a551ed27d33d823f' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_profile_semantic_submit_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_pipeline_stage1_submit_v1(text,jsonb)'::regprocedure))<>'82747605ce694ecb3b2ddee405d8bff7' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_pipeline_stage1_submit_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_route_v1(jsonb,jsonb,boolean)'::regprocedure))<>'8a74d20e7ad65f1fb3f80f1cc4bbb313' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_route_v1'; END IF;
+ IF md5(pg_get_functiondef('public.lf_router_stage1_validate_v2(jsonb)'::regprocedure))<>'b9b8f68bc4cf02af657830857a80bfc2' THEN RAISE EXCEPTION 'LF_SOURCE_DRIFT_lf_router_stage1_validate_v2'; END IF;
  IF (SELECT count(*) FROM public.lf_skill_selector_policy_v1 WHERE enabled AND selection_mode='SEMANTIC_OPTIONAL')<>18
  OR (SELECT count(*) FROM public.lf_skill_selector_policy_v1 WHERE enabled AND selection_mode='DETERMINISTIC_REQUIRED')<>0
  THEN RAISE EXCEPTION 'LF_SKILL_POLICY_COUNT_DRIFT'; END IF;
