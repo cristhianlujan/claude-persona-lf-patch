@@ -12,6 +12,8 @@ DO $pre$ BEGIN
     WHERE profile_code='PERFIL-PRODUCT-DIRECTOR-LF'
       AND operation_code='PROMOCION_REGLA_LF' AND status='ACTIVE')
  THEN RAISE EXCEPTION 'LF_PROMOTION_EXISTING_PROFILE_AUTHORITY_NOT_ACTIVE'; END IF;
+ IF to_regprocedure('programacion.fn_t_remed_rule_promotion_verdicts_v1(integer,bigint)') IS NULL
+ THEN RAISE EXCEPTION 'LF_PROMOTION_EXISTING_VERDICT_SOURCE_MISSING'; END IF;
  IF to_regprocedure('public.lf_rule_promotion_decide_batch_v1(text[],text,text,text)') IS NULL
     OR to_regprocedure('public.lf_rule_promotion_apply_batch_v1(text[])') IS NULL
  THEN RAISE EXCEPTION 'LF_PROMOTION_EXISTING_BATCH_ROUTE_MISSING'; END IF;
@@ -97,4 +99,6 @@ DO $post$ BEGIN
  IF position('PROMOTION_INDEPENDENT_STEP70_NOT_ATTESTED' IN pg_get_functiondef('public.lf_rule_promotion_request_v1(text,text,text)'::regprocedure))=0
  THEN RAISE EXCEPTION 'LF_PROMOTION_STEP70_REQUIREMENT_NOT_INSTALLED'; END IF;
 END $post$;
+-- Restrict the existing verdict read to trusted service transport; no anon/user grant.
+GRANT EXECUTE ON FUNCTION programacion.fn_t_remed_rule_promotion_verdicts_v1(integer,bigint) TO service_role;
 COMMIT;
