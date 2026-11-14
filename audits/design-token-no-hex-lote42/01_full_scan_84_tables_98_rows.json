@@ -4262,5 +4262,192 @@
     "#DDE2E8": "cool_border_qa_reference"
   },
   "identity_verified": false,
-  "live_writes": 0
+  "live_writes": 0,
+  "scanned_tables": [
+    "lf_design.brand_assets",
+    "lf_design.clean_handoffs",
+    "lf_design.color_tokens",
+    "lf_design.component_tokens",
+    "lf_design.design_systems",
+    "lf_design.icon_catalog",
+    "lf_design.responsive_tokens",
+    "lf_design.spacing_tokens",
+    "lf_design.theme_bindings",
+    "lf_design.typography_tokens",
+    "lf_design.visual_decisions",
+    "lf_ops.analytics_eventos_definicion",
+    "lf_ops.analytics_eventos_parametros",
+    "lf_ops.analytics_pantallas",
+    "lf_ops.app_shells",
+    "lf_ops.aprobaciones_registros",
+    "lf_ops.auditoria_eventos",
+    "lf_ops.b2b_corporate_group_companies",
+    "lf_ops.b2b_corporate_groups",
+    "lf_ops.b2b_user_company_assignments",
+    "lf_ops.b2b_user_company_permissions",
+    "lf_ops.b2b_user_company_profiles",
+    "lf_ops.campos",
+    "lf_ops.campos_pantallas",
+    "lf_ops.campos_validaciones",
+    "lf_ops.cargas_archivos",
+    "lf_ops.cargas_lotes",
+    "lf_ops.dispositivos_confiables",
+    "lf_ops.empresa_usuarios",
+    "lf_ops.empresa_usuarios_perfiles",
+    "lf_ops.empresa_usuarios_permisos",
+    "lf_ops.empresas",
+    "lf_ops.entidades_b2b",
+    "lf_ops.errores_catalogo",
+    "lf_ops.errores_ocurrencias",
+    "lf_ops.errores_pantallas",
+    "lf_ops.estados_catalogo",
+    "lf_ops.estados_transiciones",
+    "lf_ops.mensajes_pantallas",
+    "lf_ops.mensajes_ui",
+    "lf_ops.menu_items",
+    "lf_ops.menu_items_permisos",
+    "lf_ops.modelos_priorizacion",
+    "lf_ops.modelos_priorizacion_historial",
+    "lf_ops.modulos",
+    "lf_ops.observabilidad_alertas",
+    "lf_ops.observabilidad_proveedores",
+    "lf_ops.otp_entrega_eventos",
+    "lf_ops.otp_operaciones",
+    "lf_ops.otp_politicas",
+    "lf_ops.pantalla_artefactos",
+    "lf_ops.pantalla_elementos",
+    "lf_ops.pantalla_variantes",
+    "lf_ops.pantallas",
+    "lf_ops.pantallas_estados",
+    "lf_ops.pantallas_perfiles",
+    "lf_ops.pantallas_permisos",
+    "lf_ops.pantallas_politicas",
+    "lf_ops.pantallas_politicas_reglas",
+    "lf_ops.perfiles",
+    "lf_ops.perfiles_permisos",
+    "lf_ops.permisos",
+    "lf_ops.politicas_aprobacion",
+    "lf_ops.politicas_rate_limit",
+    "lf_ops.politicas_seguridad",
+    "lf_ops.politicas_sesion",
+    "lf_ops.politicas_timeout",
+    "lf_ops.qa_auditorias",
+    "lf_ops.qa_hallazgos",
+    "lf_ops.reglas",
+    "lf_ops.reglas_pantallas",
+    "lf_ops.relacion_tipos",
+    "lf_ops.relaciones_b2b",
+    "lf_ops.rutas",
+    "lf_ops.soporte_canales",
+    "lf_ops.system_audit_campaigns",
+    "lf_ops.system_audit_findings",
+    "lf_ops.system_audit_human_decisions",
+    "lf_ops.system_audit_messages",
+    "lf_ops.system_audit_premises",
+    "lf_ops.system_audit_queue",
+    "lf_ops.system_audit_runs",
+    "lf_ops.telemetria_dispatch_log",
+    "lf_ops.validacion_incidencias"
+  ],
+  "reusable_policy_registry_rows": 1,
+  "reusable_policy_registry_matches": 0,
+  "hex3_reference_ids_not_colors": [
+    {
+      "source": "lf_ops.pantalla_artefactos",
+      "ref": "B2B-CARGA-001-HISTORIAL-DESKTOP-LIGHT-V0-1-CANDIDATO-20260901",
+      "literals": [
+        "#402"
+      ]
+    },
+    {
+      "source": "lf_ops.reglas_pantallas",
+      "ref": "9463",
+      "literals": [
+        "#114"
+      ]
+    },
+    {
+      "source": "lf_ops.reglas_pantallas",
+      "ref": "9464",
+      "literals": [
+        "#114"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(4,5)",
+      "literals": [
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(5,1)",
+      "literals": [
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(5,3)",
+      "literals": [
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_messages",
+      "ref": "(7,5)",
+      "literals": [
+        "#440"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_queue",
+      "ref": "(1,30)",
+      "literals": [
+        "#425"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_queue",
+      "ref": "(1,31)",
+      "literals": [
+        "#418"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(11,3)",
+      "literals": [
+        "#414",
+        "#411",
+        "#414",
+        "#414",
+        "#408",
+        "#413"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(12,1)",
+      "literals": [
+        "#414",
+        "#414"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(5,1)",
+      "literals": [
+        "#827"
+      ]
+    },
+    {
+      "source": "lf_ops.system_audit_runs",
+      "ref": "(7,2)",
+      "literals": [
+        "#370"
+      ]
+    }
+  ]
 }
