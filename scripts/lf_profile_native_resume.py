@@ -816,6 +816,11 @@ def validate_independent_semantic_review(review):
                 raise ValueError("PROFILE_SEMANTIC_ROUTER_DIRECT_COMPARISON_UNPROVEN")
         elif check.get("result") not in (True, "true"):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
+    if mode == "INDEPENDENT_SEMANTIC":
+        from lf_step70_separate_call_receipt_v1 import assess_separate_call_receipt
+        assessment=assess_separate_call_receipt(review)
+        if not assessment.get("producer_independence_proven",False):
+            raise ValueError("JUDGE_INDEPENDENCE_NOT_PROVEN")
     if mode == "CURRENT_CONTEXT_REVIEW":
         # Owner-authorized current-context review is NOT an independent judge call.
         if (review.get("producer_independence_proven") is not False
@@ -862,14 +867,16 @@ def build_semantic_receipt(review):
     current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
     verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
                else "PASS_INDEPENDENT_SEMANTIC")
+    if not current_context:
+        raise ValueError("JUDGE_INDEPENDENCE_NOT_PROVEN")
     return {
         "status": "PASS",
         "verdict": verdict,
         "validator_status": "PASS",
-        "review_mode": "CURRENT_CONTEXT_REVIEW" if current_context else "INDEPENDENT_SEMANTIC",
-        "reviewer_is_producer": bool(current_context),
-        "producer_independence_proven": not current_context,
-        "model_call_count": 0 if current_context else 1,
+        "review_mode": "CURRENT_CONTEXT_REVIEW",
+        "reviewer_is_producer": True,
+        "producer_independence_proven": False,
+        "model_call_count": 0,
         "candidate_sha256": review["candidate_sha256"],
         "scope_packet_sha256": review["scope_packet_sha256"],
         "result": {
@@ -880,6 +887,9 @@ def build_semantic_receipt(review):
             "blocking_codes": [],
         },
         "judge_v3_evidence": review,
+        "content_findings":[{"finding_code":"JUDGE_INDEPENDENCE_NOT_PROVEN",
+            "continuation_allowed":True,"reviewer_is_producer":True,
+            "producer_independence_proven":False,"model_call_count":0}],
     }
 
 
@@ -908,6 +918,18 @@ def complete_native_profile_semantic_and_report(execution_id, source, semantic_r
             "next_action": feedback["next_action"],
         }, ensure_ascii=False))
         return 1
+    # Distinct GPT call and reviewer receipt must be verified, not inferred
+    # from a model-authored flag or a second GitHub Actions invocation.
+    # Until the provider/native host supplies independent call attestation,
+    # preserve all content checks and downgrade only the independence claim.
+    if semantic_review.get("review_mode") != "CURRENT_CONTEXT_REVIEW":
+        from lf_step70_separate_call_receipt_v1 import normalize_when_unverified
+        semantic_review, assessment = normalize_when_unverified(semantic_review)
+        Path("profile-step70-independence-assessment.json").write_text(
+            json.dumps(assessment,ensure_ascii=False,sort_keys=True),encoding="utf8")
+        print(json.dumps({"phase":"SEMANTIC_REVIEW",
+            "finding_code":"JUDGE_INDEPENDENCE_NOT_PROVEN",
+            "content_continuation_allowed":True},ensure_ascii=False))
     try:
         validate_independent_semantic_review(semantic_review)
     except ValueError as exc:
