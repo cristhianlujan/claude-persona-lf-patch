@@ -987,8 +987,9 @@ def main():
             or runtime.get("queue_required") is not False
             or runtime.get("polling_required") is not False
             or not isinstance(ticket, str) or not isinstance(body, dict)
-            or body.get("action") != "input_readiness_context_pack_runtime_v1"
+            or body.get("action") != "profile_skill_runtime_v1"
             or body.get("execution_id") != execution_id
+            or body.get("skill_code") != result.get("result",{}).get("skill_code")
             or not isinstance(expiry, str)):
             print("PROFILE_SELECTED_SKILL_RUNTIME_TICKET_INVALID")
             return 1
