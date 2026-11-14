@@ -151,9 +151,12 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertFalse(checkpoint["last_run_completed"])
 
     def test_readonly_ig_blocked_ticket_continues_only_after_step40_readback(self):
-        # Transport-only fixture: server makes the real Step40 admission decision.
+        """Generic policy-selected runtime ticket; never let a worker 409 alone bypass Step40."""
+        from datetime import datetime, timezone, timedelta
         execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
         profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
+        skill_code = "INPUT_GOVERNANCE_CONTEXT_PACK"
+        expiry = (datetime.now(timezone.utc)+timedelta(minutes=3)).isoformat()
         self.event["issue"]["body"] = json.dumps({
             "schema_version": SCHEMA, "execution_id": execution_id})
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
@@ -170,11 +173,13 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                     "target_repo": "test-owner/test-repo",
                     "target_path": "profiles/test_profile/SKILL.md",
                     "operation_plan": self._mock_operation_plan(profile_code)}
-            if data["action"] == "input_readiness_context_pack_runtime_v1":
+            if data["action"] == "profile_skill_runtime_v1":
+                self.assertEqual(data["skill_code"],skill_code)
                 return 409, {"outcome":"BLOCKED",
-                    "code":"IG_CONTEXT_PACK_BLOCKED",
+                    "code":"SKILL_RUNTIME_BLOCKED_AS_FINDING",
                     "terminal_status":"BLOCKED",
-                    "execution_id":execution_id,"pantalla_id":51,"consumer":"CONTEXT_PACK",
+                    "execution_id":execution_id,
+                    "skill_code":skill_code,
                     "result":{"result":{"status":"BLOCKED","consumer":"CONTEXT_PACK",
                         "pantalla_id":51,"run_id":951,
                         "remediation_state":"INTERNAL_REMEDIATION_REQUIRED",
@@ -189,17 +194,23 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             if data["action"] == "profile_native_continue_v1":
                 if sum(k[0]["action"] == "profile_native_continue_v1" for k in calls) == 1:
                     return 200, {"outcome":"CONTINUATION_REQUIRED",
-                        "phase":"INPUT_GOVERNANCE_RUNTIME_REQUIRED",
-                        "result":{"input_governance_runtime_request":{
-                            "transport":"DIRECT_EDGE_INVOCATION",
-                            "queue_required":False,"polling_required":False,
-                            "request_headers":{"X-LF-Profile-Runtime-Ticket":"fixture-ticket"},
-                            "request_body":{"action":"input_readiness_context_pack_runtime_v1",
-                                            "execution_id":execution_id,"pantalla_id":51}}}}
+                        "phase":"SKILL_RUNTIME_REQUIRED",
+                        "result":{
+                            "skill_code":skill_code,
+                            "input_governance_runtime_request":{
+                                "transport":"DIRECT_EDGE_INVOCATION",
+                                "queue_required":False,"polling_required":False,
+                                "ticket_expires_at":expiry,
+                                "request_headers":{"X-LF-Profile-Runtime-Ticket":"fixture-ticket"},
+                                "request_body":{"action":"profile_skill_runtime_v1",
+                                                "execution_id":execution_id,
+                                                "skill_code":skill_code}}}}
                 return 200, {"outcome":"CONTINUATION_REQUIRED",
                     "phase":"NATIVE_MODEL_INPUT_READY",
                     "execution_id":execution_id,"profile_code":profile_code,
                     "result":{"execution_write_mode":"READ_ONLY",
+                        "skill_findings":[{"skill_code":skill_code,
+                            "status":"SKILL_FAILED_AS_FINDING"}],
                         "input_governance":{"status":"BLOCKED",
                             "analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
                             "governance_result":{"run_id":951,
@@ -216,7 +227,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         steps=[x[0]["action"] for x in calls]
         self.assertEqual(steps,["profile_native_source_bind_v1",
                                 "profile_native_continue_v1",
-                                "input_readiness_context_pack_runtime_v1",
+                                "profile_skill_runtime_v1",
                                 "profile_native_continue_v1"])
         checkpoint=json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
         self.assertEqual(checkpoint["execution_id"],execution_id)
