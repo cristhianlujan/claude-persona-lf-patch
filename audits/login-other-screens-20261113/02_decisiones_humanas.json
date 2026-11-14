@@ -1,0 +1,32 @@
+[
+  {
+    "id": "H01",
+    "asunto": "Selfie en recuperación Cliente",
+    "propuesta": "No activar selfie ni darla por prueba aprobada hasta decisión explícita sobre liveness, seguridad, consentimiento y QA.",
+    "tipo": "DECISION_HUMANA"
+  },
+  {
+    "id": "H02",
+    "asunto": "Proveedor IDV para recuperación Cliente",
+    "propuesta": "Dejar PENDING_CANONICAL_IDV_PROVIDER; definir proveedor y pruebas antes de aceptar VERIFIED automático.",
+    "tipo": "DECISION_HUMANA"
+  },
+  {
+    "id": "H03",
+    "asunto": "Inicio de la espera de 48 horas B2B y Cliente",
+    "propuesta": "Iniciar después de completar aprobación(es) y avisos al contacto previo, con timestamp server-side auditable.",
+    "tipo": "DECISION_HUMANA"
+  },
+  {
+    "id": "H04",
+    "asunto": "Avisos al contacto anterior fallidos",
+    "propuesta": "Bloquear liberación hasta definir tratamiento alterno gobernado, sin bypass silencioso.",
+    "tipo": "DECISION_HUMANA"
+  },
+  {
+    "id": "H05",
+    "asunto": "Enlaces compartidos de OTP Brevo en pantallas de recuperación",
+    "propuesta": "Reconciliar por PR independiente los vínculos AUTH-041/044/045 sin afectar B2B-AUTH-004 ni reglas cubiertas por #3844/#3846.",
+    "tipo": "GATE_TECNICO"
+  }
+]
