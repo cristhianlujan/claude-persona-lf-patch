@@ -1,0 +1,44 @@
+[
+  {
+    "id": "H02",
+    "tipo": "GATE_EXTERNO",
+    "estado": "PENDIENTE",
+    "asunto": "Proveedor IDV",
+    "propuesta": "No seleccionar ahora; selfie inactiva. Mantener ruta automática cerrada hasta selección/QA, el soporte Q11 se mantiene separado."
+  },
+  {
+    "id": "H04A",
+    "tipo": "DECISION_HUMANA",
+    "estado": "PENDIENTE",
+    "asunto": "Ruta alternativa cuando no existe el otro canal anterior verificado",
+    "propuesta": "Soporte mantiene acceso bloqueado y expediente auditado; definir prueba independiente y autoridad para contactar al titular si no existe un canal histórico verificable. No reemplazar por datos recién capturados."
+  },
+  {
+    "id": "H04B",
+    "tipo": "DECISION_HUMANA",
+    "estado": "PENDIENTE",
+    "asunto": "Sustitución por contacto secundario ante rebote",
+    "propuesta": "Contacto secundario es opcional para onboarding y no prueba por sí mismo control del canal anterior. Exigir evidencia canónica previa y aprobación explícita si se pretende usar como notificación sustitutiva."
+  },
+  {
+    "id": "H06",
+    "tipo": "GATE_TECNICO",
+    "estado": "PENDIENTE",
+    "asunto": "Parametrización + identidad para acceso limitado",
+    "propuesta": "Crear y verificar la política Cliente CANDIDATO en lf_ops.politicas_seguridad mediante escritor oficial; registrar sesión LIMITADA, auditoría, rechazo por acción y revocación verificada. Sin permisos reales, NO-GO."
+  },
+  {
+    "id": "H07",
+    "tipo": "GATE_DE_PRODUCTO",
+    "estado": "PENDIENTE",
+    "asunto": "UI de cambio de contacto y medio de pago guardado",
+    "propuesta": "No aparecen pantallas Cliente canónicas de gestión de correo/celular/contraseña ni de modificación de medio guardado; registrar historias/rutas antes de habilitarlas. ONB_004 es alta, no cambio."
+  },
+  {
+    "id": "H05",
+    "asunto": "Enlaces compartidos de OTP Brevo en pantallas de recuperación",
+    "propuesta": "Reconciliar por PR independiente los vínculos AUTH-041/044/045 sin afectar B2B-AUTH-004 ni reglas cubiertas por #3844/#3846.",
+    "tipo": "GATE_TECNICO",
+    "estado": "PENDIENTE"
+  }
+]
