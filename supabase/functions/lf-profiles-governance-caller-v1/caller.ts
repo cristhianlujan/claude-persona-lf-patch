@@ -528,6 +528,70 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         }
 
         const action = typeof runtimeBody.action === "string" ? runtimeBody.action : "";
+        if (action === "profile_skill_runtime_v1") {
+          // Existing OIDC Edge transport. The one-use DB ticket fixes the
+          // selected skill, approved Edge slug and input; body cannot choose them.
+          const executionId = typeof runtimeBody.execution_id === "string"
+            ? runtimeBody.execution_id.trim() : "";
+          const skillCode = typeof runtimeBody.skill_code === "string"
+            ? runtimeBody.skill_code.trim() : "";
+          if (!/^[A-Za-z0-9][A-Za-z0-9_-]{10,127}$/.test(executionId)
+            || !/^[A-Z][A-Z0-9_]{2,63}$/.test(skillCode)
+            || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(runtimeTicket)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_INPUT_INVALID"},400);
+          }
+          const consumedResponse = await deps.fetchFn(
+            `${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_runtime_ticket_consume_v1`,{
+              method:"POST",
+              headers:{apikey:config.serviceRoleKey,
+                authorization:`Bearer ${config.serviceRoleKey}`,
+                "content-type":"application/json"},
+              body:JSON.stringify({p_ticket:runtimeTicket,
+                p_execution_id:executionId,p_skill_code:skillCode}),
+              signal:AbortSignal.timeout(15_000)
+            });
+          if (!consumedResponse.ok) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_RPC_FAILURE"},502);
+          }
+          const ticket = await parseJsonObject(consumedResponse,
+            "PROFILE_SKILL_TICKET_RESULT_INVALID");
+          const slug = typeof ticket.runtime_slug==="string"?ticket.runtime_slug:"";
+          const body = ticket.request_body;
+          if (ticket.authorized!==true || ticket.execution_id!==executionId
+              || ticket.skill_code!==skillCode
+              || !validSlug(slug)
+              || !body || typeof body!=="object" || Array.isArray(body)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_NOT_AUTHORIZED"},403);
+          }
+          const invocationBody = {...body as Record<string,unknown>,ticket:runtimeTicket};
+          const result = await callRuntime(config,deps,slug,invocationBody,
+            config.recurationTimeoutMs);
+          const directStatus = typeof result.status==="string"?result.status:"";
+          const governed = result.result && typeof result.result==="object"
+            && !Array.isArray(result.result)
+            ? result.result as Record<string,unknown> : {};
+          const terminalStatus = typeof governed.status==="string"
+            ? governed.status:directStatus;
+          const common = {execution_id:executionId,skill_code:skillCode,
+            runtime_slug:slug,transport:"DIRECT_EDGE_INVOCATION",
+            production_authorized:false,promotion_authorized:false,result};
+          if (terminalStatus==="VALIDATOR_RESUME_REQUIRED" ||
+              directStatus==="VALIDATOR_RESUME_REQUIRED") {
+            return json({outcome:"CONTINUATION_REQUIRED",
+              code:"SKILL_RUNTIME_VALIDATOR_RESUME_REQUIRED",...common},202);
+          }
+          if (terminalStatus==="READY") {
+            return json({outcome:"TERMINAL",terminal_status:"READY",...common},200);
+          }
+          if (terminalStatus==="BLOCKED" ||
+              terminalStatus==="HUMAN_DECISION_REQUIRED") {
+            return json({outcome:"BLOCKED",
+              code:"SKILL_RUNTIME_BLOCKED_AS_FINDING",
+              terminal_status:terminalStatus,...common},409);
+          }
+          return json({outcome:"BLOCKED",code:"SKILL_RUNTIME_NON_TERMINAL_AS_FINDING",
+            terminal_status:terminalStatus||null,...common},409);
+        }
         if (action !== CONTEXT_PACK_RUNTIME_ACTION) {
           return json({ outcome: "BLOCKED", code: "PROFILE_RUNTIME_TICKET_ACTION_MISMATCH" }, 403);
         }
