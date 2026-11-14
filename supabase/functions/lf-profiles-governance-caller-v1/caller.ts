@@ -1,5 +1,6 @@
 import {CP2_PREFLIGHT_ACTION, CP2_EXECUTE_ACTION, Cp2Fault, executeCp2} from "./cp2_edge_bridge.ts";
 import { PROFILE_CONTINUATION_ACTIONS, handleProfileContinuation } from "./profile_continuation.ts";
+import {validateLfIgTransport,IG_RPC_REQUIRED,IG_RUNTIME_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 export const OIDC_ISSUER = "https://token.actions.githubusercontent.com";
 export const OIDC_AUDIENCE = "lf-profiles-governance-caller-v1";
 
@@ -368,6 +369,9 @@ async function consumeProfileRuntimeTicket(
   executionId: string,
   pantallaId: number,
 ): Promise<Record<string, unknown>> {
+  const pTransport={p_ticket:ticket,p_execution_id:executionId,p_pantalla_id:pantallaId,p_consumer:CONTEXT_PACK_CONSUMER};
+  const pFault=validateLfIgTransport("CALLER_PROFILE_TICKET",pTransport,IG_RPC_REQUIRED[RUNTIME_TICKET_RPC] ?? []);
+  if(pFault) throw new CallerFault(pFault.code,400,{field:pFault.field,downstream_call_attempted:false});
   const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${RUNTIME_TICKET_RPC}`, {
     method: "POST",
     headers: {
@@ -396,6 +400,8 @@ async function callRuntime(
   body: Record<string, unknown>,
   timeoutMs = config.defaultTimeoutMs,
 ): Promise<Record<string, unknown>> {
+  const preflight=validateLfIgTransport("CALLER_EDGE:"+slug,body,IG_RUNTIME_REQUIRED[slug] ?? []);
+  if(preflight) throw new CallerFault(preflight.code,400,{field:preflight.field,downstream_call_attempted:false});
   const response = await deps.fetchFn(`${config.supabaseUrl}/functions/v1/${slug}`, {
     method: "POST",
     headers: {
@@ -425,6 +431,8 @@ async function inputGovQueueRpc(
   rpcName: "fn_input_governance_queue_submit_oidc_v1" | "fn_input_governance_queue_poll_oidc_v1",
   body: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
+  const preflight=validateLfIgTransport("CALLER_IG_QUEUE:"+rpcName,body,IG_RPC_REQUIRED[rpcName] ?? []);
+  if(preflight) throw new CallerFault(preflight.code,400,{field:preflight.field,downstream_call_attempted:false});
   const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${rpcName}`, {
     method: "POST",
     headers: {
@@ -541,6 +549,11 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(runtimeTicket)) {
             return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_INPUT_INVALID"},400);
           }
+          const skillTicketBody={p_ticket:runtimeTicket,p_execution_id:executionId,p_skill_code:skillCode};
+          const skillFault=validateLfIgTransport("CALLER_SKILL_TICKET",skillTicketBody,
+            IG_RPC_REQUIRED.lf_profile_skill_runtime_ticket_consume_v1);
+          if(skillFault) return json({outcome:"BLOCKED",code:skillFault.code,
+            field:skillFault.field,downstream_call_attempted:false},400);
           const consumedResponse = await deps.fetchFn(
             `${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_runtime_ticket_consume_v1`,{
               method:"POST",
@@ -565,8 +578,23 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_NOT_AUTHORIZED"},403);
           }
           const invocationBody = {...body as Record<string,unknown>,ticket:runtimeTicket};
-          const result = await callRuntime(config,deps,slug,invocationBody,
-            config.recurationTimeoutMs);
+          // A selected skill is independent of the parent profile lifecycle.
+          // Cap the one-use ticket invocation; never wait for a full synchronous
+          // Curator/Validator recuration. Failed or timed-out skills are findings.
+          let result: Record<string, unknown>;
+          try {
+            result = await callRuntime(config,deps,slug,invocationBody,
+              Math.min(config.recurationTimeoutMs, 12_000));
+          } catch (error) {
+            return json({
+              outcome:"BLOCKED",code:"SKILL_RUNTIME_BOUNDED_FAILURE_AS_FINDING",
+              execution_id:executionId,skill_code:skillCode,terminal_status:"BLOCKED",
+              remediation_action:"INSPECT_SKILL_RUNTIME_AND_RECURATE_CANONICAL_SOURCES",
+              error_type:error instanceof Error?error.name:"UNKNOWN",
+              production_authorized:false,promotion_authorized:false,
+              continuation_allowed:true
+            },409);
+          }
           const directStatus = typeof result.status==="string"?result.status:"";
           const governed = result.result && typeof result.result==="object"
             && !Array.isArray(result.result)

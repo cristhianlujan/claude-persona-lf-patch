@@ -2,6 +2,19 @@
 import "./profile_continuation_test.ts";
 // The CP2 CI carrier exercises isolated Stage 06/07 no-write and writer tests.
 import "./router_stage6_stage7_test.ts";
+// Transport preflight contract tests run within the existing authorized CP2 lane.
+import "../_shared/lf_ig_transport_guard_v1_test.ts";
+import {validateLfIgTransport} from "../_shared/lf_ig_transport_guard_v1.ts";
+Deno.test("CP2: reject semantic sha inside native profile_output RAW before transport", () => {
+  for (const key of ["semantic_receipt_sha256","catalog_sha256","request_sha256"]) {
+    const fault=validateLfIgTransport("PROFILE_NATIVE_OUTPUT",{
+      action:"profile_native_continue_v1",execution_id:"EXEC-PROFILE-GATE2-ABC",
+      profile_output:{source_text:"canonico",[key]:"untrusted"}
+    },["execution_id","profile_output"]);
+    if(!fault || fault.field!=="profile_output."+key ||
+      fault.downstream_call_attempted!==false)throw new Error("PROFILE_RAW_SEMANTIC_FIELD_NOT_BLOCKED:"+key);
+  }
+});
 import {cp2Context,executeCp2,Cp2Fault,CP2_EXECUTE_ACTION,CP2_PREFLIGHT_ACTION} from "./cp2_edge_bridge.ts";
 
 const IDS=[1,2,3,5,43,51,52,53,54,55,56,57,58];
