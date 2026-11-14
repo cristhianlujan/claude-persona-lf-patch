@@ -110,7 +110,7 @@ class TestOfficialRuntimeTransition(unittest.TestCase):
         "SELECT 'RESULT|'||(public.lf_profile_runtime_transition_v1("+req+")->>'status');",
         "SELECT 'DURING|'||"+SHA+" FROM public.lf_activos r WHERE r.codigo_activo='PERFIL-UI-ARCHITECT';",
         "SELECT 'RECEIPT_IN|'||count(*) FROM public.lf_profile_runtime_transition_receipt_v1;",
-        "SELECT 'STATUS|'||runtime_estado||'|'||impacto_automatico||'|'||metadata->>'runtime_enabled' FROM public.lf_activos WHERE codigo_activo='PERFIL-UI-ARCHITECT';",
+        "SELECT 'STATUS|'||runtime_estado||'|'||impacto_automatico||'|'||(metadata->>'runtime_enabled') FROM public.lf_activos WHERE codigo_activo='PERFIL-UI-ARCHITECT';",
         "ROLLBACK;",
         "SELECT 'AFTER|'||"+SHA+" FROM public.lf_activos r WHERE r.codigo_activo='PERFIL-UI-ARCHITECT';",
         "SELECT 'RECEIPT_OUT|'||count(*) FROM public.lf_profile_runtime_transition_receipt_v1;"]
