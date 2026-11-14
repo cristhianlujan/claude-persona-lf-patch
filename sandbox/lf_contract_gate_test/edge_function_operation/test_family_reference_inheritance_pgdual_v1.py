@@ -186,6 +186,19 @@ BEGIN
  IF o->>'status'<>'REFERENCE_CLAIMS_READY_FOR_INDEPENDENT_REVIEW'
  THEN RAISE EXCEPTION 'V5_CASES_REJECTED:%',o; END IF;
  INSERT INTO fixture_assertions VALUES('V5_CASES_PROVIDED','PASS');
+ o:=public.lf_input_family_reuse_claims_gate_v1(44,
+ '[{"family_code":"MISSING_FAMILY","action":"GAP",
+ "owner_question":{"question":"Select option","recommended_option":"A"}}]'::jsonb);
+ IF o->>'status'<>'RETURN_TO_WORKER' THEN
+   RAISE EXCEPTION 'OPEN_QUESTION_FALSELY_ACCEPTED:%',o; END IF;
+ INSERT INTO fixture_assertions VALUES('V5_OPEN_QUESTION_REJECTED','PASS');
+ o:=public.lf_input_family_reuse_claims_gate_v1(44,
+ '[{"family_code":"MISSING_FAMILY","action":"GAP",
+ "owner_question":{"question":"Select option","options":["A","B"],
+ "recommended_option":"A"}}]'::jsonb);
+ IF o->>'status'<>'REFERENCE_CLAIMS_READY_FOR_INDEPENDENT_REVIEW' THEN
+   RAISE EXCEPTION 'CLOSED_QUESTION_NOT_ACCEPTED:%',o; END IF;
+ INSERT INTO fixture_assertions VALUES('V5_CLOSED_QUESTION_VALID','PASS');
  SELECT source_hash,source_id INTO h,x FROM programacion.input_family_inheritable_sources_v1
  WHERE family_code='SESSION';
  o:=public.lf_input_family_reuse_claims_gate_v1(44,
@@ -227,6 +240,21 @@ BEGIN
  o->>'actual_independent_receipt_required'<>'true' THEN
  RAISE EXCEPTION 'SEMANTIC_SCHEMA_POSITIVE_FAILED:%',o; END IF;
  INSERT INTO fixture_assertions VALUES('70_JUDGE_SCHEMA_OWN','PASS');
+ SELECT source_hash,source_id INTO h,x FROM programacion.input_family_inheritable_sources_v1
+ WHERE family_code='ASSETS_ICONS';
+ j:=jsonb_build_object('schema_version','LF_FAMILY_REUSE_INDEPENDENT_JUDGE_V1',
+ 'reviews',jsonb_build_array(jsonb_build_object('family_code','ASSETS_ICONS',
+ 'action','REUSE_REFERENCE','source_catalog_id',x,'source_hash',h,
+ 'equivalence','EQUIVALENT_COMPONENT','transferability','TRANSFERABLE',
+ 'reason','Synthetic false upgrade of asset provenance to full icons coverage',
+ 'source_refs',jsonb_build_array('fixture://fake'))));
+ o:=public.lf_input_family_semantic_transfer_eval_v1(44,
+ jsonb_build_array(jsonb_build_object('family_code','ASSETS_ICONS',
+ 'action','REUSE_REFERENCE','source_catalog_id',x,'source_hash',h)),j);
+ IF o->>'status'<>'RETURN_TO_WORKER' OR
+   o->'findings'->0->>'code'<>'INDEPENDENT_SEMANTIC_EQUIVALENCE_OR_TRANSFERABILITY_CONTRADICTS_SOURCE'
+ THEN RAISE EXCEPTION 'JUDGE_FALSE_EQUIVALENCE_ALLOWED:%',o; END IF;
+ INSERT INTO fixture_assertions VALUES('70_SOURCE_SEMANTIC_DRIFT_REJECTED','PASS');
  o:=public.lf_input_family_semantic_transfer_eval_v1(44,
  jsonb_build_array(jsonb_build_object('family_code','AUDIT',
  'action','REUSE_REFERENCE','source_catalog_id',x,'source_hash',h)),NULL);
@@ -294,7 +322,7 @@ SELECT 'POST_ASSERT_CANDIDATE_SOURCE='||count(*) FROM programacion.input_family_
        "REUSE_RATE=RETURN_TO_WORKER","RUN_INDEPENDENT=true",
        "STEP45_SOURCE_COUNT=12","STEP45_CATALOG_SHA=true",
        "NO_ASSESSMENT_WRITES=47","ANON_NO_EXEC=true","SERVICE_EXEC=true",
-       "ASSERTIONS=11","POST_ASSERT_CATALOG=12",
+       "ASSERTIONS=14","POST_ASSERT_CATALOG=12",
        "POST_ASSERT_CANDIDATE_SOURCE=0","ROLLED_BACK=true",
        "BASE_RULES_UNCHANGED=11","BASE_ASSESSMENTS_UNCHANGED=47"]
      for wanted in expect:
