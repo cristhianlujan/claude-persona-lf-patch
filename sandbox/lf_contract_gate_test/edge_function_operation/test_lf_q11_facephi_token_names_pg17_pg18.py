@@ -5,7 +5,7 @@ import json,re,shutil,subprocess,time,unittest,uuid
 from pathlib import Path
 
 HERE=Path(__file__).resolve().parent
-ROOT=HERE.parents[3]
+ROOT=HERE.parents[2]
 SRC=HERE/"fixtures/lf_q11_facephi_tokens_source_20261114.json"
 MIG=ROOT/"supabase/migrations/20261114100000_lf_q11_facephi_off_ten_existing_token_names_v1.sql"
 CODE="SEC-LF-IDV-FACEPHI-OPTIONAL"
