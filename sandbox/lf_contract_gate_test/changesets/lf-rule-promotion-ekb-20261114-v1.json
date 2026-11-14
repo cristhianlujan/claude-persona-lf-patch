@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-rule-promotion-ekb-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114165500_lf_rule_promotion_readback_ekb_lessons_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_rule_promotion_ekb_lessons_rollback_pgdual_v1.py": "TEST",
+    "sandbox/lf_contract_gate_test/changesets/lf-rule-promotion-ekb-20261114-v1.json": "CHANGESET_MANIFEST"
+  },
+  "evidence": "SELECT 412 VIGENTE, 166 CANDIDATO; 0 PASS/166 HOLD reconstructed; no promotions",
+  "deployment": "sandbox only; via governed Train after CI"
+}
