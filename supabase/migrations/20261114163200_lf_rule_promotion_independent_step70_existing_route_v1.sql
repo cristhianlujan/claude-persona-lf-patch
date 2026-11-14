@@ -37,9 +37,9 @@ begin
    WHERE s.execution_id=p_execution_id AND s.step_order=70
      AND s.step_id='semantic_judge' AND s.status='STEP_PASS_WITH_EVIDENCE'
      AND s.evidence_payload#>>'{semantic_judge_result,verdict}'='PASS_INDEPENDENT_SEMANTIC'
-     AND s.evidence_payload#>>'{semantic_judge_result,review_mode}'='INDEPENDENT_SEMANTIC_REVIEW'
-     AND s.evidence_payload#>>'{semantic_judge_result,reviewer_is_producer}'='false'
      AND s.evidence_payload#>>'{semantic_judge_result,producer_independence_proven}'='true'
+     AND s.evidence_payload#>>'{semantic_judge_result,judge_v3_evidence,judge_invocation_kind}'='NEW_INDEPENDENT_CURRENT_CHAT_GPT_NATIVE'
+     AND s.evidence_payload#>>'{semantic_judge_result,judge_v3_evidence,judge_role}' LIKE 'INDEPENDENT_REVIEWER_%'
      AND s.evidence_payload#>>'{semantic_judge_result,model_call_count}' ~ '^[1-9][0-9]{0,5}
  if not found then return jsonb_build_object('status','BLOCKED','blocking_code','RULE_NOT_FOUND'); end if;
  if r.estado<>'CANDIDATO' then return jsonb_build_object('status','BLOCKED','blocking_code','RULE_NOT_CANDIDATE','estado',r.estado); end if;
@@ -73,8 +73,8 @@ end $function$
  return jsonb_build_object('status','PENDING_HUMAN_APPROVAL','promotion_id',v_id,'snapshot_sha256',v_sha,'next_action','Una persona debe aprobar con lf_rule_promotion_decide_v1');
 end $function$
 
-     AND jsonb_typeof(s.evidence_payload#>'{semantic_judge_result,unsupported_claims}')='array'
-     AND jsonb_array_length(s.evidence_payload#>'{semantic_judge_result,unsupported_claims}')=0
+     AND jsonb_typeof(s.evidence_payload#>'{semantic_judge_result,judge_v3_evidence,unsupported_claims}')='array'
+     AND jsonb_array_length(s.evidence_payload#>'{semantic_judge_result,judge_v3_evidence,unsupported_claims}')=0
      AND EXISTS(SELECT 1 FROM public.lf_operation_execution_steps s60
        WHERE s60.execution_id=p_execution_id AND s60.step_order=60
          AND s60.step_id='output_validate' AND s60.status='STEP_PASS_WITH_EVIDENCE')
