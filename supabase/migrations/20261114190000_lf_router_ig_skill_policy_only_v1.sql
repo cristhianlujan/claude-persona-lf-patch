@@ -161,5 +161,58 @@ BEGIN
        RAISE EXCEPTION 'LF_IG_AMBIGUOUS_CONTENT_NOT_FAILOPEN:%',v_profile;
     END IF;
   END LOOP;
+  -- The skill-specific resolver may run only after the native invoker
+  -- has selected the skill by policy. A redundant DIRECT_PROFILE relation
+  -- must never silently veto any of the 10 policy-eligible profiles.
+  SELECT p.oid,pg_get_functiondef(p.oid) INTO v_oid,v_old
+  FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE n.nspname='programacion'
+    AND p.proname='fn_lf_profile_input_governance_resolve_v1';
+  IF v_oid IS NULL OR md5(v_old)<>'1f9881b62d53a44994e108b7ee197cbe'
+  THEN RAISE EXCEPTION 'LF_IG_PROFILE_RESOLVER_PREIMAGE_DRIFT'; END IF;
+  v_start:=strpos(v_old,'  SELECT EXISTS(');
+  v_end:=strpos(v_old,E'\n  IF NOT v_bound THEN');
+  IF v_start<=0 OR v_end<=v_start OR
+    position('input_governance_binding_mode' in substr(v_old,v_start,v_end-v_start))=0
+  THEN RAISE EXCEPTION 'LF_IG_PROFILE_DIRECT_BINDING_ANCHOR_DRIFT'; END IF;
+  v_new:=substr(v_old,1,v_start-1)
+    || E'  -- Consumer identity is a flow authority, not a content finding.\n'
+    || E'  IF p_consumer IS DISTINCT FROM ''CONTEXT_PACK'' THEN\n'
+    || E'    RETURN jsonb_build_object(''applicable'',true,''status'',''BLOCKED'',\n'
+    || E'      ''blocking_code'',''BLOCK_INPUT_GOVERNANCE_CONSUMER_NOT_ALLOWED'',\n'
+    || E'      ''decision'',''BLOCKED'',''continuation_allowed'',false,\n'
+    || E'      ''flow_block_cause'',''AUTHORITY_INVALID'',''production_authorized'',false);\n'
+    || E'  END IF;\n'
+    || E'  -- Handler invocation was independently selected by\n'
+    || E'  -- public.lf_profile_skill_invoke_selected_v1 (native policy).\n'
+    || E'  SELECT EXISTS(SELECT 1 FROM public.lf_skill_selector_policy_v1 p\n'
+    || E'    JOIN public.lf_skill_catalog_v1 c USING(skill_code)\n'
+    || E'    JOIN public.lf_skill_selection_registry_v1 d USING(skill_code)\n'
+    || E'    WHERE p.profile_code=p_profile_code\n'
+    || E'      AND p.skill_code=''INPUT_GOVERNANCE_CONTEXT_PACK''\n'
+    || E'      AND p.selection_mode=''SEMANTIC_OPTIONAL''\n'
+    || E'      AND p.enabled AND NOT p.owner_decision_required\n'
+    || E'      AND p.required_operation=''EJECUCION_PERFIL_LF''\n'
+    || E'      AND p.allowed_effects=ARRAY[''READ_ONLY'']::text[]\n'
+    || E'      AND c.status=''READY'' AND c.effect=''READ_ONLY''\n'
+    || E'      AND d.descriptor_status=''CURRENT''\n'
+    || E'      AND d.descriptor->>''schema_version''=''LF_SKILL_SELECTION_DESCRIPTOR_V1''\n'
+    || E'  ) INTO v_bound;\n'
+    || substr(v_old,v_end+1);
+  v_new:=replace(v_new,'''NO_DIRECT_PROFILE_BINDING''',
+    '''NO_OPTIONAL_IG_POLICY''');
+  v_new:=replace(v_new,'''DIRECT_PROFILE''',
+    '''SKILL_POLICY_BOUND''');
+  IF position('input_governance_binding_mode' in v_new)>0 OR
+     position('lf_activo_relaciones' in v_new)>0 OR
+     position('DIRECT_PROFILE' in v_new)>0 THEN
+    RAISE EXCEPTION 'LF_IG_PROFILE_METADATA_BINDING_REMAINED';
+  END IF;
+  EXECUTE v_new;
+  IF position('lf_activo_relaciones' in pg_get_functiondef(v_oid))>0 OR
+     position('DIRECT_PROFILE' in pg_get_functiondef(v_oid))>0 OR
+     position('lf_skill_selector_policy_v1' in pg_get_functiondef(v_oid))=0 THEN
+    RAISE EXCEPTION 'LF_IG_PROFILE_POLICY_RESOLVER_NOT_EFFECTIVE';
+  END IF;
 END $lf$;
 COMMIT;
