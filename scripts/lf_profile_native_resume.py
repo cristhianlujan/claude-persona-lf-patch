@@ -862,6 +862,25 @@ def main():
     if code != 200 or source.get("outcome") != "SOURCE_BINDING_REQUIRED":
         print(json.dumps({"phase": "SOURCE_BIND", "status": code, "code": source.get("code")}))
         return 1
+    # The owning profile must consume its operation definition from DB, not
+    # a user-written step list or a Router-selected skill name.
+    plan = source.get("operation_plan")
+    if (not isinstance(plan, dict) or plan.get("status") != "READY"
+        or plan.get("operation_code") != "EJECUCION_PERFIL_LF"
+        or plan.get("profile_code") != source.get("profile_code")
+        or not isinstance(plan.get("steps"), list) or len(plan["steps"]) != 11
+        or not isinstance(plan.get("skills"), list)):
+        print("PROFILE_OPERATION_DB_PLAN_NOT_READY")
+        return 1
+    (Path.cwd() / "profile-native-operation-plan.json").write_text(
+        json.dumps(plan, ensure_ascii=False, sort_keys=True, indent=2) + "\\n",
+        encoding="utf-8",
+    )
+    print(json.dumps({"phase":"OPERATION_DB_PLAN_BOUND",
+        "execution_id":execution_id,
+        "step_count":len(plan["steps"]),
+        "skill_count":len(plan["skills"]),
+        "skill_invocation_complete":False},ensure_ascii=False))
     target_path = source.get("target_path")
     if (source.get("execution_id") != execution_id
         or source.get("source_revision_required") != source_revision
