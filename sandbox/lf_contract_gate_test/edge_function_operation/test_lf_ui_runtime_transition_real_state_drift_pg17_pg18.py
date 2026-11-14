@@ -31,7 +31,8 @@ class TestOfficialRuntimeTransition(unittest.TestCase):
   self.assertTrue(STUB.exists() and MIG.exists())
   cid="lf-ui-runtime-"+uuid.uuid4().hex[:9]
   r=subprocess.run(["docker","run","-d","--rm","--name",cid,
-    "-e","POSTGRES_PASSWORD=postgres","-e","POSTGRES_DB=postgres",image],
+    "-e","POSTGRES_PASSWORD=postgres","-e","POSTGRES_DB=postgres",
+    "-e","POSTGRES_INITDB_ARGS=--locale-provider=icu --icu-locale=en-US",image],
     text=True,capture_output=True,timeout=240)
   self.assertEqual(r.returncode,0,r.stderr[-1000:])
   try:
@@ -46,6 +47,9 @@ class TestOfficialRuntimeTransition(unittest.TestCase):
     time.sleep(1)
    else:self.fail("PG_NOT_READY")
    self.assertEqual(sql("SHOW server_version_num;"),[num])
+   # Live LF Supabase postgres uses datlocprovider='i' (ICU); exact shape validator
+   # relies on ORDER BY of JSON object keys, so the ephemeral lab must match.
+   self.assertEqual(sql("SELECT datlocprovider FROM pg_database WHERE datname=current_database();"),["i"])
    sql(STUB.read_text(encoding="utf8"))
    sql("ALTER TABLE public.lf_activos ADD COLUMN metadata jsonb NOT NULL DEFAULT "+
       """'{"runtime_enabled":false,"post_merge_next_gate":"PROFILE_RUNTIME_REFRESH_REQUIRED"}'::jsonb;""")
@@ -73,6 +77,9 @@ class TestOfficialRuntimeTransition(unittest.TestCase):
    sql("""CREATE FUNCTION public.lf_try_transition_lab(req jsonb) RETURNS text LANGUAGE plpgsql AS $$
     BEGIN PERFORM public.lf_profile_runtime_transition_v1(req); RETURN 'PASS';
     EXCEPTION WHEN OTHERS THEN RETURN SQLERRM; END $$;""")
+   source_keys=sql("SELECT array_to_string(array_agg(k ORDER BY k),'|') FROM jsonb_object_keys("+req+") k;")
+   self.assertEqual(source_keys,["owner_authorization|profile_code|request_ref|requested_by"],"REQUEST_KEYS_COLLATION_MISMATCH")
+   print("LF_UI_RUNTIME_SCHEMA_KEYS|"+image+"|"+source_keys[0]+"|ICU|PASS",flush=True)
    before=sql(SEL)[0]
    tx=["BEGIN;","SELECT 'BEFORE|'||"+SHA+" FROM public.lf_activos r WHERE r.codigo_activo='PERFIL-UI-ARCHITECT';",
         "SELECT 'GUARD|'||public.lf_try_transition_lab("+req+");",
