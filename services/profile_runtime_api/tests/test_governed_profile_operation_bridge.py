@@ -1582,5 +1582,86 @@ CREATE TABLE public.lf_profile_skill_selection_receipt_v1(
                     capture_output=True, timeout=45)
 
 
+class IgV58CurrentSourceRecurationPg17Pg18(unittest.TestCase):
+    """PG parser/rollback smoke test: V58 stale assertion becomes a finding,
+    never an unverified PASS. Does NOT attest Curator cascade E2E."""
+    def test_v58_sql_pg17_and_pg18(self):
+        import re
+        import subprocess
+        import shutil
+        import time
+        import uuid
+        self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED")
+        s=(ROOT/"supabase/migrations/"
+           "20261114051000_lf_ig_v58_recuration_finding_v1.sql").read_text()
+        expected=(
+            "fn_input_v58_build_assertions",
+            "fn_input_governance_validator_rebind_v1",
+            "fn_input_governance_validate_v2",
+        )
+        regex=re.compile(r"(?m)^CREATE OR REPLACE FUNCTION ")
+        at=[m.start() for m in regex.finditer(s)]
+        self.assertEqual(len(at),3)
+        funcs=[]
+        for i,start in enumerate(at):
+            block=s[start:at[i+1] if i+1<len(at) else len(s)]
+            tag_match=re.search(r"\bAS \$([A-Za-z_][A-Za-z0-9_]*)\$",block)
+            self.assertIsNotNone(tag_match)
+            label="$"+tag_match.group(1)+"$;"
+            end=block.find(label,tag_match.end())
+            self.assertGreater(end,0)
+            funcs.append(block[:end+len(label)])
+        for name in expected:
+            self.assertIn("FUNCTION programacion."+name+"(",s)
+        self.assertIn("'NEEDS_RECURATION'",funcs[0])
+        self.assertIn("CURATOR_REEVALUATION_REQUIRED",s)
+        self.assertNotIn("v_screen_code='B2B-AUTH-001'",funcs[0])
+        self.assertNotIn("raise exception 'V58_REBOUND_ASSERTION_FAILED",funcs[0].lower())
+        for image,version in (("postgres:17.6","17.6"),
+                              ("postgres:18.7","18.7")):
+            name="lf-ig-v58-"+uuid.uuid4().hex[:10]
+            proc=subprocess.run(
+                ["docker","run","-d","--rm","--name",name,
+                 "-e","POSTGRES_PASSWORD=fixture",image],
+                text=True,capture_output=True,timeout=240)
+            self.assertEqual(proc.returncode,0,proc.stderr[-800:])
+            try:
+                for _ in range(90):
+                    ready=subprocess.run(
+                        ["docker","exec",name,"pg_isready","-U","postgres"],
+                        capture_output=True,timeout=10)
+                    if ready.returncode==0:break
+                    time.sleep(1)
+                self.assertEqual(ready.returncode,0,"PG_NOT_READY")
+                q="""
+\\set ON_ERROR_STOP on
+CREATE SCHEMA programacion;
+CREATE SCHEMA lf_ops;
+SELECT 'BEFORE='||count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+WHERE n.nspname='programacion' AND p.proname LIKE 'fn_input_%';
+BEGIN;
+"""
+                q+="\n".join(funcs)+"\n"
+                q+="""SELECT 'DURING='||count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+WHERE n.nspname='programacion' AND p.proname IN
+('fn_input_v58_build_assertions','fn_input_governance_validator_rebind_v1','fn_input_governance_validate_v2');
+ROLLBACK;
+SELECT 'AFTER='||count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+WHERE n.nspname='programacion' AND p.proname LIKE 'fn_input_%';
+"""
+                done=subprocess.run(["docker","exec","-i",name,"psql","-X",
+                                     "-A","-t","-U","postgres","-d","postgres"],
+                                    input=q,capture_output=True,text=True,timeout=240)
+                self.assertEqual(done.returncode,0,
+                    "PG"+version+"\n"+done.stderr[-5000:]+"\n"+done.stdout[-2500:])
+                lines=[t.strip() for t in done.stdout.splitlines()]
+                self.assertIn("BEFORE=0",lines)
+                self.assertIn("DURING=3",lines)
+                self.assertIn("AFTER=0",lines)
+                print("PASS_IG_V58_PARSE_PG_"+version+" functions=3 ROLLBACK=true",flush=True)
+            finally:
+                subprocess.run(["docker","rm","-f",name],capture_output=True,timeout=45)
+
+
 if __name__ == "__main__":
     unittest.main()
