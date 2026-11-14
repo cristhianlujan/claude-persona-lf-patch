@@ -1130,5 +1130,239 @@ SELECT 'ROLLBACK_RUN_COPY_EMPTY='||
                 subprocess.run(["docker","rm","-f",name],capture_output=True,timeout=30)
 
 
+class SkillZeroEnabledPolicyCompatPg17Pg18(unittest.TestCase):
+    """Regression from PR3845: baseline was BLOCKED, candidate returns READY.
+    Installs actual production function (one surgical IF branch difference)
+    inside a PostgreSQL transaction, verifies plan 10/10, then rolls back."""
+
+    def test_pg17_pg18_zero_policy_owner_guard_valid_and_plan(self):
+        import re
+        import shutil
+        import subprocess
+        import time
+        import uuid
+        self.assertIsNotNone(shutil.which("docker"), "NOT_TESTED_DOCKER_UNAVAILABLE")
+        candidate = (ROOT / "supabase/migrations/"
+            "20261114035000_lf_profile_skill_zero_enabled_compat_v1.sql").read_text(encoding="utf-8")
+        base = (ROOT / "supabase/migrations/"
+            "20261114020000_lf_profile_skill_dynamic_selection_v1.sql").read_text(encoding="utf-8")
+        marker = """    RETURN jsonb_build_object('status','READY','skills','[]'::jsonb,
+      'profile_code',p_profile_code,'channel',p_channel,
+      'selection_mode','NO_ENABLED_SKILL_POLICY_LEGACY_STEP40_COMPAT');"""
+        old = "    RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_POLICY_NOT_CONFIGURED');"
+        self.assertEqual(candidate.count(marker), 1)
+        self.assertNotIn("SKILL_POLICY_NOT_CONFIGURED", candidate)
+        # Preimage and postimage are identical except the v_n=0 result, not the
+        # enabled-policy, owner, descriptor, semantic, or catalog checks.
+        base_sql = candidate.replace(marker, old)
+        self.assertEqual(base_sql.count(old), 1)
+        start = base.index("CREATE OR REPLACE FUNCTION public.lf_profile_execution_plan_v1(")
+        end = base.index("$profile_plan_dynamic$;", start) + len("$profile_plan_dynamic$;")
+        plan = base[start:end]
+        names = [
+            ("ACT-0051", "PRODUCTO"),
+            ("PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING", "PRODUCTO"),
+            ("PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531", "PRODUCTO"),
+            ("PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF", "OPERACIONES"),
+            ("PERFIL-GAMIFICATION-SYSTEM-ARCHITECT", "PRODUCTO"),
+            ("PERFIL-PRODUCT-DIRECTOR-LF", "PRODUCTO"),
+            ("PERFIL-QUALITY-PACK", "PRODUCTO"),
+            ("PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF", "PROGRAMACION"),
+            ("PERFIL-UI-ARCHITECT", "PRODUCTO"),
+            ("PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531", "PRODUCTO"),
+        ]
+        registry_rows = ",\n".join(
+            f"('{name}','CURRENT',ARRAY['{channel}']::text[])" for name, channel in names)
+        all_steps = ["init_execution", "router", "profile_resolve",
+                     "profile_source_read", "input_validate",
+                     "context_admission", "research_baseline_freeze",
+                     "execute_profile", "output_validate",
+                     "semantic_judge", "report_output"]
+        steps_rows = ",\n".join(f"('EJECUCION_PERFIL_LF',{order},'{step}',true,true)"
+                       for order, step in zip((0,10,20,30,40,45,47,50,60,70,80),all_steps))
+        contracts_rows = ",\n".join(
+            f"('EJECUCION_PERFIL_LF','{step}','ACTIVE_ENFORCEMENT',"
+            f"'public.fixture_step_{step}','next','blocked','[]'::jsonb)"
+            for step in all_steps)
+        setup = r"""
+\set ON_ERROR_STOP on
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE public.lf_profile_selection_registry_v1(
+ profile_code text PRIMARY KEY, descriptor_status text);
+CREATE TABLE public.lf_profile_selector_policy_v1(
+ profile_code text PRIMARY KEY, channels text[]);
+CREATE TABLE public.lf_skill_selector_policy_v1(
+ profile_code text, skill_code text, channels text[], required_operation text,
+ allowed_effects text[], selection_mode text, enabled boolean,
+ owner_decision_required boolean);
+CREATE TABLE public.lf_skill_catalog_v1(
+ skill_code text PRIMARY KEY, status text, required_operation text,
+ handler_fn text, effect text, input_required text[]);
+CREATE TABLE public.lf_skill_selection_registry_v1(
+ skill_code text PRIMARY KEY, descriptor_status text, descriptor jsonb,
+ source_revision text, source_ref text);
+CREATE TABLE public.lf_profile_write_authority_v1(
+ profile_code text, operation_code text, status text);
+CREATE TABLE public.lf_operation_steps(
+ operation_code text, step_order integer, step_id text, active boolean,
+ required boolean);
+CREATE TABLE public.lf_operation_step_contracts(
+ operation_code text, step_id text, status text, resolver_ref text,
+ next_if_pass text, next_if_blocked text, required_evidence_keys jsonb);
+CREATE TEMP TABLE profile_matrix(
+ profile_code text PRIMARY KEY, descriptor_status text, channels text[]);
+INSERT INTO profile_matrix VALUES
+"""
+        setup += registry_rows + ";\n"
+        setup += r"""
+INSERT INTO public.lf_profile_selection_registry_v1
+ SELECT profile_code, descriptor_status FROM profile_matrix;
+INSERT INTO public.lf_profile_selector_policy_v1
+ SELECT profile_code, channels FROM profile_matrix;
+-- Mirrors all ten real profile+channel bindings: all candidate policies DISABLED.
+INSERT INTO public.lf_skill_selector_policy_v1
+ SELECT profile_code,'INPUT_GOVERNANCE_CONTEXT_PACK',channels,
+ 'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY']::text[],
+ 'DETERMINISTIC_REQUIRED',false,true FROM profile_matrix;
+INSERT INTO public.lf_operation_steps VALUES
+"""
+        setup += steps_rows + ";\nINSERT INTO public.lf_operation_step_contracts VALUES\n"
+        setup += contracts_rows + ";\n"
+        sha_query = ("encode(digest(pg_get_functiondef("
+            "'public.lf_profile_skill_selection_prepare_v1(text,text,jsonb)'::regprocedure),"
+            "'sha256'),'hex')")
+        policy_sha = ("encode(digest((SELECT jsonb_agg("
+            "jsonb_build_array(profile_code,skill_code,enabled,owner_decision_required)"
+            " ORDER BY profile_code,skill_code)::text "
+            "FROM public.lf_skill_selector_policy_v1),'sha256'),'hex')")
+        checks = r"""
+DO $zero_cases$
+DECLARE row_ record; x jsonb; y jsonb; n integer := 0;
+BEGIN
+ FOR row_ IN SELECT * FROM profile_matrix LOOP
+   x:=public.lf_profile_skill_selection_prepare_v1(
+     row_.profile_code,row_.channels[1],NULL);
+   IF x->>'status'<>'READY' OR x->'skills'<>'[]'::jsonb
+      OR x->>'selection_mode'<>'NO_ENABLED_SKILL_POLICY_LEGACY_STEP40_COMPAT'
+   THEN RAISE EXCEPTION 'SKILL_ZERO_ENABLED_NOT_READY: % %',row_.profile_code,x; END IF;
+   y:=public.lf_profile_execution_plan_v1(
+     row_.profile_code,row_.channels[1],NULL);
+   IF y->>'status'<>'READY' OR y->'skills'<>'[]'::jsonb
+      OR jsonb_array_length(y->'steps')<>11
+   THEN RAISE EXCEPTION 'PROFILE_PLAN_ZERO_POLICY_BLOCKED: % %',row_.profile_code,y; END IF;
+   n:=n+1;
+ END LOOP;
+ IF n<>10 THEN RAISE EXCEPTION 'PROFILE_PLAN_MATRIX_NOT_10: %',n; END IF;
+END $zero_cases$;
+SELECT 'CASE|ZERO_ENABLED_ALL_10|READY_EMPTY|PASS_PLAN_10_10';
+UPDATE public.lf_skill_selector_policy_v1
+ SET enabled=true WHERE profile_code='PERFIL-PRODUCT-DIRECTOR-LF';
+DO $owner_guard$
+DECLARE x jsonb;
+BEGIN
+ x:=public.lf_profile_skill_selection_prepare_v1(
+     'PERFIL-PRODUCT-DIRECTOR-LF','PRODUCTO',NULL);
+ IF x->>'status'<>'BLOCKED' OR
+    x->>'blocking_code'<>'SKILL_OWNER_DECISION_REQUIRED'
+ THEN RAISE EXCEPTION 'OWNER_DECISION_GATE_BYPASSED: %',x; END IF;
+END $owner_guard$;
+SELECT 'CASE|ENABLED_OWNER_PENDING|BLOCKED_OWNER|PASS_BLOCKED';
+UPDATE public.lf_skill_selector_policy_v1
+ SET owner_decision_required=false
+ WHERE profile_code='PERFIL-PRODUCT-DIRECTOR-LF' AND enabled=true;
+INSERT INTO public.lf_skill_catalog_v1 VALUES
+ ('INPUT_GOVERNANCE_CONTEXT_PACK','READY','EJECUCION_PERFIL_LF',
+ 'public.lab_handler','READ_ONLY',ARRAY[]::text[]);
+INSERT INTO public.lf_skill_selection_registry_v1 VALUES
+ ('INPUT_GOVERNANCE_CONTEXT_PACK','CURRENT',
+ '{"schema_version":"LF_SKILL_SELECTION_DESCRIPTOR_V1"}'::jsonb,
+ 'lab-source-revision-1','fixture://skill/current');
+DO $valid$
+DECLARE x jsonb;
+BEGIN
+ x:=public.lf_profile_skill_selection_prepare_v1(
+    'PERFIL-PRODUCT-DIRECTOR-LF','PRODUCTO',NULL);
+ IF x->>'status'<>'READY' OR jsonb_array_length(x->'skills')<>1
+    OR x#>>'{skills,0,skill_code}'<>'INPUT_GOVERNANCE_CONTEXT_PACK'
+ THEN RAISE EXCEPTION 'VALID_ENABLED_SKILL_NOT_SELECTED: %',x; END IF;
+END $valid$;
+SELECT 'CASE|ENABLED_VALID|READY_ONE_SKILL|PASS_SELECTED';
+UPDATE public.lf_skill_selection_registry_v1
+ SET descriptor_status='STALE_SOURCE_CHANGED'
+ WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
+DO $stale$
+DECLARE x jsonb;
+BEGIN
+ x:=public.lf_profile_skill_selection_prepare_v1(
+    'PERFIL-PRODUCT-DIRECTOR-LF','PRODUCTO',NULL);
+ IF x->>'status'<>'BLOCKED' OR
+    x->>'blocking_code'<>'SKILL_DESCRIPTOR_STALE_OR_MISSING'
+ THEN RAISE EXCEPTION 'STALE_GATE_WEAKENED: %',x; END IF;
+END $stale$;
+SELECT 'CASE|ENABLED_STALE|BLOCKED_STALE|PASS_BLOCKED';
+"""
+        for image, version in (("postgres:17.6", "17.6"),
+                               ("postgres:18.7", "18.7")):
+            name = "lf-skill-zero-fix-" + uuid.uuid4().hex[:12]
+            proc = subprocess.run(
+                ["docker","run","-d","--rm","--name",name,
+                 "-e","POSTGRES_PASSWORD=lab-only",image],
+                capture_output=True,text=True,timeout=240)
+            self.assertEqual(proc.returncode,0,proc.stderr[-700:])
+            try:
+                for _ in range(90):
+                    if subprocess.run(["docker","exec",name,"pg_isready",
+                                       "-U","postgres"],capture_output=True,
+                                       timeout=10).returncode==0:
+                        break
+                    time.sleep(1)
+                sql = (setup + "\n" + base_sql + "\n" + plan + "\n"
+                    + "SELECT 'SHA_BEFORE='||" + sha_query + ";\n"
+                    + "SELECT 'POLICY_SHA_BEFORE='||" + policy_sha + ";\n"
+                    + "BEGIN;\n" + candidate + "\n"
+                    + "SELECT 'SHA_DURING='||" + sha_query + ";\n"
+                    + checks
+                    + "SELECT 'POLICY_SHA_DURING='||" + policy_sha + ";\n"
+                    + "ROLLBACK;\n"
+                    + "SELECT 'SHA_AFTER='||" + sha_query + ";\n"
+                    + "SELECT 'POLICY_SHA_AFTER='||" + policy_sha + ";\n"
+                    + "SELECT 'ROLLBACK_ENABLED_0='||(CASE WHEN "
+                      "(SELECT count(*) FROM public.lf_skill_selector_policy_v1 "
+                      "WHERE enabled)=0 THEN 'true' ELSE 'false' END);\n")
+                done = subprocess.run(["docker","exec","-i",name,"psql",
+                    "-X","-A","-t","-U","postgres","-d","postgres"],
+                    input=sql,capture_output=True,text=True,timeout=240)
+                self.assertEqual(done.returncode,0,
+                    f"PG_{version}_FAIL:\n"+done.stderr[-3200:] +
+                    "\nSTDOUT:\n"+done.stdout[-1500:])
+                lines = [v.strip() for v in done.stdout.splitlines() if v.strip()]
+                cases = [v for v in lines if v.startswith("CASE|")]
+                self.assertEqual(cases,[
+                    "CASE|ZERO_ENABLED_ALL_10|READY_EMPTY|PASS_PLAN_10_10",
+                    "CASE|ENABLED_OWNER_PENDING|BLOCKED_OWNER|PASS_BLOCKED",
+                    "CASE|ENABLED_VALID|READY_ONE_SKILL|PASS_SELECTED",
+                    "CASE|ENABLED_STALE|BLOCKED_STALE|PASS_BLOCKED"])
+                def sha(key):
+                    return next(v.split("=",1)[1] for v in lines if v.startswith(key+"="))
+                before, during, after = (sha("SHA_BEFORE"),sha("SHA_DURING"),
+                                          sha("SHA_AFTER"))
+                self.assertEqual(len(before),64)
+                self.assertEqual(before,after)
+                self.assertNotEqual(before,during)
+                self.assertEqual(sha("POLICY_SHA_BEFORE"),sha("POLICY_SHA_AFTER"))
+                self.assertNotEqual(sha("POLICY_SHA_BEFORE"),sha("POLICY_SHA_DURING"))
+                self.assertIn("ROLLBACK_ENABLED_0=true",lines)
+                print(f"PASS_SKILL_ZERO_COMPAT_PG_{version} cases=4/4 "
+                      "plans=10/10 rollback=true",flush=True)
+                print(f"PG_{version}_SHA before={before} during={during} after={after}",
+                      flush=True)
+                for case in cases:
+                    print(f"PG_{version}_{case}",flush=True)
+            finally:
+                subprocess.run(["docker","rm","-f",name],
+                               capture_output=True,timeout=30)
+
+
+
 if __name__ == "__main__":
     unittest.main()
