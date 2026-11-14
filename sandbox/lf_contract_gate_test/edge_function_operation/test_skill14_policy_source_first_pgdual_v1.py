@@ -11,7 +11,7 @@ import uuid
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
-MIGRATION=ROOT/"supabase/migrations/20261114141600_lf_14_skill_policy_source_first_activation_v1.sql"
+MIGRATION=ROOT/"supabase/migrations/20261114153140_lf_14_skill_policy_source_first_activation_v1.sql"
 PREIMAGE="f075ec6faf0572dc4e89d9c101224a8b"
 
 SETUP=r"""
