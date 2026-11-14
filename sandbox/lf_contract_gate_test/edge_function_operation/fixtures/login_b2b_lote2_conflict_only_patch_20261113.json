@@ -1,5 +1,5 @@
 {
-  "schema": "LF_LOGIN_B2B_LOTE2_CONFLICT_ONLY_V1",
+  "schema": "LF_LOGIN_B2B_LOTE2_DEVICE_RECONCILIATION_V2",
   "scope_codes": [
     "B2B-RULE-AUTH-004",
     "B2B-RULE-AUTH-005",
@@ -41,7 +41,8 @@
     "B2B-RULE-AUTH-030",
     "B2B-RULE-AUTH-033",
     "B2B-RULE-AUTH-034",
-    "B2B-RULE-AUTH-043"
+    "B2B-RULE-AUTH-043",
+    "B2B-RULE-AUTH-040"
   ],
   "protected_codes": [
     "B2B-RULE-AUTH-018",
@@ -127,7 +128,7 @@
       "source_status": "CANDIDATO",
       "source_sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b",
       "original_description": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega.",
-      "proposed_description": "Tras validar usuario y contraseña en LF_AUTH_BOUNDARY, la política central SEC-B2B-MFA evalúa de forma server-side únicamente dos disparadores: 30 días sin uso o 3 meses calendario sin cambiar contraseña, aplicables a perfiles 1, 2, 3, 4, 5 y 6. Si ninguno aplica, el estado de reconocimiento del dispositivo no impone OTP adicional; si aplica cualquiera, la respuesta es MFA_REQUIRED y se abre un contexto transitorio para B2B-AUTH-004 antes de AUTHENTICATED o permisos. El segundo factor se envía primero por OTP al correo registrado mediante Brevo. SMS Intico se permite solo si, tras actualizar correo, el usuario informa por llamada a soporte que el correo OTP no llega y un operador con permiso can_enable_sms_contingency habilita y audita manualmente la contingencia; sin fallback automático. La confianza o revocación de un dispositivo es señal server-side y no omite MFA exigido ni sustituye usuario y contraseña. B2B-AUTH-004 no es pública: se deniega navegación directa sin contexto válido; el cliente no decide factor, proveedor ni autenticación.",
+      "proposed_description": "Tras validar usuario y contraseña, LF_AUTH_BOUNDARY evalúa MFA exclusivamente por la política central SEC-B2B-MFA para perfiles 1 a 6: 30 días sin actividad autenticada o 3 meses calendario sin cambiar contraseña. La última actividad debe acreditarse con el registro server-side de acceso autenticado del usuario (fuente propuesta lf_ops.empresa_usuarios.last_access_at, su escritura y semántica sujetas a QA), nunca con un token, cookie, reconocimiento, revocación o last_used_at de dispositivo. AUTH-040 retira el token de dispositivo confiable del Login operativo: ni activa ni omite MFA, ni renueva la fecha de última actividad. Si algún disparador aplica, LF crea el contexto transitorio MFA_REQUIRED para B2B-AUTH-004 y verifica OTP por correo Brevo antes de AUTHENTICATED o permisos. Si ninguno aplica, puede continuar tras validar las credenciales, sin segundo factor por estado de dispositivo. SMS Intico solo por contingencia manual auditada tras actualización de correo, no recepción de OTP y llamada al soporte con permiso can_enable_sms_contingency; nunca fallback automático. El cliente no selecciona el factor ni declara autenticación; B2B-AUTH-004 exige desafío emitido por servidor y no es una ruta pública.",
       "config_patch": {
         "factor_source": "LF_EMAIL_OTP_BREVO_IF_POLICY3_MFA_REQUIRED",
         "mfa_profile_ids": [
@@ -139,17 +140,25 @@
           6
         ],
         "non_admin_second_factor": "LF_EMAIL_OTP_BREVO_IF_POLICY3_MFA_REQUIRED",
-        "recognized_device_outcome": "DEFER_TO_POLICY3_30D_OR_3_MONTHS",
-        "unrecognized_device_outcome": "DEFER_TO_POLICY3_30D_OR_3_MONTHS",
+        "recognized_device_outcome": "NOT_USED_IN_LOGIN",
+        "unrecognized_device_outcome": "NOT_USED_IN_LOGIN",
         "mfa_decision_authority": "SEC-B2B-MFA_SECURITY_POLICY_ID_3",
         "mfa_trigger_device_recognition": "DENY",
         "sms_contingency_provider": "INTICO",
         "sms_contingency_activation": "SUPPORT_MANUAL_AFTER_EMAIL_UPDATE_FAILED_DELIVERY_AND_USER_CALL",
         "sms_support_permission": "can_enable_sms_contingency",
         "sms_automatic_fallback": "DENY",
-        "fido2_passkey_requirement": "DENY"
+        "fido2_passkey_requirement": "DENY",
+        "second_control_trigger": "POLICY3_30D_AUTHENTICATED_INACTIVITY_OR_3_CALENDAR_MONTHS_PASSWORD",
+        "trusted_device_policy_id": null,
+        "device_recognition_authority": "DISABLED_RETIRED_DEVICE_TOKEN",
+        "logout_preserves_trusted_device": false,
+        "last_activity_source": "lf_ops.empresa_usuarios.last_access_at",
+        "last_activity_recording_authority": "SERVER_VERIFIED_AUTHENTICATED_ACCESS_ONLY",
+        "last_activity_binding_status": "PENDING_SERVER_WRITE_AND_SEMANTICS_QA",
+        "device_token_last_used_at_as_activity": "DENY"
       },
-      "reason": "MFA se decide por dispositivo reconocido/no reconocido y solo para perfiles no administradores; contradice la condición 30d/3m y cobertura 1–6.",
+      "reason": "La política 25/registro de token no puede decidir MFA ni ser fuente de 30 días: last_used_at refleja uso del token, distinto de last_access_at de usuario; retirar token del Login operativo.",
       "owner_decisions": [
         "a",
         "b",
@@ -222,6 +231,38 @@
       "owner_decisions": [
         "b",
         "e"
+      ],
+      "changes_applied_in_live": false
+    },
+    {
+      "code": "B2B-RULE-AUTH-040",
+      "source_status": "CANDIDATO",
+      "source_sha256": "7f0256dcbae7c1f233301793e596bd4de785f4bdbafe9b033a80e29cbe746a89",
+      "original_description": "La confianza de dispositivo no sustituye la autenticación primaria. Después de validar email y contraseña, LF puede reconocer un dispositivo únicamente mediante un token opaco emitido por servidor. Un dispositivo nuevo obtiene el token solo después de validar correctamente el OTP por correo. El navegador conserva el token en una cookie host-only con HttpOnly, Secure, SameSite=Lax, Path=/ y prefijo __Host-. La cookie no contiene identidad ni autoriza acceso por sí sola. LF persiste únicamente el hash del token en lf_ops.dispositivos_confiables, valida vencimiento y revocación del lado servidor y genera un token nuevo después de cada nueva validación OTP; un token revocado nunca se reactiva.",
+      "proposed_description": "El token opaco de dispositivo confiable queda RETIRADO del flujo operativo de Login B2B y no se emite, renueva ni consulta para autenticar, decidir, habilitar o eximir MFA. El token tampoco registra la última actividad para los 30 días: lf_ops.dispositivos_confiables.last_used_at refleja uso del token, no demuestra acceso autenticado. La actividad de usuario para SEC-B2B-MFA debe acreditarse por acceso autenticado verificado en servidor (fuente propuesta lf_ops.empresa_usuarios.last_access_at; actualización y semántica pendientes de QA). El único disparador de MFA sigue siendo 30 días sin uso o 3 meses calendario sin cambiar contraseña, perfiles 1 a 6; ante cualquiera se verifica OTP Brevo antes de sesión. Se conservan los hashes de tokens y registros existentes solo para trazabilidad, caducidad y revocación, sin reactivar confianza, emisión ni cookie __Host-. La política 25 y la regla AUTH-039 conservan referencias legadas contradictorias y requieren reconciliación gobernada separada; esta propuesta no las modifica ni autoriza producción.",
+      "config_patch": {
+        "issue_after": "DENY_RETIRED",
+        "token_generation": "DENY_RETIRED",
+        "token_rotation": "DENY_RETIRED",
+        "expiry_source": "NOT_USED_RETIRED",
+        "token_storage": "HISTORICAL_HASH_ONLY_NO_NEW_TOKENS",
+        "token_form": "RETIRED_OPAQUE_HISTORICAL_ONLY",
+        "cookie_prefix": "RETIRED_NO_NEW_COOKIE",
+        "cookie_authentication_authority": "DENY",
+        "device_token_operational_usage": "DENY",
+        "device_token_decides_mfa": "DENY",
+        "device_token_registers_user_last_activity": "DENY",
+        "token_last_used_at_source": "lf_ops.dispositivos_confiables.last_used_at",
+        "user_last_activity_source_proposed": "lf_ops.empresa_usuarios.last_access_at",
+        "user_last_activity_authentication_boundary": "SERVER_VERIFIED_ACCESS_ONLY",
+        "user_last_activity_binding_status": "PENDING_SERVER_WRITE_AND_SEMANTICS_QA",
+        "historical_registry_retention": "AUDIT_REVOCATION_ONLY",
+        "policy25_reconciliation_status": "BLOCKED_SEPARATE_GOVERNED_CHANGE",
+        "auth039_reconciliation_status": "BLOCKED_VIGENTE_SEPARATE_GOVERNED_CHANGE"
+      },
+      "reason": "Retira por completo token operacional: no decide MFA ni representa última actividad; conserva solo evidencia histórica para no alterar registros.",
+      "owner_decisions": [
+        "b"
       ],
       "changes_applied_in_live": false
     }
@@ -398,8 +439,8 @@
     {
       "code": "B2B-RULE-AUTH-040",
       "source_status": "CANDIDATO",
-      "conflict": false,
-      "reason": "No contradicción directa: conservar sin edición",
+      "conflict": true,
+      "reason": "Retira por completo token operacional: no decide MFA ni representa última actividad; conserva solo evidencia histórica para no alterar registros.",
       "source_sha256": "7f0256dcbae7c1f233301793e596bd4de785f4bdbafe9b033a80e29cbe746a89"
     },
     {
@@ -453,5 +494,22 @@
     }
   ],
   "identity_verified": false,
-  "supabase_writes": 0
+  "supabase_writes": 0,
+  "token_decision": {
+    "status": "RETIRED_FROM_OPERATIONAL_LOGIN",
+    "owner_authorization": "ARCHITECT_REQUEST_21_12_LIMA",
+    "last_activity_device_token": "NOT_AUTHORITATIVE",
+    "last_activity_user_record": "lf_ops.empresa_usuarios.last_access_at",
+    "last_activity_user_record_qa": "PENDING",
+    "other_related_rules": {
+      "AUTH035": "KEEP_LEGACY_TOTP",
+      "AUTH038": "KEEP_RECOVERY_COUNTDOWN",
+      "AUTH041": "KEEP_SECOND_FACTOR_OP4_AND_RECOVERY_OP5",
+      "AUTH042": "KEEP_RECOVERY_RATE_LIMIT"
+    },
+    "external_blockers": [
+      "SEC-B2B-TRUSTED-DEVICE policy25",
+      "B2B-RULE-AUTH-039 VIGENTE"
+    ]
+  }
 }
