@@ -411,10 +411,11 @@ def governed_request():
             raise ValueError("PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID")
         # Both independent semantic decisions belong to the SAME Router-admitted
         # execution. The Edge validates each against current DB descriptors/catalog.
-        return {"kind": "SKILL_SELECTION_CONTINUATION" if "skill_selection_decision" in data
-                else "SKILL_SEMANTIC_CONTINUATION", "execution_id": execution_id,
-                "skill_selection_decision": skill_decision,
-                "legacy_skill_selection_field": "skill_selection_decision" not in data,
+        legacy_selection_field = "skill_selection_decision" not in data
+        return {"kind": "SKILL_SEMANTIC_CONTINUATION" if legacy_selection_field
+                else "SKILL_SELECTION_CONTINUATION", "execution_id": execution_id,
+                **({"skill_semantic_decision": skill_decision} if legacy_selection_field
+                   else {"skill_selection_decision": skill_decision}),
                 **({"screen_selection_draft": screen_draft}
                    if "screen_selection_draft" in data else {})}
     selection = data.get("screen_selection_draft")
@@ -1102,8 +1103,8 @@ def main():
 
     source_request = {"action":"profile_native_source_bind_v1", "execution_id":execution_id}
     if isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
-        source_request["skill_semantic_decision" if request.get("legacy_skill_selection_field")
-                       else "skill_selection_decision"] = request["skill_selection_decision"]
+        source_request["skill_semantic_decision" if request["kind"]=="SKILL_SEMANTIC_CONTINUATION"
+                       else "skill_selection_decision"] = request.get("skill_selection_decision",request.get("skill_semantic_decision"))
     code, source = call_json(EDGE_URL, source_request, headers)
     # Optional skill omission is a finding on the SAME execution, never
     # a reason to stop the Router-admitted profile at step 30.
