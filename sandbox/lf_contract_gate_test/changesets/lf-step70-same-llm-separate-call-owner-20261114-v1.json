@@ -1,0 +1,19 @@
+{
+  "solution_ref": "lf-step70-same-llm-separate-call-owner-20261114-v1",
+  "paths": {
+    "scripts/lf_step70_separate_call_receipt_v1.py": "SERVICE_RUNTIME",
+    "scripts/lf_step70_same_llm_eval_v1.py": "SERVICE_RUNTIME",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json": "SERVICE_RUNTIME",
+    "profiles/product_director_lf/prompts/STEP70_SAME_LLM_SEPARATE_CALL_REVIEWER_V1.md": "SERVICE_RUNTIME",
+    "supabase/migrations/20261114210500_lf_step70_separate_call_unattested_preflight_and_findings_readback_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_step70_same_llm_pgdual_rollback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_step70_same_llm_separate_call_v1.py": "RUNTIME_TESTING",
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "docs/profile-execution/STEP70_OWNER_SAME_LLM_CALL_AND_HISTORICAL_FINDINGS_20261114.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-step70-same-llm-separate-call-owner-20261114-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_step70_same_llm_runner_unit_v1.py": "RUNTIME_TESTING",
+    "tests/test_lf_router_only_semantic_applicability.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_direct_gate2_dispatch_v1.py": "RUNTIME_TESTING"
+  }
+}

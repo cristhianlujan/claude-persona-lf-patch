@@ -50,8 +50,9 @@ def review():
 
 
 class RouterOnlyCheck11Tests(unittest.TestCase):
-    def test_router_only_na_allowed_with_all_other_checks_pass(self):
-        bridge.validate_independent_semantic_review(review())
+    def test_router_only_na_allowed_but_does_not_prove_model_independence(self):
+        with self.assertRaisesRegex(ValueError, "JUDGE_INDEPENDENCE_NOT_PROVEN"):
+            bridge.validate_independent_semantic_review(review())
 
     def test_absent_direct_pair_is_not_auto_pass(self):
         r = review()
@@ -83,7 +84,8 @@ class RouterOnlyCheck11Tests(unittest.TestCase):
             "direct_execution_ref": "actions://direct/2",
             "source_refs": ["actions://router/1", "actions://direct/2"],
         })
-        bridge.validate_independent_semantic_review(r)
+        with self.assertRaisesRegex(ValueError, "JUDGE_INDEPENDENCE_NOT_PROVEN"):
+            bridge.validate_independent_semantic_review(r)
         r["decision_checks"]["router_direct_consistency"]["direct_execution_ref"] = "actions://router/1"
         with self.assertRaisesRegex(ValueError, "COMPARISON_UNPROVEN"):
             bridge.validate_independent_semantic_review(r)

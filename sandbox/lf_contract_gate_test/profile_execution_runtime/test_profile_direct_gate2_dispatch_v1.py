@@ -42,7 +42,8 @@ class DirectGate2Dispatch(unittest.TestCase):
            "PROFILE_ROUTER_GATE2_JSON":self.raw,
            "PROFILE_EXECUTION_ID":"",
         }
-        self.fn=runpy.run_path(str(RUNNER),run_name="test_direct_entry")["governed_request"]
+        with patch.dict(os.environ,{"LF_PROFILE_EDGE_URL":"https://example.invalid/functions/v1/caller"},clear=False):
+            self.fn=runpy.run_path(str(RUNNER),run_name="test_direct_entry")["governed_request"]
 
     def invoke(self):
         self.event_path.write_text(json.dumps(self.event),encoding="utf8")
