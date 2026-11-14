@@ -1,0 +1,10 @@
+{
+  "solution_ref": "LF-L43-POLICY19-22-PREDECISION-PROMOTION-V1",
+  "paths": {
+    "audits/ig-l43-policy19-22-predecision/00_board_and_gates.md": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261114013500_lf_b2b_policy19_22_predecision_promotion_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l43_policies19_22_crosscheck_source.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_l43_policy19_22_crosscheck_pg17_pg18.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-L43-POLICY19-22-PREDECISION-PROMOTION-V1.json": "CHANGESET_MANIFEST"
+  }
+}
