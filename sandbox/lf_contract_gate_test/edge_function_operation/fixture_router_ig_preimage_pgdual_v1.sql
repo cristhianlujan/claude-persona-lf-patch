@@ -1,6 +1,8 @@
 -- Snapshot of actual current sandbox function bodies at 2026-11-14 12:50 Lima.
 -- For isolated, disposable PG17/18 regression only. NEVER deploy this fixture in LF.
 CREATE SCHEMA programacion;
+CREATE SCHEMA lf_ops;
+CREATE TABLE lf_ops.pantallas (id integer, codigo text, activa boolean);
 CREATE SCHEMA extensions;
 CREATE TABLE public.lf_activos (codigo_activo text);
 CREATE TABLE public.lf_router_action_registry (codigo text);
@@ -1299,5 +1301,233 @@ begin
     'downstream_execution_allowed',true
   ) || case when v_input_governance is null then '{}'::jsonb else jsonb_build_object('input_governance',v_input_governance) end;
 end;
+$function$
+;
+
+-- 1f9881b62d53a44994e108b7ee197cbe programacion.fn_lf_profile_input_governance_resolve_v1 (current preimage)
+CREATE OR REPLACE FUNCTION programacion.fn_lf_profile_input_governance_resolve_v1(p_request_text text, p_profile_code text, p_scope jsonb DEFAULT NULL::jsonb, p_consumer text DEFAULT 'CONTEXT_PACK'::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'programacion', 'lf_ops'
+AS $function$
+DECLARE
+  v_ig_exception_code text;
+  v_bound boolean:=false;
+  v_screen_count integer:=0;
+  v_pantalla_id integer;
+  v_screen_code text:=nullif(btrim(coalesce(p_scope->>'resolved_screen_code','')),'');
+  v_screen_request jsonb:=p_scope->'screen_selection_request';
+  v_screen_result jsonb:=p_scope->'screen_selection_result';
+  v_screen_validation jsonb;
+  v_result jsonb;
+  v_worker jsonb;
+BEGIN
+  SELECT EXISTS(
+    SELECT 1
+    FROM public.lf_activo_relaciones r
+    JOIN public.lf_activos a
+      ON a.codigo_activo=r.codigo_activo
+     AND a.archived_at IS NULL
+     AND a.tipo_activo='PERFIL'
+    WHERE r.codigo_activo=p_profile_code
+      AND r.relacionado_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
+      AND r.relacion_tipo='GOBERNADO_POR'
+      AND a.metadata->>'input_governance_binding_mode'='DIRECT_PROFILE'
+      AND a.metadata->>'input_governance_consumer'=p_consumer
+  ) INTO v_bound;
+
+  IF NOT v_bound THEN
+    RETURN jsonb_build_object(
+      'applicable',false,
+      'status','NOT_REQUIRED',
+      'decision','N/A',
+      'continuation_allowed',true,
+      'profile_code',p_profile_code,
+      'binding_mode','NO_DIRECT_PROFILE_BINDING',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF upper(coalesce(p_scope->>'resolution_status',''))<>'RESOLVED'
+     OR p_scope->>'resolution_method'<>'DETERMINISTIC_SHORTLIST_THEN_SEMANTIC'
+     OR v_screen_code IS NULL
+     OR v_screen_request IS NULL
+     OR v_screen_result IS NULL
+     OR jsonb_typeof(v_screen_request)<>'object'
+     OR jsonb_typeof(v_screen_result)<>'object'
+     OR v_screen_request->>'literal_request' IS DISTINCT FROM p_request_text
+  THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_SCREEN_NOT_SEMANTICALLY_RESOLVED',
+      'decision','BLOCKED',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  v_screen_validation:=public.lf_profile_screen_selector_semantic_validate_v1(
+    v_screen_request,v_screen_result
+  );
+
+  IF v_screen_validation->>'status'<>'VALID'
+     OR v_screen_result->>'decision'<>'SELECTED'
+     OR v_screen_result->>'selected_screen_code' IS DISTINCT FROM v_screen_code
+  THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_SCREEN_SEMANTIC_RECEIPT_INVALID',
+      'decision','BLOCKED',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'screen_selection_validation',v_screen_validation,
+      'router_reentry_required',false
+    );
+  END IF;
+
+  SELECT count(*),min(id),min(codigo)
+    INTO v_screen_count,v_pantalla_id,v_screen_code
+  FROM lf_ops.pantallas
+  WHERE activa
+    AND upper(codigo)=upper(v_screen_code);
+
+  IF v_screen_count<>1 THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','BLOCKED',
+      'blocking_code',case
+        when v_screen_count=0 then 'BLOCK_PROFILE_INPUT_GOVERNANCE_CANONICAL_SCREEN_NOT_FOUND'
+        else 'BLOCK_PROFILE_INPUT_GOVERNANCE_CANONICAL_SCREEN_AMBIGUOUS'
+      end,
+      'decision','BLOCKED',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  BEGIN
+    v_result:=programacion.fn_input_governance_execute(v_pantalla_id,p_consumer);
+  EXCEPTION WHEN OTHERS THEN
+    v_ig_exception_code:=split_part(SQLERRM,':',1);
+    IF v_ig_exception_code IN ('INPUT_GOVERNANCE_EKB_BLOCKED','INPUT_GOVERNANCE_CURRENT_RUN_FRESHNESS_GATE_FAILED','INPUT_GOVERNANCE_CURATOR_UNIVERSE_INCOMPLETE','INPUT_GOVERNANCE_VALIDATOR_NOT_FULL_AUTHORIZED_PASS','INPUT_GOVERNANCE_CURRENT_EVALUATION_NOT_TERMINAL') THEN
+      v_result:=jsonb_build_object('status','BLOCKED',
+        'remediation_state','IG_CONTENT_CHECK_NOT_READY','content_cause',v_ig_exception_code,
+        'production_authorized',false,'promotion_authorized',false);
+    ELSE RAISE; END IF;
+  END;
+  -- Effect authority remains hard flow boundary.
+  IF v_result->>'remediation_state'='ACTION_AUTHORIZATION_GATE' THEN
+    RETURN jsonb_build_object('applicable',true,'status','BLOCKED',
+      'blocking_code','BLOCK_INPUT_GOVERNANCE_EFFECT_AUTHORITY','decision','BLOCKED',
+      'continuation_allowed',false,'flow_block_cause','AUTHORITY_INVALID',
+      'profile_code',p_profile_code,'consumer',p_consumer,
+      'governance_result',v_result,'router_reentry_required',false);
+  END IF;
+
+  IF v_result->>'status'='READY' THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','READY',
+      'blocking_code',null,
+      'decision','PASS',
+      'continuation_allowed',true,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'pantalla_id',v_pantalla_id,
+      'screen_code',v_screen_code,
+      'screen_selection_receipt_sha256',v_screen_result->>'semantic_receipt_sha256',
+      'run_id',v_result->'run_id',
+      'governance_output_sha256',v_result->'output_sha256',
+      'context_manifest',v_result->'context_manifest',
+      'governance_result',v_result,
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_result->>'status' IN ('CURATOR_RUNTIME_REQUIRED','VALIDATOR_RUNTIME_REQUIRED') THEN
+    v_worker:=coalesce(
+      v_result->'worker_spec',
+      public.fn_input_governance_worker_spec(v_pantalla_id,p_consumer)
+    );
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','INPUT_GOVERNANCE_REQUIRED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_RUNTIME_REQUIRED',
+      'decision','PENDING',
+      'continuation_allowed',true,
+      'finding_class','INPUT_GOVERNANCE_CONTENT',
+      'finding_code','BLOCK_PROFILE_INPUT_GOVERNANCE_RUNTIME_REQUIRED',
+      'remediation_action','COMPLETE_GOVERNED_CURATOR_VALIDATOR_AND_RETRY_SKILL',
+      'analysis_only',true,'production_authorized',false,'promotion_authorized',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'pantalla_id',v_pantalla_id,
+      'screen_code',v_screen_code,
+      'screen_selection_receipt_sha256',v_screen_result->>'semantic_receipt_sha256',
+      'agent_status',v_result->>'status',
+      'worker_spec',v_worker,
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_result->>'status'='HUMAN_DECISION_REQUIRED' THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','HUMAN_DECISION_REQUIRED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED',
+      'decision','PARTIAL',
+      'continuation_allowed',true,
+      'finding_class','INPUT_GOVERNANCE_CONTENT',
+      'finding_code','BLOCK_PROFILE_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED',
+      'remediation_action','REQUEST_OWNER_DECISION_NO_PRODUCTION_AUTHORITY',
+      'analysis_only',true,'production_authorized',false,'promotion_authorized',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'pantalla_id',v_pantalla_id,
+      'screen_code',v_screen_code,
+      'screen_selection_receipt_sha256',v_screen_result->>'semantic_receipt_sha256',
+      'governance_result',v_result,
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  RETURN jsonb_build_object(
+    'applicable',true,
+    'status','BLOCKED',
+    'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE',
+    'decision','BLOCKED',
+    'continuation_allowed',true,
+      'finding_class','INPUT_GOVERNANCE_CONTENT',
+      'finding_code','BLOCK_PROFILE_INPUT_GOVERNANCE',
+      'remediation_action','RECURATE_IG_FROM_CURRENT_CANONICAL_SOURCES',
+      'analysis_only',true,'production_authorized',false,'promotion_authorized',false,
+    'profile_code',p_profile_code,
+    'consumer',p_consumer,
+    'binding_mode','DIRECT_PROFILE',
+    'pantalla_id',v_pantalla_id,
+    'screen_code',v_screen_code,
+    'screen_selection_receipt_sha256',v_screen_result->>'semantic_receipt_sha256',
+    'governance_result',v_result,
+    'resume_via','EJECUCION_PERFIL_LF/input_validate',
+    'router_reentry_required',false
+  );
+END
 $function$
 ;
