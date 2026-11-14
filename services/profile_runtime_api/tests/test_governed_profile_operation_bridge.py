@@ -776,7 +776,7 @@ INSERT INTO pd_legacy_copy VALUES
  ('EXEC-PROFILE-GATE2-EA0514AD005350958C4D6E9C',
   'd9c0ac3a8e917fb67c7d24e7d8d2bf7d','READY','CONTEXT_PACK','B2B-AUTH-001',949);
 CREATE TEMP TABLE pd_generic_compat_receipt AS
- SELECT l.*,p.profile_code AS copied_profile_code,
+ SELECT l.*,(p->>'profile_code') AS copied_profile_code,
   (p->'steps') AS copied_steps,
   l.legacy_ig_md5 AS carried_original_ig_md5,
   'SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED'::text AS evidence_limit
