@@ -157,10 +157,12 @@ gobernada de autoridad y pruebas de regresión antes de promoción.
   `ig_findings.input_governance` completo + decisión RAW
   `profile_output.traceability.ig_open_work_resolution` realmente
   observada. No crea otra función escritora ni promueve acciones.
-- `caller_test.ts` incorpora casos 200 lectura, 409 escritura,
-  409 sin evidencia; en workflow
-  `ig-m105-cp2-oidc-bridge-tests.yml` sin modificar el workflow protegido;
-  las tres pruebas nuevas se incluyen en el filtro OIDC existente `^CP2:`.
+- `caller_test.ts` contiene casos de lectura/escritura/sin evidencia.
+  `cp2_edge_bridge_test.ts` ejecuta esas **tres regresiones directamente**
+  en la suite Edge no filtrada del workflow existente
+  `ig-m105-cp2-oidc-bridge-tests.yml`; no se cambió su YAML protegido.
+  El filtro `^CP2:` sobre caller_test no ejecuta tests (observado en logs);
+  no se contabiliza como evidencia de estas pruebas.
   `test_profile_resume_issue_request.py` verifica continuación OIDC
   del mismo RUN y step40 verificado antes de step50.
 
