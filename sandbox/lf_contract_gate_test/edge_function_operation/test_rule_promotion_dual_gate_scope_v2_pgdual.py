@@ -10,7 +10,8 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[3]
 V1 = ROOT / "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_rule_promotion_v1_live_defs_20261114.sql"
-MIG1 = ROOT / "supabase/migrations/20261114193000_lf_rule_promotion_dual_gate_scope_evidence_v2.sql"
+# Source path is the exact retimestamped migration committed by LF Merge Train #3921.
+MIG1 = ROOT / "supabase/migrations/20261114185545_lf_rule_promotion_dual_gate_scope_evidence_v2.sql"
 EXPECTED_MD5 = "92e8025b70d17e3de7da7206795ed73d"
 
 FIXTURE = r"""
