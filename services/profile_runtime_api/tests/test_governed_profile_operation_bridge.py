@@ -564,7 +564,7 @@ SELECT 'ROLLBACK_EMPTY=' ||
                 self.assertNotIn("step 40", minimum)
                 self.assertNotIn("IG_CONTEXT_PACK", minimum)
                 migration = Path(__file__).resolve().parents[3] / (
-                    "supabase/migrations/20261114020000_lf_profile_step40_ig_profile_owned_v1.sql")
+                    "supabase/migrations/20261114020000_lf_profile_skill_dynamic_selection_v1.sql")
                 operation_sql = migration.read_text(encoding="utf-8")
                 operation_sql = operation_sql.replace("\nBEGIN;\n", "\n").replace("\nCOMMIT;\n", "\n")
                 generic_setup = r"""
