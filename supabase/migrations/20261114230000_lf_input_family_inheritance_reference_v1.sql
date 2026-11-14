@@ -399,8 +399,16 @@ BEGIN
    IF nullif(btrim(coalesce(item->>'solution','')),'') IS NULL AND
       (jsonb_typeof(item->'cases')<>'array' OR
        jsonb_array_length(coalesce(item->'cases','[]'::jsonb))=0) AND
-      (jsonb_typeof(item->'owner_question')<>'object' OR
-       nullif(item#>>'{owner_question,recommended_option}','') IS NULL) THEN
+      NOT (
+        jsonb_typeof(item->'owner_question')='object'
+        AND nullif(btrim(coalesce(item#>>'{owner_question,question}','')),'') IS NOT NULL
+        AND jsonb_typeof(item#>'{owner_question,options}')='array'
+        AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(
+          CASE WHEN jsonb_typeof(item#>'{owner_question,options}')='array'
+            THEN item#>'{owner_question,options}' ELSE '[]'::jsonb END
+          ) opt(value)
+          WHERE opt.value=item#>>'{owner_question,recommended_option}')
+      ) THEN
     v_findings:=v_findings||jsonb_build_array(jsonb_build_object(
        'code','V5_GAP_SOLUTION_CASES_OR_OWNER_QUESTION_REQUIRED',
        'family_code',v_family));
@@ -428,7 +436,7 @@ CREATE FUNCTION public.lf_input_family_semantic_transfer_eval_v1(
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','programacion','lf_ops'
 AS $fn$
-DECLARE v_gate jsonb;v_claim jsonb;v_review jsonb;v_count integer:=0;v_fail jsonb:='[]'::jsonb;
+DECLARE v_gate jsonb;v_claim jsonb;v_review jsonb;v_source record;v_count integer:=0;v_fail jsonb:='[]'::jsonb;
 BEGIN
  v_gate:=public.lf_input_family_reuse_claims_gate_v1(p_pantalla_id,p_claims);
  IF v_gate->>'status'='NOT_APPLICABLE' THEN RETURN jsonb_build_object(
@@ -454,9 +462,23 @@ BEGIN
     OR v_review->>'transferability' NOT IN('TRANSFERABLE','CONDITIONAL','NOT_TRANSFERABLE')
     OR nullif(btrim(coalesce(v_review->>'reason','')),'') IS NULL
     OR jsonb_typeof(v_review->'source_refs')<>'array'
-    OR jsonb_array_length(coalesce(v_review->'source_refs','[]'::jsonb))=0 THEN
+    OR jsonb_array_length(CASE WHEN jsonb_typeof(v_review->'source_refs')='array'
+         THEN v_review->'source_refs' ELSE '[]'::jsonb END)=0 THEN
      v_fail:=v_fail||jsonb_build_array(jsonb_build_object(
        'family_code',v_claim->>'family_code','code','INDEPENDENT_FAMILY_EVALUATION_MISSING'));
+   ELSIF v_claim->>'action'='REUSE_REFERENCE' THEN
+     SELECT semantic_equivalence,semantic_transferability INTO v_source
+     FROM programacion.input_family_inheritable_sources_v1
+     WHERE source_id=(v_claim->>'source_catalog_id')::bigint
+       AND family_code=v_claim->>'family_code';
+     IF NOT FOUND OR v_review->>'equivalence' IS DISTINCT FROM v_source.semantic_equivalence
+       OR v_review->>'transferability' IS DISTINCT FROM v_source.semantic_transferability
+       OR v_review->>'transferability'='NOT_TRANSFERABLE'
+     THEN
+       v_fail:=v_fail||jsonb_build_array(jsonb_build_object(
+         'family_code',v_claim->>'family_code','code',
+         'INDEPENDENT_SEMANTIC_EQUIVALENCE_OR_TRANSFERABILITY_CONTRADICTS_SOURCE'));
+     END IF;
    END IF;
    v_review:=NULL;
  END LOOP;
