@@ -478,7 +478,7 @@ Deno.test("skill invoke: parent is the authenticated execution, never caller-sup
     skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
   const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");eq(b.result.child_execution_id,"EXEC-SKILL-0123456789ABCDEF");
   const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
-  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"PROFILE_UPDATE_APPLY",p_semantic_decision:null,p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}}});
+  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"PROFILE_UPDATE_APPLY",p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}},p_semantic_decision:null});
 });
 Deno.test("skill invoke: invalid skill code or input never reaches the invoker",async()=>{
   for(const bad of [{skill_code:"profile_update_apply",input:skillInput},{skill_code:"X; DROP",input:skillInput},
@@ -534,8 +534,8 @@ Deno.test("skill invoke: SKILL_UPDATE_APPLY resolves exact skills file with trus
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input},config,n.fetchFn,sha,callerId);
   const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");
   const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
-  eq(call?.body,{p_skill:"SKILL_UPDATE_APPLY",p_execution_id:id,
-    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}}});
+  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"SKILL_UPDATE_APPLY",
+    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}},p_semantic_decision:null});
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py?ref=")),true);
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/README.md?ref=")),true);
 });
