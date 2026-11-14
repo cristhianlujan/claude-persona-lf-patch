@@ -460,6 +460,7 @@ class NativeChatSameRunChainingRegression(unittest.TestCase):
         stream = io.StringIO()
         result = unittest.TextTestRunner(stream=stream, verbosity=1).run(suite)
         self.assertTrue(result.wasSuccessful(), stream.getvalue())
+        self.assertGreaterEqual(result.testsRun, 36, stream.getvalue())
         print(f"PASS_NATIVE_SAME_RUN_ISSUE_REGRESSION tests={result.testsRun}", flush=True)
 
 
