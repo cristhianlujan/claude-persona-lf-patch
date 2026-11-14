@@ -73,7 +73,7 @@ function walkForRaw(obj: unknown, path: string, stage: string, depth: number): L
   if (isObject(obj)) {
     for (const [key,value] of Object.entries(obj)) {
       const next=path ? path+"."+key:key;
-      if (["raw","RAW","raw_payload","raw_output","raw_input"].includes(key)) {
+      if (["raw","RAW","raw_payload","raw_output","raw_input","profile_output"].includes(key)) {
         const problem=scanRaw(value,next,stage);
         if (problem) return problem;
       } else if (isObject(value) || Array.isArray(value)) {
