@@ -146,3 +146,75 @@ SELECT CASE WHEN x->>'valid'='true'
  THEN 'PASS_ROUTER_TOO_MANY_FORMAS_TRUNCATED_FINDING'
  ELSE 'FAIL_ROUTER_STAGE1_OVERFLOW' END FROM v;
 SELECT 'PASS_SKILL_OPTIONAL_TEN_PROFILES_THREE_EXISTING_RUNS' AS marker;
+
+"""
+
+class SkillOptionalV2PgDualRollback(unittest.TestCase):
+    def run_in_pg(self, image, version):
+        self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED")
+        name = "lf-skills-v2-" + uuid.uuid4().hex[:11]
+        run = subprocess.run(
+            ["docker", "run", "--rm", "-d", "--name", name,
+             "-e", "POSTGRES_PASSWORD=postgres", image],
+            capture_output=True, text=True, timeout=180)
+        self.assertEqual(run.returncode, 0, run.stderr[-1100:])
+        try:
+            for _ in range(90):
+                health = subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
+                                        capture_output=True,text=True,timeout=6)
+                if health.returncode == 0:
+                    break
+                time.sleep(1)
+            else:
+                self.fail("PG_NEVER_READY")
+
+            def sql(body, expect_error=None):
+                p = subprocess.run(["docker","exec","-i",name,"psql","-X","-Atq",
+                                    "-v","ON_ERROR_STOP=1","-U","postgres","-d","postgres"],
+                                   input=body,text=True,capture_output=True,timeout=190)
+                if expect_error:
+                    self.assertNotEqual(p.returncode,0,"NEGATIVE_NOT_REJECTED")
+                    self.assertIn(expect_error,p.stderr)
+                else:
+                    self.assertEqual(p.returncode,0,p.stderr[-7000:])
+                return p.stdout.strip()
+
+            self.assertTrue(sql("SHOW server_version_num;").startswith(version))
+            sql(FIX.read_text(encoding="utf-8"))
+            before = sql("SELECT md5(pg_get_functiondef("
+                         "'public.lf_profile_skill_selection_prepare_v1(text,text,jsonb)'"
+                         "::regprocedure));")
+            self.assertEqual(before,"24850ec585cecca9a54fe87e3d1ad2da")
+            migration = MIG.read_text(encoding="utf-8")
+            self.assertIn("BEGIN;",migration)
+            self.assertTrue(migration.rstrip().endswith("COMMIT;"))
+            inner = migration.split("\nBEGIN;\n",1)[1].rsplit("\nCOMMIT;",1)[0]
+            output = sql("BEGIN;\n" + inner + "\n" + CHECK + "\nROLLBACK;\n"
+                "SELECT md5(pg_get_functiondef("
+                "'public.lf_profile_skill_selection_prepare_v1(text,text,jsonb)'"
+                "::regprocedure));\n"
+                "SELECT count(*) FROM public.lf_skill_selector_policy_v1 "
+                "WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK' "
+                "AND applicability_contract->>'selection_required'='true';")
+            output_lines = output.splitlines()
+            self.assertIn("PASS_ROUTER_TOO_MANY_FORMAS_TRUNCATED_FINDING",output_lines)
+            self.assertIn("PASS_SKILL_OPTIONAL_TEN_PROFILES_THREE_EXISTING_RUNS",output_lines)
+            self.assertIn(before,output_lines)
+            self.assertEqual(output_lines[-1],"10")
+            # No migration effects should survive in the disposable fixture.
+            self.assertEqual(sql("SELECT to_regprocedure("
+                 "'public.lf_profile_skill_selection_prepare_v2(text,text,jsonb,jsonb)')"
+                 " IS NULL;"),"t")
+            print("PASS_SKILL_OPTIONAL_STAGE1_PG_DUAL_ROLLBACK_"+image,flush=True)
+        finally:
+            subprocess.run(["docker","rm","-f",name],
+                           capture_output=True,text=True,timeout=45)
+
+    def test_pg176(self):
+        self.run_in_pg("postgres:17.6","170006")
+
+    def test_pg187(self):
+        self.run_in_pg("postgres:18.7","180007")
+
+if __name__ == "__main__":
+    unittest.main()
