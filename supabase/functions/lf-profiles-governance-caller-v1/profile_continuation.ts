@@ -1045,6 +1045,7 @@ export async function handleProfileContinuation(
   const status = String(result.status ?? "BLOCKED");
   const expected = [
     "SCREEN_SELECTION_REQUIRED",
+    "SKILL_RUNTIME_REQUIRED",
     "INPUT_GOVERNANCE_RUNTIME_REQUIRED",
     "NATIVE_MODEL_INPUT_READY",
     "HUMAN_DECISION_REQUIRED",
