@@ -210,10 +210,9 @@ BEGIN
    -- The existing profile-owned ticket TTL is the DB-authoritative wait bound,
    -- not a caller-provided timeout. Future tickets cannot extend the first TTL.
    SELECT min(t.expires_at) INTO v_first_ticket_expires
-   FROM private.lf_profile_input_governance_runtime_ticket_v1 t
+   FROM private.lf_profile_skill_runtime_ticket_v1 t
    WHERE t.execution_id=p_input->>'execution_id'
-     AND t.pantalla_id=(v_ig->>'pantalla_id')::integer
-     AND t.consumer='CONTEXT_PACK';
+     AND t.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK';
    IF v_first_ticket_expires IS NOT NULL AND clock_timestamp()>v_first_ticket_expires THEN
      RETURN jsonb_build_object('status','BLOCKED',
         'blocking_code','SKILL_IG_RUNTIME_TIMEOUT_AS_FINDING',
@@ -248,6 +247,7 @@ BEGIN
    RETURN jsonb_build_object('status','RUNTIME_REQUIRED','skill_code','INPUT_GOVERNANCE_CONTEXT_PACK',
      'runtime_request',jsonb_build_object(
        'transport','DIRECT_EDGE_INVOCATION','runtime_slug',v_slug,
+       'legacy_ticket_adapter','INPUT_GOVERNANCE_CONTEXT_PACK_V1',
        'request_body',jsonb_build_object('pantalla_id',v_screen,'consumer','CONTEXT_PACK'),
        'terminal_statuses',jsonb_build_array('READY','BLOCKED','HUMAN_DECISION_REQUIRED'),
        'continuation_statuses',jsonb_build_array('VALIDATOR_RESUME_REQUIRED'),
@@ -538,8 +538,7 @@ BEGIN
        pg_get_functiondef('public.lf_skill_h_input_governance_context_pack_v1(jsonb)'::regprocedure),
        'UTF8'),'sha256'),'hex'),
      source_ref='supabase://public.lf_skill_h_input_governance_context_pack_v1',
-     synced_at=clock_timestamp(),
-     synced_by_execution_id='PR-A-SOURCE_FIRST_OWNER_INSTRUCTION_20261114'
+     synced_at=clock_timestamp()
  WHERE skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
    AND descriptor_status='STALE_SOURCE_CHANGED'
    AND source_revision='CANDIDATE_SOURCE_NOT_ATTESTED';
@@ -785,40 +784,31 @@ BEGIN
         p_execution_id,v_handoff->>'channel',v_skill_code,v_skill_input,null
       );
       IF v_skill_result->>'status'='RUNTIME_REQUIRED' THEN
-        IF v_skill_code='INPUT_GOVERNANCE_CONTEXT_PACK' THEN
-          -- IG adapter: retains deployed one-use ticket and OIDC Edge identity.
-          v_ig_ticket:=public.lf_profile_input_governance_runtime_ticket_issue_v1(
-            p_execution_id,v_handoff->>'literal_request',v_source_ref,v_handoff
-          );
-          IF v_ig_ticket->>'status'='AUTHORIZED' THEN
-            RETURN jsonb_build_object(
-              'status','SKILL_RUNTIME_REQUIRED','skill_code',v_skill_code,
-              'execution_id',p_execution_id,'input_validate',v_input,
-              'input_governance_runtime_request',jsonb_build_object(
-                'transport','DIRECT_EDGE_INVOCATION',
-                'runtime_orchestrator','SUPABASE_EDGE_FUNCTION:lf-profiles-governance-caller-v1',
-                'runtime_slug','lf-profiles-governance-caller-v1',
-                'request_headers',jsonb_build_object(
-                  'X-LF-Profile-Runtime-Ticket',v_ig_ticket->>'ticket'),
-                'request_body',jsonb_build_object('action','input_readiness_context_pack_runtime_v1',
-                    'execution_id',p_execution_id,'pantalla_id',(v_ig_ticket->>'pantalla_id')::integer),
-                'terminal_statuses',jsonb_build_array('READY','HUMAN_DECISION_REQUIRED','BLOCKED'),
-                'continuation_statuses',jsonb_build_array('VALIDATOR_RESUME_REQUIRED'),
-                'ticket_expires_at',v_ig_ticket->'expires_at',
-                'queue_required',false,'polling_required',false
-              ),
-              'next_action','INVOKE_SELECTED_SKILL_RUNTIME_AND_RETRY_SAME_BRIDGE',
-              'router_reentry_required',false
-            );
-          END IF;
-          v_skill_result:=jsonb_build_object('status','SKILL_FAILED_AS_FINDING',
-             'blocking_code','SKILL_RUNTIME_TICKET_NOT_AUTHORIZED',
-             'skill_code',v_skill_code);
-        ELSE
-          v_skill_result:=jsonb_build_object('status','SKILL_FAILED_AS_FINDING',
-             'blocking_code','SKILL_RUNTIME_TRANSPORT_NOT_CONFIGURED',
-             'skill_code',v_skill_code);
+        v_ig_ticket:=public.lf_profile_skill_runtime_ticket_issue_v1(
+          p_execution_id,v_skill_code,v_skill_input);
+        IF v_ig_ticket->>'status'='AUTHORIZED' THEN
+          RETURN jsonb_build_object(
+            'status','SKILL_RUNTIME_REQUIRED','skill_code',v_skill_code,
+            'execution_id',p_execution_id,'input_validate',v_input,
+            'input_governance_runtime_request',jsonb_build_object(
+              'transport','DIRECT_EDGE_INVOCATION',
+              'runtime_orchestrator','SUPABASE_EDGE_FUNCTION:lf-profiles-governance-caller-v1',
+              'runtime_slug',v_ig_ticket->>'runtime_slug',
+              'request_headers',jsonb_build_object(
+                'X-LF-Profile-Runtime-Ticket',v_ig_ticket->>'ticket'),
+              'request_body',jsonb_build_object(
+                'action','profile_skill_runtime_v1','execution_id',p_execution_id,
+                'skill_code',v_skill_code),
+              'terminal_statuses',jsonb_build_array('READY','BLOCKED','HUMAN_DECISION_REQUIRED','FAILED'),
+              'continuation_statuses',jsonb_build_array('VALIDATOR_RESUME_REQUIRED'),
+              'ticket_expires_at',v_ig_ticket->'expires_at',
+              'queue_required',false,'polling_required',false),
+            'next_action','INVOKE_SELECTED_SKILL_RUNTIME_AND_RETRY_SAME_BRIDGE',
+            'router_reentry_required',false);
         END IF;
+        v_skill_result:=jsonb_build_object('status','SKILL_FAILED_AS_FINDING',
+          'blocking_code','SKILL_RUNTIME_TICKET_NOT_AUTHORIZED',
+          'ticket_status',v_ig_ticket->>'status','skill_code',v_skill_code);
       END IF;
       v_skill_receipts:=v_skill_receipts||jsonb_build_array(jsonb_build_object(
         'skill_code',v_skill_code,'result',v_skill_result));
@@ -1007,122 +997,5 @@ BEGIN
 END
 $function$;
 
-CREATE OR REPLACE FUNCTION public.lf_profile_input_governance_runtime_ticket_issue_v1(p_execution_id text, p_input_literal text, p_input_evidence_ref text, p_handoff jsonb)
- RETURNS jsonb
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'public', 'private', 'extensions', 'programacion'
-AS $function$
-DECLARE
-  v_validation jsonb;
-  v_request jsonb;
-  v_body jsonb;
-  v_ticket uuid := extensions.gen_random_uuid();
-  v_pantalla_id integer;
-  v_expires_at timestamptz := clock_timestamp() + interval '5 minutes';
-  v_exists boolean;
-  v_skill jsonb;
-  v_profile text;
-BEGIN
-  IF nullif(btrim(coalesce(p_execution_id,'')),'') IS NULL
-     OR nullif(btrim(coalesce(p_input_literal,'')),'') IS NULL
-     OR nullif(btrim(coalesce(p_input_evidence_ref,'')),'') IS NULL
-     OR jsonb_typeof(p_handoff) IS DISTINCT FROM 'object'
-  THEN
-    RETURN jsonb_build_object(
-      'status','BLOCKED',
-      'code','PROFILE_IG_RUNTIME_TICKET_INPUT_INVALID'
-    );
-  END IF;
 
-  SELECT EXISTS(
-    SELECT 1
-    FROM public.lf_operation_execution e
-    WHERE e.execution_id=p_execution_id
-      AND e.operation_code='EJECUCION_PERFIL_LF'
-      AND e.target_type='PERFIL'
-      AND e.status='IN_PROGRESS'
-  ) INTO v_exists;
-
-  IF NOT v_exists THEN
-    RETURN jsonb_build_object(
-      'status','BLOCKED',
-      'code','PROFILE_IG_RUNTIME_EXECUTION_NOT_ACTIVE'
-    );
-  END IF;
-
-
-  -- Selected skill, not Router task applicability, authorizes this IG adapter.
-  SELECT e.target_code INTO v_profile FROM public.lf_operation_execution e
-  WHERE e.execution_id=p_execution_id AND e.status='IN_PROGRESS';
-  v_validation:=public.lf_profile_execution_input_validate_v1(
-    p_execution_id,p_input_literal,p_input_evidence_ref,p_handoff
-  );
-  IF v_validation->>'status'<>'READY' THEN
-    RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_SKILL_SCOPE_NOT_READY');
-  END IF;
-  v_skill:=public.lf_profile_skill_invoke_selected_v1(
-    p_execution_id,p_handoff->>'channel','INPUT_GOVERNANCE_CONTEXT_PACK',
-    jsonb_build_object('execution_id',p_execution_id,'request_text',p_input_literal,
-      'profile_code',v_profile,'scope',v_validation->'resolved_scope',
-      'consumer','CONTEXT_PACK','pantalla_codigo',
-      v_validation#>>'{resolved_scope,resolved_screen_code}'),null
-  );
-  IF v_skill->>'status'<>'RUNTIME_REQUIRED' THEN
-    RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_SKILL_RUNTIME_NOT_REQUIRED',
-      'skill_status',v_skill->>'status');
-  END IF;
-  v_request := v_skill->'runtime_request';
-  v_body := v_request->'request_body';
-
-  IF jsonb_typeof(v_request) IS DISTINCT FROM 'object'
-     OR v_request->>'transport' <> 'DIRECT_EDGE_INVOCATION'
-     OR coalesce((v_request->>'queue_required')::boolean,true)
-     OR coalesce((v_request->>'polling_required')::boolean,true)
-     OR v_request->>'runtime_slug' <> 'input-governance-agent-v1'
-     OR jsonb_typeof(v_body) IS DISTINCT FROM 'object'
-     OR v_body->>'consumer' <> 'CONTEXT_PACK'
-     OR coalesce(v_body->>'pantalla_id','') !~ '^[1-9][0-9]*
-  THEN
-    RETURN jsonb_build_object(
-      'status','BLOCKED',
-      'code','PROFILE_IG_RUNTIME_REQUEST_INVALID'
-    );
-  END IF;
-
-  v_pantalla_id := (v_body->>'pantalla_id')::integer;
-
-  DELETE FROM private.lf_profile_input_governance_runtime_ticket_v1
-  WHERE expires_at < clock_timestamp() - interval '1 day';
-
-  INSERT INTO private.lf_profile_input_governance_runtime_ticket_v1(
-    ticket_id,
-    execution_id,
-    pantalla_id,
-    consumer,
-    router_handoff_fingerprint,
-    expires_at
-  ) VALUES (
-    v_ticket,
-    p_execution_id,
-    v_pantalla_id,
-    'CONTEXT_PACK',
-    coalesce(v_validation->>'router_handoff_fingerprint',''),
-    v_expires_at
-  );
-
-  RETURN jsonb_build_object(
-    'status','AUTHORIZED',
-    'ticket',v_ticket::text,
-    'execution_id',p_execution_id,
-    'pantalla_id',v_pantalla_id,
-    'consumer','CONTEXT_PACK',
-    'transport','DIRECT_EDGE_INVOCATION',
-    'expires_at',v_expires_at,
-    'queue_required',false,
-    'polling_required',false,
-    'router_reentry_required',false
-  );
-END
-$function$;
 COMMIT;
