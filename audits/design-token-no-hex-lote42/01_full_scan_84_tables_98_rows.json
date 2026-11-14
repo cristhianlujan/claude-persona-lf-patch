@@ -2628,7 +2628,7 @@
           "kind": "HEX3",
           "existing_tokens": [],
           "proposed_token_missing": null,
-          "flag": null
+          "flag": "NON_COLOR_REFERENCE_ID"
         }
       ],
       "classification": "SCREENSHOT_AND_ASSET_EVIDENCE_PRESERVE"
@@ -4238,7 +4238,6 @@
     }
   ],
   "unmapped_color_values": [
-    "#440022",
     "#D7DEE8",
     "#DDE2E8",
     "#F1F7F1",
