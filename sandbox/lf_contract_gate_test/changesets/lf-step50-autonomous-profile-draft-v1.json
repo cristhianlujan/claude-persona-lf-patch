@@ -13,6 +13,7 @@
     ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
     "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
     "supabase/migrations/20261114023000_lf_profile_readonly_ig_findings_report_v1.sql": "MIGRATION",
-    "supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts": "SUPABASE_FUNCTION"
+    "supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts": "SUPABASE_FUNCTION",
+    ".github/workflows/ig-m105-cp2-oidc-bridge-tests.yml": "WORKFLOW"
   }
 }
