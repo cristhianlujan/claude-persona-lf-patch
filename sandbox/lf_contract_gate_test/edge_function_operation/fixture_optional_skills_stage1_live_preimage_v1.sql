@@ -38,6 +38,7 @@ CREATE TABLE public.lf_skill_selection_registry_v1(
 CREATE TABLE public.lf_profile_write_authority_v1(
  profile_code text,operation_code text,status text);
 CREATE TABLE public.lf_router_business_catalog_v1(business_code text);
+INSERT INTO public.lf_router_business_catalog_v1 VALUES('LF');
 CREATE TABLE public.lf_activos(
  codigo_activo text,tipo_activo text,archived_at timestamptz,metadata jsonb);
 CREATE TABLE private.lf_profile_skill_runtime_ticket_v1(
