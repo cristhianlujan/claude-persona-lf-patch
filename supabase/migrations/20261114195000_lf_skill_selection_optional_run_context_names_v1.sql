@@ -120,10 +120,13 @@ BEGIN
     'selection_mode',CASE WHEN jsonb_array_length(v_eligible)=1
      AND v_eligible->0->>'effect'='READ_ONLY' THEN 'SINGLE_READ_ONLY_AUTO_SELECTED'
      ELSE 'OPTIONAL_UNSELECTED_FAIL_OPEN' END,
-    'finding_code','SKILL_SEMANTIC_SELECTION_NOT_SUBMITTED',
-    'finding_status','SKILL_SELECTION_PENDING_FINDING',
+    'finding_code',CASE WHEN jsonb_array_length(v_eligible)=1 AND v_eligible->0->>'effect'='READ_ONLY'
+        THEN NULL ELSE 'SKILL_SEMANTIC_SELECTION_NOT_SUBMITTED' END,
+    'finding_status',CASE WHEN jsonb_array_length(v_eligible)=1 AND v_eligible->0->>'effect'='READ_ONLY'
+        THEN 'SKILL_AUTO_SELECTED' ELSE 'SKILL_SELECTION_PENDING_FINDING' END,
     'continuation_allowed',true,'production_authorized',false,
-    'next_action','SUBMIT_SKILL_SELECTION');
+    'next_action',CASE WHEN jsonb_array_length(v_eligible)=1 AND v_eligible->0->>'effect'='READ_ONLY'
+        THEN 'CONTINUE_PROFILE' ELSE 'SUBMIT_SKILL_SELECTION' END);
  END IF;
  IF jsonb_typeof(p_selection)<>'object' THEN RETURN jsonb_build_object('status','BLOCKED',
   'blocking_code','SKILL_SELECTION_CONTRACT_INVALID'); END IF;
