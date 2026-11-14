@@ -17,7 +17,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20261114153500_lf_step40_generic_skill_hook_failopen_readonly_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20261114155757_lf_step40_generic_skill_hook_failopen_readonly_v1.sql"
 FIXTURE = Path(__file__).with_name("fixture_step40_live_bridge_preimage_pgdual.sql")
 NATIVE = ROOT / "scripts/lf_profile_native_resume.py"
 CALLER = ROOT / "supabase/functions/lf-profiles-governance-caller-v1/caller.ts"
