@@ -96,6 +96,60 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             },
         }
 
+    def test_semantic_skill_resume_payload_requires_one_bounded_decision(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        decision = {"selected_skill_code": "FICTICIA_SEMANTICA",
+                    "reason": "source-bound", "evidence_refs": ["fixture://source/a"],
+                    "descriptor_revision": "fixture-sem-1",
+                    "review_mode": "CURRENT_CONTEXT_REVIEW"}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+        })
+        self.assertEqual(self.check(), {
+            "kind": "SKILL_SEMANTIC_CONTINUATION",
+            "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+        })
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision, "profile_output": {"forged": True},
+        })
+        with self.assertRaisesRegex(ValueError, "PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID"):
+            self.check()
+
+    def test_native_skill_semantic_candidates_checkpoint_same_run(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+        })
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        calls = []
+        def fake_call(_url, body, _headers):
+            calls.append(body.copy())
+            return 200, {
+                "outcome": "SKILL_SEMANTIC_SELECTION_REQUIRED",
+                "execution_id": execution_id,
+                "profile_code": "PERFIL-TEST",
+                "semantic_candidates": [{"skill_code": "FICTICIA_SEMANTICA",
+                                         "source_revision": "fixture-sem-1",
+                                         "descriptor": {"description": "synthetic"}}],
+                "required_skills": [],
+            }
+        env = {**self.env, "GITHUB_SHA": "a" * 40}
+        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            main = runpy.run_path(str(SCRIPT), run_name="native_skill_semantic_test")["main"]
+            with patch.dict(main.__globals__, {"oidc": lambda: "opaque-oidc", "call_json": fake_call}):
+                self.assertEqual(main(), 1)
+        self.assertEqual([x["action"] for x in calls], ["profile_native_source_bind_v1"])
+        self.assertEqual(calls[0]["execution_id"], execution_id)
+        checkpoint = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        selection = json.loads((Path(self.tmp.name) / "profile-native-skill-semantic.json").read_text())
+        self.assertEqual(checkpoint["next_step"], "skill_selection")
+        self.assertEqual(checkpoint["execution_id"], selection["execution_id"])
+        self.assertEqual(selection["semantic_candidates"][0]["skill_code"], "FICTICIA_SEMANTICA")
+        self.assertFalse(checkpoint["last_run_completed"])
+
     def test_native_profile_single_resume_automatically_chains_50_60_70_80(self):
         """One Issue carries native RAW+V3; mock only transport, never claim live SQL."""
         import hashlib
