@@ -49,7 +49,10 @@ class PromotionEKBRollback(unittest.TestCase):
                             ["docker", "exec", container, "pg_isready", "-U", "postgres"],
                             capture_output=True, timeout=8)
                         if ready.returncode == 0:
-                            break
+                            logs = subprocess.run(["docker", "logs", container],
+                                                  capture_output=True, text=True, timeout=8)
+                            if "PostgreSQL init process complete; ready for start up." in (logs.stdout + logs.stderr):
+                                break
                         time.sleep(.7)
                     self.assertEqual(ready.returncode, 0)
                     q = (SCHEMA + "\nBEGIN;\n" + body + """
