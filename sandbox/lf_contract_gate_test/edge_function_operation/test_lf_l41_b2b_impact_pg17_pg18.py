@@ -24,6 +24,7 @@ class TestL41B2BRemaining(unittest.TestCase):
     patch=json.loads(PATCH.read_text(encoding="utf8"))
     inv=json.loads(INV.read_text(encoding="utf8"))
     self.assertEqual((len(rules),len(pol["policies"]),len(pol["rates"])),(226,25,9))
+    self.assertEqual({x["source_row"]["codigo"] for x in rules if x.get("canonical_pg_jsonb_text")},{"REG_ALR_001","REG_ALR_005"})
     self.assertEqual(len(patch["proposals"]),3)
     self.assertEqual(inv["scoped_object_counts"]["total"],260)
     self.assertFalse(patch["identity_verified"])
@@ -74,8 +75,12 @@ class TestL41B2BRemaining(unittest.TestCase):
       for t in ("reglas","politicas_seguridad","politicas_rate_limit"):
         setup.append("CREATE TABLE lf_ops."+t+"("+ddl(t)+");")
       for part,tablename in ((rules,"reglas"),(pol["policies"],"politicas_seguridad"),(pol["rates"],"politicas_rate_limit")):
+        # JS/JSON round-trips erase PostgreSQL numeric scale (e.g. 0.60 -> 0.6).
+        # For exactly two legacy alert rows preserve byte-equivalent ::text
+        # captured via live SELECT to avoid falsely treating SHA drift as a change.
         setup += ["INSERT INTO lf_ops."+tablename+" SELECT (jsonb_populate_record(NULL::lf_ops."+
-          tablename+","+jb(z["source_row"])+")).*;" for z in part]
+          tablename+","+(q(z["canonical_pg_jsonb_text"])+"::jsonb" if z.get("canonical_pg_jsonb_text") else jb(z["source_row"]))+
+          ")).*;" for z in part]
       setup += [f["ddl"]+";" for f in pol["guards"]]
       setup += ["CREATE OR REPLACE FUNCTION lf_ops.touch_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$"+
                  "BEGIN NEW.updated_at=clock_timestamp(); RETURN NEW; END;$$;"]
@@ -90,7 +95,9 @@ class TestL41B2BRemaining(unittest.TestCase):
       expected={**{"RULE|"+k:v for k,v in rule_map.items()},
                 **{"SEC|"+k:v for k,v in sec_map.items()},
                 **{"RATE|"+k:v for k,v in rate_map.items()}}
-      self.assertEqual(before,expected,"PREIMAGE_SHA_DRIFT")
+      if before!=expected:
+          self.fail("PREIMAGE_SHA_DRIFT "+json.dumps(
+            {k:{"expected":expected.get(k),"got":before.get(k)} for k in sorted(set(before)|set(expected)) if before.get(k)!=expected.get(k)}))
       # The actual live-source policy guard must fail on changed config without updated provenance.
       sql("UPDATE lf_ops.politicas_seguridad SET policy_config=policy_config||"+
           jb({"password_failure_policy_code":"AUTH_LOGIN_FAILED_PASSWORD"})+
