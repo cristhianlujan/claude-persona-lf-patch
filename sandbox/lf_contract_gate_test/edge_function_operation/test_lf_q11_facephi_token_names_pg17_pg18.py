@@ -55,14 +55,16 @@ class TestQ11GovernedCopy(unittest.TestCase):
     ddl.append("CREATE TABLE "+table+"("+",".join(cols)+");")
    ddl.append(data["provenance_validator"][0]["def"]+";")
    ddl.append(data["provenance_trigger"][0]["def"]+";")
-   ddl.append("""CREATE TRIGGER trg_politicas_seguridad_parameter_provenance
- BEFORE INSERT OR UPDATE ON lf_ops.politicas_seguridad
- FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_parameter_provenance_v1();""")
    sql("\n".join(ddl))
    maps=[("rules","lf_ops.reglas"),("policies","lf_ops.politicas_seguridad"),("tokens","lf_design.spacing_tokens")]
    for bucket,table in maps:
     for row in data[bucket]:
      sql("INSERT INTO "+table+" SELECT (jsonb_populate_record(NULL::"+table+","+jq(row["row"])+")).*;")
+   # Source tables predate complete provenance; restore historical preimages before
+   # activating the exact live guard for our proposed writes.
+   sql("""CREATE TRIGGER trg_politicas_seguridad_parameter_provenance
+ BEFORE INSERT OR UPDATE ON lf_ops.politicas_seguridad
+ FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_parameter_provenance_v1();""")
    def keyfield(table):
     return {"lf_ops.reglas":"codigo","lf_ops.politicas_seguridad":"policy_code","lf_design.spacing_tokens":"token_name"}[table]
    def ident(table,row):return row["row"][keyfield(table)]
