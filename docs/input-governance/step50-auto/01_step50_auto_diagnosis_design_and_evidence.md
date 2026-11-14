@@ -1,30 +1,26 @@
-# EJECUCION_PERFIL_LF — disparo único GPT nativo · DRAFT / NO-GO / sin despliegue
+# EJECUCION_PERFIL_LF — plan genérico desde BD (candidato DRAFT · NO-GO)
 
-## Arquitectura efectiva (sin API de modelo ni productores externos)
-- El usuario da **una** instrucción en el chat nativo que ejecuta el perfil. ACT-0001/Router decide perfil y entrega Gate2 íntegro; el **perfil** es dueño del mismo `EJECUCION_PERFIL_LF` 0–80.
-- El paso 40 aplica IG como skill/dependencia del perfil; no se activa desde Router ni como operación padre alternativa.
-- Entrada ya existente: `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1` en Issue etiquetado `lf-profile-resume-governed` → workflow `.github/workflows/lf-edge-deploy-credential-readback.yml` / job `native-profile-resume` → GitHub OIDC → Edge `profile_native_begin_from_context_v1`. **El chat crea y etiqueta el Issue automáticamente; jamás el humano.**
-- El workflow llama `profile_native_source_bind_v1` y `profile_native_continue_v1`; éste llama `lf_profile_native_bridge_prepare_v1` dentro del RUN. Después de 7/7 devuelve `NATIVE_MODEL_INPUT_READY`. No genera RAW de modelo.
-- El **mismo chat** lee source revision y context/baseline; produce `profile_output` real bajo `profiles/<slug>/SKILL.md`, sustentado en fuentes. Produce también la evaluación V3 de 12 controles, distinguiendo `CURRENT_CONTEXT_REVIEW` de independencia no probada.
-- El chat crea y etiqueta **automáticamente** un segundo Issue de transporte con UN `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` que contiene **ambos** campos: `execution_id` original, `profile_output`, `semantic_judge_review`. No crea segundo RUN.
-- El runner **existente**, ahora encadenado en `scripts/lf_profile_native_resume.py`, ejecuta primero `run_bound_validator` fuente-bound; si PASS, llama `profile_native_continue_v1` con RAW y su recibo. Edge usa `lf_profile_native_bridge_record_output_v1` para 50 y 60 (writer `lf_record_profile_execution_step_v1`). Únicamente después del resultado `INDEPENDENT_SEMANTIC_JUDGE_REQUIRED`, el MISMO job llama `complete_native_profile_semantic_and_report`, que usa la acción `profile_native_continue_v1` + `lf_profile_native_bridge_record_semantic_v1` y `lf_profile_native_bridge_record_report_v1` para 70 y 80.
-- No se creó ningún productor de IA. Se eliminó `profile_step50_auto.ts` (Responses API) y sus secrets/config en `caller.ts`/ `profile_continuation.ts`. No se sustituyó por otro modelo/worker.
-- Si no existe V3 sustentado, validador PASS o autoridad, el paso se BLOQUEA; no se fabrica PASS ni independencia ni se avanza a 80.
+## Disparo único visible al dueño
+> Ejecuta EJECUCION_PERFIL_LF para <solicitud + contexto>
 
-## Comando exacto del chat (mecanismo GitHub conectado ya disponible)
-1. `tools.mcp__GitHub__create_issue({repository_full_name:REPO,title:UNIQUE_BEGIN_TITLE,body:JSON.stringify({schema_version:"LF_PROFILE_NATIVE_BEGIN_REQUEST_V1",router_context:GATE2_UNMODIFIED,executor_mode:"GPT_NATIVE"})})`.
-2. `tools.mcp__GitHub__add_issue_labels({repository_full_name:REPO,issue_number:BEGIN_ISSUE,labels:["lf-profile-resume-governed"]})` (labeled dispara workflow; prohibido añadir label antes de completar el body).
-3. `tools.mcp__GitHub__fetch({url:"https://api.github.com/repos/"+REPO+"/actions/runs?event=issues&per_page=100"})`: ubicar run de `.github/workflows/lf-edge-deploy-credential-readback.yml`, título único, cronología exacta y evento; comprobar `fetch_workflow_run_jobs`, artifacts y/o logs, y obtener `execution_id` NUEVO que coincida con el Issue/Run. El readback `SELECT` será solo de `lf_operation_execution` y `lf_operation_execution_steps`.
-4. `tools.mcp__GitHub__create_issue({repository_full_name:REPO,title:UNIQUE_RESUME_TITLE,body:JSON.stringify({schema_version:"LF_PROFILE_NATIVE_RESUME_REQUEST_V1",execution_id:NEW_ID,profile_output:REAL_NATIVE_RAW,semantic_judge_review:REAL_GROUNDED_V3})})`.
-5. `tools.mcp__GitHub__add_issue_labels({repository_full_name:REPO,issue_number:RESUME_ISSUE,labels:["lf-profile-resume-governed"]})`; poll del mismo workflow/Issue hasta terminal o bloqueo auténtico. No relabel/recrear simultáneamente (evita doble ejecución).
-6. Readback del **mismo** `execution_id`: `SELECT step_order,step_id,status,evidence_ref FROM public.lf_operation_execution_steps WHERE execution_id=:NEW_ID ORDER BY step_order` y `SELECT public.lf_profile_execution_terminal_authority_receipt_v1(:NEW_ID)`. Declarar cierre SOLO si 11/11 `STEP_PASS_WITH_EVIDENCE`, `lf_operation_execution.status='COMPLETED'` y recibo `READY`.
-7. Si el workflow tarda: mantener cursor `execution_id` + run_id + Issue, repetir GET/fetch sobre esa instancia **en la misma conversación activa**, sin nuevo BEGIN. Si la sesión se termina, no existe modo de revivir GPT nativo en segundo plano sin otra invocación: **NO-GO para autonomía permanente**.
+El dueño **no** selecciona perfil ni skills, no enumera pasos ni opera transporte.
 
-## Guion del ÚNICO disparo (el usuario solo escribe esto)
-> Ejecuta por ACT-0001 y Gate2 el perfil seleccionado para: «<SOLICITUD>». Tú eres el ejecutor nativo y dueño de EJECUCION_PERFIL_LF: haz automáticamente BEGIN, los pasos 0–47, el RAW de 50 y la evaluación V3 real; usa GitHub conectado para crear+etiquetar los Issues de transporte oficial y leer sus workflows hasta que 50/60/70/80 queden registrados en el MISMO execution_id. No me pidas copiar datos, pulsar continuar ni crear Issues. Sigue el perfil, validador fuente-bound y modo de juez honesto. Verifica ledger 11/11, COMPLETED y recibo terminal READY, o reporta bloqueo exacto; jamás inventes pasos, API/modelos externos, permisos ni resultados.
+## Definición interna de operación (no forma parte del disparo)
+- El Router ACT-0001 clasifica/selecciona exclusivamente un PERFIL y transporta Gate2 íntegro; no elige ninguna skill. El chat GPT nativo propietario ejecuta su RUN `EJECUCION_PERFIL_LF` con el mismo `execution_id` y ninguna API externa de modelo.
+- Planificador candidato `public.lf_profile_execution_plan_v1(p_profile_code)` en `supabase/migrations/20261114020000_lf_profile_step40_ig_profile_owned_v1.sql`: consulta `public.lf_operation_steps` + `public.lf_operation_step_contracts` (11 ACTIVE_ENFORCEMENT verificados) para obtener secuencia, `resolver_ref`, requisitos y transiciones. **No acepta lista de pasos o skills del usuario.**
+- Skills disponibles se resuelven desde `public.lf_activo_relaciones` (vínculo ejecutable `USA_SKILL`) y `public.lf_skill_catalog_v1` (`required_operation='EJECUCION_PERFIL_LF'`, `status='READY'`, `effect IN ('READ_ONLY','PROPOSE_ONLY')`). Los pasos 40 y 50 son **genéricos**: consumen el plan y las herramientas de perfil vinculadas, sin codificar IG en su definición candidata.
+- El transporte oficial interno ya existente sigue `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1` / `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` vía Issue etiquetado `lf-profile-resume-governed` → Actions/OIDC → Edge; el agente propietario invoca esas acciones automáticamente sin copiarlas al disparo.
+- `lf_profile_native_bridge_prepare_v1` devuelve `NATIVE_MODEL_INPUT_READY` después del premodelo validado. El chat nativo produce RAW real y V3 conforme al contrato; `run_bound_validator` verifica Step50; `lf_profile_native_bridge_record_output_v1` registra 50/60 y `lf_profile_native_bridge_record_semantic_v1` + `lf_profile_native_bridge_record_report_v1` registran 70/80 dentro del mismo RUN. Sin atestación independiente inventada.
+- Readback: `SELECT step_order,step_id,status,evidence_ref FROM public.lf_operation_execution_steps WHERE execution_id=:id ORDER BY step_order`, estado `COMPLETED` y `public.lf_profile_execution_terminal_authority_receipt_v1(:id)` = `READY`. Si el workflow tarda, reconsultar su run_id y el mismo `execution_id`; no relanzar BEGIN.
 
-## Prueba acotada y trazabilidad
-- `services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py`: fixture en PostgreSQL 17.6/18.7, 11 pasos 0/10/20/30/40/45/47/50/60/70/80 en transacción y `ROLLBACK`, `ROLLBACK_EMPTY=true`. **SIMULACIÓN**, no acredita ejecución GPT, writer ni E2E.
-- `scripts/lf_profile_native_resume.py`: mismo request de continuación acepta ambos objetos, valida RAW y registra 50/60 antes de 70/80 sin handoff manual.
-- Salidas nuevas no usan `MISSING_NOT_EXECUTED` ni `NOT_OFFICIAL_PROFILE_RUN`; reportan estado canónico medido.
-- Sin SQL vivo, merge, Train ni edición de RUN históricos; `DRAFT` hasta CI y prueba real del flujo completa.
+## SELECT readback del 13-nov-2026 (Supabase vivo, solo lectura)
+- 11/11 pasos activos `EJECUCION_PERFIL_LF`, contratos `ACTIVE_ENFORCEMENT`; fuente BD real.
+- **0** vínculos PERFIL→SKILL (`lf_activo_relaciones`), **4** relaciones PERFIL→`INPUT_GOVERNANCE_EXECUTION_CONTRACT` tipo `GOBERNADO_POR`; ese activo es `CONTRACT`, no `SKILL`.
+- 8 registros del catálogo `lf_skill_catalog_v1`; **no** existe IG como entrada invocable allí. Algunos perfiles tienen metadatos heredados `input_governance_binding_mode=DIRECT_PROFILE`; no equivalen a `USA_SKILL`.
+- El planificador devuelve `BLOCKED / PROFILE_LEGACY_DEPENDENCY_NOT_EXECUTABLE` si detecta esa dependencia sin skill ejecutable; **no** declara IG NOT_REQUIRED por ausencia de vínculo.
+- Falta la vinculación real perfil–skill ejecutable, contrato de entradas/aplicabilidad y adaptador gobernado para IG. La resolución del plan sí está implementada como SQL candidato; **la invocación dinámica real en Step40 no queda acreditada ni activada** y la lógica heredada sigue en el runtime vigente. El PR NO-GO es intencional hasta integración verificada.
+
+## Prueba aislada 0→80 · 2 casos, sin DML/DDL vivo
+- `services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py`: PostgreSQL 17.6 y 18.7, crea tablas de fixture con la secuencia obtenida por SELECT, instala la función candidata **dentro de transacción**, simula binding `IG_CONTEXT_PACK` y `OTRA_SKILL_FICTICIA` por separado; el mismo disparo mínimo no contiene nombre de skill, ni pasos.
+- `SELECT public.lf_profile_execution_plan_v1(perfil_interno)` devuelve `READY`, 11 pasos ordenados con `next_if_pass` y un skill distinto por caso; ledger simulado 11/11 en ambos; verifica `BLOCKED` antes de normalizar vínculo heredado; `ROLLBACK_GENERIC_EMPTY=true`.
+- Esto acredita **plan SQL genérico aislado**, NO invocación real del skill, modelo, ni cierre E2E; sin API/secretos, no se modifican RUN históricos ni Supabase vivo.
