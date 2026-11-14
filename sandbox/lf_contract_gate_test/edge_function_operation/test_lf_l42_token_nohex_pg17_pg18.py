@@ -71,7 +71,7 @@ class L42LiteralNoHex(unittest.TestCase):
           parts.append("SELECT '"+typ+"|'||"+key+"||'|'||encode(extensions.digest(convert_to(to_jsonb(t)::text,'UTF8'),'sha256'),'hex') "
            "FROM "+schema+"."+tab+" t ORDER BY "+key+";")
         result=sql("\n".join(parts))
-        return dict(x.split("|",1) for x in result)
+        return dict(x.rsplit("|",1) for x in result)
       # gather() result keys already TYPE|code
       before=gather()
       self.assertEqual(len(before),6)
@@ -107,7 +107,7 @@ class L42LiteralNoHex(unittest.TestCase):
       for typ in tables:
           self.assertIn("LITERAL_CHECK|"+typ+"|0",out,"NON_TOKEN_LITERAL_IN_PROPOSAL:"+typ)
       def parse(prefix):
-         return dict(y[len(prefix):].split("|",1) for y in out if y.startswith(prefix))
+         return dict(y[len(prefix):].rsplit("|",1) for y in out if y.startswith(prefix))
       during=parse("DURING|");after=parse("AFTER|")
       self.assertEqual(set(before),set(during));self.assertEqual(set(before),set(after))
       for key in sorted(before):
