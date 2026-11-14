@@ -114,14 +114,18 @@ def governed_request():
     # A read-only profile invokes a governed skill through its own route. The server uses the
     # authenticated execution as the parent and the skill invoker checks authority and inputs.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
-        if set(data) != {"schema_version", "execution_id", "skill_code", "input"}:
+        if set(data) - {"schema_version", "execution_id", "skill_code", "input", "skill_semantic_decision"} or not {"schema_version", "execution_id", "skill_code", "input"}.issubset(data):
             raise ValueError("PROFILE_SKILL_INVOKE_SCHEMA_INVALID")
         execution_id, skill, skill_input = data["execution_id"], data["skill_code"], data["input"]
         if (not isinstance(execution_id, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
                 or not isinstance(skill, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]{2,63}", skill)
                 or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
             raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
-        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
+        semantic = data.get("skill_semantic_decision")
+        if semantic is not None and (not isinstance(semantic, dict) or len(json.dumps(semantic)) > 12000):
+            raise ValueError("PROFILE_SKILL_INVOKE_SEMANTIC_INVALID")
+        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill,
+                "input": skill_input, "skill_semantic_decision": semantic}
     # Reuse the SAME profile Issue/OIDC/Edge lane for one bounded,
     # sequential batch of the ALREADY OPENED governed skill-update child.
     # This never opens another RUN and cannot provide signer/role credentials.
@@ -181,12 +185,23 @@ def governed_request():
             seen.add(key)
         return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review",
+        "skill_semantic_decision"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
     if not isinstance(execution_id, str):
         raise ValueError("PROFILE_GOVERNED_ISSUE_EXECUTION_ID_INVALID")
+    # Semantic skill selection is a continuation of the SAME profile RUN.
+    # It comes from the native chat, not from the Router and not from an API producer.
+    skill_decision = data.get("skill_semantic_decision")
+    if skill_decision is not None:
+        if (not isinstance(skill_decision, dict) or
+            len(json.dumps(skill_decision, ensure_ascii=False)) > 12000 or
+            not set(data).issubset({"schema_version", "execution_id", "skill_semantic_decision"})):
+            raise ValueError("PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID")
+        return {"kind": "SKILL_SEMANTIC_CONTINUATION", "execution_id": execution_id,
+                "skill_semantic_decision": skill_decision}
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
@@ -206,7 +221,7 @@ def record_incomplete_continuation(execution_id, profile_code, phase, next_step,
     owns the review must supply real V3 evidence via the existing OIDC bridge.
     """
     if next_step not in {
-        "screen_selection", "input_governance", "execute_profile", "semantic_judge",
+        "screen_selection", "skill_selection", "input_governance", "execute_profile", "semantic_judge",
     }:
         raise ValueError("PROFILE_NATIVE_CONTINUATION_UNRECOGNIZED_STEP")
     checkpoint = {
@@ -813,6 +828,7 @@ def main():
             "execution_id": request["execution_id"],
             "skill_code": request["skill_code"],
             "input": request["input"],
+            "skill_semantic_decision": request.get("skill_semantic_decision"),
         }, headers)
         result = invoked.get("result") if isinstance(invoked.get("result"), dict) else {}
         ok = code == 200 and invoked.get("outcome") == "SKILL_INVOKED"
@@ -852,13 +868,36 @@ def main():
             "execution_id":execution_id,
             "profile_code":result.get("profile_code"),
             "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
+    elif isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
+        execution_id = request["execution_id"]
+        raw_draft, profile_output, semantic_review = "", None, None
     else:
         execution_id, raw_draft, profile_output, semantic_review = request
 
-    code, source = call_json(EDGE_URL, {
-        "action": "profile_native_source_bind_v1",
-        "execution_id": execution_id,
-    }, headers)
+    source_request = {"action":"profile_native_source_bind_v1", "execution_id":execution_id}
+    if isinstance(request, dict) and request.get("kind") == "SKILL_SEMANTIC_CONTINUATION":
+        source_request["skill_semantic_decision"] = request["skill_semantic_decision"]
+    code, source = call_json(EDGE_URL, source_request, headers)
+    if (code == 200 and source.get("outcome") == "SKILL_SEMANTIC_SELECTION_REQUIRED"
+        and source.get("execution_id") == execution_id):
+        semantic_packet = {
+            "schema_version":"LF_PROFILE_NATIVE_SKILL_SEMANTIC_SELECTION_V1",
+            "execution_id":execution_id,
+            "profile_code":source.get("profile_code"),
+            "semantic_candidates":source.get("semantic_candidates"),
+            "required_skills":source.get("required_skills"),
+            "transport":"EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+            "next_action":"NATIVE_CHAT_SELECT_ONE_SKILL_AND_RESUME_SAME_EXECUTION",
+        }
+        (Path.cwd() / "profile-native-skill-semantic.json").write_text(
+            json.dumps(semantic_packet, ensure_ascii=False, sort_keys=True, indent=2)+"\n",
+            encoding="utf-8")
+        record_incomplete_continuation(
+            execution_id, source.get("profile_code"), "SKILL_SEMANTIC_SELECTION_REQUIRED",
+            "skill_selection", "ONE_GROUNDED_SKILL_SEMANTIC_DECISION")
+        print(json.dumps({"phase":"SKILL_SEMANTIC_SELECTION_REQUIRED",
+          "execution_id":execution_id,"status":"CONTINUATION_REQUIRED_NOT_COMPLETE"}))
+        return 1
     if code != 200 or source.get("outcome") != "SOURCE_BINDING_REQUIRED":
         print(json.dumps({"phase": "SOURCE_BIND", "status": code, "code": source.get("code")}))
         return 1
