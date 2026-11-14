@@ -369,10 +369,16 @@ const predecisionBlockedIg = {
   production_authorized:false,execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
   predecision_crosscheck:{status:"CANONICAL_READBACK_ONLY",run_id:951,
     deterministic_finding_count:3,
-    findings:[
-      {code:"FIXTURE-01",decision:"PENDING"},
-      {code:"FIXTURE-02",decision:"PENDING"},
-      {code:"FIXTURE-03",decision:"PENDING"},
+    deterministic_findings:[
+      {type:"VIGENTE_REFERENCES_CANDIDATO",severity:"INTERNAL_REMEDIATION",
+        source_id:3,target_id:19,relation_key:"factor_security_policy_id",
+        source_policy:"SEC-B2B-MFA",target_policy:"SEC-B2B-MFA-FACTOR-ELIGIBILITY",question_owner:false},
+      {type:"VIGENTE_REFERENCES_CANDIDATO",severity:"INTERNAL_REMEDIATION",
+        source_id:17,target_id:22,relation_key:"abuse_security_policy_id",
+        source_policy:"SEC-B2B-LOGIN-ANTIBOT",target_policy:"SEC-B2B-AUTH-ABUSE-PROTECTION",question_owner:false},
+      {type:"IP_COMPOSITE_SCOPE_REQUIRES_RUNTIME_PROOF",severity:"ACQUIRE_EVIDENCE",
+        scope_key:"IP_USER",rate_policy:"RATE-B2B-LOGIN",
+        security_policy:"SEC-B2B-AUTH-ABUSE-PROTECTION",question_owner:false},
     ]},
 };
 Deno.test("profile ticket: 3 IG predecision findings are returned intact for server-authorized read-only report",async()=>{
@@ -388,7 +394,7 @@ Deno.test("profile ticket: 3 IG predecision findings are returned intact for ser
   assertEquals(payload.analysis_scope,"READ_ONLY_WITH_IG_FINDINGS");
   assertEquals(payload.ig_security_clearance,false);
   assertEquals(payload.write_authorized,false);
-  assertEquals(payload.result.result.predecision_crosscheck.findings,predecisionBlockedIg.predecision_crosscheck.findings);
+  assertEquals(payload.result.result.predecision_crosscheck.deterministic_findings,predecisionBlockedIg.predecision_crosscheck.deterministic_findings);
   assertEquals(h.calls.filter(c=>c.url.includes("/rest/v1/lf_operation_execution?")).length,1);
 });
 Deno.test("profile ticket: IG blocked cannot continue under write-capable RUN",async()=>{
