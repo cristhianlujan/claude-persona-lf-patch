@@ -111,6 +111,7 @@ BEGIN
  LOOP
    SELECT pg_get_functiondef(r.fn) INTO src;
    spot:=strpos(src,'''blocking_code'', '''||r.code||'''');
+   IF spot=0 THEN spot:=strpos(src,'''blocking_code'','''||r.code||''''); END IF;
    IF spot=0 THEN RAISE EXCEPTION 'IG_PATH_CODE_ABSENT:%',r.code; END IF;
    segment:=substr(src,spot,440);
    IF strpos(segment,'''continuation_allowed'',true')>0
