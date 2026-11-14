@@ -56,6 +56,87 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             "skills": [],
         }
 
+    def test_native_phrase_issue_parser_preserves_text_no_gate2(self):
+        literal = ("Probar la carga masiva B2B (pantalla B2B-CARGA-002, "
+                   "wizard de nueva carga; relacionadas B2B-CARGA-001 y "
+                   "B2B-CARGA-007) entrando por el Router ACT-0001")
+        stage1 = {
+          "schema_version":"LF_ROUTER_STAGE1_V2",
+          "texto_original":literal,"es_operacion":True,"ambiguo":False,
+          "respuesta_directa":False,"sujeto":"carga masiva B2B",
+          "accion":"ejecutar perfil sobre B2B-CARGA-002",
+          "formas_busqueda":["carga masiva B2B","wizard de nueva carga","B2B-CARGA-002"],
+          "alternativas":[],"correcciones":[],
+          "downstream_execution_allowed":False,
+          "canal_candidato":"PRODUCTO","negocio_codigo":"LF",
+          "razon_seleccion":"alcance y aceptación de nueva carga",
+          "alcance":{"target_type":"PANTALLA","target_hint":"B2B-CARGA-002",
+                     "resolution_status":"UNRESOLVED"},
+        }
+        semantic = {"decision":"SELECTED",
+          "selected_profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+          "ambiguous_profile_codes":[],"material_ambiguities":[],
+          "reason":"La tarea es de producto y requiere criterios de aceptación",
+          "evidence_refs":[{"kind":"ACTIVATION",
+            "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+            "source_section":"Activation triggers"},
+            {"kind":"PURPOSE","profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+             "source_section":"Purpose"}]}
+        request={"schema_version":"LF_PROFILE_RUN_FROM_PHRASE_V1",
+          "request_text":literal,"stage1_decision":stage1,
+          "profile_semantic_decision":semantic,"executor_mode":"GPT_NATIVE"}
+        self.event["issue"]["body"] = json.dumps(request,ensure_ascii=False)
+        read=self.check()
+        self.assertEqual(read["kind"],"PHRASE_BEGIN")
+        self.assertEqual(read["request_text"],literal)
+        self.assertEqual(read["stage1_decision"],stage1)
+        self.assertNotIn("router_context",read)
+        # No invented Gate2 allowed at input boundary.
+        request["router_context"]={"status":"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"}
+        self.event["issue"]["body"]=json.dumps(request)
+        with self.assertRaisesRegex(ValueError,"PROFILE_PHRASE_SCHEMA_INVALID"):
+            self.check()
+        request.pop("router_context")
+        request["stage1_decision"]["texto_original"]="Different owner sentence"
+        self.event["issue"]["body"]=json.dumps(request)
+        with self.assertRaisesRegex(ValueError,"PROFILE_PHRASE_SEMANTIC_INVALID"):
+            self.check()
+
+    def test_native_phrase_begin_routes_oidc_then_fails_closed_before_source(self):
+        literal = "Probar la carga masiva B2B B2B-CARGA-002"
+        request={"schema_version":"LF_PROFILE_RUN_FROM_PHRASE_V1",
+          "request_text":literal,"executor_mode":"GPT_NATIVE",
+          "stage1_decision":{
+            "schema_version":"LF_ROUTER_STAGE1_V2","texto_original":literal,
+            "negocio_codigo":"LF","downstream_execution_allowed":False},
+          "profile_semantic_decision":{
+            "decision":"SELECTED","selected_profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}}
+        self.event["issue"]["body"]=json.dumps(request)
+        self.event_path.write_text(json.dumps(self.event))
+        calls=[]
+        execution_id="EXEC-PROFILE-GATE2-"+"F"*24
+        def fake(_url,body,_headers):
+            calls.append(body.copy())
+            if body["action"]=="profile_native_begin_from_phrase_v1":
+                self.assertEqual(body["request_text"],literal)
+                self.assertNotIn("router_context",body)
+                return 200,{"outcome":"NATIVE_EXECUTION_READY","result":{
+                  "status":"NATIVE_EXECUTION_READY",
+                  "execution_id":execution_id,
+                  "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}}
+            if body["action"]=="profile_native_source_bind_v1":
+                return 409,{"outcome":"BLOCKED","code":"SOURCE_BIND_EXPECTED_FIXTURE"}
+            raise AssertionError("no further step without source")
+        env={**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"123"}
+        with patch.dict(os.environ,env,clear=True):
+            runner=runpy.run_path(str(SCRIPT),run_name="phrase_issue_test")["main"]
+            with patch.dict(runner.__globals__,{"oidc":lambda:"test-oidc",
+                  "call_json":fake}):
+                self.assertEqual(runner(),1)
+        self.assertEqual([x["action"] for x in calls],[
+          "profile_native_begin_from_phrase_v1","profile_native_source_bind_v1"
+        ])
+
     def _blocked_ig_edge_reply(self):
         execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
         profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
