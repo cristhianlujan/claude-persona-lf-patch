@@ -817,7 +817,10 @@ def validate_independent_semantic_review(review):
         elif check.get("result") not in (True, "true"):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
     if mode == "INDEPENDENT_SEMANTIC":
-        from lf_step70_separate_call_receipt_v1 import assess_separate_call_receipt
+        try:
+            from lf_step70_separate_call_receipt_v1 import assess_separate_call_receipt
+        except ModuleNotFoundError:
+            from scripts.lf_step70_separate_call_receipt_v1 import assess_separate_call_receipt
         assessment=assess_separate_call_receipt(review)
         if not assessment.get("producer_independence_proven",False):
             raise ValueError("JUDGE_INDEPENDENCE_NOT_PROVEN")
@@ -923,7 +926,10 @@ def complete_native_profile_semantic_and_report(execution_id, source, semantic_r
     # Until the provider/native host supplies independent call attestation,
     # preserve all content checks and downgrade only the independence claim.
     if semantic_review.get("review_mode") != "CURRENT_CONTEXT_REVIEW":
-        from lf_step70_separate_call_receipt_v1 import normalize_when_unverified
+        try:
+            from lf_step70_separate_call_receipt_v1 import normalize_when_unverified
+        except ModuleNotFoundError:
+            from scripts.lf_step70_separate_call_receipt_v1 import normalize_when_unverified
         semantic_review, assessment = normalize_when_unverified(semantic_review)
         Path("profile-step70-independence-assessment.json").write_text(
             json.dumps(assessment,ensure_ascii=False,sort_keys=True),encoding="utf8")
