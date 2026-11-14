@@ -447,6 +447,22 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
 
 
 
+class NativeChatSameRunChainingRegression(unittest.TestCase):
+    """Prove the official Issue runner unit tests run in the PR CI, not only Issue Actions."""
+    def test_native_raw_and_v3_single_resume_issue(self) -> None:
+        import io
+        root = Path(__file__).resolve().parents[3]
+        tests = root / "sandbox/lf_contract_gate_test/profile_execution_runtime"
+        suite = unittest.defaultTestLoader.discover(
+            start_dir=str(tests), pattern="test_profile_resume_issue_request.py",
+        )
+        self.assertGreater(suite.countTestCases(), 0)
+        stream = io.StringIO()
+        result = unittest.TextTestRunner(stream=stream, verbosity=1).run(suite)
+        self.assertTrue(result.wasSuccessful(), stream.getvalue())
+        print(f"PASS_NATIVE_SAME_RUN_ISSUE_REGRESSION tests={result.testsRun}", flush=True)
+
+
 class Step50PgDualIsolatedSimulation(unittest.TestCase):
     """Real PostgreSQL 17.6/18.7 engines, simulated RUN, rollback; NOT real writer."""
     def test_step50_sequence_rollback_pg176_pg187(self) -> None:
