@@ -508,11 +508,32 @@ END $pre$;
 INSERT INTO lf_step50_simulated_steps
 VALUES ('EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',50,'execute_profile',
         'STEP_PASS_WITH_EVIDENCE',
-        '{"simulation":true,"profile_output":{"traceability":{"producer":"OPENAI_RESPONSES_API","source":"fixture","model_response_id":"simulated-only"}}}'::jsonb);
+        '{"simulation":true,"profile_output":{"traceability":{"producer":"GPT_NATIVE","source":"fixture","review_mode":"CURRENT_CONTEXT_REVIEW"}}}'::jsonb);
+-- Simulate the SAME native operation transitioning 50 -> 60 -> 70 -> 80;
+-- every successor requires the exact clean predecessor, never an invented pass.
 INSERT INTO lf_step50_simulated_steps
-SELECT 'EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',n,code,
-       'STEP_PASS_WITH_EVIDENCE',jsonb_build_object('simulation',true)
-FROM (VALUES (60,'output_validate'),(70,'semantic_judge'),(80,'report_output')) AS src(n,code);
+SELECT 'EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',60,'output_validate',
+       'STEP_PASS_WITH_EVIDENCE',jsonb_build_object('simulation',true,'validator','SOURCE_BOUND')
+WHERE EXISTS (SELECT 1 FROM lf_step50_simulated_steps
+              WHERE step_order=50 AND status='STEP_PASS_WITH_EVIDENCE');
+INSERT INTO lf_step50_simulated_steps
+SELECT 'EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',70,'semantic_judge',
+       'STEP_PASS_WITH_EVIDENCE',jsonb_build_object('simulation',true,'review_mode','CURRENT_CONTEXT_REVIEW')
+WHERE EXISTS (SELECT 1 FROM lf_step50_simulated_steps
+              WHERE step_order=60 AND status='STEP_PASS_WITH_EVIDENCE');
+INSERT INTO lf_step50_simulated_steps
+SELECT 'EXEC-STEP50-SIMULATED-NO-LIVE-WRITER',80,'report_output',
+       'STEP_PASS_WITH_EVIDENCE',jsonb_build_object('simulation',true,'terminal_simulated',true)
+WHERE EXISTS (SELECT 1 FROM lf_step50_simulated_steps
+              WHERE step_order=70 AND status='STEP_PASS_WITH_EVIDENCE');
+DO $post$
+BEGIN
+ IF (SELECT count(*) FROM lf_step50_simulated_steps)<>11 OR
+    (SELECT count(*) FROM lf_step50_simulated_steps WHERE status='STEP_PASS_WITH_EVIDENCE')<>11 OR
+    (SELECT count(DISTINCT execution_id) FROM lf_step50_simulated_steps)<>1 OR
+    EXISTS (SELECT 1 FROM lf_step50_simulated_steps WHERE evidence_payload->>'simulation' IS DISTINCT FROM 'true')
+ THEN RAISE EXCEPTION 'NATIVE_SAME_RUN_0_TO_80_SIMULATION_NOT_CLEAN'; END IF;
+END $post$;
 SELECT step_order || '|' || step_id || '|' || status
  FROM lf_step50_simulated_steps ORDER BY step_order;
 ROLLBACK;
