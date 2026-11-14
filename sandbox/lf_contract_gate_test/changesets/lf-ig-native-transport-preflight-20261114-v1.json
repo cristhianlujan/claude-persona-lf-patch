@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-ig-native-transport-preflight-20261114-v1",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "supabase/functions/_shared/lf_ig_transport_guard_v1.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/_shared/lf_ig_transport_guard_v1_test.ts": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_native_transport_preflight_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-native-transport-preflight-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
