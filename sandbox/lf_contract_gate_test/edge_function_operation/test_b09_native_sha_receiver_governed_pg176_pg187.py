@@ -72,7 +72,10 @@ class B09NativeShaGoverned(unittest.TestCase):
             for _ in range(50):
                 ok=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
                                   capture_output=True,timeout=15)
-                if ok.returncode==0:break
+                if ok.returncode==0:
+                    logs=subprocess.run(["docker","logs",name],capture_output=True,text=True,timeout=10)
+                    if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                        break
                 time.sleep(1)
             else:self.fail("POSTGRES_NOT_READY")
             v=sql("SHOW server_version_num;")
