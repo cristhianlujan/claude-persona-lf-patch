@@ -70,12 +70,12 @@ class TestOfficialRuntimeTransition(unittest.TestCase):
        'profile_code','PERFIL-UI-ARCHITECT',
        'statement','LAB ONLY NOT AN OWNER AUTHORIZATION FOR LIVE CHANGE',
        'authorized_at',now()))"""
-   sql("""CREATE FUNCTION pg_temp.try_transition(req jsonb) RETURNS text LANGUAGE plpgsql AS $$
+   sql("""CREATE FUNCTION public.lf_try_transition_lab(req jsonb) RETURNS text LANGUAGE plpgsql AS $$
     BEGIN PERFORM public.lf_profile_runtime_transition_v1(req); RETURN 'PASS';
     EXCEPTION WHEN OTHERS THEN RETURN SQLERRM; END $$;""")
    before=sql(SEL)[0]
    tx=["BEGIN;","SELECT 'BEFORE|'||"+SHA+" FROM public.lf_activos r WHERE r.codigo_activo='PERFIL-UI-ARCHITECT';",
-        "SELECT 'GUARD|'||pg_temp.try_transition("+req+");",
+        "SELECT 'GUARD|'||public.lf_try_transition_lab("+req+");",
         "SELECT 'DURING|'||"+SHA+" FROM public.lf_activos r WHERE r.codigo_activo='PERFIL-UI-ARCHITECT';",
         "SELECT 'RECEIPT_IN|'||count(*) FROM public.lf_profile_runtime_transition_receipt_v1;",
         "ROLLBACK;",
