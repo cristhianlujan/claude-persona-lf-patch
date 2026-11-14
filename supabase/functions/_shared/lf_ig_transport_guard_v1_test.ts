@@ -58,5 +58,5 @@ Deno.test("IG transport: preflight consumes no external API",()=>{
  const rejected=dispatch({p_run_id:954,p_ticket:""});
  if(!rejected||rejected.field!=="p_ticket"||calls!==0)throw new Error("invalid dispatch leaked");
  const valid=dispatch({p_run_id:954,p_ticket:"test"});
- if(valid!==null||calls!==1)throw new Error("valid dispatch unexpectedly blocked");
+ if(valid!==null||Number(calls)!==1)throw new Error("valid dispatch unexpectedly blocked");
 });
