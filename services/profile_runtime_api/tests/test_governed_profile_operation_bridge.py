@@ -1461,7 +1461,7 @@ class ProfileSelectedStep40SyntaxPg17Pg18(unittest.TestCase):
 
         self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED_FOR_PG")
         migration = (ROOT / "supabase/migrations/"
-            "20261114050000_lf_profile_skill_step40_policy_v1.sql").read_text()
+            "20261114105801_lf_profile_skill_step40_policy_v1.sql").read_text()
         rx = re.compile(
             r"(?ms)^CREATE OR REPLACE FUNCTION\s+(.+?)\nAS \$(?P<tag>\w+)\$"
             r"(?P<body>.*?)\$(?P=tag)\$;"
