@@ -496,6 +496,16 @@ Deno.test("skill invoke: execution that is not a governed read-only profile run 
     eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
+Deno.test("skill invoke: SQL BLOCKED 200 never becomes SKILL_INVOKED",async()=>{
+  const n=skillNetwork({},{status:200,body:{status:"BLOCKED",
+    blocking_code:"SKILL_SEMANTIC_SELECTION_AMBIGUOUS"}});
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  const body=await out.json();
+  eq(out.status,409);eq(body.outcome,"BLOCKED");
+  eq(body.code,"SKILL_SEMANTIC_SELECTION_AMBIGUOUS");
+});
+
 Deno.test("skill invoke: invoker block reason is passed on, truncated, and is not a success",async()=>{
   const reason="SKILL_AUTHORITY_MISSING: el perfil no tiene autoridad para ACTUALIZACION_PERFIL_LF. "+"x".repeat(900);
   const n=skillNetwork({},{status:400,body:{code:"P0001",message:reason}});
