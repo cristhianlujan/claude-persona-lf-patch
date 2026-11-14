@@ -22,7 +22,7 @@ END $source$;
 
 CREATE TABLE public.lf_rule_promotion_auto_audit_v1 (
  audit_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
- rule_id bigint NOT NULL UNIQUE,
+ rule_id bigint NOT NULL,
  rule_code text NOT NULL,
  promotion_id text NOT NULL UNIQUE REFERENCES public.lf_rule_promotion_v1(promotion_id),
  execution_id text NOT NULL REFERENCES public.lf_operation_execution(execution_id),
@@ -42,6 +42,8 @@ CREATE TABLE public.lf_rule_promotion_auto_audit_v1 (
      OR (status='REVERTED' AND reverted_at IS NOT NULL AND reverse_request_id IS NOT NULL
            AND reverse_receipt_sha256 IS NOT NULL))
 );
+CREATE UNIQUE INDEX lf_rule_promotion_auto_audit_one_live
+ ON public.lf_rule_promotion_auto_audit_v1(rule_id) WHERE status='APPLIED';
 CREATE INDEX lf_rule_promotion_auto_audit_execution ON
  public.lf_rule_promotion_auto_audit_v1(execution_id,status,recorded_at);
 COMMENT ON TABLE public.lf_rule_promotion_auto_audit_v1 IS
