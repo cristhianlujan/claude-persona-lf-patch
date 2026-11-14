@@ -18,6 +18,13 @@ SOURCE=ROOT/"sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_r
 PREIMAGE="2fcac9f18b1581985af93639e475cd1a"
 
 SCHEMA=r"""
+CREATE ROLE service_role;
+CREATE SCHEMA programacion;
+CREATE FUNCTION programacion.fn_t_remed_rule_promotion_verdicts_v1(integer,bigint)
+ RETURNS TABLE(regla_id bigint,regla_codigo text,screens integer,criteria jsonb,
+ verdict text,failed text[]) LANGUAGE sql STABLE AS $
+ SELECT NULL::bigint,NULL::text,0,'{}'::jsonb,'HOLD'::text,ARRAY[]::text[]
+ WHERE false $;
 CREATE SCHEMA lf_ops;
 CREATE TABLE public.lf_operation_execution (
  execution_id text PRIMARY KEY,operation_code text,target_code text,status text);
