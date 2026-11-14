@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LF L40 Login B2B: 5 CANDIDATO conflicts only, real Docker PG17.6/18.7 UPDATE+ROLLBACK.
+"""LF L40 Login B2B: 6 CANDIDATO conflicts only, real Docker PG17.6/18.7 UPDATE+ROLLBACK.
 Based on the isolated schema and SHA method of PR #3844; NEVER connects to Supabase.
 """
 from __future__ import annotations
@@ -8,7 +8,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 SNAP=HERE/"fixtures/login_b2b_lote2_source_snapshot_20261113.json"
 PATCH=HERE/"fixtures/login_b2b_lote2_conflict_only_patch_20261113.json"
-CHANGED=("B2B-RULE-AUTH-013","B2B-RULE-AUTH-030","B2B-RULE-AUTH-033","B2B-RULE-AUTH-034","B2B-RULE-AUTH-043")
+CHANGED=("B2B-RULE-AUTH-013","B2B-RULE-AUTH-030","B2B-RULE-AUTH-033","B2B-RULE-AUTH-034","B2B-RULE-AUTH-040","B2B-RULE-AUTH-043")
 PROTECTED=tuple("B2B-RULE-AUTH-"+n for n in ("018","019","020","021","026","047"))
 def q(x): return "'"+str(x).replace("'","''")+"'"
 def qj(x): return q(json.dumps(x,ensure_ascii=False,separators=(",",":")))+"::jsonb"
@@ -19,7 +19,7 @@ class TestLoginOtherCandidates(unittest.TestCase):
         snap=json.loads(SNAP.read_text(encoding="utf8"))
         patches=json.loads(PATCH.read_text(encoding="utf8"))
         self.assertEqual(len(snap["rules"]),32)
-        self.assertEqual(len(patches["proposals"]),5)
+        self.assertEqual(len(patches["proposals"]),6)
         self.assertEqual(set(patches["conflict_codes"]),set(CHANGED))
         self.assertFalse(set(PROTECTED) & set(patches["conflict_codes"]))
         self.assertFalse(patches["identity_verified"])
@@ -29,7 +29,7 @@ class TestLoginOtherCandidates(unittest.TestCase):
         self.assertEqual(set(bycode),set(patches["scope_codes"]))
         self.assertEqual(bycode["B2B-RULE-STATE-001"]["snapshot"]["estado"],"VIGENTE")
         self.assertTrue(all(p["source_sha256"]==bycode[p["code"]]["sha256"] for p in patches["proposals"]))
-        self.assertEqual(len({p["code"] for p in patches["proposals"]}),5)
+        self.assertEqual(len({p["code"] for p in patches["proposals"]}),6)
         cid="lf-login-l40-"+uuid.uuid4().hex[:10]
         run=subprocess.run(["docker","run","--rm","-d","--name",cid,
              "-e","POSTGRES_PASSWORD=postgres","-e","POSTGRES_DB=postgres",image],
@@ -101,10 +101,10 @@ class TestLoginOtherCandidates(unittest.TestCase):
                 else:
                     self.assertEqual(during[code],before[code],"UNAUTHORIZED_CHANGE:"+code)
                 self.assertEqual(after[code],before[code],"ROLLBACK_MISMATCH:"+code)
-            print("PASS_LOGIN_L40_5_UPDATES_27_UNCHANGED_"+image.replace(":","_"),flush=True)
+            print("PASS_LOGIN_L40_6_UPDATES_26_UNCHANGED_"+image.replace(":","_"),flush=True)
             if os.environ.get("GITHUB_STEP_SUMMARY"):
                 with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf8") as f:
-                    f.write("\n### LF L40 - "+image+" - FIVE CANDIDATO ONLY, rollback\n\n")
+                    f.write("\n### LF L40 - "+image+" - SIX CANDIDATO ONLY, rollback\n\n")
                     f.write("| Código | SHA antes | SHA dentro | SHA tras rollback | Resultado |\n|---|---|---|---|---|\n")
                     for code in CHANGED:
                         f.write("| "+code+" | "+before[code]+" | "+during[code]+" | "+after[code]+" | PASS |\n")
