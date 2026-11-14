@@ -565,8 +565,23 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_NOT_AUTHORIZED"},403);
           }
           const invocationBody = {...body as Record<string,unknown>,ticket:runtimeTicket};
-          const result = await callRuntime(config,deps,slug,invocationBody,
-            config.recurationTimeoutMs);
+          // A selected skill is independent of the parent profile lifecycle.
+          // Cap the one-use ticket invocation; never wait for a full synchronous
+          // Curator/Validator recuration. Failed or timed-out skills are findings.
+          let result: Record<string, unknown>;
+          try {
+            result = await callRuntime(config,deps,slug,invocationBody,
+              Math.min(config.recurationTimeoutMs, 12_000));
+          } catch (error) {
+            return json({
+              outcome:"BLOCKED",code:"SKILL_RUNTIME_BOUNDED_FAILURE_AS_FINDING",
+              execution_id:executionId,skill_code:skillCode,terminal_status:"BLOCKED",
+              remediation_action:"INSPECT_SKILL_RUNTIME_AND_RECURATE_CANONICAL_SOURCES",
+              error_type:error instanceof Error?error.name:"UNKNOWN",
+              production_authorized:false,promotion_authorized:false,
+              continuation_allowed:true
+            },409);
+          }
           const directStatus = typeof result.status==="string"?result.status:"";
           const governed = result.result && typeof result.result==="object"
             && !Array.isArray(result.result)
