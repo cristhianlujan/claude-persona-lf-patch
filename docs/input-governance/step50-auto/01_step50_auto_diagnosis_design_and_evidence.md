@@ -100,3 +100,94 @@ está sujeto a **DECISIÓN HUMANA** con evidencia de aplicabilidad y fuentes act
 - Validar en una copia íntegra el resolver fijo y el handler genérico sobre
   **el mismo** contexto fuente/vigencia para acreditar igualdad de evidencia,
   el RUN 0→80 y el recibo terminal.
+
+## Lote IG BLOCKED sin interrumpir análisis — DRAFT (14-nov-2026)
+**Decisión del dueño (posterior a EKB V1.4 §8):** para
+`READ_ONLY_WITH_IG_FINDINGS`, reportar el estado IG y conservar la
+ejecución de análisis. EKB vigente dice `BLOCKED: no avanzar`; por ello
+esto permanece **candidato sin despliegue**, requiere actualización
+gobernada de autoridad y pruebas de regresión antes de promoción.
+
+### Revisión del código desplegado/PR y readback SQL
+- `caller.ts:603-617`: `input_readiness_context_pack_runtime_v1` (ticket
+  del perfil) convierte **cualquier** IG terminal distinto de READY en
+  `outcome=BLOCKED, HTTP 409`, aunque contenga 3 hallazgos de predecisión.
+  Existe un segundo caso de HTTP 409 para el CONTEXT_PACK legado sin ticket,
+  que se mantiene intacto.
+- `scripts/lf_profile_native_resume.py`: exige `terminal_status=READY`
+  + HTTP200; cualquier 409 corta antes del siguiente
+  `lf_profile_native_bridge_prepare_v1`. Ruta directa SQL:
+  `public.lf_profile_execution_input_validate_v1` YA distingue la
+  autorización de análisis de la autorización de IG para efectos y,
+  con manifest read-only/no-write + evidencia actual, devuelve
+  `status=READY`, `analysis_scope=READ_ONLY_WITH_IG_FINDINGS` y
+  `ig_security_clearance=false`; el escritor oficial registra Step40 PASS.
+- SELECT de RUN `EXEC-PROFILE-GATE2-95DFBB22762787B8824EB013`:
+  `IN_PROGRESS`, solo 0/10/20/30 registrados; manifest read-only,
+  no-write/no-promotion/automatic-impact false. Referencia comprobada
+  `EXEC-PROFILE-GATE2-40471E6F661A53D7CE7A4A1B`: COMPLETED 11/11,
+  Step40 `STEP_PASS_WITH_EVIDENCE` con IG `BLOCKED`; scope
+  `READ_ONLY_WITH_IG_FINDINGS`, IG run 951, 3 hallazgos deterministas
+  en `predecision_crosscheck.deterministic_findings`.
+- Hallazgos reales leídos: (i) `SEC-B2B-MFA` referencia candidata
+  `SEC-B2B-MFA-FACTOR-ELIGIBILITY` por factor_security_policy_id;
+  (ii) `SEC-B2B-LOGIN-ANTIBOT` referencia
+  `SEC-B2B-AUTH-ABUSE-PROTECTION` por abuse_security_policy_id;
+  (iii) `RATE-B2B-LOGIN` requiere prueba de IP_USER composite scope
+  bajo `SEC-B2B-AUTH-ABUSE-PROTECTION`. Ninguno se da por resuelto.
+
+### Candidato implementado (sin alterar el RUN)
+- `caller.ts`: si IG BLOCKED aporta evidencia canónica y el manifest
+  del mismo RUN leído de Supabase autoriza exclusivamente lectura,
+  devolver `TERMINAL_WITH_FINDINGS`, HTTP200, `terminal_status=BLOCKED`
+  (nunca READY). Fuera de read-only o sin evidencia: el HTTP409 se mantiene.
+- `scripts/lf_profile_native_resume.py`: solo acepta esa respuesta
+  restringida; reinvoca el bridge oficial y **exige** Step40 registrado
+  / Step50 `NATIVE_MODEL_INPUT_READY` con IG original
+  `BLOCKED` + `READ_ONLY_WITH_IG_FINDINGS`; si falla, bloquea.
+  No transporta el hallazgo sensible a logs.
+- La SQL vigente `lf_profile_native_bridge_prepare_v1` ya incluye
+  Step40 `input_governance` íntegro para el contexto del paso 50.
+- Candidato SQL en
+  `20261114023000_lf_profile_readonly_ig_findings_report_v1.sql`:
+  preserva función oficial `lf_profile_native_bridge_record_report_v1`,
+  exige MD5 preimagen exacta `cafaaff15eb0751a9af0cfb67db3c30b`
+  (readback `pg_get_functiondef`), conserva Step80 histórico sin cambios
+  para READY/no findings y añade únicamente cuando aplica
+  `ig_findings.input_governance` completo + decisión RAW
+  `profile_output.traceability.ig_open_work_resolution` realmente
+  observada. No crea otra función escritora ni promueve acciones.
+- `caller_test.ts` incorpora casos 200 lectura, 409 escritura,
+  409 sin evidencia; en workflow
+  `ig-m105-cp2-oidc-bridge-tests.yml` se ejecuta ahora el caller completo.
+  `test_profile_resume_issue_request.py` verifica continuación OIDC
+  del mismo RUN y step40 verificado antes de step50.
+
+### Laboratorio: PG17.6 + PG18.7 con ROLLBACK
+El fixture copia **identidad/estado 0–30** del RUN afectado; los tres
+hallazgos provienen del **RUN de referencia** 40471/IG951, pues el RUN
+afectado no llegó a registrar el paso 40. La preparación y pasos
+45–70 son simulados; `report_output` llama la definición candidata
+real con escritor/terminal aislados de laboratorio. **No prueba una
+reanudación real del RUN afectado ni sustituye una prueba integrada**.
+
+| Caso | Esperado | Resultado SQL (ambos PG) |
+|---|---|---|
+| IG BLOCKED + lectura | 11/11; tres hallazgos intactos al 80 | PASS 11/11, paridad Step40→80 |
+| IG BLOCKED + escritura | STOP antes del 40 | PASS BLOCKED, 4 pasos copiados |
+| Sin hallazgos (IG READY) | 11/11, esquema histórico igual | PASS 11/11, sin campo nuevo |
+
+SHA-256 del JSONB de la copia (ambos motores):
+`before=9f537c508285abbfb6087f7500e9f6d0e425e3fc592c0a85de1b0c8b006d0fd7`,
+`during=21320c9196e3f5ab799783e788673d3400a0bf379f53bc35366717b619b054bb`,
+`after=9f537c508285abbfb6087f7500e9f6d0e425e3fc592c0a85de1b0c8b006d0fd7`.
+Readback: original=restaurado; intra-transaction=distinto; DB de laboratorio
+descartada y ningún RUN vivo tocado.
+
+**Despliegue:** PR DRAFT → revisión fuente/authority EKB/contratos,
+source-first migration parity y pruebas en clon integrado →
+ready-to-merge en HEAD exacto → LF Migration Merge Train →
+aplicar la migración de `report_output` y desplegar
+`lf-profiles-governance-caller-v1` por el flujo OIDC/Edge oficial.
+La regla previa de EKB `BLOCKED: no avanzar` requiere reconciliación
+documental gobernada. Hasta superar ese gate, NO-GO.
