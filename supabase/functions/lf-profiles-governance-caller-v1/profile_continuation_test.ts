@@ -30,7 +30,7 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
           profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}},
       ...overrides,
     }];
-    else if(url.endsWith("/lf_profile_execution_plan_v1")){
+    else if(url.endsWith("/lf_profile_execution_plan_for_run_v1")){
       out={status:"READY",operation_code:"EJECUCION_PERFIL_LF",profile_code:"PROFILE-A",
         steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
         skills:[{skill_code:"SKILL_FROM_DB",handler_fn:"fixture_readonly",effect:"READ_ONLY"}]};
@@ -67,8 +67,34 @@ Deno.test("continuation: profile path bound dynamically, never selected in code"
     const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,2);
     eq(b.operation_plan?.steps?.length,11);
     eq(b.operation_plan?.skills?.[0]?.skill_code,"SKILL_FROM_DB");
-    eq(n.calls[1].body?.p_profile_code,"PROFILE-A");
+    eq(n.calls[1].body?.p_execution_id,id);
   }
+});
+Deno.test("continuation: missing optional skill decision never blocks SOURCE_BIND",async()=>{
+  const n=network();
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id},config,n.fetchFn,sha);
+  const b=await out.json();
+  eq(out.status,200);
+  eq(b.outcome,"SOURCE_BINDING_REQUIRED");
+  eq(n.calls.some(x=>x.url.endsWith("/lf_profile_skill_selection_run_bind_v1")),false);
+});
+Deno.test("continuation: explicit empty skill selection binds same RUN before source read",async()=>{
+  const base=network();
+  const requests:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    requests.push(url);
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BOUND",execution_id:id}),{status:200});
+    return base.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id,skill_semantic_decision:{selected_skill_codes:[],
+      reason:"Ninguna skill tiene contexto suficiente"}},config,fetchFn,sha);
+  eq(out.status,200);
+  eq(requests.some(x=>x.endsWith("/lf_profile_skill_selection_run_bind_v1")),true);
+  eq((await out.json()).outcome,"SOURCE_BINDING_REQUIRED");
 });
 Deno.test("continuation: screen semantic handoff preserves ordering and source",async()=>{
   const n=network();const draft={decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"};

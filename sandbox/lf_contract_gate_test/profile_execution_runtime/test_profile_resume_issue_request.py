@@ -223,36 +223,49 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID"):
             self.check()
 
-    def test_native_skill_semantic_candidates_checkpoint_same_run(self):
+    def test_native_optional_skill_absence_continues_same_run_to_model(self):
         execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
         self.event["issue"]["body"] = json.dumps({
             "schema_version": SCHEMA, "execution_id": execution_id,
         })
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        skill = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("# current governed test profile\n", encoding="utf-8")
         calls = []
         def fake_call(_url, body, _headers):
             calls.append(body.copy())
-            return 200, {
-                "outcome": "SKILL_SEMANTIC_SELECTION_REQUIRED",
-                "execution_id": execution_id,
-                "profile_code": "PERFIL-TEST",
-                "semantic_candidates": [{"skill_code": "FICTICIA_SEMANTICA",
-                                         "source_revision": "fixture-sem-1",
-                                         "descriptor": {"description": "synthetic"}}],
-                "required_skills": [],
-            }
+            if body["action"] == "profile_native_source_bind_v1":
+                return 200, {
+                    "outcome": "SOURCE_BINDING_REQUIRED",
+                    "execution_id": execution_id,
+                    "profile_code": "PERFIL-TEST",
+                    "source_revision_required": "a" * 40,
+                    "target_repo": self.env["GITHUB_REPOSITORY"],
+                    "target_path": "profiles/test_profile/SKILL.md",
+                    "operation_plan": {
+                        "status":"READY","operation_code":"EJECUCION_PERFIL_LF",
+                        "profile_code":"PERFIL-TEST",
+                        "steps":[{"step_order":i,"step_id":"test_step_"+str(i)} for i in range(11)],
+                        "skills":[],"content_findings":[{
+                            "finding_code":"SKILL_SEMANTIC_SELECTION_NOT_SUBMITTED",
+                            "continuation_allowed":True}],
+                    },
+                }
+            if body["action"] == "profile_native_continue_v1":
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY","execution_id":execution_id}
+            raise AssertionError("Unexpected request action: "+body["action"])
         env = {**self.env, "GITHUB_SHA": "a" * 40}
         with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
-            main = runpy.run_path(str(SCRIPT), run_name="native_skill_semantic_test")["main"]
+            main = runpy.run_path(str(SCRIPT), run_name="native_optional_omission_test")["main"]
             with patch.dict(main.__globals__, {"oidc": lambda: "opaque-oidc", "call_json": fake_call}):
                 self.assertEqual(main(), 1)
-        self.assertEqual([x["action"] for x in calls], ["profile_native_source_bind_v1"])
-        self.assertEqual(calls[0]["execution_id"], execution_id)
+        self.assertEqual([x["action"] for x in calls],
+                         ["profile_native_source_bind_v1", "profile_native_continue_v1"])
         checkpoint = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
-        selection = json.loads((Path(self.tmp.name) / "profile-native-skill-semantic.json").read_text())
-        self.assertEqual(checkpoint["next_step"], "skill_selection")
-        self.assertEqual(checkpoint["execution_id"], selection["execution_id"])
-        self.assertEqual(selection["semantic_candidates"][0]["skill_code"], "FICTICIA_SEMANTICA")
+        self.assertEqual(checkpoint["next_step"], "execute_profile")
+        self.assertEqual(checkpoint["execution_id"], execution_id)
         self.assertFalse(checkpoint["last_run_completed"])
 
     def test_readonly_ig_blocked_ticket_continues_only_after_step40_readback(self):
