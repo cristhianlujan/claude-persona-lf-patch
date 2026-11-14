@@ -8,7 +8,7 @@ import uuid
 from pathlib import Path
 import unittest
 ROOT=Path(__file__).resolve().parents[3]
-SQL=ROOT/"supabase/migrations/20261114181000_lf_profile_ig_semantic_optional_dual_run_v1.sql"
+SQL=ROOT/"supabase/migrations/20261114173326_lf_profile_ig_semantic_optional_dual_run_v1.sql"
 FIXTURE="""
 CREATE TABLE public.lf_skill_selector_policy_v1(
  profile_code text,skill_code text,channels text[],required_operation text,
