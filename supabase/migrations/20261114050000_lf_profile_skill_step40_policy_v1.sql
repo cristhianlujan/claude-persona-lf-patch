@@ -189,6 +189,7 @@ AS $handler$
 DECLARE
  v_exec public.lf_operation_execution%rowtype;
  v_ig jsonb; v_runtime text; v_slug text; v_screen integer;
+ v_first_ticket_expires timestamptz;
 BEGIN
  IF jsonb_typeof(p_input)<>'object' OR
     coalesce(p_input->>'consumer','')<>'CONTEXT_PACK' OR
@@ -206,6 +207,29 @@ BEGIN
  v_ig:=programacion.fn_lf_profile_input_governance_resolve_v1(
    p_input->>'request_text',v_exec.target_code,p_input->'scope','CONTEXT_PACK');
  IF v_ig->>'status'='INPUT_GOVERNANCE_REQUIRED' THEN
+   -- The existing profile-owned ticket TTL is the DB-authoritative wait bound,
+   -- not a caller-provided timeout. Future tickets cannot extend the first TTL.
+   SELECT min(t.expires_at) INTO v_first_ticket_expires
+   FROM private.lf_profile_input_governance_runtime_ticket_v1 t
+   WHERE t.execution_id=p_input->>'execution_id'
+     AND t.pantalla_id=(v_ig->>'pantalla_id')::integer
+     AND t.consumer='CONTEXT_PACK';
+   IF v_first_ticket_expires IS NOT NULL AND clock_timestamp()>v_first_ticket_expires THEN
+     RETURN jsonb_build_object('status','BLOCKED',
+        'blocking_code','SKILL_IG_RUNTIME_TIMEOUT_AS_FINDING',
+        'skill_code','INPUT_GOVERNANCE_CONTEXT_PACK',
+        'input_governance',v_ig||jsonb_build_object(
+          'status','BLOCKED','decision','BLOCKED',
+          'blocking_code','SKILL_IG_RUNTIME_TIMEOUT_AS_FINDING',
+          'analysis_scope','READ_ONLY_WITH_IG_FINDINGS',
+          'production_authorized',false,'promotion_authorized',false),
+        'findings',jsonb_build_array(jsonb_build_object(
+           'finding_type','SKILL_RUNTIME_TIMEOUT',
+           'skill_code','INPUT_GOVERNANCE_CONTEXT_PACK',
+           'source_run_status',v_ig->>'status',
+           'first_ticket_expiry',v_first_ticket_expires)),
+        'production_authorized',false,'promotion_authorized',false);
+   END IF;
    SELECT c.especificacion->>'runtime_orchestrator' INTO v_runtime
    FROM programacion.contratos c JOIN programacion.versiones_agente v ON v.id=c.version_id
    JOIN programacion.agentes a ON a.id=v.agente_id
@@ -815,7 +839,11 @@ BEGIN
       'skill_findings',v_skill_findings,
       'analysis_scope',case when jsonb_array_length(v_skill_findings)>0
         then 'READ_ONLY_WITH_IG_FINDINGS' else 'READ_ONLY_PROFILE_VALIDATION' end,
-      'input_governance',coalesce(v_skill_ig,'{}'::jsonb),
+      'input_governance',coalesce(v_skill_ig,'{}'::jsonb)
+          ||jsonb_build_object('analysis_scope',
+              case when jsonb_array_length(v_skill_findings)>0
+                then 'READ_ONLY_WITH_IG_FINDINGS' else 'READ_ONLY_PROFILE_VALIDATION' end,
+              'production_authorized',false,'promotion_authorized',false),
       'production_authorized',false,'promotion_authorized',false,
       'mutation_authorized',false,
       'allowed_actions',jsonb_build_array('ANALYZE','PROPOSE','VALIDATE','REPORT')
