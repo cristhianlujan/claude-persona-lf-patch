@@ -48,8 +48,15 @@ INSERT INTO public.lf_profile_write_authority_v1 VALUES
  ('PERFIL-PRODUCT-DIRECTOR-LF','PROMOCION_REGLA_LF','ACTIVE');
 INSERT INTO lf_ops.reglas VALUES('RULE-CAND-001','CANDIDATO');
 INSERT INTO public.lf_operation_execution_steps VALUES
+ ('PARENT-1',40,'input_validate','STEP_PASS_WITH_EVIDENCE',
+  '{"scope_authority_packet_sha256":"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}'),
+ ('PARENT-1',50,'execute_profile','STEP_PASS_WITH_EVIDENCE',
+  '{"raw_output_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "profile_output":{"deliverable_created":{"product_decision":{"source_refs":[
+      {"source_ref":"supabase://lf_ops.reglas/RULE-CAND-001"}]}}}}'),
  ('PARENT-1',60,'output_validate','STEP_PASS_WITH_EVIDENCE',
-  '{"output_contract_result":"PASS"}'),
+  '{"output_contract_result":"PASS",
+    "raw_output_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'),
  ('PARENT-1',70,'semantic_judge','STEP_PASS_WITH_EVIDENCE',
   '{"semantic_judge_result":{"verdict":"PASS_REVIEWED_CURRENT_CONTEXT",
   "review_mode":"CURRENT_CONTEXT_REVIEW","model_call_count":0,
