@@ -67,9 +67,9 @@ SELECT CASE WHEN
   AND position('''decision'',''FINDING'',''continuation_allowed'',true' in """+func_source(DERIVE)+""")>0
   AND position('BLOCK_INPUT_GOVERNANCE_EFFECT_AUTHORITY' in """+func_source(ADAPTER)+""")>0
   AND position('''continuation_allowed'',false' in """+func_source(ADAPTER)+""")>0
-  AND position('lf_activo_relaciones' in ${func_source(PROFILE_RESOLVER)})=0
-  AND position('lf_skill_selector_policy_v1' in ${func_source(PROFILE_RESOLVER)})>0
-  AND position('''continuation_allowed'',false' in ${func_source(PROFILE_RESOLVER)})>0
+  AND position('lf_activo_relaciones' in """+func_source(PROFILE_RESOLVER)+""")=0
+  AND position('lf_skill_selector_policy_v1' in """+func_source(PROFILE_RESOLVER)+""")>0
+  AND position('''continuation_allowed'',false' in """+func_source(PROFILE_RESOLVER)+""")>0
   THEN 'PASS_IG_CONTENT_FAIL_OPEN_AUTHORITY_FAIL_CLOSED'
   ELSE 'FAIL_IG_CONTENT_OR_FLOW_CLASSIFICATION' END;
 SELECT programacion.fn_lf_profile_input_governance_resolve_v1(
