@@ -21,7 +21,7 @@ begin
  v_sha := public.lf_asset_snapshot_sha_v1('REGLA',p_rule_code);
  insert into public.lf_rule_promotion_v1(rule_code,request_execution_id,requested_by_profile,request_snapshot_sha256,reason) values(p_rule_code,p_execution_id,par.target_code,v_sha,p_reason) returning promotion_id into v_id;
  return jsonb_build_object('status','PENDING_HUMAN_APPROVAL','promotion_id',v_id,'snapshot_sha256',v_sha,'next_action','Una persona debe aprobar con lf_rule_promotion_decide_v1');
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_decide_v1(p_promotion_id text, p_decision text, p_decided_by text, p_note text)
  RETURNS jsonb
@@ -41,7 +41,7 @@ begin
   return jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_STALE'); end if;
  update public.lf_rule_promotion_v1 set status=case p_decision when 'APPROVE' then 'APPROVED' else 'REJECTED' end, decided_by=p_decided_by, decided_at=now(), reason=coalesce(reason,'')||' | '||coalesce(p_note,'') where promotion_id=p_promotion_id;
  return jsonb_build_object('status',case p_decision when 'APPROVE' then 'APPROVED' else 'REJECTED' end,'promotion_id',p_promotion_id);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_decide_batch_v1(p_ids text[], p_decision text, p_decided_by text, p_note text)
  RETURNS jsonb
@@ -57,7 +57,7 @@ begin
   res := res||jsonb_build_array(jsonb_build_object('id',x,'status',o->>'status','code',o->>'blocking_code'));
  end loop;
  return jsonb_build_object('ok',ok,'blocked',bad,'detail',res);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_apply_v1(p_promotion_id text)
  RETURNS jsonb
@@ -76,7 +76,7 @@ begin
  update lf_ops.reglas set estado='VIGENTE' where codigo=p.rule_code and estado='CANDIDATO';
  update public.lf_rule_promotion_v1 set status='APPLIED', applied_at=now() where promotion_id=p_promotion_id;
  return jsonb_build_object('status','APPLIED','rule_code',p.rule_code);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_apply_batch_v1(p_ids text[])
  RETURNS jsonb
@@ -92,7 +92,7 @@ begin
   res := res||jsonb_build_array(jsonb_build_object('id',x,'status',o->>'status','code',o->>'blocking_code'));
  end loop;
  return jsonb_build_object('applied',ok,'blocked',bad,'detail',res);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_guard_v1()
  RETURNS trigger
@@ -106,4 +106,4 @@ begin
    raise exception 'LF_RULE_PROMOTION_REQUIRED:%',OLD.codigo; end if;
  end if;
  return NEW;
-end $function$
+end $function$;
