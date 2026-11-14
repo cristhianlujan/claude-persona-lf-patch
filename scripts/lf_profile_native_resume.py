@@ -968,12 +968,11 @@ def main():
                           else result.get("code") if isinstance(result, dict) else "UNKNOWN"}))
         return 1
 
-    # Input Governance is a runtime concern, not a profile/Router bypass.
-    # BLOCKED findings may resume ONLY after Edge attests read-only RUN scope;
-    # the SQL bridge must subsequently record step40 with ORIGINAL findings.
-    # Each 202 consumes its ticket. Refresh the bridge before continuing.
-    # Four directly chained invocations, never a queue or polling worker.
-    ig_findings_resume = False
+    # No second IG route: the already-deployed Step40 SQL resolver decides
+    # whether a BLOCKED security finding is reportable in READ_ONLY scope.
+    # Edge's historical HTTP409 remains untouched. At most one canonical
+    # prepare replay after a verified terminal BLOCKED (same execution_id).
+    ig_blocked_replayed = False
     for _ in range(4):
         if result.get("phase") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
             break
@@ -999,51 +998,72 @@ def main():
                 }))
                 return 1
             continue
-        reportable = (
-            ig_code == 200
-            and ig.get("outcome") == "TERMINAL_WITH_FINDINGS"
-            and ig.get("code") == "IG_CONTEXT_PACK_BLOCKED_REPORTABLE_READ_ONLY"
-            and ig.get("analysis_scope") == "READ_ONLY_WITH_IG_FINDINGS"
-            and ig.get("ig_security_state") == "BLOCKED"
-            and ig.get("ig_security_clearance") is False
-            and ig.get("write_authorized") is False
-            and ig.get("continuation_allowed_for_effects") is False
+
+        # IG BLOCKED at the ticket/transport boundary is NOT an authorization
+        # decision about read-only profile analysis. Retry the existing SQL
+        # input_validate once; it already knows READ_ONLY_WITH_IG_FINDINGS.
+        # This permits no writes, overrides no step, and invents no IG result.
+        governed = ig.get("result", {}).get("result") if isinstance(ig.get("result"), dict) else None
+        predecision = governed.get("predecision_crosscheck") if isinstance(governed, dict) else None
+        blocked_terminal = (
+            not ig_blocked_replayed
+            and ig_code == 409
+            and ig.get("outcome") == "BLOCKED"
+            and ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
             and ig.get("terminal_status") == "BLOCKED"
             and ig.get("execution_id") == execution_id
-            and isinstance(ig.get("result"), dict)
-            and isinstance(ig["result"].get("result"), dict)
-            and ig["result"]["result"].get("status") == "BLOCKED"
+            and ig.get("pantalla_id") == body.get("pantalla_id")
+            and ig.get("consumer") == "CONTEXT_PACK"
+            and isinstance(governed, dict)
+            and governed.get("status") == "BLOCKED"
+            and governed.get("consumer") == "CONTEXT_PACK"
+            and governed.get("pantalla_id") == body.get("pantalla_id")
+            and governed.get("remediation_state") == "INTERNAL_REMEDIATION_REQUIRED"
+            and governed.get("owner_interruption_required") is False
+            and governed.get("promotion_authorized") is False
+            and governed.get("production_authorized") is False
+            and governed.get("execution_mode") == "REUSE_COMPLETED_CURRENT_RUN"
+            and isinstance(governed.get("output_sha256"), str)
+            and bool(re.fullmatch(r"[0-9a-f]{64}", governed["output_sha256"]))
+            and isinstance(predecision, dict)
+            and predecision.get("status") == "CANONICAL_READBACK_ONLY"
+            and predecision.get("run_id") == governed.get("run_id")
+            and isinstance(predecision.get("deterministic_finding_count"), int)
+            and predecision["deterministic_finding_count"] > 0
         )
         normal_ready = (
             ig_code == 200 and ig.get("outcome") == "TERMINAL"
             and ig.get("terminal_status") == "READY"
         )
-        if not (normal_ready or reportable):
+        if not (normal_ready or blocked_terminal):
             print(json.dumps({
                 "phase": "INPUT_GOVERNANCE", "status": ig_code,
                 "outcome": ig.get("outcome"), "code": ig.get("code"),
             }))
             return 1
-        if reportable:
-            ig_findings_resume = True
         payload.pop("screen_selection_draft", None)
         code, result = call_json(EDGE_URL, payload, headers)
         if code != 200:
-            print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code, "code": result.get("code")}))
+            print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code,
+                              "code": result.get("code")}))
             return 1
-        if ig_findings_resume:
+        if blocked_terminal:
+            ig_blocked_replayed = True
             bridge = result.get("result") if isinstance(result.get("result"), dict) else {}
-            outcome_ig = bridge.get("input_governance") if isinstance(bridge.get("input_governance"), dict) else {}
+            result_ig = bridge.get("input_governance") if isinstance(bridge.get("input_governance"), dict) else {}
             if (result.get("phase") != "NATIVE_MODEL_INPUT_READY"
+                or result.get("execution_id") != execution_id
+                or result.get("profile_code") != source.get("profile_code")
                 or bridge.get("execution_write_mode") != "READ_ONLY"
-                or outcome_ig.get("status") != "BLOCKED"
-                or outcome_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
-                or not isinstance(outcome_ig.get("governance_result"), dict)):
-                print("PROFILE_IG_FINDINGS_STEP40_NOT_RECORDED")
+                or result_ig.get("status") != "BLOCKED"
+                or result_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
+                or not isinstance(result_ig.get("governance_result"), dict)
+                or result_ig["governance_result"].get("run_id") != governed.get("run_id")
+                or result_ig["governance_result"].get("output_sha256") != governed.get("output_sha256")):
+                print("PROFILE_CANONICAL_STEP40_READONLY_IG_FINDINGS_NOT_ATTESTED")
                 return 1
-            # No findings in public logs/artifacts. Step40 and step50 hold full
-            # governed data in the same execution; report80 reads step40.
-            print(json.dumps({"phase":"IG_FINDINGS_RECORDED_IN_STEP40",
+            # Only source-bound Step40 output flows to Step50; no invented PASS.
+            print(json.dumps({"phase":"CANONICAL_STEP40_IG_FINDINGS_ACCEPTED",
               "execution_id":execution_id,"ig_security_state":"BLOCKED"}))
 
     if result.get("phase") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
