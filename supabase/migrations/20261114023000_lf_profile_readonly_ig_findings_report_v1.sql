@@ -203,6 +203,6 @@ BEGIN
     'next_gate','RETURN_TO_ROUTER'
   );
 END
-$function$
+$function$;
 
 COMMIT;
