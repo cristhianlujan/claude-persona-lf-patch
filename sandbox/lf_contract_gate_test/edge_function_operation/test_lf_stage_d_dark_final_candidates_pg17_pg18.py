@@ -58,7 +58,17 @@ class TestStageDDarkFinal(unittest.TestCase):
         r=ratio(colors[bad],colors["dark_mode_card"])
         self.assertLess(r,4.5,"UNEXPECTED_SECONDARY_PASS:"+bad)
         print("LF_DARK_FINAL_REJECTED|"+image+"|"+bad+"|"+format(r,".4f")+"|AA_NO",flush=True)
-    self.assertLess(ratio(colors["green_action_hover"],"#141627"),3.3)
+    # Owner 22:55: card restored; no 3.3 comfort margin, strictly WCAG 3.0 only.
+    self.assertEqual(proposed["dark_mode_card"],"#141627")
+    self.assertEqual(proposed["dark_mode_surface"],"#030712")
+    self.assertGreater(lum(colors["dark_mode_card"]),lum(colors["dark_mode_surface"]))
+    surface_card=ratio(colors["dark_mode_card"],colors["dark_mode_surface"])
+    self.assertGreaterEqual(surface_card,1.10)
+    self.assertGreaterEqual(ratios["border_over_card"],3.0)
+    self.assertGreaterEqual(ratios["button_over_card"],3.0)
+    self.assertLess(ratios["button_over_card"],3.3)
+    print("LF_DARK_CARD_SURFACE_SEPARATION|"+image+"|"+
+      format(surface_card,".6f")+"|BORDER_TOKEN=border_soft|"+format(ratios["border_over_card"],".6f")+"|PASS",flush=True)
     self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
     cid="lf-stage-d-"+uuid.uuid4().hex[:9]
     p=subprocess.run(["docker","run","-d","--rm","--name",cid,
