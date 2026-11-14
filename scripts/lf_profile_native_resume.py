@@ -116,8 +116,10 @@ def governed_request():
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_RUN_FROM_PHRASE_V1":
         # The only Issue entry is the literal owner phrase plus semantic
         # judgments authored by the native Router context, NOT a Gate2 blob.
-        if set(data) != {"schema_version", "request_text", "stage1_decision",
-                         "profile_semantic_decision", "executor_mode"}:
+        required = {"schema_version", "request_text", "stage1_decision",
+                    "profile_semantic_decision", "executor_mode"}
+        allowed = required | {"screen_semantic_decision"}
+        if not required.issubset(data) or not set(data).issubset(allowed):
             raise ValueError("PROFILE_PHRASE_SCHEMA_INVALID")
         text = data["request_text"]
         stage1 = data["stage1_decision"]
@@ -134,9 +136,41 @@ def governed_request():
             or not isinstance(semantic.get("selected_profile_code"),str)
             or mode not in {"GPT_NATIVE","CLAUDE_NATIVE"}):
             raise ValueError("PROFILE_PHRASE_SEMANTIC_INVALID")
+        # The screen judgment is authored in the same native Issue as the
+        # Router semantic judgment. The canonical DB selector still validates
+        # source/currentness; this is NOT a deterministic selection by hint.
+        screen = data.get("screen_semantic_decision")
+        if screen is not None:
+            if not isinstance(screen,dict) or set(screen)-{
+                    "decision","selected_screen_code","ambiguous_screen_codes",
+                    "material_ambiguities","reason","evidence_refs"}:
+                raise ValueError("PROFILE_PHRASE_SCREEN_DECISION_SHAPE_INVALID")
+            decision = screen.get("decision")
+            if (decision not in ("SELECTED","NO_MATCH")
+                or not isinstance(screen.get("reason"),str)
+                or not screen["reason"].strip()
+                or not isinstance(screen.get("evidence_refs"),list)
+                or not isinstance(screen.get("ambiguous_screen_codes",[]),list)
+                or not isinstance(screen.get("material_ambiguities",[]),list)):
+                raise ValueError("PROFILE_PHRASE_SCREEN_DECISION_INVALID")
+            if decision=="SELECTED":
+                code = screen.get("selected_screen_code")
+                hint = stage1.get("alcance",{}).get("target_hint") if isinstance(stage1.get("alcance"),dict) else None
+                if (not isinstance(code,str) or not re.fullmatch(r"[A-Z0-9]+(?:-[A-Z0-9]+)+",code)
+                    or code not in text or code != hint
+                    or not screen["evidence_refs"]
+                    or any(not isinstance(x,dict) or x.get("screen_code") != code
+                           or x.get("evidence_field") not in ("screen_code","screen_name","module_code","app_shell_code","match")
+                           for x in screen["evidence_refs"])
+                    or screen.get("ambiguous_screen_codes",[])!=[]
+                    or screen.get("material_ambiguities",[])!=[]):
+                    raise ValueError("PROFILE_PHRASE_SCREEN_SELECTION_UNSUPPORTED")
+            elif (screen.get("selected_screen_code") not in (None,"")
+                  or screen.get("ambiguous_screen_codes",[])!=[]):
+                raise ValueError("PROFILE_PHRASE_SCREEN_NO_MATCH_INVALID")
         return {"kind":"PHRASE_BEGIN", "request_text":text,
             "stage1_decision":stage1, "profile_semantic_decision":semantic,
-            "executor_mode":mode}
+            "screen_semantic_decision":screen, "executor_mode":mode}
     # A read-only profile invokes a governed skill through its own route. The server uses the
     # authenticated execution as the parent and the skill invoker checks authority and inputs.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
@@ -892,7 +926,9 @@ def main():
                 "http_status":code,"code":started.get("code"),
                 "outcome":started.get("outcome")}))
             return 1
-        raw_draft = ""
+        raw_draft = (json.dumps(request["screen_semantic_decision"],ensure_ascii=False)
+                     if request["kind"]=="PHRASE_BEGIN"
+                     and request.get("screen_semantic_decision") is not None else "")
         profile_output = None
         semantic_review = None
         print(json.dumps({"phase":"PROFILE_NATIVE_BEGIN",

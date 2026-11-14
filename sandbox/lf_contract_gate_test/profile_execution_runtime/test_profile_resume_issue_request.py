@@ -1019,5 +1019,105 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertEqual(len(requests), 1)
 
 
+    def test_phrase_inline_semantic_screen_is_source_bound_and_needs_no_owner_selection(self):
+        """One phrase Issue carries native semantic screen; DB validates against live catalog."""
+        import hashlib
+        literal = ("Probar la carga masiva B2B (pantalla B2B-CARGA-002, "
+                   "wizard de nueva carga; relacionadas B2B-CARGA-001 y "
+                   "B2B-CARGA-007) entrando por el Router ACT-0001")
+        screen = {
+            "decision": "SELECTED", "selected_screen_code": "B2B-CARGA-002",
+            "ambiguous_screen_codes": [], "material_ambiguities": [],
+            "reason": "Wizard de nueva carga es pantalla principal; otras son relacionadas",
+            "evidence_refs": [{"screen_code": "B2B-CARGA-002",
+                               "evidence_field": "screen_name"},
+                              {"screen_code": "B2B-CARGA-002",
+                               "evidence_field": "screen_code"}],
+        }
+        payload = {
+            "schema_version": "LF_PROFILE_RUN_FROM_PHRASE_V1",
+            "request_text": literal, "executor_mode": "GPT_NATIVE",
+            "stage1_decision": {"schema_version": "LF_ROUTER_STAGE1_V2",
+                "texto_original": literal,"negocio_codigo":"LF",
+                "es_operacion": True, "downstream_execution_allowed": False,
+                "alcance": {"target_type": "PANTALLA",
+                            "target_hint": "B2B-CARGA-002",
+                            "resolution_status": "UNRESOLVED"}},
+            "profile_semantic_decision": {"decision": "SELECTED",
+                "selected_profile_code": "PERFIL-PRODUCT-DIRECTOR-LF"},
+            "screen_semantic_decision": screen,
+        }
+        self.event["issue"]["body"] = json.dumps(payload)
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        self.assertEqual(self.check()["screen_semantic_decision"], screen)
+        path = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Governed test source\n", encoding="utf-8")
+        execution_id = "EXEC-PROFILE-GATE2-" + "A"*24
+        actions = []
+        def fake(_url, body, _headers):
+            actions.append(body.copy())
+            if body["action"] == "profile_native_begin_from_phrase_v1":
+                self.assertNotIn("router_context", body)
+                return 200, {"outcome":"NATIVE_EXECUTION_READY",
+                    "result":{"status":"NATIVE_EXECUTION_READY",
+                              "execution_id": execution_id,
+                              "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}}
+            if body["action"] == "profile_native_source_bind_v1":
+                return 200, {"outcome":"SOURCE_BINDING_REQUIRED",
+                    "execution_id":execution_id,
+                    "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+                    "source_revision_required":"a"*40,
+                    "target_repo":"test-owner/test-repo",
+                    "target_path":"profiles/test_profile/SKILL.md",
+                    "operation_plan":self._mock_operation_plan("PERFIL-PRODUCT-DIRECTOR-LF")}
+            if body["action"] == "profile_native_continue_v1":
+                self.assertEqual(body["screen_selection_draft"],screen)
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY",
+                    "execution_id":execution_id,
+                    "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}
+            raise AssertionError("unexpected bridge action")
+        env = {**self.env, "GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"995"}
+        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)):
+            runner=runpy.run_path(str(SCRIPT),run_name="native_phrase_screen_test")["main"]
+            with patch.dict(runner.__globals__,{"oidc":lambda:"opaque-oidc",
+                                                "call_json":fake}):
+                self.assertEqual(runner(),1)  # Step50 remains unproduced, not PASS
+        self.assertEqual([x["action"] for x in actions],[
+            "profile_native_begin_from_phrase_v1",
+            "profile_native_source_bind_v1","profile_native_continue_v1"])
+        cp = json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(cp["next_step"],"execute_profile")
+        self.assertFalse(cp["last_run_completed"])
+
+        # Negative: primary code must be explicitly supported by phrase AND scope.
+        invalid = json.loads(json.dumps(payload))
+        invalid["screen_semantic_decision"]["selected_screen_code"]="B2B-CARGA-007"
+        self.event["issue"]["body"]=json.dumps(invalid)
+        self.event_path.write_text(json.dumps(self.event))
+        with self.assertRaisesRegex(ValueError,"SCREEN_SELECTION_UNSUPPORTED"):
+            self.check()
+
+    def test_phrase_semantic_no_match_remains_a_finding_without_screen_fabrication(self):
+        phrase = "Probar una pantalla B2B no catalogada"
+        request = {
+            "schema_version":"LF_PROFILE_RUN_FROM_PHRASE_V1",
+            "request_text":phrase,"executor_mode":"GPT_NATIVE",
+            "stage1_decision":{"schema_version":"LF_ROUTER_STAGE1_V2",
+                "texto_original":phrase,"negocio_codigo":"LF",
+                "downstream_execution_allowed":False},
+            "profile_semantic_decision":{"decision":"SELECTED",
+                "selected_profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"},
+            "screen_semantic_decision":{
+                "decision":"NO_MATCH","selected_screen_code":None,
+                "ambiguous_screen_codes":[],"material_ambiguities":[],
+                "reason":"Sin correspondencia semántica confirmada en catálogo",
+                "evidence_refs":[]},
+        }
+        self.event["issue"]["body"]=json.dumps(request)
+        self.assertEqual(self.check()["screen_semantic_decision"]["decision"],"NO_MATCH")
+
+
 if __name__ == "__main__":
     unittest.main()
