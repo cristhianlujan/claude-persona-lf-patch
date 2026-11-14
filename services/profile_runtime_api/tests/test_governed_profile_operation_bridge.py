@@ -666,8 +666,8 @@ VALUES
 SELECT 'PLAN_IG='||(p->>'status')||'|'||jsonb_array_length(p->'steps')||'|'||
  (p#>>'{skills,0,skill_code}')||'|'||(p#>>'{skills,0,selection_mode}')
 FROM(SELECT public.lf_profile_execution_plan_v1('PERFIL-IG-TEST','PRODUCTO') p)x;
-SELECT 'SEMANTIC_PREPARE='||public.lf_profile_execution_plan_v1(
- 'PERFIL-OTHER-TEST','PRODUCTO')->>'status';
+SELECT 'SEMANTIC_PREPARE='||(public.lf_profile_execution_plan_v1(
+ 'PERFIL-OTHER-TEST','PRODUCTO')->>'status');
 SELECT 'PLAN_OTHER='||(p->>'status')||'|'||jsonb_array_length(p->'steps')||'|'||
  (p#>>'{skills,0,skill_code}')||'|'||(p#>>'{skills,0,selection_mode}')
 FROM(SELECT public.lf_profile_execution_plan_v1(
@@ -675,13 +675,13 @@ FROM(SELECT public.lf_profile_execution_plan_v1(
  '{"selected_skill_code":"FICTICIA_SEMANTICA","reason":"request context matches documented PURPOSE",
    "evidence_refs":["fixture://source/decision"],"descriptor_revision":"fixture-sem-1",
    "review_mode":"CURRENT_CONTEXT_REVIEW"}'::jsonb) p)x;
-SELECT 'BLOCK_AMBIG='||public.lf_profile_skill_selection_prepare_v1(
+SELECT 'BLOCK_AMBIG='||(public.lf_profile_skill_selection_prepare_v1(
  'PERFIL-AMBIG-TEST','PRODUCTO',
- '{"selected_skill_codes":["FICTICIA_SEMANTICA","FICTICIA_ALTERNA"]}'::jsonb)->>'blocking_code';
+ '{"selected_skill_codes":["FICTICIA_SEMANTICA","FICTICIA_ALTERNA"]}'::jsonb)->>'blocking_code');
 UPDATE public.lf_skill_selection_registry_v1 SET descriptor_status='STALE_SOURCE_CHANGED'
  WHERE skill_code='FICTICIA_ALTERNA';
-SELECT 'BLOCK_STALE='||public.lf_profile_skill_selection_prepare_v1(
- 'PERFIL-STALE-TEST','PRODUCTO')->>'blocking_code';
+SELECT 'BLOCK_STALE='||(public.lf_profile_skill_selection_prepare_v1(
+ 'PERFIL-STALE-TEST','PRODUCTO')->>'blocking_code');
 CREATE TEMP TABLE simulated_operation_ledger(
  run_id text,step_order int,step_id text,status text
 ) ON COMMIT DROP;
