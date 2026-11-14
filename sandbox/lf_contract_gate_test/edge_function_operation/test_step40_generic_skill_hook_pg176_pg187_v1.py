@@ -119,12 +119,12 @@ class BoundedSkillTransport(unittest.TestCase):
             mod=importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
         with patch.object(mod.urllib.request,"urlopen",side_effect=TimeoutError("synthetic timeout")):
-            code,response=mod.call_json("https://mock.invalid",{"action":"profile_skill_runtime_v1"},timeout_seconds=18)
+            code,response=mod.call_json("https://mock.invalid",{"action":"profile_skill_runtime_v1","execution_id":"EXEC-TEST-READONLY","skill_code":"PROFILE_UPDATE_APPLY"},timeout_seconds=18)
             self.assertEqual(code,0)
             self.assertEqual(response["code"],"SKILL_RUNTIME_NETWORK_OR_DEADLINE")
             self.assertFalse(response["production_authorized"])
             with self.assertRaises(TimeoutError):
-                mod.call_json("https://mock.invalid",{"action":"profile_native_continue_v1"})
+                mod.call_json("https://mock.invalid",{"action":"profile_native_continue_v1","execution_id":"EXEC-TEST-READONLY","source_revision":"test-revision","source_digest":"test-digest"})
         self.assertIn("timeout_seconds=18",NATIVE.read_text("utf-8"))
     def test_bounded_edge_and_sql_hook_keep_readonly(self):
         ts=CALLER.read_text("utf-8")
