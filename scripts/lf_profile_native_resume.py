@@ -969,9 +969,11 @@ def main():
         return 1
 
     # Input Governance is a runtime concern, not a profile/Router bypass.
-    # Reinvoke only on an explicit DIRECT_EDGE_INVOCATION ticket and READY.
+    # BLOCKED findings may resume ONLY after Edge attests read-only RUN scope;
+    # the SQL bridge must subsequently record step40 with ORIGINAL findings.
     # Each 202 consumes its ticket. Refresh the bridge before continuing.
     # Four directly chained invocations, never a queue or polling worker.
+    ig_findings_resume = False
     for _ in range(4):
         if result.get("phase") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
             break
@@ -997,17 +999,52 @@ def main():
                 }))
                 return 1
             continue
-        if ig_code != 200 or ig.get("outcome") != "TERMINAL" or ig.get("terminal_status") != "READY":
+        reportable = (
+            ig_code == 200
+            and ig.get("outcome") == "TERMINAL_WITH_FINDINGS"
+            and ig.get("code") == "IG_CONTEXT_PACK_BLOCKED_REPORTABLE_READ_ONLY"
+            and ig.get("analysis_scope") == "READ_ONLY_WITH_IG_FINDINGS"
+            and ig.get("ig_security_state") == "BLOCKED"
+            and ig.get("ig_security_clearance") is False
+            and ig.get("write_authorized") is False
+            and ig.get("continuation_allowed_for_effects") is False
+            and ig.get("terminal_status") == "BLOCKED"
+            and ig.get("execution_id") == execution_id
+            and isinstance(ig.get("result"), dict)
+            and isinstance(ig["result"].get("result"), dict)
+            and ig["result"]["result"].get("status") == "BLOCKED"
+        )
+        normal_ready = (
+            ig_code == 200 and ig.get("outcome") == "TERMINAL"
+            and ig.get("terminal_status") == "READY"
+        )
+        if not (normal_ready or reportable):
             print(json.dumps({
                 "phase": "INPUT_GOVERNANCE", "status": ig_code,
                 "outcome": ig.get("outcome"), "code": ig.get("code"),
             }))
             return 1
+        if reportable:
+            ig_findings_resume = True
         payload.pop("screen_selection_draft", None)
         code, result = call_json(EDGE_URL, payload, headers)
         if code != 200:
             print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code, "code": result.get("code")}))
             return 1
+        if ig_findings_resume:
+            bridge = result.get("result") if isinstance(result.get("result"), dict) else {}
+            outcome_ig = bridge.get("input_governance") if isinstance(bridge.get("input_governance"), dict) else {}
+            if (result.get("phase") != "NATIVE_MODEL_INPUT_READY"
+                or bridge.get("execution_write_mode") != "READ_ONLY"
+                or outcome_ig.get("status") != "BLOCKED"
+                or outcome_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
+                or not isinstance(outcome_ig.get("governance_result"), dict)):
+                print("PROFILE_IG_FINDINGS_STEP40_NOT_RECORDED")
+                return 1
+            # No findings in public logs/artifacts. Step40 and step50 hold full
+            # governed data in the same execution; report80 reads step40.
+            print(json.dumps({"phase":"IG_FINDINGS_RECORDED_IN_STEP40",
+              "execution_id":execution_id,"ig_security_state":"BLOCKED"}))
 
     if result.get("phase") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
         print("PROFILE_INPUT_GOVERNANCE_BOUNDED_RESUME_EXHAUSTED")
