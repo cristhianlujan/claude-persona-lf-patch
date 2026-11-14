@@ -30,6 +30,11 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
           profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}},
       ...overrides,
     }];
+    else if(url.endsWith("/lf_profile_execution_plan_v1")){
+      out={status:"READY",operation_code:"EJECUCION_PERFIL_LF",profile_code:"PROFILE-A",
+        steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+        skills:[{skill_code:"SKILL_FROM_DB",handler_fn:"fixture_readonly",effect:"READ_ONLY"}]};
+    }
     else if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))out={status:state,next_action:"RETRY_BRIDGE"};
     else if(url.endsWith("/lf_profile_screen_selector_semantic_submit_v1")){
       out={status:selectStatus};if(selectStatus==="BOUND")state="NATIVE_MODEL_INPUT_READY";
@@ -59,7 +64,10 @@ Deno.test("continuation: profile path bound dynamically, never selected in code"
   for(const target_path of ["profiles/profile_a/SKILL.md","profiles/profile_b/SKILL.md"]){
     const n=network({target_path});
     const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
-    const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,1);
+    const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,2);
+    eq(b.operation_plan?.steps?.length,11);
+    eq(b.operation_plan?.skills?.[0]?.skill_code,"SKILL_FROM_DB");
+    eq(n.calls[1].body?.p_profile_code,"PROFILE-A");
   }
 });
 Deno.test("continuation: screen semantic handoff preserves ordering and source",async()=>{
