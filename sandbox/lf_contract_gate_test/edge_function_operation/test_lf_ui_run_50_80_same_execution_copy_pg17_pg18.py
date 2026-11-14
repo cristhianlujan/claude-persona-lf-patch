@@ -46,7 +46,7 @@ class TestUITargetSameRunLab(unittest.TestCase):
    cols={}
    for c in data["columns"]:
     self.assertRegex(c["tab"],r"^(lf_operation_execution|lf_operation_execution_steps)$")
-    self.assertRegex(c["col"],r"^[a-z_]+$")
+    self.assertRegex(c["col"],r"^[a-z][a-z0-9_]*$")
     self.assertRegex(c["typ"],r"^(text|integer|bigint|jsonb|timestamp with time zone)$")
     cols.setdefault(c["tab"],[]).append('"'+c["col"]+'" '+c["typ"])
    ddl=["CREATE SCHEMA extensions;","CREATE EXTENSION pgcrypto WITH SCHEMA extensions;"]
