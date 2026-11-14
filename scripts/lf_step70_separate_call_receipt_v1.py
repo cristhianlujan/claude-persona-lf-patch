@@ -35,13 +35,15 @@ def assess_separate_call_receipt(review, *, execution_id=None):
                 "independent_semantic_receipt_ref":None,
                 "content_continuation_allowed":True}
     _required(isinstance(r,dict),"STEP70_SEPARATE_RECEIPT_NOT_OBJECT")
-    required={"receipt_ref","execution_id","model_id","model_call_id",
+    required={"schema_version","receipt_ref","execution_id","model_id","model_call_id",
               "producer_call_ref","reviewer_call_ref","prompt_sha256",
               "producer_prompt_sha256","schema_id","producer_schema_id",
               "eval_id","producer_eval_id","eval_status",
               "model_call_count","candidate_sha256","scope_packet_sha256",
               "decision_body","provider_attestation"}
     _required(set(r)==required,"STEP70_SEPARATE_RECEIPT_CONTRACT_INVALID")
+    _required(r["schema_version"]=="LF_STEP70_SAME_LLM_SEPARATE_CALL_RECEIPT_V1",
+              "STEP70_SEPARATE_RECEIPT_VERSION_INVALID")
     _required(isinstance(r["execution_id"],str) and r["execution_id"].startswith("EXEC-PROFILE-GATE2-"),
               "STEP70_RUN_ID_MISSING")
     if execution_id:
