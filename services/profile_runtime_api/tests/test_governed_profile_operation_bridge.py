@@ -519,11 +519,25 @@ ROLLBACK;
 SELECT 'ROLLBACK_EMPTY=' ||
  CASE WHEN to_regclass('pg_temp.lf_step50_simulated_steps') IS NULL THEN 'true' ELSE 'false' END;
 """
-                run = subprocess.run(
-                    ["docker", "exec", "-i", name, "psql", "-X", "-A", "-t",
-                     "-U", "postgres", "-d", "postgres"],
-                    input=sql, capture_output=True, text=True, timeout=180,
-                )
+                for readiness_attempt in range(25):
+                    run = subprocess.run(
+                        ["docker", "exec", "-i", name, "psql", "-X", "-A", "-t",
+                         "-U", "postgres", "-d", "postgres"],
+                        input=sql, capture_output=True, text=True, timeout=180,
+                    )
+                    if run.returncode == 0:
+                        break
+                    # Docker's initdb starts a temporary postmaster, then stops it.
+                    # pg_isready may report that temporary server; retry ONLY
+                    # transport-not-ready, never a SQL/schema assertion failure.
+                    if not any(marker in run.stderr for marker in (
+                        "the database system is shutting down",
+                        "the database system is starting up",
+                        "Connection refused",
+                        "No such file or directory",
+                    )):
+                        break
+                    time.sleep(1)
                 self.assertEqual(run.returncode, 0, "PG_ISOLATED_TEST_FAILED:" + run.stderr[-600:])
                 values = [s.strip() for s in run.stdout.splitlines() if s.strip()]
                 self.assertTrue(any(s.startswith("PG_VERSION=" + version) for s in values), values[:8])
