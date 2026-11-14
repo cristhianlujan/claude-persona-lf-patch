@@ -32,6 +32,76 @@ CREATE TABLE IF NOT EXISTS public.lf_skill_selector_policy_v1 (
   CHECK(cardinality(allowed_effects)>0 AND allowed_effects <@ ARRAY['READ_ONLY','PROPOSE_ONLY','WRITE_GOVERNED'])
 );
 
+-- Candidate policy is provisioned for EVERY CURRENT profile in the SAME canonical
+-- registry used by ACT-0001; no profile-specific branch in Step40/Step50.
+-- All rows remain disabled: they are proposals, not implicit owner approvals.
+-- "required" means required ONLY WHEN the existing input applicability check
+-- already returned applicable=true; historical NOT_REQUIRED must remain skipped.
+ALTER TABLE public.lf_skill_selector_policy_v1
+  ADD COLUMN IF NOT EXISTS applicability_contract jsonb NOT NULL DEFAULT
+    '{"evaluation":"EXISTING_PROFILE_INPUT_APPLICABILITY","only_if_applicable":true,"not_required_skips":true}'::jsonb,
+  ADD COLUMN IF NOT EXISTS policy_evidence_ref text,
+  ADD COLUMN IF NOT EXISTS owner_decision_required boolean NOT NULL DEFAULT true;
+
+-- No extra authority for write or silent activation.
+INSERT INTO public.lf_skill_selector_policy_v1
+ (profile_code,skill_code,channels,required_operation,allowed_effects,
+  selection_mode,enabled,applicability_contract,policy_evidence_ref,owner_decision_required)
+SELECT r.profile_code,'INPUT_GOVERNANCE_CONTEXT_PACK',p.channels,
+       'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],
+       'DETERMINISTIC_REQUIRED',false,
+       '{"evaluation":"EXISTING_PROFILE_INPUT_APPLICABILITY","only_if_applicable":true,"not_required_skips":true}'::jsonb,
+       'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
+FROM public.lf_profile_selection_registry_v1 r
+JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+WHERE r.descriptor_status='CURRENT'
+ON CONFLICT (profile_code,skill_code,required_operation) DO NOTHING;
+
+-- Existing SCREEN_RULES_SNAPSHOT is a candidate for screen-facing work only.
+-- All optional bindings are disabled pending source/owner validation.
+INSERT INTO public.lf_skill_selector_policy_v1
+ (profile_code,skill_code,channels,required_operation,allowed_effects,
+  selection_mode,enabled,policy_evidence_ref,owner_decision_required)
+SELECT r.profile_code,'SCREEN_RULES_SNAPSHOT',p.channels,'EJECUCION_PERFIL_LF',
+       ARRAY['READ_ONLY'],'SEMANTIC_OPTIONAL',false,
+       'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
+FROM public.lf_profile_selection_registry_v1 r
+JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+WHERE r.descriptor_status='CURRENT' AND r.canonical_profile_key IN
+ ('product_director_lf','ui_architect','ux_product_experience_architect_lf',
+  'customer_financial_ux_decisioning','cx_trust_experience_architect_lf',
+  'gamification_system_architect','quality_pack')
+ON CONFLICT (profile_code,skill_code,required_operation) DO NOTHING;
+
+-- The systemic repair descriptor explicitly permits a governed profile update
+-- when separately authorized; the operation/effect is enforced by the invoker.
+INSERT INTO public.lf_skill_selector_policy_v1
+ (profile_code,skill_code,channels,required_operation,allowed_effects,
+  selection_mode,enabled,policy_evidence_ref,owner_decision_required)
+SELECT r.profile_code,'PROFILE_UPDATE_APPLY',p.channels,'ACTUALIZACION_PERFIL_LF',
+       ARRAY['WRITE_GOVERNED'],'SEMANTIC_OPTIONAL',false,
+       'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
+FROM public.lf_profile_selection_registry_v1 r
+JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+WHERE r.descriptor_status='CURRENT'
+ AND r.canonical_profile_key='systemic_root_cause_repair_lf'
+ON CONFLICT (profile_code,skill_code,required_operation) DO NOTHING;
+
+DO $candidate_profile_policy_coverage$
+DECLARE n int; missing int;
+BEGIN
+ SELECT count(*) INTO n FROM public.lf_profile_selection_registry_v1
+ WHERE descriptor_status='CURRENT';
+ SELECT count(*) INTO missing FROM public.lf_profile_selection_registry_v1 r
+ WHERE r.descriptor_status='CURRENT' AND NOT EXISTS
+ (SELECT 1 FROM public.lf_skill_selector_policy_v1 p
+  WHERE p.profile_code=r.profile_code AND p.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
+    AND p.required_operation='EJECUCION_PERFIL_LF');
+ IF n<>10 OR missing<>0 THEN
+   RAISE EXCEPTION 'CANDIDATE_POLICY_PROFILE_COVERAGE_NOT_ATTESTED:n=%,missing=%',n,missing;
+ END IF;
+END $candidate_profile_policy_coverage$;
+
 -- IG is a CANDIDATE, NOT a READY skill: its real handler/authority remains NO-GO.
 INSERT INTO public.lf_skill_catalog_v1
 (skill_code,description,required_operation,handler_fn,effect,input_required,status,opener_fn,child_caller)
