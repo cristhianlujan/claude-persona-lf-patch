@@ -45,7 +45,10 @@ class IgV58GovernedEdgeReadbackTests(unittest.TestCase):
 
     def test_deploy_workflow_is_owned_by_issue_label_and_exact_sandbox(self):
         block=WORKFLOW.split("  deploy-ig-v58-runtime:",1)[1]
-        self.assertIn("lf-ig-v58-edge-deploy-governed",block)
+        self.assertIn("LF_IG_V58_DEPLOY_EXECUTE_V1",block)
+        self.assertIn("issue_comment",WORKFLOW)
+        self.assertIn("author_association == 'OWNER'",block)
+        self.assertIn("IG_V58_OWNER_IDENTITY_INVALID",block)
         self.assertIn('SUPABASE_PROJECT_REF: mhwmirqcgxxukpctffuv',block)
         self.assertIn('environment: lf-edge-deploy',block)
         self.assertIn("checkout@v4",block)
