@@ -60,7 +60,7 @@ class TestUITargetSameRunLab(unittest.TestCase):
    for item in data["steps"]:
     sql("INSERT INTO public.lf_operation_execution_steps SELECT "+
         "(jsonb_populate_record(NULL::public.lf_operation_execution_steps,"+
-        qjson(item["snapshot"])+")).*;")
+        (quote(item["source_jsonb_text"])+"::jsonb" if "source_jsonb_text" in item else qjson(item["snapshot"]))+")).*;")
    realhash=sql("SELECT "+hash_expr("e")+" FROM public.lf_operation_execution e WHERE execution_id="+quote(ID)+";")[0]
    self.assertEqual(realhash,row["sha256"],"RUN_SOURCE_SHA_MISMATCH")
    for item in data["steps"]:
