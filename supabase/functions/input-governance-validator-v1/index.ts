@@ -156,6 +156,28 @@ Deno.serve(async (req: Request) => {
       if (["COMPLETED", "NOOP_COMPLETED"].includes(result?.status)) {
         return Response.json({ runtime: "input-governance-validator-v1", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, chunked_validation: true, trace, result });
       }
+      if (result?.status === "CURATOR_REEVALUATION_REQUIRED") {
+        // Negative result is NOT Validator completion. Return a structured
+        // governed handoff so the existing Agent may dispatch Curator.
+        // No new runtime, no direct writer, no promotion/production grant.
+        if (Number(result?.run_id) !== runId ||
+            !Number.isInteger(Number(result?.parent_run_id)) ||
+            Number(result?.parent_run_id) < 1 ||
+            result?.promotion_authorized !== false ||
+            result?.production_authorized !== false) {
+          return Response.json({error:"VALIDATOR_RECURATION_RECEIPT_INVALID",
+            run_id:runId}, {status:409});
+        }
+        return Response.json({
+          runtime:"input-governance-validator-v1",
+          validator_entrypoint:VALIDATOR_ENTRYPOINT,
+          identity,resumed,scope_strategy:scopeStrategy,
+          handoff_receipt:handoffReceipt,trace,
+          result,
+          curatorial_handoff:"CURATOR_REEVALUATION_REQUIRED",
+          production_authorized:false,promotion_authorized:false,
+        });
+      }
       if (result?.status !== "VALIDATOR_CONTINUE_REQUIRED") {
         return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, trace, result }, { status: 409 });
       }
