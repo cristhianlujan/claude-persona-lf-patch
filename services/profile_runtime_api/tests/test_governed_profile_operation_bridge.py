@@ -860,6 +860,7 @@ SELECT 'ROLLBACK_GENERIC_EMPTY=' ||
                 self.assertTrue(any(s.startswith("PD_SOURCE_COMPATIBILITY_COPY_PASS=11/11|IG_MD5=d9c0ac3a8e917fb67c7d24e7d8d2bf7d|LIMIT=SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED") for s in values))
                 self.assertIn("PD_MISSING_APPLICABILITY=SKILL_APPLICABILITY_EVIDENCE_NOT_READY", values)
                 self.assertIn("PD_NOT_REQUIRED_BLOCK=SKILL_NOT_REQUIRED_BY_INPUT_VALIDATE", values)
+                print(f"PASS_PD_NOT_REQUIRED_GUARD_PG_{version} missing=BLOCKED not_required=BLOCKED", flush=True)
                 self.assertIn("ROLLBACK_GENERIC_EMPTY=true", values)
                 print(f"PASS_PROFILE_MATRIX_PG_{version} 10/10 DET=10 SEM=10 AMBIG_BLOCK=10 STALE_BLOCK=10 SIMULATED=20x11 ROLLBACK=true", flush=True)
                 print(f"PASS_PD_COMPAT_COPY_PG_{version} 11/11 SOURCE_PRESERVATION_ONLY_NOT_REEXECUTED", flush=True)
