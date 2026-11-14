@@ -109,6 +109,7 @@ type HarnessOptions = {
   allowlistStatus?: number;
   allowlistPayload?: unknown;
   inputStatus?: string;
+  agentResult?: Record<string, unknown>;
   runtimeTicketAuthorized?: boolean;
   agentRequiresTicket?: boolean;
   executionOverrides?: Record<string, unknown>;
@@ -157,7 +158,7 @@ function harness(options: HarnessOptions = {}) {
           return new Response(JSON.stringify({ error: "IG_PROFILE_TICKET_REQUIRED" }), { status: 403 });
         }
         const id = Number(body?.pantalla_id ?? 0);
-        return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
+        return new Response(JSON.stringify({ result: options.agentResult ?? { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
       }
       if (url.includes("/rest/v1/lf_operation_execution?")) {
         const executionId = decodeURIComponent(url.split("execution_id=eq.")[1]?.split("&")[0] ?? "");
@@ -175,9 +176,11 @@ function harness(options: HarnessOptions = {}) {
             read_only: true,
             no_write: true,
             no_promotion: true,
+            automatic_impact: false,
             governed_repair_write: false,
             router_profile_handoff: {
               profile_code: "PERFIL-UX-DESIGN-LF",
+              effect_authority: false,
               router_authorization_receipt: {
                 profile_code: "PERFIL-UX-DESIGN-LF",
                 profile_execution_allowed: true,
@@ -356,6 +359,63 @@ Deno.test("positive profile runtime ticket: same EJECUCION_PERFIL_LF invokes CON
     pantalla_id: 51, consumer: "CONTEXT_PACK",
     ticket: "11111111-2222-4333-8444-555555555555",
   });
+});
+
+const predecisionBlockedIg = {
+  status:"BLOCKED",consumer:"CONTEXT_PACK",pantalla_id:51,run_id:951,
+  output_sha256:"5".repeat(64),
+  remediation_state:"INTERNAL_REMEDIATION_REQUIRED",
+  owner_interruption_required:false,promotion_authorized:false,
+  production_authorized:false,execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
+  predecision_crosscheck:{status:"CANONICAL_READBACK_ONLY",run_id:951,
+    deterministic_finding_count:3,
+    findings:[
+      {code:"FIXTURE-01",decision:"PENDING"},
+      {code:"FIXTURE-02",decision:"PENDING"},
+      {code:"FIXTURE-03",decision:"PENDING"},
+    ]},
+};
+Deno.test("profile ticket: 3 IG predecision findings are returned intact for server-authorized read-only report",async()=>{
+  const h=harness({agentResult:predecisionBlockedIg,agentRequiresTicket:true});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,200);
+  assertEquals(payload.outcome,"TERMINAL_WITH_FINDINGS");
+  assertEquals(payload.terminal_status,"BLOCKED");
+  assertEquals(payload.analysis_scope,"READ_ONLY_WITH_IG_FINDINGS");
+  assertEquals(payload.ig_security_clearance,false);
+  assertEquals(payload.write_authorized,false);
+  assertEquals(payload.result.result.predecision_crosscheck.findings,predecisionBlockedIg.predecision_crosscheck.findings);
+  assertEquals(h.calls.filter(c=>c.url.includes("/rest/v1/lf_operation_execution?")).length,1);
+});
+Deno.test("profile ticket: IG blocked cannot continue under write-capable RUN",async()=>{
+  const h=harness({agentResult:predecisionBlockedIg,
+    executionOverrides:{manifest:{executor_mode:"GPT_NATIVE",
+      executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:false,
+      no_write:false,no_promotion:true,automatic_impact:false,
+      governed_repair_write:true,router_profile_handoff:{
+        profile_code:"PERFIL-UX-DESIGN-LF",effect_authority:true}}}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.outcome,"BLOCKED");
+  assertEquals(payload.code,"IG_CONTEXT_PACK_BLOCKED");
+});
+Deno.test("profile ticket: no canonical findings is still BLOCKED and never reportable",async()=>{
+  const h=harness({inputStatus:"BLOCKED"});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_BLOCKED");
 });
 
 Deno.test("negative: legacy OIDC CONTEXT_PACK cannot bypass deployed Agent profile-ticket requirement", async () => {
