@@ -2159,7 +2159,8 @@
       },
       "source_sha256": "e007df46e0d9be44de06b8bde692b27ae1e076793467b0d2c3d8970b00ae5301",
       "screen_links": [],
-      "source_cohort": "KEYWORD"
+      "source_cohort": "KEYWORD",
+      "canonical_pg_jsonb_text": "{\"id\": 110, \"razon\": \"Una caída sostenida indica fallo en el canal WhatsApp o Meta Cloud API.\", \"codigo\": \"REG_ALR_001\", \"estado\": \"VIGENTE\", \"origen\": \"decision_producto\", \"titulo\": \"Alerta: tasa de OTP verificados cae bajo umbral\", \"categoria\": \"alertas\", \"created_at\": \"2026-06-23T19:06:49.376117+00:00\", \"created_by\": null, \"updated_at\": \"2026-06-23T19:06:49.376117+00:00\", \"descripcion\": \"Si la tasa otp_verified / otp_sent cae por debajo del 60% en una ventana de 30 minutos, se activa alerta inmediata al equipo técnico.\", \"valor_config\": {\"metrica\": \"otp_verification_rate\", \"canal_alerta\": \"slack_tecnico\", \"umbral_minimo\": 0.60, \"ventana_minutos\": 30}, \"es_transversal\": false, \"pendiente_detalle\": null, \"pendiente_decision\": false}"
     },
     {
       "source_row": {
@@ -2217,7 +2218,8 @@
       },
       "source_sha256": "2ab17b6d099d77c80a592176beda7cea0d04113fa38fff736b3f54b9d51c386c",
       "screen_links": [],
-      "source_cohort": "KEYWORD"
+      "source_cohort": "KEYWORD",
+      "canonical_pg_jsonb_text": "{\"id\": 114, \"razon\": \"LCP degradado impacta directamente la tasa de inicio del funnel, especialmente en conexiones móviles lentas.\", \"codigo\": \"REG_ALR_005\", \"estado\": \"VIGENTE\", \"origen\": \"tecnico\", \"titulo\": \"Alerta: LCP supera 4 segundos en más del 20% de sesiones\", \"categoria\": \"alertas\", \"created_at\": \"2026-06-23T19:06:49.376117+00:00\", \"created_by\": null, \"updated_at\": \"2026-06-23T19:06:49.376117+00:00\", \"descripcion\": \"Si el LCP promedio supera 4 segundos en más del 20% de sesiones en una hora, alerta a técnico y producto.\", \"valor_config\": {\"metrica\": \"LCP\", \"umbral_ms\": 4000, \"canal_alerta\": \"slack_tecnico\", \"ventana_horas\": 1, \"porcentaje_sesiones\": 0.20}, \"es_transversal\": false, \"pendiente_detalle\": null, \"pendiente_decision\": false}"
     },
     {
       "source_row": {
