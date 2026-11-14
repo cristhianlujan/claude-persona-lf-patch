@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-ig-skill-generic-ticket-column-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114122900_lf_ig_skill_generic_ticket_column_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-skill-generic-ticket-column-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
