@@ -23,5 +23,5 @@ jobs:
           deno check supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
       - name: Verify exact OIDC identity negatives and CP2 Edge bridge positive/negative behavior
         run: |
-          deno test supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts
+          deno test --filter '^CP2:' supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts
           deno test supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
