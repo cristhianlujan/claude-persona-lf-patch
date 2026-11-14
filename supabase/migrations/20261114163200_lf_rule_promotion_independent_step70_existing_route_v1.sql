@@ -77,6 +77,19 @@ DO $post$ BEGIN
  IF position('PROMOTION_INDEPENDENT_STEP70_NOT_ATTESTED' IN pg_get_functiondef('public.lf_rule_promotion_request_v1(text,text,text)'::regprocedure))=0
  THEN RAISE EXCEPTION 'LF_PROMOTION_STEP70_REQUIREMENT_NOT_INSTALLED'; END IF;
 END $post$;
--- Restrict the existing verdict read to trusted service transport; no anon/user grant.
-GRANT EXECUTE ON FUNCTION programacion.fn_t_remed_rule_promotion_verdicts_v1(integer,bigint) TO service_role;
+-- The service role does NOT have USAGE on schema programacion; a direct
+-- function EXECUTE grant is unusable. Never grant broad schema USAGE (509 funcs).
+-- Narrow SECURITY DEFINER READ_ONLY adapter; this is not a new promotion gate.
+CREATE OR REPLACE FUNCTION public.lf_rule_promotion_verdicts_readonly_v1(
+ p_min_screens integer DEFAULT 5, p_regla_id bigint DEFAULT NULL)
+RETURNS TABLE (regla_id bigint,regla_codigo text,screens integer,
+ criteria jsonb,verdict text,failed text[])
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','programacion'
+AS $verdict$
+ SELECT v.regla_id,v.regla_codigo,v.screens,v.criteria,v.verdict,v.failed
+ FROM programacion.fn_t_remed_rule_promotion_verdicts_v1(p_min_screens,p_regla_id) v;
+$verdict$;
+REVOKE ALL ON FUNCTION public.lf_rule_promotion_verdicts_readonly_v1(integer,bigint) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_verdicts_readonly_v1(integer,bigint) TO service_role;
 COMMIT;
