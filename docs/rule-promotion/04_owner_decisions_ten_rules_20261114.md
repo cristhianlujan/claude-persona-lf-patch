@@ -1,0 +1,31 @@
+# LF — diez expedientes individuales para decisión del owner (2026-11-14)
+
+**Fuente exacta:** SELECT por ID de `lf_ops.reglas`, `lf_ops.reglas_pantallas`; definiciones previas L16/L35/L36 y B08; las recomendaciones son **PROPUESTAS**, no nuevas decisiones del owner. No cambiar estado ni flag de promoción. Identity B08 = documental, misma persona, NO autenticación humana.
+
+| ID / regla | Evidencia verificada | Recomendación del Product Director (propuesta) | Qué debe decidir el owner | Subsana |
+|---|---|---|---|---|
+| **390** B2B-RULE-THEME-002 | 13 pantallas; falta `dark_mode_surface/card/text`; `required_qa`: contrast/focus/status_badges/tables/modals | Mantener CANDIDATO y prohibir dark mode global hasta tokens y regresión visual. | Aprobar valores/versiones exactas de 3 tokens y criterio contraste; si no, mantener OFF | Owner + UI Architect/E2E |
+| **421** B2B-RULE-LEGAL-001 | `owner_decision=APPROVED_2026-09-17_V1`; `pendiente_decision=true` contradice texto de decisión funcional cerrada. CLIENTE es referencia opcional sin autoridad para tabla maestra | Ratificar esta decisión ya documentada y separar revisión de privacidad de la definición funcional. No crear entidad Cliente ni copiar nombre a identidad. | Confirmar que la decisión funcional está cerrada y que privacidad es control de uso, no decisión nueva | Owner + Legal/Producto |
+| **422** B2B-RULE-INSTALLMENT-001 | `allowed_difference=0.00`, decimales=2, residuo en última cuota solo para Asistente, externo sin corrección; 1 pantalla | Ratificar conciliación exacta; ensayar casos residuo, 0.01 externo, pagos iniciales e idempotencia antes de estado vigente | Convalidar fórmula y prohibición de corrección externa | Owner + QA finanzas |
+| **617** B2B-RULE-INSTALLMENT-PLAN-001 | `APPROVED_2026-09-16_V3`, 3 pantallas; cuota 0 fuera del cronograma regular, PLAN_ID y configuración física pendientes | Mantener semántica de plan/cuota 0 y exigir reconciliación física por tabla/columna, más pruebas de calendario empresa; no inventar 30 días | Confirmar el modelo funcional existente; asignar dueño de mapeo físico/fecha primera cuota | Owner + Datos/Producto |
+| **620** B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001 | `APPROVED_2026-09-17_V4`, 2 pantallas, `EXCEL_ASISTIDO` y `EXCEL_COMPLETO`, `step1_visual_status=SUPERSEDED_FUNCTIONALLY_PENDING_NEW_UX_EXPLORATION` | Mantener dos contratos exactos y autodetección por estructura; no ofrecer selector libre; revisar flujo UI nuevo y mapeos fechas/PLAN_ID | Ratificar cierre funcional de dos contratos y pedir E2E del nuevo asistente | Owner + UI/Curator/Ingeniería |
+| **648** B2B-RULE-LOAD-DEBT-TEMPORAL-BASIS-001 | `APPROVED_2026-09-15_V3`, 1 pantalla; columnas FECHA_INICIO_MORA y FECHA_CORTE_CARTERA obligatorias por fila; `PENDING_PHYSICAL_MAPPING_ONLY` | Mantener fechas como fuente única; no aceptar antigüedad manual, castigo ni último pago como fallback; mapear campos existentes sin duplicados | Ratificar regla funcional y autorizar reconciliación física en el siguiente lote técnico | Owner + Datos |
+| **438** B2B-RULE-AUTH-019 | L16-Q01/L35/L36, OTP correo Brevo perfiles 1–6; fuente `docs/rule-quality-lote37/01_manifiesto_firma_en_bloque_v1.json`, `owner_decision_identity_verified=false`, IdP ADR-003 pendiente | Mantener MFA central fail-closed, OTP Brevo sin alegar AAL2/FIDO2; definir proveedor real/QA; conservar B08 documental. | Ratificar elección OTP, binding IdP y riesgo residual; no usar firma documental como IAM | Owner + Seguridad |
+| **439** B2B-RULE-AUTH-020 | L16-Q11, recuperación asistida con DNI, dos personas, 48h y aviso a contacto anterior; IDV QA pendiente; identity=false | Mantener recuperación sin bypass, dos autorizadores distintos, auditoría y re-enrolamiento; no sesión antes de validación | Ratificar mecanismo de verificación y operación de soporte; aprobar QA de IDV | Owner + Seguridad/Soporte |
+| **440** B2B-RULE-AUTH-021 | L16-Q12 plantea «5» sin identificar control/unidad/evento; `threshold_policy_binding=PENDING_SPECIFIC_CONTROL_UNIT_EVENT`; identity=false | No aplicar 5 como intentos/requests; mantener antia-buso parametrizado y sin bloqueo definitivo por señal única | **Definir qué control, unidad, evento y ventana** representa «5» o rechazarlo | Owner + Seguridad |
+| **577** B2B-RULE-AUTH-047 | Bloq Mayús UI local; `PASSWORD_ATTEMPT_POLICY` ausente y `threshold_policy_binding=PENDING_CONTROL_UNIT`; identity=false | Permitir diseño/propuesta visual sin contar intentos ni transmitir contraseña; promoción de política de intentos solo tras control canónico | Confirmar separación del aviso visual y política de intentos; definir owner de esta última | Owner + UI/Seguridad |
+
+## Política común de identidad (pasado y futuro)
+
+Las seis reglas donde ya existe `owner_decision_identity_verified=false` (235,438,439,440,532,577) permanecen **false**. Se atribuyen documentalmente a `Cristhian Luján` mediante el registro LF único, sin firma autentificada. La vista `lf_rule_promotion_documentary_owner_v1` permitirá consultar este criterio en toda regla LF histórica y futura, sin editar sus `valor_config` originales.
+
+**Prueba exigida para usar `true`:** principal humano autenticado por IdP con `sub` comprobable; vínculo de competencia/rol owner; acto expreso con hora de servidor, ID de regla/lote, hash de fuente y propuesta, antireplay/nonce y recibo de firma por mecanismo oficial. El `owner_sub` actual es placeholder y **no** cumple.
+
+## Orden para decidir
+
+1. Confirmar o corregir definiciones funcionales 421,422,617,620,648; distinguir de QA/implementación (no levantar flags automáticamente).
+2. Resolver tokens de 390 y control/unidad/ventana de 440; luego dependencia canónica de 577.
+3. Resolver IdP/OTP/recuperación (438,439) con QA y política central, sin reclamar autenticación retroactiva.
+4. Cada decisión usa el mismo registro B08 temporal cuando corresponda, con referencia literal, separando revisor independiente del autor. Sin decisión específica, permanece hallazgo.
+
+Referencias verificables: `supabase://lf_ops.reglas/<CODIGO>`; `audits/rule-quality-lote28/12_criterios_cierre_motor_7.md`; `docs/rule-quality-lote30/01_registro_decisiones_dueno_l30.json`; `docs/rule-quality-lote37/01_manifiesto_firma_en_bloque_v1.json`.
