@@ -1,0 +1,1100 @@
+{
+  "schema": "LF_L42_DESIGN_TOKEN_COLOR_EXACT_MAPPING_STAGED_V1",
+  "owner_state": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "identity_verified": false,
+  "source": "SUPABASE_SELECT_READONLY",
+  "color_tokens": [
+    {
+      "token_name": "blue_brand_accent",
+      "hex_value": "#2563EB",
+      "rgb_value": "rgb(37,99,235)",
+      "status": "VIGENTE",
+      "semantic_role": "Acento secundario",
+      "allowed_usage": "Links, acento secundario, marcas externas cuando aplique",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "border_soft",
+      "hex_value": "#E2E8F0",
+      "rgb_value": "rgb(226,232,240)",
+      "status": "VIGENTE",
+      "semantic_role": "Borde suave",
+      "allowed_usage": "Bordes de cards, inputs y contenedores suaves",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "card_surface",
+      "hex_value": "#FFFFFF",
+      "rgb_value": "rgb(255,255,255)",
+      "status": "VIGENTE",
+      "semantic_role": "Superficie de card",
+      "allowed_usage": "Cards, modales, bloques de contenido",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "color_completed",
+      "hex_value": "#0A6639",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Estado completado, distinto de activo",
+      "allowed_usage": "Nodos y badges de pasos ya completados en rutas/steppers (ej. nodo 01 en Ruta de Claridad). Checkmarks de estado done.",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "dark_mode_card",
+      "hex_value": null,
+      "rgb_value": null,
+      "status": "PENDIENTE_DECISION_FINAL",
+      "semantic_role": "Card modo noche",
+      "allowed_usage": "Cards modo noche cuando exista tema dark validado",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "dark_mode_surface",
+      "hex_value": null,
+      "rgb_value": null,
+      "status": "PENDIENTE_DECISION_FINAL",
+      "semantic_role": "Fondo modo noche",
+      "allowed_usage": "Fondo modo noche cuando exista tema dark validado",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "dark_mode_text",
+      "hex_value": null,
+      "rgb_value": null,
+      "status": "PENDIENTE_DECISION_FINAL",
+      "semantic_role": "Texto modo noche",
+      "allowed_usage": "Texto modo noche cuando exista tema dark validado",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "divider_soft",
+      "hex_value": "#E5E7EB",
+      "rgb_value": "rgb(229,231,235)",
+      "status": "VIGENTE",
+      "semantic_role": "Separador suave",
+      "allowed_usage": "Separadores internos y lineas sutiles",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "error_bg",
+      "hex_value": "#FEE2E2",
+      "rgb_value": "rgb(254,226,226)",
+      "status": "VIGENTE",
+      "semantic_role": "Fondo de error suave",
+      "allowed_usage": "Fondo de error o bloqueo suave",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "error_text",
+      "hex_value": "#991B1B",
+      "rgb_value": "rgb(153,27,27)",
+      "status": "VIGENTE",
+      "semantic_role": "Texto de error",
+      "allowed_usage": "Texto de error o bloqueo",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "gold_reward",
+      "hex_value": "#B7791F",
+      "rgb_value": "rgb(183,121,31)",
+      "status": "VIGENTE",
+      "semantic_role": "Recompensa sobria",
+      "allowed_usage": "Logro, recompensa, claridad ganada, meta desbloqueada",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "green_action",
+      "hex_value": "#109044",
+      "rgb_value": "rgb(16,144,68)",
+      "status": "VIGENTE",
+      "semantic_role": "Accion principal, progreso y solucion",
+      "allowed_usage": "Logo, CTA principal, badges activos, checks, montos positivos, avance y solucion",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "green_action_border",
+      "hex_value": "#99cdb2",
+      "rgb_value": "rgb(153,205,178)",
+      "status": "VIGENTE",
+      "semantic_role": "Borde positivo suave",
+      "allowed_usage": "Bordes de card activa, badge activo o seleccion positiva",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "green_action_disabled",
+      "hex_value": "#87c4a3",
+      "rgb_value": "rgb(135,196,163)",
+      "status": "VIGENTE",
+      "semantic_role": "Accion deshabilitada",
+      "allowed_usage": "CTA o control deshabilitado vinculado a accion principal",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "green_action_hover",
+      "hex_value": "#0d7336",
+      "rgb_value": "rgb(13,115,54)",
+      "status": "VIGENTE",
+      "semantic_role": "Hover de accion principal",
+      "allowed_usage": "Hover de CTA principal e interaccion activa",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "green_action_soft_bg",
+      "hex_value": "#e8f5ee",
+      "rgb_value": "rgb(232,245,238)",
+      "status": "VIGENTE",
+      "semantic_role": "Fondo positivo suave",
+      "allowed_usage": "Fondo suave de badges activos, estados positivos o modulos de avance",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "green_surface",
+      "hex_value": "#D1FAE5",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Fondos de confirmación y chips de éxito",
+      "allowed_usage": "fondos de chips positivos, superficies de confirmación",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "hero_subtitle_text",
+      "hex_value": "#5A6480",
+      "rgb_value": "rgb(90,100,128)",
+      "status": "DEPRECADO",
+      "semantic_role": "home_hero_subtitle_text",
+      "allowed_usage": "Solo subtitulo del Hero Home. No reemplaza slate_text global.",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "navy_core",
+      "hex_value": "#0F172A",
+      "rgb_value": "rgb(15,23,42)",
+      "status": "VIGENTE",
+      "semantic_role": "Estructura principal y confianza",
+      "allowed_usage": "Header, titulos, texto de alta jerarquia, estructura de confianza",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "navy_muted",
+      "hex_value": "#334155",
+      "rgb_value": "rgb(51,65,85)",
+      "status": "VIGENTE",
+      "semantic_role": "Texto informativo oscuro",
+      "allowed_usage": "Texto informativo oscuro y soporte de lectura",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "navy_soft",
+      "hex_value": "#1E293B",
+      "rgb_value": "rgb(30,41,59)",
+      "status": "VIGENTE",
+      "semantic_role": "Texto fuerte secundario",
+      "allowed_usage": "Subtitulos fuertes y labels de jerarquia alta",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "purple_accent",
+      "hex_value": "#6D4DF7",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Estados premium, acompañamiento y guía contextual",
+      "allowed_usage": "estados premium, tooltips de ayuda, guía contextual",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "slate_text",
+      "hex_value": "#66708F",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Texto auxiliar, subtítulos y disclaimers",
+      "allowed_usage": "subtítulos, disclaimers, texto secundario, bordes informativos",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "slate_text_strong",
+      "hex_value": "#5A6480",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "secondary_text_reinforced",
+      "allowed_usage": "texto secundario en Hero Home sobre warm_surface donde slate_text queda al límite de contraste AA (4.69:1)",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "success_bg",
+      "hex_value": "#DCFCE7",
+      "rgb_value": "rgb(220,252,231)",
+      "status": "VIGENTE",
+      "semantic_role": "Fondo de exito",
+      "allowed_usage": "Fondo de confirmacion positiva",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "success_text",
+      "hex_value": "#109044",
+      "rgb_value": "rgb(16,144,68)",
+      "status": "VIGENTE",
+      "semantic_role": "Texto de exito",
+      "allowed_usage": "Texto de exito, avance o validacion positiva",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "terrain_label_bronze",
+      "hex_value": "#7C5F3E",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Titulo/etiqueta de seccion Terreno Calido de Claridad",
+      "allowed_usage": "Unicamente el titulo del panel de terreno (ej. \"Terreno Cálido de Claridad\"). No es gold_reward ni navy_core: color propio de esta etiqueta especifica.",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "text_muted_inactive",
+      "hex_value": "#7C8AA6",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Texto de estado inactivo/bloqueado",
+      "allowed_usage": "Nodos futuros de una ruta, labels deshabilitados. Distinto de slate_text que es texto secundario activo.",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "text_secondary_warm",
+      "hex_value": "#756B62",
+      "rgb_value": "117,107,98",
+      "status": "VIGENTE",
+      "semantic_role": "Texto e iconografía secundaria cálida",
+      "allowed_usage": "Labels, iconos y texto secundario activo sobre warm_surface u otras superficies cálidas aprobadas cuando slate_text produzca un contraste de temperatura visual no deseado.",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "trust_icon_blue",
+      "hex_value": "#93C5FD",
+      "rgb_value": null,
+      "status": "VIGENTE",
+      "semantic_role": "Acento azul suave para iconos de seguridad/confianza",
+      "allowed_usage": "Iconos de nota de proteccion de datos unicamente.",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "warm_surface",
+      "hex_value": "#FDFCFA",
+      "rgb_value": "rgb(253,252,250)",
+      "status": "VIGENTE",
+      "semantic_role": "Fondo general light",
+      "allowed_usage": "Fondo general light, base suave, superficie calida",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "warning_bg",
+      "hex_value": "#FEF3C7",
+      "rgb_value": "rgb(254,243,199)",
+      "status": "VIGENTE",
+      "semantic_role": "Fondo de alerta suave",
+      "allowed_usage": "Pendiente, alerta suave, revision operativa",
+      "design_system_code": "LF_DS_V1"
+    },
+    {
+      "token_name": "warning_text",
+      "hex_value": "#92400E",
+      "rgb_value": "rgb(146,64,14)",
+      "status": "VIGENTE",
+      "semantic_role": "Texto de alerta suave",
+      "allowed_usage": "Texto de alerta suave o pendiente",
+      "design_system_code": "LF_DS_V1"
+    }
+  ],
+  "source_components": [
+    {
+      "source_row": {
+        "notes": "Creado 2026-08-20 tras readback de ONB_001_WEB_v1.3.png (SHA 14e2073e...8750). La banda existe en los pixeles pero no estaba registrada en ningun contrato. client_auth_mockup_frame declara background_token=warm_surface para el lienzo, por lo que este componente REQUIERE decision de owner: autorizar (pasar a VIGENTE y anadirlo al frame) o eliminar de las laminas. | 2026-08-20 DECISION OWNER: eliminar. Evidencia: transicion header sin divisor (salto directo #FFFFFF -> #FDFCFA en y=97, delta 2-5 por canal, imperceptible en panel gama baja B-/C), mientras el footer si usa divisor tokenizado border_soft #E2E8F0 en y=830. La banda es artefacto de composicion, no elemento de diseno. Se conserva el registro como trazabilidad del hallazgo F-002.",
+        "status": "DEPRECADO",
+        "created_at": "2026-08-20T08:39:01.768585+00:00",
+        "updated_at": "2026-08-20T09:23:38.811763+00:00",
+        "allowed_usage": "Banda superior observada en maquetas Auth/Onboarding Cliente. Registrada para que Supabase describa la imagen real y las historias de usuario no diverjan de la evidencia visual.",
+        "blocked_usage": "NO usar como autorizacion de diseno mientras el estado sea CANDIDATO. No replicar en Tablet/Mobile sin readback. No confundir con b2b_topbar_default.",
+        "component_name": "client_auth_header_band",
+        "token_bindings": {
+          "slots": {
+            "left": "ELEM_LOGO",
+            "right": "ELEM_HELP_LINK"
+          },
+          "height_px": 98,
+          "visibility": {
+            "mobile": "UNVERIFIED",
+            "tablet": "UNVERIFIED",
+            "desktop": true
+          },
+          "width_mode": "FULL_CANVAS_WIDTH",
+          "observed_in": [
+            "ONB_001-WEB-VIGENTE-V13",
+            "ONB_002_WEB_PROPUESTA_20260820"
+          ],
+          "y_origin_px": 0,
+          "measured_fill": "#FFFFFF",
+          "surface_token": "card_surface",
+          "evidence_method": "PIXEL_READBACK_1440x900"
+        },
+        "component_state": "observed_candidate",
+        "design_system_id": 1,
+        "component_token_id": 44,
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": "QA-ONB001-V13-READBACK-20260820",
+        "component_token_code": "client_auth_header_band",
+        "source_decision_number": null
+      },
+      "source_sha": "13547f941c25863d521ac30b7c536b63c50afaca1a8ce2cf8319a84cdff4af14"
+    },
+    {
+      "source_row": {
+        "notes": "Geometría por viewport delegada a client_auth_mockup_frame para evitar que el asset y su posición queden acoplados. | 2026-08-19: owner conforme. Contrato canónico para maquetas Auth/Onboarding Cliente; no reinterpretar asset, opacidad, canvas ni geometría por pantalla. | 2026-08-20 QA correction: opacity 0.05 is layer opacity over the official RGBA master, which already contains intrinsic alpha. Do not validate against a single derived hex; validate deterministic recomposition and geometry.",
+        "status": "VIGENTE",
+        "created_at": "2026-08-20T02:24:31.747351+00:00",
+        "updated_at": "2026-08-20T06:04:58.388204+00:00",
+        "allowed_usage": "Familia Sistema Cliente: ONB_001, ONB_002, ONB_003, ONB_004 y REC_001 sobre superficie light. Reutilizar siempre el mismo asset oficial y tratamiento.",
+        "blocked_usage": "No redibujar, regenerar, recolorear, aplicar blur/gradient/multiply, cambiar opacidad por pantalla ni guardar #F1F7F1 como token. No usar en Mobile mientras visibility.mobile=false.",
+        "component_name": "client_auth_watermark",
+        "token_bindings": {
+          "role": "decorative_background",
+          "filter": "none",
+          "opacity": 0.05,
+          "qa_method": "RECOMPOSE_OFFICIAL_RGBA_MASTER_OVER_WARM_SURFACE",
+          "asset_code": "LF_BRAND_SHIELD_GREEN_TRANSPARENT_MASTER",
+          "blend_mode": "normal",
+          "visibility": {
+            "mobile": false,
+            "tablet": true,
+            "desktop": true
+          },
+          "interactive": false,
+          "render_policy": "ASSET_COMPOSITION_ONLY_NO_REDRAW",
+          "surface_token": "warm_surface",
+          "pointer_events": "none",
+          "opacity_semantics": "LAYER_OPACITY_ON_OFFICIAL_RGBA_ASSET",
+          "source_color_token": "green_action",
+          "asset_intrinsic_alpha": true,
+          "derived_color_is_token": false,
+          "expected_visible_color_range": [
+            "#F4F8F3",
+            "#F7F9F6"
+          ]
+        },
+        "component_state": "canonical_candidate",
+        "design_system_id": 1,
+        "component_token_id": 41,
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": "VD_CLIENT_AUTH_WATERMARK_20260819",
+        "component_token_code": "client_auth_watermark",
+        "source_decision_number": null
+      },
+      "source_sha": "4e7e5f6e2a1f339dfab927ebe861a4e2a22e060919d43cbbd766d053971e068d"
+    },
+    {
+      "source_row": {
+        "notes": "Reutiliza blue_brand_accent #2563EB permitido para Links; no crea color nuevo.",
+        "status": "VIGENTE",
+        "created_at": "2026-08-20T23:55:18.688488+00:00",
+        "updated_at": "2026-08-20T23:55:18.688488+00:00",
+        "allowed_usage": "Links inline dentro de copy secundario: consentimientos, legales y ayudas contextuales.",
+        "blocked_usage": "No usar como CTA principal, título, bloque independiente ni texto no interactivo.",
+        "component_name": "inline_link",
+        "token_bindings": {
+          "text": "blue_brand_accent",
+          "decoration": "underline",
+          "typography": "text_body_small"
+        },
+        "component_state": "default",
+        "design_system_id": 1,
+        "component_token_id": 50,
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": "DEC-CLIENT-ONB003-CONSENT-VISUAL-001",
+        "component_token_code": "link_inline_default",
+        "source_decision_number": 108
+      },
+      "source_sha": "e0970f10e5293f28dab3ac3b6d265a6ec191b78dd2cf52f29717229fe7cb5e3f"
+    }
+  ],
+  "columns": [
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "component_token_code",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "design_system_code",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "component_name",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "component_state",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "token_bindings",
+      "typ": "jsonb"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "allowed_usage",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "blocked_usage",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "notes",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "component_token_id",
+      "typ": "bigint"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "component_tokens",
+      "col": "design_system_id",
+      "typ": "bigint"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "token_name",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "design_system_code",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "font_family",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "font_size_px",
+      "typ": "integer"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "line_height_px",
+      "typ": "integer"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "font_weight",
+      "typ": "integer"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "letter_spacing",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "semantic_role",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "allowed_usage",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "notes",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "typography_token_id",
+      "typ": "bigint"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "table_schema": "lf_design",
+      "table_name": "typography_tokens",
+      "col": "design_system_id",
+      "typ": "bigint"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "id",
+      "typ": "integer"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "codigo",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "categoria",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "titulo",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "descripcion",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "razon",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "valor_config",
+      "typ": "jsonb"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "es_transversal",
+      "typ": "boolean"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "estado",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "origen",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "pendiente_decision",
+      "typ": "boolean"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "pendiente_detalle",
+      "typ": "text"
+    },
+    {
+      "table_schema": "lf_ops",
+      "table_name": "reglas",
+      "col": "created_by",
+      "typ": "text"
+    }
+  ],
+  "confirmed_mapping": {
+    "#109044": "green_action",
+    "#7C8AA6": "text_muted_inactive",
+    "#FFFFFF": "card_surface",
+    "#B7791F": "gold_reward",
+    "#0F172A": "navy_core",
+    "#5A6480": "slate_text_strong",
+    "#2563EB": "blue_brand_accent"
+  },
+  "missing_mapping": {
+    "#D7DEE8": "route_future_segment_soft",
+    "#F8FAFC": "cool_surface_soft"
+  },
+  "changes": [
+    {
+      "type": "RULE",
+      "code": "UX-GAMIF-TERMOMETRO-01",
+      "source_sha256": "98f46ed7d660ff5be5db1a146882c960ad8e6e31ad022ac53f833c92da239dde",
+      "source_state": "CANDIDATO",
+      "source_row": {
+        "id": 359,
+        "razon": "ACT-0017, seccion 4.2 Componentes UI Recomendados + Octalysis CD4 Propiedad y Posesion + Investigacion externa 2026-07-08: gain-framing vs loss-framing en salud/finanzas conductuales (NBER w29828; iResearchNet Gain-Loss Framing); precedentes de producto: Debt Payoff Planner, Undebt.it.",
+        "codigo": "UX-GAMIF-TERMOMETRO-01",
+        "estado": "CANDIDATO",
+        "origen": "ACT-0017",
+        "titulo": "Patrón \"Termómetro de Libertad\" para el hito Recupera",
+        "categoria": "ux",
+        "created_at": "2026-07-02T04:38:04.057437+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-09T04:39:43.666578+00:00",
+        "descripcion": "El hito final Recupera (gold_reward) debe explorar representarse como progresion visual llenandose de color a medida que se recupera patrimonio, no solo como badge/icono estatico de logro. Cambia el enfoque de perdida (lo que debo) a ganancia (lo que he recuperado). VALIDADO CON INVESTIGACION EXTERNA 2026-07-08: patron \"debt thermometer\"/progress-fill tiene tracción real en productos de pago de deuda (Debt Payoff Planner, Undebt.it) y comunidad de finanzas personales; no es un patron experimental. Gain-framing (recuperado vs pendiente) tiene mejor evidencia en behavioral economics (prospect theory, Kahneman-Tversky) para comportamientos de prevencion/certeza/baja involucracion inicial -- perfil compatible con usuario NSE B-/C en estres financiero que necesita reducir ansiedad, no sumar culpa.",
+        "valor_config": {
+          "fuente": "ACT-0017",
+          "patron": "termometro_libertad",
+          "aplica_a": "hito_recupera_ruta_claridad",
+          "reencuadre": "perdida_a_ganancia",
+          "spec_aplicable": {
+            "color_relleno": "green_action #109044",
+            "copy_direccion": "gain-framing: \"Ya recuperaste S/X\" en vez de \"Te falta S/Y\"",
+            "formula_llenado": "monto_ya_pagado / monto_total_deuda_original",
+            "tramos_visibles": [
+              25,
+              50,
+              75,
+              100
+            ],
+            "restriccion_obligatoria": "debe permanecer desactivable sin penalizacion (NEG-GAMIF-ETICA-01)"
+          },
+          "fecha_validacion_investigacion": "2026-07-08"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Enfoque gain-framing + patron progress-fill VALIDADO por investigacion externa (2026-07-08). Pendiente real: (1) mockup renderizado confirmado (NEG-GOBERNANZA-VISUAL-CONFIRM-01) antes de pasar a VIGENTE, (2) decision UI Architect: termometro reemplaza o complementa el badge dorado ya especificado en ACT-0049 (score 9.7).",
+        "pendiente_decision": true
+      },
+      "proposed": {
+        "descripcion": "El hito final Recupera (gold_reward) debe explorar representarse como progresion visual llenandose de color a medida que se recupera patrimonio, no solo como badge/icono estatico de logro. Cambia el enfoque de perdida (lo que debo) a ganancia (lo que he recuperado). VALIDADO CON INVESTIGACION EXTERNA 2026-07-08: patron \"debt thermometer\"/progress-fill tiene tracción real en productos de pago de deuda (Debt Payoff Planner, Undebt.it) y comunidad de finanzas personales; no es un patron experimental. Gain-framing (recuperado vs pendiente) tiene mejor evidencia en behavioral economics (prospect theory, Kahneman-Tversky) para comportamientos de prevencion/certeza/baja involucracion inicial -- perfil compatible con usuario NSE B-/C en estres financiero que necesita reducir ansiedad, no sumar culpa.",
+        "razon": "ACT-0017, seccion 4.2 Componentes UI Recomendados + Octalysis CD4 Propiedad y Posesion + Investigacion externa 2026-07-08: gain-framing vs loss-framing en salud/finanzas conductuales (NBER w29828; iResearchNet Gain-Loss Framing); precedentes de producto: Debt Payoff Planner, Undebt.it.",
+        "valor_config": {
+          "fuente": "ACT-0017",
+          "patron": "termometro_libertad",
+          "aplica_a": "hito_recupera_ruta_claridad",
+          "reencuadre": "perdida_a_ganancia",
+          "spec_aplicable": {
+            "color_relleno": "green_action green_action",
+            "copy_direccion": "gain-framing: \"Ya recuperaste S/X\" en vez de \"Te falta S/Y\"",
+            "formula_llenado": "monto_ya_pagado / monto_total_deuda_original",
+            "tramos_visibles": [
+              25,
+              50,
+              75,
+              100
+            ],
+            "restriccion_obligatoria": "debe permanecer desactivable sin penalizacion (NEG-GAMIF-ETICA-01)"
+          },
+          "fecha_validacion_investigacion": "2026-07-08"
+        }
+      },
+      "status": "STAGED_CANDIDATE",
+      "missing_tokens": []
+    },
+    {
+      "type": "RULE",
+      "code": "UX-RUTA-ACCESIBILIDAD-01",
+      "source_sha256": "8993d92ad768454f67965e1387ff37bce9b31d53207f86fe2106a1b7a7d2cb22",
+      "source_state": "VIGENTE",
+      "source_row": {
+        "id": 364,
+        "razon": "Patron confirmado por Telerik/KendoReact Stepper (WAI-ARIA) y USWDS Step Indicator: nav landmark + ol de navegacion, ProgressBar sin ARIA por ser aesthetic-only.",
+        "codigo": "UX-RUTA-ACCESIBILIDAD-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "Ruta de Claridad: estructura nav+ol+link, sin ARIA en el path decorativo",
+        "categoria": "ux",
+        "created_at": "2026-07-03T16:10:14.519988+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-07-03T16:10:14.519988+00:00",
+        "descripcion": "El contenedor de los 5 hitos debe ser <nav aria-label=\"Ruta de Claridad\"> con <ol> de items, cada uno un <a> o <button> real (no div). El nodo activo lleva aria-current=\"true\". El SVG del path y el terreno de fondo no necesitan ningun atributo ARIA por ser puramente decorativos (aria-hidden=true), consistente con el patron ya usado en el terreno.",
+        "valor_config": {
+          "items": "ol > li > a|button",
+          "path_svg": "aria-hidden=true",
+          "contenedor": "nav[aria-label]",
+          "nodo_activo": "aria-current=true",
+          "nodos_bloqueados": "focusables, NO deshabilitados, texto text_muted_inactive #7C8AA6 bold >=14px"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "proposed": {
+        "descripcion": "El contenedor de los 5 hitos debe ser <nav aria-label=\"Ruta de Claridad\"> con <ol> de items, cada uno un <a> o <button> real (no div). El nodo activo lleva aria-current=\"true\". El SVG del path y el terreno de fondo no necesitan ningun atributo ARIA por ser puramente decorativos (aria-hidden=true), consistente con el patron ya usado en el terreno.",
+        "razon": "Patron confirmado por Telerik/KendoReact Stepper (WAI-ARIA) y USWDS Step Indicator: nav landmark + ol de navegacion, ProgressBar sin ARIA por ser aesthetic-only.",
+        "valor_config": {
+          "items": "ol > li > a|button",
+          "path_svg": "aria-hidden=true",
+          "contenedor": "nav[aria-label]",
+          "nodo_activo": "aria-current=true",
+          "nodos_bloqueados": "focusables, NO deshabilitados, texto text_muted_inactive text_muted_inactive bold >=14px"
+        }
+      },
+      "status": "STAGED_VIGENTE_REQUIRES_GOVERNED_ROUTE",
+      "missing_tokens": []
+    },
+    {
+      "type": "RULE",
+      "code": "UX-RUTA-ESTADOS-01",
+      "source_sha256": "30a525854f4ed492b1dc02108c26fa07917cb469c45eddb1387e669cf68ea08e",
+      "source_state": "CANDIDATO",
+      "source_row": {
+        "id": 462,
+        "razon": "Hacer el progreso comprensible sin convertir la Ruta en videojuego, mantener accesibilidad web y evitar señales de premio o urgencia.",
+        "codigo": "UX-RUTA-ESTADOS-01",
+        "estado": "CANDIDATO",
+        "origen": "decision_ui_2026-08-15_HOME_RUTA_CLARIDAD",
+        "titulo": "Ruta de Claridad: estados visuales de nodos y foco web",
+        "categoria": "estados_ui",
+        "created_at": "2026-08-16T00:44:45.786765+00:00",
+        "created_by": "chatgpt_gpt-5.6-sol",
+        "updated_at": "2026-08-16T00:44:45.786765+00:00",
+        "descripcion": "Los 5 nodos usan estados visuales consistentes: ACTIVE para el paso actual, COMPLETED para pasos finalizados, FUTURE para pasos aún no completados y FINAL para Recupera. Los nodos futuros permanecen focusables y navegables según UX-RUTA-ACCESIBILIDAD-01. Hover/focus no cambia el estado funcional. El estado COMPLETED solo aparece después de cumplir UX-RUTA-COMPLETADO-01.",
+        "valor_config": {
+          "path": {
+            "decorative": true,
+            "aria_hidden": true,
+            "future_segment": "#D7DEE8",
+            "completed_segment": "#109044"
+          },
+          "final": {
+            "label": "#B7791F",
+            "node_fill": "#FFFFFF",
+            "node_text": "#B7791F",
+            "node_border": "#B7791F",
+            "reward_visual": "subtle_only"
+          },
+          "focus": {
+            "outline": "2px solid #109044",
+            "required": true,
+            "outline_offset_px": 3
+          },
+          "hover": {
+            "effect": "subtle_surface_or_border_emphasis",
+            "no_state_change": true
+          },
+          "active": {
+            "label": "#109044",
+            "node_fill": "#109044",
+            "node_text": "#FFFFFF",
+            "aria_current": true
+          },
+          "future": {
+            "label": "#7C8AA6",
+            "disabled": false,
+            "focusable": true,
+            "node_fill": "#FFFFFF",
+            "node_text": "#7C8AA6",
+            "node_border": "#D7DEE8"
+          },
+          "tokens": {
+            "navy_core": "#0F172A",
+            "gold_reward": "#B7791F",
+            "green_action": "#109044",
+            "warm_surface": "#F8FAFC",
+            "text_muted_inactive": "#7C8AA6"
+          },
+          "completed": {
+            "icon": "check",
+            "label": "#0F172A",
+            "reward": false,
+            "node_fill": "#FFFFFF",
+            "node_border": "#109044"
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "proposed": {
+        "descripcion": "Los 5 nodos usan estados visuales consistentes: ACTIVE para el paso actual, COMPLETED para pasos finalizados, FUTURE para pasos aún no completados y FINAL para Recupera. Los nodos futuros permanecen focusables y navegables según UX-RUTA-ACCESIBILIDAD-01. Hover/focus no cambia el estado funcional. El estado COMPLETED solo aparece después de cumplir UX-RUTA-COMPLETADO-01.",
+        "razon": "Hacer el progreso comprensible sin convertir la Ruta en videojuego, mantener accesibilidad web y evitar señales de premio o urgencia.",
+        "valor_config": {
+          "path": {
+            "decorative": true,
+            "aria_hidden": true,
+            "future_segment": "route_future_segment_soft",
+            "completed_segment": "green_action"
+          },
+          "final": {
+            "label": "gold_reward",
+            "node_fill": "card_surface",
+            "node_text": "gold_reward",
+            "node_border": "gold_reward",
+            "reward_visual": "subtle_only"
+          },
+          "focus": {
+            "required": true,
+            "outline_offset_px": 3,
+            "outline_color_token": "green_action",
+            "outline_width_px": 2,
+            "outline_style": "solid"
+          },
+          "hover": {
+            "effect": "subtle_surface_or_border_emphasis",
+            "no_state_change": true
+          },
+          "active": {
+            "label": "green_action",
+            "node_fill": "green_action",
+            "node_text": "card_surface",
+            "aria_current": true
+          },
+          "future": {
+            "label": "text_muted_inactive",
+            "disabled": false,
+            "focusable": true,
+            "node_fill": "card_surface",
+            "node_text": "text_muted_inactive",
+            "node_border": "route_future_segment_soft"
+          },
+          "tokens": {
+            "navy_core": "navy_core",
+            "gold_reward": "gold_reward",
+            "green_action": "green_action",
+            "text_muted_inactive": "text_muted_inactive",
+            "cool_surface_soft": "cool_surface_soft"
+          },
+          "completed": {
+            "icon": "check",
+            "label": "navy_core",
+            "reward": false,
+            "node_fill": "card_surface",
+            "node_border": "green_action"
+          }
+        }
+      },
+      "status": "STAGED_BLOCKED_MISSING_2_COLOR_TOKENS",
+      "missing_tokens": [
+        "route_future_segment_soft",
+        "cool_surface_soft"
+      ]
+    },
+    {
+      "type": "RULE",
+      "code": "UX-TOKEN-CONSOLIDACION-01",
+      "source_sha256": "56a4818a9285bd458574dff0a47fadb79fa9b0607191aadda011425b7e772f95",
+      "source_state": "VIGENTE",
+      "source_row": {
+        "id": 360,
+        "razon": "Evitar doble verdad de tokens con mismo hex y nombres distintos; mantener lf_design.color_tokens como fuente unica para valores hex, componentes referencian por nombre",
+        "codigo": "UX-TOKEN-CONSOLIDACION-01",
+        "estado": "VIGENTE",
+        "origen": "analisis_sesion_20260702",
+        "titulo": "Consolidación: hero_subtitle_text deprecado, usar slate_text_strong",
+        "categoria": "ux",
+        "created_at": "2026-07-02T05:24:32.67766+00:00",
+        "created_by": "Cristhian",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "hero_subtitle_text (creado en sesion paralela SESION_MANUAL_2026_07_02) y slate_text_strong (creado en este chat) resultaron ser el mismo hex #5A6480 registrado dos veces. Se consolida en slate_text_strong porque sigue la convencion de familia de color reutilizable ya usada en el sistema (slate_text, green_action, gold_reward), mientras hero_subtitle_text rompia esa convencion al nombrar un token de color por componente especifico. El alcance de uso del subtitulo/disclaimer del Hero se mantiene exactamente igual: slate_text_strong, no slate_text base.",
+        "valor_config": {
+          "hex": "#5A6480",
+          "token_canonico": "slate_text_strong",
+          "token_deprecado": "hero_subtitle_text",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "componentes_que_deben_referenciar_slate_text_strong": [
+            "hero_trust_card_compact.text_color_token si aplica a subtitulo",
+            "Hero H1/subtitulo/disclaimer"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "proposed": {
+        "descripcion": "hero_subtitle_text (creado en sesion paralela SESION_MANUAL_2026_07_02) y slate_text_strong (creado en este chat) resultaron ser el mismo color identificado por el token slate_text_strong registrado dos veces. Se consolida en slate_text_strong porque sigue la convencion de familia de color reutilizable ya usada en el sistema (slate_text, green_action, gold_reward), mientras hero_subtitle_text rompia esa convencion al nombrar un token de color por componente especifico. El alcance de uso del subtitulo/disclaimer del Hero se mantiene exactamente igual: slate_text_strong, no slate_text base.",
+        "razon": "Evitar doble verdad de tokens con mismo hex y nombres distintos; mantener lf_design.color_tokens como fuente unica para valores hex, componentes referencian por nombre",
+        "valor_config": {
+          "token_canonico": "slate_text_strong",
+          "token_deprecado": "hero_subtitle_text",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "componentes_que_deben_referenciar_slate_text_strong": [
+            "hero_trust_card_compact.text_color_token si aplica a subtitulo",
+            "Hero H1/subtitulo/disclaimer"
+          ],
+          "token_reference": "slate_text_strong"
+        }
+      },
+      "status": "STAGED_VIGENTE_REQUIRES_GOVERNED_ROUTE",
+      "missing_tokens": []
+    },
+    {
+      "type": "COMPONENT",
+      "code": "link_inline_default",
+      "source_sha256": "e0970f10e5293f28dab3ac3b6d265a6ec191b78dd2cf52f29717229fe7cb5e3f",
+      "source_state": "VIGENTE",
+      "source_row": {
+        "notes": "Reutiliza blue_brand_accent #2563EB permitido para Links; no crea color nuevo.",
+        "status": "VIGENTE",
+        "created_at": "2026-08-20T23:55:18.688488+00:00",
+        "updated_at": "2026-08-20T23:55:18.688488+00:00",
+        "allowed_usage": "Links inline dentro de copy secundario: consentimientos, legales y ayudas contextuales.",
+        "blocked_usage": "No usar como CTA principal, título, bloque independiente ni texto no interactivo.",
+        "component_name": "inline_link",
+        "token_bindings": {
+          "text": "blue_brand_accent",
+          "decoration": "underline",
+          "typography": "text_body_small"
+        },
+        "component_state": "default",
+        "design_system_id": 1,
+        "component_token_id": 50,
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": "DEC-CLIENT-ONB003-CONSENT-VISUAL-001",
+        "component_token_code": "link_inline_default",
+        "source_decision_number": 108
+      },
+      "proposed": {
+        "notes": "Reutiliza blue_brand_accent blue_brand_accent permitido para Links; no crea color nuevo."
+      },
+      "status": "STAGED_VIGENTE_REQUIRES_GOVERNED_ROUTE",
+      "missing_tokens": []
+    },
+    {
+      "type": "TYPOGRAPHY",
+      "code": "text_button_primary",
+      "source_sha256": "22f9f0a725cecf4c25ef39a9026d415c4f560a2586bd7a2b6acd57c85341f0a9",
+      "source_state": "VIGENTE",
+      "source_row": {
+        "notes": "19px/700 preserva green_action #109044 y cumple criterio WCAG AA para large-scale text (>=18.5px bold, ratio requerido >=3:1).",
+        "status": "VIGENTE",
+        "created_at": "2026-08-20T06:00:23.972412+00:00",
+        "token_name": "text_button_primary",
+        "updated_at": "2026-08-20T06:00:23.972412+00:00",
+        "font_family": "Inter",
+        "font_weight": 700,
+        "font_size_px": 19,
+        "allowed_usage": "CTA primario de flujo sobre green_action; no usar para acciones secundarias o links.",
+        "semantic_role": "Texto CTA primario accesible",
+        "letter_spacing": null,
+        "line_height_px": 24,
+        "design_system_id": 1,
+        "design_system_code": "LF_DS_V1",
+        "source_decision_id": "VD_LF_CTA_PRIMARY_CONTRAST_20260820",
+        "typography_token_id": 10,
+        "source_decision_number": null
+      },
+      "proposed": {
+        "notes": "19px/700 preserva green_action green_action y cumple criterio WCAG AA para large-scale text (>=18.5px bold, ratio requerido >=3:1)."
+      },
+      "status": "STAGED_VIGENTE_REQUIRES_GOVERNED_ROUTE",
+      "missing_tokens": []
+    }
+  ],
+  "write_live": false
+}
