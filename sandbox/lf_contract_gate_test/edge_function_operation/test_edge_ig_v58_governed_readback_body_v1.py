@@ -40,7 +40,7 @@ class ManagementBodyReadbackTests(unittest.TestCase):
             mod.inspect_metadata(self.meta(), "other-function", source)
         with self.assertRaisesRegex(mod.ReadbackBlocked,"BODY_SOURCE_INVALID"):
             mod.inspect_metadata(self.meta(), VALIDATOR, b"")
-        with self.assertRaisesRegex(mod.ReadbackBlocked,"VALIDATOR_RECURATION_RECEIPT_INVALID"):
+        with self.assertRaisesRegex(mod.ReadbackBlocked,"IG_V58_VALIDATOR_NEGATIVE_NOT_DEPLOYED"):
             mod.inspect_metadata(self.meta(), VALIDATOR, source, h)
     def test_download_get_body_in_temp_and_no_repo_mutation(self):
         with tempfile.TemporaryDirectory() as d, patch.dict(os.environ,{"SUPABASE_ACCESS_TOKEN":"test-only-not-real"}):
