@@ -84,6 +84,46 @@ END $fn$;
 CREATE TRIGGER tr_lf_family_ref_members_v1 BEFORE INSERT OR UPDATE
  ON programacion.input_family_inheritable_members_v1 FOR EACH ROW
  EXECUTE FUNCTION programacion.fn_lf_family_ref_member_guard_v1();
+-- Admission is strict even for privileged catalog writers: a CANDIDATO
+-- can NEVER be registered as a heritable source. Later changes are STALE at read.
+CREATE FUNCTION programacion.fn_lf_family_ref_source_guard_v1()
+RETURNS trigger LANGUAGE plpgsql AS $fn$
+DECLARE v_state text;v_hash text;v_transversal boolean;
+BEGIN
+ IF NEW.source_kind='RULE' THEN
+   SELECT r.estado,r.es_transversal,encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex')
+    INTO v_state,v_transversal,v_hash
+   FROM lf_ops.reglas r WHERE r.id=NEW.rule_id;
+ ELSIF NEW.rate_limit_policy_id IS NOT NULL THEN
+   SELECT p.status,encode(sha256(convert_to(to_jsonb(p)::text,'UTF8')),'hex')
+     INTO v_state,v_hash FROM lf_ops.politicas_rate_limit p
+     WHERE p.rate_limit_policy_id=NEW.rate_limit_policy_id;
+ ELSIF NEW.timeout_policy_id IS NOT NULL THEN
+   SELECT p.status,encode(sha256(convert_to(to_jsonb(p)::text,'UTF8')),'hex')
+     INTO v_state,v_hash FROM lf_ops.politicas_timeout p
+     WHERE p.timeout_policy_id=NEW.timeout_policy_id;
+ ELSIF NEW.session_policy_id IS NOT NULL THEN
+   SELECT p.status,encode(sha256(convert_to(to_jsonb(p)::text,'UTF8')),'hex')
+     INTO v_state,v_hash FROM lf_ops.politicas_sesion p
+     WHERE p.session_policy_id=NEW.session_policy_id;
+ ELSIF NEW.security_policy_id IS NOT NULL THEN
+   SELECT p.status,encode(sha256(convert_to(to_jsonb(p)::text,'UTF8')),'hex')
+     INTO v_state,v_hash FROM lf_ops.politicas_seguridad p
+     WHERE p.security_policy_id=NEW.security_policy_id;
+ END IF;
+ IF v_state IS DISTINCT FROM 'VIGENTE' OR
+   (NEW.source_kind='RULE' AND v_transversal IS NOT TRUE) THEN
+  RAISE EXCEPTION 'LF_FAMILY_REFERENCE_SOURCE_NOT_VIGENTE:%,%',NEW.family_code,NEW.source_kind;
+ END IF;
+ IF v_hash IS NULL OR v_hash IS DISTINCT FROM NEW.source_hash THEN
+  RAISE EXCEPTION 'LF_FAMILY_REFERENCE_SOURCE_SHA_MISMATCH:%',NEW.family_code;
+ END IF;
+ RETURN NEW;
+END $fn$;
+CREATE TRIGGER tr_lf_family_ref_source_guard_v1
+ BEFORE INSERT OR UPDATE ON programacion.input_family_inheritable_sources_v1
+ FOR EACH ROW EXECUTE FUNCTION programacion.fn_lf_family_ref_source_guard_v1();
+
 COMMENT ON TABLE programacion.input_family_inheritable_sources_v1 IS
  'Run-independent family reference registry: only FK + hash; no rule text, copied parameters, run_id, pantalla_id, or content authority transfer.';
 COMMENT ON TABLE programacion.input_family_inheritable_members_v1 IS
@@ -518,6 +558,7 @@ $fn$;
 REVOKE ALL ON programacion.input_family_inheritable_sources_v1 FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON programacion.input_family_inheritable_members_v1 FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION programacion.fn_lf_family_ref_member_guard_v1() FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION programacion.fn_lf_family_ref_source_guard_v1() FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION public.lf_input_family_reuse_before_propose_v1(integer,text,bigint) FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION public.lf_input_family_catalog_context_v1(integer) FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION public.lf_input_family_catalog_context_for_run_v1(text) FROM PUBLIC,anon,authenticated;
