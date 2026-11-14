@@ -8,7 +8,7 @@ import hashlib,json,os,re,shutil,subprocess,time,unittest,uuid
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 SRC=HERE/"fixtures/lf_l43_policies19_22_crosscheck_source.json"
-MIG=HERE.parents[2].parent/"supabase/migrations/20261114013500_lf_b2b_policy19_22_predecision_promotion_v1.sql"
+MIG=HERE.parents[2]/"supabase/migrations/20261114013500_lf_b2b_policy19_22_predecision_promotion_v1.sql"
 def q(s):return "'"+str(s).replace("'","''")+"'"
 def js(x):return q(json.dumps(x,ensure_ascii=False,separators=(",",":")))+"::jsonb"
 class TestL43Predecision(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestL43Predecision(unittest.TestCase):
         self.assertTrue(cols)
         self.assertTrue(all(re.fullmatch("[a-z0-9_]+",x["col"]) and x["typ"] in allowed for x in cols))
         return ",".join('"'+x["col"]+'" '+x["typ"] for x in cols)
-      setup=["CREATE SCHEMA lf_ops;CREATE SCHEMA programacion;CREATE SCHEMA private;CREATE SCHEMA public;",
+      setup=["CREATE SCHEMA lf_ops;CREATE SCHEMA programacion;CREATE SCHEMA private;",
         "CREATE SCHEMA extensions;CREATE EXTENSION pgcrypto WITH SCHEMA extensions;",
         "CREATE TABLE lf_ops.politicas_seguridad("+ddl("politicas_seguridad")+");",
         "CREATE TABLE lf_ops.politicas_rate_limit("+ddl("politicas_rate_limit")+");",
