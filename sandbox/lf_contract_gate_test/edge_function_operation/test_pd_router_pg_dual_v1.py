@@ -78,7 +78,7 @@ def seed_data():
           'positive_target_refs',jsonb_build_array('PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF')),
        'router_authorization_receipt',auth||jsonb_build_object(
           'fingerprint_sha256',encode(extensions.digest(convert_to(auth::text,'UTF8'),'sha256'),'hex')
-       )))) FROM core;
+       ))) FROM core;
     INSERT INTO public.lf_operation_execution_steps
     VALUES('RUN-REPAIR','execute_profile','STEP_PASS_WITH_EVIDENCE',
       jsonb_build_object('profile_output',{sql_str(SAMPLE_REPAIR)}::jsonb));
