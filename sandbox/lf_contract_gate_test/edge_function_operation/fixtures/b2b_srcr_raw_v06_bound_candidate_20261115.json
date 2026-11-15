@@ -398,7 +398,7 @@
       "missing_evidence": [],
       "authority_kind": "EXISTING_AUTHORITY",
       "evidence_id": "EV-SCREEN",
-      "subject": "Screen 44 candidate-visual source",
+      "subject": "B2B-CARGA-002 v0.3 3-step screen row",
       "observed_revision": "v0.3"
     },
     "origin_operation": {
@@ -408,7 +408,7 @@
       "missing_evidence": [],
       "authority_kind": "EXISTING_AUTHORITY",
       "evidence_id": "EV-RUN",
-      "subject": "ACT-0001-governed repair execution",
+      "subject": "ACT-0001 selected SRCR run, steps 0-47",
       "observed_revision": "2026-11-15"
     },
     "owner": {
@@ -418,7 +418,7 @@
       "missing_evidence": [],
       "authority_kind": "EXISTING_AUTHORITY",
       "evidence_id": "EV-SCREEN",
-      "subject": "Stored screen owner_name, not proof of authentication or promotion approval",
+      "subject": "B2B-CARGA-002 v0.3 3-step screen row",
       "observed_revision": "v0.3"
     },
     "invariant": {
@@ -874,8 +874,8 @@
       },
       {
         "dimension": "TESTING_ASSURANCE",
-        "disposition": "REQUIRED_CHANGE",
-        "finding": "Eight offline negative tests are executable, not backend QA.",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Eight negative tests are already merged through PR #3972 and passed R17 43668658751; no new testing mechanism is proposed.",
         "evidence_refs": [
           "EV-TEST",
           "EV-ART"
@@ -936,27 +936,15 @@
         }
       ],
       "context_transport": {
-        "status": "APPLIES",
-        "rationale": "An exact artifact ref + tests should flow to Quality, not the original inventory.",
-        "compiler_ref": "ACT-0001 Router",
-        "delivery_strategy": "Router/terminal Step80 with source refs and verified executor receipt.",
-        "deterministic_inputs": [
-          "source RUN",
-          "screen 44",
-          "artifact blob sha",
-          "R17 run"
-        ],
-        "jit_refs": [
-          "EV-ART",
-          "EV-TEST"
-        ],
-        "excluded_payloads": [
-          "production secrets",
-          "unrelated rules",
-          "caller OAuth tokens"
-        ],
+        "status": "NOT_APPLICABLE",
+        "rationale": "This bounded candidate adds no context compiler or model-prompt transport. It reuses existing ACT-0001 return and GitHub artifact refs.",
+        "compiler_ref": null,
+        "delivery_strategy": null,
+        "deterministic_inputs": [],
+        "jit_refs": [],
+        "excluded_payloads": [],
         "token_budget": null,
-        "degradation_rule": "Fail closed on missing artifact/readback."
+        "degradation_rule": null
       },
       "wiring": [
         {
@@ -1229,7 +1217,9 @@
             "EV-ART",
             "EV-TEST"
           ],
-          "decision_refs": [],
+          "decision_refs": [
+            "$.implementation_package.deliverables[1]"
+          ],
           "missing_requirements": [],
           "closure_basis": "Source screen/rule currentness, Router-selected run, merged artifact and R17 readback verified for candidate contract only; no backend effect claimed."
         }
@@ -1544,7 +1534,28 @@
       ]
     },
     "case_mode": "ARCHITECTURE_AUDIT",
-    "policy_resolution": [],
+    "policy_resolution": [
+      {
+        "question": "May B2B-RULE-LOAD-WIZARD-001 CANDIDATO replace the current three-step B2B-CARGA-002 screen without a new decision?",
+        "decision": "NO_APPLICABLE_RULE_FOUND",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "lf_ops.pantallas",
+            "query": "SELECT id,codigo,descripcion,estado,version FROM lf_ops.pantallas WHERE id=44",
+            "result": "Current v0.3 screen 44 describes 3 UI steps, backend separate.",
+            "evidence_id": "EV-SCREEN"
+          },
+          {
+            "level": "N2",
+            "source": "lf_ops.reglas",
+            "query": "SELECT codigo,estado,descripcion FROM lf_ops.reglas WHERE codigo='B2B-RULE-LOAD-WIZARD-001'",
+            "result": "Proposed 4 UI states remain CANDIDATO; not applicable as a VIGENTE override.",
+            "evidence_id": "EV-RULES"
+          }
+        ]
+      }
+    ],
     "repair_execution": {
       "mode": "EXECUTED_WITH_READBACK",
       "authority_ref": "router-authorization://079eb110a7b692f366fda415db0aff8920426392f2f3ca38025254aa7df77ed6",
@@ -1610,7 +1621,7 @@
         "evidence_class": "GOVERNED_RECEIPT",
         "source_locator": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-7D8A0D0F933807A4C8826727",
         "revision_or_observed_at": "2026-11-15",
-        "digest": "git-commit:08bc62a7e8613813dee3da9277170cff7bb51015",
+        "digest": "sha256:1e29824347c5329f59056a91befb2b17828b83ba314c237a5356343f5928c665",
         "state": "CURRENT"
       },
       {
@@ -1628,7 +1639,7 @@
         "evidence_class": "GOVERNED_RECEIPT",
         "source_locator": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706",
         "revision_or_observed_at": "2026-11-15T02:21:05Z",
-        "digest": "sha256:079eb110a7b692f366fda415db0aff8920426392f2f3ca38025254aa7df77ed6",
+        "digest": "sha256:98e6f8cfd879f3a2e1d985c2ea27e8869f74ef736edbaca08c79db0c202adc38",
         "state": "CURRENT"
       },
       {
@@ -1650,6 +1661,6 @@
         "state": "CURRENT"
       }
     ],
-    "bundle_digest": "sha256:7dba11e989e414f226d71e0fb25b2d8ff85034c57ec64cdb2cd6714aecb2e3e7"
+    "bundle_digest": "sha256:c4adafdb1ca8c8d28b44f6a30641d557a64c08342717d2ff872ec8a2c51d9c6e"
   }
 }
