@@ -375,13 +375,16 @@ BEGIN
   IF md5(v_def)<>'8b811c9cf20ff4903ced50b7b4b70ba3' THEN
     RAISE EXCEPTION 'IG_POLICY_AUTOBIND_COMPLETENESS_SOURCE_DRIFT';
   END IF;
-  v_old:=$old$  v_kind:=v_criteria->>'probe_kind';$old$;
-  v_new:=$new$  v_kind:=v_criteria->>'probe_kind';
-  IF p_family_code IN ('SESSION','RATE_LIMIT','TIMEOUT_RETRY','IDEMPOTENCY_CONCURRENCY') THEN
+  -- IMPORTANT: RATE_LIMIT, SESSION, TIMEOUT_RETRY have no complete_criteria_v1
+  -- in registry v19. Check the governed autobind receipt BEFORE the legacy
+  -- missing-criteria guard; missing receipt falls back unchanged.
+  v_old:=$old$  if jsonb_typeof(v_criteria)<>'object'$old$;
+  v_new:=$new$  IF p_family_code IN ('SESSION','RATE_LIMIT','TIMEOUT_RETRY','IDEMPOTENCY_CONCURRENCY') THEN
     v_sem:=programacion.fn_input_policy_autobind_coverage_v1(
       p_pantalla_id,p_family_code,p_version_id);
     IF coalesce((v_sem->>'handled')::boolean,false) THEN RETURN v_sem; END IF;
-  END IF;$new$;
+  END IF;
+  if jsonb_typeof(v_criteria)<>'object'$new$;
   IF (length(v_def)-length(replace(v_def,v_old,'')))<>length(v_old) THEN
     RAISE EXCEPTION 'IG_POLICY_AUTOBIND_COMPLETENESS_ANCHOR';
   END IF;
