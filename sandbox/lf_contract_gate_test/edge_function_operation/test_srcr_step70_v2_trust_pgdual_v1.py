@@ -13,7 +13,12 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MIG = ROOT / "supabase/migrations/20261115110000_lf_srcr_step70_v2_current_context_trust_v1.sql"
+MIG_CANDIDATES = tuple((ROOT / "supabase/migrations").glob(
+    "*_lf_srcr_step70_v2_current_context_trust_v1.sql"
+))
+if len(MIG_CANDIDATES) != 1:
+    raise RuntimeError("SRCR_V2_TEST_MIGRATION_SOURCE_RESOLUTION_DRIFT")
+MIG = MIG_CANDIDATES[0]
 HELP = ROOT / "supabase/migrations/20261115074500_lf_srcr_step70_same_native_conversation_candidate_v1.sql"
 RUN = "EXEC-PROFILE-GATE2-TESTSRCRV2TRUST000001"
 OLD_MD5 = "4a14fef959203b9b41212862877585f0"
