@@ -11,7 +11,17 @@ export function effectsBearingNativeSemanticReviewBlockCode(
   if (manifest?.governed_repair_write === true &&
       manifest?.read_only === false && manifest?.no_write === false &&
       reviewMode === "CURRENT_CONTEXT_REVIEW") {
-    return "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED";
+    // Only a bounded SRCR sandbox candidate may reach SQL for same-context V3.
+    // The canonical SQL scope guard checks Step40/50/60 and source-bound artifacts.
+    // No provider independence, business effect or promotion is authorized here.
+    const handoff = manifest.router_profile_handoff as Record<string, unknown> | undefined;
+    const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
+    const candidateOnly =
+      manifest.no_promotion === true &&
+      manifest.automatic_impact === false &&
+      handoff?.profile_code === "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" &&
+      receipt?.effect_authority === false;
+    if (!candidateOnly) return "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED";
   }
   return null;
 }
