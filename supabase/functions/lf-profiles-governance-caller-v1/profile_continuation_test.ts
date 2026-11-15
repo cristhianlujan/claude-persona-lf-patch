@@ -974,10 +974,24 @@ Deno.test("SRCR native repair denies any missing/forged Router evidence before S
 });
 
 
-Deno.test("SRCR effects Step70 classifies current-context self-review as missing independent provider attestation",()=>{
+Deno.test("SRCR Step70 current-context is admitted only for bounded non-promotable candidate review",()=>{
   const effects={read_only:false,no_write:false,no_promotion:true,governed_repair_write:true};
   eq(effectsBearingNativeSemanticReviewBlockCode(effects,"CURRENT_CONTEXT_REVIEW"),
     "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
+  const candidate={...effects,automatic_impact:false,router_profile_handoff:{
+    profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    router_authorization_receipt:{effect_authority:false},
+  }};
+  eq(effectsBearingNativeSemanticReviewBlockCode(candidate,"CURRENT_CONTEXT_REVIEW"),null);
+  for(const invalid of [
+    {...candidate,no_promotion:false},
+    {...candidate,automatic_impact:true},
+    {...candidate,router_profile_handoff:{profile_code:"PERFIL-PRODUCT-DIRECTOR-LF",
+      router_authorization_receipt:{effect_authority:false}}},
+    {...candidate,router_profile_handoff:{profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      router_authorization_receipt:{effect_authority:true}}},
+  ])eq(effectsBearingNativeSemanticReviewBlockCode(invalid,"CURRENT_CONTEXT_REVIEW"),
+      "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
   // Read-only historical profiles retain their existing current-context behavior.
   eq(effectsBearingNativeSemanticReviewBlockCode(
     {read_only:true,no_write:true,no_promotion:true,governed_repair_write:false},
