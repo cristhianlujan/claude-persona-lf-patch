@@ -110,7 +110,10 @@ class Skill14SourceFirstPgDual(unittest.TestCase):
                 for _ in range(90):
                     ready=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
                         capture_output=True,timeout=10)
-                    if ready.returncode==0: break
+                    if ready.returncode==0:
+                        logs=subprocess.run(["docker","logs",name],capture_output=True,text=True,timeout=10)
+                        if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                            break
                     time.sleep(1)
                 self.assertEqual(ready.returncode,0)
                 def exec_sql(sql):
