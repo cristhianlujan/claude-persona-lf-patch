@@ -96,13 +96,13 @@ def catalogue_select(source):
              if source is not None else "NULL::jsonb")
     return (
         "SELECT jsonb_build_object("
-        "'count',x->>'catalog_profile_count',"
-        "'candidates',x->'candidate_profiles',"
-        "'stage',x->'derivation_next_stage',"
-        "'derivation',x->'derivation')"
+        "'count',z.x->>'catalog_profile_count',"
+        "'candidates',z.x->'candidate_profiles',"
+        "'stage',z.x->'derivation_next_stage',"
+        "'derivation',z.x->'derivation')"
         "FROM (SELECT public.lf_profile_selector_semantic_prepare_v2("
         f"{sql_str(REQUEST)},'PRODUCTO',{derived},NULL::jsonb) AS x) z"
-        .replace("x->", "z.x->")  # produce proper outer alias
+        
     )
 
 def run_probe(name, source):
