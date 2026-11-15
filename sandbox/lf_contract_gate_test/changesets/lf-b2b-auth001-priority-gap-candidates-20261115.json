@@ -1,0 +1,19 @@
+{
+  "solution_ref": "lf-b2b-auth001-priority-gap-candidates-20261115",
+  "paths": {
+    "supabase/migrations/20261115004500_lf_b2b_auth001_priority_gap_candidate_rules_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_auth001_priority_gap_candidates_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-b2b-auth001-priority-gap-candidates-20261115.json": "CHANGESET_MANIFEST"
+  },
+  "scope": "CANDIDATE_ONLY",
+  "deployment": "NO_PRODUCTION",
+  "promotion_authorized": false,
+  "screen_id": 51,
+  "rule_codes": [
+    "B2B-RULE-AUTH-GAP-PASSWORD-ATTEMPTS-001",
+    "B2B-RULE-AUTH-GAP-AUDIT-001",
+    "B2B-RULE-AUTH-GAP-MFA-RECOVERY-001",
+    "B2B-RULE-AUTH-GAP-TENANT-ISOLATION-001",
+    "B2B-RULE-AUTH-GAP-MFA-COVERAGE-001"
+  ]
+}
