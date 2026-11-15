@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "validators"))
 from runtime_validate import validate
+from runtime_semantic_utility import evaluate
 
 
 def conservative():
@@ -44,6 +45,12 @@ def conservative():
 
 
 class QualityNativeGateTests(unittest.TestCase):
+    def test_utility_is_not_an_independent_judge(self):
+        outcome = evaluate(conservative(), {"status": "PASS"})
+        self.assertEqual(outcome["status"], "PASS")
+        self.assertIs(outcome["independent_review_executed"], False)
+        self.assertIs(outcome["promotion_authorized"], False)
+
     def test_conservative_return_is_structurally_valid_not_pass(self):
         self.assertEqual(validate(conservative()), {"valid": True, "errors": []})
 
