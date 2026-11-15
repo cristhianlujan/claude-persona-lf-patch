@@ -990,3 +990,58 @@ Deno.test("SRCR effects Step70 classifies current-context self-review as missing
     {read_only:false,no_write:false,no_promotion:true,governed_repair_write:false},
     "CURRENT_CONTEXT_REVIEW"),null);
 });
+
+Deno.test("IG native context writer uses actual OIDC run and existing SRCR route, no nonce from Issue",async()=>{
+  const n=network(boundedRepairFixture());
+  let rpcParams:Record<string,unknown>|null=null;
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_ig_native_chat_receipt_append_v1")){
+      rpcParams=JSON.parse(String(init?.body)) as Record<string,unknown>;
+      return new Response(JSON.stringify({status:"RECEIPT_APPENDED",execution_id:id,kind:"REQUEST",seq:1,
+        nonce:"e".repeat(48),frozen_bundle_sha256:"c".repeat(64)}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const resp=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,callerId);
+  const body=await resp.json();
+  eq(resp.status,200);eq(body.outcome,"NATIVE_CHAT_RECEIPT_RECORDED");
+  eq(body.step_recorded,false);eq(body.step70_completed,false);
+  eq(rpcParams?.p_execution_id,id);eq(rpcParams?.p_kind,"REQUEST");
+  eq(rpcParams?.p_event,{});
+  eq(rpcParams?.p_writer_receipt_ref,"actions://"+repo+"/runs/100");
+  // This is ONLY append provenance; never record Step70/Step80.
+  eq(n.calls.some(x=>x.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+Deno.test("IG native context writer rejects missing OIDC, forged ref, extra source fields",async()=>{
+  const n=network(boundedRepairFixture());
+  const base={execution_id:id,native_chat_receipt:{kind:"EXECUTOR",
+    event:{executor_context_ref:"actions://fixture/source",producer_schema_id:"V0_6",
+      producer_eval_id:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",producer_profile_id:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}}};
+  for(const args of [
+    {body:base,caller:undefined,status:403},
+    {body:{...base,p_writer_receipt_ref:"actions://evil"},caller:callerId,status:400},
+    {body:base,caller:{...callerId,run_id:"forged"},status:403},
+    {body:base,caller:{...callerId,method:"FORGED"},status:403},
+  ]){
+    const before=n.calls.length;
+    const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,args.body,config,n.fetchFn,sha,args.caller);
+    eq(r.status,args.status);
+    eq(n.calls.slice(before).some(x=>x.url.includes("lf_ig_native_chat_receipt_append_v1")),false);
+  }
+});
+Deno.test("IG native context append respects server BLOCK and cannot claim PASS",async()=>{
+  const n=network(boundedRepairFixture());
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_ig_native_chat_receipt_append_v1")){
+      return new Response(JSON.stringify({status:"BLOCKED",blocking_code:"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT"}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,native_chat_receipt:{kind:"JUDGE",event:{review_mode:"INDEPENDENT_EVAL_CONTEXT"}}},
+    config,fetchFn,sha,callerId);
+  const b=await r.json();eq(r.status,409);eq(b.code,"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT");
+  eq(b.step_recorded,false);
+});
