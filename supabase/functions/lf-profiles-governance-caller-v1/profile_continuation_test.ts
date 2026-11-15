@@ -898,3 +898,66 @@ Deno.test("skill step: missing canonical readback is not a completed batch",asyn
  const b=await r.json();
  eq(r.status,409);eq(b.code,"SKILL_CHILD_STEP_READBACK_NOT_CLEAN");
 });
+
+
+function boundedRepairFixture(){
+  const sha="b".repeat(64), fingerprint="a".repeat(64);
+  const scope={target_type:"PANTALLA",target_hint:"B2B-CARGA-002"};
+  const receipt={profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    profile_execution_allowed:true,effect_authority:false,
+    authority_ref:"ROUTER_PROFILE_EXECUTION_AUTHORIZATION",
+    operation_code:"EJECUCION_PERFIL_LF",action_code:"PROFILE_EXECUTION",
+    request_sha256:sha,router_action_binding_sha256:"sha256:"+sha,
+    fingerprint_sha256:fingerprint,scope};
+  const repair={schema_version:"LF_SRCR_REPAIR_EXECUTION_AUTHORITY_V1",
+    mode:"GOVERNED_REPAIR_WRITE",profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    operation_code:"EJECUCION_PERFIL_LF",profile_task_intent:"REPAIR_MISSING_PRODUCT_STRUCTURE",
+    request_sha256:sha,router_authorization_fingerprint_sha256:fingerprint,
+    router_action_binding_sha256:"sha256:"+sha,
+    readback_required:true,rollback_required:true,promotion_allowed:false,
+    automatic_impact:false,direct_profile_invocation_allowed:false,
+    return_to_router_after_result:true,scope,fingerprint_sha256:"c".repeat(64)};
+  return {target_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    target_path:"profiles/systemic_root_cause_repair_lf/SKILL.md",
+    manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",
+      read_only:false,no_write:false,no_promotion:true,governed_repair_write:true,
+      repair_execution_authority:repair,
+      router_profile_handoff:{profile_code:repair.profile_code,channel:"PRODUCTO",
+        return_to_router_after_profile_result:true,repair_execution_authority:repair,
+        router_authorization_receipt:receipt}}};
+}
+Deno.test("SRCR native source bind accepts only Router-bound governed repair for exact existing profile",async()=>{
+  const n=network(boundedRepairFixture());
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.outcome,"SOURCE_BINDING_REQUIRED");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),true);
+});
+Deno.test("SRCR governed repair remains forbidden for profile skill side action",async()=>{
+  const n=skillNetwork(boundedRepairFixture());
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  eq(out.status,403);
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
+});
+Deno.test("SRCR native repair denies any missing/forged Router evidence before SQL",async()=>{
+  const base=boundedRepairFixture();
+  const malformed=[
+    {manifest:{...base.manifest,governed_repair_write:false}},
+    {manifest:{...base.manifest,no_promotion:false}},
+    {manifest:{...base.manifest,repair_execution_authority:{
+      ...base.manifest.repair_execution_authority as object,profile_task_intent:"UNAUTHORIZED"}}},
+    {manifest:{...base.manifest,repair_execution_authority:{
+      ...base.manifest.repair_execution_authority as object,fingerprint_sha256:"forged"}}},
+    {manifest:{...base.manifest,router_profile_handoff:{
+      ...base.manifest.router_profile_handoff as object,repair_execution_authority:{mode:"FORGED"}}}},
+    {target_path:"profiles/other/SKILL.md"},
+    {target_code:"PERFIL-PRODUCT-DIRECTOR-LF"},
+  ];
+  for(const invalid of malformed){
+    const n=network({...base,...invalid});
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+    eq(out.status,403);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
+  }
+});
