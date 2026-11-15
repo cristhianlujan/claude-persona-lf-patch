@@ -993,11 +993,11 @@ Deno.test("SRCR effects Step70 classifies current-context self-review as missing
 
 Deno.test("IG native context writer uses actual OIDC run and existing SRCR route, no nonce from Issue",async()=>{
   const n=network(boundedRepairFixture());
-  let rpcParams:Record<string,unknown>|null=null;
+  const rpcParams:Array<Record<string,unknown>>=[];
   const fetchFn:typeof n.fetchFn=async(input,init)=>{
     const url=String(input);
     if(url.endsWith("/lf_ig_native_chat_receipt_append_v1")){
-      rpcParams=JSON.parse(String(init?.body)) as Record<string,unknown>;
+      rpcParams.push(JSON.parse(String(init?.body)) as Record<string,unknown>);
       return new Response(JSON.stringify({status:"RECEIPT_APPENDED",execution_id:id,kind:"REQUEST",seq:1,
         nonce:"e".repeat(48),frozen_bundle_sha256:"c".repeat(64)}),{status:200});
     }
@@ -1008,9 +1008,9 @@ Deno.test("IG native context writer uses actual OIDC run and existing SRCR route
   const body=await resp.json();
   eq(resp.status,200);eq(body.outcome,"NATIVE_CHAT_RECEIPT_RECORDED");
   eq(body.step_recorded,false);eq(body.step70_completed,false);
-  eq(rpcParams?.p_execution_id,id);eq(rpcParams?.p_kind,"REQUEST");
-  eq(rpcParams?.p_event,{});
-  eq(rpcParams?.p_writer_receipt_ref,"actions://"+repo+"/runs/100");
+  eq(rpcParams[0]?.p_execution_id,id);eq(rpcParams[0]?.p_kind,"REQUEST");
+  eq(rpcParams[0]?.p_event,{});
+  eq(rpcParams[0]?.p_writer_receipt_ref,"actions://"+repo+"/runs/100");
   // This is ONLY append provenance; never record Step70/Step80.
   eq(n.calls.some(x=>x.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
 });
