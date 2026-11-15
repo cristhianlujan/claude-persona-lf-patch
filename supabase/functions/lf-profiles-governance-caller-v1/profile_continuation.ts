@@ -2,6 +2,20 @@ import {validateLfIgTransport,IG_RPC_REQUIRED} from "../_shared/lf_ig_transport_
 // Governed, profile-agnostic continuation for an *existing* Router-admitted execution.
 // It deliberately does not select a profile/screen, impersonate a model, or grant
 // write authority. All substantive transitions use existing canonical RPCs.
+// Explicit, additive error classification only. This function cannot
+// attest a provider call, write a receipt, or relax the existing SQL gate.
+export function effectsBearingNativeSemanticReviewBlockCode(
+  manifest: Record<string, unknown> | null | undefined,
+  reviewMode: unknown,
+): string | null {
+  if (manifest?.governed_repair_write === true &&
+      manifest?.read_only === false && manifest?.no_write === false &&
+      reviewMode === "CURRENT_CONTEXT_REVIEW") {
+    return "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED";
+  }
+  return null;
+}
+
 export const PROFILE_SOURCE_BIND_ACTION = "profile_native_source_bind_v1";
 export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 // A read-only profile calls a governed skill through its own route. The skill invoker
@@ -865,6 +879,17 @@ export async function handleProfileContinuation(
     const review = receipt.judge_v3_evidence;
     const resultObj = receipt.result;
     const currentContext = receipt.review_mode === "CURRENT_CONTEXT_REVIEW";
+    // An ACT-0001-authorized effects-bearing SRCR RUN must not misrepresent
+    // producer self-review as an independently attested provider call.
+    // SQL remains the independent authority for actual provider verification.
+    const attestationBlock = effectsBearingNativeSemanticReviewBlockCode(
+      e.manifest as Payload, receipt.review_mode,
+    );
+    if (attestationBlock) {
+      return respond({outcome:"BLOCKED",phase:"SEMANTIC_JUDGE",
+        code:attestationBlock,execution_id:e.execution_id,step_id:"semantic_judge",
+        provider_independence_verified:false,step_recorded:false},409);
+    }
     const expectedVerdict = currentContext ? "PASS_REVIEWED_CURRENT_CONTEXT" : "PASS_INDEPENDENT_SEMANTIC";
     const reviewerFactsValid = currentContext
       ? receipt.producer_independence_proven === false &&
