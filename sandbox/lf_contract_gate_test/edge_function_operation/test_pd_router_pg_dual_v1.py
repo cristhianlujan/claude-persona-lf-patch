@@ -132,7 +132,10 @@ class DualPostgresPDFlow(unittest.TestCase):
                         ready=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
                               capture_output=True,text=True,timeout=10)
                         if ready.returncode==0:
-                            break
+                            logs=subprocess.run(["docker","logs",name],
+                                capture_output=True,text=True,timeout=10)
+                            if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                                break
                         time.sleep(0.6)
                     self.assertEqual(ready.returncode,0,"POSTGRES_NOT_READY")
                     psql(name,fixture+"\n"+seed_data())
