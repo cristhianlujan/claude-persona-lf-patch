@@ -59,7 +59,7 @@ BEGIN
  FOR r IN SELECT * FROM public.lf_ig_native_chat_receipt_v1
     WHERE execution_id=p_execution_id ORDER BY seq LOOP
    n:=n+1;
-   IF n>3 OR r.seq<>n OR r.kind<>CASE n WHEN 1 THEN 'REQUEST' WHEN 2 THEN 'EXECUTOR' WHEN 3 THEN 'JUDGE' END
+   IF n>3 OR r.seq<>n OR r.kind<>(CASE n WHEN 1 THEN 'REQUEST' WHEN 2 THEN 'EXECUTOR' WHEN 3 THEN 'JUDGE' END)
    THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','LF_STEP70_CLEAN_CONTEXT_SEQUENCE_DRIFT'); END IF;
    IF encode(extensions.digest(convert_to(r.raw_text,'UTF8'),'sha256'),'hex')<>r.raw_sha256
       OR r.prev_sha256<>tip
