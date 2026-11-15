@@ -14,7 +14,7 @@ import unittest
 import uuid
 
 ROOT=pathlib.Path(__file__).resolve().parents[3]
-SQL=ROOT/"supabase/migrations/20261115013000_lf_ig_curator_policy_autobind_channel_v1.sql"
+MIGRATION_CANDIDATES=list((ROOT/"supabase/migrations").glob("*_lf_ig_curator_policy_autobind_channel_v1.sql"))
 FIXTURES=ROOT/"sandbox/lf_contract_gate_test/edge_function_operation/fixtures"
 CURATOR=FIXTURES/"ig_policy_autobind_curator_preimage_20261114.sql"
 COMPLETE=FIXTURES/"ig_policy_autobind_family_complete_preimage_20261114.sql"
@@ -200,7 +200,8 @@ SELECT 'SCREEN51_NEW_RECEIPTS='||count(*) FROM programacion.input_policy_autobin
 class IGCuratorPolicyAutobindPGDual(unittest.TestCase):
  def test_exact_curator_pg17_pg18_rollback(self):
   self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
-  original=SQL.read_text(encoding="utf-8")
+  self.assertEqual(len(MIGRATION_CANDIDATES),1,"ONE_TRAIN_RETSTAMPED_MIGRATION_REQUIRED")
+  original=MIGRATION_CANDIDATES[0].read_text(encoding="utf-8")
   self.assertIn("IG_POLICY_AUTOBIND_CURATOR_SOURCE_DRIFT",original)
   self.assertIn("IG_POLICY_AUTOBIND_COMPLETENESS_SOURCE_DRIFT",original)
   self.assertIn("ON CONFLICT (pantalla_id,reference_role) DO NOTHING",original)
