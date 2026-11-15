@@ -202,15 +202,15 @@ BEGIN
       RETURN jsonb_build_object('status','BLOCKED',
           'blocking_code','LF_NATIVE_CHAT_WRITER_NONCE_ISSUANCE_DRIFT'); END IF;
  ELSIF wanted=2 THEN
-   IF coalesce(p_event->>'executor_context_ref','')=''
+   IF nullif(btrim(coalesce(p_event->>'executor_context_ref','')),'') IS NULL
       OR p_event->>'producer_schema_id' IS DISTINCT FROM source_schema
       OR p_event->>'producer_eval_id' IS DISTINCT FROM source_eval
       OR p_event->>'producer_profile_id' IS DISTINCT FROM e.target_code
    THEN RETURN jsonb_build_object('status','BLOCKED',
         'blocking_code','LF_NATIVE_CHAT_WRITER_PRODUCER_CONFIG_DRIFT'); END IF;
  ELSIF wanted=3 THEN
-   IF producer IS NULL OR coalesce(producer->>'executor_context_ref','')=''
-      OR coalesce(p_event->>'reviewer_context_ref','')=''
+   IF producer IS NULL OR nullif(btrim(coalesce(producer->>'executor_context_ref','')),'') IS NULL
+      OR nullif(btrim(coalesce(p_event->>'reviewer_context_ref','')),'') IS NULL
       OR p_event->>'reviewer_context_ref'
           IS NOT DISTINCT FROM producer->>'executor_context_ref'
       OR p_event->>'reviewer_schema_id'
@@ -221,13 +221,14 @@ BEGIN
           IS DISTINCT FROM 'LF_STEP70_SAME_LLM_SEMANTIC_EVAL_V1'
       OR p_event->>'reviewer_eval_id'
           IS NOT DISTINCT FROM producer->>'producer_eval_id'
-      OR coalesce(p_event->>'reviewer_profile_id','')=''
+      OR nullif(btrim(coalesce(p_event->>'reviewer_profile_id','')),'') IS NULL
       OR p_event->>'reviewer_profile_id'
           IS NOT DISTINCT FROM producer->>'producer_profile_id'
       OR p_event->>'review_mode'
           IS DISTINCT FROM 'INDEPENDENT_EVAL_CONTEXT'
       OR p_event->>'reviewer_context_cleared' IS DISTINCT FROM 'true'
-      OR p_event->>'eval_status' NOT IN ('PASS','FAIL')
+      OR (p_event->>'eval_status' IS DISTINCT FROM 'PASS'
+       AND p_event->>'eval_status' IS DISTINCT FROM 'FAIL')
       OR jsonb_typeof(p_event->'review_payload') IS DISTINCT FROM 'object'
       OR p_event#>>'{review_payload,review_mode}'
           IS DISTINCT FROM 'INDEPENDENT_EVAL_CONTEXT'
