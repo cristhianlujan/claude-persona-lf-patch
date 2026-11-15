@@ -359,6 +359,37 @@ def governed_request():
             raise ValueError("SKILL_STEP_BATCH_OUT_OF_ORDER")
         return {"kind": "SKILL_STEP_BATCH", "execution_id": parent,
                 "child_execution_id": child, "steps": steps}
+    # Governed Step70 chain only; the reviewer RAW is produced elsewhere.
+    # A single authenticated Issue executes ONE REQUEST, EXECUTOR or JUDGE append.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_NATIVE_CHAT_RECEIPT_APPEND_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "kind", "event"}:
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_SCHEMA_DRIFT")
+        execution_id, kind, event = data["execution_id"], data["kind"], data["event"]
+        if (not isinstance(execution_id, str)
+            or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+            or kind not in ("REQUEST", "EXECUTOR", "JUDGE")
+            or not isinstance(event, dict)
+            or len(json.dumps(event, ensure_ascii=False)) > 44000):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_INPUT_DRIFT")
+        reserved = {"stage", "execution_id", "nonce", "candidate_sha256",
+                    "scope_packet_sha256", "frozen_bundle_sha256", "seq",
+                    "raw_text", "raw_sha256", "prev_sha256", "chain_sha256",
+                    "writer_receipt_sha256", "writer_receipt_ref", "recorded_at"}
+        if reserved.intersection(event):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_PROVENANCE_FORBIDDEN")
+        required = {
+            "REQUEST": set(),
+            "EXECUTOR": {"executor_context_ref", "producer_schema_id",
+                         "producer_eval_id", "producer_profile_id"},
+            "JUDGE": {"review_mode", "reviewer_context_ref",
+                      "reviewer_schema_id", "reviewer_eval_id", "reviewer_profile_id",
+                      "reviewer_context_cleared", "eval_status", "review_payload"},
+        }[kind]
+        if set(event) != required or (kind == "REQUEST" and event):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_EVENT_FIELDS_DRIFT")
+        return {"kind": "NATIVE_CHAT_RECEIPT_APPEND", "execution_id": execution_id,
+                "receipt_kind": kind, "event": event}
+
     # Same profile-owned Issue/OIDC/Edge lane; this bounded first slice is
     # effect-free. Never infer write authority from a skill name or payload.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1":
@@ -993,6 +1024,50 @@ def main():
     request = governed_request()
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "NATIVE_CHAT_RECEIPT_APPEND":
+        # Preserve the caller event intact. Edge derives writer_receipt_ref
+        # from the VERIFIED OIDC run; SQL owns the nonce and all SHA linkage.
+        code, reply = call_json(EDGE_URL, {
+            "action": "profile_native_continue_v1",
+            "execution_id": request["execution_id"],
+            "native_chat_receipt": {
+                "kind": request["receipt_kind"],
+                "event": request["event"],
+            },
+        }, headers)
+        result = reply.get("result") if isinstance(reply, dict) else {}
+        valid = (code == 200 and isinstance(reply, dict)
+                 and reply.get("outcome") == "NATIVE_CHAT_RECEIPT_RECORDED"
+                 and reply.get("execution_id") == request["execution_id"]
+                 and reply.get("kind") == request["receipt_kind"]
+                 and isinstance(result, dict)
+                 and result.get("status") in ("RECEIPT_APPENDED", "ALREADY_RECORDED")
+                 and result.get("execution_id") == request["execution_id"]
+                 and result.get("kind") == request["receipt_kind"]
+                 and isinstance(result.get("nonce"), str)
+                 and re.fullmatch(r"[a-f0-9]{48}", result["nonce"])
+                 and isinstance(result.get("frozen_bundle_sha256"), str)
+                 and re.fullmatch(r"[a-f0-9]{64}", result["frozen_bundle_sha256"]))
+        receipt = {
+            "schema_version": "LF_NATIVE_CHAT_GOVERNED_APPEND_READBACK_V1",
+            "execution_id": request["execution_id"],
+            "kind": request["receipt_kind"],
+            "phase": "STEP70_CONTEXT_PROVENANCE",
+            "status": "RECORDED_NOT_SEMANTIC_PASS" if valid else "BLOCKED",
+            "outcome": reply.get("outcome") if isinstance(reply, dict) else None,
+            "blocking_code": None if valid else (
+                reply.get("code") if isinstance(reply, dict) else "TRANSPORT_INVALID"
+            ),
+            "writer_result": result if valid else None,
+            "step70_completed": False,
+            "profile_completed": False,
+        }
+        (Path.cwd() / "profile-native-continuation.json").write_text(
+            json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
+        return 0 if valid else 1
     if isinstance(request, dict) and request.get("kind") == "SKILL_PLAN":
         # This is an invocation batch, NOT the semantic agent or a new
         # orchestration boundary. The signed Edge checks each parent and skill.
