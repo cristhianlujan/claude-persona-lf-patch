@@ -1004,13 +1004,13 @@ Deno.test("IG native context writer uses actual OIDC run and existing SRCR route
     return n.fetchFn(input,init);
   };
   const resp=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
-    execution_id:id,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,callerId);
+    execution_id:id,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,{...callerId,run_id:"1000"});
   const body=await resp.json();
   eq(resp.status,200);eq(body.outcome,"NATIVE_CHAT_RECEIPT_RECORDED");
   eq(body.step_recorded,false);eq(body.step70_completed,false);
   eq(rpcParams[0]?.p_execution_id,id);eq(rpcParams[0]?.p_kind,"REQUEST");
   eq(rpcParams[0]?.p_event,{});
-  eq(rpcParams[0]?.p_writer_receipt_ref,"actions://"+repo+"/runs/100");
+  eq(rpcParams[0]?.p_writer_receipt_ref,"actions://"+repo+"/runs/1000");
   // This is ONLY append provenance; never record Step70/Step80.
   eq(n.calls.some(x=>x.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
 });
@@ -1021,7 +1021,7 @@ Deno.test("IG native context writer rejects missing OIDC, forged ref, extra sour
       producer_eval_id:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",producer_profile_id:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}}};
   for(const args of [
     {body:base,caller:undefined,status:403},
-    {body:{...base,p_writer_receipt_ref:"actions://evil"},caller:callerId,status:400},
+    {body:{...base,p_writer_receipt_ref:"actions://evil"},caller:{...callerId,run_id:"1000"},status:400},
     {body:base,caller:{...callerId,run_id:"forged"},status:403},
     {body:base,caller:{...callerId,method:"FORGED"},status:403},
   ]){
@@ -1041,7 +1041,7 @@ Deno.test("IG native context append respects server BLOCK and cannot claim PASS"
   };
   const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
     execution_id:id,native_chat_receipt:{kind:"JUDGE",event:{review_mode:"INDEPENDENT_EVAL_CONTEXT"}}},
-    config,fetchFn,sha,callerId);
+    config,fetchFn,sha,{...callerId,run_id:"1000"});
   const b=await r.json();eq(r.status,409);eq(b.code,"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT");
   eq(b.step_recorded,false);
 });
