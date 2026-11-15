@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-screen44-idempotency-ig956-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261115003003_lf_screen44_idempotency_concurrency_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_screen44_idempotency_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-screen44-idempotency-ig956-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
