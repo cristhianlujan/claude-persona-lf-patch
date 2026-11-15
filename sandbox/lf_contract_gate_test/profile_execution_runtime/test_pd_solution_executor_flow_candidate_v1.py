@@ -40,6 +40,8 @@ def test_analysis_must_continue_to_executor_not_quality():
     assert "PD_EXECUTOR_MISSING_PROPOSAL_REGRESSION" in s
     assert "PD_EXECUTOR_PROPOSAL_READY_REGRESSION" in s
     assert "PD_EXECUTOR_DIRECT_TARGET_REGRESSION" in s
+    assert "PD_EXECUTOR_SELECTOR_DERIVED_AUTH_DRIFT" in s
+    assert "PD_EXECUTOR_TERMINAL_ROUTER_RETURN_NOT_ATTACHED" in s
 
 
 def test_selector_never_invents_route_or_uses_hardcoded_fallback():
