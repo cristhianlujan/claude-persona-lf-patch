@@ -51,6 +51,11 @@ Before invocation require: an existing parent `EJECUCION_PERFIL_LF` execution in
 
 Invoke with the governed request `LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1` (`schema_version`, `execution_id` = parent, `skill_code` = `PROFILE_UPDATE_APPLY`, `input` with `target_code` and `target_path`). The skill only opens a child `ACTUALIZACION_PERFIL_LF` execution linked to the parent. If admission or invocation is denied, do not bypass it or claim a child execution exists; preserve the observed result and return control through governed orchestration.
 
+## Derived Product Director solution-repair stage
+When ACT-0001 selects this profile as the **configured** fallback for a Product Director `PRODUCT_EXECUTOR_HANDOFF`, read the source execution's exact Step50 output and original request binding. If Product Director supplied inventory/findings but no executable implementation package, produce the missing bounded solution first: target sources/currentness, selected corrective change, impacted assets, constraints, acceptance/negative tests, readback and rollback plan, and any eligible rule-promotion candidates. Do not pretend an inventory is an implemented repair.
+
+No repair write is authorized by derivation or fallback selection alone. Only a Router-issued `repair_execution_authority` bound to this run, scope, and allowed task intent permits governed sandbox mutation; otherwise return a ready-to-execute repair specification with the required evidence and the typed continuation. After authorized execution plus real readback, return to ACT-0001 for Quality. Promotion remains separate, candidate-only, and subject to human decision.
+
 ## Governed repair execution (V0.7R1 bounded extension)
 
 Default behavior remains read-only. The profile may implement a repair only when **all** of the following are true:
