@@ -1,0 +1,20 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_BINDING_V1",
+  "profile_slug": "quality_pack",
+  "profile_code": "PERFIL-QUALITY-PACK",
+  "runtime_schema": {
+    "default": "schemas/quality_review.schema.json",
+    "output_modes": {}
+  },
+  "canonical_validator": {
+    "path": "validators/validate_native_runtime_output.py",
+    "callable": "validate",
+    "transport": "STDIN_JSON"
+  },
+  "governance": {
+    "source_first_required": true,
+    "schema_invention_allowed": false,
+    "fail_closed": true,
+    "exact_head_evidence_required": true
+  }
+}
