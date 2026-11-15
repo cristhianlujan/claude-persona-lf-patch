@@ -46,3 +46,51 @@ puede devolver FAIL/RETURN y no se blanquea.
 Solo después de integración por Migration Merge Train, despliegue Edge y
 SELECT del RUN original se puede acreditar paso 70 y paso 80. No se modifica
 el writer ni la cadena histórica REQUEST/EXECUTOR de B09.
+
+
+## Ruta genérica CURRENT_CONTEXT
+
+**Cierre técnico, no aprobación de Quality.** Para un RUN gobernado cuyo manifiesto
+autoriza exclusivamente `read_only=true`, `no_write=true` y
+`no_promotion=true`, la ruta genérica existente de
+`CURRENT_CONTEXT_REVIEW` puede registrar Step70 con
+`PASS_REVIEWED_CURRENT_CONTEXT` y resultado técnico
+`STEP_PASS_WITH_EVIDENCE` (`EXECUTION_PASS`), continuar Step80 y cerrar
+`COMPLETED` con recibo `READY`. Esto acredita solo la **ejecución del flujo**:
+nunca significa `QUALITY_APPROVED`, `PASS_INDEPENDENT_SEMANTIC` ni
+habilitación de producto, efectos o promoción. No se convierte un hallazgo de
+contenido en un fallo de transporte. Fuente del cierre genérico:
+[`20261101050034_lf_profile_current_context_semantic_review_v1.sql`](../../../supabase/migrations/20261101050034_lf_profile_current_context_semantic_review_v1.sql).
+
+**Evidencia del caso Quality (SELECT, sandbox).** El RUN
+`EXEC-PROFILE-GATE2-497B6E82FA5593B0F03CB10C` alcanzó 11/11 y
+`COMPLETED`; Step70 quedó con `review_mode=CURRENT_CONTEXT_REVIEW`,
+`verdict=PASS_REVIEWED_CURRENT_CONTEXT`, `reviewer_is_producer=true`,
+`producer_independence_proven=false`, `model_call_count=0` e
+`independence=NOT_PROVEN`. Se conserva intacto el dictamen de Step50:
+`RETURN_TO_ORCHESTRATOR`, 19/25,
+`QUALITY_SEMANTIC_INDEPENDENCE_NOT_PROVEN` y
+`QUALITY_GOV037_FULL_RESOLVER_GATE_NOT_EXECUTED`. El retorno a ACT-0001
+no autoriza modificaciones, solicitud de promoción ni un Quality PASS.
+Esta ruta genérica no altera ni amplía la excepción SRCR anterior.
+
+**Gate de promoción separado, existente y fail-closed.** La solicitud
+`public.lf_rule_promotion_request_v1(text,text,text)` exige el Step70
+`PASS_INDEPENDENT_SEMANTIC`, `producer_independence_proven=true`,
+`judge_invocation_kind=NEW_INDEPENDENT_CURRENT_CHAT_GPT_NATIVE`, la
+procedencia/hashes exactos de Step40/50/60/70 y autoridad del perfil.
+Con el dictamen `CURRENT_CONTEXT_REVIEW`, devuelve
+`PROMOTION_INDEPENDENT_STEP70_NOT_ATTESTED`, **sin crear solicitud**.
+Fuente: [`20261114163200_lf_rule_promotion_independent_step70_existing_route_v1.sql`](../../../supabase/migrations/20261114163200_lf_rule_promotion_independent_step70_existing_route_v1.sql).
+La aprobación humana es posterior y separada: jamás automática.
+
+**Diferimiento explícito de Quality PASS pleno.** El artefacto de
+`B2B-CARGA-002` devuelve `eligible_candidates=[]`: hoy no hay candidato
+elegible que justifique un juicio limpio de aprobación. Solo cuando exista
+**al menos una regla candidata elegible con evidencia suficiente**, se
+solicitará al dueño ejecutar un **chat limpio distinto** para el juez,
+con las **cinco compuertas GOV-037** verificadas por resolver y procedencia
+exacta. Únicamente ese juicio independiente y la decisión humana posterior
+pueden sustentar aprobación/promoción. No se modifica
+`lf_profile_native_bridge_record_semantic_v1`, no se crea otro campo ni se
+reescribe el RUN histórico.
