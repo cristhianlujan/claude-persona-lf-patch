@@ -57,8 +57,8 @@ class Screen44AssetsRatePGDual(unittest.TestCase):
  def test_pg17_pg18_rollback_and_negative(self):
   self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
   sql=MIGRATION.read_text("utf-8")
-  self.assertTrue(sql.startswith("BEGIN;\n") and sql.rstrip().endswith("COMMIT;"))
-  inner=sql.split("BEGIN;\n",1)[1].rsplit("COMMIT;",1)[0]
+  self.assertTrue(sql.lstrip().startswith("-- Screen") and sql.rstrip().endswith("COMMIT;"))
+  inner=sql.split("\nBEGIN;\n",1)[1].rsplit("\nCOMMIT;",1)[0]
   for ver in ("17.6","18.7"):
    with self.subTest(postgres=ver):
     name="lf44-ar-"+uuid.uuid4().hex[:10]
