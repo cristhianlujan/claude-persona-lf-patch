@@ -99,9 +99,9 @@ INSERT INTO programacion.contratos VALUES
  (5,19,'INPUT_RETRIEVAL_HANDLE_CONTRACT','defined',true,'{}'),
  (6,19,'INPUT_FAMILY_POLICY_REGISTRY','defined',true,
   '{"families":{
-   "SESSION":{"complete_criteria_v1":{"schema_version":"input-family-complete-criteria/v1","fail_closed":true,"probe_kind":"EXISTING_RESOLVER"}},
-   "RATE_LIMIT":{"complete_criteria_v1":{"schema_version":"input-family-complete-criteria/v1","fail_closed":true,"probe_kind":"EXISTING_RESOLVER"}},
-   "TIMEOUT_RETRY":{"complete_criteria_v1":{"schema_version":"input-family-complete-criteria/v1","fail_closed":true,"probe_kind":"EXISTING_RESOLVER"}},
+   "SESSION":{},
+   "RATE_LIMIT":{},
+   "TIMEOUT_RETRY":{},
    "IDEMPOTENCY_CONCURRENCY":{"complete_criteria_v1":{"schema_version":"input-family-complete-criteria/v1","fail_closed":true,"probe_kind":"EXISTING_RESOLVER"}}}}'::jsonb);
 INSERT INTO programacion.input_readiness_runs
  VALUES(952,51,19,'COMPLETED','FIXTURE',repeat('a',64),'[]'::jsonb);
