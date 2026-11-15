@@ -890,10 +890,14 @@ export async function handleProfileContinuation(
         code:attestationBlock,execution_id:e.execution_id,step_id:"semantic_judge",
         provider_independence_verified:false,step_recorded:false},409);
     }
+    const isolatedContext = receipt.review_mode === "INDEPENDENT_EVAL_CONTEXT";
     const expectedVerdict = currentContext ? "PASS_REVIEWED_CURRENT_CONTEXT" : "PASS_INDEPENDENT_SEMANTIC";
     const reviewerFactsValid = currentContext
       ? receipt.producer_independence_proven === false &&
         receipt.reviewer_is_producer === true && receipt.model_call_count === 0
+      : isolatedContext
+      ? receipt.producer_independence_proven === true &&
+        receipt.reviewer_is_producer === false && receipt.model_call_count === null
       : (receipt.review_mode === undefined || receipt.review_mode === "INDEPENDENT_SEMANTIC") &&
         receipt.producer_independence_proven === true && receipt.model_call_count === 1;
     if (
@@ -924,7 +928,15 @@ export async function handleProfileContinuation(
         ? v3.review_mode !== "CURRENT_CONTEXT_REVIEW" ||
           v3.reviewer_is_producer !== true ||
           v3.producer_independence_proven !== false || v3.model_call_count !== 0
-        : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
+        : isolatedContext
+          ? v3.review_mode !== "INDEPENDENT_EVAL_CONTEXT" ||
+            v3.reviewer_is_producer !== false ||
+            v3.producer_context_available !== false ||
+            v3.producer_independence_proven !== true ||
+            v3.model_call_count !== null ||
+            typeof v3.reviewer_context_ref !== "string" ||
+            !v3.reviewer_context_ref.trim()
+          : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
       v3.candidate_sha256 !== receipt.candidate_sha256 ||
       v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
       !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||

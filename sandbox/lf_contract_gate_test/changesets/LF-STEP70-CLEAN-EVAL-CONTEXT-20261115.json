@@ -1,0 +1,13 @@
+{
+  "solution_ref": "LF-STEP70-CLEAN-EVAL-CONTEXT-20261115",
+  "paths": {
+    "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md": "DOCUMENTATION",
+    "supabase/migrations/20261115040500_lf_step70_clean_eval_context_same_llm_v1.sql": "MIGRATION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "scripts/lf_profile_native_resume.py": "RUNTIME_SCRIPT",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_step70_clean_eval_preimage_20261115.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_step70_clean_eval_context_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_step70_clean_eval_runner_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-STEP70-CLEAN-EVAL-CONTEXT-20261115.json": "CHANGESET_MANIFEST"
+  }
+}
