@@ -900,8 +900,8 @@
           "authority_ref": "EV-RUN",
           "rationale": "Preserves three-step current screen, server-side authority and separate promotion gate.",
           "alternatives_considered": [
-            "A",
-            "C"
+            "ALT-A",
+            "ALT-C"
           ],
           "evidence_refs": [
             "EV-RUN",
