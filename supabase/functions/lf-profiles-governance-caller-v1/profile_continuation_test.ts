@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,effectsBearingNativeSemanticReviewBlockCode,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -971,4 +971,22 @@ Deno.test("SRCR native repair denies any missing/forged Router evidence before S
     eq(out.status,403);
     eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
   }
+});
+
+
+Deno.test("SRCR effects Step70 classifies current-context self-review as missing independent provider attestation",()=>{
+  const effects={read_only:false,no_write:false,no_promotion:true,governed_repair_write:true};
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,"CURRENT_CONTEXT_REVIEW"),
+    "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
+  // Read-only historical profiles retain their existing current-context behavior.
+  eq(effectsBearingNativeSemanticReviewBlockCode(
+    {read_only:true,no_write:true,no_promotion:true,governed_repair_write:false},
+    "CURRENT_CONTEXT_REVIEW"),null);
+  // Not a provider receipt minting mechanism. Independent submissions still
+  // require canonical SQL verification; this helper never returns PASS.
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,"INDEPENDENT_SEMANTIC"),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,undefined),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode(
+    {read_only:false,no_write:false,no_promotion:true,governed_repair_write:false},
+    "CURRENT_CONTEXT_REVIEW"),null);
 });
