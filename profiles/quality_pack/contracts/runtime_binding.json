@@ -40,7 +40,7 @@
   "execution_partition": {
     "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",
     "field_classes": {
-      "review_id": "DETERMINISTIC",
+      "review_id": "HYBRID",
       "reviewed_artifact": "HYBRID",
       "verdict": "SEMANTIC",
       "score_breakdown": "HYBRID",
@@ -60,5 +60,9 @@
     "max_output_tokens": 6000,
     "min_available_memory_mb": 1024,
     "max_swap_used_pct": 50
+  },
+  "semantic_utility": {
+    "path": "validators/runtime_semantic_utility.py",
+    "callable": "evaluate"
   }
 }
