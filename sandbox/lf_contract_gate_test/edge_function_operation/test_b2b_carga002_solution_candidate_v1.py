@@ -2,7 +2,7 @@
 
 The fixture is a source-bound sandbox deliverable from an ACT-0001-selected
 Reparador. Passing this test proves candidate coherence only; it is NOT proof
-of B2B backend implementation, QA, or rule-promotion eligibility.
+of B2B backend implementation, QA, or rule-promotion eligibility. NOT implementation of B2B.
 """
 import copy
 import json
