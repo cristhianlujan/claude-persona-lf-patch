@@ -1004,7 +1004,7 @@ Deno.test("IG native context writer uses actual OIDC run and existing SRCR route
     return n.fetchFn(input,init);
   };
   const resp=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
-    execution_id:id,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,{...callerId,run_id:"1000"});
+    execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,{...callerId,run_id:"1000"});
   const body=await resp.json();
   eq(resp.status,200);eq(body.outcome,"NATIVE_CHAT_RECEIPT_RECORDED");
   eq(body.step_recorded,false);eq(body.step70_completed,false);
@@ -1016,7 +1016,7 @@ Deno.test("IG native context writer uses actual OIDC run and existing SRCR route
 });
 Deno.test("IG native context writer rejects missing OIDC, forged ref, extra source fields",async()=>{
   const n=network(boundedRepairFixture());
-  const base={execution_id:id,native_chat_receipt:{kind:"EXECUTOR",
+  const base={execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"EXECUTOR",
     event:{executor_context_ref:"actions://fixture/source",producer_schema_id:"V0_6",
       producer_eval_id:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",producer_profile_id:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}}};
   for(const args of [
@@ -1040,7 +1040,7 @@ Deno.test("IG native context append respects server BLOCK and cannot claim PASS"
     return n.fetchFn(input,init);
   };
   const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
-    execution_id:id,native_chat_receipt:{kind:"JUDGE",event:{review_mode:"INDEPENDENT_EVAL_CONTEXT"}}},
+    execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"JUDGE",event:{review_mode:"INDEPENDENT_EVAL_CONTEXT"}}},
     config,fetchFn,sha,{...callerId,run_id:"1000"});
   const b=await r.json();eq(r.status,409);eq(b.code,"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT");
   eq(b.step_recorded,false);
