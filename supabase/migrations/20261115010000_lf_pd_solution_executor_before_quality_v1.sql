@@ -112,6 +112,8 @@ DECLARE
   new_select text;
   old_return text;
   new_return text;
+  old_derived_entry text;
+  new_derived_entry text;
   v_count integer;
 BEGIN
   d:=pg_get_functiondef('public.lf_profile_selector_semantic_prepare_v2(text,text,jsonb,jsonb)'::regprocedure);
@@ -182,6 +184,40 @@ begin$new$;
   v_count:=(length(d)-length(replace(d,old_gate,'')))/length(old_gate);
   IF v_count<>1 THEN RAISE EXCEPTION 'PD_EXECUTOR_SELECTOR_GATE_DRIFT'; END IF;
   d:=replace(d,old_gate,new_gate);
+
+  -- Derived repair continuations must be bound to a real Router-authorized
+  -- completed profile; never accept a generic DERIVATION_ONLY as an entrypoint.
+  old_derived_entry:=$old$
+    where e.execution_id=v_src and e.operation_code='EJECUCION_PERFIL_LF' and e.status='COMPLETED'
+      and e.request_sha256=v_request_sha and sp.entry_policy='DIRECT';
+    -- Only canonical one-field envelope; DB proves COMPLETED, DIRECT and same SHA.
+$old$;
+  new_derived_entry:=$new$
+    where e.execution_id=v_src and e.operation_code='EJECUCION_PERFIL_LF' and e.status='COMPLETED'
+      and e.request_sha256=v_request_sha
+      and (
+        sp.entry_policy='DIRECT'
+        OR (
+          sp.entry_policy='DERIVATION_ONLY'
+          AND e.manifest#>>'{router_profile_handoff,profile_code}'=e.target_code
+          AND e.manifest#>>'{router_profile_handoff,request_sha256}'=e.request_sha256
+          AND e.manifest#>>'{router_profile_handoff,return_to_router_after_profile_result}'='true'
+          AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,authority_ref}'='ROUTER_PROFILE_EXECUTION_AUTHORIZATION'
+          AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_code}'=e.target_code
+          AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,request_sha256}'=e.request_sha256
+          AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,fingerprint_sha256}'=
+            encode(extensions.digest(convert_to(
+              ((e.manifest#>'{router_profile_handoff,router_authorization_receipt}')-'fingerprint_sha256')::text,
+              'UTF8'),'sha256'),'hex')
+          AND e.manifest#>>'{router_profile_handoff,semantic_result,decision}'='RESOLVED'
+          AND e.manifest#>>'{router_profile_handoff,semantic_result,positive_target_refs,0}'=e.target_code
+        )
+      );
+    -- Only a source-bound completed run, with DIRECT or verified Router-derived authority.
+$new$;
+  v_count:=(length(d)-length(replace(d,old_derived_entry,'')))/length(old_derived_entry);
+  IF v_count<>1 THEN RAISE EXCEPTION 'PD_EXECUTOR_SELECTOR_DERIVED_AUTH_DRIFT'; END IF;
+  d:=replace(d,old_derived_entry,new_derived_entry);
 
   old_select:=$old$  where (v_channel is null or (p->'channels') ? v_channel)
     and ($old$;
