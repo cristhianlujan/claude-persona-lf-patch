@@ -25,7 +25,7 @@ class B2BSRCRNativeV06RawContract(unittest.TestCase):
         schema_errors=sorted(Draft7Validator(schema).iter_errors(c),key=lambda e:list(map(str,e.path)))
         result=resolve_validator()(c,m)
         codes=[f"{e.get('code')} @ {e.get('path')}: {e.get('message','')}" for e in result.get("errors",[])]
-        print("SRCR_SCHEMA_ERRORS",json.dumps([{"path":".".join(map(str,e.path)),"message":e.message[:250]} for e in schema_errors],ensure_ascii=False))
+        print("SRCR_SCHEMA_ERRORS",json.dumps([{"path":".".join(map(str,e.path)),"message":e.message[:250],"nested":[{"path":".".join(map(str,z.path)),"message":z.message[:240]} for z in e.context[:12]]} for e in schema_errors],ensure_ascii=False))
         print("SRCR_RUNTIME_BLOCKING",json.dumps(codes[:125],ensure_ascii=False))
         print("SRCR_RUNTIME_STATUS",result.get("status"),"VALID",result.get("valid"),"COUNT",len(codes))
         self.assertEqual([],schema_errors)
