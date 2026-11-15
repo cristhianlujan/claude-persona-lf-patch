@@ -1,0 +1,8 @@
+{
+  "solution_ref": "LF-B2B-CARGA002-WIZARD-THREE-STEPS-TEXT-20261114",
+  "paths": {
+    "supabase/migrations/20261115205500_lf_b2b_carga002_wizard_three_step_text_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/LF-B2B-CARGA002-WIZARD-THREE-STEPS-TEXT-20261114.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b2b_wizard_three_step_pgdual_v1.py": "RUNTIME_TESTING"
+  }
+}
