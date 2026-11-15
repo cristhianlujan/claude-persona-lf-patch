@@ -254,4 +254,82 @@ end $function$$new$;
   d:=replace(d,old_return,new_return);
   EXECUTE d;
 END $lf_pd_derived$;
+
+-- Reuse existing terminal receipt attacher. The native Step80 recorder previously
+-- computed the terminal SHA but did NOT persist its ACT-0001 post-profile route.
+-- This canonical step is still no product write and no profile auto-invocation.
+DO $lf_pd_terminal_handoff$
+DECLARE
+  d text;
+  old_decl text;
+  new_decl text;
+  old_return text;
+  new_return text;
+  n integer;
+BEGIN
+  d:=pg_get_functiondef('public.lf_profile_native_bridge_record_report_v1(text,text,text)'::regprocedure);
+  IF md5(d)<>'c545d192229d369bf26152a99de9899f' THEN
+    RAISE EXCEPTION 'PD_EXECUTOR_REPORT_SOURCE_STATE_DRIFT';
+  END IF;
+  old_decl:=$old$  v_terminal jsonb;
+BEGIN$old$;
+  new_decl:=$new$  v_terminal jsonb;
+  v_attached jsonb;
+BEGIN$new$;
+  n:=(length(d)-length(replace(d,old_decl,'')))/length(old_decl);
+  IF n<>1 THEN RAISE EXCEPTION 'PD_EXECUTOR_REPORT_DECLARE_ANCHOR_DRIFT'; END IF;
+  d:=replace(d,old_decl,new_decl);
+
+  old_return:=$old$
+  RETURN jsonb_build_object(
+    'status','PROFILE_EXECUTION_COMPLETED',
+    'execution_id',p_execution_id,
+    'profile_code',e.target_code,
+    'clean_step_count',v_clean,
+    'last_completed_step','report_output',
+    'execution_status',e.status,
+    'terminal_authority_receipt_sha256',v_terminal->>'terminal_authority_receipt_sha256',
+    'next_gate','RETURN_TO_ROUTER'
+  );
+END
+$function$$old$;
+  new_return:=$new$
+  -- Attach the terminal route after the canonical 11/11 clean step and
+  -- terminal receipt are proven. Reuse the existing idempotent CAS writer.
+  v_attached:=public.lf_profile_execution_attach_terminal_authority_receipt_v1(
+    p_execution_id,p_execution_id
+  );
+  IF v_attached->>'result' NOT IN (
+    'TERMINAL_AUTHORITY_RECEIPT_ATTACHED',
+    'TERMINAL_AUTHORITY_RECEIPT_ALREADY_ATTACHED'
+  )
+  OR v_attached->>'terminal_authority_receipt_sha256' IS DISTINCT FROM
+     v_terminal->>'terminal_authority_receipt_sha256'
+  OR jsonb_typeof(v_attached->'post_profile_route')<>'object'
+  THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','PD_EXECUTOR_TERMINAL_ROUTER_RETURN_NOT_ATTACHED',
+      'attach_result',v_attached
+    );
+  END IF;
+  RETURN jsonb_build_object(
+    'status','PROFILE_EXECUTION_COMPLETED',
+    'execution_id',p_execution_id,
+    'profile_code',e.target_code,
+    'clean_step_count',v_clean,
+    'last_completed_step','report_output',
+    'execution_status',e.status,
+    'terminal_authority_receipt_sha256',v_terminal->>'terminal_authority_receipt_sha256',
+    'post_profile_route',v_attached->'post_profile_route',
+    'next_action',v_attached->>'next_action',
+    'next_gate',CASE WHEN v_attached->>'next_action'='REENTER_ROUTER_STAGE1'
+                  THEN 'ACT-0001_STAGE1' ELSE 'RETURN_TO_ROUTER' END
+  );
+END
+$function$$new$;
+  n:=(length(d)-length(replace(d,old_return,'')))/length(old_return);
+  IF n<>1 THEN RAISE EXCEPTION 'PD_EXECUTOR_REPORT_RETURN_ANCHOR_DRIFT:%',n; END IF;
+  EXECUTE replace(d,old_return,new_return);
+END $lf_pd_terminal_handoff$;
 COMMIT;
