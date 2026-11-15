@@ -818,8 +818,18 @@ export async function handleProfileContinuation(
   // continuation. The DB writer owns nonce, SHA, sequencing and scope.
   // A self-asserted context is never a semantic PASS or owner promotion.
   if (Object.prototype.hasOwnProperty.call(body, "native_chat_receipt")) {
-    if (Object.keys(body).some(k => !["action", "execution_id", "native_chat_receipt"].includes(k))) {
+    if (Object.keys(body).some(k => ![
+      "action", "execution_id", "native_chat_receipt", "source_revision", "source_digest",
+    ].includes(k))) {
       return blocked("LF_NATIVE_CHAT_RECEIPT_REQUEST_SHAPE_DRIFT", 400);
+    }
+    // The generic profile transport already requires source binding.
+    // Validate it against the authenticated workflow revision; the writer
+    // still independently derives the candidate/scope/bundle from SQL.
+    if (body.source_revision !== callerRevision ||
+      typeof body.source_digest !== "string" ||
+      !/^sha256:[0-9a-f]{64}$/.test(body.source_digest)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_SOURCE_BINDING_DRIFT", 409);
     }
     if (e.target_code !== "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" ||
       !callerIdentity ||
