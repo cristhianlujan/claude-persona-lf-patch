@@ -928,7 +928,18 @@ function boundedRepairFixture(){
 }
 Deno.test("SRCR native source bind accepts only Router-bound governed repair for exact existing profile",async()=>{
   const n=network(boundedRepairFixture());
-  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+  const repairPlanFetch:typeof n.fetchFn=async(input,init)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_execution_plan_for_run_v1")){
+      n.calls.push({url,body:typeof init?.body==="string"?JSON.parse(init.body):null});
+      return new Response(JSON.stringify({status:"READY",operation_code:"EJECUCION_PERFIL_LF",
+        profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+        skills:[]}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,repairPlanFetch,sha);
   const body=await out.json();
   eq(out.status,200);eq(body.outcome,"SOURCE_BINDING_REQUIRED");
   eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),true);
