@@ -200,7 +200,7 @@ class DualPostgresPDFlow(unittest.TestCase):
                       SELECT jsonb_agg(p->>'profile_code' ORDER BY p->>'profile_code') INTO arr
                       FROM jsonb_array_elements(x->'candidate_profiles') p;
                       IF arr IS DISTINCT FROM '["PERFIL-PRODUCT-DIRECTOR-LF"]'::jsonb
-                         OR x->'derivation_next_stage' IS NOT NULL
+                         OR x->'derivation_next_stage' IS DISTINCT FROM 'null'::jsonb
                       THEN RAISE EXCEPTION 'PG_DERIVED_REPAIR_FORGED_RECEIPT_ACCEPTED'; END IF;
                     END $probe$;
                     ROLLBACK;
