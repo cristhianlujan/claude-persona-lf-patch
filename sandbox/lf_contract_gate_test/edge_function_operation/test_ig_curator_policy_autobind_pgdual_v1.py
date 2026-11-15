@@ -61,6 +61,7 @@ CREATE TABLE programacion.input_readiness_runs(
 CREATE TABLE programacion.input_family_assessments(
  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
  run_id bigint,family_code text,coverage_status text,curator_evidence jsonb);
+CREATE TABLE programacion.input_gap_proposals(id bigint,run_id bigint);
 
 INSERT INTO lf_ops.pantallas VALUES
  (44,'B2B-CARGA-002','B2B_CARGAS',true),
