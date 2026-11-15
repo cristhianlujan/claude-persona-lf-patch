@@ -91,6 +91,7 @@ INSERT INTO public.lf_operation_execution_steps VALUES
 class FamilyRefPgDual(unittest.TestCase):
  def test_reference_catalog_and_native_bridge_contract(self):
   self.assertEqual(len(M),1)
+  self.assertEqual(M[0].name,"20261114224412_lf_input_family_inheritance_reference_v1.sql")
   self.assertTrue(SRC.exists())
   self.assertIsNotNone(shutil.which("docker"),"CI_REQUIRES_DOCKER")
   migration=M[0].read_text("utf8")
@@ -153,7 +154,12 @@ SELECT 'SERVICE_EXEC='||has_function_privilege('service_role',
 CREATE TEMP TABLE fixture_assertions(name text PRIMARY KEY, status text);
 DO $test$
 DECLARE h text; x bigint; o jsonb;j jsonb;
+        v_initial integer; v_message text; v_sqlstate text;
+        v_positive_source_id bigint; v_previous_description text;
+        v_source_hash text; v_current_hash text;
 BEGIN
+ SELECT count(*) INTO v_initial FROM programacion.input_family_inheritable_sources_v1;
+ IF v_initial<>12 THEN RAISE EXCEPTION 'TEST_INITIAL_CATALOG_NOT_12:%',v_initial; END IF;
  SELECT source_hash,source_id INTO h,x
  FROM programacion.input_family_inheritable_sources_v1
  WHERE family_code='AUDIT';
@@ -208,7 +214,7 @@ BEGIN
  IF o->'findings'->0->>'code'<>'V3_DUPLICATE_POLICY_PARAMETERS'
  THEN RAISE EXCEPTION 'V3_PARAMS_COPY_NOT_REJECTED:%',o; END IF;
  INSERT INTO fixture_assertions VALUES('V3_NO_POLICY_PARAMS_COPY','PASS');
- -- Negative: reject CANDIDATO at INSERT, no poisoned catalog persisted.
+ -- Negative 1: CANDIDATO must raise the exact guarded error.
  BEGIN
   INSERT INTO programacion.input_family_inheritable_sources_v1(
   family_code,source_kind,rule_id,scope_kind,source_hash,
@@ -220,10 +226,83 @@ BEGIN
   FROM lf_ops.reglas r WHERE r.id=390;
   RAISE EXCEPTION 'CANDIDATE_WAS_INSERTED';
  EXCEPTION WHEN OTHERS THEN
-  IF SQLERRM NOT LIKE 'LF_FAMILY_REFERENCE_SOURCE_NOT_VIGENTE:%'
-  THEN RAISE; END IF;
+  GET STACKED DIAGNOSTICS v_message=MESSAGE_TEXT,v_sqlstate=RETURNED_SQLSTATE;
+  IF v_sqlstate<>'P0001'
+     OR v_message<>'LF_FAMILY_REFERENCE_SOURCE_NOT_VIGENTE:THEME_LIGHT_DARK_SYSTEM,RULE'
+  THEN RAISE EXCEPTION 'CANDIDATE_WRONG_ERROR:%,%',v_sqlstate,v_message; END IF;
+  RAISE NOTICE 'CASE_CANDIDATO_SQLERRM=%',v_message;
  END;
+ IF (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial
+ THEN RAISE EXCEPTION 'CANDIDATE_CATALOG_COUNT_DRIFT'; END IF;
  INSERT INTO fixture_assertions VALUES('CANDIDATO_SOURCE_REJECTED','PASS');
+
+ -- Two independent fixture rules exist only inside the enclosing ROLLBACK.
+ INSERT INTO lf_ops.reglas(id,codigo,estado,es_transversal,titulo)
+ VALUES (6,'TEST_NONTRANSVERSAL','VIGENTE',false,'Nontransversal fixture'),
+        (21,'TEST_TRANSVERSAL','VIGENTE',true,'Transversal fixture');
+
+ -- Negative 2: VIGENTE non-transversal is rejected even with matching SHA.
+ BEGIN
+  INSERT INTO programacion.input_family_inheritable_sources_v1(
+  family_code,source_kind,rule_id,scope_kind,source_hash,
+  semantic_equivalence,semantic_transferability,semantic_evidence_ref,semantic_reason_code)
+  SELECT 'TEST_NONTRANSVERSAL','RULE',r.id,'GLOBAL',
+   encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex'),
+   'EQUIVALENT_COMPONENT','TRANSFERABLE',
+   'fixture://nontransversal-6','NONTRANSVERSAL_NEGATIVE'
+  FROM lf_ops.reglas r WHERE r.id=6;
+  RAISE EXCEPTION 'NONTRANSVERSAL_WAS_INSERTED';
+ EXCEPTION WHEN OTHERS THEN
+  GET STACKED DIAGNOSTICS v_message=MESSAGE_TEXT,v_sqlstate=RETURNED_SQLSTATE;
+  IF v_sqlstate<>'P0001'
+    OR v_message<>'LF_FAMILY_REFERENCE_SOURCE_NOT_VIGENTE:TEST_NONTRANSVERSAL,RULE'
+  THEN RAISE EXCEPTION 'NONTRANSVERSAL_WRONG_ERROR:%,%',v_sqlstate,v_message; END IF;
+  RAISE NOTICE 'CASE_NONTRANSVERSAL_SQLERRM=%',v_message;
+ END;
+ IF (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial
+ THEN RAISE EXCEPTION 'NONTRANSVERSAL_CATALOG_COUNT_DRIFT'; END IF;
+ INSERT INTO fixture_assertions VALUES('NONTRANSVERSAL_SOURCE_REJECTED','PASS');
+
+ -- Negative 3: VIGENTE/transversal with an incorrect 64-character SHA.
+ BEGIN
+  INSERT INTO programacion.input_family_inheritable_sources_v1(
+  family_code,source_kind,rule_id,scope_kind,source_hash,
+  semantic_equivalence,semantic_transferability,semantic_evidence_ref,semantic_reason_code)
+  SELECT 'TEST_HASH_MISMATCH','RULE',r.id,'GLOBAL',repeat('0',64),
+   'PARTIAL_BASE','TRANSFERABLE',
+   'fixture://hash-mismatch-179','SOURCE_SHA_NEGATIVE'
+  FROM lf_ops.reglas r WHERE r.id=179;
+  RAISE EXCEPTION 'SHA_MISMATCH_WAS_INSERTED';
+ EXCEPTION WHEN OTHERS THEN
+  GET STACKED DIAGNOSTICS v_message=MESSAGE_TEXT,v_sqlstate=RETURNED_SQLSTATE;
+  IF v_sqlstate<>'P0001'
+    OR v_message<>'LF_FAMILY_REFERENCE_SOURCE_SHA_MISMATCH:TEST_HASH_MISMATCH'
+  THEN RAISE EXCEPTION 'SHA_MISMATCH_WRONG_ERROR:%,%',v_sqlstate,v_message; END IF;
+  RAISE NOTICE 'CASE_SHA_MISMATCH_SQLERRM=%',v_message;
+ END;
+ IF (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial
+ THEN RAISE EXCEPTION 'SHA_MISMATCH_CATALOG_COUNT_DRIFT'; END IF;
+ INSERT INTO fixture_assertions VALUES('SOURCE_SHA_MISMATCH_REJECTED','PASS');
+
+ -- Positive 4: matching SHA for a VIGENTE transversal source passes the guard.
+ INSERT INTO programacion.input_family_inheritable_sources_v1(
+  family_code,source_kind,rule_id,scope_kind,source_hash,
+  semantic_equivalence,semantic_transferability,semantic_evidence_ref,semantic_reason_code)
+ SELECT 'TEST_VALID_TRANSVERSAL','RULE',r.id,'GLOBAL',
+  encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex'),
+  'EQUIVALENT_COMPONENT','TRANSFERABLE',
+  'fixture://positive-transversal-21','SOURCE_VIGENTE_TRANSVERSAL'
+ FROM lf_ops.reglas r WHERE r.id=21
+ RETURNING source_id INTO v_positive_source_id;
+ IF v_positive_source_id IS NULL OR
+   (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial+1
+ THEN RAISE EXCEPTION 'VALID_TRANSVERSAL_INSERT_NOT_ACCEPTED'; END IF;
+ DELETE FROM programacion.input_family_inheritable_sources_v1
+ WHERE source_id=v_positive_source_id;
+ IF (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial
+ THEN RAISE EXCEPTION 'VALID_TRANSVERSAL_CATALOG_COUNT_DRIFT'; END IF;
+ RAISE NOTICE 'CASE_VALID_TRANSVERSAL_SQLERRM=NONE';
+ INSERT INTO fixture_assertions VALUES('VIGENTE_TRANSVERSAL_SOURCE_ACCEPTED','PASS');
  -- Independent judge schema and references (fixture, no real model).
  SELECT source_hash,source_id INTO h,x FROM programacion.input_family_inheritable_sources_v1
  WHERE family_code='AUDIT';
@@ -260,13 +339,31 @@ BEGIN
  'action','REUSE_REFERENCE','source_catalog_id',x,'source_hash',h)),NULL);
  IF o->>'status'<>'RETURN_TO_WORKER' THEN RAISE EXCEPTION 'JUDGE_MISSING_FALSE_PASS'; END IF;
  INSERT INTO fixture_assertions VALUES('70_MISSING_JUDGE_NOT_PASS','PASS');
- -- Live rule changed AFTER catalog admission -> read-time STALE, never mutate catalog.
- UPDATE lf_ops.reglas SET estado='CANDIDATO' WHERE id=416;
+ -- Positive 5: change a non-status source field; read-time hash must become STALE.
+ SELECT descripcion INTO v_previous_description FROM lf_ops.reglas WHERE id=416;
+ SELECT source_hash INTO v_source_hash
+ FROM programacion.input_family_inheritable_sources_v1 WHERE rule_id=416;
  IF (SELECT freshness FROM public.v_lf_input_family_coverage_by_screen_v1
-   WHERE pantalla_id=44 AND family_code='AUDIT')<>'STALE' THEN
-   RAISE EXCEPTION 'STALE_READTIME_NOT_RECOGNIZED'; END IF;
+     WHERE pantalla_id=44 AND family_code='AUDIT')<>'CURRENT'
+ THEN RAISE EXCEPTION 'STALE_PRECONDITION_NOT_CURRENT'; END IF;
+ UPDATE lf_ops.reglas SET descripcion='SOURCE_HASH_CHANGED_IN_ROLLBACK' WHERE id=416;
+ SELECT current_source_hash INTO v_current_hash
+ FROM public.v_lf_input_family_coverage_by_screen_v1
+ WHERE pantalla_id=44 AND family_code='AUDIT';
+ IF v_current_hash IS NOT DISTINCT FROM v_source_hash
+   OR (SELECT estado FROM lf_ops.reglas WHERE id=416)<>'VIGENTE'
+   OR (SELECT freshness FROM public.v_lf_input_family_coverage_by_screen_v1
+       WHERE pantalla_id=44 AND family_code='AUDIT')<>'STALE'
+ THEN RAISE EXCEPTION 'STALE_HASH_READTIME_NOT_RECOGNIZED'; END IF;
  IF (public.lf_input_family_reuse_before_propose_v1(44,'AUDIT',956)->>'status')
    <>'STALE_SOURCE_REVIEW' THEN RAISE EXCEPTION 'STALE_WRAPPER_INVALID'; END IF;
+ UPDATE lf_ops.reglas SET descripcion=v_previous_description WHERE id=416;
+ IF (SELECT freshness FROM public.v_lf_input_family_coverage_by_screen_v1
+       WHERE pantalla_id=44 AND family_code='AUDIT')<>'CURRENT'
+ THEN RAISE EXCEPTION 'STALE_RESTORE_NOT_CURRENT'; END IF;
+ IF (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial
+ THEN RAISE EXCEPTION 'STALE_CATALOG_COUNT_DRIFT'; END IF;
+ RAISE NOTICE 'CASE_STALE_SOURCE_FIELD_SQLERRM=NONE,FRESHNESS=STALE';
  INSERT INTO fixture_assertions VALUES('STALE_SOURCE_READTIME','PASS');
  -- 80: REF+HASH only, never content/parameters.
  SELECT jsonb_agg(jsonb_build_object('family_code',c.family_code,'action','REUSE_REFERENCE',
@@ -280,6 +377,8 @@ BEGIN
  IF jsonb_array_length(public.lf_input_family_catalog_receipts_for_run_v1(
   'EXEC-PROFILE-GATE2-FIXTURE44'))<>1 THEN RAISE EXCEPTION 'STEP80_REF_HASH_MISSING'; END IF;
  INSERT INTO fixture_assertions VALUES('80_REF_HASH_ONLY','PASS');
+ IF (SELECT count(*) FROM programacion.input_family_inheritable_sources_v1)<>v_initial
+ THEN RAISE EXCEPTION 'FINAL_CATALOG_COUNT_DRIFT'; END IF;
 END $test$;
 SELECT 'ASSERTIONS='||count(*) FROM fixture_assertions WHERE status='PASS';
 SELECT 'POST_ASSERT_CATALOG='||count(*) FROM programacion.input_family_inheritable_sources_v1;
@@ -322,11 +421,21 @@ SELECT 'POST_ASSERT_CANDIDATE_SOURCE='||count(*) FROM programacion.input_family_
        "REUSE_RATE=RETURN_TO_WORKER","RUN_INDEPENDENT=true",
        "STEP45_SOURCE_COUNT=12","STEP45_CATALOG_SHA=true",
        "NO_ASSESSMENT_WRITES=47","ANON_NO_EXEC=true","SERVICE_EXEC=true",
-       "ASSERTIONS=14","POST_ASSERT_CATALOG=12",
+       "ASSERTIONS=17","POST_ASSERT_CATALOG=12",
        "POST_ASSERT_CANDIDATE_SOURCE=0","ROLLED_BACK=true",
        "BASE_RULES_UNCHANGED=11","BASE_ASSESSMENTS_UNCHANGED=47"]
      for wanted in expect:
       self.assertIn(wanted,rr.stdout,wanted+"\n"+rr.stdout[-5500:])
+     expected_case_markers=[
+       "CASE_CANDIDATO_SQLERRM=LF_FAMILY_REFERENCE_SOURCE_NOT_VIGENTE:THEME_LIGHT_DARK_SYSTEM,RULE",
+       "CASE_NONTRANSVERSAL_SQLERRM=LF_FAMILY_REFERENCE_SOURCE_NOT_VIGENTE:TEST_NONTRANSVERSAL,RULE",
+       "CASE_SHA_MISMATCH_SQLERRM=LF_FAMILY_REFERENCE_SOURCE_SHA_MISMATCH:TEST_HASH_MISMATCH",
+       "CASE_VALID_TRANSVERSAL_SQLERRM=NONE",
+       "CASE_STALE_SOURCE_FIELD_SQLERRM=NONE,FRESHNESS=STALE",
+     ]
+     for marker in expected_case_markers:
+      self.assertIn(marker,rr.stderr,marker+"\\n"+rr.stderr[-5000:])
+      print(marker)
      print("PASS_LF_FAMILY_REFERENCE_PG"+image+
        "_12_SOURCES_CANDIDATE_REJECT_V1_V5_STEP45_60_70_80_ROLLBACK_TRUE")
     finally:
