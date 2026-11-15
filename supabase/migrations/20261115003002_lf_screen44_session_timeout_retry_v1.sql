@@ -12,7 +12,8 @@ BEGIN
    RAISE EXCEPTION 'SCREEN44_SESSION_TIMEOUT_SESSION_SOURCE_DRIFT';
  END IF;
  IF (SELECT count(*) FROM lf_ops.politicas_timeout
-   WHERE (timeout_policy_id=2 AND policy_code='TIMEOUT-B2B-UPLOAD'
+   WHERE status='CANDIDATO' AND (
+        (timeout_policy_id=2 AND policy_code='TIMEOUT-B2B-UPLOAD'
           AND operation_code='FILE_UPLOAD' AND timeout_seconds=300
           AND retry_limit=2 AND backoff_strategy='EXPONENTIAL')
       OR (timeout_policy_id=4 AND policy_code='TIMEOUT-B2B-VALIDATION'
@@ -21,7 +22,7 @@ BEGIN
       OR (timeout_policy_id=5 AND policy_code='TIMEOUT-B2B-PROCESSING'
           AND operation_code='LOAD_PROCESSING' AND timeout_seconds=1800
           AND retry_limit=0 AND backoff_strategy='NONE')
-      AND status='CANDIDATO')<>3 THEN
+      ))<>3 THEN
    RAISE EXCEPTION 'SCREEN44_SESSION_TIMEOUT_TIMING_SOURCE_DRIFT';
  END IF;
  IF (SELECT count(*) FROM lf_ops.reglas
