@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-family-reference-guard-pgdual-20261114-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_family_reference_inheritance_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-family-reference-guard-pgdual-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
