@@ -1027,9 +1027,20 @@ def main():
     if isinstance(request, dict) and request.get("kind") == "NATIVE_CHAT_RECEIPT_APPEND":
         # Preserve the caller event intact. Edge derives writer_receipt_ref
         # from the VERIFIED OIDC run; SQL owns the nonce and all SHA linkage.
+        # Satisfy the SAME canonical transport preflight as every other
+        # native-profile continuation. Never send a made-up digest or role.
+        source_revision = os.environ["GITHUB_SHA"]
+        exact_source = Path.cwd() / "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        if (not re.fullmatch(r"[a-f0-9]{40}", source_revision)
+            or not exact_source.is_file()
+            or not exact_source.resolve().is_relative_to(Path.cwd().resolve())):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_SOURCE_FILE_UNRESOLVED")
+        source_digest = "sha256:" + hashlib.sha256(exact_source.read_bytes()).hexdigest()
         code, reply = call_json(EDGE_URL, {
             "action": "profile_native_continue_v1",
             "execution_id": request["execution_id"],
+            "source_revision": source_revision,
+            "source_digest": source_digest,
             "native_chat_receipt": {
                 "kind": request["receipt_kind"],
                 "event": request["event"],
