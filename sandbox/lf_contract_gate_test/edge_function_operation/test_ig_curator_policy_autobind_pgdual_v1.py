@@ -226,7 +226,7 @@ class IGCuratorPolicyAutobindPGDual(unittest.TestCase):
       return subprocess.run(["docker","exec","-i",name,"psql","-X","-Atq",
        "-v","ON_ERROR_STOP=1","-U","postgres","-d","postgres"],
        input=sql,text=True,capture_output=True,timeout=120)
-     base=psql(FIXTURE+"\n"+complete+"\n"+curator+"\n")
+     base=psql(FIXTURE+"\n"+complete+";\n"+curator+";\n")
      self.assertEqual(base.returncode,0,base.stderr[-3600:])
      md5cmd="""SELECT md5(pg_get_functiondef('programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)'::regprocedure));
 SELECT md5(pg_get_functiondef('programacion.fn_input_governance_family_complete_probe_v1(integer,text,bigint,jsonb)'::regprocedure));
@@ -246,13 +246,15 @@ SELECT 'CURATOR44='||(programacion.fn_input_governance_curator_materialize_v1(
  44,'STORY_CREATOR','FIXTURE_CURATOR',false)->>'status');
 SELECT 'CURATOR51='||(programacion.fn_input_governance_curator_materialize_v1(
  51,'STORY_CREATOR','FIXTURE_CURATOR',false)->>'status');
+SELECT 'REPLAY_WRITE_ZERO='||(programacion.fn_input_governance_policy_autobind_v1(
+ 44,'STORY_CREATOR','FIXTURE_CURATOR')->>'write_count');
 """
      txn=psql("BEGIN;\n"+inner+"\n"+tests+CHECK+"\nROLLBACK;\n"
        "SELECT 'ROLLED_BACK_LINKS='||count(*) FROM lf_ops.pantallas_politicas WHERE pantalla_id=44;\n"
        "SELECT 'ROLLED_BACK_ASSESSMENTS='||count(*) FROM programacion.input_family_assessments WHERE run_id=957;\n"
        "SELECT 'SCREEN51_STILL_12='||count(*) FROM programacion.input_family_assessments WHERE run_id=952 AND coverage_status='COMPLETE';\n")
      self.assertEqual(txn.returncode,0,txn.stderr[-4300:])
-     for required in ("CURATOR44=CURATING","CURATOR51=NOOP_CURRENT_RUN",
+     for required in ("CURATOR44=CURATING","CURATOR51=NOOP_CURRENT_RUN","REPLAY_WRITE_ZERO=0",
        "FOUR_COMPLETE=4","RATE_BIND=1","SESSION_BIND=1",
        "SESSION_CLIENT_MISBIND=0","TIMEOUT_BIND=3","IDEMPOT_BIND=1",
        "RECEIPTS=6","RULE_ASSOCIATIONS=7",
