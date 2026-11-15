@@ -1,0 +1,191 @@
+{
+  "schema_version": "LF_B2B_CARGA002_EXECUTOR_PACKAGE_V1",
+  "package_status": "SANDBOX_CANDIDATE_EXECUTABLE_CONTRACT_NOT_BUSINESS_DEPLOYMENT",
+  "source_execution_id": "EXEC-PROFILE-GATE2-7D8A0D0F933807A4C8826727",
+  "executor_execution_id": "EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706",
+  "scope": {
+    "screen_code": "B2B-CARGA-002",
+    "screen_id": 44,
+    "module_code": "B2B_CARGAS",
+    "scope_type": "CANDIDATE_CONTRACT_AND_REGRESSION_TESTS_ONLY",
+    "forbid_production": true,
+    "forbid_rule_mutation": true,
+    "forbid_screen_mutation": true
+  },
+  "source_snapshot": {
+    "screen": {
+      "ref": "supabase://lf_ops.pantallas/44",
+      "code": "B2B-CARGA-002",
+      "version": "v0.3",
+      "state": "CANDIDATO_VISUAL",
+      "row_sha256": "5aa03357bf38dcc3f8e8dbdf9593d6031924bd0554fa487a7d1955bc2e22fa2e"
+    },
+    "linked_rule_count": 43,
+    "vigente_rule_count": 30,
+    "candidato_rule_count": 13,
+    "critical_rules": [
+      {
+        "code": "B2B-RULE-AUDIT-001",
+        "status": "VIGENTE",
+        "row_sha256": "44894e46ebcd1e6dc0aafadb7f5290d0f03979fe5c8bc3b26c06eac9bb2d4386",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-AUDIT-001"
+      },
+      {
+        "code": "B2B-RULE-AUTH-002",
+        "status": "VIGENTE",
+        "row_sha256": "2f58410ed5a158a52b22313a0b9deeabd2b9632c83dc4eb7e14b8078dbef1584",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-002"
+      },
+      {
+        "code": "B2B-RULE-IDEMP-001",
+        "status": "CANDIDATO",
+        "row_sha256": "51fe469384f20206c35919d4422dd7db46622d1d1f2aadc4203ba60d6da5dfd7",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-IDEMP-001"
+      },
+      {
+        "code": "B2B-RULE-LOAD-WIZARD-001",
+        "status": "CANDIDATO",
+        "row_sha256": "91b8e73ff1719fc70d7bd76f5e8d756cea8b8ede4de87a05271d7a55b88c6dc5",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-LOAD-WIZARD-001"
+      },
+      {
+        "code": "B2B-RULE-PROD-001",
+        "status": "VIGENTE",
+        "row_sha256": "bd2a276fb3e395911dbfbe8f7ed0b3344311778357c9edf5d8941328e20a3002",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-PROD-001"
+      },
+      {
+        "code": "B2B-RULE-STATE-001",
+        "status": "VIGENTE",
+        "row_sha256": "5dc84de39a3a780bb2340f584b23995ee8b43713b9d760c1c9ffdb0c270d2764",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-STATE-001"
+      },
+      {
+        "code": "B2B-RULE-STORAGE-002",
+        "status": "CANDIDATO",
+        "row_sha256": "8c39ca6428fbfce4b6013cb59d180c83b12ab005941adc8ee91cbea416561bae",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-STORAGE-002"
+      },
+      {
+        "code": "B2B-RULE-VALIDATION-VALID-ONLY-001",
+        "status": "CANDIDATO",
+        "row_sha256": "b844437ca9eb4151914ec4e83067b1d049845a19660042750b251ccf8178f2bf",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-VALIDATION-VALID-ONLY-001"
+      }
+    ],
+    "snapshot_method": "SELECT SHA256(to_jsonb(row)::text UTF8) in sandbox",
+    "currentness_requirement": "Recompute before any governed business effect; snapshot is not durable authority for promotion"
+  },
+  "observed_product_contract": {
+    "current_ui_step_count": 3,
+    "ui_step_descriptions": [
+      "Seleccionar modalidad y obtener formato/tips",
+      "Subir y preparar datos",
+      "Validar"
+    ],
+    "backend_state_outside_wizard": "B2B_LOAD_VALIDADO",
+    "candidate_wizard_state_count": 4,
+    "candidate_wizard_rule": "B2B-RULE-LOAD-WIZARD-001",
+    "decision": "Preserve 3-step screen until a new governed current product decision",
+    "not_executed": true
+  },
+  "repair_scope": "IMPLEMENTATION-READY_CANDIDATE_B2B_RULES_AND_NEGATIVE_GUARDS",
+  "implementation_actions": [
+    {
+      "id": "A1",
+      "target_ref": "supabase://lf_ops.pantallas/44",
+      "source_refs": [
+        "supabase://lf_ops.pantallas/44",
+        "supabase://lf_ops.reglas/B2B-RULE-LOAD-WIZARD-001"
+      ],
+      "selected_solution": "Preservar los tres pasos reales y presentar contradicción con cuatro estados CANDIDATO; un cambio UI requiere decisión autoritativa nueva.",
+      "execution_boundary": "NO_SCREEN_WRITE",
+      "observable_check": "Prueba negativa: estado UI 4 sin fuente vigente se rechaza"
+    },
+    {
+      "id": "A2",
+      "target_ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-002",
+      "source_refs": [
+        "supabase://lf_ops.reglas/B2B-RULE-AUTH-002",
+        "supabase://lf_ops.reglas/B2B-RULE-STATE-001",
+        "supabase://lf_ops.reglas/B2B-RULE-VALIDATION-VALID-ONLY-001"
+      ],
+      "selected_solution": "Preparar casos negativos de empresa ajena, estado no autorizado y registro inválido; ejecutar en backend solamente después de autorizar cambio de candidato.",
+      "execution_boundary": "NO_DATA_WRITE",
+      "observable_check": "Un permiso ausente o transición no registrada produce rechazo; la regla de solo válidos sigue candidata"
+    },
+    {
+      "id": "A3",
+      "target_ref": "supabase://lf_ops.reglas/B2B-RULE-STORAGE-002",
+      "source_refs": [
+        "supabase://lf_ops.reglas/B2B-RULE-STORAGE-002",
+        "supabase://lf_ops.reglas/B2B-RULE-IDEMP-001",
+        "supabase://lf_ops.reglas/B2B-RULE-AUDIT-001"
+      ],
+      "selected_solution": "Separar propuesta de controles de archivo e idempotencia de VIGENTE; exigir checksum, MIME, malware, reintento y auditoría con pruebas futuras.",
+      "execution_boundary": "NO_DATA_WRITE",
+      "observable_check": "No marcar validaciones candidatas como desplegadas por el test de contrato"
+    },
+    {
+      "id": "A4",
+      "target_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706",
+      "source_refs": [
+        "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-7D8A0D0F933807A4C8826727",
+        "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706"
+      ],
+      "selected_solution": "Entregar este contrato ejecutable como artefacto candidato, luego Router reingresa; Quality únicamente revisa artefacto con SHA, resultados de pruebas y readback; promoción espera juez independiente y owner.",
+      "execution_boundary": "NO_AUTOMATIC_PROMOTION",
+      "observable_check": "Debe existir ref de artefacto y pruebas antes de Quality; promoción sin Step70 independiente se rechaza"
+    }
+  ],
+  "negative_test_codes": [
+    "FOUR_STEPS_WITHOUT_AUTHORITY",
+    "CANDIDATE_AS_VIGENTE",
+    "MISSING_SERVER_SIDE_AUTH",
+    "MISSING_CHANGE_READBACK",
+    "QUALITY_BEFORE_EXECUTOR",
+    "PROMOTION_WITHOUT_INDEPENDENT_STEP70",
+    "PROMOTION_WITHOUT_HUMAN_DECISION",
+    "PRODUCTION_WRITE_FORBIDDEN"
+  ],
+  "quality_gate": {
+    "artifact_required": true,
+    "executor_receipt_required": true,
+    "regression_test_required": true,
+    "quality_before_executor_allowed": false,
+    "promotion_allowed": false,
+    "quality_scope": "Review candidate executable contract and its test results, NOT deployed business behavior"
+  },
+  "promotion_gate": {
+    "eligible_candidates": [],
+    "review_queue": [
+      {
+        "rule_code": "B2B-RULE-LOAD-WIZARD-001",
+        "reason": "Contradicts screen UI step count until authoritative product reconciliation"
+      },
+      {
+        "rule_code": "B2B-RULE-VALIDATION-VALID-ONLY-001",
+        "reason": "No backend effect or independent Step70 linked to exact rule verified"
+      },
+      {
+        "rule_code": "B2B-RULE-STORAGE-002",
+        "reason": "No real file processing backend test or independent Step70"
+      }
+    ],
+    "must_use_existing_route": "lf_rule_promotion_request_v1",
+    "independent_step70_required": true,
+    "owner_human_decision_required": true,
+    "requests_created": 0
+  },
+  "rollback": {
+    "strategy": "Revert scoped governed PR; remove candidate artifact and test without changing lf_ops",
+    "protected_assets": [
+      "lf_ops.pantallas/44",
+      "lf_ops.reglas/*",
+      "ACT-0001",
+      "PASE"
+    ],
+    "before_ref": "github://main (candidate paths absent prior to branch)"
+  },
+  "claim_ceiling": "Executed here means creation + deterministic testing + GitHub readback of THIS sandbox candidate only; NOT implementation of B2B bulk load, rule promotion, deployment or production QA"
+}
