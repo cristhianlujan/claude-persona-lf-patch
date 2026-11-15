@@ -150,11 +150,11 @@ VALUES({quote(RUN)},{i},{quote(event['stage'])},{quote(raw)},{quote(raw_sha)},
         v=quote(compact(review))
         statement=f"""BEGIN;
 {body}
-SELECT 'MISSING|'||public.lf_profile_step70_clean_eval_context_verify_v1({quote(RUN)},{v}::jsonb)->>'blocking_code';
+SELECT 'MISSING|'||(public.lf_profile_step70_clean_eval_context_verify_v1({quote(RUN)},{v}::jsonb)->>'blocking_code');
 {ins}
-SELECT 'VALID|'||public.lf_profile_step70_clean_eval_context_verify_v1({quote(RUN)},{v}::jsonb)->>'status';
-SELECT 'DRIFT|'||public.lf_profile_step70_clean_eval_context_verify_v1({quote(RUN)},
-jsonb_set({v}::jsonb,'{{candidate_sha256}}','"{'c'*64}"'::jsonb))->>'blocking_code';
+SELECT 'VALID|'||(public.lf_profile_step70_clean_eval_context_verify_v1({quote(RUN)},{v}::jsonb)->>'status');
+SELECT 'DRIFT|'||(public.lf_profile_step70_clean_eval_context_verify_v1({quote(RUN)},
+jsonb_set({v}::jsonb,'{{candidate_sha256}}','"{'c'*64}"'::jsonb))->>'blocking_code');
 ROLLBACK;"""
         out,_=self.sql(name,statement)
         self.assertIn("MISSING|LF_STEP70_CLEAN_CONTEXT_RECEIPT_NOT_VERIFIED",out)
