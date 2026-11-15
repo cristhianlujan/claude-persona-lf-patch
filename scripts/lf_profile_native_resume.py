@@ -781,7 +781,7 @@ SEMANTIC_CHECKS = (
 
 def validate_independent_semantic_review(review):
     mode = review.get("review_mode", "INDEPENDENT_SEMANTIC")
-    if mode not in ("INDEPENDENT_SEMANTIC", "CURRENT_CONTEXT_REVIEW"):
+    if mode not in ("INDEPENDENT_SEMANTIC", "CURRENT_CONTEXT_REVIEW", "INDEPENDENT_EVAL_CONTEXT"):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_MODE_INVALID")
     expected_verdict = (
         "PASS_REVIEWED_CURRENT_CONTEXT" if mode == "CURRENT_CONTEXT_REVIEW"
@@ -830,6 +830,17 @@ def validate_independent_semantic_review(review):
                 or review.get("reviewer_is_producer") is not True
                 or review.get("model_call_count") != 0):
             raise ValueError("PROFILE_CURRENT_CONTEXT_REVIEW_PROVENANCE_INVALID")
+    elif mode == "INDEPENDENT_EVAL_CONTEXT":
+        # SQL independently resolves the frozen three-stage immutable context chain.
+        # This local check cannot grant independence or fabricate model-call metadata.
+        if (review.get("reviewer_is_producer") is not False
+                or review.get("producer_context_available") is not False
+                or review.get("producer_independence_proven") is not True
+                or review.get("model_call_count") is not None):
+            raise ValueError("LF_STEP70_CLEAN_CONTEXT_METADATA_INVALID")
+        if (not isinstance(review.get("reviewer_context_ref"), str)
+                or not review["reviewer_context_ref"].strip()):
+            raise ValueError("LF_STEP70_CLEAN_CONTEXT_REF_MISSING")
     else:
         if review.get("producer_independence_proven") is not True:
             raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
@@ -870,16 +881,17 @@ def build_semantic_receipt(review):
     current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
     verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
                else "PASS_INDEPENDENT_SEMANTIC")
-    if not current_context:
+    isolated_context = review.get("review_mode") == "INDEPENDENT_EVAL_CONTEXT"
+    if not current_context and not isolated_context:
         raise ValueError("JUDGE_INDEPENDENCE_NOT_PROVEN")
     return {
         "status": "PASS",
         "verdict": verdict,
         "validator_status": "PASS",
-        "review_mode": "CURRENT_CONTEXT_REVIEW",
-        "reviewer_is_producer": True,
-        "producer_independence_proven": False,
-        "model_call_count": 0,
+        "review_mode": "INDEPENDENT_EVAL_CONTEXT" if isolated_context else "CURRENT_CONTEXT_REVIEW",
+        "reviewer_is_producer": False if isolated_context else True,
+        "producer_independence_proven": True if isolated_context else False,
+        "model_call_count": None if isolated_context else 0,
         "candidate_sha256": review["candidate_sha256"],
         "scope_packet_sha256": review["scope_packet_sha256"],
         "result": {
@@ -890,7 +902,7 @@ def build_semantic_receipt(review):
             "blocking_codes": [],
         },
         "judge_v3_evidence": review,
-        "content_findings":[{"finding_code":"JUDGE_INDEPENDENCE_NOT_PROVEN",
+        "content_findings":[] if isolated_context else [{"finding_code":"JUDGE_INDEPENDENCE_NOT_PROVEN",
             "continuation_allowed":True,"reviewer_is_producer":True,
             "producer_independence_proven":False,"model_call_count":0}],
     }
@@ -925,7 +937,7 @@ def complete_native_profile_semantic_and_report(execution_id, source, semantic_r
     # from a model-authored flag or a second GitHub Actions invocation.
     # Until the provider/native host supplies independent call attestation,
     # preserve all content checks and downgrade only the independence claim.
-    if semantic_review.get("review_mode") != "CURRENT_CONTEXT_REVIEW":
+    if semantic_review.get("review_mode") not in ("CURRENT_CONTEXT_REVIEW", "INDEPENDENT_EVAL_CONTEXT"):
         try:
             from lf_step70_separate_call_receipt_v1 import normalize_when_unverified
         except ModuleNotFoundError:
