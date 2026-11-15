@@ -178,7 +178,6 @@ BEGIN
    SELECT * INTO existing FROM public.lf_ig_native_chat_receipt_v1
     WHERE execution_id=p_execution_id AND seq=wanted;
    IF existing.kind IS DISTINCT FROM p_kind
-    OR existing.writer_receipt_ref IS DISTINCT FROM p_writer_receipt_ref
     OR (existing.raw_text::jsonb - ARRAY[
        'stage','execution_id','candidate_sha256','scope_packet_sha256',
        'frozen_bundle_sha256','nonce']::text[]) IS DISTINCT FROM p_event
