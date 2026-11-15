@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-ig-curator-policy-autobind-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261115013000_lf_ig_curator_policy_autobind_channel_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_curator_policy_autobind_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/ig_policy_autobind_curator_preimage_20261114.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/ig_policy_autobind_family_complete_preimage_20261114.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-curator-policy-autobind-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
