@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,effectsBearingNativeSemanticReviewBlockCode,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -971,4 +971,91 @@ Deno.test("SRCR native repair denies any missing/forged Router evidence before S
     eq(out.status,403);
     eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
   }
+});
+
+
+Deno.test("SRCR Step70 current-context is admitted only for bounded non-promotable candidate review",()=>{
+  const effects={read_only:false,no_write:false,no_promotion:true,governed_repair_write:true};
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,"CURRENT_CONTEXT_REVIEW"),
+    "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
+  const candidate={...effects,automatic_impact:false,router_profile_handoff:{
+    profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    router_authorization_receipt:{effect_authority:false},
+  }};
+  eq(effectsBearingNativeSemanticReviewBlockCode(candidate,"CURRENT_CONTEXT_REVIEW"),null);
+  for(const invalid of [
+    {...candidate,no_promotion:false},
+    {...candidate,automatic_impact:true},
+    {...candidate,router_profile_handoff:{profile_code:"PERFIL-PRODUCT-DIRECTOR-LF",
+      router_authorization_receipt:{effect_authority:false}}},
+    {...candidate,router_profile_handoff:{profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      router_authorization_receipt:{effect_authority:true}}},
+  ])eq(effectsBearingNativeSemanticReviewBlockCode(invalid,"CURRENT_CONTEXT_REVIEW"),
+      "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
+  // Read-only historical profiles retain their existing current-context behavior.
+  eq(effectsBearingNativeSemanticReviewBlockCode(
+    {read_only:true,no_write:true,no_promotion:true,governed_repair_write:false},
+    "CURRENT_CONTEXT_REVIEW"),null);
+  // Not a provider receipt minting mechanism. Independent submissions still
+  // require canonical SQL verification; this helper never returns PASS.
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,"INDEPENDENT_SEMANTIC"),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,undefined),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode(
+    {read_only:false,no_write:false,no_promotion:true,governed_repair_write:false},
+    "CURRENT_CONTEXT_REVIEW"),null);
+});
+
+Deno.test("IG native context writer uses actual OIDC run and existing SRCR route, no nonce from Issue",async()=>{
+  const n=network(boundedRepairFixture());
+  const rpcParams:Array<Record<string,unknown>>=[];
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_ig_native_chat_receipt_append_v1")){
+      rpcParams.push(JSON.parse(String(init?.body)) as Record<string,unknown>);
+      return new Response(JSON.stringify({status:"RECEIPT_APPENDED",execution_id:id,kind:"REQUEST",seq:1,
+        nonce:"e".repeat(48),frozen_bundle_sha256:"c".repeat(64)}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const resp=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,{...callerId,run_id:"1000"});
+  const body=await resp.json();
+  eq(resp.status,200);eq(body.outcome,"NATIVE_CHAT_RECEIPT_RECORDED");
+  eq(body.step_recorded,false);eq(body.step70_completed,false);
+  eq(rpcParams[0]?.p_execution_id,id);eq(rpcParams[0]?.p_kind,"REQUEST");
+  eq(rpcParams[0]?.p_event,{});
+  eq(rpcParams[0]?.p_writer_receipt_ref,"actions://"+repo+"/runs/1000");
+  // This is ONLY append provenance; never record Step70/Step80.
+  eq(n.calls.some(x=>x.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+Deno.test("IG native context writer rejects missing OIDC, forged ref, extra source fields",async()=>{
+  const n=network(boundedRepairFixture());
+  const base={execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"EXECUTOR",
+    event:{executor_context_ref:"actions://fixture/source",producer_schema_id:"V0_6",
+      producer_eval_id:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",producer_profile_id:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}}};
+  for(const args of [
+    {body:base,caller:undefined,status:403},
+    {body:{...base,p_writer_receipt_ref:"actions://evil"},caller:{...callerId,run_id:"1000"},status:400},
+    {body:base,caller:{...callerId,run_id:"forged"},status:403},
+    {body:base,caller:{...callerId,method:"FORGED"},status:403},
+  ]){
+    const before=n.calls.length;
+    const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,args.body,config,n.fetchFn,sha,args.caller);
+    eq(r.status,args.status);
+    eq(n.calls.slice(before).some(x=>x.url.includes("lf_ig_native_chat_receipt_append_v1")),false);
+  }
+});
+Deno.test("IG native context append respects server BLOCK and cannot claim PASS",async()=>{
+  const n=network(boundedRepairFixture());
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_ig_native_chat_receipt_append_v1")){
+      return new Response(JSON.stringify({status:"BLOCKED",blocking_code:"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT"}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"JUDGE",event:{review_mode:"INDEPENDENT_EVAL_CONTEXT"}}},
+    config,fetchFn,sha,{...callerId,run_id:"1000"});
+  const b=await r.json();eq(r.status,409);eq(b.code,"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT");
+  eq(b.step_recorded,false);
 });

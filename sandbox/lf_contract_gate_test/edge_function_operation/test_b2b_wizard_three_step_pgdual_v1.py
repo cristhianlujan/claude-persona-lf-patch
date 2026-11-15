@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MIG = ROOT / "supabase/migrations/20261115024900_lf_b2b_carga002_wizard_three_step_text_v1.sql"
+MIG = ROOT / "supabase/migrations/20261115205500_lf_b2b_carga002_wizard_three_step_text_v1.sql"
 ORIGINAL = (
     "B2B-CARGA-002 organiza la preparación de cartera en cuatro estados UI: "
     "tipo y forma de carga, preparar datos, validar y cartera preparada. "

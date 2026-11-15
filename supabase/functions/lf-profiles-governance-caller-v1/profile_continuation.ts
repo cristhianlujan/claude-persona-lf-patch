@@ -2,6 +2,30 @@ import {validateLfIgTransport,IG_RPC_REQUIRED} from "../_shared/lf_ig_transport_
 // Governed, profile-agnostic continuation for an *existing* Router-admitted execution.
 // It deliberately does not select a profile/screen, impersonate a model, or grant
 // write authority. All substantive transitions use existing canonical RPCs.
+// Explicit, additive error classification only. This function cannot
+// attest a provider call, write a receipt, or relax the existing SQL gate.
+export function effectsBearingNativeSemanticReviewBlockCode(
+  manifest: Record<string, unknown> | null | undefined,
+  reviewMode: unknown,
+): string | null {
+  if (manifest?.governed_repair_write === true &&
+      manifest?.read_only === false && manifest?.no_write === false &&
+      reviewMode === "CURRENT_CONTEXT_REVIEW") {
+    // Only a bounded SRCR sandbox candidate may reach SQL for same-context V3.
+    // The canonical SQL scope guard checks Step40/50/60 and source-bound artifacts.
+    // No provider independence, business effect or promotion is authorized here.
+    const handoff = manifest.router_profile_handoff as Record<string, unknown> | undefined;
+    const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
+    const candidateOnly =
+      manifest.no_promotion === true &&
+      manifest.automatic_impact === false &&
+      handoff?.profile_code === "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" &&
+      receipt?.effect_authority === false;
+    if (!candidateOnly) return "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED";
+  }
+  return null;
+}
+
 export const PROFILE_SOURCE_BIND_ACTION = "profile_native_source_bind_v1";
 export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 // A read-only profile calls a governed skill through its own route. The skill invoker
@@ -799,6 +823,62 @@ export async function handleProfileContinuation(
   if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn, callerIdentity);
   if (action === PROFILE_SKILL_STEP_BATCH_ACTION) return await recordSkillChildSteps(e, body, config, fetchFn, callerIdentity);
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
+
+  // B09 Step70 receipt issuance, via the SAME authorized Issue/OIDC/Edge
+  // continuation. The DB writer owns nonce, SHA, sequencing and scope.
+  // A self-asserted context is never a semantic PASS or owner promotion.
+  if (Object.prototype.hasOwnProperty.call(body, "native_chat_receipt")) {
+    if (Object.keys(body).some(k => ![
+      "action", "execution_id", "native_chat_receipt", "source_revision", "source_digest",
+    ].includes(k))) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_REQUEST_SHAPE_DRIFT", 400);
+    }
+    // The generic profile transport already requires source binding.
+    // Validate it against the authenticated workflow revision; the writer
+    // still independently derives the candidate/scope/bundle from SQL.
+    if (body.source_revision !== callerRevision ||
+      typeof body.source_digest !== "string" ||
+      !/^sha256:[0-9a-f]{64}$/.test(body.source_digest)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_SOURCE_BINDING_DRIFT", 409);
+    }
+    if (e.target_code !== "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" ||
+      !callerIdentity ||
+      callerIdentity.method !== "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1" ||
+      callerIdentity.repository !== config.repository ||
+      !/^[1-9][0-9]{3,19}$/.test(callerIdentity.run_id)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_OIDC_AUTHORITY_DRIFT", 403);
+    }
+    const request = body.native_chat_receipt;
+    if (!request || typeof request !== "object" || Array.isArray(request)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_EVENT_SHAPE_DRIFT", 400);
+    }
+    const typed = request as Payload;
+    const kind = typed.kind;
+    const event = typed.event;
+    if (Object.keys(typed).sort().join("|") !== "event|kind" ||
+      !["REQUEST", "EXECUTOR", "JUDGE"].includes(String(kind)) ||
+      !event || typeof event !== "object" || Array.isArray(event) ||
+      JSON.stringify(event).length > 45000) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_EVENT_SHAPE_DRIFT", 400);
+    }
+    const writerReceiptRef = `actions://${config.repository}/runs/${callerIdentity.run_id}`;
+    const issued = await rpc(config, fetchFn, "lf_ig_native_chat_receipt_append_v1", {
+      p_execution_id: e.execution_id, p_kind: kind,
+      p_event: event, p_writer_receipt_ref: writerReceiptRef,
+    });
+    if (issued.error) return issued.error;
+    if (!["RECEIPT_APPENDED", "ALREADY_RECORDED"].includes(String(issued.result?.status ?? ""))) {
+      return respond({outcome:"BLOCKED",phase:"STEP70_CONTEXT_PROVENANCE",
+        code: issued.result?.blocking_code ?? "LF_NATIVE_CHAT_RECEIPT_APPEND_NOT_PASS",
+        execution_id:e.execution_id,kind,step_recorded:false,
+        result:issued.result},409);
+    }
+    return respond({outcome:"NATIVE_CHAT_RECEIPT_RECORDED",
+      phase:"STEP70_CONTEXT_PROVENANCE",execution_id:e.execution_id,
+      kind,step_recorded:false,step70_completed:false,
+      result:issued.result});
+  }
+
   const revision = body.source_revision;
   const digest = body.source_digest;
   if (
@@ -865,10 +945,25 @@ export async function handleProfileContinuation(
     const review = receipt.judge_v3_evidence;
     const resultObj = receipt.result;
     const currentContext = receipt.review_mode === "CURRENT_CONTEXT_REVIEW";
+    // An ACT-0001-authorized effects-bearing SRCR RUN must not misrepresent
+    // producer self-review as an independently attested provider call.
+    // SQL remains the independent authority for actual provider verification.
+    const attestationBlock = effectsBearingNativeSemanticReviewBlockCode(
+      e.manifest as Payload, receipt.review_mode,
+    );
+    if (attestationBlock) {
+      return respond({outcome:"BLOCKED",phase:"SEMANTIC_JUDGE",
+        code:attestationBlock,execution_id:e.execution_id,step_id:"semantic_judge",
+        provider_independence_verified:false,step_recorded:false},409);
+    }
+    const isolatedContext = receipt.review_mode === "INDEPENDENT_EVAL_CONTEXT";
     const expectedVerdict = currentContext ? "PASS_REVIEWED_CURRENT_CONTEXT" : "PASS_INDEPENDENT_SEMANTIC";
     const reviewerFactsValid = currentContext
       ? receipt.producer_independence_proven === false &&
         receipt.reviewer_is_producer === true && receipt.model_call_count === 0
+      : isolatedContext
+      ? receipt.producer_independence_proven === true &&
+        receipt.reviewer_is_producer === false && receipt.model_call_count === null
       : (receipt.review_mode === undefined || receipt.review_mode === "INDEPENDENT_SEMANTIC") &&
         receipt.producer_independence_proven === true && receipt.model_call_count === 1;
     if (
@@ -899,7 +994,15 @@ export async function handleProfileContinuation(
         ? v3.review_mode !== "CURRENT_CONTEXT_REVIEW" ||
           v3.reviewer_is_producer !== true ||
           v3.producer_independence_proven !== false || v3.model_call_count !== 0
-        : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
+        : isolatedContext
+          ? v3.review_mode !== "INDEPENDENT_EVAL_CONTEXT" ||
+            v3.reviewer_is_producer !== false ||
+            v3.producer_context_available !== false ||
+            v3.producer_independence_proven !== true ||
+            v3.model_call_count !== null ||
+            typeof v3.reviewer_context_ref !== "string" ||
+            !v3.reviewer_context_ref.trim()
+          : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
       v3.candidate_sha256 !== receipt.candidate_sha256 ||
       v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
       !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||
