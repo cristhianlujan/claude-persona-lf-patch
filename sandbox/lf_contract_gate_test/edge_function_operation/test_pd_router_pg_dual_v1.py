@@ -146,37 +146,73 @@ class DualPostgresPDFlow(unittest.TestCase):
                        "'public.lf_profile_selector_semantic_prepare_v2(text,text,jsonb,jsonb)'::regprocedure"
                        "));")
                     self.assertEqual(old_selector,"89bd02a1c46e41c156322ab9370b140b")
-                    # SQL update and assertions run under transaction, never persist.
-                    psql(name,"BEGIN;\n"+body+"\nCOMMIT;")
-                    route=psql(name,
-                       "SELECT public.lf_profile_result_router_return_classify_v1("
-                       f"{sql_str(SAMPLE_PD)}::jsonb,{sql_str(REQUEST)},"
-                       "'RUN-PD','PERFIL-PRODUCT-DIRECTOR-LF');")
-                    decision=json.loads(route.splitlines()[-1])
-                    self.assertEqual(decision["status"],"RETURN_TO_ROUTER")
-                    self.assertEqual(decision["redirect_kind"],"PRODUCT_EXECUTOR_HANDOFF")
-                    self.assertFalse(decision["router_return_request"]["direct_profile_invocation_allowed"])
-                    self.assertEqual(decision["router_return_request"]["stage1_literal"],REQUEST)
-                    # No stage1 derivation -> DIRECT product only.
-                    direct=run_probe(name,None)
-                    self.assertEqual([x["profile_code"] for x in direct["candidates"]],
-                                     ["PERFIL-PRODUCT-DIRECTOR-LF"])
-                    # Completed PD with no executable package => configured fallback ONLY.
-                    repaired=run_probe(name,"RUN-PD")
-                    self.assertEqual([x["profile_code"] for x in repaired["candidates"]],
-                                     ["PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"])
-                    self.assertEqual(repaired["stage"]["phase"],"EXECUTOR_BEFORE_QUALITY")
-                    self.assertFalse(repaired["stage"]["quality_allowed"])
-                    # Completed Router-admitted repair with readbacks => Quality ONLY.
-                    quality=run_probe(name,"RUN-REPAIR")
-                    self.assertEqual([x["profile_code"] for x in quality["candidates"]],
-                                     ["PERFIL-QUALITY-PACK"])
-                    self.assertEqual(quality["stage"]["phase"],"QUALITY_ON_EXECUTED_ARTIFACT")
-                    # Completed but unbound 'repair' cannot unlock derived Quality.
-                    spoof=run_probe(name,"RUN-SPOOF")
-                    self.assertEqual([x["profile_code"] for x in spoof["candidates"]],
-                                     ["PERFIL-PRODUCT-DIRECTOR-LF"])
-                    self.assertIsNone(spoof["stage"])
+                    old_report=psql(name,
+                       "SELECT md5(pg_get_functiondef("
+                       "'public.lf_profile_native_bridge_record_report_v1(text,text,text)'::regprocedure"
+                       "));")
+                    self.assertEqual(old_report,"c545d192229d369bf26152a99de9899f")
+                    # The migration, all probes and its DDL stay in a single
+                    # real PostgreSQL transaction, closed by ROLLBACK.
+                    probes=f"""
+                    BEGIN;
+                    {body}
+                    DO $probe$
+                    DECLARE r jsonb; x jsonb; arr jsonb;
+                    BEGIN
+                      r:=public.lf_profile_result_router_return_classify_v1(
+                        {sql_str(SAMPLE_PD)}::jsonb,{sql_str(REQUEST)},
+                        'RUN-PD','PERFIL-PRODUCT-DIRECTOR-LF');
+                      IF r->>'status'<>'RETURN_TO_ROUTER'
+                         OR r->>'redirect_kind'<>'PRODUCT_EXECUTOR_HANDOFF'
+                         OR r->'router_return_request'->>'stage1_literal' IS DISTINCT FROM {sql_str(REQUEST)}
+                         OR r->'router_return_request'->>'direct_profile_invocation_allowed'<>'false'
+                      THEN RAISE EXCEPTION 'PG_PD_RETURN_TO_EXECUTOR_NOT_VERIFIED'; END IF;
+
+                      x:=public.lf_profile_selector_semantic_prepare_v2(
+                        {sql_str(REQUEST)},'PRODUCTO',NULL::jsonb,NULL::jsonb);
+                      SELECT jsonb_agg(p->>'profile_code' ORDER BY p->>'profile_code') INTO arr
+                      FROM jsonb_array_elements(x->'candidate_profiles') p;
+                      IF arr IS DISTINCT FROM '["PERFIL-PRODUCT-DIRECTOR-LF"]'::jsonb
+                      THEN RAISE EXCEPTION 'PG_PD_DIRECT_ENTRY_REGRESSION'; END IF;
+
+                      x:=public.lf_profile_selector_semantic_prepare_v2(
+                        {sql_str(REQUEST)},'PRODUCTO',
+                        jsonb_build_object('source_execution_id','RUN-PD'),NULL::jsonb);
+                      SELECT jsonb_agg(p->>'profile_code' ORDER BY p->>'profile_code') INTO arr
+                      FROM jsonb_array_elements(x->'candidate_profiles') p;
+                      IF arr IS DISTINCT FROM '["PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"]'::jsonb
+                         OR x->'derivation_next_stage'->>'phase'<>'EXECUTOR_BEFORE_QUALITY'
+                         OR x->'derivation_next_stage'->>'quality_allowed'<>'false'
+                      THEN RAISE EXCEPTION 'PG_PD_FALLBACK_AND_QUALITY_GUARD_REGRESSION'; END IF;
+
+                      x:=public.lf_profile_selector_semantic_prepare_v2(
+                        {sql_str(REQUEST)},'PRODUCTO',
+                        jsonb_build_object('source_execution_id','RUN-REPAIR'),NULL::jsonb);
+                      SELECT jsonb_agg(p->>'profile_code' ORDER BY p->>'profile_code') INTO arr
+                      FROM jsonb_array_elements(x->'candidate_profiles') p;
+                      IF arr IS DISTINCT FROM '["PERFIL-QUALITY-PACK"]'::jsonb
+                         OR x->'derivation_next_stage'->>'phase'<>'QUALITY_ON_EXECUTED_ARTIFACT'
+                      THEN RAISE EXCEPTION 'PG_EXECUTOR_EVIDENCED_QUALITY_ENTRY_REGRESSION'; END IF;
+
+                      x:=public.lf_profile_selector_semantic_prepare_v2(
+                        {sql_str(REQUEST)},'PRODUCTO',
+                        jsonb_build_object('source_execution_id','RUN-SPOOF'),NULL::jsonb);
+                      SELECT jsonb_agg(p->>'profile_code' ORDER BY p->>'profile_code') INTO arr
+                      FROM jsonb_array_elements(x->'candidate_profiles') p;
+                      IF arr IS DISTINCT FROM '["PERFIL-PRODUCT-DIRECTOR-LF"]'::jsonb
+                         OR x->'derivation_next_stage' IS NOT NULL
+                      THEN RAISE EXCEPTION 'PG_DERIVED_REPAIR_FORGED_RECEIPT_ACCEPTED'; END IF;
+                    END $probe$;
+                    ROLLBACK;
+                    """
+                    outcome=psql(name,probes)
+                    self.assertIn("ROLLBACK",outcome)
+                    # Prove that function DDL was not persisted by these probes.
+                    restored=psql(name,
+                       "SELECT md5(pg_get_functiondef("
+                       "'public.lf_profile_result_router_return_classify_v1(jsonb,text,text,text)'::regprocedure"
+                       "));")
+                    self.assertEqual(restored,old_hash)
                 finally:
                     subprocess.run(["docker","rm","-f",name],capture_output=True,timeout=30)
 
