@@ -813,6 +813,52 @@ export async function handleProfileContinuation(
   if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn, callerIdentity);
   if (action === PROFILE_SKILL_STEP_BATCH_ACTION) return await recordSkillChildSteps(e, body, config, fetchFn, callerIdentity);
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
+
+  // B09 Step70 receipt issuance, via the SAME authorized Issue/OIDC/Edge
+  // continuation. The DB writer owns nonce, SHA, sequencing and scope.
+  // A self-asserted context is never a semantic PASS or owner promotion.
+  if (Object.prototype.hasOwnProperty.call(body, "native_chat_receipt")) {
+    if (Object.keys(body).some(k => !["action", "execution_id", "native_chat_receipt"].includes(k))) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_REQUEST_SHAPE_DRIFT", 400);
+    }
+    if (e.target_code !== "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" ||
+      !callerIdentity ||
+      callerIdentity.method !== "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1" ||
+      callerIdentity.repository !== config.repository ||
+      !/^[1-9][0-9]{3,19}$/.test(callerIdentity.run_id)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_OIDC_AUTHORITY_DRIFT", 403);
+    }
+    const request = body.native_chat_receipt;
+    if (!request || typeof request !== "object" || Array.isArray(request)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_EVENT_SHAPE_DRIFT", 400);
+    }
+    const typed = request as Payload;
+    const kind = typed.kind;
+    const event = typed.event;
+    if (Object.keys(typed).sort().join("|") !== "event|kind" ||
+      !["REQUEST", "EXECUTOR", "JUDGE"].includes(String(kind)) ||
+      !event || typeof event !== "object" || Array.isArray(event) ||
+      JSON.stringify(event).length > 45000) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_EVENT_SHAPE_DRIFT", 400);
+    }
+    const writerReceiptRef = `actions://${config.repository}/runs/${callerIdentity.run_id}`;
+    const issued = await rpc(config, fetchFn, "lf_ig_native_chat_receipt_append_v1", {
+      p_execution_id: e.execution_id, p_kind: kind,
+      p_event: event, p_writer_receipt_ref: writerReceiptRef,
+    });
+    if (issued.error) return issued.error;
+    if (!["RECEIPT_APPENDED", "ALREADY_RECORDED"].includes(String(issued.result?.status ?? ""))) {
+      return respond({outcome:"BLOCKED",phase:"STEP70_CONTEXT_PROVENANCE",
+        code: issued.result?.blocking_code ?? "LF_NATIVE_CHAT_RECEIPT_APPEND_NOT_PASS",
+        execution_id:e.execution_id,kind,step_recorded:false,
+        result:issued.result},409);
+    }
+    return respond({outcome:"NATIVE_CHAT_RECEIPT_RECORDED",
+      phase:"STEP70_CONTEXT_PROVENANCE",execution_id:e.execution_id,
+      kind,step_recorded:false,step70_completed:false,
+      result:issued.result});
+  }
+
   const revision = body.source_revision;
   const digest = body.source_digest;
   if (
