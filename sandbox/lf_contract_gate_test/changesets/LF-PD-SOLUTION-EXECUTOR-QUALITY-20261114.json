@@ -8,6 +8,8 @@
     "sandbox/lf_contract_gate_test/profile_execution_runtime/test_pd_solution_executor_flow_candidate_v1.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/LF-PD-SOLUTION-EXECUTOR-QUALITY-20261114.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_pd_router_contract_preimage_20261114.sql": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/edge_function_operation/test_pd_router_pg_dual_v1.py": "RUNTIME_TESTING"
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_pd_router_pg_dual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_skill14_policy_source_first_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_step70_same_llm_pgdual_rollback_v1.py": "RUNTIME_TESTING"
   }
 }
