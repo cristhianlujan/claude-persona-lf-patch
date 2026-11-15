@@ -18,3 +18,31 @@ Sin una segunda evaluación real en contexto aislado y su cadena registrada: `LF
 
 ## Validación y no regresión
 CAS por MD5 exacto del bridge preexistente, transacción, `*_DRIFT`, pruebas PG17/18 en `BEGIN/ROLLBACK`. No modificar Step50/60, perfil Product Director histórico, mecanismo B09 legacy ni reglas LF. El juez puede devolver RETURN/BLOCK y permanece en flujo gobernado.
+
+## Excepción gobernada del owner — mismo contexto SRCR (2026-11-15, sandbox)
+
+Para el Reparador que **solo entregó artefactos candidatos de sandbox** y no posee
+autorización del paso 40 para mutar reglas/producto, se permite
+`CURRENT_CONTEXT_REVIEW / PASS_REVIEWED_CURRENT_CONTEXT` **dentro de la misma
+conversación y el mismo RUN**. No hay evento JUDGE independiente, segunda llamada,
+tercer recibo ficticio ni cambio retroactivo del manifiesto histórico.
+
+Aplicabilidad real la deriva SQL:
+`lf_profile_srcr_same_context_candidate_scope_v1(execution_id)`. Requiere
+manifest de no promoción/no impacto automático, Router sin efecto autorizado,
+Step40 `mutation_authorized=false` y acciones de análisis, Step60 PASS,
+y Step50 con cambios CREATE referidos exclusivamente a fuentes
+`sandbox/lf_contract_gate_test/` del repositorio LF. Fuera de ese alcance,
+la revisión de contexto propio sigue rechazada. Nunca se permite este modo
+en Product Director, producción, promoción, Quality o aprobación de efectos.
+
+El dictamen tiene procedencia explícita:
+`reviewer_is_producer=true`, `producer_independence_proven=false`,
+`model_call_count=0`, `independent_semantic_receipt_ref=null` y
+`judge_independence_status=NOT_PROVEN`. Debe pasar los doce controles V3
+y la verificación material de evidencias; un hallazgo de contradicción
+puede devolver FAIL/RETURN y no se blanquea.
+
+Solo después de integración por Migration Merge Train, despliegue Edge y
+SELECT del RUN original se puede acreditar paso 70 y paso 80. No se modifica
+el writer ni la cadena histórica REQUEST/EXECUTOR de B09.
