@@ -160,7 +160,9 @@ CREATE OR REPLACE FUNCTION programacion.fn_input_governance_curator_handoff_rece
  p_run_id bigint,p_curator_identity text) RETURNS jsonb
  LANGUAGE sql STABLE AS $fn$
  SELECT jsonb_build_object('receipt_id',1,'status','PERSISTED',
-   'graph_sha256',(current_setting('lf.input_request_context_v1',true)::jsonb->>'graph_sha256'))
+   'graph_sha256',programacion.fn_v09_sha256_jsonb(
+     jsonb_build_object('screen_code','B2B-CARGA-002',
+       'graph_contract','IG_SCREEN_GRAPH_FIXTURE','agent_contract_version_id',19)))
 $fn$;
 
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validator_handoff_assert_v1(
