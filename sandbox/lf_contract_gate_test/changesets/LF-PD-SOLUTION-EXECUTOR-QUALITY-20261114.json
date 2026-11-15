@@ -5,7 +5,7 @@
     "profiles/product_director_lf/SKILL.md": "PROFILE_CANDIDATE",
     "profiles/systemic_root_cause_repair_lf/SKILL.md": "PROFILE_CANDIDATE",
     "profiles/quality_pack/SKILL.md": "PROFILE_CANDIDATE",
-    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_pd_solution_executor_flow_candidate_v1.py": "SANDBOX_TEST",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_pd_solution_executor_flow_candidate_v1.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/LF-PD-SOLUTION-EXECUTOR-QUALITY-20261114.json": "CHANGESET_MANIFEST"
   }
 }
