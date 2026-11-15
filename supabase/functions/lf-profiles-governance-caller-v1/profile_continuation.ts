@@ -78,6 +78,7 @@ async function authorizedExecution(
   config: Config,
   fetchFn: Fetcher,
   executionId: string,
+  allowGovernedRepair = false,
 ): Promise<{ execution?: Execution; error?: Response }> {
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]{10,127}$/.test(executionId)) {
     return { error: blocked("PROFILE_CONTINUATION_EXECUTION_ID_INVALID", 400) };
@@ -100,16 +101,52 @@ async function authorizedExecution(
   const m = e.manifest;
   const handoff = m?.router_profile_handoff as Record<string, unknown> | undefined;
   const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
-  if (
-    e.operation_code !== "EJECUCION_PERFIL_LF" || e.target_type !== "PERFIL" ||
-    e.status !== "IN_PROGRESS" || e.target_repo !== config.repository ||
-    !/^profiles\/[a-z0-9_-]+\/SKILL\.md$/.test(e.target_path) ||
-    !NATIVE_EXECUTOR_PROVIDER_BY_MODE.has(`${m?.executor_mode}|${m?.executor_provider}`) ||
-    m?.read_only !== true || m?.no_write !== true ||
-    m?.no_promotion !== true || m?.governed_repair_write !== false ||
-    handoff?.profile_code !== e.target_code || receipt?.profile_code !== e.target_code ||
-    receipt?.profile_execution_allowed !== true || receipt?.effect_authority !== false
-  ) return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+  const repair = m?.repair_execution_authority as Record<string, unknown> | undefined;
+  const handoffRepair = handoff?.repair_execution_authority as Record<string, unknown> | undefined;
+  const commonAuthority = (
+    e.operation_code === "EJECUCION_PERFIL_LF" && e.target_type === "PERFIL" &&
+    e.status === "IN_PROGRESS" && e.target_repo === config.repository &&
+    /^profiles\/[a-z0-9_-]+\/SKILL\.md$/.test(e.target_path) &&
+    NATIVE_EXECUTOR_PROVIDER_BY_MODE.has(`${m?.executor_mode}|${m?.executor_provider}`) &&
+    m?.no_promotion === true && handoff?.profile_code === e.target_code &&
+    receipt?.profile_code === e.target_code &&
+    receipt?.profile_execution_allowed === true && receipt?.effect_authority === false
+  );
+  const readOnly = m?.read_only === true && m?.no_write === true &&
+    m?.governed_repair_write === false;
+  // Additive allowance for the EXISTING Router-issued SRCR repair authority.
+  // No direct invocation, no new writer, no skill-invocation expansion:
+  // SQL retains canonical source/fingerprint and per-step enforcement.
+  const governedRepair = allowGovernedRepair &&
+    e.target_code === "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" &&
+    e.target_path === "profiles/systemic_root_cause_repair_lf/SKILL.md" &&
+    m?.read_only === false && m?.no_write === false &&
+    m?.governed_repair_write === true &&
+    receipt?.authority_ref === "ROUTER_PROFILE_EXECUTION_AUTHORIZATION" &&
+    receipt?.operation_code === "EJECUCION_PERFIL_LF" &&
+    receipt?.action_code === "PROFILE_EXECUTION" &&
+    typeof receipt?.fingerprint_sha256 === "string" &&
+    /^[0-9a-f]{64}$/.test(receipt.fingerprint_sha256) &&
+    repair?.schema_version === "LF_SRCR_REPAIR_EXECUTION_AUTHORITY_V1" &&
+    repair?.mode === "GOVERNED_REPAIR_WRITE" &&
+    repair?.profile_code === e.target_code &&
+    repair?.operation_code === "EJECUCION_PERFIL_LF" &&
+    repair?.profile_task_intent === "REPAIR_MISSING_PRODUCT_STRUCTURE" &&
+    repair?.request_sha256 === receipt?.request_sha256 &&
+    repair?.router_authorization_fingerprint_sha256 === receipt?.fingerprint_sha256 &&
+    repair?.router_action_binding_sha256 === receipt?.router_action_binding_sha256 &&
+    repair?.readback_required === true && repair?.rollback_required === true &&
+    repair?.promotion_allowed === false && repair?.automatic_impact === false &&
+    repair?.direct_profile_invocation_allowed === false &&
+    repair?.return_to_router_after_result === true &&
+    handoff?.return_to_router_after_profile_result === true &&
+    JSON.stringify(repair?.scope) === JSON.stringify(receipt?.scope) &&
+    JSON.stringify(handoffRepair) === JSON.stringify(repair) &&
+    typeof repair?.fingerprint_sha256 === "string" &&
+    /^[0-9a-f]{64}$/.test(repair.fingerprint_sha256);
+  if (!commonAuthority || !(readOnly || governedRepair)) {
+    return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+  }
   return { execution: e };
 }
 
@@ -699,7 +736,8 @@ export async function handleProfileContinuation(
   callerIdentity?: CallerIdentity,
 ): Promise<Response> {
   const executionId = typeof body.execution_id === "string" ? body.execution_id : "";
-  const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId);
+  const allowGovernedRepair = action === PROFILE_SOURCE_BIND_ACTION || action === PROFILE_CONTINUE_ACTION;
+  const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId, allowGovernedRepair);
   if (error || !e) return error ?? blocked("PROFILE_CONTINUATION_EXECUTION_NOT_FOUND");
   if (action === PROFILE_SOURCE_BIND_ACTION) {
     // Operation-owned DB plan. Router supplies selected profile ONLY: never trust
