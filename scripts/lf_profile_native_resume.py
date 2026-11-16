@@ -591,19 +591,45 @@ def record_blocked_ig_receipt(http_status, response, execution_id, profile_code)
     return True
 
 
-def is_direct_validator_continuation(status, response):
-    """Only the exact governed 202 response may request a fresh one-time ticket."""
-    return (
-        status == 202
-        and isinstance(response, dict)
-        and response.get("outcome") == "CONTINUATION_REQUIRED"
-        and response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED"
-        and response.get("transport") == "DIRECT_EDGE_INVOCATION"
-        and response.get("queue_required") is False
-        and response.get("polling_required") is False
-        and isinstance(response.get("result"), dict)
-        and response["result"].get("status") == "VALIDATOR_RESUME_REQUIRED"
-    )
+def is_direct_validator_continuation(status, response, execution_id=None,
+                                     pantalla_id=None, skill_code=None):
+    """One SQL-ticket-bound Validator continuation, not a failed-runtime retry.
+
+    Accept the actual Edge envelopes (skill and context-pack). Verify identity
+    and screen against the *consumed ticket's* request_body, not the model.
+    """
+    if (status != 202 or not isinstance(response, dict)
+        or response.get("outcome") != "CONTINUATION_REQUIRED"
+        or response.get("code") not in (
+            "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
+            "SKILL_RUNTIME_VALIDATOR_RESUME_REQUIRED")
+        or response.get("transport") != "DIRECT_EDGE_INVOCATION"
+        or response.get("queue_required") is not False
+        or response.get("polling_required") is not False
+        or not isinstance(response.get("result"), dict)):
+        return False
+    result = response["result"]
+    nested = result.get("result")
+    if (result.get("status") != "VALIDATOR_RESUME_REQUIRED"
+        and not (isinstance(nested, dict)
+                 and nested.get("status") == "VALIDATOR_RESUME_REQUIRED")):
+        return False
+    if execution_id is not None and response.get("execution_id") != execution_id:
+        return False
+    if response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED":
+        if response.get("consumer") not in (None, "CONTEXT_PACK"):
+            return False
+        if execution_id is not None and (
+            type(pantalla_id) is not int or pantalla_id <= 0):
+            return False
+        if pantalla_id is not None and response.get("pantalla_id") != pantalla_id:
+            return False
+    else:
+        if skill_code is not None and response.get("skill_code") != skill_code:
+            return False
+        if type(pantalla_id) is int and response.get("pantalla_id") != pantalla_id:
+            return False
+    return True
 
 
 def sha256_file(path):
@@ -702,6 +728,71 @@ def attach_bound_evidence_manifest(repo_root, packet, evidence_manifest):
     manifest_path.write_bytes(encoded)
     packet["evidence_manifest_ref"] = manifest_path.relative_to(repo_root).as_posix()
     packet["evidence_manifest_sha256"] = hashlib.sha256(encoded).hexdigest()
+
+
+def require_step50_verified_effect_shape(target_path, profile_output, prepare_result):
+    """Local preflight, not attestation: the DB writer verifies actual Train and snapshots.
+
+    Only server-derived prepare_result may enable this gate. Never use a flag
+    authored in the Issue/model RAW as promotion or write authority.
+    """
+    if target_path != "profiles/systemic_root_cause_repair_lf/SKILL.md":
+        return
+    if not isinstance(prepare_result, dict):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    authority = prepare_result.get("repair_execution_authority")
+    mode = prepare_result.get("execution_write_mode")
+    if not isinstance(authority, dict) or mode not in ("READ_ONLY", "GOVERNED_REPAIR_WRITE"):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    repair = profile_output.get("repair_execution") if isinstance(profile_output, dict) else None
+    requested_mode = repair.get("mode") if isinstance(repair, dict) else None
+    promotion_allowed = authority.get("promotion_allowed") is True
+    if requested_mode == "AUTHORIZED_NOT_EXECUTED" and promotion_allowed:
+        raise ValueError("STEP50_AUTHORIZED_NOT_EXECUTED_FORBIDDEN")
+    if not promotion_allowed:
+        return
+    if mode != "GOVERNED_REPAIR_WRITE" or authority.get("mode") != "GOVERNED_REPAIR_WRITE":
+        raise ValueError("STEP50_PROMOTION_REPAIR_AUTHORITY_MISMATCH")
+    if requested_mode != "EXECUTED_WITH_READBACK":
+        raise ValueError("STEP50_VERIFIED_EFFECT_MODE_REQUIRED")
+    receipts = repair.get("rule_receipts")
+    changes = repair.get("changes")
+    if not isinstance(receipts, list) or not receipts:
+        raise ValueError("STEP50_RULE_RECEIPTS_REQUIRED")
+    if not isinstance(changes, list) or len(changes) != len(receipts):
+        raise ValueError("STEP50_EFFECT_CHANGES_NOT_BOUND")
+    codes = set()
+    sha = re.compile(r"^[a-f0-9]{64}$")
+    for receipt in receipts:
+        if not isinstance(receipt, dict):
+            raise ValueError("STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH")
+        rule = receipt.get("rule_code")
+        if (not isinstance(rule, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", rule)
+                or receipt.get("source_ref") != "supabase://lf_ops.reglas/" + rule):
+            raise ValueError("STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH")
+        if rule in codes:
+            raise ValueError("STEP50_RULE_RECEIPT_DUPLICATE")
+        codes.add(rule)
+        before = receipt.get("before_sha256")
+        after = receipt.get("after_sha256")
+        if (not isinstance(before, str) or not sha.fullmatch(before)
+                or not isinstance(after, str) or not sha.fullmatch(after)
+                or before == after):
+            raise ValueError("STEP50_EFFECT_HASH_PAIR_REQUIRED")
+        if not any(isinstance(c, dict)
+                   and c.get("target_ref") == receipt["source_ref"]
+                   and isinstance(c.get("before_ref"), str)
+                   and isinstance(c.get("after_ref"), str)
+                   for c in changes):
+            raise ValueError("STEP50_EFFECT_CHANGES_NOT_BOUND")
+        for key in ("train_execution_id", "train_run_id", "migration_version",
+                    "migration_name", "merge_sha"):
+            if not isinstance(receipt.get(key), str) or not receipt[key]:
+                raise ValueError("STEP50_TRAIN_RECEIPT_FIELDS_REQUIRED")
+        if type(receipt.get("train_pr")) is not int or receipt["train_pr"] < 1:
+            raise ValueError("STEP50_TRAIN_RECEIPT_FIELDS_REQUIRED")
+    # Structural only: the canonical writer checks DB snapshots, ledger and
+    # the completed Step20/Step30 Train before it records execute_profile.
 
 
 def run_bound_validator(target_path, profile_code, profile_output, evidence_manifest=None):
@@ -1318,7 +1409,9 @@ def main():
     # Two independent, one-use DB tickets MAX per parent+skill. The DB
     # handler records an IG finding after exhaustion, instead of keeping
     # the native workflow running until the short-lived OIDC token expires.
-    for attempt in range(2):
+    attempt = 0
+    validator_resumes = 0
+    while attempt < 2:
         if result.get("phase") not in ("SKILL_RUNTIME_REQUIRED",
                                         "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
             break
@@ -1369,9 +1462,9 @@ def main():
                  else True)
             and ig.get("terminal_status") == "BLOCKED"
             and ig.get("execution_id") == execution_id
-            and (ig.get("pantalla_id") == body.get("pantalla_id")
-                 if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
-                 else True)
+            and type(body.get("pantalla_id")) is int
+            and body["pantalla_id"] > 0
+            and ig.get("pantalla_id") == body["pantalla_id"]
             and (ig.get("consumer") == "CONTEXT_PACK"
                  if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
                  else True)
@@ -1395,17 +1488,30 @@ def main():
         normal_ready = (
             ig_code == 200 and ig.get("outcome") == "TERMINAL"
             and ig.get("terminal_status") == "READY"
+            and (ig.get("pantalla_id") == body.get("pantalla_id")
+                 if type(body.get("pantalla_id")) is int else True)
         )
-        if not (normal_ready or blocked_terminal or
-                is_direct_validator_continuation(ig_code,ig)):
+        validator_resume = is_direct_validator_continuation(
+            ig_code, ig, execution_id=execution_id,
+            pantalla_id=body.get("pantalla_id"),
+            skill_code=body.get("skill_code"))
+        if validator_resume:
+            validator_resumes += 1
+            if validator_resumes > 3:
+                print("PROFILE_SELECTED_SKILL_VALIDATOR_RESUME_LIMIT")
+                return 1
+        else:
+            # Only real terminal/error outcomes consume the two-attempt budget.
+            attempt += 1
+        if not (normal_ready or blocked_terminal or validator_resume):
             # The full worker error may contain sensitive source; do not log it.
             print(json.dumps({"phase":"SKILL_RUNTIME_RETRY",
-                "execution_id":execution_id,"attempt":attempt+1,
+                "execution_id":execution_id,"attempt":attempt,
                 "http_status":ig_code,
                 "outcome":ig.get("outcome"),
                 "code":str(ig.get("code") or "")[:120],
                 "production_authorized":False}))
-        if not (normal_ready or blocked_terminal):
+        if not (normal_ready or blocked_terminal or validator_resume):
             remaining = (runtime_deadline-dt.datetime.now(dt.timezone.utc)).total_seconds()
             if remaining>0 and ig_code != 0:
                 time.sleep(min(2.0,remaining))
@@ -1493,11 +1599,15 @@ def main():
         try:
             profile_output, evidence_manifest = unwrap_profile_native_evidence(target_path, profile_output)
             profile_output = prepare_product_director_raw(target_path, profile_output)
+            require_step50_verified_effect_shape(
+                target_path, profile_output,
+                result.get("result") if isinstance(result.get("result"), dict) else None,
+            )
             validation, raw_ref, validator_ref = run_bound_validator(
                 target_path, source.get("profile_code"), profile_output, evidence_manifest
             )
         except ValueError as exc:
-            print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
+            print(json.dumps({"phase":"STEP50_EFFECT_PRECHECK_OR_BOUND_VALIDATOR","code":str(exc)}))
             return 1
         submit = {
             "action": "profile_native_continue_v1",

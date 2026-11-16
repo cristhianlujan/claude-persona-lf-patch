@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-e21-step50-effect-v1",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-e21-step50-effect-v1.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -16,9 +16,12 @@ export function effectsBearingNativeSemanticReviewBlockCode(
     // This helper does not assert reviewer independence or grant a promotion; the score route owns requests.
     const handoff = manifest.router_profile_handoff as Record<string, unknown> | undefined;
     const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
+    const repair = manifest.repair_execution_authority as Record<string, unknown> | undefined;
     const candidateOnly =
       manifest.automatic_impact === false &&
-      handoff?.profile_code === "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" &&
+      typeof handoff?.profile_code === "string" &&
+      repair?.profile_code === handoff.profile_code &&
+      repair?.mode === "GOVERNED_REPAIR_WRITE" &&
       receipt?.effect_authority === false;
     if (!candidateOnly) return "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED";
   }
@@ -137,12 +140,13 @@ async function authorizedExecution(
   );
   const readOnly = m?.read_only === true && m?.no_write === true &&
     m?.governed_repair_write === false;
-  // Additive allowance for the EXISTING Router-issued SRCR repair authority.
-  // No direct invocation, no new writer, no skill-invocation expansion:
-  // SQL retains canonical source/fingerprint and per-step enforcement.
+  // The resolved profile and its slug come from the immutable Router handoff.
+  // SQL, not the Edge function or a literal profile name, determines whether
+  // that handoff grants governed repair and the promotion_allowed bit.
   const governedRepair = allowGovernedRepair &&
-    e.target_code === "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" &&
-    e.target_path === "profiles/systemic_root_cause_repair_lf/SKILL.md" &&
+    typeof handoff?.profile_slug === "string" &&
+    /^[a-z0-9_-]+$/.test(handoff.profile_slug) &&
+    e.target_path === `profiles/${handoff.profile_slug}/SKILL.md` &&
     m?.read_only === false && m?.no_write === false &&
     m?.governed_repair_write === true &&
     receipt?.authority_ref === "ROUTER_PROFILE_EXECUTION_AUTHORIZATION" &&
@@ -159,7 +163,9 @@ async function authorizedExecution(
     repair?.router_authorization_fingerprint_sha256 === receipt?.fingerprint_sha256 &&
     repair?.router_action_binding_sha256 === receipt?.router_action_binding_sha256 &&
     repair?.readback_required === true && repair?.rollback_required === true &&
-    repair?.promotion_allowed === false && repair?.automatic_impact === false &&
+    (repair?.promotion_allowed === true || repair?.promotion_allowed === false) &&
+    repair?.promotion_allowed === m?.promotion_allowed &&
+    repair?.automatic_impact === false && m?.automatic_impact === false &&
     repair?.direct_profile_invocation_allowed === false &&
     repair?.return_to_router_after_result === true &&
     handoff?.return_to_router_after_profile_result === true &&
@@ -169,6 +175,25 @@ async function authorizedExecution(
     /^[0-9a-f]{64}$/.test(repair.fingerprint_sha256);
   if (!commonAuthority || !(readOnly || governedRepair)) {
     return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+  }
+  if (governedRepair) {
+    // Always validate the PERSISTED handoff (not user-provided fields). The
+    // SECURITY DEFINER function checks ACT-0001 binding, source currentness,
+    // router/repair fingerprints, explicit owner intent and configured profile.
+    const verified = await rpc(config, fetchFn, "lf_router_profile_execution_handoff_validate_v1", {
+      p_handoff: handoff,
+      p_literal_request: handoff?.literal_request,
+      p_profile_code: e.target_code,
+    });
+    if (verified.error || verified.result?.valid !== true ||
+        verified.result?.governed_repair_write_allowed !== true ||
+        verified.result?.promotion_allowed !== repair?.promotion_allowed ||
+        verified.result?.profile_code !== e.target_code ||
+        verified.result?.profile_slug !== handoff?.profile_slug ||
+        verified.result?.repair_execution_authority_fingerprint_sha256 !== repair?.fingerprint_sha256 ||
+        verified.result?.fingerprint_sha256 !== handoff?.fingerprint_sha256) {
+      return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+    }
   }
   return { execution: e };
 }
@@ -840,7 +865,10 @@ export async function handleProfileContinuation(
       !/^sha256:[0-9a-f]{64}$/.test(body.source_digest)) {
       return blocked("LF_NATIVE_CHAT_RECEIPT_SOURCE_BINDING_DRIFT", 409);
     }
-    if (e.target_code !== "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" ||
+    const nativeRepair = e.manifest?.repair_execution_authority as Payload | undefined;
+    if (e.manifest?.governed_repair_write !== true ||
+      nativeRepair?.mode !== "GOVERNED_REPAIR_WRITE" ||
+      nativeRepair?.profile_code !== e.target_code ||
       !callerIdentity ||
       callerIdentity.method !== "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1" ||
       callerIdentity.repository !== config.repository ||
