@@ -201,6 +201,10 @@ BEGIN
  RAISE NOTICE 'PASS_5_SNAPSHOT_STALE_REJECTED';
 
  -- 6. RAW references belonging to a different rule or absent must fail.
+ -- Give repair profile a temporary fixture-only MANUAL grant to reach the RAW guard;
+ -- AUTO without that grant was independently proven in case 1.
+ INSERT INTO public.lf_profile_write_authority_v1
+   VALUES ('PERFIL-REPARADOR-LF','PROMOCION_REGLA_LF','ACTIVE');
  v:=public.lf_rule_promotion_request_v1('RUN-OTHER','SAFE-WRONG','wrong RAW ref');
  IF v->>'blocking_code'<>'PROMOTION_STEP70_HASH_CHAIN_NOT_ATTESTED'
  THEN RAISE EXCEPTION 'IG0815_WRONG_RULE_RAW_ACCEPTED:%',v; END IF;
