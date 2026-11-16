@@ -71,11 +71,17 @@ class SameLlmReceiptV1Tests(unittest.TestCase):
             with self.subTest(field=field):
                 item=fixture()
                 item["separate_model_call_receipt"][field]=value
-                safe,r=normalize_when_unverified(item)
-                self.assertEqual(r["status"],"JUDGE_INDEPENDENCE_NOT_PROVEN")
-                self.assertIn("receipt_contract_error",r)
-                self.assertFalse(safe["producer_independence_proven"])
-                self.assertEqual(safe["judge_independence_finding"],"JUDGE_INDEPENDENCE_NOT_PROVEN")
+                if field in ("reviewer_call_ref","receipt_ref","candidate_sha256"):
+                    with self.assertRaises(ValueError) as err:
+                        normalize_when_unverified(item,execution_id=RUN)
+                    self.assertIn(str(err.exception),{
+                        "STEP70_CALL_NOT_SEPARATE","STEP70_REVIEW_NOT_SOURCE_BOUND"})
+                else:
+                    safe,r=normalize_when_unverified(item,execution_id=RUN)
+                    self.assertEqual(r["status"],"JUDGE_INDEPENDENCE_NOT_PROVEN")
+                    self.assertIn("receipt_contract_error",r)
+                    self.assertFalse(safe["producer_independence_proven"])
+                    self.assertEqual(safe["judge_independence_finding"],"JUDGE_INDEPENDENCE_NOT_PROVEN")
 
     def test_second_evaluator_detects_unsupported_claim_and_scope_drift(self):
         good=fixture()
@@ -93,6 +99,37 @@ class SameLlmReceiptV1Tests(unittest.TestCase):
         result=evaluate(raw,RUN,S50,S40)
         self.assertEqual(result["eval_status"],"FAIL")
         self.assertIn("UNSUPPORTED_CLAIMS",result["errors"])
+
+    def test_pigp_material_run_id_and_source_ref_fail_closed(self):
+        item=fixture()
+        item["separate_model_call_receipt"]["execution_id"]="EXEC-PROFILE-GATE2-OTHER000001"
+        with self.assertRaisesRegex(ValueError,"STEP70_RUN_ID_DRIFT"):
+            normalize_when_unverified(item,execution_id=RUN)
+        item=fixture()
+        item["source_refs"]=["x"]
+        raw={"schema_id":SCHEMA_ID,"execution_id":RUN,
+             "candidate_sha256":S50,"scope_packet_sha256":S40,
+             "verdict":"PASS_INDEPENDENT_SEMANTIC",
+             "decision_body":item["separate_model_call_receipt"]["decision_body"],
+             "source_refs":item["source_refs"]}
+        result=evaluate(raw,RUN,S50,S40)
+        self.assertEqual(result["eval_status"],"FAIL")
+        self.assertIn("REVIEW_SOURCE_REFS_MISSING",result["errors"])
+
+    def test_pigp_source_and_evaluator_failures_must_not_downgrade(self):
+        for mutate,expected in [
+            (lambda x:x["separate_model_call_receipt"].update(candidate_sha256="e"*64),
+                "STEP70_REVIEW_NOT_SOURCE_BOUND"),
+            (lambda x:x["separate_model_call_receipt"].update(eval_status="FAIL"),
+                "STEP70_REVIEW_EVAL_NOT_PASS"),
+            (lambda x:x["separate_model_call_receipt"]["decision_body"]["decision_checks"].get(
+                "context_resolution_valid").update(result=False),
+                "STEP70_SEPARATE_EVALUATOR_NOT_PASS")]:
+            with self.subTest(code=expected):
+                item=fixture()
+                mutate(item)
+                with self.assertRaisesRegex(ValueError,expected):
+                    normalize_when_unverified(item,execution_id=RUN)
 
     def test_model_call_id_does_not_exist_as_trusted_provider_token(self):
         r=fixture()
