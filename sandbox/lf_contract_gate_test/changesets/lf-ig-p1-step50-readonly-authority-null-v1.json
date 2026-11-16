@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-ig-p1-step50-readonly-authority-null-v1",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_e21_step50_preeval_pytest_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-p1-step50-readonly-authority-null-v1.json": "CHANGESET_MANIFEST"
+  }
+}
