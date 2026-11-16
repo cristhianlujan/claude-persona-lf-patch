@@ -138,7 +138,8 @@ class LoginBehaviorPGDual(unittest.TestCase):
          input=sql,capture_output=True,text=True,timeout=180)
       self.assertEqual(x.returncode,0,x.stderr[-4200:]+"\n"+x.stdout[-2200:])
       return x.stdout,x.stderr
-     query(DB+"\n"+SOURCE)
+     setup_prefix,setup_policies=DB.split("-- Real pg_policies source",1)
+     query(setup_prefix+"\n"+SOURCE+"\n-- Real pg_policies source"+setup_policies)
      output,_=query(TXN)
      for marker in (
       "AUTH001_POSITIVE_ALLOW=1",
