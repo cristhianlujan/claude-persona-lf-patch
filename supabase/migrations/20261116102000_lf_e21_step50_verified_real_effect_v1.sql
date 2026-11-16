@@ -219,7 +219,7 @@ BEGIN
       OR v_train.manifest#>>'{closure_evidence,ledger,name}' IS DISTINCT FROM item->>'migration_name'
       OR v_train.manifest#>>'{closure_evidence,merge_sha}' IS DISTINCT FROM item->>'merge_sha'
       OR v_train.manifest->>'target_code'
-          IS DISTINCT FROM item->>'migration_version'||'_'||item->>'migration_name'
+          IS DISTINCT FROM (item->>'migration_version')||'_'||(item->>'migration_name')
       OR NOT EXISTS(SELECT 1 FROM supabase_migrations.schema_migrations m
            WHERE m.version=item->>'migration_version' AND m.name=item->>'migration_name')
       OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps t
