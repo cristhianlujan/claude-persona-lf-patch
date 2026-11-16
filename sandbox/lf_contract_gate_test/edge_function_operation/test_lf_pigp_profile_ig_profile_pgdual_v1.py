@@ -197,8 +197,8 @@ class TestPIGPPG17PG18(unittest.TestCase):
       return p.stdout,p.stderr
      sql('BEGIN;\n'+SCHEMA+'\n'+source+'\nCOMMIT;')
      negative="""BEGIN;
-CREATE OR REPLACE FUNCTION public.lf_profile_execution_plan_for_run_v1(text,jsonb)
-RETURNS jsonb LANGUAGE sql AS $$ SELECT '{}'::jsonb $$;
+CREATE OR REPLACE FUNCTION public.lf_profile_execution_plan_for_run_v1(p_execution_id text,p_decision jsonb DEFAULT NULL::jsonb)
+RETURNS jsonb LANGUAGE sql AS $ SELECT '{}'::jsonb $;
 """
      out,err=sql(negative+body+'\nCOMMIT;',expect_error=True)
      self.assertIn('LF_PIGP01_SOURCE_PATCH_NOT_APPLIED',err)
