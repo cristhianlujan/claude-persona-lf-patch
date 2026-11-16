@@ -845,16 +845,25 @@ def run_bound_validator(target_path, profile_code, profile_output, evidence_mani
         or validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}):
         raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
 
-    output_modes = runtime_schema.get("output_modes", {})
-    output_type = profile_output.get("output_type") if isinstance(profile_output, dict) else None
-    if not isinstance(output_modes, dict):
-        raise ValueError("PROFILE_RUNTIME_BINDING_OUTPUT_MODES_INVALID")
-    if output_modes:
-        if not isinstance(output_type, str) or output_type not in output_modes:
-            raise ValueError("PROFILE_OUTPUT_MODE_UNDECLARED")
-        schema_rel = output_modes[output_type]
-    else:
-        schema_rel = runtime_schema["default"]
+    # Import the same pure selector used by RepositoryBindings.runtime_schema.
+    # Loading from this checked-out source avoids copying a divergent mode map.
+    import importlib.util
+    selector_path = Path(__file__).resolve().parents[1] / (
+        "services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py"
+    )
+    if not selector_path.is_file():
+        raise ValueError("PROFILE_RUNTIME_SCHEMA_SELECTOR_REQUIRED")
+    selector_spec = importlib.util.spec_from_file_location("lf_native_schema_selector", selector_path)
+    if selector_spec is None or selector_spec.loader is None:
+        raise ValueError("PROFILE_RUNTIME_SCHEMA_SELECTOR_INVALID")
+    selector_module = importlib.util.module_from_spec(selector_spec)
+    selector_spec.loader.exec_module(selector_module)
+    try:
+        schema_rel = selector_module.select_schema_relative(
+            runtime_schema, payload=profile_output
+        )
+    except selector_module.RuntimeSchemaSelectionError as exc:
+        raise ValueError("PROFILE_OUTPUT_MODE_UNDECLARED") from exc
     if not isinstance(schema_rel, str) or not schema_rel.strip():
         raise ValueError("PROFILE_RUNTIME_BINDING_SCHEMA_MODE_INVALID")
     schema_ref = f"profiles/{slug}/{schema_rel}"
