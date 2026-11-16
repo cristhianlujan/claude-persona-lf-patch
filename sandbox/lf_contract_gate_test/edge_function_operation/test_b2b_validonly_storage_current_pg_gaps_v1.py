@@ -47,7 +47,7 @@ CREATE TABLE lf_ops.cargas_archivos(
  malware_scan_status text NOT NULL,
  CONSTRAINT cargas_archivos_size_ck CHECK ((size_bytes > 0)),
  CONSTRAINT cargas_archivos_scan_ck CHECK ((malware_scan_status = ANY (
- ARRAY['PENDING'::text,'CLEAN'::text,'REJECTED'::text,'FAILED'::text))));
+ ARRAY['PENDING'::text,'CLEAN'::text,'REJECTED'::text,'FAILED'::text)));
 """
 BEHAVIOR="""BEGIN;
 INSERT INTO lf_ops.cargas_lotes(load_code,load_name,idempotency_key,
@@ -106,7 +106,10 @@ class LiveConstraintGapPGDual(unittest.TestCase):
                     for _ in range(90):
                         ready=subprocess.run(["docker","exec",name,"pg_isready",
                            "-U","postgres"],capture_output=True,text=True,timeout=10)
-                        if ready.returncode==0:break
+                        if ready.returncode==0:
+                            logs=subprocess.run(["docker","logs",name],capture_output=True,text=True,timeout=10)
+                            if "PostgreSQL init process complete; ready for start up." in (logs.stdout+logs.stderr):
+                                break
                         time.sleep(.5)
                     self.assertEqual(ready.returncode,0,"PG_NOT_READY")
                     def sql(src):
