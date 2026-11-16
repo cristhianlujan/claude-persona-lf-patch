@@ -26,7 +26,8 @@ BEGIN
  FOR r IN SELECT codigo,pendiente_decision FROM lf_ops.reglas LOOP
    s:=public.lf_rule_promotion_score_v1('E21-NO-REAL-RUN',r.codigo);
    IF s->>'A'<>'0' OR s->>'B'<>'0' OR s->>'D'<>'0' OR
-      s->>'score'<>CASE WHEN r.pendiente_decision THEN '0' ELSE '20' END OR
+      (r.pendiente_decision AND s->>'score'<>'0') OR
+      (NOT r.pendiente_decision AND s->>'score'<>'20') OR
       s->>'decision'<>'BLOCKED' THEN
      RAISE EXCEPTION 'E21_L2_FALSE_A_SCORING:%:%',r.codigo,s; END IF;
  END LOOP;
