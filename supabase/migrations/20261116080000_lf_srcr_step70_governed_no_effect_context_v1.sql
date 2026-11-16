@@ -24,7 +24,7 @@ BEGIN
  d:=pg_get_functiondef('public.lf_profile_srcr_same_context_candidate_scope_v1(text)'::regprocedure); d0:=d;
  IF position(anchor IN d)=0 OR position('READ_ONLY_WITH_IG_FINDINGS' IN d)=0 THEN RAISE EXCEPTION 'LF_SRCR_STEP70_GOVERNED_SOURCE_DRIFT'; END IF;
  d:=replace(d,anchor,addon||anchor);
- IF d=d0 OR position('Strictly no-effect' IN d)>0 THEN NULL; END IF;
+ IF d=d0 THEN RAISE EXCEPTION 'LF_SRCR_STEP70_GOVERNED_PATCH_NOT_APPLIED'; END IF;
  IF position('Scope-compatible, strictly no-effect repair report' IN d)=0 THEN RAISE EXCEPTION 'LF_SRCR_STEP70_GOVERNED_PATCH_NOT_APPLIED'; END IF;
  EXECUTE d;
 END $lf$;
