@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-pigp-01-05-20261116",
+  "paths": {
+    "scripts/lf_step70_separate_call_receipt_v1.py": "SERVICE_RUNTIME",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "scripts/lf_step70_same_llm_eval_v1.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-pigp-01-05-20261116.json": "CHANGESET_MANIFEST"
+  }
+}
