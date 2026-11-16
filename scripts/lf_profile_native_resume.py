@@ -836,7 +836,19 @@ def run_bound_validator(target_path, profile_code, profile_output, evidence_mani
         or validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}):
         raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
 
-    schema_ref = f"profiles/{slug}/{runtime_schema['default']}"
+    output_modes = runtime_schema.get("output_modes", {})
+    output_type = profile_output.get("output_type") if isinstance(profile_output, dict) else None
+    if not isinstance(output_modes, dict):
+        raise ValueError("PROFILE_RUNTIME_BINDING_OUTPUT_MODES_INVALID")
+    if output_modes:
+        if not isinstance(output_type, str) or output_type not in output_modes:
+            raise ValueError("PROFILE_OUTPUT_MODE_UNDECLARED")
+        schema_rel = output_modes[output_type]
+    else:
+        schema_rel = runtime_schema["default"]
+    if not isinstance(schema_rel, str) or not schema_rel.strip():
+        raise ValueError("PROFILE_RUNTIME_BINDING_SCHEMA_MODE_INVALID")
+    schema_ref = f"profiles/{slug}/{schema_rel}"
     validator_ref = f"profiles/{slug}/{validator['path']}"
     for ref in (schema_ref, validator_ref):
         ref_path = PurePosixPath(ref)
