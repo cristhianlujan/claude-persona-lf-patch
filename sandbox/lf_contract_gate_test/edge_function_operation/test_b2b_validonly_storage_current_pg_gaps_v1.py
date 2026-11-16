@@ -89,8 +89,8 @@ END $$;
 SELECT 'DUPLICATE_IDEMPOTENCY_REJECTED='||(
  SELECT count(*) FROM lf_ops.cargas_lotes WHERE idempotency_key='key-one');
 ROLLBACK;
-SELECT 'ROLLBACK_NO_SCHEMA='||(
- to_regnamespace('lf_ops') IS NULL)::text;
+SELECT 'ROLLBACK_LOAD_ROWS='||count(*) FROM lf_ops.cargas_lotes;
+SELECT 'ROLLBACK_FILE_ROWS='||count(*) FROM lf_ops.cargas_archivos;
 """
 class LiveConstraintGapPGDual(unittest.TestCase):
     def test_current_constraint_behavior_does_not_prove_backend(self):
@@ -124,7 +124,7 @@ class LiveConstraintGapPGDual(unittest.TestCase):
                       "GAP_MIME_EXTENSION_AND_PENDING_SCAN=1",
                       "CURRENT_CHECKS=4",
                       "DUPLICATE_IDEMPOTENCY_REJECTED=1",
-                      "ROLLBACK_NO_SCHEMA=false",
+                      "ROLLBACK_LOAD_ROWS=0","ROLLBACK_FILE_ROWS=0",
                     ):
                         self.assertIn(marker,out,marker+"\n"+out[-3400:])
                     print(f"PASS_PG{engine}_SOURCE_CONSTRAINT_BEHAVIOR_GAPS_NO_BACKEND_ATTESTATION",flush=True)
