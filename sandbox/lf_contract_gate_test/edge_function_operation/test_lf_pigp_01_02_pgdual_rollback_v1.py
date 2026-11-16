@@ -12,7 +12,9 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
 FIXTURE=(Path(__file__).parent/"fixtures/lf_pigp_live_preimage_20261116.sql").read_text()
-MIG=(ROOT/"supabase/migrations/20261116070000_lf_pigp_step70_ig_findings_and_pre40_screen_v1.sql").read_text()
+MIG_PATHS=list((ROOT/"supabase/migrations").glob("*_lf_pigp_step70_ig_findings_and_pre40_screen_v1.sql"))
+assert len(MIG_PATHS)==1,"PIGP_MIGRATION_MISSING_OR_DUPLICATED"
+MIG=MIG_PATHS[0].read_text()
 MIG_BODY=MIG.split("BEGIN;",1)[1].rsplit("COMMIT;",1)[0]
 
 SETUP=r"""
