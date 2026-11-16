@@ -591,19 +591,45 @@ def record_blocked_ig_receipt(http_status, response, execution_id, profile_code)
     return True
 
 
-def is_direct_validator_continuation(status, response):
-    """Only the exact governed 202 response may request a fresh one-time ticket."""
-    return (
-        status == 202
-        and isinstance(response, dict)
-        and response.get("outcome") == "CONTINUATION_REQUIRED"
-        and response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED"
-        and response.get("transport") == "DIRECT_EDGE_INVOCATION"
-        and response.get("queue_required") is False
-        and response.get("polling_required") is False
-        and isinstance(response.get("result"), dict)
-        and response["result"].get("status") == "VALIDATOR_RESUME_REQUIRED"
-    )
+def is_direct_validator_continuation(status, response, execution_id=None,
+                                     pantalla_id=None, skill_code=None):
+    """One SQL-ticket-bound Validator continuation, not a failed-runtime retry.
+
+    Accept the actual Edge envelopes (skill and context-pack). Verify identity
+    and screen against the *consumed ticket's* request_body, not the model.
+    """
+    if (status != 202 or not isinstance(response, dict)
+        or response.get("outcome") != "CONTINUATION_REQUIRED"
+        or response.get("code") not in (
+            "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
+            "SKILL_RUNTIME_VALIDATOR_RESUME_REQUIRED")
+        or response.get("transport") != "DIRECT_EDGE_INVOCATION"
+        or response.get("queue_required") is not False
+        or response.get("polling_required") is not False
+        or not isinstance(response.get("result"), dict)):
+        return False
+    result = response["result"]
+    nested = result.get("result")
+    if (result.get("status") != "VALIDATOR_RESUME_REQUIRED"
+        and not (isinstance(nested, dict)
+                 and nested.get("status") == "VALIDATOR_RESUME_REQUIRED")):
+        return False
+    if execution_id is not None and response.get("execution_id") != execution_id:
+        return False
+    if response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED":
+        if response.get("consumer") not in (None, "CONTEXT_PACK"):
+            return False
+        if execution_id is not None and (
+            type(pantalla_id) is not int or pantalla_id <= 0):
+            return False
+        if pantalla_id is not None and response.get("pantalla_id") != pantalla_id:
+            return False
+    else:
+        if skill_code is not None and response.get("skill_code") != skill_code:
+            return False
+        if type(pantalla_id) is int and response.get("pantalla_id") != pantalla_id:
+            return False
+    return True
 
 
 def sha256_file(path):
@@ -1383,7 +1409,9 @@ def main():
     # Two independent, one-use DB tickets MAX per parent+skill. The DB
     # handler records an IG finding after exhaustion, instead of keeping
     # the native workflow running until the short-lived OIDC token expires.
-    for attempt in range(2):
+    attempt = 0
+    validator_resumes = 0
+    while attempt < 2:
         if result.get("phase") not in ("SKILL_RUNTIME_REQUIRED",
                                         "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
             break
@@ -1434,9 +1462,9 @@ def main():
                  else True)
             and ig.get("terminal_status") == "BLOCKED"
             and ig.get("execution_id") == execution_id
-            and (ig.get("pantalla_id") == body.get("pantalla_id")
-                 if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
-                 else True)
+            and type(body.get("pantalla_id")) is int
+            and body["pantalla_id"] > 0
+            and ig.get("pantalla_id") == body["pantalla_id"]
             and (ig.get("consumer") == "CONTEXT_PACK"
                  if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
                  else True)
@@ -1460,17 +1488,30 @@ def main():
         normal_ready = (
             ig_code == 200 and ig.get("outcome") == "TERMINAL"
             and ig.get("terminal_status") == "READY"
+            and (ig.get("pantalla_id") == body.get("pantalla_id")
+                 if type(body.get("pantalla_id")) is int else True)
         )
-        if not (normal_ready or blocked_terminal or
-                is_direct_validator_continuation(ig_code,ig)):
+        validator_resume = is_direct_validator_continuation(
+            ig_code, ig, execution_id=execution_id,
+            pantalla_id=body.get("pantalla_id"),
+            skill_code=body.get("skill_code"))
+        if validator_resume:
+            validator_resumes += 1
+            if validator_resumes > 3:
+                print("PROFILE_SELECTED_SKILL_VALIDATOR_RESUME_LIMIT")
+                return 1
+        else:
+            # Only real terminal/error outcomes consume the two-attempt budget.
+            attempt += 1
+        if not (normal_ready or blocked_terminal or validator_resume):
             # The full worker error may contain sensitive source; do not log it.
             print(json.dumps({"phase":"SKILL_RUNTIME_RETRY",
-                "execution_id":execution_id,"attempt":attempt+1,
+                "execution_id":execution_id,"attempt":attempt,
                 "http_status":ig_code,
                 "outcome":ig.get("outcome"),
                 "code":str(ig.get("code") or "")[:120],
                 "production_authorized":False}))
-        if not (normal_ready or blocked_terminal):
+        if not (normal_ready or blocked_terminal or validator_resume):
             remaining = (runtime_deadline-dt.datetime.now(dt.timezone.utc)).total_seconds()
             if remaining>0 and ig_code != 0:
                 time.sleep(min(2.0,remaining))
