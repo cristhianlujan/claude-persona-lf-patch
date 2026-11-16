@@ -43,14 +43,14 @@ SELECT 'PREV_REF='||(manifest#>>'{previous_outputs,0,output_ref}')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
 SELECT 'PREV_SUMMARY='||(manifest#>>'{previous_outputs,0,summary}')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
-SELECT 'PROMOTION_FLAG_WITH='||manifest->>'no_promotion'
+SELECT 'PROMOTION_FLAG_WITH='||(manifest->>'no_promotion')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
 SELECT 'NO_SOURCE='||(public.lf_profile_execution_begin_from_handoff_v1(
  jsonb_build_object('profile_code','PERFIL-TEST','literal_request','test','request_sha256',repeat('b',64)),
  'GPT_NATIVE','E10-WITHOUT','idem-2','actor-1','repo','profile-path','{}'::jsonb)->>'status');
 SELECT 'PREV_EMPTY='||jsonb_array_length(manifest->'previous_outputs')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITHOUT';
-SELECT 'PROMOTION_FLAG_NO_SOURCE='||manifest->>'no_promotion'
+SELECT 'PROMOTION_FLAG_NO_SOURCE='||(manifest->>'no_promotion')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITHOUT';
 SELECT 'MISSING_SOURCE='||(
  public.lf_profile_execution_begin_from_handoff_v1(
