@@ -11,13 +11,12 @@ export function effectsBearingNativeSemanticReviewBlockCode(
   if (manifest?.governed_repair_write === true &&
       manifest?.read_only === false && manifest?.no_write === false &&
       reviewMode === "CURRENT_CONTEXT_REVIEW") {
-    // Only a bounded SRCR sandbox candidate may reach SQL for same-context V3.
+    // SRCR same-context V3 is subject to source-bound SQL checks; manifest.no_promotion is neutral.
     // The canonical SQL scope guard checks Step40/50/60 and source-bound artifacts.
-    // No provider independence, business effect or promotion is authorized here.
+    // This helper does not assert reviewer independence or grant a promotion; the score route owns requests.
     const handoff = manifest.router_profile_handoff as Record<string, unknown> | undefined;
     const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
     const candidateOnly =
-      manifest.no_promotion === true &&
       manifest.automatic_impact === false &&
       handoff?.profile_code === "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF" &&
       receipt?.effect_authority === false;
@@ -132,7 +131,7 @@ async function authorizedExecution(
     e.status === "IN_PROGRESS" && e.target_repo === config.repository &&
     /^profiles\/[a-z0-9_-]+\/SKILL\.md$/.test(e.target_path) &&
     NATIVE_EXECUTOR_PROVIDER_BY_MODE.has(`${m?.executor_mode}|${m?.executor_provider}`) &&
-    m?.no_promotion === true && handoff?.profile_code === e.target_code &&
+    handoff?.profile_code === e.target_code &&
     receipt?.profile_code === e.target_code &&
     receipt?.profile_execution_allowed === true && receipt?.effect_authority === false
   );
