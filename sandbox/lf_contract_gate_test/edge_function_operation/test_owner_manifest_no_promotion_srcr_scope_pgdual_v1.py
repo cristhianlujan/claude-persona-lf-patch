@@ -59,7 +59,10 @@ class ManifestNeutralSRCRPGDual(unittest.TestCase):
                     producer={"profile_output":{"repair_execution":{"changes":[{
                         "target_ref":SRC,"after_ref":SRC,"before_ref":None,"change_type":"CREATE"
                     }]}}}
-                    init="""CREATE TABLE public.lf_operation_execution(
+                    init="""CREATE ROLE anon NOLOGIN;
+CREATE ROLE authenticated NOLOGIN;
+CREATE ROLE service_role NOLOGIN;
+CREATE TABLE public.lf_operation_execution(
 execution_id text PRIMARY KEY,status text,operation_code text,target_code text,manifest jsonb);
 CREATE TABLE public.lf_operation_execution_steps(
 execution_id text,step_id text,status text,evidence_payload jsonb);
