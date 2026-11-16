@@ -164,7 +164,7 @@ class E20DualRollback(unittest.TestCase):
                     neg="""CREATE OR REPLACE FUNCTION public.lf_router_profile_execution_handoff_v1(
                       p_request jsonb,p_result jsonb,p_channel text,p_business text,
                       p_scope jsonb DEFAULT NULL::jsonb)
-                      RETURNS jsonb LANGUAGE sql AS $ SELECT '{}'::jsonb $;"""
+                      RETURNS jsonb LANGUAGE sql AS $drift$ SELECT '{}'::jsonb $drift$;"""
                     out,err=execute("BEGIN;\n"+SETUP+FIX+neg+"\n"+BODY+"ROLLBACK;",fail=True)
                     self.assertIn("E20_SOURCE_STATE_DRIFT:handoff_builder",err)
                     out,err=execute("BEGIN;\n"+SETUP+FIX+BODY+ASSERTS+
