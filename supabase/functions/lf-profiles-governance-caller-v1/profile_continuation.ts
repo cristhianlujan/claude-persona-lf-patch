@@ -976,7 +976,11 @@ export async function handleProfileContinuation(
       p_execution_id:e.execution_id,p_baseline_envelope:payload,p_actor_execution_id:e.execution_id,
     });
     if (recordedBaseline.error) return recordedBaseline.error;
-    if (!["STEP_RECORDED","STEP_ALREADY_RECORDED"].includes(String(recordedBaseline.result?.status ?? recordedBaseline.result?.outcome ?? "")))
+    // The canonical recorder returns outcome=STEP_RECORDED and
+    // status=STEP_PASS_WITH_EVIDENCE. Reject a merely asserted outcome
+    // whose deterministic step status is BLOCKED or RETURN_TO_ROUTER.
+    if (recordedBaseline.result?.outcome !== "STEP_RECORDED" ||
+        recordedBaseline.result?.status !== "STEP_PASS_WITH_EVIDENCE")
       return respond({outcome:"BLOCKED",code:"PROFILE_BASELINE_RECORD_NOT_CLEAN",
         execution_id:e.execution_id,result:recordedBaseline.result},409);
     prepared=await rpc(config,fetchFn,"lf_profile_native_bridge_prepare_v1",{
