@@ -74,7 +74,7 @@ SELECT 'REPORT_GOV='||(public.lf_profile_native_bridge_record_report_v1(
 class Step40GovernedRepairPGDual(unittest.TestCase):
  def test_live_bridge_source_migration_patch_and_scenarios(self):
   self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
-  src=SOURCE.read_text(encoding="utf-8")
+  src=SOURCE.read_text(encoding="utf-8").replace("$function$\nCREATE OR REPLACE", "$function$;\nCREATE OR REPLACE").rstrip()+";\n"
   migration=MIGS[0].read_text(encoding="utf-8")
   self.assertIn("lf_profile_native_bridge_prepare_v1",src)
   self.assertIn("lf_profile_native_bridge_record_report_v1",src)
@@ -117,9 +117,6 @@ BEGIN RETURN '{}'::jsonb; END $break$;
      out,err=sql(migration,expected=1)
      self.assertIn("LF_STEP40_PATCH_A_NOT_APPLIED",err)
      # Restore actual LIVE prepatch source via CREATE OR REPLACE (not a dummy).
-     sql("BEGIN;\n"+src+"\n"+migration.split("BEGIN;",1)[1].rsplit("COMMIT;",1)[0]+"\n"
-         +RUNS+"\nROLLBACK;\n"
-         "SELECT 'RESIDUE='||count(*) FROM public.lf_operation_execution;\n")
      # The real regression reads output in same SQL session, before ROLLBACK.
      out,err=sql("BEGIN;\n"+src+"\n"+
         migration.split("BEGIN;",1)[1].rsplit("COMMIT;",1)[0]+"\n"+
