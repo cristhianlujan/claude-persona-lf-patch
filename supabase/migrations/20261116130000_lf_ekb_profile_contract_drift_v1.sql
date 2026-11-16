@@ -1,9 +1,9 @@
 -- IG 07:55 Lima 2026-11-16: EKB only. No code/runtime/previous RUN changes.
--- PR metadata is replaced with the real PR number before Train admission.
+-- PR metadata: #4046 (this one-file migration PR).
 BEGIN;
 DO $ekb$
 DECLARE
- v_pr text:='#PENDING_PR';
+ v_pr text:='#4046';
  v_source_ref text:='supabase/migrations/20261116130000_lf_ekb_profile_contract_drift_v1.sql';
  v_codes text[]:=ARRAY[
     'LF-PROFILE-EDGE-PROMOTION-ALLOWED-FALSE-CONTRACT-20261116-001',
