@@ -39,9 +39,9 @@ SELECT 'WITH_SOURCE='||(public.lf_profile_execution_begin_from_handoff_v1(
  'GPT_NATIVE','E10-WITH','idem-1','actor-1','repo','profile-path','{}'::jsonb)->>'status');
 SELECT 'PREV_COUNT='||jsonb_array_length(manifest->'previous_outputs')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
-SELECT 'PREV_REF='||manifest#>>'{previous_outputs,0,output_ref}'
+SELECT 'PREV_REF='||(manifest#>>'{previous_outputs,0,output_ref}')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
-SELECT 'PREV_SUMMARY='||manifest#>>'{previous_outputs,0,summary}'
+SELECT 'PREV_SUMMARY='||(manifest#>>'{previous_outputs,0,summary}')
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
 SELECT 'PROMOTION_FLAG_WITH='||manifest->>'no_promotion'
  FROM public.lf_operation_execution WHERE execution_id='E10-WITH';
