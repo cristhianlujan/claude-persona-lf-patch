@@ -108,8 +108,8 @@ INSERT INTO lf_ops.reglas_pantallas VALUES (51,1);
         psql(name,invalid)
         err=psql(name,mig,ok=False)
         self.assertIn("LF_SRCR_E12_STEP70_NO_EFFECT_PATCH_NOT_APPLIED",err)
-        psql(name,original())
-        out=psql(name,"BEGIN;\n"+mig.removeprefix("BEGIN;").removesuffix("COMMIT;")+f"""
+        psql(name,original().replace("CREATE FUNCTION public.lf_profile_srcr_same_context_candidate_scope_v1(", "CREATE OR REPLACE FUNCTION public.lf_profile_srcr_same_context_candidate_scope_v1("))
+        out=psql(name,"BEGIN;\n"+mig.strip().removeprefix("BEGIN;").strip().removesuffix("COMMIT;").strip()+f"""
 SELECT 'GOOD|'||({fn})::text;
 UPDATE public.lf_operation_execution SET manifest=jsonb_set(manifest,'{{repair_execution_authority,promotion_allowed}}','true'::jsonb);
 SELECT 'PROMOTION|'||({fn})::text;
