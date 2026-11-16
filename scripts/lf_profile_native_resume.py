@@ -416,7 +416,7 @@ def governed_request():
         return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review",
-        "skill_semantic_decision", "skill_selection_decision"
+        "skill_semantic_decision", "skill_selection_decision", "baseline_envelope"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
@@ -449,6 +449,14 @@ def governed_request():
                    else {"skill_selection_decision": skill_decision}),
                 **({"screen_selection_draft": screen_draft}
                    if "screen_selection_draft" in data else {})}
+    if "baseline_envelope" in data:
+        envelope=data["baseline_envelope"]
+        if (set(data)!={"schema_version","execution_id","baseline_envelope"}
+            or not isinstance(envelope,dict)
+            or len(json.dumps(envelope,ensure_ascii=False))>200000):
+            raise ValueError("PROFILE_BASELINE_GOVERNED_REQUEST_INVALID")
+        return {"kind":"BASELINE_CONTINUATION","execution_id":execution_id,
+                "baseline_envelope":envelope}
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
@@ -469,6 +477,7 @@ def record_incomplete_continuation(execution_id, profile_code, phase, next_step,
     """
     if next_step not in {
         "screen_selection", "skill_selection", "input_governance", "execute_profile", "semantic_judge",
+        "research_baseline_freeze",
     }:
         raise ValueError("PROFILE_NATIVE_CONTINUATION_UNRECOGNIZED_STEP")
     checkpoint = {
@@ -1339,6 +1348,9 @@ def main():
             "execution_id":execution_id,
             "profile_code":result.get("profile_code"),
             "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
+    elif isinstance(request, dict) and request.get("kind") == "BASELINE_CONTINUATION":
+        execution_id = request["execution_id"]
+        raw_draft,profile_output,semantic_review = "",None,None
     elif isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
         execution_id = request["execution_id"]
         # Source-bind carries skill decision; native-continue separately carries
@@ -1407,6 +1419,8 @@ def main():
         "source_revision": source_revision,
         "source_digest": digest,
     }
+    if isinstance(request, dict) and request.get("kind") == "BASELINE_CONTINUATION":
+        payload["baseline_envelope"] = request["baseline_envelope"]
     if raw_draft:
         draft = json.loads(raw_draft)
         if not isinstance(draft, dict):
@@ -1583,6 +1597,11 @@ def main():
         return 1
 
     phase = result.get("phase")
+    if phase == "RESEARCH_BASELINE_REQUIRED":
+        return record_incomplete_continuation(
+            execution_id,source.get("profile_code"),phase,
+            "research_baseline_freeze","SOURCE_BOUND_BASELINE_ENVELOPE",
+        )
     # Deliberately do not print context packs or runtime tickets in CI logs.
     print(json.dumps({
         "execution_id": execution_id,
