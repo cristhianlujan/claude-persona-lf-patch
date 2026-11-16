@@ -26,14 +26,28 @@ CREATE TABLE lf_ops.regla_behavior_tests (
 );
 CREATE OR REPLACE FUNCTION public.lf_input_family_catalog_receipts_for_run_v1(text)
 RETURNS jsonb LANGUAGE sql AS $$SELECT '[]'::jsonb$$;
-CREATE OR REPLACE FUNCTION public.lf_rule_promotion_score_v1(text,text)
-RETURNS jsonb LANGUAGE sql STABLE AS $$
-SELECT CASE WHEN $2='B2B-RULE-AUTH-047' THEN
- '{"score":0,"A":0,"B":0,"C":0,"D":0,"hard_block":true,"decision":"BLOCKED"}'::jsonb
- WHEN $2='B2B-RULE-AUTH-022' THEN
- '{"score":95,"A":40,"B":30,"C":20,"D":5,"hard_block":false,"decision":"AUTO"}'::jsonb
- ELSE '{"score":20,"A":0,"B":0,"C":20,"D":0,"hard_block":false,"decision":"BLOCKED"}'::jsonb
- END $$;
+CREATE OR REPLACE FUNCTION public.lf_rule_promotion_score_v1(p_execution_id text,p_rule_code text)
+RETURNS jsonb LANGUAGE plpgsql STABLE AS $f$
+DECLARE
+ r record;
+ hard_block boolean;
+ points integer;
+ blocked_categories CONSTANT text[]:=ARRAY['LEGAL','APPROVAL','OFERTAS_CUOTAS','AUTH','PRIVACY','PAGOS'];
+BEGIN
+ SELECT codigo,categoria,pendiente_decision INTO r FROM lf_ops.reglas WHERE codigo=p_rule_code;
+ hard_block:=coalesce(r.pendiente_decision,true) OR r.categoria=ANY(blocked_categories)
+    OR p_rule_code LIKE '%INSTALLMENT%';
+ points:=CASE WHEN p_rule_code='B2B-RULE-AUTH-047' THEN 0
+              WHEN p_rule_code='B2B-RULE-AUTH-022' THEN 95 ELSE 20 END;
+ RETURN jsonb_build_object('score',points,
+  'A',CASE WHEN points=95 THEN 40 ELSE 0 END,
+  'B',CASE WHEN points=95 THEN 30 ELSE 0 END,
+  'C',CASE WHEN points=0 THEN 0 ELSE 20 END,
+  'D',CASE WHEN points=95 THEN 5 ELSE 0 END,
+  'hard_block',hard_block,
+  'decision',CASE WHEN points>=85 AND hard_block THEN 'MANUAL'
+                  WHEN points>=85 THEN 'AUTO' ELSE 'BLOCKED' END);
+END $f$;
 """
 BAD_REPORT=r"""
 CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_record_report_v1(
@@ -71,23 +85,27 @@ SELECT 'DEST_REPAIR='||(public.lf_profile_native_bridge_record_report_v1(
 SELECT 'DEST_T_REMED='||(public.lf_profile_native_bridge_record_report_v1(
  'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,1,destino}');
 SELECT 'DEST_HUMAN='||(public.lf_profile_native_bridge_record_report_v1(
- 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,2,destino}');
+ 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,3,destino}');
+SELECT 'AUTH_HARD_BLOCK='||(public.lf_profile_native_bridge_record_report_v1(
+ 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,0,hard_block}');
+SELECT 'AUTH_CATEGORY='||(public.lf_profile_native_bridge_record_report_v1(
+ 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,0,hard_block_categoria}');
 SELECT 'HARD_BLOCK='||(public.lf_profile_native_bridge_record_report_v1(
- 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,2,hard_block}');
+ 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,3,hard_block}');
 SELECT 'A_MAX='||(public.lf_profile_native_bridge_record_report_v1(
  'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,0,A,maximo}');
 SELECT 'C_OBTAINED='||(public.lf_profile_native_bridge_record_report_v1(
- 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,2,C,obtenidos}');
+ 'EXEC-TEST','evidence',null)#>>'{rule_score_report,rule_reports,3,C,obtenidos}');
 SELECT 'NO_OUT_OF_SCOPE='||(
   SELECT count(*) FROM jsonb_array_elements(
    public.lf_profile_native_bridge_record_report_v1('EXEC-TEST','evidence',null)
      #>'{rule_score_report,rule_reports}') a
   WHERE a->>'regla'='B2B-RULE-A11Y-001');
-SELECT 'NO_ELIGIBLE_AUTO='||(
+SELECT 'AUTH_MANUAL_INCLUDED='||(
   SELECT count(*) FROM jsonb_array_elements(
    public.lf_profile_native_bridge_record_report_v1('EXEC-TEST','evidence',null)
      #>'{rule_score_report,rule_reports}') a
-  WHERE a->>'regla'='B2B-RULE-AUTH-022');
+  WHERE a->>'regla'='B2B-RULE-AUTH-022' AND a->>'hard_block'='true' AND a->>'destino'='DECISION_HUMANA');
 SELECT 'NO_MUTATION='||count(*) FROM lf_ops.reglas WHERE estado='VIGENTE';
 ROLLBACK;
 SELECT 'NO_RESIDUE='||count(*) FROM lf_ops.reglas;
@@ -127,10 +145,10 @@ class ProfileRuleScoreReportPGDual(unittest.TestCase):
      sql(migration)
      out,_=sql(RUN)
      for marker in (
-       "REPORT_COUNT=3","DEST_REPAIR=REPARAR_REGLA",
+       "REPORT_COUNT=4","DEST_REPAIR=REPARAR_REGLA",
        "DEST_T_REMED=T_REMED","DEST_HUMAN=DECISION_HUMANA",
-       "HARD_BLOCK=true","A_MAX=40","C_OBTAINED=0",
-       "NO_OUT_OF_SCOPE=0","NO_ELIGIBLE_AUTO=0",
+       "HARD_BLOCK=true","AUTH_HARD_BLOCK=true","AUTH_CATEGORY=AUTH","A_MAX=40","C_OBTAINED=0",
+       "NO_OUT_OF_SCOPE=0","AUTH_MANUAL_INCLUDED=1",
        "NO_MUTATION=1","NO_RESIDUE=0"):
       self.assertIn(marker,out,marker+"\n"+out[-3000:])
      print("PASS_LF_STEP80_RULE_SCORE_PG"+pg+"_NEGATIVE_ROLLBACK",flush=True)
