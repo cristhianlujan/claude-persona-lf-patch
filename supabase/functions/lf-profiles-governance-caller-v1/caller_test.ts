@@ -174,7 +174,6 @@ function harness(options: HarnessOptions = {}) {
             executor_provider: "OPENAI_CHATGPT_NATIVE",
             read_only: true,
             no_write: true,
-            no_promotion: true,
             governed_repair_write: false,
             router_profile_handoff: {
               profile_code: "PERFIL-UX-DESIGN-LF",
