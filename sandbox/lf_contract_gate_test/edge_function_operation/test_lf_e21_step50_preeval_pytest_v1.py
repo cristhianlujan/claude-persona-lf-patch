@@ -52,6 +52,38 @@ class Step50PythonTest(unittest.TestCase):
         raw={"repair_execution":{"mode":"AUTHORIZED_NOT_EXECUTED"}}
         self.expect_code(raw,granted(),"STEP50_AUTHORIZED_NOT_EXECUTED_FORBIDDEN")
 
+
+    def test_readonly_null_repair_authority_accepted_no_effect(self):
+        # Positive: SQL READ_ONLY can legitimately omit a repair authority.
+        raw={"repair_execution":{"mode":"AUTHORIZED_NOT_EXECUTED"}}
+        self.assertIsNone(CHECK(TARGET,raw,{
+            "execution_write_mode":"READ_ONLY","repair_execution_authority":None
+        }))
+        self.assertIsNone(CHECK(TARGET,raw,{"execution_write_mode":"READ_ONLY"}))
+        self.assertIsNone(CHECK(TARGET,raw,{
+            "execution_write_mode":"READ_ONLY",
+            "repair_execution_authority":{"promotion_allowed":False}
+        }))
+
+    def test_readonly_rejects_effect_and_any_promotion_authority(self):
+        # Negative: READ_ONLY must never be turned into a write/promotion lane.
+        self.expect_code(effect(),{"execution_write_mode":"READ_ONLY",
+             "repair_execution_authority":None},"STEP50_READ_ONLY_EFFECT_FORBIDDEN")
+        raw={"repair_execution":{"mode":"AUTHORIZED_NOT_EXECUTED",
+             "changes":[{"target_ref":"supabase://lf_ops.reglas/B2B-RULE-AUTH-004"}]}}
+        self.expect_code(raw,{"execution_write_mode":"READ_ONLY",
+             "repair_execution_authority":None},"STEP50_READ_ONLY_EFFECT_FORBIDDEN")
+        self.expect_code({"repair_execution":{"mode":"AUTHORIZED_NOT_EXECUTED"}},
+            {"execution_write_mode":"READ_ONLY",
+             "repair_execution_authority":{"promotion_allowed":True}},
+            "STEP50_PROMOTION_REPAIR_AUTHORITY_MISMATCH")
+
+    def test_governed_write_still_requires_exact_repair_authority(self):
+        self.expect_code(effect(),{"execution_write_mode":"GOVERNED_REPAIR_WRITE",
+             "repair_execution_authority":None},"STEP50_SERVER_AUTHORITY_NOT_BOUND")
+        self.expect_code({"repair_execution":{"mode":"AUTHORIZED_NOT_EXECUTED"}},
+            granted(),"STEP50_AUTHORIZED_NOT_EXECUTED_FORBIDDEN")
+
     def test_missing_before_after_fail_closed(self):
         raw=effect()
         del raw["repair_execution"]["rule_receipts"][0]["before_sha256"]
