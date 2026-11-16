@@ -75,10 +75,9 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertEqual(binding.payload.get("title"), "UI Architect Focused Decision Spec")
         self.assertNotIn("anyOf", binding.payload)
 
-    def test_ui_auto_ambiguity_fails_closed_without_aggregate_schema(self) -> None:
-        with self.assertRaises(RepositoryError) as ctx:
-            self.repository.runtime_schema("ui_architect", "AUTO")
-        self.assertEqual(ctx.exception.code, "PROFILE_RUNTIME_SCHEMA_AMBIGUOUS")
+    def test_ui_auto_uses_declared_production_default_schema(self) -> None:
+        binding = self.repository.runtime_schema("ui_architect", "AUTO")
+        self.assertEqual(binding.source_refs, ("profiles/ui_architect/schemas/ui_production_spec.schema.json",))
 
     def test_unsupported_repository_mode_fails_closed(self) -> None:
         with self.assertRaises(RepositoryError) as ctx:
