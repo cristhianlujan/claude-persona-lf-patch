@@ -496,9 +496,10 @@ class RepositoryBindings:
     def load_validator(self, profile_slug: str) -> ModuleType | None:
         binding = self.runtime_binding(profile_slug)
         if binding is not None:
-            return self._load_file(
-                self.profiles_root / profile_slug / binding.canonical_validator_path,
-                f"lf_profile_validator_{profile_slug}",
+            path = self.profiles_root / profile_slug / binding.canonical_validator_path
+            # Profile-local canonical validators can import sibling modules.
+            return self._load_with_siblings(
+                path, path.parent, f"lf_profile_validator_{profile_slug}",
             )
         mapping = {
             "product_director_lf": "profiles/product_director_lf/validators/validate_product_director_output.py",
