@@ -26,7 +26,7 @@ class RepositoryRuntimeSchemaTest(unittest.TestCase):
         self.assertEqual(len(schema.source_refs), 1)
         self.assertEqual(
             schema.source_refs[0],
-            "profiles/quality_pack/schemas/runtime_output.schema.json",
+            "profiles/quality_pack/schemas/quality_review.schema.json",
         )
         self.assertEqual(len(schema.sha256), 64)
         self.assertEqual(schema.raw, (self.repo / schema.source_refs[0]).read_bytes())
