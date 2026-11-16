@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
-MIG=ROOT/"supabase/migrations/20261116144000_lf_b2b_bulk_cross_load_file_integrity_v1.sql"
+MIG=ROOT/"supabase/migrations/20261116135008_lf_b2b_bulk_cross_load_file_integrity_v1.sql"
 BASE=r"""
 CREATE SCHEMA lf_ops;
 CREATE TABLE lf_ops.cargas_lotes (
