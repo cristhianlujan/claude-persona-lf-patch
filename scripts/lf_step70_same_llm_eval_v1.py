@@ -49,7 +49,7 @@ def evaluate(raw, execution_id, candidate_sha, scope_sha):
             "DECISION_REASON_MISSING")
     chk(raw.get("verdict")=="PASS_INDEPENDENT_SEMANTIC","NOT_PASS_VERDICT")
     refs=raw.get("source_refs")
-    chk(isinstance(refs,list) and len(refs)>0 and all(isinstance(r,str) and r for r in refs),
+    chk(isinstance(refs,list) and len(refs)>0 and all(isinstance(r,str) and len(r)>=4 for r in refs),
         "REVIEW_SOURCE_REFS_MISSING")
     sha=hashlib.sha256(json.dumps(raw,ensure_ascii=False,sort_keys=True,
         separators=(",",":")).encode("utf8")).hexdigest()
