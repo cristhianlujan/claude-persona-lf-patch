@@ -138,23 +138,23 @@ SELECT jsonb_build_object(
 )) AS raw FROM public.lf_profile_step50_rule_effect_receipts_v1 r;
 
 DO $e21$
-DECLARE raw jsonb; x jsonb;
+DECLARE v_raw jsonb; x jsonb;
 BEGIN
- SELECT raw INTO raw FROM e21_output;
+ SELECT o.raw INTO v_raw FROM e21_output o;
  x:=public.lf_profile_step50_rule_effect_guard_v1(
- 'E21-TEST-GOV',jsonb_set(raw,'{repair_execution,rule_receipts,0,before_sha256}','null'::jsonb));
+ 'E21-TEST-GOV',jsonb_set(v_raw,'{repair_execution,rule_receipts,0,before_sha256}','null'::jsonb));
  IF x->>'code'<>'STEP50_EFFECT_HASH_PAIR_REQUIRED' THEN
  RAISE EXCEPTION 'E21_MISSING_BEFORE_HASH_NOT_BLOCKED:%',x; END IF;
  x:=public.lf_profile_step50_rule_effect_guard_v1(
- 'E21-TEST-GOV',jsonb_set(raw,'{repair_execution,rule_receipts,0,after_sha256}','null'::jsonb));
+ 'E21-TEST-GOV',jsonb_set(v_raw,'{repair_execution,rule_receipts,0,after_sha256}','null'::jsonb));
  IF x->>'code'<>'STEP50_EFFECT_HASH_PAIR_REQUIRED' THEN
  RAISE EXCEPTION 'E21_MISSING_AFTER_HASH_NOT_BLOCKED:%',x; END IF;
  x:=public.lf_profile_step50_rule_effect_guard_v1(
- 'E21-TEST-GOV',jsonb_set(raw,'{repair_execution,rule_receipts,0,source_ref}',
+ 'E21-TEST-GOV',jsonb_set(v_raw,'{repair_execution,rule_receipts,0,source_ref}',
   to_jsonb('supabase://lf_ops.reglas/B2B-RULE-AUTH-049'::text)));
  IF x->>'code'<>'STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH' THEN
  RAISE EXCEPTION 'E21_OTHER_RULE_RECEIPT_ACCEPTED:%',x; END IF;
- x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',raw);
+ x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',v_raw);
  IF x->>'code'<>'STEP50_TRAIN_RECEIPT_NOT_VERIFIED' THEN
  RAISE EXCEPTION 'E21_INCOMPLETE_TRAIN_ACCEPTED:%',x; END IF;
 END $e21$;
@@ -175,15 +175,15 @@ VALUES
  ('EXEC-DB-TRAIN-PR4100-20261116102000-R44444444',30,'verify','PASS_CLEAN',
   '{"train_run_id":"44444444","readback":{"in_main":true}}'::jsonb);
 DO $e21$
-DECLARE raw jsonb; x jsonb;
+DECLARE v_raw jsonb; x jsonb;
 BEGIN
- SELECT raw INTO raw FROM e21_output;
- x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',raw);
+ SELECT o.raw INTO v_raw FROM e21_output o;
+ x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',v_raw);
  IF x->>'status'<>'VERIFIED' OR x->>'verified_rule_count'<>'1'
  OR x#>>'{rule_receipts,0,source_ref}'<>'supabase://lf_ops.reglas/B2B-RULE-AUTH-004' THEN
  RAISE EXCEPTION 'E21_VERIFIED_EFFECT_NOT_ACCEPTED:%',x; END IF;
  x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',
- jsonb_set(raw,'{repair_execution,rule_receipts,0,train_pr}','4101'::jsonb));
+ jsonb_set(v_raw,'{repair_execution,rule_receipts,0,train_pr}','4101'::jsonb));
  IF x->>'code'<>'STEP50_TRAIN_RECEIPT_NOT_VERIFIED' THEN
  RAISE EXCEPTION 'E21_FOREIGN_TRAIN_PR_ACCEPTED:%',x; END IF;
 END $e21$;
@@ -191,10 +191,10 @@ SELECT 'E21_SOURCE_BOUND_REAL_DB_EFFECT_POSITIVE=PASS';
 -- An out-of-band later update invalidates the previous AFTER snapshot.
 UPDATE lf_ops.reglas SET titulo='Unrelated latest change' WHERE codigo='B2B-RULE-AUTH-004';
 DO $e21$
-DECLARE raw jsonb;x jsonb;
+DECLARE v_raw jsonb;x jsonb;
 BEGIN
- SELECT raw INTO raw FROM e21_output;
- x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',raw);
+ SELECT o.raw INTO v_raw FROM e21_output o;
+ x:=public.lf_profile_step50_rule_effect_guard_v1('E21-TEST-GOV',v_raw);
  IF x->>'code'<>'STEP50_EFFECT_AFTER_NOT_CURRENT' THEN
  RAISE EXCEPTION 'E21_STALE_AFTER_RECEIPT_ACCEPTED:%',x; END IF;
 END $e21$;
