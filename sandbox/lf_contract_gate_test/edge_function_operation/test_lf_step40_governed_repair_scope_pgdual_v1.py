@@ -2,7 +2,7 @@
 three real Step40 prepare cases and an actual Step80 report admission path.
 BEGIN/ROLLBACK. Negative source-drift patch MUST reject.
 """
-import shutil, subprocess, time, unittest, uuid
+import shutil, subprocess, time, unittest, uuid, re
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -74,7 +74,7 @@ SELECT 'REPORT_GOV='||(public.lf_profile_native_bridge_record_report_v1(
 class Step40GovernedRepairPGDual(unittest.TestCase):
  def test_live_bridge_source_migration_patch_and_scenarios(self):
   self.assertIsNotNone(shutil.which("docker"),"DOCKER_REQUIRED")
-  src=SOURCE.read_text(encoding="utf-8").replace("$function$\nCREATE OR REPLACE", "$function$;\nCREATE OR REPLACE").rstrip()+";\n"
+  src=re.sub(r"(\$function\$)(\s+)(?=CREATE OR REPLACE FUNCTION)",r"\1;\2",SOURCE.read_text(encoding="utf-8")).rstrip()+";\n"
   migration=MIGS[0].read_text(encoding="utf-8")
   self.assertIn("lf_profile_native_bridge_prepare_v1",src)
   self.assertIn("lf_profile_native_bridge_record_report_v1",src)
