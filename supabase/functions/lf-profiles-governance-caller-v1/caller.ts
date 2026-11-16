@@ -617,6 +617,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           const common = {execution_id:executionId,skill_code:skillCode,
             pantalla_id:pantallaId,
             runtime_slug:slug,transport:"DIRECT_EDGE_INVOCATION",
+            queue_required:false,polling_required:false,
             production_authorized:false,promotion_authorized:false,result};
           if (terminalStatus==="VALIDATOR_RESUME_REQUIRED" ||
               directStatus==="VALIDATOR_RESUME_REQUIRED") {
