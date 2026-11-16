@@ -162,8 +162,9 @@ class E20DualRollback(unittest.TestCase):
                         return p.stdout,p.stderr
                     # Reject source drift, don't patch guessed definitions.
                     neg="""CREATE OR REPLACE FUNCTION public.lf_router_profile_execution_handoff_v1(
-                      jsonb,jsonb,text,text,jsonb)
-                      RETURNS jsonb LANGUAGE sql AS $$ SELECT '{}'::jsonb $$;"""
+                      p_request jsonb,p_result jsonb,p_channel text,p_business text,
+                      p_scope jsonb DEFAULT NULL::jsonb)
+                      RETURNS jsonb LANGUAGE sql AS $ SELECT '{}'::jsonb $;"""
                     out,err=execute("BEGIN;\n"+SETUP+FIX+neg+"\n"+BODY+"ROLLBACK;",fail=True)
                     self.assertIn("E20_SOURCE_STATE_DRIFT:handoff_builder",err)
                     out,err=execute("BEGIN;\n"+SETUP+FIX+BODY+ASSERTS+
