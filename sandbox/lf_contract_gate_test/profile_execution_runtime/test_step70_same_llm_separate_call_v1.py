@@ -67,7 +67,7 @@ class SameLlmReceiptV1Tests(unittest.TestCase):
           ("prompt_sha256","d"*64),("schema_id","PROFILE_PRODUCT_DIRECTION_SPEC"),
           ("eval_id","PROFILE_OUTPUT_VALIDATION_RESULT_V1"),
           ("model_call_count",0),("receipt_ref","actions://producer/run/100/artifact/raw"),
-          ("candidate_sha256","e"*64)]:
+          ("producer_prompt_sha256","c"*64)]:
             with self.subTest(field=field):
                 item=fixture()
                 item["separate_model_call_receipt"][field]=value
@@ -101,5 +101,40 @@ class SameLlmReceiptV1Tests(unittest.TestCase):
         self.assertFalse(a["producer_independence_proven"])
         self.assertTrue(a["reviewer_is_producer"])
         self.assertNotIn("receipt_minted",a)
+
+    def test_pigp_material_run_drift_rejected(self):
+        item=fixture()
+        item["separate_model_call_receipt"]["execution_id"]="EXEC-PROFILE-GATE2-999999999999999999999999"
+        with self.assertRaisesRegex(ValueError,"STEP70_RUN_ID_DRIFT"):
+            normalize_when_unverified(item,execution_id=RUN)
+
+    def test_pigp_candidate_drift_rejected(self):
+        item=fixture()
+        item["separate_model_call_receipt"]["candidate_sha256"]="e"*64
+        with self.assertRaisesRegex(ValueError,"STEP70_REVIEW_NOT_SOURCE_BOUND"):
+            normalize_when_unverified(item,execution_id=RUN)
+
+    def test_pigp_not_separate_call_rejected(self):
+        item=fixture()
+        item["separate_model_call_receipt"]["reviewer_call_ref"]=item["separate_model_call_receipt"]["producer_call_ref"]
+        with self.assertRaisesRegex(ValueError,"STEP70_CALL_NOT_SEPARATE"):
+            normalize_when_unverified(item,execution_id=RUN)
+
+    def test_pigp_invalid_eval_is_material(self):
+        item=fixture()
+        item["separate_model_call_receipt"]["eval_status"]="FAIL"
+        with self.assertRaisesRegex(ValueError,"STEP70_REVIEW_EVAL_NOT_PASS"):
+            normalize_when_unverified(item,execution_id=RUN)
+
+    def test_pigp_single_letter_refs_fail(self):
+        item=fixture()
+        r=item["separate_model_call_receipt"]
+        raw={"schema_id":SCHEMA_ID,"execution_id":RUN,
+             "candidate_sha256":S50,"scope_packet_sha256":S40,
+             "verdict":"PASS_INDEPENDENT_SEMANTIC",
+             "decision_body":r["decision_body"],"source_refs":["x"]}
+        assessment=evaluate(raw,RUN,S50,S40)
+        self.assertEqual(assessment["eval_status"],"FAIL")
+        self.assertIn("REVIEW_SOURCE_REFS_MISSING",assessment["errors"])
 
 if __name__=="__main__":unittest.main()
