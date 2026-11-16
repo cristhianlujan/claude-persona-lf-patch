@@ -1,4 +1,4 @@
--- Owner 19:05 + 19:08 single atomic migration (Merge Train: one migration per PR).
+-- Owner 19:05 + 19:08 single atomic migration > 20261115222000 (Merge Train: one migration per PR).
 -- Source preimages from SELECT, fail closed; no DML to product tables in this migration.
 BEGIN;
 DO $pre$ BEGIN
