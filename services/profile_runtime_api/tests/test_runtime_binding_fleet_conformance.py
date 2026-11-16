@@ -5,6 +5,7 @@ Native runner execution is intercepted before spawning a subprocess.
 """
 from __future__ import annotations
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -126,6 +127,69 @@ class FleetRuntimeBindingConformance(unittest.TestCase):
                 }
             )
         self.assertIn("RUNTIME_OUTPUT_MODE_UNSUPPORTED", str(ambiguous.exception))
+
+    def test_03_final_bound_consumer_uses_same_real_schema_and_transport(self):
+        """Exercise final source-SHA-bound consumer on synthetic negatives.
+
+        The canonical JSON Schema rejects incomplete payloads before any
+        profile-local validator or model is executed; no RUN/DB is touched.
+        """
+        runner_spec = importlib.util.spec_from_file_location(
+            "lf_fleet_bound_runner",
+            ROOT / "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
+        )
+        runner = importlib.util.module_from_spec(runner_spec)
+        runner_spec.loader.exec_module(runner)
+
+        cases = [
+            ("ui_architect", payload, expected)
+            for payload, _mode, expected in FORMS["ui_architect"]
+        ] + [
+            ("product_director_lf", payload, expected)
+            for payload, _mode, expected in FORMS["product_director_lf"]
+        ]
+        for slug, payload, expected in cases:
+            with self.subTest(profile=slug, expected=expected), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                binding = json.loads((ROOT / f"profiles/{slug}/contracts/runtime_binding.json").read_text(encoding="utf8"))
+                refs = [
+                    f"profiles/{slug}/contracts/runtime_binding.json",
+                    f"profiles/{slug}/{expected}",
+                    f"profiles/{slug}/{binding['canonical_validator']['path']}",
+                    "services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py",
+                ]
+                for ref in refs:
+                    target = root / ref
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes((ROOT / ref).read_bytes())
+                raw_ref = "profile-native-test-output.json"
+                (root / raw_ref).write_text(json.dumps(payload), encoding="utf8")
+                def digest(ref):
+                    return hashlib.sha256((root / ref).read_bytes()).hexdigest()
+                packet = {
+                    "schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1",
+                    "operation_code": "EJECUCION_PERFIL_LF",
+                    "profile_slug": slug,
+                    "validator_transport": binding["canonical_validator"]["transport"],
+                    "expected_valid": False,
+                    "runtime_binding_sha256": digest(refs[0]),
+                    "schema_ref": refs[1],
+                    "schema_sha256": digest(refs[1]),
+                    "validator_ref": refs[2],
+                    "validator_sha256": digest(refs[2]),
+                    "raw_output_ref": raw_ref,
+                    "raw_output_sha256": digest(raw_ref),
+                }
+                result = runner.validate_bound_output(root, packet)
+                self.assertEqual(result["status"], "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE", result)
+                self.assertTrue(result["source_readback_matched"])
+                self.assertTrue(result["structural_check_executed"])
+                self.assertFalse(result["profile_validator_executed"])
+                wrong_transport = dict(packet, validator_transport=(
+                    "STDIN_JSON" if packet["validator_transport"] == "JSON_FILE_ARGUMENT" else "JSON_FILE_ARGUMENT"
+                ))
+                blocked = runner.validate_bound_output(root, wrong_transport)
+                self.assertEqual(blocked["blocking_codes"], ["RUNTIME_BINDING_TRANSPORT_NOT_CANONICAL"])
 
     def _native_probe(self, slug, raw, payload, expected):
         with tempfile.TemporaryDirectory() as temporary:
