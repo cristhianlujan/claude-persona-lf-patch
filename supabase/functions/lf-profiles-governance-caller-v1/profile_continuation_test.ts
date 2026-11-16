@@ -30,6 +30,15 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
           profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}},
       ...overrides,
     }];
+    else if(url.endsWith("/lf_router_profile_execution_handoff_validate_v1")){
+      const handoff=(body?.p_handoff ?? {}) as Record<string,unknown>;
+      const repair=(handoff.repair_execution_authority ?? {}) as Record<string,unknown>;
+      out={valid:true,governed_repair_write_allowed:true,
+        promotion_allowed:repair.promotion_allowed,
+        profile_code:handoff.profile_code,profile_slug:handoff.profile_slug,
+        repair_execution_authority_fingerprint_sha256:repair.fingerprint_sha256,
+        fingerprint_sha256:handoff.fingerprint_sha256};
+    }
     else if(url.endsWith("/lf_profile_execution_plan_for_run_v1")){
       out={status:"READY",operation_code:"EJECUCION_PERFIL_LF",profile_code:"PROFILE-A",
         steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
@@ -921,8 +930,11 @@ function boundedRepairFixture(){
     target_path:"profiles/systemic_root_cause_repair_lf/SKILL.md",
     manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",
       read_only:false,no_write:false,no_promotion:true,governed_repair_write:true,
+      promotion_allowed:false,automatic_impact:false,
       repair_execution_authority:repair,
-      router_profile_handoff:{profile_code:repair.profile_code,channel:"PRODUCTO",
+      router_profile_handoff:{profile_code:repair.profile_code,profile_slug:"systemic_root_cause_repair_lf",
+        literal_request:"Reparar reglas de login B2B sin promocionar",
+        fingerprint_sha256:"e".repeat(64),channel:"PRODUCTO",
         return_to_router_after_profile_result:true,repair_execution_authority:repair,
         router_authorization_receipt:receipt}}};
 }
@@ -986,10 +998,13 @@ Deno.test("SRCR Step70 current-context disregards manifest.no_promotion but reta
   const effects={read_only:false,no_write:false,no_promotion:true,governed_repair_write:true};
   eq(effectsBearingNativeSemanticReviewBlockCode(effects,"CURRENT_CONTEXT_REVIEW"),
     "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
-  const candidate={...effects,automatic_impact:false,router_profile_handoff:{
-    profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-    router_authorization_receipt:{effect_authority:false},
-  }};
+  const candidate={...effects,automatic_impact:false,
+    repair_execution_authority:{mode:"GOVERNED_REPAIR_WRITE",
+      profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"},
+    router_profile_handoff:{
+      profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      router_authorization_receipt:{effect_authority:false},
+    }};
   eq(effectsBearingNativeSemanticReviewBlockCode(candidate,"CURRENT_CONTEXT_REVIEW"),null);
   eq(effectsBearingNativeSemanticReviewBlockCode({...candidate,no_promotion:false},"CURRENT_CONTEXT_REVIEW"),null);
   for(const invalid of [
@@ -1066,4 +1081,93 @@ Deno.test("IG native context append respects server BLOCK and cannot claim PASS"
     config,fetchFn,sha,{...callerId,run_id:"1000"});
   const b=await r.json();eq(r.status,409);eq(b.code,"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT");
   eq(b.step_recorded,false);
+});
+
+Deno.test("E21: promotion=true accepts ONLY source-bound SQL validator decision; false remains valid",async()=>{
+  const base=boundedRepairFixture();
+  const upgrade=(allow:boolean)=>{
+    const manifest=base.manifest as Record<string,unknown>;
+    const repair={...manifest.repair_execution_authority as Record<string,unknown>,
+      promotion_allowed:allow};
+    const h=manifest.router_profile_handoff as Record<string,unknown>;
+    return {...base,manifest:{...manifest,promotion_allowed:allow,
+      repair_execution_authority:repair,
+      router_profile_handoff:{...h,
+        literal_request:allow?"Reparar y promocionar las reglas de login B2B":
+          "Reparar las reglas de login B2B sin promocionar",
+        repair_execution_authority:repair}}};
+  };
+  for(const allowed of [true,false]){
+    const n=network(upgrade(allowed));
+    const fetchFn:typeof n.fetchFn=async(input,init)=>{
+      const url=String(input);
+      if(url.endsWith("/lf_profile_execution_plan_for_run_v1"))
+        return new Response(JSON.stringify({status:"READY",operation_code:"EJECUCION_PERFIL_LF",
+          profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+          skills:[]}),{status:200});
+      return n.fetchFn(input,init);
+    };
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+      {execution_id:id},config,fetchFn,sha);
+    eq(out.status,200);
+    eq((await out.json()).outcome,"SOURCE_BINDING_REQUIRED");
+    const sql=n.calls.find(x=>x.url.endsWith("/lf_router_profile_execution_handoff_validate_v1"));
+    eq(Boolean(sql),true);
+    eq((sql?.body?.p_handoff as Record<string,unknown>)?.profile_code,
+      "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF");
+  }
+  const allowed=upgrade(true);
+  const n=network(allowed);
+  const deniedFetch:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_router_profile_execution_handoff_validate_v1"))
+      return new Response(JSON.stringify({valid:false,promotion_allowed:false}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const forbidden=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,deniedFetch,sha);
+  eq(forbidden.status,403);
+  eq((await forbidden.json()).code,"PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
+
+  const n2=network(allowed);
+  const driftFetch:typeof n2.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_router_profile_execution_handoff_validate_v1"))
+      return new Response(JSON.stringify({valid:true,governed_repair_write_allowed:true,
+        promotion_allowed:false,profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}),{status:200});
+    return n2.fetchFn(input,init);
+  };
+  const drift=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,driftFetch,sha);
+  eq(drift.status,403);
+  const mismatch=network({...allowed,manifest:{...allowed.manifest,promotion_allowed:false}});
+  const bad=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,mismatch.fetchFn,sha);
+  eq(bad.status,403);
+  eq(mismatch.calls.some(c=>c.url.includes("handoff_validate")),false);
+});
+Deno.test("E21: Edge resolves governed repair profile by SQL-validated handoff, not a literal code",async()=>{
+  const base=boundedRepairFixture();
+  const profile="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF-V06-CANDIDATE";
+  const slug="systemic_root_cause_repair_lf_v06_candidate";
+  const repair={...base.manifest.repair_execution_authority as Record<string,unknown>,
+    profile_code:profile};
+  const handoff={...base.manifest.router_profile_handoff as Record<string,unknown>,
+    profile_code:profile,profile_slug:slug,repair_execution_authority:repair,
+    router_authorization_receipt:{...(
+      base.manifest.router_profile_handoff as Record<string,unknown>).router_authorization_receipt as Record<string,unknown>,
+      profile_code:profile}};
+  const n=network({...base,target_code:profile,target_path:`profiles/${slug}/SKILL.md`,
+    manifest:{...base.manifest,repair_execution_authority:repair,router_profile_handoff:handoff}});
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_profile_execution_plan_for_run_v1"))
+      return new Response(JSON.stringify({status:"READY",operation_code:"EJECUCION_PERFIL_LF",
+        profile_code:profile,steps:Array.from({length:11},(_,i)=>({step_order:i,step_id:"fixture_"+i})),
+        skills:[]}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,fetchFn,sha);
+  eq(out.status,200);
+  eq((await out.json()).profile_code,profile);
 });
