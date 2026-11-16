@@ -2,7 +2,9 @@
 import shutil,subprocess,time,unittest,uuid
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]
-MIG=ROOT/"supabase/migrations/20261116080000_lf_srcr_step70_governed_no_effect_context_v1.sql"
+MIG_MATCHES=list((ROOT/"supabase/migrations").glob("*_lf_srcr_step70_governed_no_effect_context_v1.sql"))
+assert len(MIG_MATCHES)==1,"SRCR_STEP70_MIGRATION_NOT_UNIQUE"
+MIG=MIG_MATCHES[0]
 SOURCE=Path(__file__).resolve().parent/"fixtures/lf_srcr_step70_scope_prepatch_live_v1.sql"
 SCHEMA=r'''CREATE TABLE public.lf_operation_execution(
  execution_id text PRIMARY KEY,operation_code text,target_code text,status text,manifest jsonb);
