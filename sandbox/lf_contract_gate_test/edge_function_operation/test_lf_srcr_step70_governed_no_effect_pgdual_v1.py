@@ -57,7 +57,7 @@ class SrcrGovernedStep70PGDual(unittest.TestCase):
       else:self.assertEqual(proc.returncode,0,proc.stderr[-2500:]+"\n"+proc.stdout[-1000:])
       return proc.stdout,proc.stderr
      sql(SCHEMA+src)
-     sql("CREATE OR REPLACE FUNCTION public.lf_profile_srcr_same_context_candidate_scope_v1(text) RETURNS boolean LANGUAGE sql AS $$ SELECT false $$;")
+     sql("CREATE OR REPLACE FUNCTION public.lf_profile_srcr_same_context_candidate_scope_v1(p_execution_id text) RETURNS boolean LANGUAGE sql AS $$ SELECT false $$;")
      _,err=sql(mig,fail=True)
      self.assertIn("LF_SRCR_STEP70_GOVERNED_SOURCE_DRIFT",err)
      sql(src)
