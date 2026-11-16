@@ -1,0 +1,14 @@
+{
+  "solution_ref": "lf-e21-edge-ig-validator-transport-v1",
+  "paths": {
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/caller.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts": "SUPABASE_FUNCTION",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_e21_edge_sql_handoff_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_e21_ig_validator_continuation_pytest_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-e21-edge-ig-validator-transport-v1.json": "CHANGESET_MANIFEST"
+  }
+}
