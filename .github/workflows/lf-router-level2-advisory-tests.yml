@@ -840,5 +840,15 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s services/profile_runtime_api/tests -p 'test_runtime_binding_fleet_conformance.py' -v
           python -m unittest discover -s services/profile_runtime_api/tests -p 'test_repository_runtime_schema.py' -v
-          python -m unittest discover -s services/profile_runtime_api/tests -p 'test_runtime_output_mode.py' -v
+          # Only binding selection/contract gates; semantic-utility negatives are
+          # explicitly outside this PR (LF-UI-AUD-04) and remain visible in
+          # their separate legacy suite, not converted to PASS here.
+          PYTHONPATH=services/profile_runtime_api:services/profile_runtime_api/tests python -m unittest -v \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_focused_mode_is_typed_and_allowed \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_mode_on_non_ui_profile_fails_closed \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_focused_mode_binds_exact_single_schema \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_auto_uses_declared_production_default_schema \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_unsupported_repository_mode_fails_closed \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_focused_mode_uses_schema_not_production_only_validator \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_focused_schema_still_fails_closed_on_missing_required_field
           python -m unittest discover -s services/profile_runtime_api/tests -p 'test_generic_profile_runtime_binding.py' -v
