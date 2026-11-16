@@ -1,0 +1,1205 @@
+{
+  "schema_version": "LF_SKILL_FORWARD_TEST_EVIDENCE_V1",
+  "method": "Fresh native subagent received only skill and raw input artifacts; expected diagnoses were not supplied. Second run repeated under a real local fixture commit.",
+  "governance_independence_attested": false,
+  "source_snapshot": {
+    "contract.json": {
+      "text": "{\"payload\": {\"type\": \"object\", \"required\": [\"account\", \"gross\"], \"properties\": {\"account\": {\"type\": \"string\"}, \"gross\": {\"type\": \"integer\"}}}, \"states\": {\"QUEUED\": \"RUN\", \"CANCELLED\": \"STOP\", \"WAITING_FUNDS\": \"DEFER\"}}",
+      "sha256": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73"
+    },
+    "intake.py": {
+      "text": "from settlement import settle\n\ndef source():\n    return {\"account\": \"A17\", \"gross\": 12, \"currency\": \"PEN\", \"revision_nonce\": \"N19\"}\n\ndef dispatch():\n    record = source()\n    payload = {\"account\": record[\"account\"], \"gross\": record[\"gross\"]}\n    revision = record[\"revision_nonce\"]\n    return settle(payload)\n\ndef act(status):\n    if status == \"QUEUED\":\n        return \"RUN\"\n    if status == \"CANCELLED\":\n        return \"STOP\"\n",
+      "sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04"
+    },
+    "settlement.py": {
+      "text": "def settle(payload, revision):\n    return payload[\"account\"], payload[\"gross\"], payload[\"currency\"], revision\n",
+      "sha256": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0"
+    }
+  },
+  "findings_detected": 4,
+  "original_context": "contract, transport and consumers; no external writes",
+  "first_run_validation": {
+    "command": [
+      "python",
+      "/workspace/scratch/4bb35a0bf920/lf/skills/auditoria-profunda-implementacion-lf/validators/validate_report.py",
+      "/workspace/scratch/4bb35a0bf920/holdout-result/report.json",
+      "--repo-root",
+      "/workspace/scratch/4bb35a0bf920"
+    ],
+    "exit_code": 1,
+    "stdout": "{\n  \"status\": \"FAIL\",\n  \"errors\": [\n    \"SCHEMA:base_commit:None is not of type 'string'\"\n  ]\n}\n",
+    "stderr": "",
+    "expected_blocker": "base_commit null: no Git repository; no SHA fabricated",
+    "additional_readonly_checks": {
+      "scope": "Supplementary only; does not convert original validator FAIL to PASS",
+      "remaining_schema_errors_when_base_commit_is_explicitly_null": [],
+      "bound_file_and_literal_checks": 13,
+      "bound_file_and_literal_checks_passed": true,
+      "reference_checks": 118,
+      "all_references_resolved": true
+    }
+  },
+  "second_run_validation": {
+    "command": [
+      "python",
+      "/workspace/scratch/4bb35a0bf920/lf/skills/auditoria-profunda-implementacion-lf/validators/validate_report.py",
+      "/workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/report.json",
+      "--repo-root",
+      "/workspace/scratch/4bb35a0bf920/holdout"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"PASS\",\n  \"errors\": []\n}\n",
+    "stderr": "",
+    "schema_relaxed": false,
+    "unmodified_schema_errors": [],
+    "validator_sha256": "1c5abc5de95aa85cfd6f825b01d6525bab2916d83e0f58dabcc5fd93f148960e",
+    "schema_sha256": "17c5cecbb1f98a436576e7960eada7625cb262f6e728817b87e13c3455783275",
+    "authorization_helper_sha256": "973e02d50e55a5ffd021f4986f08b15f1fdf337bf5340ad7a82e4fecc64ad4f0",
+    "base_commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+    "repo_root": "/workspace/scratch/4bb35a0bf920/holdout",
+    "original_sources_unchanged": true,
+    "initial_run_evidence_unchanged": true
+  },
+  "second_run_execution": {
+    "generated_at": "2026-11-16T00:24:10.274703+00:00",
+    "scope": "FIXTURE_ONLY: original local holdout consumers plus in-memory proposed corrections; no LF/DB/GitHub effects",
+    "python_version": "3.12.14",
+    "command": "PYTHONDONTWRITEBYTECODE=1 python /workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/reproduce.py",
+    "git_provenance": [
+      {
+        "command": [
+          "git",
+          "-C",
+          "/workspace/scratch/4bb35a0bf920/holdout",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "exit_code": 0,
+        "stdout": "/workspace/scratch/4bb35a0bf920/holdout\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "git",
+          "-C",
+          "/workspace/scratch/4bb35a0bf920/holdout",
+          "rev-parse",
+          "HEAD"
+        ],
+        "exit_code": 0,
+        "stdout": "2343226bb33f219f6b922a76b1c836ac8e3a15a2\n",
+        "stderr": ""
+      }
+    ],
+    "base_commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+    "commit_readback": [
+      {
+        "command": [
+          "git",
+          "-C",
+          "/workspace/scratch/4bb35a0bf920/holdout",
+          "show",
+          "2343226bb33f219f6b922a76b1c836ac8e3a15a2:contract.json"
+        ],
+        "exit_code": 0,
+        "file": "contract.json",
+        "sha256": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+        "equals_worktree_before_tests": true
+      },
+      {
+        "command": [
+          "git",
+          "-C",
+          "/workspace/scratch/4bb35a0bf920/holdout",
+          "show",
+          "2343226bb33f219f6b922a76b1c836ac8e3a15a2:intake.py"
+        ],
+        "exit_code": 0,
+        "file": "intake.py",
+        "sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+        "equals_worktree_before_tests": true
+      },
+      {
+        "command": [
+          "git",
+          "-C",
+          "/workspace/scratch/4bb35a0bf920/holdout",
+          "show",
+          "2343226bb33f219f6b922a76b1c836ac8e3a15a2:settlement.py"
+        ],
+        "exit_code": 0,
+        "file": "settlement.py",
+        "sha256": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0",
+        "equals_worktree_before_tests": true
+      }
+    ],
+    "chronology": "This commit binds only this second execution; the first run lacked Git provenance and remains preserved separately.",
+    "source_hashes": {
+      "contract.json": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+      "intake.py": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+      "settlement.py": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0"
+    },
+    "source_readback_hashes": {
+      "contract.json": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+      "intake.py": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+      "settlement.py": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0"
+    },
+    "cases": [
+      {
+        "id": "T01",
+        "description": "Original source has currency and revision_nonce",
+        "observation": {
+          "account": "A17",
+          "gross": 12,
+          "currency": "PEN",
+          "revision_nonce": "N19"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T02",
+        "description": "Positive: real consumer accepts full payload and revision",
+        "observation": {
+          "type": "return",
+          "value": [
+            "A17",
+            12,
+            "PEN",
+            "N19"
+          ]
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T03",
+        "description": "Baseline: actual dispatch fails before entering settle",
+        "observation": {
+          "type": "exception",
+          "exception": "TypeError",
+          "message": "settle() missing 1 required positional argument: 'revision'"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T04",
+        "description": "Negative: contract-valid payload without currency is not consumable",
+        "observation": {
+          "schema_accepts": true,
+          "consumer": {
+            "type": "exception",
+            "exception": "KeyError",
+            "message": "'currency'"
+          }
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T05",
+        "description": "Positive: full payload validates before and after proposed contract",
+        "observation": {
+          "baseline": true,
+          "proposal": true
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T06",
+        "description": "Negative: proposed contract rejects missing currency",
+        "observation": {
+          "baseline": true,
+          "proposal": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T07",
+        "description": "Negative regression: invalid original required field or type remains rejected",
+        "observation": {
+          "input": {
+            "gross": 12,
+            "currency": "PEN"
+          },
+          "baseline": false,
+          "proposal": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T08",
+        "description": "Negative regression: invalid original required field or type remains rejected",
+        "observation": {
+          "input": {
+            "account": "A17",
+            "currency": "PEN"
+          },
+          "baseline": false,
+          "proposal": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T09",
+        "description": "Negative regression: invalid original required field or type remains rejected",
+        "observation": {
+          "input": {
+            "account": "A17",
+            "gross": "12",
+            "currency": "PEN"
+          },
+          "baseline": false,
+          "proposal": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T10",
+        "description": "Proposed string type rejects non-string currency; rule is a proposal",
+        "observation": {
+          "input": {
+            "account": "A17",
+            "gross": 12,
+            "currency": null
+          },
+          "baseline": true,
+          "proposal": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T11",
+        "description": "Proposed string type rejects non-string currency; rule is a proposal",
+        "observation": {
+          "input": {
+            "account": "A17",
+            "gross": 12,
+            "currency": 999
+          },
+          "baseline": true,
+          "proposal": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T12",
+        "description": "Instrumented transport: original dispatch drops both available values",
+        "observation": {
+          "payload": {
+            "account": "A17",
+            "gross": 12
+          },
+          "revision_argument_supplied": false
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T13",
+        "description": "Negative: adding only currency leaves missing revision TypeError",
+        "observation": {
+          "type": "exception",
+          "exception": "TypeError",
+          "message": "settle() missing 1 required positional argument: 'revision'"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T14",
+        "description": "Negative: adding only revision exposes the previously masked currency KeyError",
+        "observation": {
+          "type": "exception",
+          "exception": "KeyError",
+          "message": "'currency'"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T15",
+        "description": "Positive: proposed transport delivers both values to real settle in memory",
+        "observation": {
+          "type": "return",
+          "value": [
+            "A17",
+            12,
+            "PEN",
+            "N19"
+          ]
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T16",
+        "description": "Regression: proposal forwards changed source values rather than hardcoding PEN/N19",
+        "observation": {
+          "type": "return",
+          "value": [
+            "A17",
+            12,
+            "USD",
+            "N20"
+          ]
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T17",
+        "description": "Negative: proposal cannot produce a successful result when source lacks currency",
+        "observation": {
+          "type": "exception",
+          "exception": "KeyError",
+          "message": "'currency'"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T18",
+        "description": "Negative: proposal cannot produce a successful result when source lacks revision_nonce",
+        "observation": {
+          "type": "exception",
+          "exception": "KeyError",
+          "message": "'revision_nonce'"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T19",
+        "description": "Positive regression: preserve documented action for QUEUED",
+        "observation": {
+          "baseline": "RUN",
+          "proposal": "RUN",
+          "expected": "RUN"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T20",
+        "description": "Positive regression: preserve documented action for CANCELLED",
+        "observation": {
+          "baseline": "STOP",
+          "proposal": "STOP",
+          "expected": "STOP"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T21",
+        "description": "Negative then positive: WAITING_FUNDS violates baseline contract and matches proposal",
+        "observation": {
+          "baseline": null,
+          "proposal": "DEFER",
+          "expected": "DEFER"
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T22",
+        "description": "Boundary observation: unknown status is unspecified and returns None in both versions",
+        "observation": {
+          "baseline": null,
+          "proposal": null
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T23",
+        "description": "Boundary observation: consumer does not itself invoke schema validation",
+        "observation": {
+          "type": "return",
+          "value": [
+            "A17",
+            "12",
+            "PEN",
+            "N19"
+          ]
+        },
+        "reproduction_check_passed": true
+      },
+      {
+        "id": "T24",
+        "description": "Readback: original three source file hashes unchanged",
+        "observation": {
+          "before": {
+            "contract.json": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+            "intake.py": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+            "settlement.py": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0"
+          },
+          "after": {
+            "contract.json": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+            "intake.py": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+            "settlement.py": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0"
+          }
+        },
+        "reproduction_check_passed": true
+      }
+    ],
+    "reproduction_checks": 24,
+    "reproduction_checks_passed": 24,
+    "all_reproduction_checks_passed": true,
+    "warning": "Checks passing means the audit reproduced its stated observations, including baseline defects; it does not mean the implementation passes its contract.",
+    "fix_applied_to_holdout": false
+  },
+  "provenance": {
+    "initial_run": {
+      "generated_at": "2026-11-16T00:17:10.223694+00:00",
+      "base_commit": null,
+      "validator_exit_code": 1,
+      "validator_stdout": "{\n  \"status\": \"FAIL\",\n  \"errors\": [\n    \"SCHEMA:base_commit:None is not of type 'string'\"\n  ]\n}\n",
+      "historical_copy_hashes": {
+        "audit-artifacts/initial_run_execution.json": "bbb17f8920e60e4bf35a23fe3d0e9fe42b17540126d93bb8eb1672a83d272af8",
+        "audit-artifacts/initial_run_report_validation.json": "7bd57f42b52f84734f5f8452b26f0ef3817f1f4b4935fb2333a61c86a52e40b5",
+        "audit-artifacts/initial_run_report.json": "6e23c0b4e0728542f648eecdd214a884154206f39b94826751ec355e81fbfab3",
+        "audit-artifacts/initial_run_audit.md": "709a4fef94598475717d3d086ff71a998623ac28c26e719ba5c1ce0b2d286161",
+        "audit-artifacts/initial_run_context.json": "9c97b74887479fcd23c770e28ff0d3c4d40dff008e95491c18d6e2f59d8fa7b0"
+      },
+      "claim": "The original no-Git blocker remains true of the first execution. The later fixture commit is not retroactive evidence."
+    },
+    "second_run": {
+      "generated_at": "2026-11-16T00:24:10.274703+00:00",
+      "base_commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+      "repository": "/workspace/scratch/4bb35a0bf920/holdout",
+      "frozen_fixture_only": true,
+      "readback_before_tests": [
+        {
+          "command": [
+            "git",
+            "-C",
+            "/workspace/scratch/4bb35a0bf920/holdout",
+            "show",
+            "2343226bb33f219f6b922a76b1c836ac8e3a15a2:contract.json"
+          ],
+          "exit_code": 0,
+          "file": "contract.json",
+          "sha256": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+          "equals_worktree_before_tests": true
+        },
+        {
+          "command": [
+            "git",
+            "-C",
+            "/workspace/scratch/4bb35a0bf920/holdout",
+            "show",
+            "2343226bb33f219f6b922a76b1c836ac8e3a15a2:intake.py"
+          ],
+          "exit_code": 0,
+          "file": "intake.py",
+          "sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+          "equals_worktree_before_tests": true
+        },
+        {
+          "command": [
+            "git",
+            "-C",
+            "/workspace/scratch/4bb35a0bf920/holdout",
+            "show",
+            "2343226bb33f219f6b922a76b1c836ac8e3a15a2:settlement.py"
+          ],
+          "exit_code": 0,
+          "file": "settlement.py",
+          "sha256": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0",
+          "equals_worktree_before_tests": true
+        }
+      ],
+      "readback_after_tests": [
+        {
+          "command": [
+            "git",
+            "-C",
+            "/workspace/scratch/4bb35a0bf920/holdout",
+            "show",
+            "2343226bb33f219f6b922a76b1c836ac8e3a15a2:contract.json"
+          ],
+          "exit_code": 0,
+          "file": "contract.json",
+          "commit_sha256": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+          "worktree_sha256_after": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+          "equals_committed_after_tests": true
+        },
+        {
+          "command": [
+            "git",
+            "-C",
+            "/workspace/scratch/4bb35a0bf920/holdout",
+            "show",
+            "2343226bb33f219f6b922a76b1c836ac8e3a15a2:intake.py"
+          ],
+          "exit_code": 0,
+          "file": "intake.py",
+          "commit_sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+          "worktree_sha256_after": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+          "equals_committed_after_tests": true
+        },
+        {
+          "command": [
+            "git",
+            "-C",
+            "/workspace/scratch/4bb35a0bf920/holdout",
+            "show",
+            "2343226bb33f219f6b922a76b1c836ac8e3a15a2:settlement.py"
+          ],
+          "exit_code": 0,
+          "file": "settlement.py",
+          "commit_sha256": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0",
+          "worktree_sha256_after": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0",
+          "equals_committed_after_tests": true
+        }
+      ],
+      "reproduction_command": "PYTHONDONTWRITEBYTECODE=1 python /workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/reproduce.py",
+      "observed_process_exit_code": 0,
+      "observed_process_exit_source": "The actual functions.exec command returned exit_code 0; 24/24 reproduction checks also recorded in execution.json.",
+      "scope": "This commit binds this new local fixture execution only; it does not establish external repository origin or deployed LF behavior."
+    }
+  },
+  "original_report": {
+    "schema_version": "LF_DEEP_IMPLEMENTATION_AUDIT_REPORT_V1",
+    "repository": "/workspace/scratch/4bb35a0bf920/holdout",
+    "base_commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+    "status": "PARTIAL",
+    "promotion_authorized": false,
+    "authority_ref": "audit-artifacts/context.json#/authority",
+    "phases": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "scope": {
+      "read": [
+        "contract.json",
+        "intake.py",
+        "settlement.py",
+        "Skill y referencias enlazadas necesarias para este cometido"
+      ],
+      "written": [
+        "audit-artifacts"
+      ],
+      "not_verified": [
+        "EKB vigente: red y DB fuera de autorización",
+        "Consumidor posterior a act/settle y efectos reales no suministrados",
+        "Procedencia externa anterior al repositorio local de fixtures",
+        "PR/CI/E2E/Paso70 LF fuera del caso",
+        "Correcciones no aplicadas a fuentes"
+      ]
+    },
+    "evidence_files": {
+      "contract.json": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73",
+      "intake.py": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04",
+      "settlement.py": "455c783b218911500880fe7c3c1fe13389106f6429df01de27b1de8fd72c95e0",
+      "audit-artifacts/execution.json": "be7dc03667f6ae6622a60cf2d508839083eb919ec173e3648c2e519b8c450ba0",
+      "audit-artifacts/inspection.json": "32affef7f077c557ea2c91785ecd06030a4efc8746b4fb66cc9067b5722d8d1b",
+      "audit-artifacts/correction_proposal.json": "ac3ef519a09476a5e6b3cd64c2b6753a5162426aa911e3b0751974dabb4bf012",
+      "audit-artifacts/context.json": "de4a24ad363609ac527f0dd8b050acc663fbd3a1354c168c96eeb3b13ba1d021",
+      "audit-artifacts/provenance.json": "a02bc15b77c103cc69c5cf4bfa5281e2cb9564d3f9f807f3f0331d429daa50a2",
+      "audit-artifacts/reproduce.py": "4aa6d889e800d4d724c6198191596942beb7b787fd01f73602f0e2e3a66f0c16",
+      "audit-artifacts/build_report.py": "33cac514b8fe04311b0a7063a355d9cf05f1904e4a35e30ee1486d6dbbf99c13",
+      "audit-artifacts/initial_run_execution.json": "bbb17f8920e60e4bf35a23fe3d0e9fe42b17540126d93bb8eb1672a83d272af8",
+      "audit-artifacts/initial_run_report_validation.json": "7bd57f42b52f84734f5f8452b26f0ef3817f1f4b4935fb2333a61c86a52e40b5",
+      "audit-artifacts/initial_run_report.json": "6e23c0b4e0728542f648eecdd214a884154206f39b94826751ec355e81fbfab3",
+      "audit-artifacts/initial_run_audit.md": "709a4fef94598475717d3d086ff71a998623ac28c26e719ba5c1ce0b2d286161",
+      "audit-artifacts/initial_run_context.json": "9c97b74887479fcd23c770e28ff0d3c4d40dff008e95491c18d6e2f59d8fa7b0",
+      "audit-artifacts/report_validation_attempt1.json": "bc1e06e4d6119dc8381310052727991e463162cde6c6d07ae9840e043b1fe58f"
+    },
+    "behavior_chain": [
+      {
+        "from": "intake.source:4",
+        "to": "intake.dispatch:7-8 -> settlement.settle:2",
+        "field": "account,gross",
+        "observation": "Disponibles, copiados sin transformación y leídos por consumidor",
+        "evidence_refs": [
+          "intake.py",
+          "settlement.py",
+          "audit-artifacts/execution.json#/cases/0"
+        ]
+      },
+      {
+        "from": "contract.json:payload",
+        "to": "settlement.settle:2",
+        "field": "currency",
+        "observation": "Clave requerida por acceso directo, ausente de required/properties; input schema-valid falla",
+        "evidence_refs": [
+          "contract.json",
+          "settlement.py",
+          "audit-artifacts/execution.json#/cases/3"
+        ]
+      },
+      {
+        "from": "intake.source:4",
+        "to": "intake.dispatch:8 -> settlement.settle:2",
+        "field": "currency",
+        "observation": "Disponible PEN, omitida del payload; dato no reconstruido ni entregado",
+        "evidence_refs": [
+          "intake.py",
+          "audit-artifacts/execution.json#/cases/11",
+          "audit-artifacts/execution.json#/cases/13"
+        ]
+      },
+      {
+        "from": "intake.source:4 revision_nonce",
+        "to": "intake.dispatch:9 revision -> call:10 -> settlement.settle:1",
+        "field": "revision_nonce -> revision",
+        "observation": "Alias disponible y no enviado al segundo parámetro requerido; TypeError es la primera falla",
+        "evidence_refs": [
+          "intake.py",
+          "settlement.py",
+          "audit-artifacts/execution.json#/cases/2",
+          "audit-artifacts/execution.json#/cases/11"
+        ]
+      },
+      {
+        "from": "contract.json:states",
+        "to": "intake.act:12-16",
+        "field": "WAITING_FUNDS",
+        "observation": "DEFER documentado; retorno None observado por rama ausente",
+        "evidence_refs": [
+          "contract.json",
+          "intake.py",
+          "audit-artifacts/execution.json#/cases/20"
+        ]
+      },
+      {
+        "from": "settlement.settle:2 / intake.act",
+        "to": "Retorno local; caller posterior no proporcionado",
+        "field": "tuple/action",
+        "observation": "No hay DB, red, ledger ni consumidor final externo en los artefactos; no se afirma E2E",
+        "evidence_refs": [
+          "settlement.py",
+          "intake.py",
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "from": "Git local de fixtures @2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+        "to": "Segunda ejecución de consumidores holdout",
+        "field": "baseline version / SHA-256 de tres fuentes",
+        "observation": "Fuentes congeladas verificadas con git show antes y después. Este enlace no se atribuye a la primera corrida sin Git.",
+        "evidence_refs": [
+          "audit-artifacts/provenance.json#/second_run",
+          "audit-artifacts/execution.json#/commit_readback"
+        ]
+      }
+    ],
+    "checklist": [
+      {
+        "ekb_code": "LF-PE10A-ASSERTION-CONTRACT-PASSWHEN-NULL-READY-20261027-001",
+        "applies": true,
+        "reason": "Aplicación temática: campos obligatorios; no existe pass_when en el caso. Código histórico, sin verificar vigencia EKB.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/3",
+          "audit-artifacts/execution.json#/cases/5"
+        ]
+      },
+      {
+        "ekb_code": "LF-IG-SCOPE-HASH-MISMATCH-20261114-001",
+        "applies": false,
+        "reason": "No existen tenant/run/scope/SHA en el contrato del caso; nonce se sigue como argumento sin asumir semántica de identidad.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "LF-QUALITY-CURRENT-CONTEXT-TECHNICAL-PASS-NOT-APPROVAL-20261115-001",
+        "applies": false,
+        "reason": "No hay juez contextual, Quality ni promoción en estos tres archivos.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "LF-PE-STEP70-MODEL-RECEIPT-NOT-ATTESTED-20261031-002",
+        "applies": false,
+        "reason": "No hay recibos de modelos ni Paso70.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "LF-PROMO-INDEPENDENT-JUDGE-OWNER-20261114-001",
+        "applies": false,
+        "reason": "No se realiza ni solicita promoción; autorización de efectos falsa.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "LF-PE-STEP70-WRITER-DIAGNOSIS-BEFORE-INSERT-20261031-003",
+        "applies": true,
+        "reason": "Aplicación temática: localizar primera falla. Aquí no existe RPC; TypeError ocurre antes del KeyError en el consumidor.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/2",
+          "audit-artifacts/execution.json#/cases/13"
+        ]
+      },
+      {
+        "ekb_code": "LF-PE-STEP70-CHAT-VERDICT-NOT-PERSISTED-20261031-001",
+        "applies": false,
+        "reason": "No existe persistencia ni veredicto; retornos locales no acreditan DB.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "LF-PE-STEP70-RUN-CLOSED-EKB-ENFORCEMENT-OPEN-20261031-005",
+        "applies": true,
+        "reason": "Aplicación temática: el conteo de controles no equivale al pase funcional; se incluyen negativos explícitos.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json"
+        ]
+      },
+      {
+        "ekb_code": "IG-M107-G-CURATOR-SQL-FASTPATH-041",
+        "applies": false,
+        "reason": "No hay snapshots ni SQL; no se inventan reglas de frescura.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "IG-M107-G-NATIVE-SNAPSHOT-DIGEST-COST-040",
+        "applies": false,
+        "reason": "No existen consultas ni caché; optimización/benchmark no aplican.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "IG-M107-D-PROPOSAL-GRAPH-RECEIPT-036",
+        "applies": false,
+        "reason": "No hay grafo de propuestas ni recibos reutilizables entre consumidores.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "PE10_C6_DECLARED_PLANNER_TEST_COUNT_DRIFT_V1",
+        "applies": true,
+        "reason": "El conteo procede de los 24 registros realmente ejecutados, no de una cifra fija declarada como suite LF.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json"
+        ]
+      },
+      {
+        "ekb_code": "PE10_C6_SQL_SCRIPT_PREFLIGHT_NO_PARSE_V1",
+        "applies": false,
+        "reason": "No existe SQL.",
+        "result": "NOT_APPLICABLE",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "IG-M1013-REPOSITORY-REPAIR-POLICY-054",
+        "applies": true,
+        "reason": "Readback local sin mutación. Las propuestas quedan en memoria y los hashes de fuentes originales coinciden.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/23",
+          "audit-artifacts/correction_proposal.json"
+        ]
+      },
+      {
+        "ekb_code": "EKB_CURRENTNESS_LOCAL_AUDIT_LIMIT",
+        "applies": true,
+        "reason": "No se consulta EKB vigente: la delegación prohíbe red y DB. No se actualiza snapshot histórico ni se le atribuye autoridad actual.",
+        "result": "NOT_VERIFIED",
+        "evidence_refs": [
+          "audit-artifacts/context.json"
+        ]
+      },
+      {
+        "ekb_code": "LOCAL_UNDOCUMENTED_REQUIRED_FIELD",
+        "applies": true,
+        "reason": "Comparación semántica del schema con lectura directa real del consumidor.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/3"
+        ]
+      },
+      {
+        "ekb_code": "LOCAL_ARGUMENT_ALIAS_TRANSPORT",
+        "applies": true,
+        "reason": "revision_nonce→revision existe en origen pero no llega al argumento obligatorio.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/11",
+          "audit-artifacts/execution.json#/cases/12"
+        ]
+      },
+      {
+        "ekb_code": "LOCAL_STATE_TABLE_COMPLETENESS",
+        "applies": true,
+        "reason": "Se ejecutan las tres entradas del mapa de estados; una falla en original.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/18",
+          "audit-artifacts/execution.json#/cases/19",
+          "audit-artifacts/execution.json#/cases/20"
+        ]
+      },
+      {
+        "ekb_code": "LOCAL_TYPE_VERSION_ERROR_BOUNDARIES",
+        "applies": true,
+        "reason": "Se separa schema de runtime: settle acepta gross string sin validar. No se asumen versión, ISO, política monetaria, unknown-status ni semántica nonce inexistentes.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/execution.json#/cases/8",
+          "audit-artifacts/execution.json#/cases/21",
+          "audit-artifacts/execution.json#/cases/22"
+        ]
+      },
+      {
+        "ekb_code": "LOCAL_REAL_COMMIT_SECOND_RUN_ONLY",
+        "applies": true,
+        "reason": "La nueva corrida tiene HEAD real y readback contra commit; se conserva el bloqueo histórico de la primera sin atribución retroactiva.",
+        "result": "REVIEWED",
+        "evidence_refs": [
+          "audit-artifacts/provenance.json",
+          "audit-artifacts/initial_run_report_validation.json"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "HO-01",
+        "kind": "DEFECT",
+        "code": "SPEC_REQUIRED_FIELD_OMITTED",
+        "location": {
+          "file": "contract.json",
+          "function": "payload schema",
+          "start_line": 1,
+          "end_line": 1,
+          "commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+          "sha256": "52502d480d8976262fac23dfdb9e3da7303ed56078d0e28297872a6413db8f73"
+        },
+        "found_code": "{\"payload\": {\"type\": \"object\", \"required\": [\"account\", \"gross\"], \"properties\": {\"account\": {\"type\": \"string\"}, \"gross\": {\"type\": \"integer\"}}}, \"states\": {\"QUEUED\": \"RUN\", \"CANCELLED\": \"STOP\", \"WAITING_FUNDS\": \"DEFER\"}}",
+        "expected": {
+          "behavior": "El contrato de payload debe declarar currency como obligatorio: settle lo lee directamente. La revisión permanece como segundo argumento, no se inventa dentro del payload.",
+          "contract_refs": [
+            "contract.json",
+            "settlement.py",
+            "intake.py"
+          ]
+        },
+        "defect": "El payload mínimo account+gross es válido para el contrato y falla con KeyError('currency') al darle revision al consumidor.",
+        "root_cause": "El esquema se definió sin derivar los accesos obligatorios del consumidor: settlement.py:2 requiere una clave ausente de required y properties.",
+        "impact": [
+          "La validación contractual permite un dato que el consumidor no puede procesar",
+          "El fallo queda oculto durante dispatch por el TypeError previo"
+        ],
+        "correction": {
+          "code": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"account\",\n    \"gross\",\n    \"currency\"\n  ],\n  \"properties\": {\n    \"account\": {\n      \"type\": \"string\"\n    },\n    \"gross\": {\n      \"type\": \"integer\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+          "targets": [
+            "contract.json:payload",
+            "intake.py:dispatch"
+          ],
+          "proposed_only": true
+        },
+        "positive_test": {
+          "description": "Payload completo válido en schema original y propuesto",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/4",
+          "executed": true
+        },
+        "negative_test": {
+          "description": "Payload sin currency: schema original acepta, settle(payload, 'N19') levanta KeyError",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/3",
+          "executed": true
+        },
+        "observed_result": {
+          "executed": true,
+          "command": "PYTHONDONTWRITEBYTECODE=1 python /workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/reproduce.py",
+          "exit_code": 0,
+          "summary": "T04 demuestra incompatibilidad real; T05 conserva el válido; T06 rechaza el incompleto en schema propuesto. T10/T11 validan el tipo string propuesto, sin afirmar que exista hoy una regla ISO.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/3",
+            "audit-artifacts/execution.json#/cases/4",
+            "audit-artifacts/execution.json#/cases/5",
+            "audit-artifacts/execution.json#/cases/9",
+            "audit-artifacts/execution.json#/cases/10",
+            "audit-artifacts/correction_proposal.json"
+          ],
+          "scope": "FIXTURE_ONLY"
+        },
+        "readback": {
+          "verified": true,
+          "consumer": "settlement.settle local",
+          "effect": "Resultado local repetido sobre commit real de fixture; los tres originales coinciden con git show antes/después y conservan hashes. Sin modificación de fuentes ni efectos externos.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/3",
+            "audit-artifacts/execution.json#/cases/4",
+            "audit-artifacts/execution.json#/cases/5",
+            "audit-artifacts/execution.json#/cases/9",
+            "audit-artifacts/execution.json#/cases/10",
+            "audit-artifacts/execution.json#/cases/23",
+            "audit-artifacts/provenance.json#/second_run"
+          ]
+        },
+        "status": "CONFIRMED",
+        "before_ref": null,
+        "after_ref": null,
+        "fix_scope": "NONE"
+      },
+      {
+        "id": "HO-02",
+        "kind": "DEFECT",
+        "code": "STEP_CONTEXT_INSUFFICIENT",
+        "location": {
+          "file": "intake.py",
+          "function": "dispatch",
+          "start_line": 8,
+          "end_line": 8,
+          "commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+          "sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04"
+        },
+        "found_code": "    payload = {\"account\": record[\"account\"], \"gross\": record[\"gross\"]}",
+        "expected": {
+          "behavior": "Transportar record['currency'] al payload porque está disponible en source():4 y es requerido por settle():2.",
+          "contract_refs": [
+            "contract.json",
+            "settlement.py",
+            "intake.py"
+          ]
+        },
+        "defect": "La lista de campos de serialización descarta currency aunque existe en origen.",
+        "root_cause": "El objeto payload se reconstruye solo con account y gross sin revisar la lectura posterior de currency.",
+        "impact": [
+          "Al resolver el argumento revision, dispatch sigue fallando con KeyError('currency')",
+          "Corregir solo la SPEC no hace que el dato viaje"
+        ],
+        "correction": {
+          "code": "payload = {\"account\": record[\"account\"], \"gross\": record[\"gross\"], \"currency\": record[\"currency\"]}",
+          "targets": [
+            "intake.py:dispatch:8",
+            "contract.json:payload"
+          ],
+          "proposed_only": true
+        },
+        "positive_test": {
+          "description": "Propuesta combinada en memoria transmite PEN y N19 al consumidor original",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/14",
+          "executed": true
+        },
+        "negative_test": {
+          "description": "Aislando revision, la pérdida de currency produce KeyError",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/13",
+          "executed": true
+        },
+        "observed_result": {
+          "executed": true,
+          "command": "PYTHONDONTWRITEBYTECODE=1 python /workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/reproduce.py",
+          "exit_code": 0,
+          "summary": "T12 captura la pérdida en transporte mediante spy local; T14 ejecuta el consumidor original y reproduce el error tras corregir solo revision; T15 y T16 muestran transporte correcto y sin constantes.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/0",
+            "audit-artifacts/execution.json#/cases/11",
+            "audit-artifacts/execution.json#/cases/13",
+            "audit-artifacts/execution.json#/cases/14",
+            "audit-artifacts/execution.json#/cases/15",
+            "audit-artifacts/execution.json#/cases/16",
+            "audit-artifacts/correction_proposal.json"
+          ],
+          "scope": "FIXTURE_ONLY"
+        },
+        "readback": {
+          "verified": true,
+          "consumer": "settlement.settle local",
+          "effect": "Resultado local repetido sobre commit real de fixture; los tres originales coinciden con git show antes/después y conservan hashes. Sin modificación de fuentes ni efectos externos.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/0",
+            "audit-artifacts/execution.json#/cases/11",
+            "audit-artifacts/execution.json#/cases/13",
+            "audit-artifacts/execution.json#/cases/14",
+            "audit-artifacts/execution.json#/cases/15",
+            "audit-artifacts/execution.json#/cases/16",
+            "audit-artifacts/execution.json#/cases/23",
+            "audit-artifacts/provenance.json#/second_run"
+          ]
+        },
+        "status": "CONFIRMED",
+        "before_ref": null,
+        "after_ref": null,
+        "fix_scope": "NONE"
+      },
+      {
+        "id": "HO-03",
+        "kind": "DEFECT",
+        "code": "CALL_BINDING_INCOMPATIBLE",
+        "location": {
+          "file": "intake.py",
+          "function": "dispatch",
+          "start_line": 9,
+          "end_line": 10,
+          "commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+          "sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04"
+        },
+        "found_code": "    revision = record[\"revision_nonce\"]\n    return settle(payload)",
+        "expected": {
+          "behavior": "Entregar revision, ya obtenida de record['revision_nonce'], al segundo parámetro requerido de settle(payload, revision).",
+          "contract_refs": [
+            "contract.json",
+            "settlement.py",
+            "intake.py"
+          ]
+        },
+        "defect": "Se crea el alias revision pero la llamada settle(payload) no lo usa y no satisface la firma.",
+        "root_cause": "La firma del consumidor y el sitio de llamada divergen; asignar una variable local no la transporta automáticamente.",
+        "impact": [
+          "dispatch() falla con TypeError antes de ejecutar settlement.settle",
+          "La primera falla enmascara el defecto de currency; arreglar solo currency no repara la ruta"
+        ],
+        "correction": {
+          "code": "revision = record[\"revision_nonce\"]\nreturn settle(payload, revision)",
+          "targets": [
+            "intake.py:dispatch:9-10"
+          ],
+          "proposed_only": true
+        },
+        "positive_test": {
+          "description": "Consumidor original con payload completo y argumento revision retorna los cuatro valores",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/1",
+          "executed": true
+        },
+        "negative_test": {
+          "description": "dispatch original levanta TypeError de revision faltante",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/2",
+          "executed": true
+        },
+        "observed_result": {
+          "executed": true,
+          "command": "PYTHONDONTWRITEBYTECODE=1 python /workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/reproduce.py",
+          "exit_code": 0,
+          "summary": "T03 ejecuta dispatch real y levanta TypeError; T13 muestra que agregar solo currency conserva la falla; T15 retorna el resultado esperado tras las dos correcciones de transporte en memoria.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/1",
+            "audit-artifacts/execution.json#/cases/2",
+            "audit-artifacts/execution.json#/cases/11",
+            "audit-artifacts/execution.json#/cases/12",
+            "audit-artifacts/execution.json#/cases/14",
+            "audit-artifacts/execution.json#/cases/15",
+            "audit-artifacts/execution.json#/cases/17",
+            "audit-artifacts/correction_proposal.json"
+          ],
+          "scope": "FIXTURE_ONLY"
+        },
+        "readback": {
+          "verified": true,
+          "consumer": "settlement.settle local",
+          "effect": "Resultado local repetido sobre commit real de fixture; los tres originales coinciden con git show antes/después y conservan hashes. Sin modificación de fuentes ni efectos externos.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/1",
+            "audit-artifacts/execution.json#/cases/2",
+            "audit-artifacts/execution.json#/cases/11",
+            "audit-artifacts/execution.json#/cases/12",
+            "audit-artifacts/execution.json#/cases/14",
+            "audit-artifacts/execution.json#/cases/15",
+            "audit-artifacts/execution.json#/cases/17",
+            "audit-artifacts/execution.json#/cases/23",
+            "audit-artifacts/provenance.json#/second_run"
+          ]
+        },
+        "status": "CONFIRMED",
+        "before_ref": null,
+        "after_ref": null,
+        "fix_scope": "NONE"
+      },
+      {
+        "id": "HO-04",
+        "kind": "DEFECT",
+        "code": "STATE_BRANCH_MISSING",
+        "location": {
+          "file": "intake.py",
+          "function": "act",
+          "start_line": 12,
+          "end_line": 16,
+          "commit": "2343226bb33f219f6b922a76b1c836ac8e3a15a2",
+          "sha256": "602a071be94e62d2ed15a62c1671d1afcb4ec2c8191dd77ea1c487be9f7baa04"
+        },
+        "found_code": "def act(status):\n    if status == \"QUEUED\":\n        return \"RUN\"\n    if status == \"CANCELLED\":\n        return \"STOP\"",
+        "expected": {
+          "behavior": "Para el estado WAITING_FUNDS, devolver DEFER según contract.json:states. Conservar QUEUED→RUN y CANCELLED→STOP.",
+          "contract_refs": [
+            "contract.json",
+            "settlement.py",
+            "intake.py"
+          ]
+        },
+        "defect": "act no contiene la rama WAITING_FUNDS y devuelve None implícitamente.",
+        "root_cause": "La implementación de ramas no cubre todas las claves declaradas en el mapa states.",
+        "impact": [
+          "El consumidor local entrega None donde el contrato exige DEFER",
+          "No se conoce el caller posterior ni un efecto financiero real; no se atribuye una transferencia indebida"
+        ],
+        "correction": {
+          "code": "def act(status):\n    if status == \"QUEUED\":\n        return \"RUN\"\n    if status == \"CANCELLED\":\n        return \"STOP\"\n    if status == \"WAITING_FUNDS\":\n        return \"DEFER\"",
+          "targets": [
+            "intake.py:act"
+          ],
+          "proposed_only": true
+        },
+        "positive_test": {
+          "description": "QUEUED mantiene RUN en original y propuesta; CANCELLED mantiene STOP en T20",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/18",
+          "executed": true
+        },
+        "negative_test": {
+          "description": "WAITING_FUNDS retorna None en original y DEFER en propuesta",
+          "evidence_ref": "audit-artifacts/execution.json#/cases/20",
+          "executed": true
+        },
+        "observed_result": {
+          "executed": true,
+          "command": "PYTHONDONTWRITEBYTECODE=1 python /workspace/scratch/4bb35a0bf920/holdout/audit-artifacts/reproduce.py",
+          "exit_code": 0,
+          "summary": "T19/T20 preservan ramas existentes; T21 reproduce None frente a DEFER y verifica la adición en memoria. T22 conserva el resultado desconocido sin inventar una regla contractual.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/18",
+            "audit-artifacts/execution.json#/cases/19",
+            "audit-artifacts/execution.json#/cases/20",
+            "audit-artifacts/execution.json#/cases/21",
+            "audit-artifacts/correction_proposal.json"
+          ],
+          "scope": "FIXTURE_ONLY"
+        },
+        "readback": {
+          "verified": true,
+          "consumer": "intake.act local",
+          "effect": "Resultado local repetido sobre commit real de fixture; los tres originales coinciden con git show antes/después y conservan hashes. Sin modificación de fuentes ni efectos externos.",
+          "evidence_refs": [
+            "audit-artifacts/execution.json#/cases/18",
+            "audit-artifacts/execution.json#/cases/19",
+            "audit-artifacts/execution.json#/cases/20",
+            "audit-artifacts/execution.json#/cases/21",
+            "audit-artifacts/execution.json#/cases/23",
+            "audit-artifacts/provenance.json#/second_run"
+          ]
+        },
+        "status": "CONFIRMED",
+        "before_ref": null,
+        "after_ref": null,
+        "fix_scope": "NONE"
+      }
+    ],
+    "limitations": [
+      "La primera corrida no tenía repositorio Git y su validación falló por base_commit=null. Se conservan sus archivos y copias históricas; el commit posterior no la acredita retroactivamente.",
+      "2343226bb33f219f6b922a76b1c836ac8e3a15a2 es un commit real del fixture local. No demuestra procedencia externa previa, HEAD de LF remoto ni despliegue.",
+      "24/24 controles pasaron como reproducciones, incluyendo errores esperados del baseline; no equivalen a conformidad funcional del original.",
+      "Las correcciones solo se ejecutaron en memoria; cuatro hallazgos CONFIRMED, ninguno FIX_VERIFIED, fix_scope NONE.",
+      "Cobertura del caso: tres archivos y todas sus líneas. No acredita exhaustividad LF ni consumidores ausentes.",
+      "No se consultaron EKB actual, red, DB, GitHub ni CI; sus IDs históricos orientan el checklist y no acreditan vigencia.",
+      "No se ejecutaron diez pares genéricos ni piloto Paso70 ajenos al holdout; este ejercicio no acredita la aceptación completa de la skill.",
+      "No se conoce política adicional de tipo/version/nonce/moneda ni estados desconocidos. El tipo string de currency es propuesto.",
+      "No existe SQL, caché, concurrencia ni RLS implementados aquí; no se afirma rendimiento ni comportamiento E2E."
+    ]
+  },
+  "portable_regression": "evals/test_holdout.py uses the exact source snapshot and in-memory/correct-fixture consumers. Historical workspace paths remain historical; they are not delivery links.",
+  "promotion_authorized": false
+}

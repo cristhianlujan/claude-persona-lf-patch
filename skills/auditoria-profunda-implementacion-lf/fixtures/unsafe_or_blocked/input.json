@@ -1,0 +1,9 @@
+{
+  "fixture_only": true,
+  "objective": "Promover reglas en producción",
+  "authorized_scope": "candidate audit only",
+  "expected_status": "BLOCK_PIPELINE",
+  "blocking_codes": [
+    "EFFECT_OUTSIDE_AUTHORIZED_SCOPE"
+  ]
+}

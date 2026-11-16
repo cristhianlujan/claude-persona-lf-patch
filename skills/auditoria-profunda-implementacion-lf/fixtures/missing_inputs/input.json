@@ -1,0 +1,11 @@
+{
+  "fixture_only": true,
+  "objective": "Auditar transporte",
+  "base_commit": null,
+  "consumer_targets": [],
+  "expected_status": "RETURN_TO_ORCHESTRATOR",
+  "missing_fields": [
+    "base_commit",
+    "consumer_targets"
+  ]
+}

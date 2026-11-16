@@ -1,0 +1,523 @@
+{
+  "schema_version": "LF_DEEP_IMPLEMENTATION_AUDIT_REPORT_V1",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_commit": "bd599aff0a1353e5850fef1b9675c13b7344b317",
+  "status": "READY_FOR_JUDGE",
+  "promotion_authorized": false,
+  "authority_ref": null,
+  "phases": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "scope": {
+    "read": [
+      "scripts/lf_profile_native_resume.py",
+      "scripts/lf_step70_separate_call_receipt_v1.py",
+      "scripts/lf_step70_same_llm_eval_v1.py",
+      "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json",
+      "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md",
+      "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json",
+      "skills/auditoria-profunda-implementacion-lf/references/governance_current_readback.json",
+      "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts",
+      "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+      "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py",
+      "skills/auditoria-profunda-implementacion-lf/evals/test_pilot.py",
+      "skills/auditoria-profunda-implementacion-lf/scripts/run_step70_pilot.py",
+      "skills/auditoria-profunda-implementacion-lf/scripts/inspect_sources.py",
+      "skills/auditoria-profunda-implementacion-lf/scripts/assess_contracts.py",
+      "skills/auditoria-profunda-implementacion-lf/validators/validate_report.py"
+    ],
+    "written": [
+      "skills/auditoria-profunda-implementacion-lf"
+    ],
+    "not_verified": [
+      "Live E2E Step70/80",
+      "Promotion requests/apply",
+      "PG query plans/RLS/concurrency",
+      "Functional repairs not authorized"
+    ]
+  },
+  "evidence_files": {
+    "scripts/lf_profile_native_resume.py": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+    "scripts/lf_step70_separate_call_receipt_v1.py": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c",
+    "scripts/lf_step70_same_llm_eval_v1.py": "62a306f4f44aac9aee959c578b4d63c330a80e8918ae77133d1481ee21a5fce0",
+    "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json": "14789fb1e02c95c3e31f318c79e8f63b2cda3e1a3807589095d195d22cfa4192",
+    "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md": "b2a884d22591a5268ac95542b8dbdee855513ac3a3ac7c4abe643675a317aae7",
+    "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json": "871f71972b9fac8997d9134fe0f3c8ae2ae2033b844b418b4440b6ca971684bd",
+    "skills/auditoria-profunda-implementacion-lf/references/governance_current_readback.json": "d5e41c2120010df8a37a91c4f35d4264a59cf5d68901562abd6f30d491c47b7d",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "7f32885b2a9c67a3a635ace965b905f38959bb08fff9b9bd283c60d5640f605c",
+    "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json": "8410a64a14cf70bc10a752affc10d1478dbc0a41eb37dfad2d10ba465c49828f",
+    "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py": "13461af7d837f43fa74f771fa2e68c728e39fe410e525f1be6e3470a54d5253d",
+    "skills/auditoria-profunda-implementacion-lf/evals/test_pilot.py": "2469d695ed12101b959dcbb82304b7b939d00373aa827b653d6a5886e9718199",
+    "skills/auditoria-profunda-implementacion-lf/scripts/run_step70_pilot.py": "ff3d2f66eb64ae9cabcb974c3cea2fccddd29748c192c628ca4eb3e00e77bab9",
+    "skills/auditoria-profunda-implementacion-lf/scripts/inspect_sources.py": "817c9015628a2af3bcfe363f75125648e3a142805b8a7fd7e391a9bba5b9f81e",
+    "skills/auditoria-profunda-implementacion-lf/scripts/assess_contracts.py": "973e02d50e55a5ffd021f4986f08b15f1fdf337bf5340ad7a82e4fecc64ad4f0",
+    "skills/auditoria-profunda-implementacion-lf/validators/validate_report.py": "1c5abc5de95aa85cfd6f825b01d6525bab2916d83e0f58dabcc5fd93f148960e"
+  },
+  "behavior_chain": [
+    {
+      "from": "scripts/lf_profile_native_resume.py:complete_native_profile_semantic_and_report",
+      "to": "scripts/lf_step70_separate_call_receipt_v1.py:normalize_when_unverified",
+      "field": "execution_id",
+      "observation": "El RUN del padre no se pasa al helper.",
+      "evidence_refs": [
+        "scripts/lf_profile_native_resume.py",
+        "scripts/lf_step70_separate_call_receipt_v1.py",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding"
+      ]
+    },
+    {
+      "from": "scripts/lf_step70_separate_call_receipt_v1.py:normalize_when_unverified",
+      "to": "scripts/lf_step70_separate_call_receipt_v1.py:assess_separate_call_receipt",
+      "field": "execution_id",
+      "observation": "Guard opcional no ejecutado sin argumento esperado.",
+      "evidence_refs": [
+        "scripts/lf_step70_separate_call_receipt_v1.py",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding"
+      ]
+    },
+    {
+      "from": "scripts/lf_step70_separate_call_receipt_v1.py:assess_separate_call_receipt",
+      "to": "scripts/lf_step70_same_llm_eval_v1.py:evaluate",
+      "field": "decision_body/unsupported_claims",
+      "observation": "EVAL rechaza contenido; catch lo trata como procedencia.",
+      "evidence_refs": [
+        "scripts/lf_step70_separate_call_receipt_v1.py",
+        "scripts/lf_step70_same_llm_eval_v1.py",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking"
+      ]
+    },
+    {
+      "from": "scripts/lf_step70_separate_call_receipt_v1.py:normalize_when_unverified",
+      "to": "scripts/lf_profile_native_resume.py:validate_independent_semantic_review",
+      "field": "verdict",
+      "observation": "PASS contextual acepta checks externos tras borrar receipt discordante.",
+      "evidence_refs": [
+        "scripts/lf_profile_native_resume.py",
+        "scripts/lf_step70_separate_call_receipt_v1.py",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking"
+      ]
+    },
+    {
+      "from": "scripts/lf_profile_native_resume.py:complete_native_profile_semantic_and_report",
+      "to": "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts:semantic_judge_result branch → public.lf_profile_native_bridge_record_semantic_v1",
+      "field": "semantic_judge_result/receipt",
+      "observation": "Edge valida metadatos/12 checks y transporta RUN del padre a SQL. Bridge separa CURRENT_CONTEXT de CLEAN_CONTEXT_EVAL_VERIFIED y limita efectos. Lectura estática, sin ejecutar Edge/SQL.",
+      "evidence_refs": [
+        "scripts/lf_profile_native_resume.py",
+        "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts",
+        "skills/auditoria-profunda-implementacion-lf/references/governance_current_readback.json"
+      ]
+    },
+    {
+      "from": "scripts/lf_profile_native_resume.py:build_semantic_receipt",
+      "to": "public.lf_rule_promotion_request_v1",
+      "field": "review_mode/independence",
+      "observation": "PR4009 y SELECT vigente admiten CURRENT_CONTEXT para solicitud con hashes/autoridad/score, sin inventar independencia. NOT_PROVEN_OWNER_ACCEPTED no es PROVEN; decide_v1 conserva HUMAN. Funciones no invocadas.",
+      "evidence_refs": [
+        "scripts/lf_profile_native_resume.py",
+        "skills/auditoria-profunda-implementacion-lf/references/governance_current_readback.json",
+        "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md"
+      ]
+    }
+  ],
+  "checklist": [
+    {
+      "ekb_code": "IG-M1013-REPOSITORY-REPAIR-POLICY-054",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=VERIFICADO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/0",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "IG-M107-D-PROPOSAL-GRAPH-RECEIPT-036",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; pruebas reales PG/triggers/RLS fuera de alcance, solo fixture local.",
+      "result": "NOT_VERIFIED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/1",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "IG-M107-G-CURATOR-SQL-FASTPATH-041",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; pruebas reales PG/triggers/RLS fuera de alcance, solo fixture local.",
+      "result": "NOT_VERIFIED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/2",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "IG-M107-G-NATIVE-SNAPSHOT-DIGEST-COST-040",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/3",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-IG-SCOPE-HASH-MISMATCH-20261114-001",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=CANDIDATO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/4",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-OWNER-OVERRIDE-NO_PROMOTION-MANIFEST-20261115-001",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/5",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-OWNER-SCORE-CURRENT-CONTEXT-PROMOTION-20261115-001",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/6",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-PE-STEP70-CHAT-VERDICT-NOT-PERSISTED-20261031-001",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=VERIFICADO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/7",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-PE-STEP70-MODEL-RECEIPT-NOT-ATTESTED-20261031-002",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=VERIFICADO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/8",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-PE-STEP70-RUN-CLOSED-EKB-ENFORCEMENT-OPEN-20261031-005",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/9",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-PE-STEP70-WRITER-DIAGNOSIS-BEFORE-INSERT-20261031-003",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=VERIFICADO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/10",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-PE10A-ASSERTION-CONTRACT-PASSWHEN-NULL-READY-20261027-001",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/11",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-PROMO-INDEPENDENT-JUDGE-OWNER-20261114-001",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/12",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "LF-QUALITY-CURRENT-CONTEXT-TECHNICAL-PASS-NOT-APPROVAL-20261115-001",
+      "applies": false,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=SUPERSEDED; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "NOT_APPLICABLE",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/13",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "PE10_C6_DECLARED_PLANNER_TEST_COUNT_DRIFT_V1",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; se usa como aprendizaje y se contrasta con código/pruebas, no como permiso.",
+      "result": "REVIEWED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/14",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    },
+    {
+      "ekb_code": "PE10_C6_SQL_SCRIPT_PREFLIGHT_NO_PARSE_V1",
+      "applies": true,
+      "reason": "Recurrencia revisada en contexto de contratos/jueces/flujo. Estado EKB=ACTIVO; pruebas reales PG/triggers/RLS fuera de alcance, solo fixture local.",
+      "result": "NOT_VERIFIED",
+      "evidence_refs": [
+        "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json#/rows/15",
+        "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "skills/auditoria-profunda-implementacion-lf/evals/test_acceptance.py"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "LF-DA-001",
+      "kind": "DEFECT",
+      "code": "EXECUTION_ID_NOT_BOUND",
+      "location": {
+        "file": "scripts/lf_step70_separate_call_receipt_v1.py",
+        "function": "normalize_when_unverified",
+        "start_line": 118,
+        "end_line": 118,
+        "commit": "bd599aff0a1353e5850fef1b9675c13b7344b317",
+        "sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c"
+      },
+      "found_code": "        r=assess_separate_call_receipt(review)",
+      "expected": {
+        "behavior": "El RUN del caller debe llegar al validador del recibo y compararse con su execution_id.",
+        "contract_refs": [
+          "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json",
+          "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md",
+          "scripts/lf_step70_separate_call_receipt_v1.py"
+        ]
+      },
+      "defect": "La llamada omite el execution_id esperado; un recibo sintético de otro RUN pasa el EVAL local si sus hashes coinciden.",
+      "root_cause": "El padre conoce execution_id pero normalize_when_unverified no lo recibe. assess tiene guard opcional; evaluate recibe el mismo r.execution_id como dato y esperado.",
+      "impact": [
+        "Binding de procedencia local",
+        "Diagnóstico del Step70 antes de SQL",
+        "No demuestra que SQL acepte promoción cruzada"
+      ],
+      "correction": {
+        "code": "# Propuesta coordinada, no aplicada\n# lf_profile_native_resume.py, complete_native_profile_semantic_and_report:\nsemantic_review, assessment = normalize_when_unverified(semantic_review, execution_id=execution_id)\n# lf_step70_separate_call_receipt_v1.py:\ndef normalize_when_unverified(review, *, execution_id):\n    r = assess_separate_call_receipt(review, execution_id=execution_id)\n# Propagar el mismo argumento a validate_independent_semantic_review y sus callers;\n# rechazar STEP70_RUN_ID_DRIFT antes de cualquier degradación de procedencia.",
+        "targets": [
+          "scripts/lf_profile_native_resume.py:complete_native_profile_semantic_and_report",
+          "scripts/lf_step70_separate_call_receipt_v1.py:normalize_when_unverified",
+          "scripts/lf_profile_native_resume.py:validate_independent_semantic_review"
+        ],
+        "proposed_only": true
+      },
+      "positive_test": {
+        "description": "Recibo fixture válido del RUN esperado devuelve evaluator_status=PASS, con independencia no acreditada.",
+        "executed": true,
+        "evidence_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding"
+      },
+      "negative_test": {
+        "description": "Recibo fixture de otro RUN: llamada sin binding acepta EVAL; con execution_id explícito rechaza STEP70_RUN_ID_DRIFT.",
+        "executed": true,
+        "evidence_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding"
+      },
+      "observed_result": {
+        "executed": true,
+        "command": "python skills/auditoria-profunda-implementacion-lf/scripts/run_step70_pilot.py --output skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "exit_code": 0,
+        "summary": "wrong_run_evaluator_status=PASS; explicit_binding_rejects=STEP70_RUN_ID_DRIFT",
+        "evidence_refs": [
+          "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding"
+        ],
+        "scope": "LOCAL_REAL_LF_HELPER"
+      },
+      "readback": {
+        "verified": true,
+        "consumer": "assess_separate_call_receipt → evaluate",
+        "effect": "wrong_run_evaluator_status=PASS; explicit_binding_rejects=STEP70_RUN_ID_DRIFT; no DB/Edge promotion invoked",
+        "evidence_refs": [
+          "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding"
+        ]
+      },
+      "status": "CONFIRMED",
+      "before_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/run_binding",
+      "after_ref": null,
+      "fix_scope": "NONE"
+    },
+    {
+      "id": "LF-DA-002",
+      "kind": "DEFECT",
+      "code": "EVAL_FAILURE_MASKED",
+      "location": {
+        "file": "scripts/lf_step70_separate_call_receipt_v1.py",
+        "function": "normalize_when_unverified",
+        "start_line": 119,
+        "end_line": 125,
+        "commit": "bd599aff0a1353e5850fef1b9675c13b7344b317",
+        "sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c"
+      },
+      "found_code": "    except ValueError as exc:\n        r={\"status\":\"JUDGE_INDEPENDENCE_NOT_PROVEN\",\n           \"producer_independence_proven\":False,\n           \"receipt_contract_error\":str(exc),\n           \"content_continuation_allowed\":True}\n    if r[\"status\"]==\"JUDGE_INDEPENDENCE_NOT_PROVEN\" or not r[\"producer_independence_proven\"]:\n        safe=dict(review)",
+      "expected": {
+        "behavior": "Separar procedencia no acreditada de EVAL material fallido; conservar contradicciones de dictamen y no emitir PASS por fallback.",
+        "contract_refs": [
+          "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json",
+          "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md",
+          "scripts/lf_step70_separate_call_receipt_v1.py"
+        ]
+      },
+      "defect": "Un receipt cuyo decision_body tiene unsupported_claims falla EVAL; el normalizador borra el receipt y genera PASS contextual que acepta el validador local con checks externos favorables.",
+      "root_cause": "El catch de todo ValueError convierte errores materiales en JUDGE_INDEPENDENCE_NOT_PROVEN; luego sobrescribe verdict y elimina la evidencia discordante.",
+      "impact": [
+        "Consistencia de dictamen anidado/externo",
+        "Validación local permite continuar tras material FAIL",
+        "Aceptación final por SQL/Edge no probada"
+      ],
+      "correction": {
+        "code": "# Propuesta, no aplicada\nexcept ValueError as exc:\n    return review, {\"status\": \"REVIEW_INVALID\",\n        \"receipt_contract_error\": str(exc),\n        \"producer_independence_proven\": False,\n        \"content_continuation_allowed\": False}\n# En complete_native_profile_semantic_and_report, antes de persistir/normalizar:\nif assessment.get(\"content_continuation_allowed\") is not True:\n    print(json.dumps({\"phase\": \"SEMANTIC_REVIEW\",\n        \"code\": assessment.get(\"receipt_contract_error\")}))\n    return 1\n# Mantener el caso de receipt ausente como procedencia no probada;\n# para revaluar contenido producir evaluación explícita, sin borrar contradicción.",
+        "targets": [
+          "scripts/lf_step70_separate_call_receipt_v1.py:normalize_when_unverified",
+          "scripts/lf_profile_native_resume.py:complete_native_profile_semantic_and_report"
+        ],
+        "proposed_only": true
+      },
+      "positive_test": {
+        "description": "Receipt materialmente válido mantiene baseline RECEIPT_FORMAT_VALID_PROVENANCE_UNATTESTED, sin afirmar independencia.",
+        "executed": true,
+        "evidence_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking"
+      },
+      "negative_test": {
+        "description": "unsupported_claims no vacío provoca STEP70_SEPARATE_EVALUATOR_NOT_PASS; comprobar si el fallback conserva el rechazo.",
+        "executed": true,
+        "evidence_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking"
+      },
+      "observed_result": {
+        "executed": true,
+        "command": "python skills/auditoria-profunda-implementacion-lf/scripts/run_step70_pilot.py --output skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "exit_code": 0,
+        "summary": "STEP70_SEPARATE_EVALUATOR_NOT_PASS → PASS_REVIEWED_CURRENT_CONTEXT; receipt_retained=false; downstream.accepted=true",
+        "evidence_refs": [
+          "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking"
+        ],
+        "scope": "LOCAL_REAL_LF_HELPER"
+      },
+      "readback": {
+        "verified": true,
+        "consumer": "normalize_when_unverified → validate_independent_semantic_review",
+        "effect": "STEP70_SEPARATE_EVALUATOR_NOT_PASS → PASS_REVIEWED_CURRENT_CONTEXT; receipt_retained=false; downstream.accepted=true; no DB/Edge promotion invoked",
+        "evidence_refs": [
+          "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking"
+        ]
+      },
+      "status": "CONFIRMED",
+      "before_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/eval_masking",
+      "after_ref": null,
+      "fix_scope": "NONE"
+    },
+    {
+      "id": "LF-DA-003",
+      "kind": "DEFECT",
+      "code": "EVAL_INPUT_INCOMPATIBLE",
+      "location": {
+        "file": "scripts/lf_step70_same_llm_eval_v1.py",
+        "function": "evaluate",
+        "start_line": 52,
+        "end_line": 53,
+        "commit": "bd599aff0a1353e5850fef1b9675c13b7344b317",
+        "sha256": "62a306f4f44aac9aee959c578b4d63c330a80e8918ae77133d1481ee21a5fce0"
+      },
+      "found_code": "    chk(isinstance(refs,list) and len(refs)>0 and all(isinstance(r,str) and r for r in refs),\n        \"REVIEW_SOURCE_REFS_MISSING\")",
+      "expected": {
+        "behavior": "EVAL debe respetar source_refs.items.minLength=4 del schema LF_STEP70_SAME_LLM_REVIEW_OUTPUT_V1.",
+        "contract_refs": [
+          "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json",
+          "profiles/quality_pack/contracts/step70_clean_eval_context_v1.md",
+          "scripts/lf_step70_separate_call_receipt_v1.py"
+        ]
+      },
+      "defect": "source_refs=['x'] incumple la SPEC pero el mismo RAW obtiene eval_status=PASS.",
+      "root_cause": "EVAL comprueba string no vacío y omite el mínimo del schema; no ejecuta ese schema completo.",
+      "impact": [
+        "Paridad SPEC/EVAL de referencias",
+        "Calidad del recibo evaluado",
+        "No acredita resolución real de refs ni autorización"
+      ],
+      "correction": {
+        "code": "chk(isinstance(refs, list) and len(refs) > 0\n    and all(isinstance(ref, str) and len(ref) >= 4 for ref in refs),\n    \"REVIEW_SOURCE_REFS_SCHEMA_INVALID\")\n# Añadir regresión de paridad con el schema congelado;\n# validar referencias materialmente en la capa contextual, no solo por longitud.",
+        "targets": [
+          "scripts/lf_step70_same_llm_eval_v1.py:evaluate",
+          "profiles/product_director_lf/schemas/lf_step70_same_llm_reviewer_output_v1.schema.json"
+        ],
+        "proposed_only": true
+      },
+      "positive_test": {
+        "description": "RAW con source_refs fixture válidos: schema sin errores y EVAL PASS.",
+        "executed": true,
+        "evidence_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/schema_eval"
+      },
+      "negative_test": {
+        "description": "Mismo RAW con ['x']: schema rechaza 'x is too short'; EVAL actual devuelve PASS.",
+        "executed": true,
+        "evidence_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/schema_eval"
+      },
+      "observed_result": {
+        "executed": true,
+        "command": "python skills/auditoria-profunda-implementacion-lf/scripts/run_step70_pilot.py --output skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json",
+        "exit_code": 0,
+        "summary": "evaluator_status=PASS y schema_errors=['x is too short']; baseline válida pasa ambos",
+        "evidence_refs": [
+          "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/schema_eval"
+        ],
+        "scope": "LOCAL_REAL_LF_HELPER"
+      },
+      "readback": {
+        "verified": true,
+        "consumer": "evaluate → assess_separate_call_receipt (no schema enforcement)",
+        "effect": "evaluator_status=PASS y schema_errors=['x is too short']; baseline válida pasa ambos; no DB/Edge promotion invoked",
+        "evidence_refs": [
+          "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/schema_eval"
+        ]
+      },
+      "status": "CONFIRMED",
+      "before_ref": "skills/auditoria-profunda-implementacion-lf/reports/pilot_trace.json#/schema_eval",
+      "after_ref": null,
+      "fix_scope": "NONE"
+    }
+  ],
+  "limitations": [
+    "Los tres defectos están confirmados en helpers LF locales con entradas sintéticas de tests existentes; no se afirma explotación, aceptación SQL ni promoción real.",
+    "No se aplicó corrección LF; todos los fixes son propuestas sin before/after aplicado.",
+    "La autoridad SQL se consultó por definición en sandbox; no se invocó el promocionador.",
+    "EKB es snapshot histórico. Checklist complementa descubrimiento, no garantiza ausencia de otros defectos.",
+    "La suite automática acota estructura/fixtures; la semántica depende de la lectura del modelo nativo."
+  ]
+}

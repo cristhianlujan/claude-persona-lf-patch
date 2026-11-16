@@ -1,0 +1,1 @@
+{"payload": {"type": "object", "required": ["account", "gross", "currency"], "properties": {"account": {"type": "string"}, "gross": {"type": "integer"}, "currency": {"type": "string"}}}, "states": {"QUEUED": "RUN", "CANCELLED": "STOP", "WAITING_FUNDS": "DEFER"}}

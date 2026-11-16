@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auditoría profunda de implementación LF"
+  short_description: "Contrasta código, contratos, transporte y evidencia LF"
+  default_prompt: "Usa $auditoria-profunda-implementacion-lf para auditar este flujo con código real, EKB, pruebas y readback."

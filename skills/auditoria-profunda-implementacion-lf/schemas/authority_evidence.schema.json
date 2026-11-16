@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "origin",
+    "retrieval_ref",
+    "retrieved_at",
+    "policy",
+    "evaluation",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "LF_AUDIT_AUTHORITY_EVIDENCE_V1"
+    },
+    "origin": {
+      "const": "CURRENT_GOVERNANCE_READBACK"
+    },
+    "retrieval_ref": {
+      "type": "string",
+      "minLength": 8
+    },
+    "retrieved_at": {
+      "type": "string",
+      "minLength": 20
+    },
+    "policy": {
+      "type": "object"
+    },
+    "evaluation": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

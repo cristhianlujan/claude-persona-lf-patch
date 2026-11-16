@@ -1,0 +1,20 @@
+{
+  "schema_version": "LF_SKILL_REGISTRATION_CANDIDATE_V1",
+  "skill_code": "SKILL_AUDITORIA_PROFUNDA_IMPLEMENTACION_LF",
+  "asset_type": "SKILL",
+  "status": "CANDIDATE_SOURCE_ONLY_NOT_REGISTERED",
+  "operation_code": "EJECUCION_SKILL_LF",
+  "source_authority": "OWNER_HANDOFF_20261115_CANDIDATE_PR_ONLY",
+  "profile_consumer": null,
+  "catalog_registration_applied": false,
+  "runtime_enabled": false,
+  "production_authorized": false,
+  "promotion_authorized": false,
+  "no_router_to_skill_direct": true,
+  "pending": [
+    "governed catalog binding if separately authorized",
+    "profile consumer binding",
+    "runtime admission"
+  ],
+  "entrypoint": "skills/auditoria-profunda-implementacion-lf/SKILL.md"
+}
