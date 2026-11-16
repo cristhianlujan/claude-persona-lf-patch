@@ -77,6 +77,7 @@ BEGIN
 
     v_category:=CASE
       WHEN x.pendiente_decision IS TRUE THEN 'PENDING_DECISION'
+      WHEN x.codigo LIKE 'B2B-RULE-AUTH-%' THEN 'AUTH'
       WHEN x.categoria IN ('LEGAL','APPROVAL','OFERTAS_CUOTAS','AUTH','PRIVACY','PAGOS')
         THEN x.categoria
       WHEN x.codigo LIKE '%INSTALLMENT%' THEN 'OFERTAS_CUOTAS'
@@ -86,7 +87,7 @@ BEGIN
            coalesce(nullif(x.pendiente_detalle,''),'Motivo humano no documentado en la regla '||x.codigo)
       ELSE NULL END;
     v_destination:=CASE
-      WHEN v_hard THEN 'DECISION_HUMANA'
+      WHEN x.pendiente_decision IS TRUE OR (v_hard AND v_score>=85) THEN 'DECISION_HUMANA'
       WHEN coalesce((x.scoring->>'A')::integer,0)<40
            AND x.test_count>0 THEN 'T_REMED'
       WHEN coalesce((x.scoring->>'A')::integer,0)<40 THEN 'REPARAR_REGLA'
@@ -122,6 +123,23 @@ BEGIN
     'promotion_performed',false);
 END
 $fn$;
+
+-- AUTH is a governed domain, not just a literal category; login codes must be MANUAL.
+-- Existing score and threshold remain unchanged. No rule state is modified.
+DO $auth$
+DECLARE d text; d0 text;
+BEGIN
+  d:=pg_get_functiondef('public.lf_rule_promotion_score_v1(text,text)'::regprocedure);
+  d0:=d;
+  d:=replace(d,
+    $a$OR p_rule_code LIKE '%INSTALLMENT%';$a$,
+    $b$OR p_rule_code LIKE '%INSTALLMENT%' OR p_rule_code LIKE 'B2B-RULE-AUTH-%';$b$);
+  IF d=d0 OR position('B2B-RULE-AUTH-%' IN d)=0 THEN
+    RAISE EXCEPTION 'LF_RULE_AUTH_HARD_BLOCK_PATCH_NOT_APPLIED';
+  END IF;
+  EXECUTE d;
+END
+$auth$;
 
 -- Patch the actual Step80 source without changing existing steps, ACL, or score rules.
 DO $patch$
