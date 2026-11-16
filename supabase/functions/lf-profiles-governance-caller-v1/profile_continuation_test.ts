@@ -1083,7 +1083,7 @@ Deno.test("IG native context append respects server BLOCK and cannot claim PASS"
   eq(b.step_recorded,false);
 });
 
-Deno.test("E21: promotion=true accepts ONLY source-bound SQL validator decision; false remains valid",async()=>{
+Deno.test("CP2: E21 promotion=true accepts ONLY source-bound SQL validator decision; false remains valid",async()=>{
   const base=boundedRepairFixture();
   const upgrade=(allow:boolean)=>{
     const manifest=base.manifest as Record<string,unknown>;
@@ -1146,7 +1146,7 @@ Deno.test("E21: promotion=true accepts ONLY source-bound SQL validator decision;
   eq(bad.status,403);
   eq(mismatch.calls.some(c=>c.url.includes("handoff_validate")),false);
 });
-Deno.test("E21: Edge resolves governed repair profile by SQL-validated handoff, not a literal code",async()=>{
+Deno.test("CP2: E21 Edge resolves governed repair profile by SQL-validated handoff, not a literal code",async()=>{
   const base=boundedRepairFixture();
   const profile="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF-V06-CANDIDATE";
   const slug="systemic_root_cause_repair_lf_v06_candidate";
