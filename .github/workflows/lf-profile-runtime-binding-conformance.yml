@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install canonical validator import requirement
+        run: python -m pip install jsonschema
       - name: Real binding and dual-consumer conformance (no profile runs)
         env:
           PYTHONPATH: services/profile_runtime_api
