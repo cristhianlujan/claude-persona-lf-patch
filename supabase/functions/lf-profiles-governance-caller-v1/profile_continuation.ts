@@ -952,6 +952,51 @@ export async function handleProfileContinuation(
     if (prepared.error) return prepared.error;
     result = prepared.result!;
   }
+  // P4: typed Step47 continuation. Only the already-admitted OIDC parent RUN
+  // can supply a baseline envelope; canonical SQL validates all digests/sources.
+  const baseline = result.baseline_result as Payload | undefined;
+  const baselineRequired = result.status === "BLOCKED" &&
+    result.blocking_code === "BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY" &&
+    baseline?.outcome === "BASELINE_REQUIRED" && baseline?.recorded === false &&
+    baseline?.execution_id === e.execution_id &&
+    baseline?.next_action === "INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY";
+  if (Object.prototype.hasOwnProperty.call(body,"baseline_envelope")) {
+    if (!baselineRequired) return blocked("PROFILE_BASELINE_NOT_REQUESTED",409);
+    const envelope = body.baseline_envelope;
+    if (!envelope || typeof envelope !== "object" || Array.isArray(envelope))
+      return blocked("PROFILE_BASELINE_ENVELOPE_INVALID",400);
+    const payload = envelope as Payload;
+    if (!payload.snapshot || typeof payload.snapshot !== "object" || Array.isArray(payload.snapshot) ||
+        typeof payload.baseline_digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(payload.baseline_digest) ||
+        typeof payload.input_digest !== "string" || typeof payload.profile_source_digest !== "string" ||
+        typeof payload.capture_stage !== "string" || !Array.isArray(payload.evidence_refs) ||
+        payload.evidence_refs.length === 0)
+      return blocked("PROFILE_BASELINE_ENVELOPE_INVALID",400);
+    const recordedBaseline = await rpc(config,fetchFn,"lf_profile_execution_research_baseline_v1",{
+      p_execution_id:e.execution_id,p_baseline_envelope:payload,p_actor_execution_id:e.execution_id,
+    });
+    if (recordedBaseline.error) return recordedBaseline.error;
+    if (!["STEP_RECORDED","STEP_ALREADY_RECORDED"].includes(String(recordedBaseline.result?.status ?? recordedBaseline.result?.outcome ?? "")))
+      return respond({outcome:"BLOCKED",code:"PROFILE_BASELINE_RECORD_NOT_CLEAN",
+        execution_id:e.execution_id,result:recordedBaseline.result},409);
+    prepared=await rpc(config,fetchFn,"lf_profile_native_bridge_prepare_v1",{
+      p_execution_id:e.execution_id,p_source_revision:revision,
+      p_source_digest:digest,p_actor_execution_id:e.execution_id,
+    });
+    if(prepared.error)return prepared.error;
+    result=prepared.result!;
+    if (result.status==="BLOCKED" && result.blocking_code==="BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY")
+      return blocked("PROFILE_BASELINE_REPLAY_NOT_CLEAN",409);
+  } else if (baselineRequired) {
+    return respond({outcome:"CONTINUATION_REQUIRED",phase:"RESEARCH_BASELINE_REQUIRED",
+      execution_id:e.execution_id,profile_code:e.target_code,
+      next_action:"SUBMIT_BASELINE_ENVELOPE_SAME_RUN",
+      governed_continuation:{schema_version:"LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+        payload_field:"baseline_envelope",transport:"EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+        reuse_execution_id:true,issue_label:"lf-profile-resume-governed",
+        source_contract:baseline.research_baseline_contract,
+        baseline_receipt_ref:baseline.baseline_receipt_ref},result},200);
+  }
   const semanticKeys = [
     "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
     "authority_resolution_valid", "constraints_preserved", "claims_authorized",
