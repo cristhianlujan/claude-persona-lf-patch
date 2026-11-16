@@ -1171,3 +1171,80 @@ Deno.test("CP2: E21 Edge resolves governed repair profile by SQL-validated hando
   eq(out.status,200);
   eq((await out.json()).profile_code,profile);
 });
+
+
+Deno.test("P4: baseline missing returns typed same-run continuation; unauthorized envelope denied",async()=>{
+  const base=network();
+  const rpcCalls:string[]=[];
+  let recorded=false;
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    rpcCalls.push(url);
+    if(url.endsWith("/lf_profile_native_bridge_prepare_v1")){
+      const pending={status:"BLOCKED",blocking_code:"BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY",
+        baseline_result:{outcome:"BASELINE_REQUIRED",recorded:false,execution_id:id,
+          research_baseline_contract:{contract_version:"PROFILE_RESEARCH_BASELINE_BINDING_V1"},
+          baseline_receipt_ref:"supabase://steps/47",
+          next_action:"INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY"}};
+      return new Response(JSON.stringify(recorded?{status:"NATIVE_MODEL_INPUT_READY"}:pending),{status:200});
+    }
+    if(url.endsWith("/lf_profile_execution_research_baseline_v1")){
+      recorded=true;
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",status:"STEP_PASS_WITH_EVIDENCE",execution_id:id}),{status:200});
+    }
+    return base.fetchFn(input,init);
+  };
+  const initial=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    {execution_id:id,source_revision:sha,source_digest:digest},config,fetchFn,sha);
+  const checkpoint=await initial.json();
+  eq(initial.status,200);eq(checkpoint.phase,"RESEARCH_BASELINE_REQUIRED");
+  eq(checkpoint.governed_continuation.reuse_execution_id,true);
+  eq(rpcCalls.some(x=>x.endsWith("/lf_profile_execution_research_baseline_v1")),false);
+  const wrong=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    {execution_id:id,source_revision:sha,source_digest:digest,
+      baseline_envelope:{snapshot:{},baseline_digest:"wrong"}},config,fetchFn,sha);
+  eq(wrong.status,400);eq((await wrong.json()).code,"PROFILE_BASELINE_ENVELOPE_INVALID");
+  const good={snapshot:{source:"existing"},baseline_digest:"sha256:"+"a".repeat(64),
+    capture_stage:"PRE_RESEARCH",input_digest:digest,profile_source_digest:digest,
+    evidence_refs:["supabase://source/real"]};
+  const resumed=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    {execution_id:id,source_revision:sha,source_digest:digest,baseline_envelope:good},
+    config,fetchFn,sha);
+  eq(resumed.status,200);eq((await resumed.json()).phase,"NATIVE_MODEL_INPUT_READY");
+  eq(rpcCalls.filter(x=>x.endsWith("/lf_profile_execution_research_baseline_v1")).length,1);
+});
+Deno.test("P4: baseline envelope cannot be injected when not required",async()=>{
+  const n=network();
+  const body={execution_id:id,source_revision:sha,source_digest:digest,
+    baseline_envelope:{snapshot:{},baseline_digest:"sha256:"+"a".repeat(64),
+      input_digest:digest,profile_source_digest:digest,capture_stage:"C1",
+      evidence_refs:["supabase://source/current"]}};
+  const response=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,body,config,n.fetchFn,sha);
+  eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_NOT_REQUESTED");
+});
+
+Deno.test("P4: Step47 recorder outcome cannot mask blocked deterministic status",async()=>{
+  const base=network();let baselineStored=false;
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))
+      return new Response(JSON.stringify({status:"BLOCKED",
+        blocking_code:"BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY",
+        baseline_result:{outcome:"BASELINE_REQUIRED",recorded:false,execution_id:id,
+          next_action:"INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY"}}),{status:200});
+    if(url.endsWith("/lf_profile_execution_research_baseline_v1")){
+      baselineStored=true;
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+        status:"BLOCKED_STEP_NOT_CLEAN",execution_id:id}),{status:200});
+    }
+    return base.fetchFn(input,init);
+  };
+  const envelope={snapshot:{source:"fixture"},baseline_digest:"sha256:"+"c".repeat(64),
+    capture_stage:"PRE_RESEARCH",input_digest:digest,profile_source_digest:digest,
+    evidence_refs:["supabase://source/fixture"]};
+  const response=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,baseline_envelope:envelope
+  },config,fetchFn,sha);
+  eq(baselineStored,true);
+  eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_RECORD_NOT_CLEAN");
+});
