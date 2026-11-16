@@ -973,7 +973,12 @@ def complete_native_profile_semantic_and_report(execution_id, source, semantic_r
             from lf_step70_separate_call_receipt_v1 import normalize_when_unverified
         except ModuleNotFoundError:
             from scripts.lf_step70_separate_call_receipt_v1 import normalize_when_unverified
-        semantic_review, assessment = normalize_when_unverified(semantic_review)
+        try:
+            semantic_review, assessment = normalize_when_unverified(
+                semantic_review, execution_id=execution_id)
+        except ValueError as exc:
+            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+            return 1
         Path("profile-step70-independence-assessment.json").write_text(
             json.dumps(assessment,ensure_ascii=False,sort_keys=True),encoding="utf8")
         print(json.dumps({"phase":"SEMANTIC_REVIEW",
