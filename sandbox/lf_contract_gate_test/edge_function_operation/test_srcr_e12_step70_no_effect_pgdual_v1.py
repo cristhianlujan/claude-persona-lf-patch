@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MIG = ROOT / "supabase/migrations/20261116070000_lf_srcr_e12_step70_no_effect_context_v1.sql"
+MIG = ROOT / "supabase/migrations/20261116070001_lf_srcr_e12_step70_no_effect_context_v1.sql"
 ORIG = ROOT / "supabase/migrations/20261115074500_lf_srcr_step70_same_native_conversation_candidate_v1.sql"
 RUN = "EXEC-PROFILE-GATE2-TESTE12NOEFFECT000001"
 
