@@ -1,3 +1,4 @@
+import "./profile_continuation_test.ts";
 import { createHandler, OIDC_AUDIENCE, OIDC_ISSUER, type JwtPayload } from "./caller.ts";
 
 function assert(condition: unknown, message = "assertion failed"): asserts condition {
