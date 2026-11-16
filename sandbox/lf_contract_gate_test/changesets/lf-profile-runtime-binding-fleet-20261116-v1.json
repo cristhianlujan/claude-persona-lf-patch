@@ -14,6 +14,7 @@
     "services/profile_runtime_api/tests/test_generic_profile_runtime_binding.py": "SERVICE_RUNTIME",
     "services/profile_runtime_api/tests/test_repository_runtime_schema.py": "SERVICE_RUNTIME",
     "services/profile_runtime_api/tests/test_runtime_binding_fleet_conformance.py": "SERVICE_RUNTIME",
-    "services/profile_runtime_api/tests/test_runtime_output_mode.py": "SERVICE_RUNTIME"
+    "services/profile_runtime_api/tests/test_runtime_output_mode.py": "SERVICE_RUNTIME",
+    "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py": "SERVICE_RUNTIME"
   }
 }
