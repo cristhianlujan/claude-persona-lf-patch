@@ -107,7 +107,10 @@ def assess_separate_call_receipt(review, *, execution_id=None):
             "content_continuation_allowed":True}
 
 
-def normalize_when_unverified(review):
+MATERIAL_CODES={"STEP70_RUN_ID_DRIFT","STEP70_REVIEW_NOT_SOURCE_BOUND","STEP70_REVIEW_EVAL_NOT_PASS","STEP70_SEPARATE_EVALUATOR_NOT_PASS","STEP70_CALL_NOT_SEPARATE"}
+
+
+def normalize_when_unverified(review, *, execution_id=None):
     """Conservatively downgrade a self-asserted independent PASS to content-only.
 
     Only read-only V3 content checks may continue under this mode; SQL will
@@ -115,8 +118,9 @@ def normalize_when_unverified(review):
     separate, optional audit artifact; do not claim provider provenance.
     """
     try:
-        r=assess_separate_call_receipt(review)
+        r=assess_separate_call_receipt(review, execution_id=execution_id)
     except ValueError as exc:
+        if str(exc) in MATERIAL_CODES: raise
         r={"status":"JUDGE_INDEPENDENCE_NOT_PROVEN",
            "producer_independence_proven":False,
            "receipt_contract_error":str(exc),
