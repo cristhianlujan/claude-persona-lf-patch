@@ -129,9 +129,9 @@ FROM public.lf_operation_execution WHERE execution_id<>'PIGP-STALE'
 ORDER BY execution_id;
 
 SELECT 'SCOPE='||execution_id||':'||
- evidence_payload->>'analysis_scope'||':'||
- evidence_payload#>>'{input_governance,analysis_scope}'||':'||
- evidence_payload->>'mutation_authorized'||':'||
+ (evidence_payload->>'analysis_scope')||':'||
+ (evidence_payload#>>'{input_governance,analysis_scope}')||':'||
+ (evidence_payload->>'mutation_authorized')||':'||
  jsonb_array_length(evidence_payload->'skill_selection_findings')::text||':'||
  jsonb_array_length(evidence_payload->'input_governance_findings')::text
 FROM public.lf_operation_execution_steps
