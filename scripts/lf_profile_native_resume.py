@@ -742,10 +742,25 @@ def require_step50_verified_effect_shape(target_path, profile_output, prepare_re
         raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
     authority = prepare_result.get("repair_execution_authority")
     mode = prepare_result.get("execution_write_mode")
-    if not isinstance(authority, dict) or mode not in ("READ_ONLY", "GOVERNED_REPAIR_WRITE"):
+    if mode not in ("READ_ONLY", "GOVERNED_REPAIR_WRITE"):
         raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
     repair = profile_output.get("repair_execution") if isinstance(profile_output, dict) else None
     requested_mode = repair.get("mode") if isinstance(repair, dict) else None
+    if mode == "READ_ONLY":
+        # Step 50 has no repair effect authority in read-only runs. In particular,
+        # SQL legitimately returns null here; never demand GOVERNED_REPAIR_WRITE.
+        if authority is not None and (not isinstance(authority, dict)
+                                      or authority.get("promotion_allowed") not in (None, False)):
+            raise ValueError("STEP50_PROMOTION_REPAIR_AUTHORITY_MISMATCH")
+        if (requested_mode == "EXECUTED_WITH_READBACK"
+                or (isinstance(repair, dict) and
+                    (repair.get("rule_receipts") or repair.get("changes")))):
+            raise ValueError("STEP50_READ_ONLY_EFFECT_FORBIDDEN")
+        return
+    # The governed write path is unchanged: its exact SQL-issued authority is
+    # mandatory, and promotion still requires real Train receipts + snapshots.
+    if not isinstance(authority, dict):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
     promotion_allowed = authority.get("promotion_allowed") is True
     if requested_mode == "AUTHORIZED_NOT_EXECUTED" and promotion_allowed:
         raise ValueError("STEP50_AUTHORIZED_NOT_EXECUTED_FORBIDDEN")
