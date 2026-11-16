@@ -1,6 +1,8 @@
 """E21 Step50 Python/pytest same-code source contract, no model/DB writes."""
 import importlib.util
 import json
+import os
+os.environ.setdefault('LF_PROFILE_EDGE_URL','https://test.invalid')
 from pathlib import Path
 import unittest
 
