@@ -70,7 +70,7 @@ BEGIN
        THEN 'INDEPENDENCE_ASSERTED_NOT_REVERIFIED'
       ELSE 'NO_VALID_JUDGE' END,
     'reason','A from lf_ops.regla_behavior_tests');
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_request_v1(p_execution_id text, p_rule_code text, p_reason text)
  RETURNS jsonb
@@ -160,7 +160,7 @@ begin
   'judge_independence',v_score->>'judge_independence',
   'next_action','MANUAL score requires authentic human decision');
 
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_decide_v1(p_promotion_id text, p_decision text, p_decided_by text, p_note text)
  RETURNS jsonb
@@ -205,7 +205,7 @@ begin
   return jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_STALE'); end if;
  update public.lf_rule_promotion_v1 set status=case p_decision when 'APPROVE' then 'APPROVED' else 'REJECTED' end, decided_by=p_decided_by, decided_at=now(), reason=coalesce(reason,'')||' | '||coalesce(p_note,'') where promotion_id=p_promotion_id;
  return jsonb_build_object('status',case p_decision when 'APPROVE' then 'APPROVED' else 'REJECTED' end,'promotion_id',p_promotion_id);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_apply_v1(p_promotion_id text)
  RETURNS jsonb
@@ -224,5 +224,5 @@ begin
  update lf_ops.reglas set estado='VIGENTE' where codigo=p.rule_code and estado='CANDIDATO';
  update public.lf_rule_promotion_v1 set status='APPLIED', applied_at=now() where promotion_id=p_promotion_id;
  return jsonb_build_object('status','APPLIED','rule_code',p.rule_code);
-end $function$
+end $function$;
 
