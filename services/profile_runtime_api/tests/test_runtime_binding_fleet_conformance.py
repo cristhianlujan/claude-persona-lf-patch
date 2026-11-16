@@ -107,6 +107,26 @@ class FleetRuntimeBindingConformance(unittest.TestCase):
                     defects.append(f"{slug}: NATIVE_SCHEMA {mode}: {type(exc).__name__}: {exc}")
         self.assertFalse(defects, "\n" + "\n".join(defects))
 
+    def test_02_schema_selection_rejects_unknown_and_ambiguous_forms(self):
+        for slug, mode in (("ui_architect", "UI_UNDECLARED"), ("product_director_lf", "UNKNOWN")):
+            with self.subTest(profile=slug):
+                with self.assertRaises(Exception) as raised:
+                    self.repository.runtime_schema(slug, mode)
+                self.assertIn("RUNTIME_OUTPUT_MODE_UNSUPPORTED", str(raised.exception))
+        with self.assertRaises(Exception) as conflict:
+            self.repository.runtime_schema(
+                "ui_architect", "UI_FOCUSED_DECISION",
+                profile_output={"pipeline_action": "RETURN"}
+            )
+        self.assertIn("RUNTIME_OUTPUT_MODE_UNSUPPORTED", str(conflict.exception))
+        with self.assertRaises(Exception) as ambiguous:
+            self.repository.runtime_schema(
+                "ui_architect", profile_output={
+                    "decision_subject": "layout", "pipeline_action": "RETURN"
+                }
+            )
+        self.assertIn("RUNTIME_OUTPUT_MODE_UNSUPPORTED", str(ambiguous.exception))
+
     def _native_probe(self, slug, raw, payload, expected):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
