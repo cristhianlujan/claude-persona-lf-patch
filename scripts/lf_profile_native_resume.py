@@ -704,6 +704,71 @@ def attach_bound_evidence_manifest(repo_root, packet, evidence_manifest):
     packet["evidence_manifest_sha256"] = hashlib.sha256(encoded).hexdigest()
 
 
+def require_step50_verified_effect_shape(target_path, profile_output, prepare_result):
+    """Local preflight, not attestation: the DB writer verifies actual Train and snapshots.
+
+    Only server-derived prepare_result may enable this gate. Never use a flag
+    authored in the Issue/model RAW as promotion or write authority.
+    """
+    if target_path != "profiles/systemic_root_cause_repair_lf/SKILL.md":
+        return
+    if not isinstance(prepare_result, dict):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    authority = prepare_result.get("repair_execution_authority")
+    mode = prepare_result.get("execution_write_mode")
+    if not isinstance(authority, dict) or mode not in ("READ_ONLY", "GOVERNED_REPAIR_WRITE"):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    repair = profile_output.get("repair_execution") if isinstance(profile_output, dict) else None
+    requested_mode = repair.get("mode") if isinstance(repair, dict) else None
+    promotion_allowed = authority.get("promotion_allowed") is True
+    if requested_mode == "AUTHORIZED_NOT_EXECUTED" and promotion_allowed:
+        raise ValueError("STEP50_AUTHORIZED_NOT_EXECUTED_FORBIDDEN")
+    if not promotion_allowed:
+        return
+    if mode != "GOVERNED_REPAIR_WRITE" or authority.get("mode") != "GOVERNED_REPAIR_WRITE":
+        raise ValueError("STEP50_PROMOTION_REPAIR_AUTHORITY_MISMATCH")
+    if requested_mode != "EXECUTED_WITH_READBACK":
+        raise ValueError("STEP50_VERIFIED_EFFECT_MODE_REQUIRED")
+    receipts = repair.get("rule_receipts")
+    changes = repair.get("changes")
+    if not isinstance(receipts, list) or not receipts:
+        raise ValueError("STEP50_RULE_RECEIPTS_REQUIRED")
+    if not isinstance(changes, list) or len(changes) != len(receipts):
+        raise ValueError("STEP50_EFFECT_CHANGES_NOT_BOUND")
+    codes = set()
+    sha = re.compile(r"^[a-f0-9]{64}$")
+    for receipt in receipts:
+        if not isinstance(receipt, dict):
+            raise ValueError("STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH")
+        rule = receipt.get("rule_code")
+        if (not isinstance(rule, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", rule)
+                or receipt.get("source_ref") != "supabase://lf_ops.reglas/" + rule):
+            raise ValueError("STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH")
+        if rule in codes:
+            raise ValueError("STEP50_RULE_RECEIPT_DUPLICATE")
+        codes.add(rule)
+        before = receipt.get("before_sha256")
+        after = receipt.get("after_sha256")
+        if (not isinstance(before, str) or not sha.fullmatch(before)
+                or not isinstance(after, str) or not sha.fullmatch(after)
+                or before == after):
+            raise ValueError("STEP50_EFFECT_HASH_PAIR_REQUIRED")
+        if not any(isinstance(c, dict)
+                   and c.get("target_ref") == receipt["source_ref"]
+                   and isinstance(c.get("before_ref"), str)
+                   and isinstance(c.get("after_ref"), str)
+                   for c in changes):
+            raise ValueError("STEP50_EFFECT_CHANGES_NOT_BOUND")
+        for key in ("train_execution_id", "train_run_id", "migration_version",
+                    "migration_name", "merge_sha"):
+            if not isinstance(receipt.get(key), str) or not receipt[key]:
+                raise ValueError("STEP50_TRAIN_RECEIPT_FIELDS_REQUIRED")
+        if type(receipt.get("train_pr")) is not int or receipt["train_pr"] < 1:
+            raise ValueError("STEP50_TRAIN_RECEIPT_FIELDS_REQUIRED")
+    # Structural only: the canonical writer checks DB snapshots, ledger and
+    # the completed Step20/Step30 Train before it records execute_profile.
+
+
 def run_bound_validator(target_path, profile_code, profile_output, evidence_manifest=None):
     """Run only the validator declared by the exact profile runtime binding."""
     source_path = PurePosixPath(target_path)
@@ -1493,11 +1558,15 @@ def main():
         try:
             profile_output, evidence_manifest = unwrap_profile_native_evidence(target_path, profile_output)
             profile_output = prepare_product_director_raw(target_path, profile_output)
+            require_step50_verified_effect_shape(
+                target_path, profile_output,
+                result.get("result") if isinstance(result.get("result"), dict) else None,
+            )
             validation, raw_ref, validator_ref = run_bound_validator(
                 target_path, source.get("profile_code"), profile_output, evidence_manifest
             )
         except ValueError as exc:
-            print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
+            print(json.dumps({"phase":"STEP50_EFFECT_PRECHECK_OR_BOUND_VALIDATOR","code":str(exc)}))
             return 1
         submit = {
             "action": "profile_native_continue_v1",
