@@ -135,8 +135,8 @@ UPDATE public.lf_operation_execution SET manifest='{{"no_promotion":false}}'::js
 WHERE execution_id='PARENT-1';
 SELECT 'NO_PROMOTION_FALSE_SCORE='||(public.lf_rule_promotion_score_v1(
 'PARENT-1','B2B-RULE-LOAD-WIZARD-001')->>'score');
-SELECT 'REQUEST='||j->>'status'||':'||j->>'score_decision'||':'||
-j->>'judge_independence'||':'||j#>>'{{auto_decision_attempt,blocking_code}}'
+SELECT 'REQUEST='||(j->>'status')||':'||(j->>'score_decision')||':'||
+(j->>'judge_independence')||':'||(j#>>'{{auto_decision_attempt,blocking_code}}')
 FROM (SELECT public.lf_rule_promotion_request_v1(
  'PARENT-1','B2B-RULE-LOAD-WIZARD-001','owner score') j) x;
 SELECT 'PROMOTION_IN_TX='||count(*) FROM public.lf_rule_promotion_v1;
