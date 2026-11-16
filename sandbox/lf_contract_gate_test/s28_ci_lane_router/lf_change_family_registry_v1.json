@@ -278,7 +278,6 @@
       ".github/workflows/lf-pg01-oidc-review-auditor.yml",
       ".github/workflows/lf-pg01-oidc-subject-verifier.yml",
       ".github/workflows/lf-profile-evolution-proof.yml",
-      ".github/workflows/lf-profile-runtime-binding-conformance.yml",
       ".github/workflows/lf-router-level2-advisory-tests.yml",
       ".github/workflows/lf-step70-v3-consumer-ci.yml",
       ".github/workflows/pase-merge-gate.yml",
