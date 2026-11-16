@@ -1,3 +1,4 @@
+import "./profile_continuation_test.ts";
 import { createHandler, OIDC_AUDIENCE, OIDC_ISSUER, type JwtPayload } from "./caller.ts";
 
 function assert(condition: unknown, message = "assertion failed"): asserts condition {
@@ -109,6 +110,7 @@ type HarnessOptions = {
   allowlistStatus?: number;
   allowlistPayload?: unknown;
   inputStatus?: string;
+  runtimeResultPantallaId?: number;
   runtimeTicketAuthorized?: boolean;
   agentRequiresTicket?: boolean;
   executionOverrides?: Record<string, unknown>;
@@ -157,7 +159,9 @@ function harness(options: HarnessOptions = {}) {
           return new Response(JSON.stringify({ error: "IG_PROFILE_TICKET_REQUIRED" }), { status: 403 });
         }
         const id = Number(body?.pantalla_id ?? 0);
-        return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
+        return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id,
+          ...(options.runtimeResultPantallaId === undefined ? {} :
+            {pantalla_id:options.runtimeResultPantallaId}) } }), { status: 200 });
       }
       if (url.includes("/rest/v1/lf_operation_execution?")) {
         const executionId = decodeURIComponent(url.split("execution_id=eq.")[1]?.split("&")[0] ?? "");
@@ -814,3 +818,23 @@ Deno.test("CP2: native profile resume: fail closed before prepare for invalid au
   assertEquals(h.calls.length, 1);
 });
 
+
+Deno.test("CP2: E21 runtime pantalla_id from SQL ticket rejects foreign worker screen",async()=>{
+  const h=harness({inputStatus:"READY",runtimeResultPantallaId:52});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH");
+  assertEquals(payload.pantalla_id,51);
+  const h2=harness({inputStatus:"READY",runtimeResultPantallaId:51});
+  const r2=await invokeRuntime(h2,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(r2.response.status,200);
+  assertEquals(r2.payload.pantalla_id,51);
+});

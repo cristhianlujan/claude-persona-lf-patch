@@ -297,7 +297,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                     "code":"SKILL_RUNTIME_BLOCKED_AS_FINDING",
                     "terminal_status":"BLOCKED",
                     "execution_id":execution_id,
-                    "skill_code":skill_code,
+                    "skill_code":skill_code,"pantalla_id":51,
                     "result":{"result":{"status":"BLOCKED","consumer":"CONTEXT_PACK",
                         "pantalla_id":51,"run_id":951,
                         "remediation_state":"INTERNAL_REMEDIATION_REQUIRED",
@@ -322,7 +322,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                                 "request_headers":{"X-LF-Profile-Runtime-Ticket":"fixture-ticket"},
                                 "request_body":{"action":"profile_skill_runtime_v1",
                                                 "execution_id":execution_id,
-                                                "skill_code":skill_code}}}}
+                                                "skill_code":skill_code,"pantalla_id":51}}}}
                 return 200, {"outcome":"CONTINUATION_REQUIRED",
                     "phase":"NATIVE_MODEL_INPUT_READY",
                     "execution_id":execution_id,"profile_code":profile_code,
@@ -1223,7 +1223,8 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
 
     def test_ig_bounded_retry_and_single_refresh_guard(self):
         text = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn("for attempt in range(2):",text)
+        self.assertIn("while attempt < 2:",text)
+        self.assertIn("validator_resumes > 3:",text)
         self.assertNotIn("for attempt in range(64):",text)
         self.assertIn('if code == 401:',text)
         self.assertIn('headers = {"authorization": f"Bearer {oidc()}"}',text)
