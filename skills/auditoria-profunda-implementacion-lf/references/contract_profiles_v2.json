@@ -1,0 +1,911 @@
+{
+  "version": "LF_CONTRACT_PROFILES_V2",
+  "columns": {
+    "scope": "Objetivo y alcance",
+    "input": "Entrada",
+    "types": "Tipos, nulos y defaults",
+    "preconditions": "Precondiciones",
+    "behavior": "Reglas y ramas",
+    "output": "Salida y significado",
+    "errors": "Errores y siguiente acción",
+    "authority": "Autoridad y efectos",
+    "version_hash": "Versión, hashes y compatibilidad",
+    "tests": "Positivos, negativos y readback",
+    "consumer": "Consumidor y bindings",
+    "examples": "Ejemplos concretos",
+    "freshness": "Frescura e invalidación"
+  },
+  "profiles": {
+    "INPUT": {
+      "format": "JSON Schema, firma o contrato de entrada",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": false,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": true,
+          "meaning": "Entrada según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": true,
+          "meaning": "Tipos, nulos y defaults según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": true,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": false,
+          "critical": false,
+          "meaning": "Reglas y ramas según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": false,
+          "critical": false,
+          "meaning": "Salida y significado según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": false,
+          "critical": false,
+          "meaning": "Autoridad y efectos según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": true,
+          "meaning": "Consumidor y bindings según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": true,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de INPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "JSON_SCHEMA",
+        "PYTHON_SIGNATURE",
+        "MD_INPUT_CONTRACT"
+      ]
+    },
+    "SPEC": {
+      "format": "SPEC de comportamiento con referencias tipadas",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": true,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": false,
+          "meaning": "Entrada según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": true,
+          "meaning": "Reglas y ramas según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": true,
+          "meaning": "Salida y significado según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": true,
+          "meaning": "Autoridad y efectos según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": true,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de SPEC; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "MD_SPEC",
+        "JSON_SPEC"
+      ]
+    },
+    "OUTPUT": {
+      "format": "JSON Schema de salida y semántica del resultado",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": false,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": false,
+          "critical": false,
+          "meaning": "Entrada según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": true,
+          "meaning": "Tipos, nulos y defaults según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": false,
+          "critical": false,
+          "meaning": "Reglas y ramas según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": true,
+          "meaning": "Salida y significado según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": false,
+          "critical": false,
+          "meaning": "Autoridad y efectos según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": true,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de OUTPUT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "JSON_SCHEMA"
+      ]
+    },
+    "TRANSPORT": {
+      "format": "Firma/mensaje por salto y mapa de campos",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": false,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": true,
+          "meaning": "Entrada según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": false,
+          "meaning": "Reglas y ramas según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": true,
+          "meaning": "Salida y significado según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": false,
+          "meaning": "Autoridad y efectos según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": true,
+          "meaning": "Consumidor y bindings según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": false,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de TRANSPORT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "PYTHON",
+        "TS",
+        "SQL_MESSAGE_CONTRACT",
+        "JSON_SCHEMA_TRANSPORT"
+      ]
+    },
+    "EVAL": {
+      "format": "Función/rúbrica ejecutable con oráculo y negativos",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": false,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": false,
+          "meaning": "Entrada según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": true,
+          "meaning": "Tipos, nulos y defaults según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": true,
+          "meaning": "Reglas y ramas según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": true,
+          "meaning": "Salida y significado según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": false,
+          "critical": false,
+          "meaning": "Autoridad y efectos según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": true,
+          "meaning": "Positivos, negativos y readback según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": false,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de EVAL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "PYTHON",
+        "SQL",
+        "YAML_EVAL"
+      ]
+    },
+    "JUDGE": {
+      "format": "Dictamen contextual separado de procedencia y efecto",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": true,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": false,
+          "meaning": "Entrada según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": true,
+          "meaning": "Reglas y ramas según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": true,
+          "meaning": "Salida y significado según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": true,
+          "meaning": "Autoridad y efectos según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": true,
+          "meaning": "Positivos, negativos y readback según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": true,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de JUDGE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "MD_JUDGE_CONTRACT",
+        "JSON_JUDGE_DECISION"
+      ]
+    },
+    "SQL": {
+      "format": "SQL parametrizado, plan, autoridad y métricas",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": false,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": true,
+          "meaning": "Entrada según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": false,
+          "meaning": "Reglas y ramas según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": false,
+          "meaning": "Salida y significado según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": true,
+          "meaning": "Autoridad y efectos según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": true,
+          "meaning": "Positivos, negativos y readback según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": false,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": false,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": true,
+          "critical": true,
+          "meaning": "Frescura e invalidación según el cometido de SQL; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "SQL"
+      ]
+    },
+    "SNAPSHOT": {
+      "format": "Identidad + payload + hashes + vigencia + reuso",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": false,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": false,
+          "meaning": "Entrada según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": true,
+          "meaning": "Reglas y ramas según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": false,
+          "meaning": "Salida y significado según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": true,
+          "meaning": "Autoridad y efectos según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": true,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": false,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": true,
+          "critical": true,
+          "meaning": "Frescura e invalidación según el cometido de SNAPSHOT; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "PYTHON",
+        "JSON_SCHEMA_SNAPSHOT",
+        "MD_SNAPSHOT_CONTRACT"
+      ]
+    },
+    "HANDOFF": {
+      "format": "Paquete accionable emisor/receptor con faltantes",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": true,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": false,
+          "meaning": "Entrada según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": false,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": false,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": false,
+          "critical": false,
+          "meaning": "Reglas y ramas según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": true,
+          "meaning": "Salida y significado según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": false,
+          "meaning": "Errores y siguiente acción según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": true,
+          "meaning": "Autoridad y efectos según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": true,
+          "critical": true,
+          "meaning": "Consumidor y bindings según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": true,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de HANDOFF; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "JSON_HANDOFF",
+        "MD_HANDOFF"
+      ]
+    },
+    "STATE_MACHINE": {
+      "format": "Matriz estado × evento × guard × acción × siguiente estado",
+      "fields": {
+        "scope": {
+          "label": "Objetivo y alcance",
+          "required": true,
+          "critical": false,
+          "meaning": "Objetivo y alcance según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "input": {
+          "label": "Entrada",
+          "required": true,
+          "critical": false,
+          "meaning": "Entrada según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "types": {
+          "label": "Tipos, nulos y defaults",
+          "required": true,
+          "critical": false,
+          "meaning": "Tipos, nulos y defaults según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "preconditions": {
+          "label": "Precondiciones",
+          "required": true,
+          "critical": false,
+          "meaning": "Precondiciones según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "behavior": {
+          "label": "Reglas y ramas",
+          "required": true,
+          "critical": true,
+          "meaning": "Reglas y ramas según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "output": {
+          "label": "Salida y significado",
+          "required": true,
+          "critical": false,
+          "meaning": "Salida y significado según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "errors": {
+          "label": "Errores y siguiente acción",
+          "required": true,
+          "critical": true,
+          "meaning": "Errores y siguiente acción según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "authority": {
+          "label": "Autoridad y efectos",
+          "required": true,
+          "critical": true,
+          "meaning": "Autoridad y efectos según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "version_hash": {
+          "label": "Versión, hashes y compatibilidad",
+          "required": true,
+          "critical": false,
+          "meaning": "Versión, hashes y compatibilidad según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "tests": {
+          "label": "Positivos, negativos y readback",
+          "required": true,
+          "critical": false,
+          "meaning": "Positivos, negativos y readback según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "consumer": {
+          "label": "Consumidor y bindings",
+          "required": false,
+          "critical": false,
+          "meaning": "Consumidor y bindings según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "examples": {
+          "label": "Ejemplos concretos",
+          "required": false,
+          "critical": false,
+          "meaning": "Ejemplos concretos según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        },
+        "freshness": {
+          "label": "Frescura e invalidación",
+          "required": false,
+          "critical": false,
+          "meaning": "Frescura e invalidación según el cometido de STATE_MACHINE; resolver fuentes/consumidor, no exigir prosa si el formato lo expresa inequívocamente."
+        }
+      },
+      "accepted_formats": [
+        "JSON_STATE_MACHINE",
+        "MD_STATE_MACHINE",
+        "SQL",
+        "PYTHON"
+      ]
+    }
+  },
+  "semantic_acceptance": [
+    "Actor/objeto y condiciones identificables en contexto",
+    "Dato/resultado y significado inequívocos; no contar palabras",
+    "Regla comprobable con un contraejemplo",
+    "Compatibilidad efectiva con productor y consumidor",
+    "Referencias e instrucciones resueltas, no etiquetas decorativas"
+  ],
+  "cell_statuses": [
+    "ACCEPTABLE",
+    "WEAK",
+    "MISSING",
+    "CONTRADICTORY",
+    "NOT_EVALUATED",
+    "NOT_APPLICABLE"
+  ],
+  "grade_rule": "Peor obligación crítica; sin promedio compensatorio. No evaluado no equivale a aceptable."
+}

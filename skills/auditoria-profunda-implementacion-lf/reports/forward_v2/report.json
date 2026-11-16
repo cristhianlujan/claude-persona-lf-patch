@@ -1,0 +1,3045 @@
+{
+  "schema_version": "LF_FORWARD_V2_LOCAL_USE_TEST_1",
+  "report_status": "LOCAL_FIXTURE_REVIEW_COMPLETE_WITH_LIMITS",
+  "audit_context": {
+    "objective": "Prueba de uso desde contexto limpio del paquete: descubrir omisiones y evaluar contenido sin respuestas previas.",
+    "started_at": "2026-11-16T06:07:03.496211+00:00",
+    "collected_at": "2026-11-16T06:07:44.969581+00:00",
+    "source_revision": null,
+    "source_state": "FIXTURE_COMMIT_NOT_RESOLVED",
+    "read_scope": [
+      "fixtures/forward_v2/raw/consumer.py",
+      "fixtures/forward_v2/raw/error_contract.txt",
+      "fixtures/forward_v2/raw/handoff.txt",
+      "fixtures/forward_v2/raw/input.schema.json",
+      "fixtures/forward_v2/raw/pipeline.py",
+      "fixtures/forward_v2/raw/producer.py"
+    ],
+    "write_scope": [
+      "reports/forward_v2/",
+      "fixtures/forward_v2/correct/"
+    ],
+    "promotion_authorized": false,
+    "independence_proven": false,
+    "authority_verified": false,
+    "new_lf_e2e_executed": false,
+    "scope_authority": "Instrucción del solicitante para esta prueba local; no autoridad LF gobernada.",
+    "full_lf_v2_report_conformance": "NOT_CLAIMED",
+    "conformance_reason": "Formato propio autorizado: no commit SHA40, PR/CI/readback gobernado ni pasos LF ejecutados; no se suplanta schemas/audit_report_v2.schema.json."
+  },
+  "completion": {
+    "lot_coverage_percent": 100,
+    "known_raw_files_read": 6,
+    "known_raw_files_total": 6,
+    "known_python_functions_read": 3,
+    "known_python_functions_total": 3,
+    "contract_quality": {
+      "C_INPUT": "LOW",
+      "C_PRODUCER": "LOW",
+      "C_PIPELINE": "LOW",
+      "C_CONSUMER": "NOT_EVALUATED",
+      "C_HANDOFF": "LOW",
+      "C_ERRORS": "ACCEPTABLE"
+    },
+    "flow_verdict": "FLOW_NOT_ACCREDITED",
+    "flow_reasons": [
+      "Prueba sintética local; no ejecución LF",
+      "Raw sigue defectuoso; correct solo candidato aislado",
+      "Currentness, autoridad e independencia reales no verificados"
+    ],
+    "known_pending": [
+      "Dominio/nulos/fuente de tokens",
+      "Loader de schema y política de extras",
+      "EKB vigente sin consulta por alcance sin DB",
+      "Revisión por receptor real del handoff no realizada"
+    ]
+  },
+  "discovery": {
+    "method": [
+      "rg --files",
+      "rg -n sobre firmas/imports/keys/READY/errores",
+      "Lectura integral de los seis archivos",
+      "AST de las tres funciones sin ejecutar descubrimientos desconocidos"
+    ],
+    "functions": [
+      {
+        "file": "fixtures/forward_v2/raw/consumer.py",
+        "function": "assess",
+        "line": 1,
+        "end_line": 6,
+        "parameters": [
+          "message"
+        ],
+        "keyword_only": [
+          "as_of"
+        ]
+      },
+      {
+        "file": "fixtures/forward_v2/raw/pipeline.py",
+        "function": "run",
+        "line": 5,
+        "end_line": 7,
+        "parameters": [
+          "portfolio_key",
+          "execution_id"
+        ],
+        "keyword_only": [
+          "currency",
+          "source_revision",
+          "as_of"
+        ]
+      },
+      {
+        "file": "fixtures/forward_v2/raw/producer.py",
+        "function": "prepare",
+        "line": 1,
+        "end_line": 2,
+        "parameters": [
+          "portfolio_key",
+          "execution_id"
+        ],
+        "keyword_only": [
+          "currency",
+          "source_revision"
+        ]
+      }
+    ],
+    "imports": [
+      {
+        "source": "fixtures/forward_v2/raw/pipeline.py:1",
+        "target": "fixtures/forward_v2/raw/producer.py:prepare"
+      },
+      {
+        "source": "fixtures/forward_v2/raw/pipeline.py:2",
+        "target": "fixtures/forward_v2/raw/consumer.py:assess"
+      }
+    ],
+    "new_consumer_obligations_not_in_schema": [
+      "currency presente y PEN/USD",
+      "source_revision presente",
+      "as_of argumento keyword-only",
+      "execution_id presente para salida",
+      "source_revision == as_of antes de READY"
+    ],
+    "source_lineage": "Argumentos sintéticos del harness → run → prepare → message → assess → retorno/exception local",
+    "no_live_caller_found": true,
+    "schema_loader_found": false,
+    "not_read": [
+      "reports/pilot*",
+      "reports/perfil*",
+      "scripts/build_report*",
+      "scripts/contract_reviews*",
+      "evals/test_*",
+      "Otros resultados previos y fuentes fuera del paquete"
+    ],
+    "contracts_read": [
+      "SKILL.md",
+      "contracts/main_contract.md",
+      "contracts/reporting_and_contract_depth_v2.md",
+      "contracts/missing_input_policy.md",
+      "references/contract_profiles_v2.json",
+      "checklists/preflight_checklist.md",
+      "references/scope.md",
+      "references/inspection_rules.md",
+      "references/defect_taxonomy.json",
+      "schemas/audit_report_v2.schema.json"
+    ]
+  },
+  "hops": [
+    {
+      "sender": "caller sintético",
+      "receiver": "run",
+      "available": [
+        "portfolio_key",
+        "execution_id",
+        "currency",
+        "source_revision",
+        "as_of"
+      ],
+      "sent": [
+        "portfolio_key",
+        "execution_id",
+        "currency",
+        "source_revision",
+        "as_of"
+      ],
+      "lost": [],
+      "evidence": [
+        "RAW_RUN_VALID"
+      ],
+      "limit": "No caller externo real; IDs son fixtures, no RUN LF."
+    },
+    {
+      "sender": "run",
+      "receiver": "prepare",
+      "available": [
+        "portfolio_key",
+        "execution_id",
+        "currency",
+        "source_revision",
+        "as_of"
+      ],
+      "sent": [
+        "portfolio_key",
+        "execution_id",
+        "currency",
+        "source_revision"
+      ],
+      "lost": [],
+      "evidence": [
+        "pipeline.py:6"
+      ],
+      "limit": "as_of no corresponde a prepare; debe viajar directamente desde run a assess."
+    },
+    {
+      "sender": "prepare",
+      "receiver": "run:message",
+      "available": [
+        "portfolio_key",
+        "execution_id",
+        "currency",
+        "source_revision"
+      ],
+      "sent": [
+        "portfolio_key",
+        "execution_id"
+      ],
+      "lost": [
+        "currency",
+        "source_revision"
+      ],
+      "evidence": [
+        "RAW_PREPARE_LOSS",
+        "CORRECT_PREPARE_READBACK"
+      ],
+      "limit": "Primer punto de pérdida del payload."
+    },
+    {
+      "sender": "run",
+      "receiver": "assess",
+      "available": [
+        "message",
+        "as_of"
+      ],
+      "sent": [
+        "message"
+      ],
+      "lost": [
+        "as_of"
+      ],
+      "evidence": [
+        "RAW_RUN_VALID",
+        "RAW_AFTER_BINDING_ONLY",
+        "CORRECT_RUN_PEN"
+      ],
+      "limit": "El error de binding precede a la lectura del mensaje; no atribuir el primer TypeError a datos ausentes."
+    },
+    {
+      "sender": "assess",
+      "receiver": "caller local",
+      "available": [
+        "execution_id",
+        "decision"
+      ],
+      "sent": [
+        "execution_id",
+        "decision"
+      ],
+      "lost": [],
+      "evidence": [
+        "RAW_DIRECT_CONSUMER_PEN",
+        "CORRECT_RUN_PEN",
+        "CORRECT_EXECUTION_ID"
+      ],
+      "limit": "Raw run no alcanza este salto. No se exige portfolio_key en salida porque no hay consumidor que lo requiera."
+    }
+  ],
+  "field_lineage": {
+    "portfolio_key": "Schema string → run → prepare → message; assess no lo usa. Sin prueba para eliminarlo.",
+    "execution_id": "Schema string → run → prepare → message → eco en READY; no autenticación de RUN externo.",
+    "currency": "Caller → run → prepare; raw lo descarta → assess KeyError tras corregir binding; correct lo conserva.",
+    "source_revision": "Caller → run → prepare; raw lo descarta → assess KeyError tras recuperar currency; correct lo conserva.",
+    "as_of": "Caller → run; raw no lo pasa a assess → TypeError; correct entrega por keyword. Fuente confiable no resuelta.",
+    "sha256": "Solo identidad de archivos auditados; no se confunde con el token source_revision ni acredita hash de payload."
+  },
+  "pass_emitters": [
+    {
+      "file": "fixtures/forward_v2/raw/consumer.py",
+      "line": 6,
+      "marker": "READY",
+      "classification": "EMITTER",
+      "literal": "return {\"decision\": \"READY\", \"execution_id\": message[\"execution_id\"]}",
+      "positive_tests": [
+        "RAW_DIRECT_CONSUMER_PEN",
+        "RAW_DIRECT_CONSUMER_USD",
+        "CORRECT_RUN_PEN"
+      ],
+      "negative_tests": [
+        "RAW_UNSUPPORTED",
+        "RAW_STALE",
+        "CORRECT_UNSUPPORTED",
+        "CORRECT_STALE",
+        "CORRECT_MISSING_EXECUTION_ID"
+      ],
+      "negative_status": "EXECUTED_REJECTED_BROKEN_INPUT",
+      "scope": "Solo moneda/revisión distinta/claves ausentes; no juicio de promoción."
+    }
+  ],
+  "pass_scan_scope": {
+    "files": [
+      "fixtures/forward_v2/raw/producer.py",
+      "fixtures/forward_v2/raw/pipeline.py",
+      "fixtures/forward_v2/raw/consumer.py"
+    ],
+    "literal_scan_complete_for_fixture": true,
+    "dynamic_emissions_found": false,
+    "lf_pass_applied_sites_found": 0,
+    "limit": "READY es análogo de decisión local; no es STEP_PASS LF. Ningún except ni default true en las tres funciones leídas."
+  },
+  "sql_queries": [],
+  "sql_status": "NOT_APPLICABLE: no SQL, DB ni consultas en el fixture.",
+  "run_sample": {
+    "live_sampled_runs": 0,
+    "requested_live_n": null,
+    "status": "NOT_APPLICABLE",
+    "reason": "Sin DB ni corridas LF. Los 32 casos son escenarios de fixture, no cohorte de producción.",
+    "false_pass_rate": null
+  },
+  "steps": [
+    {
+      "order": 0,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 10,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 20,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 30,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 40,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 45,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 47,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 50,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 60,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 70,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    },
+    {
+      "order": 80,
+      "status": "NOT_APPLICABLE",
+      "evidence_kind": "NOT_MEASURED",
+      "reason": "Fixture sintético de tres funciones sin pasos LF, IG, recorder ni RUN real; fuera del alcance autorizado."
+    }
+  ],
+  "contracts": [
+    {
+      "id": "C_INPUT",
+      "type": "INPUT",
+      "format": "JSON_SCHEMA",
+      "source_ref": "fixtures/forward_v2/raw/input.schema.json",
+      "scope": "Contrato de entrada contrastado con la firma de run; integración de un loader no demostrada.",
+      "format_appropriate": true,
+      "format_reason": "Se acepta el formato nativo y sus referencias; la extensión .txt no impide interpretar prosa como contrato Markdown.",
+      "fields": {
+        "scope": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Schema de entrada; no necesita repetir el objetivo general del sistema.",
+          "consumer_obligation": "Schema de entrada; no necesita repetir el objetivo general del sistema.",
+          "cause": "Schema de entrada; no necesita repetir el objetivo general del sistema.",
+          "reason": "Schema de entrada; no necesita repetir el objetivo general del sistema.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Schema de entrada; no necesita repetir el objetivo general del sistema."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "input": {
+          "status": "MISSING",
+          "literal": "\"required\":[\"portfolio_key\",\"execution_id\"]",
+          "consumer": "pipeline.run exige también currency, source_revision y as_of",
+          "consumer_obligation": "pipeline.run exige también currency, source_revision y as_of",
+          "cause": "El schema admite payload sin tres argumentos obligatorios; el único entrypoint descubierto no puede consumirlo.",
+          "reason": "El schema admite payload sin tres argumentos obligatorios; el único entrypoint descubierto no puede consumirlo.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El schema admite payload sin tres argumentos obligatorios; el único entrypoint descubierto no puede consumirlo."
+          ],
+          "proposed_rewrite": "\"required\":[\"portfolio_key\",\"execution_id\",\"currency\",\"source_revision\",\"as_of\"]",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_SCHEMA_MINIMAL",
+            "reports/forward_v2/reproduction.json#RAW_MINIMAL_TO_RUN",
+            "reports/forward_v2/reproduction.json#CORRECT_SCHEMA_MISSING_AS_OF"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "types": {
+          "status": "WEAK",
+          "literal": "\"portfolio_key\":{\"type\":\"string\"},\"execution_id\":{\"type\":\"string\"}",
+          "consumer": "assess consume moneda PEN/USD y compara dos tokens",
+          "consumer_obligation": "assess consume moneda PEN/USD y compara dos tokens",
+          "cause": "Tipos de IDs concretos, moneda sin enum; dominio/nulos de revisión no definidos. No se impone string por preferencia.",
+          "reason": "Tipos de IDs concretos, moneda sin enum; dominio/nulos de revisión no definidos. No se impone string por preferencia.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Tipos de IDs concretos, moneda sin enum; dominio/nulos de revisión no definidos. No se impone string por preferencia."
+          ],
+          "proposed_rewrite": "currency: {\"type\":\"string\",\"enum\":[\"PEN\",\"USD\"]}; documentar tokens opacos sin adivinar su tipo.",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "preconditions": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "run debe recibir cinco argumentos; assess compara source_revision con as_of",
+          "consumer_obligation": "run debe recibir cinco argumentos; assess compara source_revision con as_of",
+          "cause": "No hay enlace al receptor ni condición de igualdad. JSON Schema estándar no expresa esa igualdad mediante required.",
+          "reason": "No hay enlace al receptor ni condición de igualdad. JSON Schema estándar no expresa esa igualdad mediante required.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay enlace al receptor ni condición de igualdad. JSON Schema estándar no expresa esa igualdad mediante required."
+          ],
+          "proposed_rewrite": "description: \"Entrada de pipeline.run. La igualdad source_revision == as_of se comprueba en consumer.assess.\"",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "behavior": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Las ramas de decisión pertenecen al consumidor; no se exige duplicarlas físicamente en JSON Schema.",
+          "consumer_obligation": "Las ramas de decisión pertenecen al consumidor; no se exige duplicarlas físicamente en JSON Schema.",
+          "cause": "Las ramas de decisión pertenecen al consumidor; no se exige duplicarlas físicamente en JSON Schema.",
+          "reason": "Las ramas de decisión pertenecen al consumidor; no se exige duplicarlas físicamente en JSON Schema.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Las ramas de decisión pertenecen al consumidor; no se exige duplicarlas físicamente en JSON Schema."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "output": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Este artefacto valida entrada, no especifica la salida READY.",
+          "consumer_obligation": "Este artefacto valida entrada, no especifica la salida READY.",
+          "cause": "Este artefacto valida entrada, no especifica la salida READY.",
+          "reason": "Este artefacto valida entrada, no especifica la salida READY.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Este artefacto valida entrada, no especifica la salida READY."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "errors": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "El caller necesita distinguir rechazo de schema, TypeError y ValueError de assess",
+          "consumer_obligation": "El caller necesita distinguir rechazo de schema, TypeError y ValueError de assess",
+          "cause": "No existe mapeo ni consumidor de validación de schema en los tres Python leídos.",
+          "reason": "No existe mapeo ni consumidor de validación de schema en los tres Python leídos.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No existe mapeo ni consumidor de validación de schema en los tres Python leídos."
+          ],
+          "proposed_rewrite": "description: \"Validar required/enum antes de run; conservar CURRENCY_UNSUPPORTED y SOURCE_REVISION_STALE del consumidor. La integración del loader queda pendiente.\"",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "authority": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Schema puro sin acciones externas; no es prueba de autoridad.",
+          "consumer_obligation": "Schema puro sin acciones externas; no es prueba de autoridad.",
+          "cause": "Schema puro sin acciones externas; no es prueba de autoridad.",
+          "reason": "Schema puro sin acciones externas; no es prueba de autoridad.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Schema puro sin acciones externas; no es prueba de autoridad."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "version_hash": {
+          "status": "WEAK",
+          "literal": null,
+          "consumer": "Fijar interpretación del schema para otro validador",
+          "consumer_obligation": "Fijar interpretación del schema para otro validador",
+          "cause": "Sin $schema ni $id; esta auditoría eligió explícitamente Draft 2020-12 para ejecutar las pruebas.",
+          "reason": "Sin $schema ni $id; esta auditoría eligió explícitamente Draft 2020-12 para ejecutar las pruebas.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Sin $schema ni $id; esta auditoría eligió explícitamente Draft 2020-12 para ejecutar las pruebas."
+          ],
+          "proposed_rewrite": "\"$schema\":\"https://json-schema.org/draft/2020-12/schema\", \"$id\":\"urn:forward-v2:run-input:proposed-1\"",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "tests": {
+          "status": "ACCEPTABLE",
+          "literal": "Evidencia ejecutada adjunta; no se atribuye al raw una suite previa.",
+          "consumer": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "consumer_obligation": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "cause": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "reason": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_SCHEMA_MINIMAL",
+            "reports/forward_v2/reproduction.json#RAW_SCHEMA_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#CORRECT_SCHEMA_NOMINAL",
+            "reports/forward_v2/reproduction.json#CORRECT_SCHEMA_UNSUPPORTED"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "consumer": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "pipeline.run y consumer.assess son los consumidores descubiertos",
+          "consumer_obligation": "pipeline.run y consumer.assess son los consumidores descubiertos",
+          "cause": "Ningún Python carga input.schema.json. La correspondencia se audita por firma; no se inventa integración runtime.",
+          "reason": "Ningún Python carga input.schema.json. La correspondencia se audita por firma; no se inventa integración runtime.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Ningún Python carga input.schema.json. La correspondencia se audita por firma; no se inventa integración runtime."
+          ],
+          "proposed_rewrite": "title: \"Entrada de pipeline.run del fixture sintético\"; añadir referencia al loader cuando exista.",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "examples": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "Otro ejecutor necesita un payload de cinco campos que pueda reproducir",
+          "consumer_obligation": "Otro ejecutor necesita un payload de cinco campos que pueda reproducir",
+          "cause": "No hay ejemplo en el schema original.",
+          "reason": "No hay ejemplo en el schema original.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay ejemplo en el schema original."
+          ],
+          "proposed_rewrite": "{\"portfolio_key\": \"portfolio-A\", \"execution_id\": \"run-A\", \"currency\": \"PEN\", \"source_revision\": \"revision-1\", \"as_of\": \"revision-1\"}",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "freshness": {
+          "status": "NOT_EVALUATED",
+          "literal": null,
+          "consumer": "Definir quién suministra as_of y qué revisión es vigente",
+          "consumer_obligation": "Definir quién suministra as_of y qué revisión es vigente",
+          "cause": "No hay fuente confiable, presupuesto de frescura ni dominio del token en los seis archivos. La igualdad no prueba actualidad.",
+          "reason": "No hay fuente confiable, presupuesto de frescura ni dominio del token en los seis archivos. La igualdad no prueba actualidad.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay fuente confiable, presupuesto de frescura ni dominio del token en los seis archivos. La igualdad no prueba actualidad."
+          ],
+          "proposed_rewrite": "Decisión pendiente: identificar fuente de as_of y política de nulos/tipos antes de acreditar frescura externa.",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#CORRECT_NULL_REVISION_BOUNDARY",
+            "reports/forward_v2/reproduction.json#CORRECT_WRONG_AS_OF_BOUNDARY"
+          ],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "currency_enum": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "assess: message[\"currency\"] in (\"PEN\", \"USD\")",
+          "consumer_obligation": "assess: message[\"currency\"] in (\"PEN\", \"USD\")",
+          "cause": "Obligación adicional descubierta en consumidor; no declarada por el schema.",
+          "reason": "Obligación adicional descubierta en consumidor; no declarada por el schema.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/input.schema.json",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#INPUT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Obligación adicional descubierta en consumidor; no declarada por el schema."
+          ],
+          "proposed_rewrite": "\"currency\":{\"type\":\"string\",\"enum\":[\"PEN\",\"USD\"]}",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_SCHEMA_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#CORRECT_SCHEMA_UNSUPPORTED"
+          ],
+          "critical": true,
+          "required_by_profile": false
+        }
+      },
+      "grade": "LOW",
+      "semantic_reviewer": "Modelo nativo en contexto de la prueba local",
+      "review_mode": "CURRENT_CONTEXT_SPEC",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "C_PRODUCER",
+      "type": "TRANSPORT",
+      "format": "PYTHON",
+      "source_ref": "fixtures/forward_v2/raw/producer.py",
+      "scope": "Primer salto que pierde currency/source_revision; no se exige enviar as_of a prepare porque no lo consume.",
+      "format_appropriate": true,
+      "format_reason": "Se acepta el formato nativo y sus referencias; la extensión .txt no impide interpretar prosa como contrato Markdown.",
+      "fields": {
+        "scope": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Transformación local de argumentos a mensaje; sin otro efecto.",
+          "consumer_obligation": "Transformación local de argumentos a mensaje; sin otro efecto.",
+          "cause": "Transformación local de argumentos a mensaje; sin otro efecto.",
+          "reason": "Transformación local de argumentos a mensaje; sin otro efecto.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Transformación local de argumentos a mensaje; sin otro efecto."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "input": {
+          "status": "ACCEPTABLE",
+          "literal": "def prepare(portfolio_key, execution_id, *, currency, source_revision):",
+          "consumer": "run entrega cuatro valores a prepare",
+          "consumer_obligation": "run entrega cuatro valores a prepare",
+          "cause": "La firma exige todos los valores y run los pasa por nombre correctamente.",
+          "reason": "La firma exige todos los valores y run los pasa por nombre correctamente.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "La firma exige todos los valores y run los pasa por nombre correctamente."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "types": {
+          "status": "WEAK",
+          "literal": "currency, source_revision",
+          "consumer": "Preservar valor y tipo hasta assess",
+          "consumer_obligation": "Preservar valor y tipo hasta assess",
+          "cause": "No hay anotaciones ni contrato referenciado del mensaje; el tipo de los tokens sigue sin decisión.",
+          "reason": "No hay anotaciones ni contrato referenciado del mensaje; el tipo de los tokens sigue sin decisión.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay anotaciones ni contrato referenciado del mensaje; el tipo de los tokens sigue sin decisión."
+          ],
+          "proposed_rewrite": "Conservar literalmente los cuatro valores; enlazar al schema del mensaje cuando se defina su dominio.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "preconditions": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "prepare no es el juez de moneda/frescura; no se exige duplicar sus controles.",
+          "consumer_obligation": "prepare no es el juez de moneda/frescura; no se exige duplicar sus controles.",
+          "cause": "prepare no es el juez de moneda/frescura; no se exige duplicar sus controles.",
+          "reason": "prepare no es el juez de moneda/frescura; no se exige duplicar sus controles.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "prepare no es el juez de moneda/frescura; no se exige duplicar sus controles."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "behavior": {
+          "status": "MISSING",
+          "literal": "return {\"portfolio_key\": portfolio_key, \"execution_id\": execution_id}",
+          "consumer": "assess necesita currency y source_revision",
+          "consumer_obligation": "assess necesita currency y source_revision",
+          "cause": "Los dos parámetros existen pero nunca se copian al mensaje.",
+          "reason": "Los dos parámetros existen pero nunca se copian al mensaje.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los dos parámetros existen pero nunca se copian al mensaje."
+          ],
+          "proposed_rewrite": "return {\"portfolio_key\":portfolio_key,\"execution_id\":execution_id,\"currency\":currency,\"source_revision\":source_revision}",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_PREPARE_LOSS",
+            "reports/forward_v2/reproduction.json#CORRECT_PREPARE_READBACK"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "output": {
+          "status": "MISSING",
+          "literal": "{\"portfolio_key\": portfolio_key, \"execution_id\": execution_id}",
+          "consumer": "El mensaje debe llevar las claves leídas por assess",
+          "consumer_obligation": "El mensaje debe llevar las claves leídas por assess",
+          "cause": "Pérdida material demostrada mediante readback y dos KeyError sucesivos.",
+          "reason": "Pérdida material demostrada mediante readback y dos KeyError sucesivos.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Pérdida material demostrada mediante readback y dos KeyError sucesivos."
+          ],
+          "proposed_rewrite": "Añadir \"currency\": currency y \"source_revision\": source_revision al dict devuelto.",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_AFTER_BINDING_ONLY",
+            "reports/forward_v2/reproduction.json#RAW_AFTER_CURRENCY_ONLY",
+            "reports/forward_v2/reproduction.json#CORRECT_PREPARE_READBACK"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "errors": {
+          "status": "ACCEPTABLE",
+          "literal": "def prepare(portfolio_key, execution_id, *, currency, source_revision):",
+          "consumer": "Faltas de argumentos se rechazan por la firma Python",
+          "consumer_obligation": "Faltas de argumentos se rechazan por la firma Python",
+          "cause": "La función no atrapa ni convierte fallas en READY; el defecto es de transporte, no falta de try/except.",
+          "reason": "La función no atrapa ni convierte fallas en READY; el defecto es de transporte, no falta de try/except.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "La función no atrapa ni convierte fallas en READY; el defecto es de transporte, no falta de try/except."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "authority": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Solo construye un dict local; no autoriza acciones.",
+          "consumer_obligation": "Solo construye un dict local; no autoriza acciones.",
+          "cause": "Solo construye un dict local; no autoriza acciones.",
+          "reason": "Solo construye un dict local; no autoriza acciones.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Solo construye un dict local; no autoriza acciones."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "version_hash": {
+          "status": "ACCEPTABLE",
+          "literal": "c1c0231df4d33229ead2e29e7de9ec8cb0d1b6b2e6df40f4dc0d2b3a08098f7e",
+          "consumer": "Identificar los bytes exactos revisados del fixture local",
+          "consumer_obligation": "Identificar los bytes exactos revisados del fixture local",
+          "cause": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "reason": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "tests": {
+          "status": "ACCEPTABLE",
+          "literal": "Evidencia ejecutada adjunta; no se atribuye al raw una suite previa.",
+          "consumer": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "consumer_obligation": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "cause": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "reason": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_PREPARE_LOSS",
+            "reports/forward_v2/reproduction.json#RAW_AFTER_BINDING_ONLY",
+            "reports/forward_v2/reproduction.json#RAW_AFTER_CURRENCY_ONLY",
+            "reports/forward_v2/reproduction.json#CORRECT_PREPARE_READBACK"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "consumer": {
+          "status": "CONTRADICTORY",
+          "literal": "return {\"portfolio_key\": portfolio_key, \"execution_id\": execution_id}",
+          "consumer": "consumer.assess lee message[\"currency\"] y message[\"source_revision\"]",
+          "consumer_obligation": "consumer.assess lee message[\"currency\"] y message[\"source_revision\"]",
+          "cause": "El payload disponible no satisface al consumidor real, aunque la llamada a prepare sí es compatible.",
+          "reason": "El payload disponible no satisface al consumidor real, aunque la llamada a prepare sí es compatible.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El payload disponible no satisface al consumidor real, aunque la llamada a prepare sí es compatible."
+          ],
+          "proposed_rewrite": "Transportar ambas claves; no reconstruirlas en assess ni inventar defaults.",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "examples": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "La función ejecutable y los cuatro casos enlazados proporcionan ejemplo; no se exige otro bloque narrativo para TRANSPORT.",
+          "consumer_obligation": "La función ejecutable y los cuatro casos enlazados proporcionan ejemplo; no se exige otro bloque narrativo para TRANSPORT.",
+          "cause": "La función ejecutable y los cuatro casos enlazados proporcionan ejemplo; no se exige otro bloque narrativo para TRANSPORT.",
+          "reason": "La función ejecutable y los cuatro casos enlazados proporcionan ejemplo; no se exige otro bloque narrativo para TRANSPORT.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "La función ejecutable y los cuatro casos enlazados proporcionan ejemplo; no se exige otro bloque narrativo para TRANSPORT."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "freshness": {
+          "status": "MISSING",
+          "literal": "source_revision",
+          "consumer": "Comparación de revisión en assess",
+          "consumer_obligation": "Comparación de revisión en assess",
+          "cause": "La revisión ya recibida se pierde; esta omisión sí está demostrada y es distinta de validar su fuente.",
+          "reason": "La revisión ya recibida se pierde; esta omisión sí está demostrada y es distinta de validar su fuente.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/producer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "La revisión ya recibida se pierde; esta omisión sí está demostrada y es distinta de validar su fuente."
+          ],
+          "proposed_rewrite": "Incluir \"source_revision\": source_revision; mantener as_of en run para entregarlo a assess.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        }
+      },
+      "grade": "LOW",
+      "semantic_reviewer": "Modelo nativo en contexto de la prueba local",
+      "review_mode": "CURRENT_CONTEXT_SPEC",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "C_PIPELINE",
+      "type": "TRANSPORT",
+      "format": "PYTHON",
+      "source_ref": "fixtures/forward_v2/raw/pipeline.py",
+      "scope": "Binding del argumento obligatorio; TypeError primero, pérdidas de payload después.",
+      "format_appropriate": true,
+      "format_reason": "Se acepta el formato nativo y sus referencias; la extensión .txt no impide interpretar prosa como contrato Markdown.",
+      "fields": {
+        "scope": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Orquestación local sin pasos LF ni DB.",
+          "consumer_obligation": "Orquestación local sin pasos LF ni DB.",
+          "cause": "Orquestación local sin pasos LF ni DB.",
+          "reason": "Orquestación local sin pasos LF ni DB.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Orquestación local sin pasos LF ni DB."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "input": {
+          "status": "ACCEPTABLE",
+          "literal": "def run(portfolio_key, execution_id, *, currency, source_revision, as_of):",
+          "consumer": "El caller debe dar cinco argumentos",
+          "consumer_obligation": "El caller debe dar cinco argumentos",
+          "cause": "Todos están explícitos, sin defaults. as_of está disponible antes de llamar al consumidor.",
+          "reason": "Todos están explícitos, sin defaults. as_of está disponible antes de llamar al consumidor.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Todos están explícitos, sin defaults. as_of está disponible antes de llamar al consumidor."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "types": {
+          "status": "WEAK",
+          "literal": "currency, source_revision, as_of",
+          "consumer": "Mantener tipos/valores sin reinterpretación",
+          "consumer_obligation": "Mantener tipos/valores sin reinterpretación",
+          "cause": "Sin enlace al contrato de entrada y tokens de tipo no resuelto.",
+          "reason": "Sin enlace al contrato de entrada y tokens de tipo no resuelto.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Sin enlace al contrato de entrada y tokens de tipo no resuelto."
+          ],
+          "proposed_rewrite": "Enlazar schema de entrada; no convertir los tokens durante transporte.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "preconditions": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Las guardas de moneda/revisión se delegan a assess; no se pide duplicación.",
+          "consumer_obligation": "Las guardas de moneda/revisión se delegan a assess; no se pide duplicación.",
+          "cause": "Las guardas de moneda/revisión se delegan a assess; no se pide duplicación.",
+          "reason": "Las guardas de moneda/revisión se delegan a assess; no se pide duplicación.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Las guardas de moneda/revisión se delegan a assess; no se pide duplicación."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "behavior": {
+          "status": "CONTRADICTORY",
+          "literal": "return assess(message)",
+          "consumer": "assess(message, *, as_of) exige el argumento keyword-only",
+          "consumer_obligation": "assess(message, *, as_of) exige el argumento keyword-only",
+          "cause": "El argumento recibido no se entrega. La firma Python falla antes de ejecutar las guardas del consumidor.",
+          "reason": "El argumento recibido no se entrega. La firma Python falla antes de ejecutar las guardas del consumidor.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El argumento recibido no se entrega. La firma Python falla antes de ejecutar las guardas del consumidor."
+          ],
+          "proposed_rewrite": "return assess(message, as_of=as_of)",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_RUN_VALID",
+            "reports/forward_v2/reproduction.json#CORRECT_RUN_PEN"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "output": {
+          "status": "CONTRADICTORY",
+          "literal": "return assess(message)",
+          "consumer": "Entrada nominal debe poder producir READY local",
+          "consumer_obligation": "Entrada nominal debe poder producir READY local",
+          "cause": "Todo recorrido nominal de run termina en TypeError; no puede propagar el retorno de assess.",
+          "reason": "Todo recorrido nominal de run termina en TypeError; no puede propagar el retorno de assess.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Todo recorrido nominal de run termina en TypeError; no puede propagar el retorno de assess."
+          ],
+          "proposed_rewrite": "Pasar as_of y preservar currency/source_revision en producer; corregir solo una causa no basta.",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_RUN_VALID",
+            "reports/forward_v2/reproduction.json#RAW_AFTER_BINDING_ONLY",
+            "reports/forward_v2/reproduction.json#CORRECT_RUN_PEN"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "errors": {
+          "status": "WEAK",
+          "literal": "return assess(message)",
+          "consumer": "Un negativo debe llegar al rechazo semántico de assess",
+          "consumer_obligation": "Un negativo debe llegar al rechazo semántico de assess",
+          "cause": "TypeError de binding enmascara tanto los campos perdidos como los errores de negocio declarados.",
+          "reason": "TypeError de binding enmascara tanto los campos perdidos como los errores de negocio declarados.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "TypeError de binding enmascara tanto los campos perdidos como los errores de negocio declarados."
+          ],
+          "proposed_rewrite": "Corregir la llamada; mantener excepciones de assess sin convertirlas en READY.",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#CORRECT_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#CORRECT_STALE"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "authority": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "No hay escritura ni promoción; retorno local no acredita permiso.",
+          "consumer_obligation": "No hay escritura ni promoción; retorno local no acredita permiso.",
+          "cause": "No hay escritura ni promoción; retorno local no acredita permiso.",
+          "reason": "No hay escritura ni promoción; retorno local no acredita permiso.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay escritura ni promoción; retorno local no acredita permiso."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "version_hash": {
+          "status": "ACCEPTABLE",
+          "literal": "83bcb284d96f55c603c6b87ff3a07c32578cecb3245fd1e25f3409c155403e23",
+          "consumer": "Identificar los bytes exactos revisados del fixture local",
+          "consumer_obligation": "Identificar los bytes exactos revisados del fixture local",
+          "cause": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "reason": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "tests": {
+          "status": "ACCEPTABLE",
+          "literal": "Evidencia ejecutada adjunta; no se atribuye al raw una suite previa.",
+          "consumer": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "consumer_obligation": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "cause": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "reason": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_RUN_VALID",
+            "reports/forward_v2/reproduction.json#RAW_AFTER_BINDING_ONLY",
+            "reports/forward_v2/reproduction.json#CORRECT_RUN_PEN",
+            "reports/forward_v2/reproduction.json#CORRECT_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#CORRECT_STALE"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "consumer": {
+          "status": "CONTRADICTORY",
+          "literal": "assess(message)",
+          "consumer": "consumer.py:1 requiere as_of keyword-only",
+          "consumer_obligation": "consumer.py:1 requiere as_of keyword-only",
+          "cause": "Firma y llamada incompatibles: primer fallo real probado.",
+          "reason": "Firma y llamada incompatibles: primer fallo real probado.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Firma y llamada incompatibles: primer fallo real probado."
+          ],
+          "proposed_rewrite": "assess(message, as_of=as_of)",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "examples": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "TRANSPORT permite revisión de código y casos ejecutados sin plantilla narrativa adicional.",
+          "consumer_obligation": "TRANSPORT permite revisión de código y casos ejecutados sin plantilla narrativa adicional.",
+          "cause": "TRANSPORT permite revisión de código y casos ejecutados sin plantilla narrativa adicional.",
+          "reason": "TRANSPORT permite revisión de código y casos ejecutados sin plantilla narrativa adicional.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "TRANSPORT permite revisión de código y casos ejecutados sin plantilla narrativa adicional."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "freshness": {
+          "status": "MISSING",
+          "literal": "as_of",
+          "consumer": "assess necesita el valor esperado para comparar la revisión",
+          "consumer_obligation": "assess necesita el valor esperado para comparar la revisión",
+          "cause": "El dato existe en run pero falta en la llamada siguiente.",
+          "reason": "El dato existe en run pero falta en la llamada siguiente.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El dato existe en run pero falta en la llamada siguiente."
+          ],
+          "proposed_rewrite": "Entregar as_of por keyword y probar source_revision distinta.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "as_of_binding": {
+          "status": "CONTRADICTORY",
+          "literal": "return assess(message)",
+          "consumer": "def assess(message, *, as_of)",
+          "consumer_obligation": "def assess(message, *, as_of)",
+          "cause": "Obligación descubierta en firma del receptor, ausente del mensaje/callsite.",
+          "reason": "Obligación descubierta en firma del receptor, ausente del mensaje/callsite.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/pipeline.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#TRANSPORT"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Obligación descubierta en firma del receptor, ausente del mensaje/callsite."
+          ],
+          "proposed_rewrite": "return assess(message, as_of=as_of)",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": false
+        }
+      },
+      "grade": "LOW",
+      "semantic_reviewer": "Modelo nativo en contexto de la prueba local",
+      "review_mode": "CURRENT_CONTEXT_SPEC",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "C_CONSUMER",
+      "type": "EVAL",
+      "format": "PYTHON",
+      "source_ref": "fixtures/forward_v2/raw/consumer.py",
+      "scope": "Guardas y retorno local; política externa de tipos/procedencia sin evaluar.",
+      "format_appropriate": true,
+      "format_reason": "Se acepta el formato nativo y sus referencias; la extensión .txt no impide interpretar prosa como contrato Markdown.",
+      "fields": {
+        "scope": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Evaluador puro del fixture, no juez de promoción.",
+          "consumer_obligation": "Evaluador puro del fixture, no juez de promoción.",
+          "cause": "Evaluador puro del fixture, no juez de promoción.",
+          "reason": "Evaluador puro del fixture, no juez de promoción.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Evaluador puro del fixture, no juez de promoción."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "input": {
+          "status": "ACCEPTABLE",
+          "literal": "def assess(message, *, as_of):",
+          "consumer": "Recibir mensaje y token esperado",
+          "consumer_obligation": "Recibir mensaje y token esperado",
+          "cause": "Lecturas directas identifican currency/source_revision/execution_id; ausencia se traduce en KeyError, sin default silencioso.",
+          "reason": "Lecturas directas identifican currency/source_revision/execution_id; ausencia se traduce en KeyError, sin default silencioso.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Lecturas directas identifican currency/source_revision/execution_id; ausencia se traduce en KeyError, sin default silencioso."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "types": {
+          "status": "NOT_EVALUATED",
+          "literal": "message[\"source_revision\"] != as_of",
+          "consumer": "Definir dominio y nulos de tokens si READY pretende significar revisión vigente",
+          "consumer_obligation": "Definir dominio y nulos de tokens si READY pretende significar revisión vigente",
+          "cause": "No hay especificación del tipo/procedencia que permita afirmar que None u otro token igual es inválido.",
+          "reason": "No hay especificación del tipo/procedencia que permita afirmar que None u otro token igual es inválido.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay especificación del tipo/procedencia que permita afirmar que None u otro token igual es inválido."
+          ],
+          "proposed_rewrite": "Resolver política antes de añadir validación de tipos/nulos; no cambiar consumer en la corrección mínima.",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#CORRECT_NULL_REVISION_BOUNDARY"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "preconditions": {
+          "status": "ACCEPTABLE",
+          "literal": "message[\"currency\"]; message[\"source_revision\"]; message[\"execution_id\"]",
+          "consumer": "Claves necesarias presentes para retornar READY",
+          "consumer_obligation": "Claves necesarias presentes para retornar READY",
+          "cause": "Python define rechazo de claves ausentes y del keyword as_of. No se exige una plantilla de precondiciones separada.",
+          "reason": "Python define rechazo de claves ausentes y del keyword as_of. No se exige una plantilla de precondiciones separada.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Python define rechazo de claves ausentes y del keyword as_of. No se exige una plantilla de precondiciones separada."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "behavior": {
+          "status": "ACCEPTABLE",
+          "literal": "if message[\"currency\"] not in (\"PEN\", \"USD\"):",
+          "consumer": "Moneda primero, revisión después",
+          "consumer_obligation": "Moneda primero, revisión después",
+          "cause": "Ambos rechazos coinciden literalmente con error_contract; prioridad probada.",
+          "reason": "Ambos rechazos coinciden literalmente con error_contract; prioridad probada.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Ambos rechazos coinciden literalmente con error_contract; prioridad probada."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_ERROR_PRECEDENCE",
+            "reports/forward_v2/reproduction.json#CORRECT_ERROR_PRECEDENCE"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "output": {
+          "status": "ACCEPTABLE",
+          "literal": "return {\"decision\": \"READY\", \"execution_id\": message[\"execution_id\"]}",
+          "consumer": "READY local con mismo execution_id del mensaje",
+          "consumer_obligation": "READY local con mismo execution_id del mensaje",
+          "cause": "Retorno preciso; no hay APPLIED ni efectos externos. Otro ID se copia, no se autentica.",
+          "reason": "Retorno preciso; no hay APPLIED ni efectos externos. Otro ID se copia, no se autentica.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Retorno preciso; no hay APPLIED ni efectos externos. Otro ID se copia, no se autentica."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_DIRECT_CONSUMER_PEN",
+            "reports/forward_v2/reproduction.json#CORRECT_EXECUTION_ID"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "errors": {
+          "status": "ACCEPTABLE",
+          "literal": "raise ValueError(\"CURRENCY_UNSUPPORTED\"); raise ValueError(\"SOURCE_REVISION_STALE\")",
+          "consumer": "Rechazo antes del retorno READY",
+          "consumer_obligation": "Rechazo antes del retorno READY",
+          "cause": "Códigos y condiciones ejecutados para moneda inválida y revisión distinta; KeyError de faltantes también observado.",
+          "reason": "Códigos y condiciones ejecutados para moneda inválida y revisión distinta; KeyError de faltantes también observado.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Códigos y condiciones ejecutados para moneda inválida y revisión distinta; KeyError de faltantes también observado."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#RAW_STALE",
+            "reports/forward_v2/reproduction.json#CORRECT_MISSING_CURRENCY"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "authority": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Ninguna autoridad real se infiere de esta función pura.",
+          "consumer_obligation": "Ninguna autoridad real se infiere de esta función pura.",
+          "cause": "Ninguna autoridad real se infiere de esta función pura.",
+          "reason": "Ninguna autoridad real se infiere de esta función pura.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Ninguna autoridad real se infiere de esta función pura."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "version_hash": {
+          "status": "ACCEPTABLE",
+          "literal": "55385451af4c5319c4d8435210f536e404e9832791615a87b13810443ba5903a",
+          "consumer": "Identificar los bytes exactos revisados del fixture local",
+          "consumer_obligation": "Identificar los bytes exactos revisados del fixture local",
+          "cause": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "reason": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "tests": {
+          "status": "ACCEPTABLE",
+          "literal": "Evidencia ejecutada adjunta; no se atribuye al raw una suite previa.",
+          "consumer": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "consumer_obligation": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "cause": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "reason": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_DIRECT_CONSUMER_PEN",
+            "reports/forward_v2/reproduction.json#RAW_DIRECT_CONSUMER_USD",
+            "reports/forward_v2/reproduction.json#RAW_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#RAW_STALE",
+            "reports/forward_v2/reproduction.json#CORRECT_MISSING_EXECUTION_ID"
+          ],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "consumer": {
+          "status": "ACCEPTABLE",
+          "literal": "pipeline.py: return assess(message)",
+          "consumer": "run es el caller descubierto; el retorno se entrega directamente",
+          "consumer_obligation": "run es el caller descubierto; el retorno se entrega directamente",
+          "cause": "Consumidor resuelto por import explícito; el binding roto se registra en C_PIPELINE, sin culpar a la guarda correcta.",
+          "reason": "Consumidor resuelto por import explícito; el binding roto se registra en C_PIPELINE, sin culpar a la guarda correcta.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Consumidor resuelto por import explícito; el binding roto se registra en C_PIPELINE, sin culpar a la guarda correcta."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "examples": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "EVAL no exige ejemplos adicionales cuando el código y las pruebas enlazadas determinan los oráculos.",
+          "consumer_obligation": "EVAL no exige ejemplos adicionales cuando el código y las pruebas enlazadas determinan los oráculos.",
+          "cause": "EVAL no exige ejemplos adicionales cuando el código y las pruebas enlazadas determinan los oráculos.",
+          "reason": "EVAL no exige ejemplos adicionales cuando el código y las pruebas enlazadas determinan los oráculos.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "EVAL no exige ejemplos adicionales cuando el código y las pruebas enlazadas determinan los oráculos."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "freshness": {
+          "status": "NOT_EVALUATED",
+          "literal": "message[\"source_revision\"] != as_of",
+          "consumer": "Contrastar igualdad local con fuente autorizada si se reclama actualidad",
+          "consumer_obligation": "Contrastar igualdad local con fuente autorizada si se reclama actualidad",
+          "cause": "Dos valores iguales ajenos pasan. Fuente, período y presupuesto no existen en el fixture.",
+          "reason": "Dos valores iguales ajenos pasan. Fuente, período y presupuesto no existen en el fixture.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/consumer.py",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#EVAL"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Dos valores iguales ajenos pasan. Fuente, período y presupuesto no existen en el fixture."
+          ],
+          "proposed_rewrite": "No llamar a esta igualdad prueba de actualidad; documentar fuente de as_of antes de ampliar el efecto.",
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#CORRECT_WRONG_AS_OF_BOUNDARY"
+          ],
+          "critical": false,
+          "required_by_profile": false
+        }
+      },
+      "grade": "NOT_EVALUATED",
+      "semantic_reviewer": "Modelo nativo en contexto de la prueba local",
+      "review_mode": "CURRENT_CONTEXT_SPEC",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "C_HANDOFF",
+      "type": "HANDOFF",
+      "format": "MD_HANDOFF",
+      "source_ref": "fixtures/forward_v2/raw/handoff.txt",
+      "scope": "Accionabilidad de una entrega: causa, archivos, cambio, prueba, alcance y receptor.",
+      "format_appropriate": true,
+      "format_reason": "Se acepta el formato nativo y sus referencias; la extensión .txt no impide interpretar prosa como contrato Markdown.",
+      "fields": {
+        "scope": {
+          "status": "WEAK",
+          "literal": "casos relevantes",
+          "consumer": "Mantenedor necesita archivos, funciones y alcance de cambio",
+          "consumer_obligation": "Mantenedor necesita archivos, funciones y alcance de cambio",
+          "cause": "No identifica implementación ni operación concreta.",
+          "reason": "No identifica implementación ni operación concreta.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No identifica implementación ni operación concreta."
+          ],
+          "proposed_rewrite": "Revisar solo fixtures/forward_v2: producer.prepare y pipeline.run; sin efectos LF.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "input": {
+          "status": "WEAK",
+          "literal": "Entregar los datos necesarios",
+          "consumer": "Identificar campos, fuente y destino",
+          "consumer_obligation": "Identificar campos, fuente y destino",
+          "cause": "No enumera currency/source_revision/as_of ni su origen.",
+          "reason": "No enumera currency/source_revision/as_of ni su origen.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No enumera currency/source_revision/as_of ni su origen."
+          ],
+          "proposed_rewrite": "run recibe currency/source_revision/as_of; prepare devuelve los dos primeros y run entrega as_of a assess.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "types": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "El handoff puede referenciar contratos de tipos; no necesita duplicar un JSON Schema.",
+          "consumer_obligation": "El handoff puede referenciar contratos de tipos; no necesita duplicar un JSON Schema.",
+          "cause": "El handoff puede referenciar contratos de tipos; no necesita duplicar un JSON Schema.",
+          "reason": "El handoff puede referenciar contratos de tipos; no necesita duplicar un JSON Schema.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El handoff puede referenciar contratos de tipos; no necesita duplicar un JSON Schema."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "preconditions": {
+          "status": "WEAK",
+          "literal": "validar todo lo necesario",
+          "consumer": "Saber cuándo detener adopción del candidato",
+          "consumer_obligation": "Saber cuándo detener adopción del candidato",
+          "cause": "No hay guard ni criterio de bloqueo.",
+          "reason": "No hay guard ni criterio de bloqueo.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay guard ni criterio de bloqueo."
+          ],
+          "proposed_rewrite": "Detener adopción si falla el positivo nominal o si EUR/revisión distinta no se rechazan.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "behavior": {
+          "status": "WEAK",
+          "literal": "La solución deberá ser robusta, suficiente y completa",
+          "consumer": "Otro ejecutor debe poder aplicar un cambio exacto",
+          "consumer_obligation": "Otro ejecutor debe poder aplicar un cambio exacto",
+          "cause": "Los adjetivos no determinan la instrucción ni una condición verificable.",
+          "reason": "Los adjetivos no determinan la instrucción ni una condición verificable.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los adjetivos no determinan la instrucción ni una condición verificable."
+          ],
+          "proposed_rewrite": "prepare: añadir \"currency\":currency y \"source_revision\":source_revision; run: assess(message, as_of=as_of).",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "output": {
+          "status": "WEAK",
+          "literal": "informar los resultados y las recomendaciones oportunas",
+          "consumer": "Entregar causa/código/prueba/readback al receptor",
+          "consumer_obligation": "Entregar causa/código/prueba/readback al receptor",
+          "cause": "Salida sin artefacto, resultado esperado ni binding al candidato.",
+          "reason": "Salida sin artefacto, resultado esperado ni binding al candidato.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Salida sin artefacto, resultado esperado ni binding al candidato."
+          ],
+          "proposed_rewrite": "Entregar reporte JSON/Markdown, diff de correct, comando y resultado literal del before/after.",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "errors": {
+          "status": "WEAK",
+          "literal": "Gestionar correctamente los errores",
+          "consumer": "Códigos y siguiente acción concretos",
+          "consumer_obligation": "Códigos y siguiente acción concretos",
+          "cause": "No diferencia TypeError de binding, KeyError de payload o ValueError de las guardas.",
+          "reason": "No diferencia TypeError de binding, KeyError de payload o ValueError de las guardas.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No diferencia TypeError de binding, KeyError de payload o ValueError de las guardas."
+          ],
+          "proposed_rewrite": "TypeError as_of: corregir callsite; KeyError currency/source_revision: reparar prepare; EUR/mismatch deben conservar sus ValueError.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "authority": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "Distinguir prueba local autorizada de cambios LF/envío externo",
+          "consumer_obligation": "Distinguir prueba local autorizada de cambios LF/envío externo",
+          "cause": "No acota efecto ni actor; no puede conceder permisos por adjetivos.",
+          "reason": "No acota efecto ni actor; no puede conceder permisos por adjetivos.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No acota efecto ni actor; no puede conceder permisos por adjetivos."
+          ],
+          "proposed_rewrite": "Solo candidato local y sus pruebas en rutas autorizadas. Sin producción, envío, Git, promoción ni cambios LF.",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "version_hash": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "Vincular diagnóstico y cambio a fuentes concretas",
+          "consumer_obligation": "Vincular diagnóstico y cambio a fuentes concretas",
+          "cause": "El handoff no identifica archivos ni revisiones/hash del código afectado.",
+          "reason": "El handoff no identifica archivos ni revisiones/hash del código afectado.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El handoff no identifica archivos ni revisiones/hash del código afectado."
+          ],
+          "proposed_rewrite": "Resolver hashes de raw/correct desde reports/forward_v2/reproduction.json; source_revision=null, FIXTURE_COMMIT_NOT_RESOLVED.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "tests": {
+          "status": "WEAK",
+          "literal": "una evaluación apropiada",
+          "consumer": "Positivo/negativo con entrada y resultado esperado",
+          "consumer_obligation": "Positivo/negativo con entrada y resultado esperado",
+          "cause": "Ningún oráculo ni comando permite demostrar suficiencia.",
+          "reason": "Ningún oráculo ni comando permite demostrar suficiencia.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Ningún oráculo ni comando permite demostrar suficiencia."
+          ],
+          "proposed_rewrite": "python -B reports/forward_v2/reproduce.py; PEN/USD→READY, EUR→CURRENCY_UNSUPPORTED, mismatch→SOURCE_REVISION_STALE.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "consumer": {
+          "status": "WEAK",
+          "literal": "enviar al equipo correspondiente",
+          "consumer": "Identificar receptor y acción siguiente",
+          "consumer_obligation": "Identificar receptor y acción siguiente",
+          "cause": "No existe receptor concreto ni mecanismo de entrega. No se inventa un equipo real.",
+          "reason": "No existe receptor concreto ni mecanismo de entrega. No se inventa un equipo real.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No existe receptor concreto ni mecanismo de entrega. No se inventa un equipo real."
+          ],
+          "proposed_rewrite": "Receptor: mantenedor del fixture fixtures/forward_v2; revisar propuesta local. No enviar automáticamente.",
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "examples": {
+          "status": "MISSING",
+          "literal": null,
+          "consumer": "Mostrar al menos una llamada/negativo reproducible",
+          "consumer_obligation": "Mostrar al menos una llamada/negativo reproducible",
+          "cause": "No hay ejemplo operativo en las cinco líneas originales.",
+          "reason": "No hay ejemplo operativo en las cinco líneas originales.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "No hay ejemplo operativo en las cinco líneas originales."
+          ],
+          "proposed_rewrite": "run('portfolio-A','run-A',currency='PEN',source_revision='revision-1',as_of='revision-1') → READY.",
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "freshness": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Este handoff no es un snapshot ni define política de vigencia; debe remitir al pendiente ya descrito.",
+          "consumer_obligation": "Este handoff no es un snapshot ni define política de vigencia; debe remitir al pendiente ya descrito.",
+          "cause": "Este handoff no es un snapshot ni define política de vigencia; debe remitir al pendiente ya descrito.",
+          "reason": "Este handoff no es un snapshot ni define política de vigencia; debe remitir al pendiente ya descrito.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/handoff.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#HANDOFF"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Este handoff no es un snapshot ni define política de vigencia; debe remitir al pendiente ya descrito."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        }
+      },
+      "grade": "LOW",
+      "semantic_reviewer": "Modelo nativo en contexto de la prueba local",
+      "review_mode": "CURRENT_CONTEXT_SPEC",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "C_ERRORS",
+      "type": "SPEC",
+      "format": "MD_SPEC",
+      "source_ref": "fixtures/forward_v2/raw/error_contract.txt",
+      "scope": "Solo las tres cláusulas de rechazo. ACCEPTABLE no afirma completitud de la implementación, tipo del token, autoridad, independencia ni E2E.",
+      "format_appropriate": true,
+      "format_reason": "Se acepta el formato nativo y sus referencias; la extensión .txt no impide interpretar prosa como contrato Markdown.",
+      "fields": {
+        "scope": {
+          "status": "ACCEPTABLE",
+          "literal": "El receptor assess rechaza el mensaje antes de emitir READY.",
+          "consumer": "Definir dos rechazos del receptor identificado",
+          "consumer_obligation": "Definir dos rechazos del receptor identificado",
+          "cause": "El cometido del artefacto está delimitado por sus dos condiciones y el receptor; no pretende ser contrato completo de promoción.",
+          "reason": "El cometido del artefacto está delimitado por sus dos condiciones y el receptor; no pretende ser contrato completo de promoción.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El cometido del artefacto está delimitado por sus dos condiciones y el receptor; no pretende ser contrato completo de promoción."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "input": {
+          "status": "ACCEPTABLE",
+          "literal": "currency fuera de PEN/USD; source_revision distinta de as_of",
+          "consumer": "Identificar datos de las dos guardas",
+          "consumer_obligation": "Identificar datos de las dos guardas",
+          "cause": "Los tres nombres resuelven a las lecturas y al argumento de consumer.assess; execution_id no interviene en estos dos rechazos.",
+          "reason": "Los tres nombres resuelven a las lecturas y al argumento de consumer.assess; execution_id no interviene en estos dos rechazos.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los tres nombres resuelven a las lecturas y al argumento de consumer.assess; execution_id no interviene en estos dos rechazos."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "types": {
+          "status": "ACCEPTABLE",
+          "literal": "currency fuera de PEN/USD; source_revision distinta de as_of",
+          "consumer": "Conjunto admitido de moneda y predicado de comparación",
+          "consumer_obligation": "Conjunto admitido de moneda y predicado de comparación",
+          "cause": "PEN/USD fija valores concretos; distinta fija desigualdad de tokens. El parcial no afirma un tipo más estricto ni procedencia externa.",
+          "reason": "PEN/USD fija valores concretos; distinta fija desigualdad de tokens. El parcial no afirma un tipo más estricto ni procedencia externa.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "PEN/USD fija valores concretos; distinta fija desigualdad de tokens. El parcial no afirma un tipo más estricto ni procedencia externa."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "preconditions": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "El contrato parcial no afirma exhaustividad de todas las excepciones Python; claves/as_of obligatorios se resuelven en la firma y lecturas del receptor.",
+          "consumer_obligation": "El contrato parcial no afirma exhaustividad de todas las excepciones Python; claves/as_of obligatorios se resuelven en la firma y lecturas del receptor.",
+          "cause": "El contrato parcial no afirma exhaustividad de todas las excepciones Python; claves/as_of obligatorios se resuelven en la firma y lecturas del receptor.",
+          "reason": "El contrato parcial no afirma exhaustividad de todas las excepciones Python; claves/as_of obligatorios se resuelven en la firma y lecturas del receptor.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El contrato parcial no afirma exhaustividad de todas las excepciones Python; claves/as_of obligatorios se resuelven en la firma y lecturas del receptor."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        },
+        "behavior": {
+          "status": "ACCEPTABLE",
+          "literal": "currency fuera de PEN/USD → ValueError(\"CURRENCY_UNSUPPORTED\").\nsource_revision distinta de as_of → ValueError(\"SOURCE_REVISION_STALE\").\nEl receptor assess rechaza el mensaje antes de emitir READY.",
+          "consumer": "Cada condición debe conducir al rechazo nombrado",
+          "consumer_obligation": "Cada condición debe conducir al rechazo nombrado",
+          "cause": "Las tres cláusulas coinciden con consumer.py:2-6. Prioridad de moneda observada; no se usa longitud como nota.",
+          "reason": "Las tres cláusulas coinciden con consumer.py:2-6. Prioridad de moneda observada; no se usa longitud como nota.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Las tres cláusulas coinciden con consumer.py:2-6. Prioridad de moneda observada; no se usa longitud como nota."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "output": {
+          "status": "ACCEPTABLE",
+          "literal": "ValueError(\"CURRENCY_UNSUPPORTED\"); ValueError(\"SOURCE_REVISION_STALE\"); antes de emitir READY",
+          "consumer": "Resultado/error entendible y comprobable",
+          "consumer_obligation": "Resultado/error entendible y comprobable",
+          "cause": "Tipo/código y exclusión de READY están determinados para ambas condiciones; los dos negativos los reproducen.",
+          "reason": "Tipo/código y exclusión de READY están determinados para ambas condiciones; los dos negativos los reproducen.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Tipo/código y exclusión de READY están determinados para ambas condiciones; los dos negativos los reproducen."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "errors": {
+          "status": "ACCEPTABLE",
+          "literal": "currency fuera de PEN/USD → ValueError(\"CURRENCY_UNSUPPORTED\").\nsource_revision distinta de as_of → ValueError(\"SOURCE_REVISION_STALE\").",
+          "consumer": "No adivinar los dos códigos de rechazo",
+          "consumer_obligation": "No adivinar los dos códigos de rechazo",
+          "cause": "Condición y código exactos, sin frases abiertas. No se extiende esta aceptación al pipeline roto.",
+          "reason": "Condición y código exactos, sin frases abiertas. No se extiende esta aceptación al pipeline roto.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Condición y código exactos, sin frases abiertas. No se extiende esta aceptación al pipeline roto."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#RAW_STALE"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "authority": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "Reglas de rechazo de función pura: no es una política de permiso ni un dictamen independiente.",
+          "consumer_obligation": "Reglas de rechazo de función pura: no es una política de permiso ni un dictamen independiente.",
+          "cause": "Reglas de rechazo de función pura: no es una política de permiso ni un dictamen independiente.",
+          "reason": "Reglas de rechazo de función pura: no es una política de permiso ni un dictamen independiente.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Reglas de rechazo de función pura: no es una política de permiso ni un dictamen independiente."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": true,
+          "required_by_profile": true
+        },
+        "version_hash": {
+          "status": "ACCEPTABLE",
+          "literal": "bf356486e8f53373d2551187ae385e94ea4ca24a27dcc0f556fc20369b4c309f",
+          "consumer": "Identificar los bytes exactos revisados del fixture local",
+          "consumer_obligation": "Identificar los bytes exactos revisados del fixture local",
+          "cause": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "reason": "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Hash SHA256 calculado de la fuente; commit desconocido. No se afirma compatibilidad entre versiones ni Git HEAD."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "tests": {
+          "status": "ACCEPTABLE",
+          "literal": "Evidencia ejecutada adjunta; no se atribuye al raw una suite previa.",
+          "consumer": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "consumer_obligation": "Oráculo positivo/negativo reproducible de esta auditoría",
+          "cause": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "reason": "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Los casos enlazados se ejecutaron y conservaron resultado literal, incluidos errores esperados del baseline."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#RAW_STALE",
+            "reports/forward_v2/reproduction.json#RAW_ERROR_PRECEDENCE"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "consumer": {
+          "status": "ACCEPTABLE",
+          "literal": "El receptor assess",
+          "consumer": "Resolver función y rutas de error",
+          "consumer_obligation": "Resolver función y rutas de error",
+          "cause": "Nombre resuelto a consumer.py por pipeline.py:2; revisión contextual de la función completa.",
+          "reason": "Nombre resuelto a consumer.py por pipeline.py:2; revisión contextual de la función completa.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "Nombre resuelto a consumer.py por pipeline.py:2; revisión contextual de la función completa."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "examples": {
+          "status": "ACCEPTABLE",
+          "literal": "ValueError(\"CURRENCY_UNSUPPORTED\"); ValueError(\"SOURCE_REVISION_STALE\")",
+          "consumer": "Contraejemplos concretos que cubran los dos predicados",
+          "consumer_obligation": "Contraejemplos concretos que cubran los dos predicados",
+          "cause": "EUR y revision-0/as_of revision-1 de la evidencia actual instancian ambas cláusulas sin completar por adivinanza.",
+          "reason": "EUR y revision-0/as_of revision-1 de la evidencia actual instancian ambas cláusulas sin completar por adivinanza.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "EUR y revision-0/as_of revision-1 de la evidencia actual instancian ambas cláusulas sin completar por adivinanza."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [
+            "reports/forward_v2/reproduction.json#RAW_UNSUPPORTED",
+            "reports/forward_v2/reproduction.json#RAW_STALE"
+          ],
+          "critical": false,
+          "required_by_profile": true
+        },
+        "freshness": {
+          "status": "NOT_APPLICABLE",
+          "literal": null,
+          "consumer": "El predicado declara desigualdad con as_of; comprobar vigencia externa requiere otro contrato y no se acredita aquí.",
+          "consumer_obligation": "El predicado declara desigualdad con as_of; comprobar vigencia externa requiere otro contrato y no se acredita aquí.",
+          "cause": "El predicado declara desigualdad con as_of; comprobar vigencia externa requiere otro contrato y no se acredita aquí.",
+          "reason": "El predicado declara desigualdad con as_of; comprobar vigencia externa requiere otro contrato y no se acredita aquí.",
+          "source_refs": [
+            "fixtures/forward_v2/raw/error_contract.txt",
+            "reports/forward_v2/source_capture.json",
+            "references/contract_profiles_v2.json#SPEC"
+          ],
+          "semantic_checks": [
+            "Dato, condición, resultado/error y prueba interpretados por significado",
+            "El predicado declara desigualdad con as_of; comprobar vigencia externa requiere otro contrato y no se acredita aquí."
+          ],
+          "proposed_rewrite": null,
+          "test_refs": [],
+          "critical": false,
+          "required_by_profile": false
+        }
+      },
+      "grade": "ACCEPTABLE",
+      "semantic_reviewer": "Modelo nativo en contexto de la prueba local",
+      "review_mode": "CURRENT_CONTEXT_SPEC",
+      "does_not_authorize_effect": true
+    }
+  ],
+  "semantic_comparison": {
+    "criterion": "Dato + condición + resultado/error + receptor + prueba. No longitud ni número de palabras.",
+    "handoff": {
+      "scope_quality": "LOW",
+      "literal": "Entregar los datos necesarios y un análisis adecuado de los casos relevantes.\nGestionar correctamente los errores, validar todo lo necesario y enviar al equipo\ncorrespondiente. La solución deberá ser robusta, suficiente y completa, incluyendo\nuna evaluación apropiada y las consideraciones que correspondan según el caso.\nAl terminar, informar los resultados y las recomendaciones oportunas.\n",
+      "reason": "Datos necesarios/equipo correspondiente/robusta/evaluación apropiada no fijan actor, cambio ni oráculo.",
+      "replacement_ref": "fixtures/forward_v2/correct/handoff.txt"
+    },
+    "error_contract": {
+      "scope_quality": "ACCEPTABLE",
+      "literal": "currency fuera de PEN/USD → ValueError(\"CURRENCY_UNSUPPORTED\").\nsource_revision distinta de as_of → ValueError(\"SOURCE_REVISION_STALE\").\nEl receptor assess rechaza el mensaje antes de emitir READY.\n",
+      "reason": "Tres cláusulas identifican moneda/revisión, condición, excepción/código y receptor assess. Las dos guardas fueron ejecutadas y coinciden.",
+      "limit": "Aceptación parcial de rechazo; no implica completitud del pipeline, independencia, permiso o actualidad externa."
+    }
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "title": "Schema admite entrada incompleta para el entrypoint descubierto",
+      "status": "FIX_VERIFIED",
+      "kind": "DEFECT",
+      "code": "SPEC_REQUIRED_FIELD_OMITTED",
+      "location": {
+        "file": "fixtures/forward_v2/raw/input.schema.json",
+        "function": "schema",
+        "lines": [
+          1,
+          1
+        ],
+        "commit": "FIXTURE_COMMIT_NOT_RESOLVED",
+        "source_revision": null,
+        "sha256": "50075dd1eec40b097a3e994c5256189421505cb2f154d21f4d5b428bb594fa7c"
+      },
+      "literal": "{\"type\":\"object\",\"required\":[\"portfolio_key\",\"execution_id\"],\"properties\":{\"portfolio_key\":{\"type\":\"string\"},\"execution_id\":{\"type\":\"string\"}},\"additionalProperties\":true}",
+      "consumer": "pipeline.run / consumer.assess",
+      "cause": "Solo declara dos de los cinco argumentos obligatorios de run; no refleja enum de moneda.",
+      "expected": "Required de cinco campos y currency PEN/USD; sin afirmar que exista loader integrado.",
+      "correction_exact": "{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"$id\": \"urn:forward-v2:run-input:proposed-1\",\n  \"title\": \"Entrada de pipeline.run del fixture sintético\",\n  \"type\": \"object\",\n  \"required\": [\"portfolio_key\", \"execution_id\", \"currency\", \"source_revision\", \"as_of\"],\n  \"properties\": {\n    \"portfolio_key\": {\"type\": \"string\"},\n    \"execution_id\": {\"type\": \"string\"},\n    \"currency\": {\"type\": \"string\", \"enum\": [\"PEN\", \"USD\"]},\n    \"source_revision\": {\n      \"description\": \"Token de revisión conservado literalmente; assess exige igualdad con as_of. El tipo operativo aún no está definido por la fuente.\"\n    },\n    \"as_of\": {\n      \"description\": \"Token esperado suministrado por el caller; requerido como argumento keyword-only de assess. La igualdad entre campos se comprueba en assess.\"\n    }\n  },\n  \"additionalProperties\": true,\n  \"$comment\": \"Propuesta mínima de required y enum; conserva tipos de IDs y extensibilidad previos. No acredita procedencia ni frescura real del token. No hay loader de schema en el fixture. El caller debe seleccionar los cinco argumentos de run; campos extra no son argumentos admitidos por run.\"\n}\n",
+      "before_cases": [
+        "RAW_SCHEMA_MINIMAL",
+        "RAW_MINIMAL_TO_RUN",
+        "RAW_SCHEMA_UNSUPPORTED"
+      ],
+      "after_cases": [
+        "CORRECT_SCHEMA_NOMINAL",
+        "CORRECT_SCHEMA_MISSING_CURRENCY",
+        "CORRECT_SCHEMA_MISSING_SOURCE_REVISION",
+        "CORRECT_SCHEMA_MISSING_AS_OF",
+        "CORRECT_SCHEMA_UNSUPPORTED"
+      ],
+      "test_evidence": [
+        {
+          "id": "RAW_SCHEMA_MINIMAL",
+          "objective": "Schema actual admite entrada incompleta para run",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": true,
+            "errors": []
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": true
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "RAW_MINIMAL_TO_RUN",
+          "objective": "Misma entrada admitida: run no puede ejecutarse",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "TypeError",
+            "message": "run() missing 3 required keyword-only arguments: 'currency', 'source_revision', and 'as_of'"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "TypeError",
+            "message": "run() missing 3 required keyword-only arguments: 'currency', 'source_revision', and 'as_of'"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "RAW_SCHEMA_UNSUPPORTED",
+          "objective": "Enum de consumidor no está declarado",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": true,
+            "errors": []
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": true
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_SCHEMA_NOMINAL",
+          "objective": "Schema propuesto admite nominal",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": true,
+            "errors": []
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": true
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_SCHEMA_MISSING_CURRENCY",
+          "objective": "Required propuesto rechaza falta de currency",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": false,
+            "errors": [
+              {
+                "path": [],
+                "validator": "required",
+                "message": "'currency' is a required property"
+              }
+            ]
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": false
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_SCHEMA_MISSING_SOURCE_REVISION",
+          "objective": "Required propuesto rechaza falta de source_revision",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": false,
+            "errors": [
+              {
+                "path": [],
+                "validator": "required",
+                "message": "'source_revision' is a required property"
+              }
+            ]
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": false
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_SCHEMA_MISSING_AS_OF",
+          "objective": "Required propuesto rechaza falta de as_of",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": false,
+            "errors": [
+              {
+                "path": [],
+                "validator": "required",
+                "message": "'as_of' is a required property"
+              }
+            ]
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": false
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_SCHEMA_UNSUPPORTED",
+          "objective": "Enum propuesto rechaza EUR",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": false,
+            "errors": [
+              {
+                "path": [
+                  "currency"
+                ],
+                "validator": "enum",
+                "message": "'EUR' is not one of ['PEN', 'USD']"
+              }
+            ]
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": false
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        }
+      ],
+      "impact": "Schema admite entrada incompleta para el entrypoint descubierto",
+      "scope": "FIXTURE_ONLY",
+      "fix_scope": "FIXTURE",
+      "readback": {
+        "performed": true,
+        "source": "reports/forward_v2/source_capture.json",
+        "runtime": "reports/forward_v2/reproduction.json"
+      },
+      "confidence": "HIGH",
+      "confidence_reason": "Fuente y consumidor leídos; salida actual preservada.",
+      "rollback": "Descartar correct; raw permanece como baseline. Sin cambio funcional LF.",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "F02",
+      "title": "prepare descarta currency y source_revision",
+      "status": "FIX_VERIFIED",
+      "kind": "DEFECT",
+      "code": "STEP_CONTEXT_INSUFFICIENT",
+      "location": {
+        "file": "fixtures/forward_v2/raw/producer.py",
+        "function": "prepare",
+        "lines": [
+          1,
+          2
+        ],
+        "commit": "FIXTURE_COMMIT_NOT_RESOLVED",
+        "source_revision": null,
+        "sha256": "c1c0231df4d33229ead2e29e7de9ec8cb0d1b6b2e6df40f4dc0d2b3a08098f7e"
+      },
+      "literal": "def prepare(portfolio_key, execution_id, *, currency, source_revision):\n    return {\"portfolio_key\": portfolio_key, \"execution_id\": execution_id}",
+      "consumer": "pipeline.run / consumer.assess",
+      "cause": "El dict de retorno se reduce a dos IDs aunque recibe ambos datos necesarios para assess.",
+      "expected": "Conservar literalmente currency/source_revision junto con portfolio_key/execution_id.",
+      "correction_exact": "def prepare(portfolio_key, execution_id, *, currency, source_revision):\n    return {\n        \"portfolio_key\": portfolio_key,\n        \"execution_id\": execution_id,\n        \"currency\": currency,\n        \"source_revision\": source_revision,\n    }\n",
+      "before_cases": [
+        "RAW_PREPARE_LOSS",
+        "RAW_AFTER_BINDING_ONLY",
+        "RAW_AFTER_CURRENCY_ONLY"
+      ],
+      "after_cases": [
+        "CORRECT_PREPARE_READBACK",
+        "CORRECT_RUN_PEN",
+        "CORRECT_UNSUPPORTED",
+        "CORRECT_STALE"
+      ],
+      "test_evidence": [
+        {
+          "id": "RAW_PREPARE_LOSS",
+          "objective": "Readback del mensaje producido",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "portfolio_key": "portfolio-A",
+              "execution_id": "run-A"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "portfolio_key": "portfolio-A",
+              "execution_id": "run-A"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "RAW_AFTER_BINDING_ONLY",
+          "objective": "Probar defecto latente tras entregar as_of",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "KeyError",
+            "message": "'currency'"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "KeyError",
+            "message": "'currency'"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "RAW_AFTER_CURRENCY_ONLY",
+          "objective": "Descubrir segunda clave perdida sin confundir causa",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "KeyError",
+            "message": "'source_revision'"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "KeyError",
+            "message": "'source_revision'"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_PREPARE_READBACK",
+          "objective": "Readback de cuatro campos preservados",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "portfolio_key": "portfolio-A",
+              "execution_id": "run-A",
+              "currency": "PEN",
+              "source_revision": "revision-1"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "portfolio_key": "portfolio-A",
+              "execution_id": "run-A",
+              "currency": "PEN",
+              "source_revision": "revision-1"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_RUN_PEN",
+          "objective": "Positivo del pipeline corregido",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_UNSUPPORTED",
+          "objective": "Negativo moneda por pipeline completo local",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "ValueError",
+            "message": "CURRENCY_UNSUPPORTED"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "ValueError",
+            "message": "CURRENCY_UNSUPPORTED"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_STALE",
+          "objective": "Negativo revisión por pipeline completo local",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "ValueError",
+            "message": "SOURCE_REVISION_STALE"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "ValueError",
+            "message": "SOURCE_REVISION_STALE"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        }
+      ],
+      "impact": "prepare descarta currency y source_revision",
+      "scope": "FIXTURE_ONLY",
+      "fix_scope": "FIXTURE",
+      "readback": {
+        "performed": true,
+        "source": "reports/forward_v2/source_capture.json",
+        "runtime": "reports/forward_v2/reproduction.json"
+      },
+      "confidence": "HIGH",
+      "confidence_reason": "Fuente y consumidor leídos; salida actual preservada.",
+      "rollback": "Descartar correct; raw permanece como baseline. Sin cambio funcional LF.",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "F03",
+      "title": "run omite as_of y falla antes de evaluar el mensaje",
+      "status": "FIX_VERIFIED",
+      "kind": "DEFECT",
+      "code": "CALL_BINDING_INCOMPATIBLE",
+      "location": {
+        "file": "fixtures/forward_v2/raw/pipeline.py",
+        "function": "run",
+        "lines": [
+          5,
+          7
+        ],
+        "commit": "FIXTURE_COMMIT_NOT_RESOLVED",
+        "source_revision": null,
+        "sha256": "83bcb284d96f55c603c6b87ff3a07c32578cecb3245fd1e25f3409c155403e23"
+      },
+      "literal": "def run(portfolio_key, execution_id, *, currency, source_revision, as_of):\n    message = prepare(portfolio_key, execution_id, currency=currency, source_revision=source_revision)\n    return assess(message)",
+      "consumer": "pipeline.run / consumer.assess",
+      "cause": "as_of está en la firma del caller pero no en la llamada assess; TypeError enmascara el defecto del mensaje.",
+      "expected": "Pasar as_of por keyword y corregir la pérdida upstream; una sola reparación no restituye el flujo local.",
+      "correction_exact": "from producer import prepare\nfrom consumer import assess\n\n\ndef run(portfolio_key, execution_id, *, currency, source_revision, as_of):\n    message = prepare(\n        portfolio_key,\n        execution_id,\n        currency=currency,\n        source_revision=source_revision,\n    )\n    return assess(message, as_of=as_of)\n",
+      "before_cases": [
+        "RAW_RUN_VALID",
+        "RAW_AFTER_BINDING_ONLY"
+      ],
+      "after_cases": [
+        "CORRECT_RUN_PEN",
+        "CORRECT_RUN_USD",
+        "CORRECT_ERROR_PRECEDENCE"
+      ],
+      "test_evidence": [
+        {
+          "id": "RAW_RUN_VALID",
+          "objective": "Entrada nominal por run: primer fallo de binding",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "TypeError",
+            "message": "assess() missing 1 required keyword-only argument: 'as_of'"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "TypeError",
+            "message": "assess() missing 1 required keyword-only argument: 'as_of'"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "RAW_AFTER_BINDING_ONLY",
+          "objective": "Probar defecto latente tras entregar as_of",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "KeyError",
+            "message": "'currency'"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "KeyError",
+            "message": "'currency'"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_RUN_PEN",
+          "objective": "Positivo del pipeline corregido",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_RUN_USD",
+          "objective": "Regresión del segundo valor admitido",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_ERROR_PRECEDENCE",
+          "objective": "Regresión de prioridad del error",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "ValueError",
+            "message": "CURRENCY_UNSUPPORTED"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "ValueError",
+            "message": "CURRENCY_UNSUPPORTED"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        }
+      ],
+      "impact": "run omite as_of y falla antes de evaluar el mensaje",
+      "scope": "FIXTURE_ONLY",
+      "fix_scope": "FIXTURE",
+      "readback": {
+        "performed": true,
+        "source": "reports/forward_v2/source_capture.json",
+        "runtime": "reports/forward_v2/reproduction.json"
+      },
+      "confidence": "HIGH",
+      "confidence_reason": "Fuente y consumidor leídos; salida actual preservada.",
+      "rollback": "Descartar correct; raw permanece como baseline. Sin cambio funcional LF.",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "F04",
+      "title": "Handoff no determina receptor, causa, cambio ni oráculo",
+      "status": "CONFIRMED",
+      "kind": "DEFECT",
+      "code": "OUTPUT_NOT_ACTIONABLE",
+      "location": {
+        "file": "fixtures/forward_v2/raw/handoff.txt",
+        "function": "handoff",
+        "lines": [
+          1,
+          5
+        ],
+        "commit": "FIXTURE_COMMIT_NOT_RESOLVED",
+        "source_revision": null,
+        "sha256": "0091eb47703108781a776417de9de5156e4a5c8f24d5537912381f1dac1860a4"
+      },
+      "literal": "Entregar los datos necesarios y un análisis adecuado de los casos relevantes.\nGestionar correctamente los errores, validar todo lo necesario y enviar al equipo\ncorrespondiente. La solución deberá ser robusta, suficiente y completa, incluyendo\nuna evaluación apropiada y las consideraciones que correspondan según el caso.\nAl terminar, informar los resultados y las recomendaciones oportunas.",
+      "consumer": "Mantenedor del fixture; equipo real no identificado",
+      "cause": "Adjetivos y referencias abiertas reemplazan campos operativos aunque código/consumidor están disponibles para investigarlos.",
+      "expected": "Identificar causa, archivos/funciones, código exacto, positivo/negativo, alcance, receptor y rollback.",
+      "correction_exact": "Receptor: mantenedor del fixture fixtures/forward_v2; ejecutar solo la propuesta local, sin efectos LF.\nCausa 1: raw/producer.py:prepare recibe currency/source_revision pero no los devuelve. Copiar ambos valores literalmente al mensaje, conservando portfolio_key/execution_id.\nCausa 2: raw/pipeline.py:run recibe as_of pero llama assess(message). Cambiar a assess(message, as_of=as_of).\nContrato de entrada: declarar currency/source_revision/as_of en required; currency admite PEN/USD. El tipo y la procedencia de source_revision/as_of no están resueltos: no inventar una política.\nCódigo esperado: fixtures/forward_v2/correct/producer.py y pipeline.py. consumer.py conserva su comportamiento.\nPrueba/readback: python -B reports/forward_v2/reproduce.py desde la raíz del paquete; positivo PEN y USD devuelve READY con el mismo execution_id; EUR produce CURRENCY_UNSUPPORTED; revisión distinta produce SOURCE_REVISION_STALE; claves ausentes fallan antes de READY. Ver reports/forward_v2/reproduction.json para before/after y hashes.\nSi falla un positivo o negativo, detener la adopción del candidato y conservar raw como baseline. Rollback local: descartar correct; raw no se modifica.\nLímites: sin Git/PR/CI, red, base de datos, despliegue, promoción, E2E LF ni evidencia de independencia o autoridad real. No enviar este handoff automáticamente.\n",
+      "before_cases": [],
+      "after_cases": [],
+      "test_evidence": [],
+      "impact": "Handoff no determina receptor, causa, cambio ni oráculo",
+      "scope": "FIXTURE_ONLY",
+      "fix_scope": "PROPOSAL_ONLY",
+      "readback": {
+        "performed": true,
+        "source": "reports/forward_v2/source_capture.json",
+        "runtime": null
+      },
+      "confidence": "HIGH",
+      "confidence_reason": "Fuente y consumidor leídos; salida actual preservada.",
+      "rollback": "Descartar correct; raw permanece como baseline. Sin cambio funcional LF.",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "F05",
+      "title": "Tipo y origen confiable de los tokens no están definidos",
+      "status": "NOT_VERIFIED",
+      "kind": "GOVERNANCE_GAP",
+      "code": "TOKEN_DOMAIN_AND_PROVENANCE_UNSPECIFIED",
+      "location": {
+        "file": "fixtures/forward_v2/raw/consumer.py",
+        "function": "assess",
+        "lines": [
+          4,
+          6
+        ],
+        "commit": "FIXTURE_COMMIT_NOT_RESOLVED",
+        "source_revision": null,
+        "sha256": "55385451af4c5319c4d8435210f536e404e9832791615a87b13810443ba5903a"
+      },
+      "literal": "    if message[\"source_revision\"] != as_of:\n        raise ValueError(\"SOURCE_REVISION_STALE\")\n    return {\"decision\": \"READY\", \"execution_id\": message[\"execution_id\"]}",
+      "consumer": "pipeline.run / consumer.assess",
+      "cause": "La comparación solo verifica igualdad con un argumento del caller. No hay política sobre nulos/tipos ni fuente autorizada.",
+      "expected": "Resolver tipo, nulos y origen de as_of antes de interpretar READY como actualidad externa. No se declara inválido un dato sin contrato.",
+      "correction_exact": "Propuesta contractual pendiente, sin cambio de consumer: identificar quién obtiene as_of y el dominio/nulos admitidos de ambos tokens.",
+      "before_cases": [
+        "CORRECT_NULL_REVISION_BOUNDARY",
+        "CORRECT_WRONG_AS_OF_BOUNDARY"
+      ],
+      "after_cases": [],
+      "test_evidence": [
+        {
+          "id": "CORRECT_NULL_REVISION_BOUNDARY",
+          "objective": "Límite observado: sin política de tipo, null==null emite READY",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_WRONG_AS_OF_BOUNDARY",
+          "objective": "Límite: caller puede igualar dos tokens ajenos; no prueba currentness",
+          "observed": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "expected": {
+            "kind": "RETURN",
+            "value": {
+              "decision": "READY",
+              "execution_id": "run-A"
+            }
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        }
+      ],
+      "impact": "Tipo y origen confiable de los tokens no están definidos",
+      "scope": "FIXTURE_ONLY",
+      "fix_scope": "PROPOSAL_ONLY",
+      "readback": {
+        "performed": true,
+        "source": "reports/forward_v2/source_capture.json",
+        "runtime": "reports/forward_v2/reproduction.json"
+      },
+      "confidence": "MEDIUM",
+      "confidence_reason": "Observación local comprobada; falta política o integración para afirmar defecto material.",
+      "rollback": "Descartar correct; raw permanece como baseline. Sin cambio funcional LF.",
+      "does_not_authorize_effect": true
+    },
+    {
+      "id": "F06",
+      "title": "Compatibilidad de claves extra depende de un loader no descubierto",
+      "status": "HYPOTHESIS",
+      "kind": "DEFECT",
+      "code": "SCHEMA_CALLER_BINDING_UNRESOLVED",
+      "location": {
+        "file": "fixtures/forward_v2/raw/input.schema.json",
+        "function": "schema/caller",
+        "lines": [
+          1,
+          1
+        ],
+        "commit": "FIXTURE_COMMIT_NOT_RESOLVED",
+        "source_revision": null,
+        "sha256": "50075dd1eec40b097a3e994c5256189421505cb2f154d21f4d5b428bb594fa7c"
+      },
+      "literal": "{\"type\":\"object\",\"required\":[\"portfolio_key\",\"execution_id\"],\"properties\":{\"portfolio_key\":{\"type\":\"string\"},\"execution_id\":{\"type\":\"string\"}},\"additionalProperties\":true}",
+      "consumer": "pipeline.run / consumer.assess",
+      "cause": "additionalProperties=true permite extra; run(**payload) no lo admite. Ningún loader enlaza ambos artefactos en el fixture.",
+      "expected": "Si el schema se usa como entrada directa, decidir proyección de argumentos o additionalProperties=false. La integración real está sin verificar.",
+      "correction_exact": "Pendiente de contrato de compatibilidad: proyectar explícitamente los cinco parámetros conocidos antes de run, o rechazar extras en schema si se autoriza ese cambio.",
+      "before_cases": [
+        "CORRECT_SCHEMA_EXTRA_BOUNDARY",
+        "CORRECT_RUN_EXTRA_BOUNDARY"
+      ],
+      "after_cases": [],
+      "test_evidence": [
+        {
+          "id": "CORRECT_SCHEMA_EXTRA_BOUNDARY",
+          "objective": "Extensibilidad heredada del schema",
+          "observed": {
+            "kind": "SCHEMA",
+            "valid": true,
+            "errors": []
+          },
+          "expected": {
+            "kind": "SCHEMA",
+            "valid": true
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        },
+        {
+          "id": "CORRECT_RUN_EXTRA_BOUNDARY",
+          "objective": "Sin loader no hay proyección de campos extra a firma",
+          "observed": {
+            "kind": "RAISE",
+            "exception": "TypeError",
+            "message": "run() got an unexpected keyword argument 'extra'"
+          },
+          "expected": {
+            "kind": "RAISE",
+            "exception": "TypeError",
+            "message": "run() got an unexpected keyword argument 'extra'"
+          },
+          "assertion_pass": true,
+          "scope": "FIXTURE_ONLY"
+        }
+      ],
+      "impact": "Compatibilidad de claves extra depende de un loader no descubierto",
+      "scope": "FIXTURE_ONLY",
+      "fix_scope": "PROPOSAL_ONLY",
+      "readback": {
+        "performed": true,
+        "source": "reports/forward_v2/source_capture.json",
+        "runtime": "reports/forward_v2/reproduction.json"
+      },
+      "confidence": "MEDIUM",
+      "confidence_reason": "Observación local comprobada; falta política o integración para afirmar defecto material.",
+      "rollback": "Descartar correct; raw permanece como baseline. Sin cambio funcional LF.",
+      "does_not_authorize_effect": true
+    }
+  ],
+  "execution": {
+    "command": "python -B reports/forward_v2/reproduce.py",
+    "working_directory": "/workspace/scratch/4bb35a0bf920/lf-audit-v2/skills/auditoria-profunda-implementacion-lf",
+    "exit_code": 0,
+    "stdout_ref": "reports/forward_v2/execution.json",
+    "results_ref": "reports/forward_v2/reproduction.json",
+    "summary": {
+      "total": 32,
+      "assertions_passed": 32,
+      "assertions_failed": 0
+    },
+    "scope": "FIXTURE_ONLY",
+    "new_lf_e2e": false
+  },
+  "evidence": [
+    {
+      "id": "SOURCES",
+      "kind": "CODE_READ_ONLY",
+      "origin": "SOURCE_FILE",
+      "capture_ref": "reports/forward_v2/source_capture.json",
+      "sha256": "72feaad73f21ce96afdff6cd2d06aabecf9c7403cb6d516ea97c1d9f1906887e",
+      "collected_at": "2026-11-16T06:07:44.969581+00:00",
+      "confidence": "HIGH",
+      "claim": "Bytes y líneas de los seis archivos raw."
+    },
+    {
+      "id": "EXEC",
+      "kind": "MEASURED_THIS_AUDIT",
+      "origin": "FIXTURE",
+      "capture_ref": "reports/forward_v2/execution.json",
+      "sha256": "684cda832bcc895b8df9d06ebfea633ba171b86829add2458a5553fd2213f556",
+      "collected_at": "2026-11-16T06:07:03.496211+00:00",
+      "confidence": "HIGH",
+      "claim": "Comando real exit 0, stdout de 32 assertions; incluye errores esperados de baseline."
+    },
+    {
+      "id": "CASES",
+      "kind": "MEASURED_THIS_AUDIT",
+      "origin": "FIXTURE",
+      "capture_ref": "reports/forward_v2/reproduction.json",
+      "sha256": "66af3be88e11b863e3e9578435f902482c45371db27d7beddd5cb22f7f762ab5",
+      "collected_at": "2026-11-16T06:07:03.496211+00:00",
+      "confidence": "HIGH",
+      "claim": "Entradas/casos, resultados exactos, AST y hashes raw/correct; sin E2E LF."
+    }
+  ],
+  "ekb": {
+    "currentness": "NOT_VERIFIED",
+    "live_lookup_executed": false,
+    "reason": "Alcance prohíbe DB/red; checklist local solo orientativo, no autoridad vigente.",
+    "checks": [
+      {
+        "topic": "Obligatorios/identidad/transporte",
+        "status": "APPLIED_LOCAL",
+        "evidence": [
+          "F01",
+          "F02",
+          "F03"
+        ],
+        "reason": "Consumidor y firma descubren campos no declarados y omitidos."
+      },
+      {
+        "topic": "Primera falla antes de diagnosticar otras capas",
+        "status": "APPLIED_LOCAL",
+        "evidence": [
+          "RAW_RUN_VALID",
+          "RAW_AFTER_BINDING_ONLY",
+          "RAW_AFTER_CURRENCY_ONLY"
+        ],
+        "reason": "Se separó el TypeError de los KeyError latentes."
+      },
+      {
+        "topic": "Conteo real de tests",
+        "status": "APPLIED_LOCAL",
+        "evidence": [
+          "CASES"
+        ],
+        "reason": "32 casos enumerados, no conteo declarado sin ejecución."
+      },
+      {
+        "topic": "Currentness/identidad de snapshots",
+        "status": "PARTIAL_LOCAL",
+        "evidence": [
+          "F05"
+        ],
+        "reason": "Solo igualdad de tokens, sin snapshot persistido, tenant ni fuente autorizada."
+      },
+      {
+        "topic": "Jueces/autoridad/registro/promoción/SQL/RLS/CI",
+        "status": "NOT_APPLICABLE",
+        "evidence": [],
+        "reason": "No existen estos componentes en el fixture y no se invocaron."
+      }
+    ],
+    "new_candidate_unregistered": "LF-LOCAL-CONSUMER-ARGUMENT-ERROR-MASKS-TRANSPORT-LOSS: un keyword omitido puede ocultar campos perdidos en el mensaje; conservar ambas reproducciones."
+  },
+  "limits": [
+    "Sin red, DB, Git, PR, CI ni producción; ningún reporte anterior leído.",
+    "No se acredita independencia, autoridad real, registro ni promoción.",
+    "No commit real disponible; no se fabrica SHA40. Hashes de archivos sí calculados.",
+    "No despliegue LF reparado: solo candidatos correct y baseline raw sin alterar por esta tarea.",
+    "No loader integrado del schema: la comparación schema→run es una prueba local explícita, no un camino desplegado.",
+    "Tokens null o ajenos iguales pasan; riesgo contextual sin política no se convierte en defecto confirmado.",
+    "HANDOFF corregido revisado estáticamente, sin envío ni prueba de ejecución por receptor real.",
+    "Este JSON es reporte propio de prueba, no certificado de conformidad con un reporte LF V2 de once pasos.",
+    "No evaluación de SQL/RLS/concurrencia/retry/tenant/hash de payload o E2E porque el fixture no los define."
+  ],
+  "next_action": "Revisar candidatos y decidir dominio/procedencia de tokens e integración de schema antes de ampliar a LF. Sin aplicar cambios LF."
+}

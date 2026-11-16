@@ -1,0 +1,900 @@
+[
+  {
+    "file": "scripts/lf_profile_native_resume.py",
+    "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+    "sites": [
+      {
+        "id": "PASS-20d25eaa9bd7",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 818,
+        "literal": "        \"PASS_REVIEWED_CURRENT_CONTEXT\" if mode == \"CURRENT_CONTEXT_REVIEW\"",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "PASS_REVIEWED_CURRENT_CONTEXT",
+        "risk_candidates": [
+          "CONDITIONAL_SUCCESS_REQUIRES_DATAFLOW_REVIEW"
+        ],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-2d3e66763178",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 819,
+        "literal": "        else \"PASS_INDEPENDENT_SEMANTIC\"",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "PASS_INDEPENDENT_SEMANTIC",
+        "risk_candidates": [
+          "CONDITIONAL_SUCCESS_REQUIRES_DATAFLOW_REVIEW"
+        ],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-4486ed29fc59",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 913,
+        "literal": "    verdict = (\"PASS_REVIEWED_CURRENT_CONTEXT\" if current_context",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "PASS_REVIEWED_CURRENT_CONTEXT",
+        "risk_candidates": [
+          "CONDITIONAL_SUCCESS_REQUIRES_DATAFLOW_REVIEW"
+        ],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-c4aa9234a586",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 914,
+        "literal": "               else \"PASS_INDEPENDENT_SEMANTIC\")",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "PASS_INDEPENDENT_SEMANTIC",
+        "risk_candidates": [
+          "CONDITIONAL_SUCCESS_REQUIRES_DATAFLOW_REVIEW"
+        ],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-d7e799f98bdd",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 919,
+        "literal": "        \"status\": \"PASS\",",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "PASS",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-98e7f4a47937",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 920,
+        "literal": "        \"verdict\": verdict,",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:verdict",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-4ee03ef05075",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 921,
+        "literal": "        \"validator_status\": \"PASS\",",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "PASS",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-d18fe8d6c168",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 929,
+        "literal": "            \"verdict\": verdict,",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:verdict",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-5cb258c862c7",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1009,
+        "literal": "            \"phase\":\"SEMANTIC_OR_REPORT_RECORD\",\"status\":code,",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:status",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-422394313a8b",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1178,
+        "literal": "        print(json.dumps({\"phase\": \"PROFILE_SKILL_INVOKE\", \"http_status\": code, \"outcome\": invoked.get(\"outcome\"),",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:outcome",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-901ab7f24ec7",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1209,
+        "literal": "                \"outcome\":started.get(\"outcome\")}))",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:outcome",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-f68a0733e5a8",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1240,
+        "literal": "        print(json.dumps({\"phase\": \"SOURCE_BIND\", \"status\": code, \"code\": source.get(\"code\")}))",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:status",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-b412c314da18",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1302,
+        "literal": "        print(json.dumps({\"phase\": \"PREPARE\", \"status\": code,",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:status",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-ed59ac6a2a76",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1401,
+        "literal": "                \"outcome\":ig.get(\"outcome\"),",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:outcome",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-61351cc6b31a",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1472,
+        "literal": "                \"phase\":\"REPORT_RECORD\",\"status\":code,",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:status",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-47f0101848ff",
+        "file": "scripts/lf_profile_native_resume.py",
+        "line": 1511,
+        "literal": "                \"phase\":\"OUTPUT_RECORD\",\"status\":code,",
+        "source_sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a",
+        "marker": "DYNAMIC:status",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      }
+    ],
+    "dynamic_emissions_complete": false,
+    "limits": [
+      "Literal Python AST and SQL/TS token candidates only",
+      "No runtime or generated SQL execution",
+      "Comparisons, metadata and returns need native context classification"
+    ]
+  },
+  {
+    "file": "scripts/lf_step70_separate_call_receipt_v1.py",
+    "source_sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c",
+    "sites": [
+      {
+        "id": "PASS-99313dd9b86c",
+        "file": "scripts/lf_step70_separate_call_receipt_v1.py",
+        "line": 14,
+        "literal": "VERDICT=\"PASS_INDEPENDENT_SEMANTIC\"",
+        "source_sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c",
+        "marker": "PASS_INDEPENDENT_SEMANTIC",
+        "risk_candidates": [
+          "SUCCESS_ASSIGNMENT_REQUIRES_DATAFLOW_REVIEW"
+        ],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-6d28428bdddf",
+        "file": "scripts/lf_step70_separate_call_receipt_v1.py",
+        "line": 88,
+        "literal": "        \"verdict\":r[\"decision_body\"].get(\"verdict\"),",
+        "source_sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c",
+        "marker": "DYNAMIC:verdict",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-4654e430c761",
+        "file": "scripts/lf_step70_separate_call_receipt_v1.py",
+        "line": 127,
+        "literal": "        safe[\"verdict\"]=\"PASS_REVIEWED_CURRENT_CONTEXT\"",
+        "source_sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c",
+        "marker": "PASS_REVIEWED_CURRENT_CONTEXT",
+        "risk_candidates": [
+          "SUCCESS_ASSIGNMENT_REQUIRES_DATAFLOW_REVIEW"
+        ],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      }
+    ],
+    "dynamic_emissions_complete": false,
+    "limits": [
+      "Literal Python AST and SQL/TS token candidates only",
+      "No runtime or generated SQL execution",
+      "Comparisons, metadata and returns need native context classification"
+    ]
+  },
+  {
+    "file": "scripts/lf_step70_same_llm_eval_v1.py",
+    "source_sha256": "62a306f4f44aac9aee959c578b4d63c330a80e8918ae77133d1481ee21a5fce0",
+    "sites": [
+      {
+        "id": "PASS-f1dd2e86996d",
+        "file": "scripts/lf_step70_same_llm_eval_v1.py",
+        "line": 56,
+        "literal": "    return {\"eval_id\":EVAL_ID,\"eval_status\":\"PASS\" if not errors else \"FAIL\",",
+        "source_sha256": "62a306f4f44aac9aee959c578b4d63c330a80e8918ae77133d1481ee21a5fce0",
+        "marker": "PASS",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      }
+    ],
+    "dynamic_emissions_complete": false,
+    "limits": [
+      "Literal Python AST and SQL/TS token candidates only",
+      "No runtime or generated SQL execution",
+      "Comparisons, metadata and returns need native context classification"
+    ]
+  },
+  {
+    "file": "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts",
+    "source_sha256": "7f32885b2a9c67a3a635ace965b905f38959bb08fff9b9bd283c60d5640f605c",
+    "sites": [
+      {
+        "id": "PASS-44acd9637dfb",
+        "file": "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts",
+        "line": 631,
+        "literal": "   receipts.push({step_id:step,status:\"STEP_PASS_WITH_EVIDENCE\"});",
+        "source_sha256": "7f32885b2a9c67a3a635ace965b905f38959bb08fff9b9bd283c60d5640f605c",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      }
+    ],
+    "dynamic_emissions_complete": false,
+    "limits": [
+      "Literal Python AST and SQL/TS token candidates only",
+      "No runtime or generated SQL execution",
+      "Comparisons, metadata and returns need native context classification"
+    ]
+  },
+  {
+    "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+    "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+    "sites": [
+      {
+        "id": "PASS-c3d71e077aba",
+        "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+        "line": 21,
+        "literal": "  is_bound:=p40.status='STEP_PASS_WITH_EVIDENCE'",
+        "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-6f59605de15a",
+        "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+        "line": 22,
+        "literal": "    AND p50.status='STEP_PASS_WITH_EVIDENCE'",
+        "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-e9629331b524",
+        "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+        "line": 23,
+        "literal": "    AND p60.status='STEP_PASS_WITH_EVIDENCE'",
+        "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-0a00b9c5531f",
+        "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+        "line": 24,
+        "literal": "    AND p70.status='STEP_PASS_WITH_EVIDENCE'",
+        "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-59770dfee03e",
+        "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+        "line": 43,
+        "literal": "  hard_block:=coalesce(r.pendiente_decision,true) OR r.categoria=ANY(blocked_categories)",
+        "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+        "marker": "DEFAULT_TRUE",
+        "risk_candidates": [
+          "DEFAULT_TRUE_REQUIRES_CONTEXT"
+        ],
+        "classification": "RISK_PATTERN_ONLY",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-fc6707e333a7",
+        "file": "supabase/migrations/20261116020000_lf_generic_rule_engine_and_abandon_v1.sql",
+        "line": 69,
+        "literal": "  RETURN jsonb_build_object('status','APPLIED','score',v_score,'request',v_req,'written',true);",
+        "source_sha256": "081ed0653bbac5a8762354622c6387ae7de37f12d0e10cec7a393688c557c417",
+        "marker": "APPLIED",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      }
+    ],
+    "dynamic_emissions_complete": false,
+    "limits": [
+      "Literal Python AST and SQL/TS token candidates only",
+      "No runtime or generated SQL execution",
+      "Comparisons, metadata and returns need native context classification"
+    ]
+  },
+  {
+    "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+    "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+    "sites": [
+      {
+        "id": "PASS-d020f9b864e2",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 21,
+        "literal": " AND step_id='input_validate' AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-f7f6e91c8f89",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 208,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-9cb96ed3cd75",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 412,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-8aba46fccab6",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 456,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-0b8f6efdf81c",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 473,
+        "literal": "           AND status='STEP_PASS_WITH_EVIDENCE'",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-90d91b2bd25c",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 486,
+        "literal": "      AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-499d29fa126f",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 492,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-90226948015d",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 761,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-e70a2883a20a",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 771,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-212849dd1e99",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 795,
+        "literal": "      AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-151f0b26cd21",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 858,
+        "literal": "                                   'ig_findings_reported',true)",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "ig_findings_reported=true",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-b7dd1b59aa7c",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 879,
+        "literal": "  WHERE execution_id=p_execution_id AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-92f7f0b26cb6",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 1039,
+        "literal": "  IF p_semantic_judge_result->>'verdict'='PASS_INDEPENDENT_SEMANTIC'",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "PASS_INDEPENDENT_SEMANTIC",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-e60f8ddf0b28",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 1066,
+        "literal": "         p_semantic_judge_result->>'verdict'='PASS_INDEPENDENT_SEMANTIC'",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "PASS_INDEPENDENT_SEMANTIC",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-25c77286bd7b",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 1070,
+        "literal": "         p_semantic_judge_result->>'verdict'='PASS_INDEPENDENT_SEMANTIC'",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "PASS_INDEPENDENT_SEMANTIC",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-a29ad4534ef7",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 1077,
+        "literal": "         p_semantic_judge_result->>'verdict'='PASS_REVIEWED_CURRENT_CONTEXT'",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "PASS_REVIEWED_CURRENT_CONTEXT",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-4c793716ffab",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 1080,
+        "literal": "         AND coalesce((p_semantic_judge_result->>'producer_independence_proven')::boolean,true) IS FALSE",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "DEFAULT_TRUE",
+        "risk_candidates": [
+          "DEFAULT_TRUE_REQUIRES_CONTEXT"
+        ],
+        "classification": "RISK_PATTERN_ONLY",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      },
+      {
+        "id": "PASS-5a53866e46d0",
+        "file": "skills/auditoria-profunda-implementacion-lf/reports/v2_inputs/live_functions.sql",
+        "line": 1170,
+        "literal": "    AND status='STEP_PASS_WITH_EVIDENCE';",
+        "source_sha256": "5232deb5f4f663b174a1a1c701cb4e1215ca1a04fd64c36e05e3dbf28eded3aa",
+        "marker": "STEP_PASS_WITH_EVIDENCE",
+        "risk_candidates": [],
+        "classification": "EMITTER_CANDIDATE",
+        "evidence_required": [],
+        "context_review": "NOT_EVALUATED",
+        "negative_test": {
+          "status": "NOT_EXECUTED",
+          "command": null,
+          "evidence_refs": [],
+          "expected_rejection": "Resolve the applicable input/contract before testing"
+        }
+      }
+    ],
+    "dynamic_emissions_complete": false,
+    "limits": [
+      "Literal Python AST and SQL/TS token candidates only",
+      "No runtime or generated SQL execution",
+      "Comparisons, metadata and returns need native context classification"
+    ]
+  }
+]

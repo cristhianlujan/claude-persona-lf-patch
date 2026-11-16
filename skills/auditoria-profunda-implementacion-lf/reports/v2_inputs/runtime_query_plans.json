@@ -1,0 +1,299 @@
+{
+  "queries": [
+    {
+      "id": "Q_RUNTIME_PARENT",
+      "source_function": "lf_profile_execution_plan_for_run_v1",
+      "sql": "SELECT * FROM public.lf_operation_execution WHERE execution_id='EXEC-PROFILE-GATE2-808379962BF5ACA150004167'",
+      "plan": [
+        {
+          "QUERY PLAN": [
+            {
+              "Plan": {
+                "Node Type": "Index Scan",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Scan Direction": "Forward",
+                "Index Name": "lf_operation_execution_pkey",
+                "Relation Name": "lf_operation_execution",
+                "Alias": "lf_operation_execution",
+                "Startup Cost": 0.28,
+                "Total Cost": 2.5,
+                "Plan Rows": 1,
+                "Plan Width": 883,
+                "Actual Startup Time": 0.036,
+                "Actual Total Time": 0.037,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Index Cond": "(execution_id = 'EXEC-PROFILE-GATE2-808379962BF5ACA150004167'::text)",
+                "Rows Removed by Index Recheck": 0,
+                "Shared Hit Blocks": 3,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              },
+              "Planning": {
+                "Shared Hit Blocks": 231,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 1,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              },
+              "Planning Time": 20.792,
+              "Triggers": [],
+              "Execution Time": 0.129
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Q_RUNTIME_SCOPE",
+      "source_function": "lf_profile_execution_plan_for_run_v1",
+      "sql": "SELECT evidence_payload->'resolved_scope' FROM public.lf_operation_execution_steps WHERE execution_id='EXEC-PROFILE-GATE2-808379962BF5ACA150004167' AND step_id='input_validate' AND status='STEP_PASS_WITH_EVIDENCE'",
+      "plan": [
+        {
+          "QUERY PLAN": [
+            {
+              "Plan": {
+                "Node Type": "Index Scan",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Scan Direction": "Forward",
+                "Index Name": "uq_lf_operation_execution_steps_execution_step",
+                "Relation Name": "lf_operation_execution_steps",
+                "Alias": "lf_operation_execution_steps",
+                "Startup Cost": 0.41,
+                "Total Cost": 2.64,
+                "Plan Rows": 1,
+                "Plan Width": 32,
+                "Actual Startup Time": 0.909,
+                "Actual Total Time": 0.91,
+                "Actual Rows": 1,
+                "Actual Loops": 1,
+                "Index Cond": "((execution_id = 'EXEC-PROFILE-GATE2-808379962BF5ACA150004167'::text) AND (step_id = 'input_validate'::text))",
+                "Rows Removed by Index Recheck": 0,
+                "Filter": "(status = 'STEP_PASS_WITH_EVIDENCE'::text)",
+                "Rows Removed by Filter": 0,
+                "Shared Hit Blocks": 33,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              },
+              "Planning": {
+                "Shared Hit Blocks": 156,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              },
+              "Planning Time": 1.798,
+              "Triggers": [],
+              "Execution Time": 0.97
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Q_RUNTIME_SELECTION",
+      "source_function": "lf_profile_skill_selection_prepare_context_v1",
+      "sql": "SELECT p.skill_code,p.selection_mode,p.required_operation,p.allowed_effects,c.status AS catalog_status,c.effect,c.required_operation AS catalog_operation,c.handler_fn,c.input_required,d.descriptor_status,d.descriptor,d.source_revision,d.source_ref FROM public.lf_skill_selector_policy_v1 p LEFT JOIN public.lf_skill_catalog_v1 c USING(skill_code) LEFT JOIN public.lf_skill_selection_registry_v1 d USING(skill_code) WHERE p.profile_code='PERFIL-PRODUCT-DIRECTOR-LF' AND p.enabled AND 'PRODUCTO'=ANY(p.channels) ORDER BY p.skill_code",
+      "plan": [
+        {
+          "QUERY PLAN": [
+            {
+              "Plan": {
+                "Node Type": "Nested Loop",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Join Type": "Left",
+                "Startup Cost": 0.43,
+                "Total Cost": 12.77,
+                "Plan Rows": 2,
+                "Plan Width": 389,
+                "Actual Startup Time": 4.8,
+                "Actual Total Time": 4.813,
+                "Actual Rows": 2,
+                "Actual Loops": 1,
+                "Inner Unique": true,
+                "Shared Hit Blocks": 10,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Nested Loop",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Join Type": "Left",
+                    "Startup Cost": 0.28,
+                    "Total Cost": 8.03,
+                    "Plan Rows": 2,
+                    "Plan Width": 261,
+                    "Actual Startup Time": 4.24,
+                    "Actual Total Time": 4.249,
+                    "Actual Rows": 2,
+                    "Actual Loops": 1,
+                    "Inner Unique": true,
+                    "Shared Hit Blocks": 6,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Index Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Scan Direction": "Forward",
+                        "Index Name": "lf_skill_selector_policy_v1_pkey",
+                        "Relation Name": "lf_skill_selector_policy_v1",
+                        "Alias": "p",
+                        "Startup Cost": 0.14,
+                        "Total Cost": 3.28,
+                        "Plan Rows": 2,
+                        "Plan Width": 101,
+                        "Actual Startup Time": 1.885,
+                        "Actual Total Time": 1.888,
+                        "Actual Rows": 2,
+                        "Actual Loops": 1,
+                        "Index Cond": "(profile_code = 'PERFIL-PRODUCT-DIRECTOR-LF'::text)",
+                        "Rows Removed by Index Recheck": 0,
+                        "Filter": "(enabled AND ('PRODUCTO'::text = ANY (channels)))",
+                        "Rows Removed by Filter": 0,
+                        "Shared Hit Blocks": 2,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0
+                      },
+                      {
+                        "Node Type": "Index Scan",
+                        "Parent Relationship": "Inner",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Scan Direction": "Forward",
+                        "Index Name": "lf_skill_catalog_v1_pkey",
+                        "Relation Name": "lf_skill_catalog_v1",
+                        "Alias": "c",
+                        "Startup Cost": 0.14,
+                        "Total Cost": 2.36,
+                        "Plan Rows": 1,
+                        "Plan Width": 192,
+                        "Actual Startup Time": 1.177,
+                        "Actual Total Time": 1.178,
+                        "Actual Rows": 1,
+                        "Actual Loops": 2,
+                        "Index Cond": "(skill_code = p.skill_code)",
+                        "Rows Removed by Index Recheck": 0,
+                        "Shared Hit Blocks": 4,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Node Type": "Index Scan",
+                    "Parent Relationship": "Inner",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Scan Direction": "Forward",
+                    "Index Name": "lf_skill_selection_registry_v1_pkey",
+                    "Relation Name": "lf_skill_selection_registry_v1",
+                    "Alias": "d",
+                    "Startup Cost": 0.15,
+                    "Total Cost": 2.37,
+                    "Plan Rows": 1,
+                    "Plan Width": 160,
+                    "Actual Startup Time": 0.279,
+                    "Actual Total Time": 0.279,
+                    "Actual Rows": 1,
+                    "Actual Loops": 2,
+                    "Index Cond": "(skill_code = p.skill_code)",
+                    "Rows Removed by Index Recheck": 0,
+                    "Shared Hit Blocks": 4,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              },
+              "Planning": {
+                "Shared Hit Blocks": 208,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 1,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              },
+              "Planning Time": 11.324,
+              "Triggers": [],
+              "Execution Time": 4.927
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "read_only": true,
+  "rollback_included": true,
+  "frequency_measured": false,
+  "sample_count_per_query": 1
+}

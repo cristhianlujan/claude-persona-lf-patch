@@ -1,0 +1,37 @@
+{
+  "rows": [
+    {
+      "server_version": "17.6",
+      "query_role": "supabase_read_only_user",
+      "captured_at": "2026-11-16 06:05:27.574977+00",
+      "function_hashes": [
+        {
+          "function": "lf_profile_execution_plan_for_run_v1",
+          "volatility": "s",
+          "definition_md5": "2dd5b6570e5a4b5cc08b2905ef2dae57"
+        },
+        {
+          "function": "lf_profile_native_bridge_prepare_v1",
+          "volatility": "v",
+          "definition_md5": "f32dd30ddc095401eaa01e1499c924b8"
+        },
+        {
+          "function": "lf_profile_native_bridge_record_report_v1",
+          "volatility": "v",
+          "definition_md5": "975a9d1ab81898f39dab93c058edf682"
+        },
+        {
+          "function": "lf_profile_native_bridge_record_semantic_v1",
+          "volatility": "v",
+          "definition_md5": "633648e23cbd3c5fbf27324881709cb9"
+        },
+        {
+          "function": "lf_profile_skill_selection_prepare_context_v1",
+          "volatility": "s",
+          "definition_md5": "353a555c6c3a1666d36293dd6792ea9a"
+        }
+      ]
+    }
+  ],
+  "source": "Read-only SELECT of server_version/current_user/pg_get_functiondef hashes; no writer invoked"
+}

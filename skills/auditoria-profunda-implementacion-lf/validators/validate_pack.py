@@ -19,7 +19,13 @@ REQUIRED = ["SKILL.md", "README.md", "contracts/main_contract.md", "contracts/mi
     "handoffs/to_quality_pack.handoff.json", "adapters/github_pack_adapter.md", "adapters/document_patch_adapter.md",
     "references/defect_taxonomy.json", "references/ekb_snapshot.json", "references/promotion_sql_readback.json",
     "references/ekb_current_snapshot.json", "references/governance_current_readback.json", "reports/forward_test.json",
-    "reports/pilot_report.json", "reports/pilot_trace.json", "registration/asset_registration_candidate_v1.json"]
+    "reports/pilot_report.json", "reports/pilot_trace.json", "registration/asset_registration_candidate_v1.json",
+    "contracts/reporting_and_contract_depth_v2.md", "schemas/audit_input_v2.schema.json",
+    "schemas/audit_report_v2.schema.json", "schemas/judge_result_v2.schema.json", "schemas/quality_handoff_v2.schema.json",
+    "references/contract_profiles_v2.json", "validators/validate_audit_v2.py", "scripts/audit_v2.py",
+    "scripts/scan_pass_emitters.py", "scripts/render_audit_v2.py", "scripts/contract_reviews_v2.py",
+    "scripts/build_report_v2.py", "evals/test_reporting_v2.py", "reports/perfil_ig_perfil_v2.json",
+    "reports/perfil_ig_perfil_v2.md", "reports/perfil_ig_perfil_v2.html"]
 
 
 def validate():
@@ -60,6 +66,8 @@ def validate():
             errors.append("LF_SKILL_CREATOR_CONVENTION:" + legacy.stdout + legacy.stderr)
         from validate_report import validate as validate_report
         errors.extend(validate_report(json.loads((PACK / "reports/pilot_report.json").read_text()), ROOT))
+        from validate_audit_v2 import validate as validate_audit_v2
+        errors.extend(validate_audit_v2(json.loads((PACK / "reports/perfil_ig_perfil_v2.json").read_text()), ROOT))
     return errors
 
 

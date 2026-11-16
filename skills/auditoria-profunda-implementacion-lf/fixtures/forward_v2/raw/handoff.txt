@@ -1,0 +1,5 @@
+Entregar los datos necesarios y un análisis adecuado de los casos relevantes.
+Gestionar correctamente los errores, validar todo lo necesario y enviar al equipo
+correspondiente. La solución deberá ser robusta, suficiente y completa, incluyendo
+una evaluación apropiada y las consideraciones que correspondan según el caso.
+Al terminar, informar los resultados y las recomendaciones oportunas.

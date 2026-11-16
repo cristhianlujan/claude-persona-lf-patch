@@ -1,0 +1,350 @@
+{
+  "executed_at": "2026-11-16T06:12:04.508618+00:00",
+  "scope": "LOCAL_TESTS_NOT_GOVERNANCE_PASS",
+  "command": "python skills/auditoria-profunda-implementacion-lf/scripts/run_evals.py --output <path>",
+  "tests_run": 74,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "successful": true,
+  "observations": [
+    {
+      "test": "test_acceptance.Acceptance.test_A01_spec_two_undeclared_required_fields_from_consumer",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A02_parameter_full_origin_transport_consumer_chain",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A03_missing_branch_from_state_contract",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A04_sql_index_measured_equivalence_and_negative_tenant",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A05_repeated_queries_snapshot_and_currentness_negatives",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A06_independence_not_extra_veto_when_context_is_authorized",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A07_valid_review_does_not_create_authority",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A08_input_contract_passes_incompatible_consumer",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A09_step_context_lost_at_transport",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A10_superficial_output_despite_available_evidence",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N01_immediate_freshness_never_periodic_materialization",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N02_context_isolated_same_model_can_satisfy_independence",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N03_stale_wrong_scope_and_material_fail_remain_blocked",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N04_renamed_undocumented_consumer_fields_generalize",
+      "result": "PASS"
+    },
+    {
+      "test": "test_ci_provenance.ShallowCheckoutProvenance.test_exact_baseline_fetch_preserves_source_checks",
+      "result": "PASS"
+    },
+    {
+      "test": "test_ci_provenance.ShallowCheckoutProvenance.test_invalid_commit_is_rejected_before_transport",
+      "result": "PASS"
+    },
+    {
+      "test": "test_holdout.BlindCaseReplay.test_first_failure_masks_second_and_coordinated_fix_resolves_both",
+      "result": "PASS"
+    },
+    {
+      "test": "test_holdout.BlindCaseReplay.test_raw_snapshot_matches_actual_blind_test_sources",
+      "result": "PASS"
+    },
+    {
+      "test": "test_holdout.BlindCaseReplay.test_renamed_contract_call_and_state_discovered_from_raw_sources",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_authority_cannot_be_created_by_report_flag",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_changed_literal_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_evidence_hash_drift_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_fix_without_before_after_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_literal_commit_hash_and_consumers_resolve",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_missing_ref_and_nonexistent_json_pointer_are_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_path_escape_and_duplicate_ids_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_policy_strict_types_and_nonhex_hash_never_authorize",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_snapshot_missing_identity_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_unexecuted_confirmation_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_unrelated_bound_evidence_cannot_masquerade_as_authority",
+      "result": "PASS"
+    },
+    {
+      "test": "test_pilot.Step70Pilot.test_actual_material_failure_masking_is_reproducible",
+      "result": "PASS"
+    },
+    {
+      "test": "test_pilot.Step70Pilot.test_actual_run_argument_binding_gap_is_reproducible",
+      "result": "PASS"
+    },
+    {
+      "test": "test_pilot.Step70Pilot.test_spec_and_eval_mismatch_is_reproducible",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_100_percent_lot_never_implies_new_e2e",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_accepted_broken_input_is_not_verified_negative",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_accounting_can_accredit_a_complete_synthetic_new_run",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_candidate_hash_not_invented_before_step50",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_capture_hash_and_pointer_resolve",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_cohort_statistics_cannot_be_rewritten_as_zero_false_passes",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_contract_literal_and_grade_cannot_be_invented",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_critical_missing_and_weak_never_averaged_away",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_ekb_applicability_and_evidence_cannot_be_faked",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_empty_sample_denominators_are_null",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_fake_negative_execution_and_source_drift_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_finding_integrity_and_no_fake_fix",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_fresh_context_fixture_reproduces_undocumented_losses",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_historical_run_is_not_new_e2e",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_judge_contextual_pass_does_not_require_invented_independence",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_materialization_not_recommended_without_frequency_and_safety",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_materialization_rejected_for_immediate_freshness",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_materialize_plan_node_not_materialized_view",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_measured_sql_without_readonly_rollback_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_missing_hop_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_missing_step_cannot_disappear",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_new_run_cannot_relabel_old_or_static_receipt",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_optional_ig_without_invocation_not_automatically_false_pass",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_optional_materialization_requires_measured_positive_benefit",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_overclaimed_flow_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_pass_scanner_finds_exception_success_without_executing_source",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_pointer_presence_not_false_pass_rate",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_promotion_true_requires_real_current_policy_evidence",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_query_numbers_must_match_captured_plan",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_real_packet_valid_but_flow_not_accredited",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_renderer_colors_labels_escape_and_separate_verdict",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_six_phases_and_ekb_evidence_are_preserved",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_sql_comparison_and_default_true_need_context",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_static_evidence_cannot_be_current_measurement",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_type_specific_formats_and_semantic_acceptance_required",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_typed_intake_rejects_null_commit_empty_consumer_and_unscoped_write",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_unknown_contract_field_stays_gray",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_unmeasured_writer_cannot_have_fake_latency",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_vague_phrase_is_a_hint_even_in_negation",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_weak_field_requires_actionable_rewrite",
+      "result": "PASS"
+    },
+    {
+      "test": "test_reporting_v2.V2Reporting.test_wordy_vague_contract_does_not_outscore_concise_specific",
+      "result": "PASS"
+    }
+  ],
+  "log": "test_A01_spec_two_undeclared_required_fields_from_consumer (test_acceptance.Acceptance.test_A01_spec_two_undeclared_required_fields_from_consumer) ... ok\ntest_A02_parameter_full_origin_transport_consumer_chain (test_acceptance.Acceptance.test_A02_parameter_full_origin_transport_consumer_chain) ... ok\ntest_A03_missing_branch_from_state_contract (test_acceptance.Acceptance.test_A03_missing_branch_from_state_contract) ... ok\ntest_A04_sql_index_measured_equivalence_and_negative_tenant (test_acceptance.Acceptance.test_A04_sql_index_measured_equivalence_and_negative_tenant) ... ok\ntest_A05_repeated_queries_snapshot_and_currentness_negatives (test_acceptance.Acceptance.test_A05_repeated_queries_snapshot_and_currentness_negatives) ... ok\ntest_A06_independence_not_extra_veto_when_context_is_authorized (test_acceptance.Acceptance.test_A06_independence_not_extra_veto_when_context_is_authorized) ... ok\ntest_A07_valid_review_does_not_create_authority (test_acceptance.Acceptance.test_A07_valid_review_does_not_create_authority) ... ok\ntest_A08_input_contract_passes_incompatible_consumer (test_acceptance.Acceptance.test_A08_input_contract_passes_incompatible_consumer) ... ok\ntest_A09_step_context_lost_at_transport (test_acceptance.Acceptance.test_A09_step_context_lost_at_transport) ... ok\ntest_A10_superficial_output_despite_available_evidence (test_acceptance.Acceptance.test_A10_superficial_output_despite_available_evidence) ... ok\ntest_N01_immediate_freshness_never_periodic_materialization (test_acceptance.Acceptance.test_N01_immediate_freshness_never_periodic_materialization) ... ok\ntest_N02_context_isolated_same_model_can_satisfy_independence (test_acceptance.Acceptance.test_N02_context_isolated_same_model_can_satisfy_independence) ... ok\ntest_N03_stale_wrong_scope_and_material_fail_remain_blocked (test_acceptance.Acceptance.test_N03_stale_wrong_scope_and_material_fail_remain_blocked) ... ok\ntest_N04_renamed_undocumented_consumer_fields_generalize (test_acceptance.Acceptance.test_N04_renamed_undocumented_consumer_fields_generalize) ... ok\ntest_exact_baseline_fetch_preserves_source_checks (test_ci_provenance.ShallowCheckoutProvenance.test_exact_baseline_fetch_preserves_source_checks) ... ok\ntest_invalid_commit_is_rejected_before_transport (test_ci_provenance.ShallowCheckoutProvenance.test_invalid_commit_is_rejected_before_transport) ... ok\ntest_first_failure_masks_second_and_coordinated_fix_resolves_both (test_holdout.BlindCaseReplay.test_first_failure_masks_second_and_coordinated_fix_resolves_both) ... ok\ntest_raw_snapshot_matches_actual_blind_test_sources (test_holdout.BlindCaseReplay.test_raw_snapshot_matches_actual_blind_test_sources) ... ok\ntest_renamed_contract_call_and_state_discovered_from_raw_sources (test_holdout.BlindCaseReplay.test_renamed_contract_call_and_state_discovered_from_raw_sources) ... ok\ntest_authority_cannot_be_created_by_report_flag (test_integrity.ReportIntegrity.test_authority_cannot_be_created_by_report_flag) ... ok\ntest_changed_literal_is_rejected (test_integrity.ReportIntegrity.test_changed_literal_is_rejected) ... ok\ntest_evidence_hash_drift_is_rejected (test_integrity.ReportIntegrity.test_evidence_hash_drift_is_rejected) ... ok\ntest_fix_without_before_after_is_rejected (test_integrity.ReportIntegrity.test_fix_without_before_after_is_rejected) ... ok\ntest_literal_commit_hash_and_consumers_resolve (test_integrity.ReportIntegrity.test_literal_commit_hash_and_consumers_resolve) ... ok\ntest_missing_ref_and_nonexistent_json_pointer_are_rejected (test_integrity.ReportIntegrity.test_missing_ref_and_nonexistent_json_pointer_are_rejected) ... ok\ntest_path_escape_and_duplicate_ids_rejected (test_integrity.ReportIntegrity.test_path_escape_and_duplicate_ids_rejected) ... ok\ntest_policy_strict_types_and_nonhex_hash_never_authorize (test_integrity.ReportIntegrity.test_policy_strict_types_and_nonhex_hash_never_authorize) ... ok\ntest_snapshot_missing_identity_rejected (test_integrity.ReportIntegrity.test_snapshot_missing_identity_rejected) ... ok\ntest_unexecuted_confirmation_is_rejected (test_integrity.ReportIntegrity.test_unexecuted_confirmation_is_rejected) ... ok\ntest_unrelated_bound_evidence_cannot_masquerade_as_authority (test_integrity.ReportIntegrity.test_unrelated_bound_evidence_cannot_masquerade_as_authority) ... ok\ntest_actual_material_failure_masking_is_reproducible (test_pilot.Step70Pilot.test_actual_material_failure_masking_is_reproducible) ... ok\ntest_actual_run_argument_binding_gap_is_reproducible (test_pilot.Step70Pilot.test_actual_run_argument_binding_gap_is_reproducible) ... ok\ntest_spec_and_eval_mismatch_is_reproducible (test_pilot.Step70Pilot.test_spec_and_eval_mismatch_is_reproducible) ... ok\ntest_100_percent_lot_never_implies_new_e2e (test_reporting_v2.V2Reporting.test_100_percent_lot_never_implies_new_e2e) ... ok\ntest_accepted_broken_input_is_not_verified_negative (test_reporting_v2.V2Reporting.test_accepted_broken_input_is_not_verified_negative) ... ok\ntest_accounting_can_accredit_a_complete_synthetic_new_run (test_reporting_v2.V2Reporting.test_accounting_can_accredit_a_complete_synthetic_new_run) ... ok\ntest_candidate_hash_not_invented_before_step50 (test_reporting_v2.V2Reporting.test_candidate_hash_not_invented_before_step50) ... ok\ntest_capture_hash_and_pointer_resolve (test_reporting_v2.V2Reporting.test_capture_hash_and_pointer_resolve) ... ok\ntest_cohort_statistics_cannot_be_rewritten_as_zero_false_passes (test_reporting_v2.V2Reporting.test_cohort_statistics_cannot_be_rewritten_as_zero_false_passes) ... ok\ntest_contract_literal_and_grade_cannot_be_invented (test_reporting_v2.V2Reporting.test_contract_literal_and_grade_cannot_be_invented) ... ok\ntest_critical_missing_and_weak_never_averaged_away (test_reporting_v2.V2Reporting.test_critical_missing_and_weak_never_averaged_away) ... ok\ntest_ekb_applicability_and_evidence_cannot_be_faked (test_reporting_v2.V2Reporting.test_ekb_applicability_and_evidence_cannot_be_faked) ... ok\ntest_empty_sample_denominators_are_null (test_reporting_v2.V2Reporting.test_empty_sample_denominators_are_null) ... ok\ntest_fake_negative_execution_and_source_drift_rejected (test_reporting_v2.V2Reporting.test_fake_negative_execution_and_source_drift_rejected) ... ok\ntest_finding_integrity_and_no_fake_fix (test_reporting_v2.V2Reporting.test_finding_integrity_and_no_fake_fix) ... ok\ntest_fresh_context_fixture_reproduces_undocumented_losses (test_reporting_v2.V2Reporting.test_fresh_context_fixture_reproduces_undocumented_losses) ... ok\ntest_historical_run_is_not_new_e2e (test_reporting_v2.V2Reporting.test_historical_run_is_not_new_e2e) ... ok\ntest_judge_contextual_pass_does_not_require_invented_independence (test_reporting_v2.V2Reporting.test_judge_contextual_pass_does_not_require_invented_independence) ... ok\ntest_materialization_not_recommended_without_frequency_and_safety (test_reporting_v2.V2Reporting.test_materialization_not_recommended_without_frequency_and_safety) ... ok\ntest_materialization_rejected_for_immediate_freshness (test_reporting_v2.V2Reporting.test_materialization_rejected_for_immediate_freshness) ... ok\ntest_materialize_plan_node_not_materialized_view (test_reporting_v2.V2Reporting.test_materialize_plan_node_not_materialized_view) ... ok\ntest_measured_sql_without_readonly_rollback_is_rejected (test_reporting_v2.V2Reporting.test_measured_sql_without_readonly_rollback_is_rejected) ... ok\ntest_missing_hop_is_rejected (test_reporting_v2.V2Reporting.test_missing_hop_is_rejected) ... ok\ntest_missing_step_cannot_disappear (test_reporting_v2.V2Reporting.test_missing_step_cannot_disappear) ... ok\ntest_new_run_cannot_relabel_old_or_static_receipt (test_reporting_v2.V2Reporting.test_new_run_cannot_relabel_old_or_static_receipt) ... ok\ntest_optional_ig_without_invocation_not_automatically_false_pass (test_reporting_v2.V2Reporting.test_optional_ig_without_invocation_not_automatically_false_pass) ... ok\ntest_optional_materialization_requires_measured_positive_benefit (test_reporting_v2.V2Reporting.test_optional_materialization_requires_measured_positive_benefit) ... ok\ntest_overclaimed_flow_is_rejected (test_reporting_v2.V2Reporting.test_overclaimed_flow_is_rejected) ... ok\ntest_pass_scanner_finds_exception_success_without_executing_source (test_reporting_v2.V2Reporting.test_pass_scanner_finds_exception_success_without_executing_source) ... ok\ntest_pointer_presence_not_false_pass_rate (test_reporting_v2.V2Reporting.test_pointer_presence_not_false_pass_rate) ... ok\ntest_promotion_true_requires_real_current_policy_evidence (test_reporting_v2.V2Reporting.test_promotion_true_requires_real_current_policy_evidence) ... ok\ntest_query_numbers_must_match_captured_plan (test_reporting_v2.V2Reporting.test_query_numbers_must_match_captured_plan) ... ok\ntest_real_packet_valid_but_flow_not_accredited (test_reporting_v2.V2Reporting.test_real_packet_valid_but_flow_not_accredited) ... ok\ntest_renderer_colors_labels_escape_and_separate_verdict (test_reporting_v2.V2Reporting.test_renderer_colors_labels_escape_and_separate_verdict) ... ok\ntest_six_phases_and_ekb_evidence_are_preserved (test_reporting_v2.V2Reporting.test_six_phases_and_ekb_evidence_are_preserved) ... ok\ntest_sql_comparison_and_default_true_need_context (test_reporting_v2.V2Reporting.test_sql_comparison_and_default_true_need_context) ... ok\ntest_static_evidence_cannot_be_current_measurement (test_reporting_v2.V2Reporting.test_static_evidence_cannot_be_current_measurement) ... ok\ntest_type_specific_formats_and_semantic_acceptance_required (test_reporting_v2.V2Reporting.test_type_specific_formats_and_semantic_acceptance_required) ... ok\ntest_typed_intake_rejects_null_commit_empty_consumer_and_unscoped_write (test_reporting_v2.V2Reporting.test_typed_intake_rejects_null_commit_empty_consumer_and_unscoped_write) ... ok\ntest_unknown_contract_field_stays_gray (test_reporting_v2.V2Reporting.test_unknown_contract_field_stays_gray) ... ok\ntest_unmeasured_writer_cannot_have_fake_latency (test_reporting_v2.V2Reporting.test_unmeasured_writer_cannot_have_fake_latency) ... ok\ntest_vague_phrase_is_a_hint_even_in_negation (test_reporting_v2.V2Reporting.test_vague_phrase_is_a_hint_even_in_negation) ... ok\ntest_weak_field_requires_actionable_rewrite (test_reporting_v2.V2Reporting.test_weak_field_requires_actionable_rewrite) ... ok\ntest_wordy_vague_contract_does_not_outscore_concise_specific (test_reporting_v2.V2Reporting.test_wordy_vague_contract_does_not_outscore_concise_specific) ... ok\n\n----------------------------------------------------------------------\nRan 74 tests in 2.023s\n\nOK\n",
+  "sql_fixture_measurement": {
+    "engine": "SQLite in-memory fixture; not PG performance",
+    "rows": 20000,
+    "before": {
+      "plan": [
+        "SCAN payments"
+      ],
+      "vm_operations": 68013,
+      "result": [
+        [
+          19201,
+          38402
+        ]
+      ]
+    },
+    "after": {
+      "plan": [
+        "SEARCH payments USING INDEX payments_tenant_external (tenant=? AND external_id=?)"
+      ],
+      "vm_operations": 21,
+      "result": [
+        [
+          19201,
+          38402
+        ]
+      ]
+    },
+    "wrong_tenant_result": []
+  },
+  "freshness_fixture_measurement": {
+    "engine": "SQLite cache-table analogue, not PG materialized view",
+    "before": 5,
+    "source_after_change": 12,
+    "cached_after_change": 5
+  },
+  "query_count_fixture": {
+    "before": 5,
+    "after": 1,
+    "evidence_test": "test_A05_repeated_queries_snapshot_and_currentness_negatives"
+  },
+  "promotion_authorized": false
+}

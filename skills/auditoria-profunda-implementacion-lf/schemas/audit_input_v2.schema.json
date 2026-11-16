@@ -1,0 +1,158 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "LF_DEEP_AUDIT_INPUT_V2"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[^/]+/[^/]+$"
+    },
+    "base_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "read_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "write_scope": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "CREATE_CANDIDATE_SKILL",
+          "TEST_LOCAL",
+          "UPDATE_DRAFT_PR"
+        ]
+      }
+    },
+    "entrypoints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "consumer_targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "authority_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "uri": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_sha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "resolved_revision": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolution_status": {
+            "enum": [
+              "DECLARED_ONLY",
+              "RESOLVED_CURRENT",
+              "STALE",
+              "NOT_VERIFIED"
+            ]
+          }
+        },
+        "required": [
+          "uri",
+          "expected_sha256",
+          "resolved_revision",
+          "resolution_status"
+        ]
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "evidence_destination": {
+      "type": "string",
+      "minLength": 1
+    },
+    "new_e2e_requested": {
+      "type": "boolean"
+    },
+    "ig_execution_required": {
+      "type": "boolean"
+    },
+    "sample_n": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "performance_budget_ms": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "freshness_budget_ms": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "repository",
+    "base_commit",
+    "objective",
+    "read_scope",
+    "write_scope",
+    "entrypoints",
+    "consumer_targets",
+    "authority_refs",
+    "acceptance_criteria",
+    "evidence_destination",
+    "new_e2e_requested",
+    "ig_execution_required",
+    "sample_n",
+    "performance_budget_ms",
+    "freshness_budget_ms"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "LF_DEEP_AUDIT_INPUT_V2",
+  "description": "Forma de intake. resolution_status declarado no autentica autoridad; cotejo nativo obligatorio. Alcance de este candidato: fuente y pruebas."
+}

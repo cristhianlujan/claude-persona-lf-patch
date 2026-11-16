@@ -1,0 +1,35 @@
+{
+  "query": "select schemaname,tablename,indexname,indexdef from pg_indexes where schemaname='public' and tablename in ('lf_profile_selection_registry_v1','lf_profile_selector_policy_v1','lf_skill_selector_policy_v1','lf_skill_selection_registry_v1','lf_skill_catalog_v1') order by tablename,indexname;",
+  "indexes": [
+    {
+      "schemaname": "public",
+      "tablename": "lf_profile_selection_registry_v1",
+      "indexname": "lf_profile_selection_registry_v1_pkey",
+      "indexdef": "CREATE UNIQUE INDEX lf_profile_selection_registry_v1_pkey ON public.lf_profile_selection_registry_v1 USING btree (profile_code)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lf_profile_selector_policy_v1",
+      "indexname": "lf_profile_selector_policy_v1_pkey",
+      "indexdef": "CREATE UNIQUE INDEX lf_profile_selector_policy_v1_pkey ON public.lf_profile_selector_policy_v1 USING btree (profile_code)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lf_skill_catalog_v1",
+      "indexname": "lf_skill_catalog_v1_pkey",
+      "indexdef": "CREATE UNIQUE INDEX lf_skill_catalog_v1_pkey ON public.lf_skill_catalog_v1 USING btree (skill_code)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lf_skill_selection_registry_v1",
+      "indexname": "lf_skill_selection_registry_v1_pkey",
+      "indexdef": "CREATE UNIQUE INDEX lf_skill_selection_registry_v1_pkey ON public.lf_skill_selection_registry_v1 USING btree (skill_code)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lf_skill_selector_policy_v1",
+      "indexname": "lf_skill_selector_policy_v1_pkey",
+      "indexdef": "CREATE UNIQUE INDEX lf_skill_selector_policy_v1_pkey ON public.lf_skill_selector_policy_v1 USING btree (profile_code, skill_code, required_operation)"
+    }
+  ]
+}

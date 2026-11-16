@@ -1,0 +1,41 @@
+{
+  "execution_scope": "LOCAL_REAL_LF_HELPER_WITH_EXISTING_SYNTHETIC_INPUTS",
+  "real_governance_run_created": false,
+  "network_calls": 0,
+  "database_writes": 0,
+  "lf_functional_files_modified": [],
+  "run_binding": {
+    "valid_explicit_evaluator_status": "PASS",
+    "actual_caller_shape_status": "RECEIPT_FORMAT_VALID_PROVENANCE_UNATTESTED",
+    "wrong_run_evaluator_status": "PASS",
+    "explicit_binding_rejects": "STEP70_RUN_ID_DRIFT"
+  },
+  "eval_masking": {
+    "failing_nested_eval_error": "STEP70_SEPARATE_EVALUATOR_NOT_PASS",
+    "normalized_verdict": "PASS_REVIEWED_CURRENT_CONTEXT",
+    "original_receipt_retained": false,
+    "content_continuation_allowed": true,
+    "downstream_validator": {
+      "accepted": true,
+      "error": null
+    },
+    "valid_receipt_baseline_status": "RECEIPT_FORMAT_VALID_PROVENANCE_UNATTESTED"
+  },
+  "schema_eval": {
+    "invalid_input": {
+      "source_refs": [
+        "x"
+      ]
+    },
+    "evaluator_status": "PASS",
+    "schema_errors": [
+      "'x' is too short"
+    ],
+    "valid_schema_errors": [],
+    "valid_evaluator_status": "PASS"
+  },
+  "network_interception": {
+    "urllib_urlopen_calls": 0,
+    "socket_create_connection_calls": 0
+  }
+}

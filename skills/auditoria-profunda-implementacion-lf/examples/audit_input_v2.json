@@ -1,0 +1,34 @@
+{
+  "schema_version": "LF_DEEP_AUDIT_INPUT_V2",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_commit": "274b3c571ec58556916fa7738d66100fe4328824",
+  "objective": "Auditar contratos y transporte Perfil→IG→Perfil leyendo código y run persistido, sin iniciar runtime.",
+  "read_scope": [
+    "scripts/lf_profile_native_resume.py",
+    "scripts/lf_step70_separate_call_receipt_v1.py",
+    "public.lf_operation_execution_steps"
+  ],
+  "write_scope": [
+    "CREATE_CANDIDATE_SKILL",
+    "TEST_LOCAL",
+    "UPDATE_DRAFT_PR"
+  ],
+  "entrypoints": [
+    "scripts/lf_profile_native_resume.py"
+  ],
+  "consumer_targets": [
+    "semantic_judge",
+    "report_output"
+  ],
+  "authority_refs": [],
+  "acceptance_criteria": [
+    "Once filas con evidencia/pendiente",
+    "Matriz de contratos con motivo y redacción por celda débil"
+  ],
+  "evidence_destination": "skills/auditoria-profunda-implementacion-lf/reports",
+  "new_e2e_requested": false,
+  "ig_execution_required": true,
+  "sample_n": 20,
+  "performance_budget_ms": null,
+  "freshness_budget_ms": null
+}

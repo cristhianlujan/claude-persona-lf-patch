@@ -1,0 +1,1 @@
+{"type":"object","required":["portfolio_key","execution_id"],"properties":{"portfolio_key":{"type":"string"},"execution_id":{"type":"string"}},"additionalProperties":true}

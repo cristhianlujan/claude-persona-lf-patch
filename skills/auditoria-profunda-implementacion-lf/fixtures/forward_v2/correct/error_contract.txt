@@ -1,0 +1,9 @@
+Contrato parcial de rechazos de consumer.assess(message, *, as_of).
+Precondición: message contiene currency, source_revision y execution_id; as_of se suministra por keyword. La ausencia de clave conserva KeyError de Python; omitir as_of conserva TypeError de Python.
+currency fuera de PEN/USD → ValueError("CURRENCY_UNSUPPORTED").
+source_revision distinta de as_of → ValueError("SOURCE_REVISION_STALE").
+Los controles son secuenciales: currency se comprueba primero; cualquier rechazo evita READY.
+Con currency admitida y source_revision == as_of: {"decision":"READY","execution_id":message["execution_id"]}.
+READY solo describe este retorno local. source_revision == as_of no verifica la procedencia del token ni su actualidad respecto de un sistema externo.
+El tipo de source_revision/as_of y la política sobre nulos siguen pendientes; esta propuesta no añade restricciones sin fuente.
+Reproducción: python -B reports/forward_v2/reproduce.py desde la raíz de este paquete. El reporte de pruebas incluye positivos PEN/USD, moneda inválida, revisión discordante y claves ausentes.

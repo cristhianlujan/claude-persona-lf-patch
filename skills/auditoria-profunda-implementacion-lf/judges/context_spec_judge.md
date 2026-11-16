@@ -1,4 +1,4 @@
-# Juez contextual V1
+# Juez contextual V2
 
 Revisar solo objetivo, contexto, SPEC y EVAL efectivos del paso. Resolver fuentes,
 candidato/alcance congelados, controles y contraejemplos. No agregar gates de otro
@@ -23,9 +23,16 @@ Diferenciar solicitar/aprobar/aplicar. El helper offline audita la decisión;
 no concede autoridad ni ejecuta efectos. Receipt ilegible con EVAL inválido no
 se convierte en PASS; degradar solo procedencia cuando contenido siga válido.
 
-LF al cierre PR #4009: request_v1 admite PASS_REVIEWED_CURRENT_CONTEXT y registra
-NOT_PROVEN_OWNER_ACCEPTED. Verificar score, hashes, referencia de regla, autoridad
-del perfil y hard_block. No añadir el viejo requisito de independencia a esa
-solicitud. decide_v1 conserva aprobación humana; no confundir REQUEST con APPROVE
-o APPLY. manifest.no_promotion no es veto vigente de esa ruta. Releer gobernanza
-antes de cada auditoría futura.
+Resolver la política vigente del efecto solicitado (REQUEST/APPROVE/APPLY), sus
+funciones, versiones y readback; una nota histórica de PR #4009 no sustituye la
+gobernanza actual. Rutas AUTO requieren exactamente su autoridad y criterios;
+no añadir aprobación humana ni independencia que esa ruta no exija.
+
+Usar [salida tipada](../schemas/judge_result_v2.schema.json). Errores materiales
+producen evaluation_valid=false, código causal y next_action concreta.
+Autoridad no resuelta produce promotion_authorized=false con policy_ref faltante
+y actor/objeto/efecto afectados. Si el contrato vigente acepta revisión contextual
+y el efecto está autorizado: evaluation_valid=true, independence_status=NOT_PROVEN
+(sin aislamiento comprobado), promotion_authorized=true y authorized_effect exacto.
+El pase contextual satisface el gate que la política acepte; no fabrica independencia.
+El schema no autentica readback externo ni ejecuta efectos por sí mismo.

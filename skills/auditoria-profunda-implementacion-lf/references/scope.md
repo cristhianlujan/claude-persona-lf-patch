@@ -21,3 +21,15 @@ autoridad aportada; no autentica una procedencia externa por sí mismo. Antes de
 reportar promotion_authorized=true, el auditor nativo debe resolver el readback
 gobernado vigente y sus bindings, no aceptar verified=true del solicitante. Usar
 schemas/authority_evidence.schema.json; el flag no ejecuta ni concede un efecto.
+
+V2 exige aciertos y pendientes por paso, inventario de SQL y de PASS, matriz de
+saltos, muestreo con denominadores y contenido contractual por tipo. Las ayudas
+no ejecutan automáticamente lo descubierto ni califican semántica por longitud.
+El piloto ampliado midió ocho SELECT con ANALYZE/BUFFERS en READ ONLY y ROLLBACK:
+tres tomados del flujo y cinco consultas de auditoría, una muestra cada uno.
+La frecuencia y el inventario SQL dinámico no se agotaron; no recomienda MV.
+La cohorte de 20 runs comprueba punteros/metadatos, no tasa semántica de falsos PASS.
+La matriz distingue snapshots V1 de contratos V2 del candidato; su nota no concede
+permiso de efecto. El HTML tiene verificación estática; su ejecución visual quedó
+sin verificar por socket() no permitido al iniciar Chromium. No sustituir ese
+límite por una declaración de render/interaction PASS.

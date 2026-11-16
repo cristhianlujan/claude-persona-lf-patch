@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:forward-v2:run-input:proposed-1",
+  "title": "Entrada de pipeline.run del fixture sintético",
+  "type": "object",
+  "required": ["portfolio_key", "execution_id", "currency", "source_revision", "as_of"],
+  "properties": {
+    "portfolio_key": {"type": "string"},
+    "execution_id": {"type": "string"},
+    "currency": {"type": "string", "enum": ["PEN", "USD"]},
+    "source_revision": {
+      "description": "Token de revisión conservado literalmente; assess exige igualdad con as_of. El tipo operativo aún no está definido por la fuente."
+    },
+    "as_of": {
+      "description": "Token esperado suministrado por el caller; requerido como argumento keyword-only de assess. La igualdad entre campos se comprueba en assess."
+    }
+  },
+  "additionalProperties": true,
+  "$comment": "Propuesta mínima de required y enum; conserva tipos de IDs y extensibilidad previos. No acredita procedencia ni frescura real del token. No hay loader de schema en el fixture. El caller debe seleccionar los cinco argumentos de run; campos extra no son argumentos admitidos por run."
+}
