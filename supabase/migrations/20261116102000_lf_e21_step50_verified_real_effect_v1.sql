@@ -275,7 +275,7 @@ BEGIN
  END IF;
  old:=d;
  d:=replace(d,'  v_family_gate jsonb;',E'  v_family_gate jsonb;\n  v_step50_effect jsonb;');
- d:=replace(d,'  v_actor:=coalesce(nullif(btrim(p_actor_execution_id),''),p_execution_id);',
+ d:=replace(d,$oldactor$  v_actor:=coalesce(nullif(btrim(p_actor_execution_id),''),p_execution_id);$oldactor$,
    $replacement$  v_step50_effect:=public.lf_profile_step50_rule_effect_guard_v1(p_execution_id,p_profile_output);
   IF v_step50_effect->>'status'='BLOCKED' THEN
     RETURN jsonb_build_object('status','BLOCKED',
