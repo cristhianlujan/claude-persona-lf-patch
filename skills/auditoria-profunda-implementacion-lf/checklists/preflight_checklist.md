@@ -26,3 +26,9 @@ SUPERSEDED no es regla vigente. El checklist orienta y no limita descubrimiento.
 Añadir suficiencia, comentario accionable, RLS, concurrencia, estados,
 excepciones, retries, N+1, tipos/nulos/versiones/errores. NOT_APPLICABLE exige
 motivo. Cada nueva casuística demostrada se añade como candidato trazable.
+
+Aprendizaje candidato del propio piloto, aún sin registrar en EKB:
+LF-DEEP-AUDIT-CI-SHALLOW-BASELINE-001. Verificar que el checkout contenga el
+commit fuente, no solo el archivo; recuperar únicamente ese commit si falta.
+Evidencia en references/ekb_candidate_ci_provenance.json y regresión real de
+checkout superficial en evals/test_ci_provenance.py. No relajar el validador.

@@ -16,7 +16,7 @@ El error EKB que imponía el requisito anterior quedó SUPERSEDED; se conservan 
 
 ## Pruebas y medición
 
-31 pruebas locales ejecutadas; 0 fallos; 0 errores. Incluyen diez casos de aceptación y negativos.
+33 pruebas locales ejecutadas; 0 fallos; 0 errores. Incluyen diez casos de aceptación y negativos.
 
 | Medición | Antes | Después | Alcance |
 |---|---|---|---|

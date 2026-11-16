@@ -68,6 +68,8 @@
     "skills/auditoria-profunda-implementacion-lf/validators/validate_report.py": "TRANSVERSAL_ASSETS",
     "sandbox/lf_contract_gate_test/changesets/lf-deep-implementation-audit-skill-20261115-v1.json": "CHANGESET_MANIFEST",
     "skills/auditoria-profunda-implementacion-lf/references/governance_current_readback.json": "TRANSVERSAL_ASSETS",
-    "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json": "TRANSVERSAL_ASSETS"
+    "skills/auditoria-profunda-implementacion-lf/references/ekb_current_snapshot.json": "TRANSVERSAL_ASSETS",
+    "skills/auditoria-profunda-implementacion-lf/evals/test_ci_provenance.py": "TRANSVERSAL_ASSETS",
+    "skills/auditoria-profunda-implementacion-lf/references/ekb_candidate_ci_provenance.json": "TRANSVERSAL_ASSETS"
   }
 }
