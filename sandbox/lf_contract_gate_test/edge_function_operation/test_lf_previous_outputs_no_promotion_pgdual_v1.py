@@ -44,16 +44,16 @@ SELECT 'PARENT_RESULT='||(public.lf_profile_execution_begin_from_handoff_v1(
  'GPT_NATIVE','RUN-A','idempotent-a','actor',
  'repo','path','{}'::jsonb)->>'status');
 SELECT 'PARENT_OUTPUT_LENGTH='||jsonb_array_length(manifest->'previous_outputs'),
- 'PARENT_OUTPUT_REF='||manifest#>>'{previous_outputs,0,output_ref}',
- 'PARENT_OUTPUT_SHA='||manifest#>>'{previous_outputs,0,deliverable_sha256}',
+ 'PARENT_OUTPUT_REF='||(manifest#>>'{previous_outputs,0,output_ref}'),
+ 'PARENT_OUTPUT_SHA='||(manifest#>>'{previous_outputs,0,deliverable_sha256}'),
  'PARENT_OUTPUT_SUMMARY_CHARS='||length(manifest#>>'{previous_outputs,0,summary}'),
- 'PARENT_NO_PROMOTION='||manifest->>'no_promotion'
+ 'PARENT_NO_PROMOTION='||(manifest->>'no_promotion')
  FROM public.lf_operation_execution WHERE execution_id='RUN-A';
 SELECT 'NO_SOURCE_RESULT='||(public.lf_profile_execution_begin_from_handoff_v1(
  '{"profile_code":"PERFIL-PRODUCT-DIRECTOR-LF","literal_request":"test","request_sha256":"source","scope":{}}',
  'GPT_NATIVE','RUN-B','idempotent-b','actor','repo','path','{}'::jsonb)->>'status');
 SELECT 'NO_SOURCE_OUTPUT_LENGTH='||jsonb_array_length(manifest->'previous_outputs'),
- 'NO_SOURCE_NO_PROMOTION='||manifest->>'no_promotion'
+ 'NO_SOURCE_NO_PROMOTION='||(manifest->>'no_promotion')
  FROM public.lf_operation_execution WHERE execution_id='RUN-B';
 SELECT 'MISSING_RESULT='||(public.lf_profile_execution_begin_from_handoff_v1(
  '{"profile_code":"PERFIL-PRODUCT-DIRECTOR-LF","literal_request":"test","request_sha256":"source","scope":{"source_execution_id":"MISSING"}}',
