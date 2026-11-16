@@ -836,7 +836,18 @@ def run_bound_validator(target_path, profile_code, profile_output, evidence_mani
         or validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}):
         raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
 
-    schema_ref = f"profiles/{slug}/{runtime_schema['default']}"
+    output_modes = runtime_schema.get("output_modes", {})
+    if not isinstance(output_modes, dict):
+        raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
+    schema_relative = runtime_schema["default"]
+    if output_modes:
+        output_type = profile_output.get("output_type") if isinstance(profile_output, dict) else None
+        if (not isinstance(output_type, str) or output_type not in output_modes
+                or not isinstance(output_modes[output_type], str)
+                or not output_modes[output_type]):
+            raise ValueError("PROFILE_RUNTIME_OUTPUT_TYPE_UNSUPPORTED")
+        schema_relative = output_modes[output_type]
+    schema_ref = f"profiles/{slug}/{schema_relative}"
     validator_ref = f"profiles/{slug}/{validator['path']}"
     for ref in (schema_ref, validator_ref):
         ref_path = PurePosixPath(ref)
@@ -860,6 +871,7 @@ def run_bound_validator(target_path, profile_code, profile_output, evidence_mani
         "schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1",
         "operation_code": "EJECUCION_PERFIL_LF",
         "profile_slug": slug,
+        "output_type": profile_output.get("output_type") if output_modes else None,
         "validator_transport": validator["transport"],
         "expected_valid": True,
         "runtime_binding_sha256": sha256_file(binding_path),
