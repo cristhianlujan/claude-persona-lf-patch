@@ -47,6 +47,11 @@
       "reason": "Runs focused tests for migration parity proposal changes."
     },
     {
+      "name": "lf-profile-runtime-binding-conformance.yml",
+      "owner": "LF Profile Runtime Binding Fleet",
+      "reason": "Tests declared runtime bindings against API and native schema consumers without executing profiles or touching Supabase."
+    },
+    {
       "name": "lf-router-level2-advisory-tests.yml",
       "owner": "LF Router ACT-0001 / CI",
       "reason": "Runs exact-source positive and negative tests for the advisory level2 handoff; CI owns execution, PASE consumes evidence."
