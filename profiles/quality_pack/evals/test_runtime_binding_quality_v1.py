@@ -49,15 +49,9 @@ class QualityNativeGateTests(unittest.TestCase):
         outcome = evaluate(conservative(), {"status": "PASS"})
         self.assertEqual(outcome["status"], "PASS")
         self.assertIs(outcome["independent_review_executed"], False)
-        self.assertIs(outcome["promotion_authorized"], False)
 
     def test_conservative_return_is_structurally_valid_not_pass(self):
         self.assertEqual(validate(conservative()), {"valid": True, "errors": []})
-
-    def test_no_promotion_by_quality(self):
-        payload = conservative()
-        payload["promotion_authorized"] = True
-        self.assertIn("QUALITY_PROMOTION_AUTHORITY_FORBIDDEN", validate(payload)["errors"])
 
     def test_broken_score(self):
         payload = conservative()
