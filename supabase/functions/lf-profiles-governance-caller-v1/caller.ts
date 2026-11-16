@@ -577,6 +577,13 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
               || !body || typeof body!=="object" || Array.isArray(body)) {
             return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_NOT_AUTHORIZED"},403);
           }
+          const authorizedScreen = (body as Record<string,unknown>).pantalla_id;
+          if (authorizedScreen !== undefined &&
+              (typeof authorizedScreen !== "number" ||
+               !Number.isSafeInteger(authorizedScreen) || authorizedScreen <= 0)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_SCREEN_INVALID"},403);
+          }
+          const pantallaId = typeof authorizedScreen === "number" ? authorizedScreen : null;
           const invocationBody = {...body as Record<string,unknown>,ticket:runtimeTicket};
           // A selected skill is independent of the parent profile lifecycle.
           // Cap the one-use ticket invocation; never wait for a full synchronous
@@ -601,7 +608,14 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             ? result.result as Record<string,unknown> : {};
           const terminalStatus = typeof governed.status==="string"
             ? governed.status:directStatus;
+          // The scope comes only from the SQL-consumed one-use ticket.
+          // A downstream worker cannot replace that authorized screen.
+          if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_RUNTIME_SCREEN_SCOPE_MISMATCH",
+              execution_id:executionId,skill_code:skillCode,pantalla_id:pantallaId},409);
+          }
           const common = {execution_id:executionId,skill_code:skillCode,
+            pantalla_id:pantallaId,
             runtime_slug:slug,transport:"DIRECT_EDGE_INVOCATION",
             production_authorized:false,promotion_authorized:false,result};
           if (terminalStatus==="VALIDATOR_RESUME_REQUIRED" ||
@@ -661,6 +675,10 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           ? result.result as Record<string, unknown>
           : {};
         const terminalStatus = typeof governed.status === "string" ? governed.status : directStatus;
+        if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
+          return json({outcome:"BLOCKED",code:"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH",
+            execution_id:executionId,pantalla_id:pantallaId,consumer:CONTEXT_PACK_CONSUMER},409);
+        }
 
         if (directStatus === "VALIDATOR_RESUME_REQUIRED" || terminalStatus === "VALIDATOR_RESUME_REQUIRED") {
           return json({
