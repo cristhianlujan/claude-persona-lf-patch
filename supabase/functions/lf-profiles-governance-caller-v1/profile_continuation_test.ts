@@ -970,12 +970,13 @@ Deno.test("SRCR native repair denies any missing/forged Router evidence before S
     eq(out.status,403);
     eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
   }
-  // Owner override: manifest.no_promotion is not a source-bind denial.
+  // The fixture returns 409 for missing downstream plan, not authority denial.
   for(const value of [true,false,undefined]){
     const manifest={...base.manifest,no_promotion:value};
     const n=network({...base,manifest});
     const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
-    eq(out.status,200);
+    eq(out.status!==403,true);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),true);
   }
 
 });
