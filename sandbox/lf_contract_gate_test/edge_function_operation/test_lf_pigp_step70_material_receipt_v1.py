@@ -29,7 +29,7 @@ class PIGPMaterialStep70R17(unittest.TestCase):
  def test_material_receipt_failures_rejected(self):
   scenarios=[
    ("STEP70_REVIEW_NOT_SOURCE_BOUND",lambda x:x["separate_model_call_receipt"].update(
-     candidate_sha256="z"*64)),
+     candidate_sha256="e"*64)),
    ("STEP70_REVIEW_EVAL_NOT_PASS",lambda x:x["separate_model_call_receipt"].update(
      eval_status="FAIL")),
    ("STEP70_CALL_NOT_SEPARATE",lambda x:x["separate_model_call_receipt"].update(
