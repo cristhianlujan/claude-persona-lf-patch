@@ -2,7 +2,11 @@
   "profile_slug": "product_director_lf",
   "runtime_schema": {
     "default": "schemas/product_direction_spec.schema.json",
-    "output_modes": {}
+    "output_modes": {
+      "PRODUCT_DIRECTION_SPEC": "schemas/product_direction_spec.schema.json",
+      "PRODUCT_MISSING_INPUT_STATE": "schemas/product_missing_input.schema.json",
+      "BLOCKED_PRODUCT_RISK": "schemas/product_blocked_risk.schema.json"
+    }
   },
   "canonical_validator": {
     "path": "validators/validate_product_director_output.py",
