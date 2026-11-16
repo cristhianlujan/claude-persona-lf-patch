@@ -79,8 +79,16 @@ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','extensions'
 AS $after$
 DECLARE v_row public.lf_profile_step50_rule_effect_receipts_v1%rowtype;
-        v_snap jsonb;v_sha text;
+        v_snap jsonb;v_sha text;v_train_status text;v_profile_status text;
 BEGIN
+ SELECT status INTO v_train_status FROM public.lf_operation_execution
+ WHERE execution_id=p_train_execution_id AND operation_code='ACTUALIZACION_DB_LF';
+ SELECT status INTO v_profile_status FROM public.lf_operation_execution
+ WHERE execution_id=p_profile_execution_id AND operation_code='EJECUCION_PERFIL_LF';
+ IF v_train_status IS DISTINCT FROM 'IN_PROGRESS'
+    OR v_profile_status IS DISTINCT FROM 'IN_PROGRESS' THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','STEP50_EFFECT_CAPTURE_AUTHORITY_INVALID');
+ END IF;
  SELECT * INTO v_row FROM public.lf_profile_step50_rule_effect_receipts_v1
  WHERE profile_execution_id=p_profile_execution_id AND train_execution_id=p_train_execution_id
  AND rule_code=p_rule_code FOR UPDATE;
@@ -161,6 +169,9 @@ BEGIN
    RETURN jsonb_build_object('status','BLOCKED','code','STEP50_EFFECT_CHANGES_NOT_BOUND');
  END IF;
  v_scope:=e.manifest#>>'{screen_selection_result,selected_screen_code}';
+ IF nullif(btrim(coalesce(v_scope,'')),'') IS NULL THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','STEP50_SELECTED_SCOPE_UNRESOLVED');
+ END IF;
  FOR item IN SELECT value FROM jsonb_array_elements(v_rows) LOOP
    v_rule:=item->>'rule_code';
    v_source:=item->>'source_ref';
@@ -182,10 +193,9 @@ BEGIN
           AND c->>'after_ref' IS NOT NULL AND c->>'before_ref' IS NOT NULL) THEN
      RETURN jsonb_build_object('status','BLOCKED','code','STEP50_EFFECT_CHANGES_NOT_BOUND');
    END IF;
-   IF v_scope='B2B-AUTH-001'
-   AND NOT EXISTS(SELECT 1 FROM lf_ops.reglas r JOIN lf_ops.reglas_pantallas rp ON rp.regla_id=r.id
+   IF NOT EXISTS(SELECT 1 FROM lf_ops.reglas r JOIN lf_ops.reglas_pantallas rp ON rp.regla_id=r.id
        JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id
-       WHERE r.codigo=v_rule AND p.codigo='B2B-AUTH-001') THEN
+       WHERE r.codigo=v_rule AND p.codigo=v_scope) THEN
      RETURN jsonb_build_object('status','BLOCKED','code','STEP50_RULE_OUTSIDE_SELECTED_SCREEN');
    END IF;
    SELECT * INTO v_receipt FROM public.lf_profile_step50_rule_effect_receipts_v1
