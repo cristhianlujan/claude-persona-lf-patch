@@ -148,11 +148,16 @@ BEGIN
    RETURN jsonb_build_object('status','BLOCKED','code','STEP50_STEP40_SCOPE_NOT_BOUND');
  END IF;
  v_rows:=p_output#>'{repair_execution,rule_receipts}';
- IF jsonb_typeof(v_rows) IS DISTINCT FROM 'array' OR jsonb_array_length(v_rows)=0 THEN
+ IF jsonb_typeof(v_rows) IS DISTINCT FROM 'array' THEN
    RETURN jsonb_build_object('status','BLOCKED','code','STEP50_RULE_RECEIPTS_REQUIRED');
  END IF;
- IF jsonb_typeof(p_output#>'{repair_execution,changes}') IS DISTINCT FROM 'array'
-    OR jsonb_array_length(p_output#>'{repair_execution,changes}')<>jsonb_array_length(v_rows) THEN
+ IF jsonb_array_length(v_rows)=0 THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','STEP50_RULE_RECEIPTS_REQUIRED');
+ END IF;
+ IF jsonb_typeof(p_output#>'{repair_execution,changes}') IS DISTINCT FROM 'array' THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','STEP50_EFFECT_CHANGES_NOT_BOUND');
+ END IF;
+ IF jsonb_array_length(p_output#>'{repair_execution,changes}')<>jsonb_array_length(v_rows) THEN
    RETURN jsonb_build_object('status','BLOCKED','code','STEP50_EFFECT_CHANGES_NOT_BOUND');
  END IF;
  v_scope:=e.manifest#>>'{screen_selection_result,selected_screen_code}';
@@ -242,7 +247,7 @@ BEGIN
  RETURN jsonb_build_object('status','VERIFIED','code','STEP50_EFFECTS_VERIFIED',
    'verified_rule_count',v_count,'rule_receipts',v_verified,
    'step40_bound',true,'step50_raw_sha_bound_at_write',true,
-   'step60_step70_bound_by_existing_digest_chain',true);
+   'step60_step70_status','PENDING_EXISTING_DIGEST_CHAIN');
 END $guard$;
 
 REVOKE ALL ON FUNCTION public.lf_profile_step50_rule_effect_guard_v1(text,jsonb)
