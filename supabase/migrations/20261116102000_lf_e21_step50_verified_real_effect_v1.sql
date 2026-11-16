@@ -294,4 +294,34 @@ BEGIN
  EXECUTE d;
 END $patch$;
 
+
+-- The scorer must consume the server-verified SRCR Step50 receipt as a second
+-- source-ref route, without changing its A, hard-block or 40/50/60/70 SHA gates.
+DO $score_patch$
+DECLARE d text;d0 text;
+BEGIN
+ d:=pg_get_functiondef('public.lf_rule_promotion_score_v1(text,text)'::regprocedure);
+ IF md5(d)<>'38ce5aa5a36e70d44cf2c6d3cfd6c596' THEN
+   RAISE EXCEPTION 'STEP50_SCORER_SOURCE_STATE_DRIFT';
+ END IF;
+ d0:=d;
+ d:=replace(d,
+   $old$  IF is_bound AND has_ref THEN b:=30; END IF;$old$,
+   $new$  IF NOT has_ref
+     AND p50.evidence_payload#>>'{step50_effect_verification,status}'='VERIFIED'
+     AND jsonb_typeof(p50.evidence_payload#>'{step50_effect_verification,rule_receipts}')='array'
+   THEN
+     SELECT EXISTS(SELECT 1 FROM jsonb_array_elements(
+       p50.evidence_payload#>'{step50_effect_verification,rule_receipts}') x
+       WHERE x->>'rule_code'=p_rule_code
+         AND x->>'source_ref'='supabase://lf_ops.reglas/'||p_rule_code
+     ) INTO has_ref;
+   END IF;
+   IF is_bound AND has_ref THEN b:=30; END IF;$new$);
+ IF d=d0 OR position('step50_effect_verification,rule_receipts' IN d)=0 THEN
+   RAISE EXCEPTION 'STEP50_SCORER_PATCH_NOT_APPLIED';
+ END IF;
+ EXECUTE d;
+END $score_patch$;
+
 COMMIT;
