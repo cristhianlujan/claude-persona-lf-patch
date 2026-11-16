@@ -64,7 +64,17 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
             return block("RUNTIME_BINDING_UNREADABLE")
         if not isinstance(declared_binding, dict) or declared_binding.get("profile_slug") != slug:
             return block("RUNTIME_BINDING_IDENTITY_INVALID")
-        schema_rel = declared_binding.get("runtime_schema", {}).get("default")
+        declared_schema = declared_binding.get("runtime_schema", {})
+        schema_rel = declared_schema.get("default")
+        output_modes = declared_schema.get("output_modes", {})
+        if (packet.get("operation_code") == "EJECUCION_PERFIL_LF"
+                and isinstance(output_modes, dict) and output_modes):
+            output_type = packet.get("output_type")
+            if (not isinstance(output_type, str) or output_type not in output_modes
+                    or not isinstance(output_modes[output_type], str)
+                    or not output_modes[output_type]):
+                return block("RUNTIME_OUTPUT_MODE_UNSUPPORTED")
+            schema_rel = output_modes[output_type]
         validator_decl = declared_binding.get("canonical_validator")
         if (not isinstance(schema_rel, str) or not isinstance(validator_decl, dict)
                 or not isinstance(validator_decl.get("path"), str)
@@ -148,6 +158,11 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
     try:
         canonical_schema = json.loads(contents["schema"][1])
         candidate = json.loads(contents["raw_output"][1])
+        if (declared_binding is not None
+                and packet.get("operation_code") == "EJECUCION_PERFIL_LF"
+                and declared_binding.get("runtime_schema", {}).get("output_modes")):
+            if not isinstance(candidate, dict) or candidate.get("output_type") != packet.get("output_type"):
+                return block("RUNTIME_OUTPUT_MODE_CANDIDATE_MISMATCH")
         Draft202012Validator.check_schema(canonical_schema)
         errors = sorted(
             Draft202012Validator(canonical_schema).iter_errors(candidate),
