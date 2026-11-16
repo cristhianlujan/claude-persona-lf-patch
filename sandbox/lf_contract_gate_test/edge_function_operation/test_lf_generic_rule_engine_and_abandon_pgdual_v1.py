@@ -115,7 +115,7 @@ SELECT 'ABANDON='||(j->>'execution_id')||':'||(j->>'abandoned') FROM
  (SELECT public.lf_execution_mark_abandoned_v1('E1','SIN_AVANCE_24H_OWNER_20261115') AS j) x;
 SELECT 'EXEC_STATE='||execution_id||':'||status FROM public.lf_operation_execution
  WHERE execution_id IN ('OLD1','OLD2','E1') ORDER BY execution_id;
-SELECT 'OLD1_REASON='||manifest->>'abandoned_reason'
+SELECT 'OLD1_REASON='||(manifest->>'abandoned_reason')
  FROM public.lf_operation_execution WHERE execution_id='OLD1';
 """
         test="BEGIN;\n"+decide+"\n"+request+"\n"+migration_body+"\n"+setup+"\n"+checks+"\nROLLBACK;\n"
