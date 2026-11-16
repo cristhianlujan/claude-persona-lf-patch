@@ -9,6 +9,7 @@ from types import ModuleType
 from typing import Any
 
 from .hashing import sha256_bytes
+from .runtime_schema_selection import select_schema_relative, RuntimeSchemaSelectionError
 
 UI_RUNTIME_SCHEMA_BY_MODE = {
     "UI_FOCUSED_DECISION": "ui_focused_decision.schema.json",
@@ -406,7 +407,7 @@ class RepositoryBindings:
         if binding is not None and profile_code != binding.profile_code:
             raise RepositoryError("PROFILE_RUNTIME_IDENTITY_BINDING_MISMATCH", profile_slug)
 
-    def runtime_schema(self, profile_slug: str, output_mode: str = "AUTO") -> SchemaBinding:
+    def runtime_schema(self, profile_slug: str, output_mode: str = "AUTO", profile_output: dict[str, Any] | None = None) -> SchemaBinding:
         profile_root = (self.profiles_root / profile_slug).resolve()
         self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
         schema_root = (profile_root / "schemas").resolve()
@@ -416,9 +417,25 @@ class RepositoryBindings:
 
         binding = self.runtime_binding(profile_slug)
         if binding is not None:
-            relative = binding.default_schema if output_mode == "AUTO" else binding.output_modes.get(output_mode)
-            if not relative:
-                raise RepositoryError("RUNTIME_OUTPUT_MODE_UNSUPPORTED", output_mode)
+            # Same selector used by the governed native validator preflight.
+            runtime_contract = {
+                "default": binding.default_schema,
+                "output_modes": binding.output_modes,
+            }
+            # Preserve optional declarative form aliases/markers from the exact
+            # source binding without profile-specific branching.
+            raw_contract = json.loads((profile_root / "contracts/runtime_binding.json").read_text(encoding="utf-8"))["runtime_schema"]
+            runtime_contract.update({
+                key: raw_contract[key]
+                for key in ("default_mode", "output_type_modes", "shape_modes")
+                if key in raw_contract
+            })
+            try:
+                relative = select_schema_relative(
+                    runtime_contract, output_mode=output_mode, payload=profile_output
+                )
+            except RuntimeSchemaSelectionError as exc:
+                raise RepositoryError("RUNTIME_OUTPUT_MODE_UNSUPPORTED", str(exc)) from exc
             selected = (profile_root / relative).resolve()
             self._within(selected, schema_root, "PROFILE_SCHEMA_PATH_ESCAPE")
             payload, raw = self._read_schema(selected, schema_root)
