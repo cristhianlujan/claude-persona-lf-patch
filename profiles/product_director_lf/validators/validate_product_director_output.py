@@ -47,6 +47,77 @@ def norm_acceptance_ref(v):
     value=v.strip()
     return value.split('acceptance://',1)[1] if value.startswith('acceptance://') else value
 
+def validate_implementation_package(deliverable, observed_source_refs):
+    """Only validate an explicitly present/actionable package; never invent scope.
+
+    This is a structural guard, not a currentness/owner/promotion attestation.
+    Actual per-rule admissibility belongs to the DB scorer and snapshot gate.
+    """
+    errors = []
+    def add(code, path, message):
+        err(errors, code, path, message)
+    step = deliverable.get('next_step')
+    executor_handoff = isinstance(step, dict) and step.get('action') == 'ROUTER_SELECT_EXECUTOR'
+    package = deliverable.get('implementation_package')
+    if package is None and not executor_handoff:
+        return errors
+    if not isinstance(package, dict):
+        add('IMPLEMENTATION_PACKAGE_REQUIRED', 'deliverable_created.implementation_package',
+            'executor handoff requires source-bound implementation package')
+        return errors
+    prefix = 'deliverable_created.implementation_package.'
+    if package.get('solution_status') != 'PROPOSED_NOT_IMPLEMENTED':
+        add('IMPLEMENTATION_STATUS_INVALID', prefix + 'solution_status',
+            'proposal is not execution or promotion')
+    if not text(package.get('scope_ref')):
+        add('IMPLEMENTATION_SCOPE_REF_MISSING', prefix + 'scope_ref',
+            'scope must cite actual source')
+    if not isinstance(package.get('actions'), list) or not package['actions']:
+        add('IMPLEMENTATION_ACTIONS_MISSING', prefix + 'actions',
+            'actionable executor handoff needs nonempty actions')
+    for key in ('source_refs', 'acceptance_refs', 'preserved_constraints',
+                'expected_artifacts', 'negative_tests', 'readback_requirements',
+                'rollback_requirements'):
+        if not isinstance(package.get(key), list):
+            add('IMPLEMENTATION_LIST_MISSING', prefix + key, 'declared list required')
+    candidates = package.get('promotion_candidates')
+    if not isinstance(candidates, list):
+        add('PROMOTION_CANDIDATES_LIST_REQUIRED', prefix + 'promotion_candidates',
+            'explicit list required; empty is valid when no candidate is eligible')
+        return errors
+    seen = set()
+    for index, item in enumerate(candidates):
+        path = prefix + f'promotion_candidates[{index}]'
+        if not isinstance(item, dict):
+            add('PROMOTION_CANDIDATE_INVALID', path, 'candidate must be object')
+            continue
+        ref = item.get('source_ref')
+        if (not text(ref) or
+            not ref.startswith('supabase://lf_ops.reglas/') or
+            len(ref) <= len('supabase://lf_ops.reglas/')):
+            add('PROMOTION_SOURCE_REF_INVALID', path + '.source_ref',
+                'exact canonical rule ref required')
+            continue
+        if ref not in observed_source_refs:
+            add('PROMOTION_SOURCE_UNBOUND', path + '.source_ref',
+                'promotion candidate must be in product decision source_refs')
+        if ref in seen:
+            add('PROMOTION_CANDIDATE_DUPLICATE', path + '.source_ref',
+                'same rule cannot be proposed twice')
+        seen.add(ref)
+        supplied_code = item.get('rule_code', item.get('codigo'))
+        if supplied_code is not None and supplied_code != ref.rsplit('/', 1)[1]:
+            add('PROMOTION_RULE_CODE_MISMATCH', path + '.rule_code',
+                'stated rule code contradicts source_ref')
+        if item.get('approval_status') != 'NOT_REQUESTED':
+            add('PROMOTION_APPROVAL_PREMATURE', path + '.approval_status',
+                'product analysis cannot assert owner approval')
+        if not text(item.get('reason')):
+            add('PROMOTION_REASON_MISSING', path + '.reason',
+                'each candidate requires a source-supported reason')
+    return errors
+
+
 def validate(payload):
     e=[]
     if not isinstance(payload,dict):
@@ -121,6 +192,7 @@ def validate(payload):
             elif not set(contradictory_refs).issubset(set(rejected)):
                 err(e,'CONFLICT_REFS_NOT_RECONCILED','deliverable_created.conflict_resolution.rejected_source_refs','all contradictory refs must be explicitly reconciled')
 
+    e.extend(validate_implementation_package(d, source_ids))
     claims=d.get('material_claims')
     if not isinstance(claims,list): err(e,'CLAIMS_INVALID','deliverable_created.material_claims','array required'); claims=[]
     for i,c in enumerate(claims):
