@@ -1190,7 +1190,7 @@ Deno.test("P4: baseline missing returns typed same-run continuation; unauthorize
     }
     if(url.endsWith("/lf_profile_execution_research_baseline_v1")){
       recorded=true;
-      return new Response(JSON.stringify({status:"STEP_RECORDED",execution_id:id}),{status:200});
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",status:"STEP_PASS_WITH_EVIDENCE",execution_id:id}),{status:200});
     }
     return base.fetchFn(input,init);
   };
@@ -1221,4 +1221,30 @@ Deno.test("P4: baseline envelope cannot be injected when not required",async()=>
       evidence_refs:["supabase://source/current"]}};
   const response=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,body,config,n.fetchFn,sha);
   eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_NOT_REQUESTED");
+});
+
+Deno.test("P4: Step47 recorder outcome cannot mask blocked deterministic status",async()=>{
+  const base=network();let baselineStored=false;
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))
+      return new Response(JSON.stringify({status:"BLOCKED",
+        blocking_code:"BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY",
+        baseline_result:{outcome:"BASELINE_REQUIRED",recorded:false,execution_id:id,
+          next_action:"INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY"}}),{status:200});
+    if(url.endsWith("/lf_profile_execution_research_baseline_v1")){
+      baselineStored=true;
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+        status:"BLOCKED_STEP_NOT_CLEAN",execution_id:id}),{status:200});
+    }
+    return base.fetchFn(input,init);
+  };
+  const envelope={snapshot:{source:"fixture"},baseline_digest:"sha256:"+"c".repeat(64),
+    capture_stage:"PRE_RESEARCH",input_digest:digest,profile_source_digest:digest,
+    evidence_refs:["supabase://source/fixture"]};
+  const response=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,baseline_envelope:envelope
+  },config,fetchFn,sha);
+  eq(baselineStored,true);
+  eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_RECORD_NOT_CLEAN");
 });
