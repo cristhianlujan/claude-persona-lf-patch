@@ -955,7 +955,6 @@ Deno.test("SRCR native repair denies any missing/forged Router evidence before S
   const base=boundedRepairFixture();
   const malformed=[
     {manifest:{...base.manifest,governed_repair_write:false}},
-    {manifest:{...base.manifest,no_promotion:false}},
     {manifest:{...base.manifest,repair_execution_authority:{
       ...base.manifest.repair_execution_authority as object,profile_task_intent:"UNAUTHORIZED"}}},
     {manifest:{...base.manifest,repair_execution_authority:{
@@ -971,10 +970,19 @@ Deno.test("SRCR native repair denies any missing/forged Router evidence before S
     eq(out.status,403);
     eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
   }
+  // The fixture returns 409 for missing downstream plan, not authority denial.
+  for(const value of [true,false,undefined]){
+    const manifest={...base.manifest,no_promotion:value};
+    const n=network({...base,manifest});
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+    eq(out.status!==403,true);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),true);
+  }
+
 });
 
 
-Deno.test("SRCR Step70 current-context is admitted only for bounded non-promotable candidate review",()=>{
+Deno.test("SRCR Step70 current-context disregards manifest.no_promotion but retains actual router authority",()=>{
   const effects={read_only:false,no_write:false,no_promotion:true,governed_repair_write:true};
   eq(effectsBearingNativeSemanticReviewBlockCode(effects,"CURRENT_CONTEXT_REVIEW"),
     "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
@@ -983,8 +991,8 @@ Deno.test("SRCR Step70 current-context is admitted only for bounded non-promotab
     router_authorization_receipt:{effect_authority:false},
   }};
   eq(effectsBearingNativeSemanticReviewBlockCode(candidate,"CURRENT_CONTEXT_REVIEW"),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode({...candidate,no_promotion:false},"CURRENT_CONTEXT_REVIEW"),null);
   for(const invalid of [
-    {...candidate,no_promotion:false},
     {...candidate,automatic_impact:true},
     {...candidate,router_profile_handoff:{profile_code:"PERFIL-PRODUCT-DIRECTOR-LF",
       router_authorization_receipt:{effect_authority:false}}},
