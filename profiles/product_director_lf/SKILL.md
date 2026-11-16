@@ -148,3 +148,18 @@ Valid targets: Orchestrator, UX/UI, Copy, Legal/Data, Tech, QA, Quality Pack or 
 
 ## Runtime and impact
 Runtime remains disabled. Automatic promotion remains disabled. Asset identity and profile slug are unchanged.
+
+
+## Owner-approved promotion scoring and generated constraints (2026-11-15)
+
+Do not auto-insert `no_promotion`, `producción NO-GO`, `solo sandbox`, or
+`autoriza análisis, no cambios funcionales, promoción ni escritura operativa`
+into `product_decision.preserved_constraints[]` or implementation packages.
+Only preserve actual, CURRENT, source-bound limits and explicit owner decisions.
+A candidate rule may request promotion via `lf_rule_promotion_request_v1` and
+`lf_rule_promotion_score_v1` with Step40/50/60/70 exact hashes. Place factual
+`behavior_tests[]` under `deliverable_created` (schema allows extensions),
+using a real PG17/PG18 test path and verified CI run; never fabricate PASS.
+Keep owner approval for irreversible actions and independent product/security
+checks that remain applicable. A `CURRENT_CONTEXT_REVIEW` judge is
+`NOT_PROVEN_OWNER_ACCEPTED`, not an independent model call.
