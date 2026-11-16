@@ -11,7 +11,10 @@ from pathlib import Path
 from test_b2b_validonly_storage_current_pg_gaps_v1 import DDL
 
 ROOT=Path(__file__).resolve().parents[3]
-MIG=ROOT/"supabase/migrations/20261116040000_lf_b2b_carga002_hardening_v1.sql"
+MIGS=list((ROOT/"supabase/migrations").glob("*_lf_b2b_carga002_hardening_v1.sql"))
+if len(MIGS)!=1:
+ raise RuntimeError("LF_B2B_HARDENING_MIGRATION_AMBIGUOUS_OR_MISSING")
+MIG=MIGS[0]
 EXT_DDL="""
 ALTER TABLE lf_ops.cargas_lotes ADD COLUMN source_file_id text;
 ALTER TABLE lf_ops.cargas_archivos ADD COLUMN file_role text NOT NULL DEFAULT 'ORIGINAL';
