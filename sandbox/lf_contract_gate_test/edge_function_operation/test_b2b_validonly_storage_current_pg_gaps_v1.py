@@ -47,7 +47,7 @@ CREATE TABLE lf_ops.cargas_archivos(
  malware_scan_status text NOT NULL,
  CONSTRAINT cargas_archivos_size_ck CHECK ((size_bytes > 0)),
  CONSTRAINT cargas_archivos_scan_ck CHECK ((malware_scan_status = ANY (
- ARRAY['PENDING'::text,'CLEAN'::text,'REJECTED'::text,'FAILED'::text)));
+ ARRAY['PENDING'::text,'CLEAN'::text,'REJECTED'::text,'FAILED'::text])));
 """
 BEHAVIOR="""BEGIN;
 INSERT INTO lf_ops.cargas_lotes(load_code,load_name,idempotency_key,
