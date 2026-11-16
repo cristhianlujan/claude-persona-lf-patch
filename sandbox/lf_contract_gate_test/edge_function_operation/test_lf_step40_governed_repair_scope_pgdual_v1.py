@@ -23,7 +23,7 @@ CREATE TABLE public.lf_activos(
  codigo_activo text PRIMARY KEY,tipo_activo text,archived_at timestamptz,
  metadata jsonb NOT NULL DEFAULT '{}'::jsonb);
 CREATE OR REPLACE FUNCTION public.lf_input_family_catalog_receipts_for_run_v1(text)
-RETURNS jsonb LANGUAGE sql AS $ SELECT '[]'::jsonb $;
+RETURNS jsonb LANGUAGE sql AS $family$ SELECT '[]'::jsonb $family$;
 CREATE OR REPLACE FUNCTION public.lf_router_profile_execution_handoff_validate_v1(jsonb,text,text)
 RETURNS jsonb LANGUAGE sql AS $$ SELECT '{"valid":true}'::jsonb $$;
 CREATE OR REPLACE FUNCTION public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)
