@@ -151,8 +151,8 @@ main confiable y requiere bootstrap oficial de forma separada.
   documentación, migraciones, fixtures, tests, acciones GitHub ni logs.
   **Esta PR no instala ni acredita que el secreto ya exista en producción.**
 - El SHA256(lower(trim(email))) entregado coincide exactamente con la huella
-  previa de Claude. La misma huella se siembra para `CHAT_CLAUDE_SESSION`
-  y `CHAT_GPT_SESSION` a partir de una sola constante SQL, uniendo al
+  previa de Claude. La misma huella se siembra para `canal Claude configurado`
+  y `canal ChatGPT configurado` a partir de una sola constante SQL, uniendo al
   `owner_sub` canónico. Nunca se incluye el correo real en claro.
 - El registrador PostgreSQL recibe el correo únicamente desde metadatos de
   una cuenta de sesión previamente validada por el transporte protegido,
