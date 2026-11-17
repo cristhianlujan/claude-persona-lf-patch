@@ -14,6 +14,7 @@ import time
 import unittest
 import uuid
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from sandbox.lf_contract_gate_test.owner_chat_approval.owner_chat_fixture_v1 import OWNER, OWNER_NAME, OTHER_SUB, REPO, CHANNEL
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -157,6 +158,32 @@ BEGIN
    'rule_snapshots_sha256',snap);
   lit:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(sc),12)||
      ' '||programacion.fn_v09_canonical_jsonb_text(sc);
+  -- Same displayed name is NOT identity: a different owner_sub must fail.
+  IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_identity_v1 c
+    JOIN public.lf_ig_project_owner_v2 p
+     ON p.project_code=c.project_code AND p.owner_sub=c.owner_sub
+    WHERE c.config_key='LF_OWNER' AND c.owner_sub='__OWNER_SUB__'::uuid
+      AND c.authority_role_code='SUPER_ADMIN'
+      AND c.repository_full_name='__REPO__' AND c.channel_code='__CHANNEL__')
+  THEN RAISE EXCEPTION 'RECOVERY_CONFIG_OWNER_SUB_ROLE_REPO_DRIFT'; END IF;
+  BEGIN
+    PERFORM private.fn_lf_owner_chat_register_v1(
+      'fixture-recovery-chat-0001','fixture-recovery-wrong-owner-01',
+      '__CHANNEL__','__OTHER_SUB__'::uuid,'fixture-proposer-01',
+      'fixture-recorder-01',clock_timestamp(),lit,sc);
+    RAISE EXCEPTION 'RECOVERY_WRONG_OWNER_SUB_ACCEPTED';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM='RECOVERY_WRONG_OWNER_SUB_ACCEPTED' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'CHAT_OWNER_ORCHESTRATOR_EVENT_OR_SEPARATION_INVALID%'
+    THEN RAISE EXCEPTION 'RECOVERY_WRONG_SUB_WRONG_FAILURE:%',SQLERRM; END IF;
+  END;
+  -- Canonical UUID remains unchanged when source owner_name accent changes.
+  UPDATE public.lf_ig_project_owner_v2
+    SET owner_name=replace(owner_name,'á','a') WHERE project_code='LF';
+  IF (SELECT owner_name FROM public.lf_ig_project_owner_v2 WHERE project_code='LF')
+       IS NOT DISTINCT FROM '__OWNER_NAME__' OR
+     private.fn_lf_owner_chat_owner_sub_v1() IS DISTINCT FROM '__OWNER_SUB__'::uuid
+  THEN RAISE EXCEPTION 'RECOVERY_ACCENT_NAME_VS_UUID_NOT_ISOLATED'; END IF;
   -- No order: must fail and leave all 6 pending.
   BEGIN
     PERFORM private.fn_lf_owner_chat_promote_batch_v1(gen_random_uuid(),ids,
