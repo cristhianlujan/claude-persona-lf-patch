@@ -9,6 +9,7 @@
     "docs/operations/LF_OWNER_CHAT_SIGNED_APPROVAL_V1_DRAFT.md": "DOCUMENTATION",
     "sandbox/lf_contract_gate_test/changesets/lf-owner-chat-signed-approval-source-draft-20261116-v1.json": "CHANGESET_MANIFEST",
     ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
-    "sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_pgdual_rollback_v1.py": "HUMAN_DECISION_ROUTING"
+    "sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_pgdual_rollback_v1.py": "HUMAN_DECISION_ROUTING",
+    ".github/workflows/lf-migration-merge-train.yml": "WORKFLOW"
   }
 }
