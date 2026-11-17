@@ -22,6 +22,9 @@ ORDER = re.compile(r"\AAPRUEBO ([0-9a-f]{12}) (.+)\Z", re.DOTALL)
 DEFAULT_CATALOG = {
     "MERGE_GOVERNANCE_PR": frozenset({"action", "repository", "pr_number", "head_sha"}),
     "PROMOTE_RULE_BATCH": frozenset({"action", "repository", "execution_id", "rule_codes", "rule_snapshots_sha256"}),
+    "UPDATE_IG_PARAMETER": frozenset({"action", "repository", "parameter_namespace",
+                                       "parameter_code", "channel_code", "expected_revision",
+                                       "new_value_sha256", "new_activo"}),
 }
 
 class ChatOrderRejected(ValueError):
@@ -64,6 +67,17 @@ def validate_scope(scope: Any, catalog: dict | None = None) -> dict:
             raise ChatOrderRejected("INVALID_RUN")
         if not isinstance(scope["rule_snapshots_sha256"],str) or not SHA64.fullmatch(scope["rule_snapshots_sha256"]):
             raise ChatOrderRejected("INVALID_RULE_SNAPSHOTS")
+    elif action == "UPDATE_IG_PARAMETER":
+        if (scope.get("parameter_namespace") != "OWNER_CHAT"
+                or scope.get("parameter_code") != "SESSION_EMAIL_SHA256"
+                or not isinstance(scope.get("channel_code"), str)
+                or not re.fullmatch(r"CHAT_[A-Z_]+_SESSION",scope["channel_code"])
+                or type(scope.get("expected_revision")) is not int
+                or scope["expected_revision"] < 1
+                or not isinstance(scope.get("new_value_sha256"),str)
+                or not SHA64.fullmatch(scope["new_value_sha256"])
+                or type(scope.get("new_activo")) is not bool):
+            raise ChatOrderRejected("INVALID_PARAMETER_CHANGE_SCOPE")
     return scope
 
 
