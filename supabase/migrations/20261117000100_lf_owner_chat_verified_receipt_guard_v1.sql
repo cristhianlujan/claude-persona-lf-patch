@@ -437,7 +437,7 @@ BEGIN
    'order_id',p_order_id,'consumed_receipt',v);
 END;
 $fn$;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(uuid,text,integer,text)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(uuid,text,integer,text,text)
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- No new EXECUTE grants. Train must explicitly wire this guarded function
