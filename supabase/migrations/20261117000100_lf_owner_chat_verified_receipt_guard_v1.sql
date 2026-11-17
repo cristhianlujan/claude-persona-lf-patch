@@ -216,7 +216,7 @@ BEGIN
     v.action_code IS DISTINCT FROM p_action_code OR
     v.scope IS DISTINCT FROM p_expected_scope OR
     v.proposer_subject=v.registrar_subject OR
-    v.actor_subject=v.registrar_subject OR
+    v.actor_sub::text=v.registrar_subject OR
     nullif(btrim(p_consumer_ref),'') IS NULL THEN
    RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_SCOPE_OR_ACTORS_MISMATCH');
  END IF;
@@ -387,7 +387,8 @@ BEGIN
      AND l.parent_run=p.request_execution_id
      AND l.tx_id=pg_current_xact_id()::text
      AND o.action_code='PROMOTE_RULE_BATCH'
-     AND o.actor_subject=substring(p_decided_by FROM 7)
+     AND o.actor_sub=private.fn_lf_owner_chat_owner_sub_v1()
+     AND p_decided_by='HUMAN:'||o.actor_sub::text
      AND o.consumed_by='PROMOTION_BATCH_TX:'||pg_current_xact_id()::text
      AND o.consumed_at IS NOT NULL
      AND o.expires_at>clock_timestamp()
@@ -408,16 +409,15 @@ $guard$;
 -- This is one-use and does NOT merge, publish a check or bypass Train.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(
  p_order_id uuid,p_repository text,p_pr_number integer,p_final_head_sha text,
- p_expected_owner_subject text,p_train_run_ref text
+ p_train_run_ref text
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
 DECLARE v_scope jsonb;v jsonb;
 BEGIN
- IF p_expected_owner_subject IS DISTINCT FROM
-     (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
- THEN RETURN jsonb_build_object('status','BLOCKED','code','CHAT_OWNER_FIXED_OWNER_REQUIRED'); END IF;
- IF p_pr_number IS NULL OR p_pr_number<=0 OR
+ IF p_repository IS DISTINCT FROM
+   (SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
+   OR p_pr_number IS NULL OR p_pr_number<=0 OR
    coalesce(p_final_head_sha,'') !~ '^[a-f0-9]{40}$' OR
    coalesce(p_repository,'') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
    OR coalesce(p_train_run_ref,'') !~ '^TRAIN-[A-Z0-9_-]{8,128}$' THEN
@@ -426,7 +426,7 @@ BEGIN
  v_scope:=jsonb_build_object('action','MERGE_GOVERNANCE_PR',
    'repository',p_repository,'pr_number',p_pr_number,'head_sha',p_final_head_sha);
  v:=private.fn_lf_owner_chat_consume_v1(
-   p_order_id,'MERGE_GOVERNANCE_PR',v_scope,p_expected_owner_subject,
+   p_order_id,'MERGE_GOVERNANCE_PR',v_scope,
    'MERGE_TRAIN:'||p_train_run_ref);
  IF v->>'status' IS DISTINCT FROM 'CONSUMED' THEN
    RETURN jsonb_build_object('status','BLOCKED',
@@ -437,7 +437,7 @@ BEGIN
    'order_id',p_order_id,'consumed_receipt',v);
 END;
 $fn$;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(uuid,text,integer,text,text,text)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(uuid,text,integer,text)
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- No new EXECUTE grants. Train must explicitly wire this guarded function
