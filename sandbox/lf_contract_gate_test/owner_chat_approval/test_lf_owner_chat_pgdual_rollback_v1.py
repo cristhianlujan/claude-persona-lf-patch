@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]
 MIGRATION=ROOT/"supabase/migrations/20261117000100_lf_owner_chat_verified_receipt_guard_v1.sql"
 SETUP=r"""
+CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN;
 CREATE SCHEMA private; CREATE SCHEMA programacion; CREATE SCHEMA extensions;
 CREATE EXTENSION pgcrypto WITH SCHEMA extensions;
 CREATE FUNCTION programacion.fn_v09_canonical_jsonb_text(j jsonb)
