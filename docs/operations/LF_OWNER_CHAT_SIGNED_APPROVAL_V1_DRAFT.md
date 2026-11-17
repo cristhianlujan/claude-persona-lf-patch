@@ -56,3 +56,27 @@ Se corrieron 16 tests de verificador Python y 9 tests transaccionales SQLite con
 - **Pruebas PG reales:** `sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_pgdual_rollback_v1.py` ejecuta un fixture PostgreSQL 17.6 y otro PostgreSQL 18.7 con DDL de funciones de consumo, `BEGIN/ROLLBACK`, cero residuos en las tablas nuevas, caso de PR HEAD exacto, lote sintético de 22 reglas y negativos (sin orden, HEAD cambiado, vencida, repetida, revocada, autoaprobación). El fixture sustituye `decide_v1/apply_v1` por dobles y **omite el DO de pin MD5 de la función live**, porque no tiene el esquema productivo. Por tanto acredita el wrapper y consumo en PG17/18, **no** una promoción contra los contratos vivos.
 - **Evidencia red→green:** primer job PG17/18 falló porque PostgreSQL puro no trae roles Supabase; después se corrigieron roles en setup, sincronización de arranque PostgreSQL y tres literales SQL dañados. La ejecución <https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44000026845> terminó SUCCESS (PG17/PG18). PASE, PASE Merge Gate, paridad, clasificación y admisión sobre HEAD anterior `23a93b8388188d1de327f01cc2faf12dc379a88d`: SUCCESS.
 - **Cierre del lote:** código candidato DRAFT, no merge, no ejecución de perfiles, no promoción, no permisos EXECUTE nuevos, sin tocar PR #4061/#4062 ni producción. Falta readback del origen USER y el enlace efectivo al Merge Train antes de habilitar efectos.
+
+
+## Lote IG 21:50 — dueño fijo, Train y prueba B2B-AUTH-002
+
+Configuración de autoridad única en private.lf_owner_chat_identity_v1: nombre fijo **Cristhian Lujan**, canal fijo **CHAT_ORCHESTRATOR_USER_TURN**. No se parametriza por regla, pantalla, PR u orden. El transporte del orquestador aún debe acreditar de modo independiente que el USER turn original pertenece a esa identidad; no se infiere a partir del texto firmado por el propio modelo.
+
+Fuente Supabase SELECT: lf_ops.pantallas id **52**, código **B2B-AUTH-002**, nombre **Recuperar acceso**, flujo **BACKOFFICE_B2B**, paso **RECOVERY_REQUEST**. Tiene 32 reglas vinculadas (25 VIGENTE, 7 CANDIDATO). Seis candidatas sin decisión pendiente: B2B-RULE-AUTH-027, B2B-RULE-AUTH-028, B2B-RULE-AUTH-042, B2B-RULE-AUTH-044, B2B-RULE-AUTH-045, B2B-RULE-COMPAT-001. B2B-RULE-THEME-002 tiene pendiente_decision=true: excluir de promociones mientras siga pendiente.
+
+El test owner_chat_approval/test_lf_owner_chat_pgdual_rollback_v1.py usa el código real de request_v1, decide_v1 y apply_v1 del fixture de fuente LF más la migración IG0815 vigente, seguido por el parche MD5-protegido de decide_v1 en #4063. No tiene dobles de decide/apply; sí usa un RUN, mensajes y registros sintéticos exclusivamente en PostgreSQL 17/18 local con BEGIN/ROLLBACK. Esta prueba NO registra un evento auténtico del orquestador, no demuestra independencia del juez sintético y no escribe en Supabase.
+
+El workflow lf-migration-merge-train.yml comprueba, desde main confiable, que existe exactamente un recibo no revocado/no consumido con el dueño fijo, PR y HEAD finales. Invoca fn_lf_owner_chat_train_merge_gate_v1 mediante el rol postgres del Train **antes** de aplicar, con bloqueo si el recibo o la función no existen. El job de merge exige output autorizado+HEAD exacto antes del merge. El flujo de bootstrap requiere atención: GitHub pull_request_target ejecuta el workflow del main previo hasta que estos cambios estén fusionados; no declarar el guard activo en producción mientras no haya readback de cutover.
+
+### Necesidades consolidadas para futura activación
+
+| Necesito | Para qué | Quién | Asumo si no hay respuesta |
+|---|---|---|---|
+| Evento USER original con conversation_id, message_id e identidad autenticada vinculada al dueño | Probar procedencia real del mandato por chat; no admitir textos de perfiles o modelos | Orquestador / plataforma | BLOCKED: ningún recibo real acreditado |
+| Vinculación estable de identidad ChatGPT a Cristhian Lujan mediante el transporte existente | Autoridad fija comprobable sin pedirla por cada orden | Administrador de orquestación | Solo configuración nominal; no autenticación material |
+| Ruta de ingesta del mensaje USER a la función registradora con permisos existentes | Crear recibos reales para HUMAN y Train sin nuevos roles | Operaciones LF | Fail-closed sin nuevos EXECUTE |
+| Secuencia de bootstrap gobernado de SQL + workflow en main confiable | Evitar ventana de bypass/bloqueo irreversible del propio Train | Dueño / gobernanza LF | PR DRAFT, sin instalación ni merge |
+| RUN real de pantalla B2B-AUTH-002 con once pasos y hashes/source_refs vigentes | Probar posteriormente contra un caso real sin inventar RUN | Router / orquestador | Solo fixtures sintéticos PG17/18; no promoción real |
+| Resolver B2B-RULE-THEME-002 pendiente | Delimitar cohorte susceptible de promoción | Dueño / perfil competente | Excluir THEME-002; cohorte de 6 no pendientes |
+| Orden APRUEBO con alcance literal cerrado tras fijar HEAD, RUN y snapshots | Validar consumo único y TTL 15 min para una orden REAL | Dueño, en el chat | No asumir la instrucción general como orden específica |
+| Evidencia readback de la primera invocación material del Train y cierre de los checks | Verificar conexión real a la BD y al mecanismo, sin autoaprobaciones | Operaciones LF | Estado no verificado, sin activación |
