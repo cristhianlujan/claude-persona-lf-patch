@@ -127,6 +127,7 @@ DECLARE
   sc jsonb; r jsonb; ids text[]; v jsonb; oid uuid; msg text;
   wrong_sc jsonb; snap text; codes text[]; lit text; n integer;
   pr_sc jsonb; pr_order uuid; v_direct jsonb; first_id text;
+  ps jsonb; poid uuid; pmsg text;
   fixture_email text:=concat('fixture.','account','@','example.invalid');
   wrong_email text:=concat('different.','account','@','example.invalid');
   fixture_sha text;
@@ -173,12 +174,73 @@ BEGIN
   -- never appears in SQL, source, fixtures or CI job arguments.
   fixture_sha:=encode(extensions.digest(
        convert_to(lower(btrim(fixture_email)),'UTF8'),'sha256'),'hex');
-  UPDATE private.lf_owner_chat_authorized_accounts_v1
-    SET account_email_sha256=fixture_sha WHERE owner_sub='__OWNER_SUB__'::uuid;
+  -- Fixture substitution under rollback only; prove the runtime write trigger
+  -- remains fail closed after immediately re-enabling it.
+  ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1;
+  UPDATE private.lf_ig_parameters_v1 SET value_sha256=fixture_sha
+   WHERE owner_sub='__OWNER_SUB__'::uuid AND parameter_namespace='OWNER_CHAT';
+  ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1;
+  BEGIN
+    UPDATE private.lf_ig_parameters_v1 SET activo=false
+     WHERE parameter_namespace='OWNER_CHAT' AND channel_code='__GPT_CHANNEL__';
+    RAISE EXCEPTION 'NEG_DIRECT_PARAMETER_UPDATE_ACCEPTED';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM='NEG_DIRECT_PARAMETER_UPDATE_ACCEPTED' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'IG_PARAMETER_UNAUTHORIZED_STRUCTURE_CHANGE%'
+    THEN RAISE EXCEPTION 'NEG_DIRECT_PARAMETER_WRONG_ERROR:%',SQLERRM; END IF;
+  END;
+  -- Owner USER chat order is required for every parameter edit.
+  ps:=jsonb_build_object('action','UPDATE_IG_PARAMETER','repository','__REPO__',
+    'parameter_namespace','OWNER_CHAT','parameter_code','SESSION_EMAIL_SHA256',
+    'channel_code','__GPT_CHANNEL__','expected_revision',1,
+    'new_value_sha256',fixture_sha,'new_activo',false);
+  pmsg:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(ps),12)||
+    ' '||programacion.fn_v09_canonical_jsonb_text(ps);
+  v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
+    'fixture-parameter-off-00001','__CHANNEL__','__OWNER_SUB__'::uuid,
+    '__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01',
+    'fixture-recorder-01',clock_timestamp(),pmsg,ps);
+  poid:=(v->>'order_id')::uuid;
+  v:=private.fn_lf_ig_parameter_update_v1(poid,'OWNER_CHAT','SESSION_EMAIL_SHA256',
+    '__GPT_CHANNEL__',1,fixture_sha,false);
+  IF v->>'status' IS DISTINCT FROM 'UPDATED_WITH_OWNER_CHAT_AUDIT' OR
+     (SELECT count(*) FROM private.lf_ig_parameter_change_audit_v1 WHERE approval_order_id=poid)<>1 OR
+     (SELECT activo FROM private.lf_ig_parameters_v1 WHERE channel_code='__GPT_CHANNEL__')
+  THEN RAISE EXCEPTION 'PARAMETER_APPROVED_WRITE_AUDIT_FAILED:%',v; END IF;
+  -- Replay and stale revision cannot mutate the row twice.
+  BEGIN
+    PERFORM private.fn_lf_ig_parameter_update_v1(poid,'OWNER_CHAT','SESSION_EMAIL_SHA256',
+      '__GPT_CHANNEL__',1,fixture_sha,false);
+    RAISE EXCEPTION 'NEG_PARAMETER_REPLAY_UNBLOCKED';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM='NEG_PARAMETER_REPLAY_UNBLOCKED' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'IG_PARAMETER_STALE_OR_MISSING%'
+    THEN RAISE EXCEPTION 'PARAMETER_REPLAY_WRONG_REASON:%',SQLERRM; END IF;
+  END;
+  -- Re-enable GPT only through a fresh, distinct approved chat event.
+  ps:=jsonb_set(ps,'{expected_revision}','2'::jsonb);
+  ps:=jsonb_set(ps,'{new_activo}','true'::jsonb);
+  pmsg:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(ps),12)||
+    ' '||programacion.fn_v09_canonical_jsonb_text(ps);
+  v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
+    'fixture-parameter-on-00002','__CHANNEL__','__OWNER_SUB__'::uuid,
+    '__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01',
+    'fixture-recorder-01',clock_timestamp(),pmsg,ps);
+  poid:=(v->>'order_id')::uuid;
+  v:=private.fn_lf_ig_parameter_update_v1(poid,'OWNER_CHAT','SESSION_EMAIL_SHA256',
+    '__GPT_CHANNEL__',2,fixture_sha,true);
+  IF v->>'status' IS DISTINCT FROM 'UPDATED_WITH_OWNER_CHAT_AUDIT' OR
+    (SELECT count(*) FROM private.lf_ig_parameter_change_audit_v1)<>2 OR
+    (SELECT revision FROM private.lf_ig_parameters_v1 WHERE channel_code='__GPT_CHANNEL__')<>3
+  THEN RAISE EXCEPTION 'PARAMETER_REENABLE_AUDIT_OR_VERSION_FAILED:%',v; END IF;
   -- Missing email, different email, inactive channel, and session cross-bind.
   FOR n IN 1..4 LOOP
-    IF n=3 THEN UPDATE private.lf_owner_chat_authorized_accounts_v1
-      SET activo=false WHERE channel_code='__GPT_CHANNEL__'; END IF;
+    IF n=3 THEN
+      ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1;
+      UPDATE private.lf_ig_parameters_v1 SET activo=false
+       WHERE channel_code='__GPT_CHANNEL__';
+      ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1;
+    END IF;
     BEGIN
       PERFORM private.fn_lf_owner_chat_register_v1(
         'fixture-recovery-chat-0001','fixture-recovery-neg-session-'||n,
@@ -193,8 +255,12 @@ BEGIN
       IF SQLERRM NOT LIKE 'CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED%'
       THEN RAISE EXCEPTION 'NEG_SESSION_WRONG_REASON:%:%',n,SQLERRM; END IF;
     END;
-    IF n=3 THEN UPDATE private.lf_owner_chat_authorized_accounts_v1
-      SET activo=true WHERE channel_code='__GPT_CHANNEL__'; END IF;
+    IF n=3 THEN
+      ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1;
+      UPDATE private.lf_ig_parameters_v1 SET activo=true
+       WHERE channel_code='__GPT_CHANNEL__';
+      ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1;
+    END IF;
   END LOOP;
   IF EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace
     WHERE ns.nspname='private' AND p.proname='fn_lf_owner_chat_register_v1'
