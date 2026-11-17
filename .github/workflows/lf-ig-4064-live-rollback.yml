@@ -1,0 +1,104 @@
+name: LF IG 4064 live governed rollback proof
+
+# One manual test only. No pull_request, push, merge, Train or issue triggers.
+# workflow_dispatch requires the file on the default branch; a draft-only
+# workflow is deliberately NOT dispatchable until separately activated.
+on:
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: "Fixed PR 4064 HEAD; live Supabase BEGIN/ROLLBACK only"
+        required: true
+        type: choice
+        options:
+          - ROLLBACK_ONLY
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: lf-ig-4064-live-postgres-rollback
+  cancel-in-progress: false
+
+jobs:
+  ig-4064-live-rollback:
+    name: IG4064 real PostgreSQL 135/135 and 39-screen regression
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
+      inputs.test_scope == 'ROLLBACK_ONLY'
+    runs-on: ubuntu-latest
+    environment: lf-merge-train
+    timeout-minutes: 40
+    steps:
+      - name: Checkout only trusted default-branch workflow code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Download exact PR 4064 commit as DATA, without credentials
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: 6d9f33fe300432270fdf078a35d1ae56cc1c8fab
+          path: candidate-readonly
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Prepare guarded evidence directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_ci/ig4064
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/ig4064_governed_live_rollback_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/ig4064_governed_live_rollback_v1.py self-test
+
+      - name: Validate PR state and pinned migration/harness blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG4064_DISPATCH_SCOPE: ${{ inputs.test_scope }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/ig4064_governed_live_rollback_v1.py preflight
+
+      - name: Install psql client
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+
+      - name: "LIVE DB: one BEGIN -> candidate -> focal + full tests -> ROLLBACK"
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG4064_DISPATCH_SCOPE: ${{ inputs.test_scope }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGSSLMODE: require
+        run: |
+          set -euo pipefail
+          test -n "$PGPASSWORD" || { echo 'BLOCK_PROTECTED_DB_SECRET_UNAVAILABLE'; exit 2; }
+          python3 sandbox/lf_contract_gate_test/input_governance/ig4064_governed_live_rollback_v1.py execute
+
+      - name: Publish logs, counts, SHA and rollback receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig4064-live-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/ig4064/preflight.json
+            .lf_ci/ig4064/report.json
+            .lf_ci/ig4064/postgresql.log
+            .lf_ci/ig4064/independent_readback.log
+          if-no-files-found: warn
+          retention-days: 30
