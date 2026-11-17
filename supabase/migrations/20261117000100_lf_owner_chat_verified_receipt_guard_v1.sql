@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS private.lf_owner_chat_orders_v1 (
   order_id uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
   source_chat_id text NOT NULL CHECK (length(source_chat_id)>=12),
   source_message_id text NOT NULL UNIQUE CHECK (length(source_message_id)>=12),
-  source_kind text NOT NULL CHECK (source_kind='CHAT_ORCHESTRATOR_USER_TURN'),
-  actor_subject text NOT NULL CHECK (length(actor_subject)>=8),
+  source_kind text NOT NULL CHECK (length(source_kind)>=8),
+  actor_sub uuid NOT NULL,
   proposer_subject text NOT NULL CHECK (length(proposer_subject)>=8),
   registrar_subject text NOT NULL CHECK (length(registrar_subject)>=8),
   action_code text NOT NULL REFERENCES private.lf_owner_chat_action_catalog_v1(action_code),
@@ -80,14 +80,14 @@ CREATE TABLE IF NOT EXISTS private.lf_owner_chat_orders_v1 (
   expires_at timestamptz NOT NULL,
   consumed_at timestamptz,
   consumed_by text,
-  CHECK (proposer_subject<>registrar_subject AND actor_subject<>registrar_subject),
+  CHECK (proposer_subject<>registrar_subject AND actor_sub::text<>registrar_subject),
   CHECK (expires_at > sent_at AND expires_at <= sent_at + interval '15 minutes'),
   CHECK (consumed_at IS NULL OR consumed_by IS NOT NULL)
 );
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_revocations_v1 (
   order_id uuid PRIMARY KEY REFERENCES private.lf_owner_chat_orders_v1(order_id),
   revocation_message_id text NOT NULL UNIQUE CHECK (length(revocation_message_id)>=12),
-  revoked_by_owner text NOT NULL,
+  revoked_by_owner_sub uuid NOT NULL,
   revoked_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   reason text NOT NULL CHECK (length(btrim(reason))>0)
 );
@@ -99,7 +99,7 @@ REVOKE ALL ON private.lf_owner_chat_action_catalog_v1,
 -- Function arguments are not human-authentication evidence by themselves.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(
   p_source_chat_id text,p_source_message_id text,p_source_kind text,
-  p_actor_subject text,p_proposer_subject text,p_registrar_subject text,
+  p_actor_sub uuid,p_proposer_subject text,p_registrar_subject text,
   p_sent_at timestamptz,p_literal_text text,p_scope jsonb
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
@@ -107,17 +107,16 @@ AS $fn$
 DECLARE v_action text; v_catalog private.lf_owner_chat_action_catalog_v1%ROWTYPE;
   v_sha text;v_text text;v_order uuid;v_keys text[];v_count int;v_unique int;
 BEGIN
- IF p_source_kind IS DISTINCT FROM 'CHAT_ORCHESTRATOR_USER_TURN' OR
+ IF p_source_kind IS DISTINCT FROM
+      (SELECT channel_code FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
     p_source_chat_id IS NULL OR length(p_source_chat_id)<12 OR
     p_source_message_id IS NULL OR length(p_source_message_id)<12 OR
-    p_actor_subject IS NULL OR length(p_actor_subject)<8 OR
+    p_actor_sub IS NULL OR
     p_proposer_subject IS NULL OR length(p_proposer_subject)<8 OR
     p_registrar_subject IS NULL OR length(p_registrar_subject)<8 OR
-    p_proposer_subject=p_registrar_subject OR p_actor_subject=p_registrar_subject OR
-    p_actor_subject IS DISTINCT FROM
-       (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
-    p_source_kind IS DISTINCT FROM
-       (SELECT channel_code FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') THEN
+    p_proposer_subject=p_registrar_subject OR
+    p_actor_sub::text=p_registrar_subject OR
+    p_actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() THEN
    RAISE EXCEPTION 'CHAT_OWNER_ORCHESTRATOR_EVENT_OR_SEPARATION_INVALID';
  END IF;
  IF p_sent_at IS NULL OR p_sent_at > clock_timestamp()+interval '30 seconds'
@@ -137,7 +136,8 @@ BEGIN
     FROM unnest(v_catalog.required_scope_keys) AS k) THEN
    RAISE EXCEPTION 'CHAT_OWNER_SCOPE_FIELDS_NOT_CLOSED';
  END IF;
- IF coalesce(p_scope->>'repository','') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' THEN
+ IF coalesce(p_scope->>'repository','') IS DISTINCT FROM
+   (SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') THEN
    RAISE EXCEPTION 'CHAT_OWNER_REPOSITORY_INVALID';
  END IF;
  IF v_action='MERGE_GOVERNANCE_PR' THEN
@@ -170,10 +170,10 @@ BEGIN
    RAISE EXCEPTION 'CHAT_OWNER_LITERAL_OR_SHORT_HASH_MISMATCH';
  END IF;
  INSERT INTO private.lf_owner_chat_orders_v1(
-   source_chat_id,source_message_id,source_kind,actor_subject,
+   source_chat_id,source_message_id,source_kind,actor_sub,
    proposer_subject,registrar_subject,action_code,scope,scope_sha256,
    literal_text,literal_sha256,sent_at,expires_at)
- VALUES(p_source_chat_id,p_source_message_id,p_source_kind,p_actor_subject,
+ VALUES(p_source_chat_id,p_source_message_id,p_source_kind,p_actor_sub,
    p_proposer_subject,p_registrar_subject,v_action,p_scope,v_sha,
    p_literal_text,encode(extensions.digest(convert_to(p_literal_text,'UTF8'),'sha256'),'hex'),
    p_sent_at,p_sent_at + make_interval(secs=>v_catalog.max_ttl_seconds))
@@ -189,7 +189,7 @@ $fn$;
 
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_consume_v1(
  p_order_id uuid,p_action_code text,p_expected_scope jsonb,
- p_expected_owner_subject text,p_consumer_ref text
+ p_consumer_ref text
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
@@ -208,11 +208,11 @@ BEGIN
  IF clock_timestamp()>=v.expires_at THEN
    RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_EXPIRED');
  END IF;
- IF v.actor_subject IS DISTINCT FROM
-    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
-    OR p_expected_owner_subject IS DISTINCT FROM
-    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
-    OR
+ IF v.actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() OR
+    v.source_kind IS DISTINCT FROM
+      (SELECT channel_code FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
+    v.scope->>'repository' IS DISTINCT FROM
+      (SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
     v.action_code IS DISTINCT FROM p_action_code OR
     v.scope IS DISTINCT FROM p_expected_scope OR
     v.proposer_subject=v.registrar_subject OR
@@ -243,34 +243,32 @@ $fn$;
 
 -- Revocation is a separate owner USER event, registered by trusted transport.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_revoke_v1(
- p_order_id uuid,p_revocation_message_id text,p_owner_subject text,p_reason text
+ p_order_id uuid,p_revocation_message_id text,p_owner_sub uuid,p_reason text
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
 DECLARE v private.lf_owner_chat_orders_v1%ROWTYPE;
 BEGIN
  SELECT * INTO v FROM private.lf_owner_chat_orders_v1 WHERE order_id=p_order_id FOR UPDATE;
- IF NOT FOUND OR v.actor_subject IS DISTINCT FROM
-    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
-    OR p_owner_subject IS DISTINCT FROM
-    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
+ IF NOT FOUND OR v.actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1()
+    OR p_owner_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() OR
     v.consumed_at IS NOT NULL OR length(coalesce(p_revocation_message_id,''))<12
     OR nullif(btrim(p_reason),'') IS NULL OR
     p_revocation_message_id=v.source_message_id THEN
    RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_REVOKE_INVALID');
  END IF;
- INSERT INTO private.lf_owner_chat_revocations_v1(order_id,revocation_message_id,revoked_by_owner,reason)
- VALUES(p_order_id,p_revocation_message_id,p_owner_subject,p_reason)
+ INSERT INTO private.lf_owner_chat_revocations_v1(order_id,revocation_message_id,revoked_by_owner_sub,reason)
+ VALUES(p_order_id,p_revocation_message_id,p_owner_sub,p_reason)
  ON CONFLICT DO NOTHING;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_ALREADY_REVOKED'); END IF;
  RETURN jsonb_build_object('status','REVOKED','order_id',p_order_id);
 END;
 $fn$;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_register_v1(text,text,text,text,text,text,timestamptz,text,jsonb)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_register_v1(text,text,text,uuid,text,text,timestamptz,text,jsonb)
  FROM PUBLIC,anon,authenticated,service_role;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_consume_v1(uuid,text,jsonb,text,text)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_consume_v1(uuid,text,jsonb,text)
  FROM PUBLIC,anon,authenticated,service_role;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_revoke_v1(uuid,text,text,text)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_revoke_v1(uuid,text,uuid,text)
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- HUMAN consumer: one immutable order -> one complete closed rule batch -> one
