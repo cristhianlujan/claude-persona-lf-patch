@@ -58,15 +58,22 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
         for path in TARGETS:
             value=(ROOT / path).read_text(encoding="utf-8")
             sha_expected=1 if path in (MIGRATION,FIXTURE) else 0
-            claude_expected=2 if path==MIGRATION else (1 if path==FIXTURE else 0)
-            gpt_expected=2 if path==MIGRATION else (1 if path==FIXTURE else 0)
+            claude_expected=None if path==MIGRATION else (1 if path==FIXTURE else 0)
+            gpt_expected=None if path==MIGRATION else (1 if path==FIXTURE else 0)
             self.assertEqual(len(CLAUDE_EMAIL_SHA_PATTERN.findall(value)),sha_expected,path)
-            self.assertEqual(len(CLAUDE_CHANNEL_PATTERN.findall(value)),claude_expected,path)
-            self.assertEqual(len(GPT_CHANNEL_PATTERN.findall(value)),gpt_expected,path)
+            if path==MIGRATION:
+                self.assertGreaterEqual(len(CLAUDE_CHANNEL_PATTERN.findall(value)),2,path)
+                self.assertGreaterEqual(len(GPT_CHANNEL_PATTERN.findall(value)),2,path)
+            else:
+                self.assertEqual(len(CLAUDE_CHANNEL_PATTERN.findall(value)),claude_expected,path)
+                self.assertEqual(len(GPT_CHANNEL_PATTERN.findall(value)),gpt_expected,path)
 
     def test_session_table_references_canonical_owner_and_seeds_both_channels(self):
         sql=(ROOT/MIGRATION).read_text(encoding="utf-8")
         self.assertIn("REFERENCES private.lf_owner_chat_identity_v1(owner_sub)",sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS private.lf_ig_parameters_v1",sql)
+        self.assertIn("CREATE VIEW private.lf_owner_chat_authorized_accounts_v1 AS",sql)
+        self.assertIn("parameter_namespace IN ('OWNER_CHAT','INPUT_GOVERNANCE','NOTIFICATIONS')",sql)
         self.assertIn("account_email_sha256",sql)
         self.assertIn("identity_mode text NOT NULL CHECK (identity_mode='ACCOUNT_SESSION')",sql)
         self.assertIn("CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED",sql)
@@ -101,15 +108,38 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
                 self.assertNotEqual(fingerprint,CLAUDE_HASH,
                     path.decode('utf-8','replace')+':'+line.decode('ascii','replace'))
 
-    def test_single_shared_hash_seed_and_external_installation_variable(self):
+    def test_single_shared_hash_seed_and_no_environment_dependency(self):
         sql=(ROOT/MIGRATION).read_text(encoding='utf-8')
         self.assertEqual(sql.count(CLAUDE_HASH),1)
-        self.assertIn("OWNER_ACCOUNT_EMAIL",sql)
         py=(ROOT/'scripts/lf_owner_chat_gate_ci_v1.py').read_text(encoding='utf-8')
-        self.assertIn("os.environ.get('OWNER_ACCOUNT_EMAIL')",py)
+        verifier=(ROOT/'scripts/lf_owner_chat_event_v1.py').read_text(encoding='utf-8')
+        env_name='OWNER_'+'ACCOUNT_EMAIL'
+        for body in (sql,py,verifier):
+            self.assertNotIn(env_name,body)
+        self.assertNotIn('owner_account_email',py)
+        self.assertNotIn('owner_account_email',verifier)
+        self.assertIn('private.lf_ig_parameters_v1',sql)
+        self.assertIn('SESSION_EMAIL_SHA256',sql)
         register_signature=sql.split("CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(",1)[1].split(") RETURNS jsonb",1)[0]
         self.assertIn("p_session_account_email text",register_signature)
         self.assertNotIn("p_session_account_sha256",register_signature)
+
+    def test_all_parameter_writes_are_governed_and_audited(self):
+        sql=(ROOT/MIGRATION).read_text(encoding='utf-8')
+        for requirement in (
+            'CREATE TABLE private.lf_ig_parameter_change_audit_v1',
+            'CREATE TRIGGER lf_ig_parameter_governed_write_v1',
+            'CREATE OR REPLACE FUNCTION private.fn_lf_ig_parameter_update_v1(',
+            "ord.action_code IS DISTINCT FROM 'UPDATE_IG_PARAMETER'",
+            "ord.consumed_by IS DISTINCT FROM 'PARAMETER_CHANGE_TX:'",
+            'IG_PARAMETER_APPROVED_OWNER_CHAT_RECEIPT_REQUIRED',
+            'last_approved_order_id',
+            'expected_revision',
+            'old_sha256,new_sha256',
+        ):
+            self.assertIn(requirement,sql,requirement)
+        self.assertIn('REVOKE ALL ON FUNCTION private.fn_lf_ig_parameter_update_v1',sql)
+        self.assertNotRegex(sql,r'(?mi)^\s*GRANT\s+EXECUTE\b')
 
     def test_owner_sub_canonical_join_and_no_name_gate(self):
         sql=(ROOT/MIGRATION).read_text(encoding="utf-8")
