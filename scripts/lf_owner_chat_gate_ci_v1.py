@@ -9,7 +9,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from scripts.lf_owner_chat_event_v1 import ChatOrderRejected, verify_order
+from scripts.lf_owner_chat_event_v1 import ChatOrderRejected, verify_order, OWNER_IDENTITY
 
 
 def main(argv=None):
@@ -18,7 +18,7 @@ def main(argv=None):
     p.add_argument('--exact-expected-scope',required=True)
     p.add_argument('--out-receipt',required=True)
     args=p.parse_args(argv)
-    owner=os.getenv('LF_OWNER_CHAT_ACCOUNT_SUBJECT')
+    owner=OWNER_IDENTITY
     proposer=os.getenv('LF_OWNER_CHAT_PROPOSER_SUBJECT')
     registrar=os.getenv('LF_OWNER_CHAT_REGISTRAR_SUBJECT')
     ingress=os.getenv('LF_OWNER_CHAT_INGRESS')
