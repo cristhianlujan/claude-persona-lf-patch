@@ -1,86 +1,49 @@
-# LF_OWNER_CHAT_SIGNED_APPROVAL_V1 — DRAFT / FAIL-CLOSED
+# LF — Aprobación humana oficial por chat de orquestación (V2, DRAFT)
 
-## Mandato 2026-11-16 18:54 Lima
+**Decisión del dueño 16/11/2026, 20:35 Lima:** la orden literal del dueño enviada como mensaje de usuario en el chat de orquestación es la **aprobación humana oficial y final** de todo PR de gobernanza y todo lote de promociones MANUAL, presente y futuro. No se exige clic de GitHub, web, correo, SMS, firma del proveedor ni servicio externo. Esta política no constituye una excepción: es contrato general. Esta fuente revoca el requisito de firma externa de la versión candidata anterior de #4063.
 
-El dueño decidió que el CHAT sea canal humano final de aprobación de promociones de reglas y PRs de gobernanza. Un clic en GitHub no debe ser la aprobación final. El texto actual demuestra intención expresada, no un evento del proveedor autenticado criptográficamente.
+## Regla base y frontera de identidad
 
-Estado: CANDIDATO SOURCE-ONLY. PROHIBIDO fusionar, activar, promover, ampliar permisos, saltar Merge Train o declarar operativa esta vía hasta disponer de mensaje humano original autenticado y firmado por el proveedor. El modelo no puede emitir, firmar ni completar el recibo.
+proponente -> contrato/snapshot cerrado -> render(scope) -> el dueño escribe APRUEBO <scope_hash corto> <alcance> en el chat -> orquestador toma el evento USER original -> recibo -> gate de consumo único -> decide HUMAN o Merge Train.
 
-## Reutilizar HUMAN_DECISION_ROUTING (no ruta paralela)
+El hash (12 hex en orden visible, SHA-256 completo en receipt) vincula alcance y detecta manipulación; **no prueba identidad por sí mismo**. La identidad procede del **rol de emisor del evento original del transporte de orquestación**, con el actor_subject previamente vinculado al dueño. Un texto introducido por el modelo, un parámetro actor_subject escrito por el proponente o una captura de pantalla no equivalen al evento USER original. El registrador del mensaje se identifica separadamente del proponente: proposer_subject != registrar_subject y owner_subject != registrar_subject. El orquestador solo debe escribir a través del transporte oficial admitido; nunca dar capacidad de registro a los perfiles/LLM. Sin readback del evento USER original, el gate bloquea, **no por firma externa**, sino por falta de procedencia interna.
 
-Proponente -> alcance y snapshot congelados -> solicitud HUMAN_DECISION_ROUTING
--> ingreso de mensaje humano de primera parte autenticado y firmado FUERA del modelo
--> verificador Ed25519 scripts/lf_owner_chat_event_v1.py
--> programacion.provenance_receipts (adaptador autenticado: PENDIENTE)
--> private.fn_lf_human_decision_record_verified_v1
--> private.lf_human_decision_receipts_v1
--> private.fn_lf_owner_chat_consume_v1 (consumo único, caducidad y revocación)
--> gate de promoción o Merge Train.
+## Catálogo reutilizable; alcance individual cerrado
 
-Se conserva private.fn_lf_human_decision_assert_authority_receipt_v1, políticas de autoridad y recibos canónicos. SELECT 2026-11-16: solicitudes humanas genéricas=0; políticas de emisor activas=0. El entorno no ofrece una firma de mensaje original de ChatGPT. No existe aún un recibo real aceptable.
+Tabla private.lf_owner_chat_action_catalog_v1: acciones habilitadas, claves obligatorias exactas, TTL máximo 900 segundos, versión. Dos entradas iniciales:
 
-## Evento firmado; identidad y trazabilidad
+- MERGE_GOVERNANCE_PR: {action,repository,pr_number,head_sha}. Alcance único PR+HEAD. Si el Train cambia HEAD al sincronizar/retimestamp, exigir **nueva orden por chat**.
+- PROMOTE_RULE_BATCH: {action,repository,execution_id,rule_codes,rule_snapshots_sha256}. Lista ordenada y sin duplicados + RUN + snapshot del lote. Una autorización no expande la cohorte ni implica GO de producción.
 
-El servicio emisor independiente del LLM debe leer el mensaje ORIGINAL con identidad de cuenta autenticada; nunca firmará texto o JSON presentado por el asistente. Campos obligatorios:
-- version LF_OWNER_CHAT_SIGNED_MESSAGE_V1; event_type USER_MESSAGE; source_platform CHATGPT; issuer_kind TRUSTED_FIRST_PARTY_INGRESS;
-- actor_subject de cuenta autenticada, fijado en configuración protegida (un nombre visible NO es identidad);
-- conversation_id, message_id único, challenge_id, literal_text, sent_at y expires_at;
-- scope exacto fijado por API de PR HEAD vigente o fuente de BD y NO por el modelo;
-- firma Ed25519 separada sobre bytes originales, payload_b64, signature_b64, key_id.
+Para otras familias futuras, PR de gobernanza agrega entrada y validador de alcance al catálogo; no se crea otro canal. Prohibido habilitar una acción nueva sin validación y controles de alcance equivalentes.
 
-El trust store externo configura huella de clave pública y owner subject. El verificador retorna SHA256 de texto literal, mensaje firmado y alcance; fecha, emisor, mensaje y firma. No se almacena clave privada ni texto literal en el latch de un solo uso. Emisión válida no equivale a consumo.
+Formato exacto de mensaje humano:
 
-El backend entrega en el propio chat un challenge inmutable de alcance cerrado; el dueño responde en chat APRUEBO LF-<challenge> o AUTORIZO LF-<challenge>. Ese mensaje debe estar firmado y unido al challenge por proveedor. No se acepta autorreferencia, mensaje generado por agente ni "Ok" sin binding demostrable. Esto NO obliga clic en GitHub.
+APRUEBO <primeros_12_hex_SHA256_UTF8_JSON_CANONICO_ALCANCE> <JSON_CANONICO_ALCANCE>
 
-## Dos scopes independientes, exactos y no ampliables
+No hay contraseñas ni códigos remitidos fuera del chat; el hash corto se calcula localmente del alcance y no es un factor de autenticación. El recorte solo sirve para identificar la orden; el gate verifica además SHA completo y **JSON completo**. El literal es una instrucción *futura e individual*: la decisión general actual por chat no se convierte retroactivamente en autorización de merge o promoción de un alcance no expresado.
 
-MERGE_GOVERNANCE_PR:
- action, repository, pr_number, head_sha exacto. Si el Train sincroniza/retimestamp y HEAD cambia, exigir nueva orden para el HEAD nuevo.
+## Registro oficial propuesto
 
-PROMOTE_RULE_BATCH:
- action, repository, pr_number, head_sha, execution_id, rule_codes ordenados y únicos, rule_snapshots_sha256. Sin expansión ni selección por nombre, con transacción única para todas las reglas y readback APPLIED. Es promoción de DEFINICIÓN, NO GO de producción.
+private.lf_owner_chat_orders_v1: source_chat_id, source_message_id único, source_kind=CHAT_ORCHESTRATOR_USER_TURN, actor_subject, proposer_subject, registrar_subject, acción, scope JSONB, scope_sha256, **texto literal**, literal_sha256, sent_at, recorded_at, expires_at, consumed_at, consumed_by. Fecha Lima en readback sent_at_lima, zona America/Lima. TTL 15 minutos desde el mensaje original. private.lf_owner_chat_revocations_v1 registra anulación antes del consumo. Tabla/fns en esquema private, sin GRANT EXECUTE a roles nuevos; PUBLIC/anon/authenticated/service_role revocados.
 
-Vigencia máxima: 15 minutos después del mensaje original. Un solo uso por message_id, request_id y receipt SHA. Cancelación/revocación por otro evento humano firmado mediante tabla private.lf_owner_chat_revocations_v1, antes del consumo.
+Funciones propuestas, source-only:
+- private.fn_lf_owner_chat_register_v1: valida orden, tipo de evento, catálogo, alcance, SHA y separación de actores, registra recibo; solo autorizada desde registrador del orquestador, no desde el proponente.
+- private.fn_lf_owner_chat_consume_v1: operación atómica FOR UPDATE; sin orden, otro scope/HEAD/snapshots, caducidad, revocación, reutilización, alteración o actores no separados retorna BLOCKED. Consume una sola vez bajo transacción del gate.
+- private.fn_lf_owner_chat_revoke_v1: anula recibo no consumido, requiere otro mensaje original del dueño por el canal de orquestación.
 
-## Gates y cambios de cutover necesarios — NO IMPLEMENTADOS EN ESTE PR
+## Integración con gates existentes (futuro cutover gobernado)
 
-1. Ingreso: crear integración OFICIAL del proveedor de ChatGPT que entregue evento usuario autenticado y firma. Ningún conector actual entrega ese recibo. Hasta entonces FAIL-CLOSED. Nada de model-supplied verified=true.
-2. decide_v1 HUMAN: exigir recibo chat ya consumido, con lote/ejecución/snapshots exactos; no aceptar sólo HUMAN:<nombre>. Wrapper genérico debe consumir una vez y llamar request_v1 -> decide_v1 -> apply_v1 de cada regla en la MISMA transacción, abortar al primer error y comparar readbacks. AUTO_SCORE_V1 permanece idéntico. No GRANT nuevos.
-3. Merge Train: tras sincronizar PR y verificar HEAD exacto y CI, antes de cualquier real_apply/merge, verificar y consumir un recibo MERGE_GOVERNANCE_PR. El trigger del Train puede ser solicitado desde el chat sin clic, pero sólo tras verificar evento real. Mantener locks, admisión, PASE, source parity, branch protections, ruta de Train; ningún merge directo.
-4. PASE: verificar tests y wiring de plataforma; PASE PASS NO ES decisión humana. Si falta recibo real el Merge Gate bloquea aunque CI sea verde.
-5. Revocación: evento firmado por el mismo owner, antes del consumo, marca receipt SHA revocado. Replay prohibido.
+**HUMAN public.lf_rule_promotion_decide_v1:** exigir resultado CONSUMED del recibo PROMOTE_RULE_BATCH asociado a RUN y lista exactos; el lote gobierna llamadas existentes request/decide/apply y readback en una sola transacción. Mantener score, hard blocks, validaciones y AUTO_SCORE_V1. La cadena HUMAN:<nombre> nunca sustituye el receipt.
 
-## Snippet de integración en workflow protegido (diseño, NO operativo)
+**Merge Train:** en el camino de main confiable, después del sync y PASE verde sobre HEAD exacto, pero antes del efecto, exigir recibo MERGE_GOVERNANCE_PR consumido atómicamente para ese pr_number+head_sha. La UI de GitHub no decide la autoridad humana. Conservar cola, locks, source parity, commit checks y políticas del Train.
 
-En el archivo actual .github/workflows/lf-migration-merge-train.yml, del checkout main confiable, en el punto posterior a sync/rechecks y anterior a real_apply, ejecutar como paso:
+**PASE:** validar arquitectura de canal y fixtures; un check SUCCESS no representa aprobación humana. PASE no genera orden ni consume recibo.
 
-    - name: Require authenticated owner chat decision
-      env:
-        LF_CHAT_TRUSTED_SIGNER_PUBLIC_KEY_PEM: from protected runner setting
-        LF_CHAT_TRUSTED_SIGNER_PUBLIC_KEY_SHA256: from protected runner setting
-        LF_CHAT_TRUSTED_OWNER_SUBJECT: from protected runner setting
-        LF_CHAT_TRUSTED_KID: from protected runner setting
-      run: |
-        python3 scripts/lf_owner_chat_gate_ci_v1.py \
-          --event-json "$TRUSTED_PROVIDER_MESSAGE_EVENT" \
-          --expected-scope-json "$SERVER_RESOLVED_EXACT_HEAD_SCOPE" \
-          --out-json "$RUNNER_TEMP/verified-chat-owner.json"
+**Sin bypass:** este PR #4063 introduce la infraestructura candidata, NO cambia la función HUMAN en vivo, ni el Merge Train, ni PASE, ni los PR #4061/#4062. Falta el puente de transporte del evento USER original del orquestador a escritor autorizado y un readback de ese puente. No se exige firmante de proveedor. El mecanismo está **aceptado como política general**; la implantación operacional sigue **NO VERIFICADA** hasta integración y PG17/18.
 
-El runner protegido debe resolver expected_scope desde el PR/BD, no confiar en payload del evento ni en archivos del PR. La siguiente operación, todavía no implementada, debe registrar la procedencia firmada por escritor oficial, crear el recibo del HUMAN_DECISION_ROUTING y consumirlo atómicamente dentro del Train. Nunca transferir secret/private key a un prompt. No instalar el snippet antes de la integración del emisor.
+## Evidencia de pruebas del candidato
 
-La migración candidata añade solamente tablas/funcción de consumo y revocación sin grants. No cambia decide_v1, Train, PASE ni las funciones históricas protegidas. Es intencional: activar sin emisor real bloquearía todo el Train; aceptar string arbitrario sería autoaprobación.
+Se corrieron 16 tests de verificador Python y 9 tests transaccionales SQLite con BEGIN/ROLLBACK: ausente, otro scope, caducado, reutilizado, revocado, actor incorrecto y autoaprobación, además de alcance PR y lote y catálogo de acción futura. 25/25 PASS en el ambiente local. Hashes, actor y origen del evento en estos tests son **datos sintéticos**.
 
-## Coexistencia con PR #4061
-
-El PR #4061 sigue DRAFT con 22 reglas P51 60 MANUAL. No se modifica en este PR. Cadenas HUMAN:Cristhian Lujan y citas textuales previas no son firmas del proveedor; no pueden elevarse retroactivamente. Tras disponer de emisor real, se debe preparar challenge NUEVO con #4061 HEAD exacto, la lista cerrada de 22, RUN autorizado y SHA de snapshots; recibir aprobación firmada por chat, consumirla dentro de wrapper oficial y pasar por Train. Una aprobación de merge distinta no promueve reglas automáticamente.
-
-No tocar #4040, #4044, #4062, RATE-001, TIMEOUT-001, AUTH-047/049 ni ejecución protegida. No nuevas autorizaciones EXECUTE.
-
-## Pruebas y límite
-
-En el entorno local se ejecutaron 14/14 fixtures criptográficos Ed25519 con claves SINTÉTICAS efímeras y 9/9 fixtures SQLite en transacción ROLLBACK, incluyendo: éxito, falta de orden, scope equivocado, HEAD incorrecto, caducidad, repetición, actor equivocado, autoaprobación, firma equivocada, payload manipulado, sin trust root, regla diferente, cohorte duplicada, fecha futura, challenge diferente y revocación.
-
-FALTAN: PG17 y PG18 contra el DDL, CI sobre HEAD exacto, autenticación real de evento de ChatGPT, políticas canónicas ACTIVE e integración del camino material al Train/decide. No existió prueba de recibo real ni escritura en Supabase. Cierre NO-GO.
-
-Comando local con pytest y cryptography instalados:
- python -m pytest -q sandbox/lf_contract_gate_test/owner_chat_approval/
+**Límites:** SQL DDL/fns PG17/PG18 no ejecutadas en PostgreSQL local; no se ha introducido evento auténtico de orquestación ni activado el consumidor material HUMAN/Train. CI exact-head mide admisión/código del PR, no prueba integración material de este contrato.
