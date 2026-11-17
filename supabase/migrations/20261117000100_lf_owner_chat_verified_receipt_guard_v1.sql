@@ -107,7 +107,8 @@ CREATE TABLE IF NOT EXISTS private.lf_owner_chat_action_catalog_v1 (
 INSERT INTO private.lf_owner_chat_action_catalog_v1
 (action_code,required_scope_keys,enabled,policy_version) VALUES
 ('MERGE_GOVERNANCE_PR',ARRAY['action','repository','pr_number','head_sha']::text[],true,'LF_CHAT_OWNER_ORDER_V2'),
-('PROMOTE_RULE_BATCH',ARRAY['action','repository','execution_id','rule_codes','rule_snapshots_sha256']::text[],true,'LF_CHAT_OWNER_ORDER_V2')
+('PROMOTE_RULE_BATCH',ARRAY['action','repository','execution_id','rule_codes','rule_snapshots_sha256']::text[],true,'LF_CHAT_OWNER_ORDER_V2'),
+('UPDATE_IG_PARAMETER',ARRAY['action','repository','parameter_namespace','parameter_code','channel_code','expected_revision','new_value_sha256','new_activo']::text[],true,'LF_CHAT_OWNER_ORDER_V2')
 ON CONFLICT(action_code) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_orders_v1 (
@@ -147,11 +148,10 @@ REVOKE ALL ON private.lf_owner_chat_action_catalog_v1,
   private.lf_owner_chat_orders_v1,private.lf_owner_chat_revocations_v1
   FROM PUBLIC,anon,authenticated,service_role;
 
--- Called ONLY by a trusted orchestrator writer with the email obtained from
--- a verified platform account session. OWNER_ACCOUNT_EMAIL is an external
--- installation input, never a message/PR literal or user-controllable claim.
--- Plaintext must not be logged, returned or persisted. Function arguments
--- alone do NOT prove ownership of the platform session.
+-- Called ONLY by a trusted orchestrator with a provider-verified account
+-- session. Account email may be transient inbound metadata but is never
+-- configured via environment or persisted in plaintext. The active SHA
+-- parameter row is the sole authority; function arguments alone prove nothing.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(
   p_source_chat_id text,p_source_message_id text,p_source_kind text,
   p_actor_sub uuid,p_channel_code text,p_session_account_email text,
@@ -232,6 +232,15 @@ BEGIN
         IS DISTINCT FROM p_scope->'rule_codes' THEN
       RAISE EXCEPTION 'CHAT_OWNER_RULE_COHORT_NOT_CLOSED';
    END IF;
+ ELSIF v_action='UPDATE_IG_PARAMETER' THEN
+   IF p_scope->>'parameter_namespace' IS DISTINCT FROM 'OWNER_CHAT'
+     OR p_scope->>'parameter_code' IS DISTINCT FROM 'SESSION_EMAIL_SHA256'
+     OR p_scope->>'channel_code' NOT IN ('CHAT_GPT_SESSION','CHAT_CLAUDE_SESSION')
+     OR coalesce(p_scope->>'new_value_sha256','') !~ '^[a-f0-9]{64}$'
+     OR jsonb_typeof(p_scope->'expected_revision') IS DISTINCT FROM 'number'
+     OR (p_scope->>'expected_revision') !~ '^[1-9][0-9]*$'
+     OR jsonb_typeof(p_scope->'new_activo') IS DISTINCT FROM 'boolean'
+   THEN RAISE EXCEPTION 'CHAT_OWNER_PARAMETER_SCOPE_INVALID'; END IF;
  END IF;
  v_text:=programacion.fn_v09_canonical_jsonb_text(p_scope);
  v_sha:=programacion.fn_v09_sha256_jsonb(p_scope);
@@ -533,6 +542,126 @@ BEGIN
 END;
 $fn$;
 REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(uuid,text,integer,text,text)
+ FROM PUBLIC,anon,authenticated,service_role;
+
+-- Single canonical parameter store: immutability unless one-use approved
+-- owner CHAT order is consumed by this transaction. Audit is mandatory.
+ALTER TABLE private.lf_ig_parameters_v1 ADD CONSTRAINT
+ lf_ig_parameter_last_order_fkey FOREIGN KEY(last_approved_order_id)
+ REFERENCES private.lf_owner_chat_orders_v1(order_id);
+CREATE TABLE private.lf_ig_parameter_change_audit_v1(
+ change_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ parameter_namespace text NOT NULL,
+ parameter_code text NOT NULL,
+ channel_code text NOT NULL,
+ owner_sub uuid,
+ old_sha256 text,
+ new_sha256 text,
+ old_activo boolean NOT NULL,
+ new_activo boolean NOT NULL,
+ old_revision integer NOT NULL,
+ new_revision integer NOT NULL,
+ approval_order_id uuid NOT NULL REFERENCES private.lf_owner_chat_orders_v1(order_id),
+ approval_message_id text NOT NULL,
+ approval_scope_sha256 text NOT NULL,
+ owner_actor_sub uuid NOT NULL,
+ changed_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+REVOKE ALL ON private.lf_ig_parameter_change_audit_v1
+ FROM PUBLIC,anon,authenticated,service_role;
+
+CREATE OR REPLACE FUNCTION private.fn_lf_ig_parameter_guard_audit_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE ord private.lf_owner_chat_orders_v1%ROWTYPE;
+  expected jsonb; repo text;
+BEGIN
+ IF TG_OP<>'UPDATE' THEN
+   RAISE EXCEPTION 'IG_PARAMETER_DIRECT_INSERT_DELETE_BLOCKED';
+ END IF;
+ IF NEW.parameter_namespace IS DISTINCT FROM OLD.parameter_namespace OR
+    NEW.parameter_code IS DISTINCT FROM OLD.parameter_code OR
+    NEW.channel_code IS DISTINCT FROM OLD.channel_code OR
+    NEW.owner_sub IS DISTINCT FROM OLD.owner_sub OR
+    NEW.value_kind IS DISTINCT FROM OLD.value_kind OR
+    NEW.value_jsonb IS DISTINCT FROM OLD.value_jsonb OR
+    NEW.revision<>OLD.revision+1 OR NEW.last_approved_order_id IS NULL OR
+    NEW.updated_at IS NULL THEN
+   RAISE EXCEPTION 'IG_PARAMETER_UNAUTHORIZED_STRUCTURE_CHANGE';
+ END IF;
+ SELECT * INTO ord FROM private.lf_owner_chat_orders_v1
+  WHERE order_id=NEW.last_approved_order_id FOR UPDATE;
+ repo:=(SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER');
+ expected:=jsonb_build_object('action','UPDATE_IG_PARAMETER','repository',repo,
+  'parameter_namespace',OLD.parameter_namespace,'parameter_code',OLD.parameter_code,
+  'channel_code',OLD.channel_code,'expected_revision',OLD.revision,
+  'new_value_sha256',NEW.value_sha256,'new_activo',NEW.activo);
+ IF NOT FOUND OR ord.action_code IS DISTINCT FROM 'UPDATE_IG_PARAMETER' OR
+    ord.actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() OR
+    ord.identity_mode IS DISTINCT FROM 'ACCOUNT_SESSION' OR
+    ord.proposer_subject=ord.registrar_subject OR
+    ord.scope IS DISTINCT FROM expected OR
+    ord.scope_sha256 IS DISTINCT FROM programacion.fn_v09_sha256_jsonb(expected) OR
+    ord.consumed_by IS DISTINCT FROM 'PARAMETER_CHANGE_TX:'||pg_current_xact_id()::text OR
+    ord.consumed_at IS NULL OR NEW.owner_sub IS DISTINCT FROM ord.actor_sub OR
+    EXISTS(SELECT 1 FROM private.lf_owner_chat_revocations_v1 r WHERE r.order_id=ord.order_id)
+ THEN RAISE EXCEPTION 'IG_PARAMETER_APPROVED_OWNER_CHAT_RECEIPT_REQUIRED'; END IF;
+ INSERT INTO private.lf_ig_parameter_change_audit_v1(
+  parameter_namespace,parameter_code,channel_code,owner_sub,
+  old_sha256,new_sha256,old_activo,new_activo,old_revision,new_revision,
+  approval_order_id,approval_message_id,approval_scope_sha256,owner_actor_sub)
+ VALUES(OLD.parameter_namespace,OLD.parameter_code,OLD.channel_code,OLD.owner_sub,
+  OLD.value_sha256,NEW.value_sha256,OLD.activo,NEW.activo,OLD.revision,NEW.revision,
+  ord.order_id,ord.source_message_id,ord.scope_sha256,ord.actor_sub);
+ RETURN NEW;
+END;
+$fn$;
+REVOKE ALL ON FUNCTION private.fn_lf_ig_parameter_guard_audit_v1()
+ FROM PUBLIC,anon,authenticated,service_role;
+CREATE TRIGGER lf_ig_parameter_governed_write_v1
+ BEFORE INSERT OR UPDATE OR DELETE ON private.lf_ig_parameters_v1
+ FOR EACH ROW EXECUTE FUNCTION private.fn_lf_ig_parameter_guard_audit_v1();
+
+CREATE OR REPLACE FUNCTION private.fn_lf_ig_parameter_update_v1(
+ p_order_id uuid,p_namespace text,p_code text,p_channel_code text,
+ p_expected_revision integer,p_new_sha256 text,p_new_activo boolean
+) RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE oldrow private.lf_ig_parameters_v1%ROWTYPE; scope jsonb; receipt jsonb;
+BEGIN
+ IF p_namespace IS DISTINCT FROM 'OWNER_CHAT' OR
+    p_code IS DISTINCT FROM 'SESSION_EMAIL_SHA256' OR
+    p_channel_code NOT IN ('CHAT_CLAUDE_SESSION','CHAT_GPT_SESSION') OR
+    coalesce(p_new_sha256,'') !~ '^[a-f0-9]{64}
+ OR
+    p_new_activo IS NULL OR coalesce(p_expected_revision,0)<1
+ THEN RAISE EXCEPTION 'IG_PARAMETER_CHANGE_NOT_CATALOGUED'; END IF;
+ SELECT * INTO oldrow FROM private.lf_ig_parameters_v1
+  WHERE parameter_namespace=p_namespace AND parameter_code=p_code
+    AND channel_code=p_channel_code FOR UPDATE;
+ IF NOT FOUND OR oldrow.revision IS DISTINCT FROM p_expected_revision
+ THEN RAISE EXCEPTION 'IG_PARAMETER_STALE_OR_MISSING'; END IF;
+ scope:=jsonb_build_object('action','UPDATE_IG_PARAMETER',
+  'repository',(SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER'),
+  'parameter_namespace',p_namespace,'parameter_code',p_code,
+  'channel_code',p_channel_code,'expected_revision',p_expected_revision,
+  'new_value_sha256',p_new_sha256,'new_activo',p_new_activo);
+ receipt:=private.fn_lf_owner_chat_consume_v1(p_order_id,'UPDATE_IG_PARAMETER',
+  scope,'PARAMETER_CHANGE_TX:'||pg_current_xact_id()::text);
+ IF receipt->>'status' IS DISTINCT FROM 'CONSUMED'
+ THEN RAISE EXCEPTION 'IG_PARAMETER_OWNER_APPROVAL_REQUIRED:%',receipt; END IF;
+ UPDATE private.lf_ig_parameters_v1
+  SET value_sha256=p_new_sha256,activo=p_new_activo,revision=revision+1,
+      last_approved_order_id=p_order_id,updated_at=clock_timestamp()
+ WHERE parameter_namespace=p_namespace AND parameter_code=p_code
+   AND channel_code=p_channel_code;
+ RETURN jsonb_build_object('status','UPDATED_WITH_OWNER_CHAT_AUDIT',
+   'parameter_namespace',p_namespace,'parameter_code',p_code,
+   'channel_code',p_channel_code,'revision',p_expected_revision+1,
+   'order_id',p_order_id);
+END;
+$fn$;
+REVOKE ALL ON FUNCTION private.fn_lf_ig_parameter_update_v1(uuid,text,text,text,integer,text,boolean)
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- No new EXECUTE grants. Train must explicitly wire this guarded function
