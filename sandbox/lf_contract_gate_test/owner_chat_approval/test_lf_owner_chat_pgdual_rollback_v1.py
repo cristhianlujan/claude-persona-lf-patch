@@ -279,7 +279,7 @@ BEGIN
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_revoke_v1(oid,'fixture-recovery-revoke-msg',
-     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_sha,'fixture-only');
+     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',('  '||upper(fixture_email)||' '),'fixture-only');
   IF v->>'status' IS DISTINCT FROM 'REVOKED'
     THEN RAISE EXCEPTION 'NEG_REVOKE_SETUP:%',v; END IF;
   BEGIN
