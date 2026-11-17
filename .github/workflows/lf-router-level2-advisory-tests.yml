@@ -160,76 +160,6 @@ permissions:
   contents: read
 
 jobs:
-  profile-binding-scope-preflight:
-    name: profile-binding-scope-preflight
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      binding_only: ${{ steps.check.outputs.binding_only }}
-    steps:
-      - name: Read exact Git diff only
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Classify binding-only changes; keep Router checks for mixed PRs
-        id: check
-        shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import fnmatch
-          import os
-          import subprocess
-
-          binding_paths = (
-              "profiles/*/contracts/runtime_binding.json",
-              "profiles/*/validators/runtime_semantic_utility.py",
-              "scripts/lf_profile_native_resume.py",
-              "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
-              "services/profile_runtime_api/profile_runtime_api/repository.py",
-              "services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py",
-              "services/profile_runtime_api/tests/test_runtime_binding_fleet_conformance.py",
-              "services/profile_runtime_api/tests/test_repository_runtime_schema.py",
-              "services/profile_runtime_api/tests/test_runtime_output_mode.py",
-              "services/profile_runtime_api/tests/test_generic_profile_runtime_binding.py",
-          )
-          supporting = {
-              ".github/workflows/lf-router-level2-advisory-tests.yml",
-              "sandbox/lf_contract_gate_test/changesets/lf-profile-runtime-binding-fleet-20261116-v1.json",
-          }
-
-          def binding_only(paths):
-              found = any(any(fnmatch.fnmatchcase(p, pattern) for pattern in binding_paths) for p in paths)
-              recognized = all(
-                  p in supporting or any(fnmatch.fnmatchcase(p, pattern) for pattern in binding_paths)
-                  for p in paths
-              )
-              return bool(paths) and found and recognized
-
-          assert binding_only(["profiles/sample/contracts/runtime_binding.json"])
-          assert binding_only(["profiles/sample/contracts/runtime_binding.json", ".github/workflows/lf-router-level2-advisory-tests.yml"])
-          assert not binding_only([".github/workflows/lf-router-level2-advisory-tests.yml"])
-          assert not binding_only(["profiles/sample/contracts/runtime_binding.json", "supabase/migrations/new.sql"])
-          assert not binding_only(["sandbox/lf_contract_gate_test/router_wave/new.py"])
-
-          if os.environ["GITHUB_EVENT_NAME"] != "pull_request":
-              selected = False
-          else:
-              files = subprocess.check_output(
-                  ["git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
-                  text=True,
-              ).splitlines()
-              selected = binding_only(files)
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf8") as output:
-              print("binding_only=" + str(selected).lower(), file=output)
-          print("PROFILE_BINDING_ONLY_SCOPE=" + str(selected).lower())
-          PY
-
   profile-product-director-gpt-native-raw-canonical:
     name: product-director-gpt-native-raw-canonical
     if: ${{ github.event_name == 'pull_request' }}
@@ -361,8 +291,6 @@ jobs:
             < sandbox/lf_contract_gate_test/profile_execution_runtime/test_router_one_path_pg17_rollback_readback.sql
 
   router-level2-advisory-contract:
-    needs: [profile-binding-scope-preflight]
-    if: ${{ needs.profile-binding-scope-preflight.outputs.binding_only != 'true' }}
     name: router-level2-advisory-contract
     runs-on: ubuntu-latest
     timeout-minutes: 5
