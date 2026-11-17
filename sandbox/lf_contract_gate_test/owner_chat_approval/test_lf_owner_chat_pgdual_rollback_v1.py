@@ -146,7 +146,11 @@ class OwnerChatPGDualRollback(unittest.TestCase):
                     for _ in range(90):
                         ping=subprocess.run(['docker','exec',name,'pg_isready','-U','postgres'],
                           capture_output=True,text=True,timeout=15)
-                        if ping.returncode==0:break
+                        if ping.returncode==0:
+                            logs=subprocess.run(['docker','logs',name],
+                                capture_output=True,text=True,timeout=15)
+                            if 'PostgreSQL init process complete; ready for start up.' in (logs.stdout+logs.stderr):
+                                break
                         time.sleep(.5)
                     self.assertEqual(ping.returncode,0)
                     script=SETUP+'\nBEGIN;\n'+sql+'\n'+ASSERTIONS+'\nROLLBACK;\n'+"""
