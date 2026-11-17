@@ -113,9 +113,10 @@ de la orden chat, no normalizarla sin un cambio separado gobernado.
 el owner_sub canónico unido a public.lf_ig_project_owner_v2. La tabla hija
 private.lf_owner_chat_authorized_accounts_v1 almacena únicamente SHA-256
 hexadecimal del correo de cuenta normalizado a minúsculas y el canal. Nunca
-correos claros. Solo se siembra el hash de Claude aportado por el dueño, sin
-sembrar fila de ChatGPT: la autenticación ChatGPT permanece bloqueada hasta
-recibir hash respaldado por sesión realmente autenticada.
+correos claros. La fuente de instalación es exclusivamente la variable externa
+OWNER_ACCOUNT_EMAIL. La huella del correo normalizado está en la migración,
+sembrada para ambos canales (Claude y ChatGPT), compartiendo una sola identidad.
+**No se interpreta el simple conocimiento del correo como prueba de sesión.**
 
 **Regla de autoridad:** el registrador únicamente acepta una sesión si
 owner_sub, canal, session_account_sha256 y activo coinciden exactamente
@@ -140,3 +141,41 @@ USER original, sin aceptar metadatos declarados por el agente.
 **Permisos/cutover:** no se añaden grants, no se ejecutan migraciones
 ni Train sobre un PR productivo. La ruta pull_request_target sigue usando
 main confiable y requiere bootstrap oficial de forma separada.
+
+
+## Lote IG 23:25 — Correo único externo, dos canales activos (candidato)
+
+- Aprobación del dueño: una sola variable de instalación `OWNER_ACCOUNT_EMAIL`,
+  proporcionada fuera del repositorio. La configuración debe llegar al
+  orquestador desde su gestor de secretos; no insertar el valor claro en
+  documentación, migraciones, fixtures, tests, acciones GitHub ni logs.
+  **Esta PR no instala ni acredita que el secreto ya exista en producción.**
+- El SHA256(lower(trim(email))) entregado coincide exactamente con la huella
+  previa de Claude. La misma huella se siembra para `CHAT_CLAUDE_SESSION`
+  y `CHAT_GPT_SESSION` a partir de una sola constante SQL, uniendo al
+  `owner_sub` canónico. Nunca se incluye el correo real en claro.
+- El registrador PostgreSQL recibe el correo únicamente desde metadatos de
+  una cuenta de sesión previamente validada por el transporte protegido,
+  calcula internamente SHA256(lower(trim(email))) y compara con la fila activa
+  del canal. No persiste ni devuelve el texto del correo; el recibo conserva
+  solo SHA, canal, identidad derivada, fecha Lima y orden literal.
+  La revocación aplica exactamente la misma normalización.
+- El validador Python exige `OWNER_ACCOUNT_EMAIL` en el entorno privado
+  de instalación; sin esa variable bloquea. Calcula SHA256 del correo
+  normalizado y exige concordancia con hash de evento de sesión (el evento
+  debe ser autentificado por proveedor) y la fila del canal activa. No
+  autoriza una orden a partir del correo de instalación por sí solo.
+- Tests aislados PG17.6/PG18.7: una cuenta **ficticia** ensamblada en
+  memoria permite probar minúsculas, mayúsculas y espacios sin depositar el
+  correo real en CI; primero se comprueba el seed real para los dos canales,
+  luego se reemplaza la huella por el hash de la cuenta de prueba dentro de
+  la transacción que se revierte. Un segundo guard inspecciona todos los
+  archivos versionados y compara hashes de correos literales.
+- Hallazgo de privacidad durante la guardia: el ledger histórico de
+  migraciones tenía el correo del dueño en la columna `created_by`.
+  Se redactaron esos valores con su hash y se dejó nota explícita;
+  se conservaron nombres y versiones. No se alteró la base de datos.
+- ACCOUNT_SESSION continúa sin equivaler a una firma verificable por
+  mensaje ni acredita por sí solo el ingreso autenticado de ChatGPT/Claude.
+  **No realizar promociones reales ni merge por la coincidencia de este
+  hash:** se exige evento de sesión protegido y readback de autoría.
