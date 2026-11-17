@@ -824,6 +824,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Checkout pinned #4064 SQL as inert test data (no credentials)
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: 6d9f33fe300432270fdf078a35d1ae56cc1c8fab
+          path: candidate-readonly
+          persist-credentials: false
+          fetch-depth: 1
       - name: Execute positive-negative route and SQL source guards
         shell: bash
         run: |
