@@ -364,9 +364,9 @@ AS $fn$
 DECLARE v_scope jsonb;v jsonb;
 BEGIN
  IF p_pr_number IS NULL OR p_pr_number<=0 OR
-   coalesce(p_final_head_sha,'') !~ '^[a-f0-9]{40} OR
-   coalesce(p_repository,'') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+
-   OR coalesce(p_train_run_ref,'') !~ '^TRAIN-[A-Z0-9_-]{8,128} THEN
+   coalesce(p_final_head_sha,'') !~ '^[a-f0-9]{40}$' OR
+   coalesce(p_repository,'') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
+   OR coalesce(p_train_run_ref,'') !~ '^TRAIN-[A-Z0-9_-]{8,128}$' THEN
    RETURN jsonb_build_object('status','BLOCKED','code','TRAIN_CHAT_OWNER_SCOPE_INVALID');
  END IF;
  v_scope:=jsonb_build_object('action','MERGE_GOVERNANCE_PR',
