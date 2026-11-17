@@ -855,7 +855,7 @@ jobs:
                     "github.ref == 'refs/heads/main' && "
                     "github.repository == 'cristhianlujan/claude-persona-lf-patch' && "
                     "github.actor == 'lf-migration-train[bot]' && "
-                    "startsWith(github.event.head_commit.message, 'merge(train): PR #000000')")
+                    "startsWith(github.event.head_commit.message, 'merge(train): PR #4071')")
           assert actual == expected, "IG4064_ONE_SHOT_GATE_SOURCE_DRIFT"
           assert "permissions:\n      contents: read\n      actions: write\n      pull-requests: read" in job
           assert ".merged_by.login == \"lf-migration-train[bot]\"" in job
@@ -866,11 +866,11 @@ jobs:
               return (e["event"]=="push" and e["ref"]=="refs/heads/main"
                       and e["repository"]=="cristhianlujan/claude-persona-lf-patch"
                       and e["actor"]=="lf-migration-train[bot]"
-                      and e["message"].startswith("merge(train): PR #000000"))
+                      and e["message"].startswith("merge(train): PR #4071"))
           valid={"event":"push","ref":"refs/heads/main",
                  "repository":"cristhianlujan/claude-persona-lf-patch",
                  "actor":"lf-migration-train[bot]",
-                 "message":"merge(train): PR #000000\n\nAutomate IG4064 rollback"}
+                 "message":"merge(train): PR #4071\n\nAutomate IG4064 rollback"}
           assert eligible(valid), "IG4064_ONE_SHOT_POSITIVE_FAILED"
           cases=[("fork",{"repository":"external/fork"}),
                  ("feature_branch",{"ref":"refs/heads/feature"}),
@@ -878,7 +878,7 @@ jobs:
                  ("dispatch",{"event":"workflow_dispatch"}),
                  ("unauthorized_actor",{"actor":"other-user"}),
                  ("other_pr",{"message":"merge(train): PR #4064"}),
-                 ("prefix_trick",{"message":"prefix merge(train): PR #000000"})]
+                 ("prefix_trick",{"message":"prefix merge(train): PR #4071"})]
           for name,changes in cases:
               assert not eligible(valid | changes), "IG4064_ONE_SHOT_NEGATIVE_FAILED:"+name
           print("PASS_IG4064_ONESHOT_TRIGGER 1/1 positive 7/7 negative")
@@ -893,7 +893,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
       github.actor == 'lf-migration-train[bot]' &&
-      startsWith(github.event.head_commit.message, 'merge(train): PR #000000')
+      startsWith(github.event.head_commit.message, 'merge(train): PR #4071')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -907,7 +907,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          result="$(gh api "repos/$GITHUB_REPOSITORY/pulls/000000")"
+          result="$(gh api "repos/$GITHUB_REPOSITORY/pulls/4071")"
           jq -e --arg sha "$GITHUB_SHA" --arg repo "$GITHUB_REPOSITORY" '
             .merged_at != null and
             .merge_commit_sha == $sha and
@@ -915,7 +915,7 @@ jobs:
             .head.repo.full_name == $repo and
             .base.ref == "main"
           ' <<< "$result" >/dev/null
-          files="$(gh api "repos/$GITHUB_REPOSITORY/pulls/000000/files?per_page=100")"
+          files="$(gh api "repos/$GITHUB_REPOSITORY/pulls/4071/files?per_page=100")"
           jq -e --arg target '.github/workflows/lf-router-level2-advisory-tests.yml' '
             length == 1 and .[0].filename == $target
           ' <<< "$files" >/dev/null
