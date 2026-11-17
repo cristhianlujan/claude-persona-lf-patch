@@ -106,13 +106,13 @@ BEGIN
       jsonb_array_length(p_scope->'rule_codes')=0 THEN
      RAISE EXCEPTION 'CHAT_OWNER_RULE_BATCH_INVALID';
    END IF;
-   SELECT count(*),count(DISTINCT s) INTO v_count,v_unique
-     FROM jsonb_array_elements_text(p_scope->'rule_codes') AS s;
+   SELECT count(*),count(DISTINCT x.code) INTO v_count,v_unique
+     FROM jsonb_array_elements_text(p_scope->'rule_codes') AS x(code);
    IF v_count<>v_unique OR EXISTS(
-     SELECT 1 FROM jsonb_array_elements_text(p_scope->'rule_codes') AS s
-     WHERE s !~ '^[A-Z0-9_-]{3,128}$') OR
-     (SELECT jsonb_agg(s ORDER BY s)
-      FROM jsonb_array_elements_text(p_scope->'rule_codes') AS s)
+     SELECT 1 FROM jsonb_array_elements_text(p_scope->'rule_codes') AS x(code)
+     WHERE x.code !~ '^[A-Z0-9_-]{3,128}$') OR
+     (SELECT jsonb_agg(x.code ORDER BY x.code)
+      FROM jsonb_array_elements_text(p_scope->'rule_codes') AS x(code))
         IS DISTINCT FROM p_scope->'rule_codes' THEN
       RAISE EXCEPTION 'CHAT_OWNER_RULE_COHORT_NOT_CLOSED';
    END IF;
@@ -218,6 +218,174 @@ REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_consume_v1(uuid,text,jsonb,text,
  FROM PUBLIC,anon,authenticated,service_role;
 REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_revoke_v1(uuid,text,text,text)
  FROM PUBLIC,anon,authenticated,service_role;
--- No GRANT. Cutover to existing HUMAN decide and LF Merge Train is separate
--- and requires readback of the actual orquestador USER event boundary.
+
+-- HUMAN consumer: one immutable order -> one complete closed rule batch -> one
+-- transaction. A direct HUMAN:* call to decide_v1 has no per-rule tx lease.
+CREATE TABLE private.lf_owner_chat_promotion_leases_v1(
+  promotion_id text PRIMARY KEY REFERENCES public.lf_rule_promotion_v1(promotion_id),
+  order_id uuid NOT NULL REFERENCES private.lf_owner_chat_orders_v1(order_id),
+  rule_code text NOT NULL,
+  parent_run text NOT NULL,
+  tx_id text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  UNIQUE(order_id,rule_code)
+);
+REVOKE ALL ON private.lf_owner_chat_promotion_leases_v1
+  FROM PUBLIC,anon,authenticated,service_role;
+
+CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_promote_batch_v1(
+ p_order_id uuid,p_promotion_ids text[],p_expected_owner_subject text,p_note text
+) RETURNS jsonb
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE
+  v_run text;v_codes text[];v_snap text;v_scope jsonb;v_receipt jsonb;
+  v_count integer;v_bad integer;v_ids_count integer;
+  v_promotion_id text;v_r record;v_dec jsonb;v_apply jsonb;v_done integer:=0;
+  v_xid text:=pg_current_xact_id()::text;
+BEGIN
+  IF coalesce(array_length(p_promotion_ids,1),0)=0
+    OR array_position(p_promotion_ids,NULL) IS NOT NULL
+    OR (SELECT count(*) <> count(DISTINCT i) FROM unnest(p_promotion_ids) AS i)
+    OR nullif(btrim(coalesce(p_expected_owner_subject,'')),'') IS NULL
+    OR nullif(btrim(coalesce(p_note,'')),'') IS NULL
+  THEN RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_BATCH_INPUT_INVALID'; END IF;
+
+  -- Stable lock order and complete cohort: no partial approval after drift.
+  PERFORM 1 FROM public.lf_rule_promotion_v1
+   WHERE promotion_id=ANY(p_promotion_ids) ORDER BY promotion_id FOR UPDATE;
+  v_ids_count:=cardinality(p_promotion_ids);
+  SELECT count(*),count(*) FILTER(WHERE status<>'PENDING'),
+    min(request_execution_id),array_agg(rule_code ORDER BY rule_code),
+    programacion.fn_v09_sha256_jsonb(
+      jsonb_agg(jsonb_build_object('rule_code',rule_code,
+                      'snapshot_sha256',request_snapshot_sha256) ORDER BY rule_code))
+  INTO v_count,v_bad,v_run,v_codes,v_snap
+  FROM public.lf_rule_promotion_v1 WHERE promotion_id=ANY(p_promotion_ids);
+  IF v_count<>v_ids_count OR v_bad<>0 OR
+     (SELECT count(DISTINCT request_execution_id) FROM public.lf_rule_promotion_v1
+       WHERE promotion_id=ANY(p_promotion_ids))<>1 OR
+     (SELECT count(DISTINCT rule_code) FROM public.lf_rule_promotion_v1
+       WHERE promotion_id=ANY(p_promotion_ids))<>v_count OR
+     EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1
+       WHERE promotion_id=ANY(p_promotion_ids) AND
+         (public.lf_asset_snapshot_sha_v1('REGLA',rule_code)
+                 IS DISTINCT FROM request_snapshot_sha256)) THEN
+    RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_COHORT_OR_SNAPSHOT_STALE';
+  END IF;
+  v_scope:=jsonb_build_object('action','PROMOTE_RULE_BATCH',
+    'repository','cristhianlujan/claude-persona-lf-patch',
+    'execution_id',v_run,'rule_codes',to_jsonb(v_codes),
+    'rule_snapshots_sha256',v_snap);
+  v_receipt:=private.fn_lf_owner_chat_consume_v1(
+    p_order_id,'PROMOTE_RULE_BATCH',v_scope,p_expected_owner_subject,
+    'PROMOTION_BATCH_TX:'||v_xid);
+  IF v_receipt->>'status' IS DISTINCT FROM 'CONSUMED' THEN
+    RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_NO_VALID_ORDER:%',v_receipt;
+  END IF;
+
+  INSERT INTO private.lf_owner_chat_promotion_leases_v1
+    (promotion_id,order_id,rule_code,parent_run,tx_id)
+  SELECT promotion_id,p_order_id,rule_code,request_execution_id,v_xid
+  FROM public.lf_rule_promotion_v1 WHERE promotion_id=ANY(p_promotion_ids);
+
+  FOR v_promotion_id IN
+    SELECT promotion_id FROM public.lf_rule_promotion_v1
+    WHERE promotion_id=ANY(p_promotion_ids) ORDER BY rule_code
+  LOOP
+    v_dec:=public.lf_rule_promotion_decide_v1(v_promotion_id,'APPROVE',
+      'HUMAN:'||p_expected_owner_subject,
+      'ORQUESTACION_CHAT_ORDER:'||p_order_id::text||' '||p_note);
+    IF v_dec->>'status' IS DISTINCT FROM 'APPROVED' THEN
+      RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_DECIDE_DENIED:%',v_dec;
+    END IF;
+    v_apply:=public.lf_rule_promotion_apply_v1(v_promotion_id);
+    IF v_apply->>'status' IS DISTINCT FROM 'APPLIED' THEN
+      RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_APPLY_DENIED:%',v_apply;
+    END IF;
+    v_done:=v_done+1;
+  END LOOP;
+
+  IF (SELECT count(*) FROM public.lf_rule_promotion_v1
+      WHERE promotion_id=ANY(p_promotion_ids) AND status='APPLIED')<>v_done THEN
+    RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_READBACK_MISMATCH';
+  END IF;
+  RETURN jsonb_build_object('status','APPLIED','count',v_done,
+    'order_id',p_order_id,'parent_run',v_run,
+    'snapshot_cohort_sha256',v_snap);
+END;
+$fn$;
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_promote_batch_v1(uuid,text[],text,text)
+ FROM PUBLIC,anon,authenticated,service_role;
+
+-- Guard the exact live HUMAN consumer; preserve AUTO_SCORE_V1 logic.
+DO $guard$
+DECLARE d text;target text;addition text;
+BEGIN
+ d:=pg_get_functiondef('public.lf_rule_promotion_decide_v1(text,text,text,text)'::regprocedure);
+ IF md5(d)<>'98f1be74469c91d577e5eca66b81cba5' THEN
+   RAISE EXCEPTION 'CHAT_OWNER_DECIDE_V1_BASE_DRIFT';
+ END IF;
+ target:=$t$ if p_decision='APPROVE' and public.lf_asset_snapshot_sha_v1$t$;
+ addition:=$a$
+ IF p_decided_by LIKE 'HUMAN:%' AND p_decision='APPROVE' AND NOT EXISTS(
+   SELECT 1
+   FROM private.lf_owner_chat_promotion_leases_v1 l
+   JOIN private.lf_owner_chat_orders_v1 o ON o.order_id=l.order_id
+   WHERE l.promotion_id=p_promotion_id AND l.rule_code=p.rule_code
+     AND l.parent_run=p.request_execution_id
+     AND l.tx_id=pg_current_xact_id()::text
+     AND o.action_code='PROMOTE_RULE_BATCH'
+     AND o.actor_subject=substring(p_decided_by FROM 7)
+     AND o.consumed_by='PROMOTION_BATCH_TX:'||pg_current_xact_id()::text
+     AND o.consumed_at IS NOT NULL
+     AND o.expires_at>clock_timestamp()
+     AND NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_revocations_v1 r
+       WHERE r.order_id=o.order_id)
+ ) THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+     'blocking_code','CHAT_OWNER_HUMAN_BATCH_RECEIPT_REQUIRED');
+ END IF;
+ $a$;
+ IF position(target in d)=0 THEN RAISE EXCEPTION 'CHAT_OWNER_DECIDE_V1_PATCH_TARGET_NOT_FOUND'; END IF;
+ d:=replace(d,target,addition||target);
+ EXECUTE d;
+END;
+$guard$;
+
+-- Train consumer; invoked only at trusted-main exact-HEAD pre-apply stage.
+-- This is one-use and does NOT merge, publish a check or bypass Train.
+CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(
+ p_order_id uuid,p_repository text,p_pr_number integer,p_final_head_sha text,
+ p_expected_owner_subject text,p_train_run_ref text
+) RETURNS jsonb
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+DECLARE v_scope jsonb;v jsonb;
+BEGIN
+ IF p_pr_number IS NULL OR p_pr_number<=0 OR
+   coalesce(p_final_head_sha,'') !~ '^[a-f0-9]{40} OR
+   coalesce(p_repository,'') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+
+   OR coalesce(p_train_run_ref,'') !~ '^TRAIN-[A-Z0-9_-]{8,128} THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','TRAIN_CHAT_OWNER_SCOPE_INVALID');
+ END IF;
+ v_scope:=jsonb_build_object('action','MERGE_GOVERNANCE_PR',
+   'repository',p_repository,'pr_number',p_pr_number,'head_sha',p_final_head_sha);
+ v:=private.fn_lf_owner_chat_consume_v1(
+   p_order_id,'MERGE_GOVERNANCE_PR',v_scope,p_expected_owner_subject,
+   'MERGE_TRAIN:'||p_train_run_ref);
+ IF v->>'status' IS DISTINCT FROM 'CONSUMED' THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+      'code','TRAIN_CHAT_OWNER_ORDER_NOT_AUTHORIZED','gate_receipt',v);
+ END IF;
+ RETURN jsonb_build_object('status','AUTHORIZED_FOR_TRAIN_ONLY',
+   'pr_number',p_pr_number,'head_sha',p_final_head_sha,
+   'order_id',p_order_id,'consumed_receipt',v);
+END;
+$fn$;
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_train_merge_gate_v1(uuid,text,integer,text,text,text)
+ FROM PUBLIC,anon,authenticated,service_role;
+
+-- No new EXECUTE grants. Train must explicitly wire this guarded function
+-- through the already-authorized trusted-main transport before activation.
 COMMIT;
