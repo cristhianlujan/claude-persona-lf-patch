@@ -48,6 +48,8 @@ jobs:
       applied: ${{ steps.real_apply.outputs.applied || 'false' }}
       trusted_main: ${{ steps.admission.outputs.current_main }}
       train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
+      owner_chat_authorized: ${{ steps.owner_chat_gate.outputs.authorized || 'false' }}
+      owner_chat_authorized_head: ${{ steps.owner_chat_gate.outputs.authorized_head || '' }}
       train_exec_commit_outcome: ${{ steps.train_exec_commit.outcome }}
       train_exec_required: ${{ steps.real_apply.outputs.applied == 'true' || steps.train_exec.outputs.result == 'TRAIN_EXECUTION_RESUMED' }}
 
@@ -542,6 +544,73 @@ jobs:
           echo "FAIL_TRAIN_REQUIRED_CHECK_TIMEOUT"
           exit 2
 
+      - name: Require owner chat receipt on exact final HEAD before any DB apply or merge
+        id: owner_chat_gate
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          FINAL_HEAD: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Trusted-main workflow, pre-existing postgres identity, no new grants.
+          [[ "$REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] \
+            && [[ "$PR" =~ ^[1-9][0-9]*$ ]] \
+            && [[ "$FINAL_HEAD" =~ ^[a-f0-9]{40}$ ]] \
+            && [[ "$GITHUB_RUN_ID" =~ ^[0-9]{8,20}$ ]] \
+            || { echo "FAIL_TRAIN_CHAT_OWNER_INPUT_INVALID"; exit 2; }
+          [ -n "$LF_SUPABASE_DB_PASSWORD" ] \
+            || { echo "FAIL_TRAIN_CHAT_OWNER_DB_CONTEXT_MISSING"; exit 2; }
+          # No auto-approval or fallback. Missing receipt/function blocks.
+          result="$(docker run --rm -i \
+            -e PGHOST="$SUPABASE_POOLER_HOST" -e PGPORT=5432 \
+            -e PGUSER="postgres.$SUPABASE_PROJECT_ID" \
+            -e PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" \
+            -e PGDATABASE=postgres -e PGSSLMODE=require postgres:17.6 \
+            psql -X -At -v ON_ERROR_STOP=1 \
+              -v "lf_repo=$REPO" -v "lf_pr=$PR" \
+              -v "lf_head=$FINAL_HEAD" -v "lf_run=$GITHUB_RUN_ID" <<'SQL'
+          WITH target AS MATERIALIZED(
+            SELECT jsonb_build_object(
+              'action','MERGE_GOVERNANCE_PR',
+              'repository', :'lf_repo',
+              'pr_number',(:'lf_pr')::integer,
+              'head_sha',:'lf_head') AS closed_scope),
+          eligible AS MATERIALIZED(
+            SELECT o.order_id FROM private.lf_owner_chat_orders_v1 o
+            CROSS JOIN target t
+            JOIN private.lf_owner_chat_identity_v1 cfg
+              ON cfg.config_key='LF_OWNER'
+            WHERE o.action_code='MERGE_GOVERNANCE_PR'
+              AND o.scope=t.closed_scope
+              AND o.actor_subject=cfg.owner_identity
+              AND o.source_kind=cfg.channel_code
+              AND o.consumed_at IS NULL
+              AND o.expires_at>clock_timestamp()
+              AND NOT EXISTS(SELECT 1
+                FROM private.lf_owner_chat_revocations_v1 r
+                WHERE r.order_id=o.order_id)
+            ORDER BY o.source_message_id LIMIT 2),
+          selected AS (SELECT count(*) AS n,min(order_id) AS id FROM eligible)
+          SELECT CASE WHEN selected.n=1
+           THEN coalesce((private.fn_lf_owner_chat_train_merge_gate_v1(
+              selected.id,:'lf_repo',(:'lf_pr')::integer,:'lf_head',
+              (SELECT owner_identity
+                FROM private.lf_owner_chat_identity_v1
+                WHERE config_key='LF_OWNER'),
+              'TRAIN-'||:'lf_run'))->>'status','BLOCKED')
+           ELSE 'BLOCKED_NO_UNIQUE_OWNER_CHAT_ORDER' END
+          FROM selected;
+          SQL
+          )" || { echo "FAIL_TRAIN_CHAT_OWNER_QUERY"; exit 2; }
+          [ "$result" = "AUTHORIZED_FOR_TRAIN_ONLY" ] \
+            || { echo "FAIL_TRAIN_OWNER_CHAT_ORDER_NOT_AUTHORIZED"; exit 2; }
+          echo "authorized=true" >> "$GITHUB_OUTPUT"
+          echo "authorized_head=$FINAL_HEAD" >> "$GITHUB_OUTPUT"
+          echo "PASS_TRAIN_OWNER_CHAT_EXACT_HEAD_RECEIPT_CONSUMED"
+
       - name: Require read-only parity credential and trusted runner before apply
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
         env:
@@ -904,9 +973,13 @@ jobs:
           REPO: ${{ github.repository }}
           PR: ${{ needs.lf-migration-merge-train.outputs.pr_number }}
           HEAD_SHA: ${{ needs.lf-migration-merge-train.outputs.final_head_sha }}
+          OWNER_CHAT_AUTHORIZED: ${{ needs.lf-migration-merge-train.outputs.owner_chat_authorized }}
+          OWNER_CHAT_HEAD: ${{ needs.lf-migration-merge-train.outputs.owner_chat_authorized_head }}
         shell: bash
         run: |
           set -euo pipefail
+          [ "$OWNER_CHAT_AUTHORIZED" = "true" ] && [ "$OWNER_CHAT_HEAD" = "$HEAD_SHA" ] \
+            || { echo "FAIL_TRAIN_PREMERGE_CHAT_ORDER_NOT_BOUND_TO_HEAD"; exit 2; }
           observed="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
           [ "$observed" = "$HEAD_SHA" ] || { echo "FAIL_TRAIN_PREMERGE_HEAD_MOVED"; exit 2; }
           gh api --method PUT "repos/$REPO/pulls/$PR/merge" \
