@@ -25,7 +25,7 @@ No hay contraseñas ni códigos remitidos fuera del chat; el hash corto se calcu
 
 ## Registro oficial propuesto
 
-private.lf_owner_chat_orders_v1: source_chat_id, source_message_id único, source_kind=CHAT_ORCHESTRATOR_USER_TURN, actor_subject, proposer_subject, registrar_subject, acción, scope JSONB, scope_sha256, **texto literal**, literal_sha256, sent_at, recorded_at, expires_at, consumed_at, consumed_by. Fecha Lima en readback sent_at_lima, zona America/Lima. TTL 15 minutos desde el mensaje original. private.lf_owner_chat_revocations_v1 registra anulación antes del consumo. Tabla/fns en esquema private, sin GRANT EXECUTE a roles nuevos; PUBLIC/anon/authenticated/service_role revocados.
+private.lf_owner_chat_orders_v1: source_chat_id, source_message_id único, source_kind=canal de origen USER configurado, actor_subject, proposer_subject, registrar_subject, acción, scope JSONB, scope_sha256, **texto literal**, literal_sha256, sent_at, recorded_at, expires_at, consumed_at, consumed_by. Fecha Lima en readback sent_at_lima, zona America/Lima. TTL 15 minutos desde el mensaje original. private.lf_owner_chat_revocations_v1 registra anulación antes del consumo. Tabla/fns en esquema private, sin GRANT EXECUTE a roles nuevos; PUBLIC/anon/authenticated/service_role revocados.
 
 Funciones propuestas, source-only:
 - private.fn_lf_owner_chat_register_v1: valida orden, tipo de evento, catálogo, alcance, SHA y separación de actores, registra recibo; solo autorizada desde registrador del orquestador, no desde el proponente.
@@ -60,7 +60,7 @@ Se corrieron 16 tests de verificador Python y 9 tests transaccionales SQLite con
 
 ## Lote IG 21:50 — dueño fijo, Train y prueba B2B-AUTH-002
 
-Configuración de autoridad única en private.lf_owner_chat_identity_v1: nombre fijo **titular canónico LF**, canal fijo **CHAT_ORCHESTRATOR_USER_TURN**. No se parametriza por regla, pantalla, PR u orden. El transporte del orquestador aún debe acreditar de modo independiente que el USER turn original pertenece a esa identidad; no se infiere a partir del texto firmado por el propio modelo.
+Configuración de autoridad única en private.lf_owner_chat_identity_v1: nombre fijo **titular canónico LF**, canal fijo **canal de origen USER configurado**. No se parametriza por regla, pantalla, PR u orden. El transporte del orquestador aún debe acreditar de modo independiente que el USER turn original pertenece a esa identidad; no se infiere a partir del texto firmado por el propio modelo.
 
 Fuente Supabase SELECT: lf_ops.pantallas id **52**, código **B2B-AUTH-002**, nombre **Recuperar acceso**, flujo **BACKOFFICE_B2B**, paso **RECOVERY_REQUEST**. Tiene 32 reglas vinculadas (25 VIGENTE, 7 CANDIDATO). Seis candidatas sin decisión pendiente: B2B-RULE-AUTH-027, B2B-RULE-AUTH-028, B2B-RULE-AUTH-042, B2B-RULE-AUTH-044, B2B-RULE-AUTH-045, B2B-RULE-COMPAT-001. B2B-RULE-THEME-002 tiene pendiente_decision=true: excluir de promociones mientras siga pendiente.
 
