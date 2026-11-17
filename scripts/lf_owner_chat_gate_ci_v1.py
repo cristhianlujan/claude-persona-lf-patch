@@ -9,7 +9,9 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from scripts.lf_owner_chat_event_v1 import ChatOrderRejected, verify_order, OWNER_IDENTITY
+if __package__ in (None, ''):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.lf_owner_chat_event_v1 import ChatOrderRejected, verify_order
 
 
 def main(argv=None):
@@ -18,17 +20,18 @@ def main(argv=None):
     p.add_argument('--exact-expected-scope',required=True)
     p.add_argument('--out-receipt',required=True)
     args=p.parse_args(argv)
-    owner=OWNER_IDENTITY
+    owner_sub=os.getenv('LF_OWNER_CHAT_OWNER_SUB')
+    channel_code=os.getenv('LF_OWNER_CHAT_CHANNEL_CODE')
     proposer=os.getenv('LF_OWNER_CHAT_PROPOSER_SUBJECT')
     registrar=os.getenv('LF_OWNER_CHAT_REGISTRAR_SUBJECT')
     ingress=os.getenv('LF_OWNER_CHAT_INGRESS')
-    if ingress!='PROTECTED_ORCHESTRATOR_USER_EVENT' or not all((owner,proposer,registrar)):
+    if ingress!='PROTECTED_ORCHESTRATOR_USER_EVENT' or not all((owner_sub,channel_code,proposer,registrar)):
         raise ChatOrderRejected('ORCHESTRATOR_INGRESS_NOT_ATTESTED')
     # Paths must be produced by the protected orchestrator and authoritative
     # HEAD/snapshot consumer, never by user-supplied PR content or the model.
     ev=json.loads(Path(args.orchestrator_user_event).read_text(encoding='utf-8'))
     scope=json.loads(Path(args.exact_expected_scope).read_text(encoding='utf-8'))
-    receipt=verify_order(event=ev, expected_scope=scope, owner_subject=owner,
+    receipt=verify_order(event=ev, expected_scope=scope, owner_sub=owner_sub, channel_code=channel_code,
                          proposer_subject=proposer, registrar_subject=registrar,
                          now=datetime.now(timezone.utc))
     Path(args.out_receipt).write_text(json.dumps(receipt,sort_keys=True,ensure_ascii=False)+'\n',encoding='utf-8')
