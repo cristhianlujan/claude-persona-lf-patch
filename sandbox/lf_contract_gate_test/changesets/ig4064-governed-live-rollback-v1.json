@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ig4064-governed-live-rollback-v1",
+  "paths": {
+    "tests/test_ig4064_governed_live_rollback_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/ig4064-governed-live-rollback-v1.json": "CHANGESET_MANIFEST"
+  }
+}
