@@ -1768,7 +1768,7 @@ class IgV58CuratorSuccessorEdgeMockedE2E(unittest.TestCase):
         node=shutil.which("node")
         self.assertIsNotNone(node,"NODE_RUNTIME_REQUIRED")
         script=ROOT/"services/profile_runtime_api/tests/ig_v58_curator_successor_edge_e2e_node.mjs"
-        r=subprocess.run([node,"--no-warnings",str(script)],cwd=ROOT,
+        r=subprocess.run([node,"--no-warnings","--experimental-vm-modules",str(script)],cwd=ROOT,
                          capture_output=True,text=True,timeout=90)
         self.assertEqual(r.returncode,0,
             "ACTUAL_EDGE_HANDLERS_MOCKED_RPC_E2E_FAILED\n"+
