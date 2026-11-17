@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-ig-retention-10y-candidate-v1",
+  "paths": {
+    "docs/ig/retention_10y_governance_design_v1.md": "INPUT_GOVERNANCE",
+    "docs/ig/retention_10y_table_inventory_v1.csv": "INPUT_GOVERNANCE",
+    "tests/test_lf_ig_retention_10y_candidate_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-retention-10y-candidate-v1.json": "CHANGESET_MANIFEST"
+  }
+}
