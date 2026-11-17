@@ -1690,7 +1690,7 @@ class IgV58CurrentSourceRecurationPg17Pg18(unittest.TestCase):
         import uuid
         self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED")
         s=(ROOT/"supabase/migrations/"
-           "20261114051000_lf_ig_v58_recuration_finding_v1.sql").read_text()
+           "20261114131843_lf_ig_v58_recuration_finding_v1.sql").read_text()
         expected=(
             "fn_input_v58_build_assertions",
             "fn_input_governance_validator_rebind_v1",
@@ -1768,7 +1768,7 @@ class IgV58CuratorSuccessorEdgeMockedE2E(unittest.TestCase):
         node=shutil.which("node")
         self.assertIsNotNone(node,"NODE_RUNTIME_REQUIRED")
         script=ROOT/"services/profile_runtime_api/tests/ig_v58_curator_successor_edge_e2e_node.mjs"
-        r=subprocess.run([node,"--no-warnings",str(script)],cwd=ROOT,
+        r=subprocess.run([node,"--no-warnings","--experimental-vm-modules",str(script)],cwd=ROOT,
                          capture_output=True,text=True,timeout=90)
         self.assertEqual(r.returncode,0,
             "ACTUAL_EDGE_HANDLERS_MOCKED_RPC_E2E_FAILED\n"+
