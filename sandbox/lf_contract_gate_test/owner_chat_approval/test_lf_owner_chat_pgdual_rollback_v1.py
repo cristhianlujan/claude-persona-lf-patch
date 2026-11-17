@@ -127,6 +127,9 @@ DECLARE
   sc jsonb; r jsonb; ids text[]; v jsonb; oid uuid; msg text;
   wrong_sc jsonb; snap text; codes text[]; lit text; n integer;
   pr_sc jsonb; pr_order uuid; v_direct jsonb; first_id text;
+  fixture_email text:=concat('fixture.','account','@','example.invalid');
+  wrong_email text:=concat('different.','account','@','example.invalid');
+  fixture_sha text;
 BEGIN
   IF (SELECT count(*) FROM lf_ops.reglas_pantallas WHERE pantalla_id=52)<>32 OR
      (SELECT count(*) FROM lf_ops.reglas WHERE estado='CANDIDATO')<>7 OR
@@ -160,25 +163,29 @@ BEGIN
    'rule_snapshots_sha256',snap);
   lit:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(sc),12)||
      ' '||programacion.fn_v09_canonical_jsonb_text(sc);
-  -- Claude active session; GPT intentionally has no account row.
+  -- Baseline migration must seed BOTH channels with one owner hash.
   IF (SELECT count(*) FROM private.lf_owner_chat_authorized_accounts_v1
-        WHERE channel_code='__CLAUDE_CHANNEL__' AND activo
-          AND account_email_sha256='__CLAUDE_HASH__')<>1 OR
-     (SELECT count(*) FROM private.lf_owner_chat_authorized_accounts_v1
-        WHERE channel_code='__GPT_CHANNEL__')<>0
-  THEN RAISE EXCEPTION 'SESSION_ACCOUNT_SEED_DRIFT'; END IF;
-  -- No hash, wrong SHA, unseeded GPT, inactive Claude: all fail closed.
-  INSERT INTO private.lf_owner_chat_authorized_accounts_v1
-    (owner_sub,channel_code,account_email_sha256,activo)
-    VALUES ('__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',repeat('e',64),false);
+        WHERE owner_sub='__OWNER_SUB__'::uuid AND activo
+          AND account_email_sha256='__CLAUDE_HASH__'
+          AND channel_code IN ('__CLAUDE_CHANNEL__','__GPT_CHANNEL__'))<>2
+  THEN RAISE EXCEPTION 'ACCOUNT_SEED_TWO_CHANNELS_DRIFT'; END IF;
+  -- Purely synthetic mailbox for executable tests. The owner's real email
+  -- never appears in SQL, source, fixtures or CI job arguments.
+  fixture_sha:=encode(extensions.digest(
+       convert_to(lower(btrim(fixture_email)),'UTF8'),'sha256'),'hex');
+  UPDATE private.lf_owner_chat_authorized_accounts_v1
+    SET account_email_sha256=fixture_sha WHERE owner_sub='__OWNER_SUB__'::uuid;
+  -- Missing email, different email, inactive channel, and session cross-bind.
   FOR n IN 1..4 LOOP
+    IF n=3 THEN UPDATE private.lf_owner_chat_authorized_accounts_v1
+      SET activo=false WHERE channel_code='__GPT_CHANNEL__'; END IF;
     BEGIN
       PERFORM private.fn_lf_owner_chat_register_v1(
         'fixture-recovery-chat-0001','fixture-recovery-neg-session-'||n,
         '__CHANNEL__','__OWNER_SUB__'::uuid,
-        CASE WHEN n=3 THEN '__GPT_CHANNEL__' ELSE '__CLAUDE_CHANNEL__' END,
-        CASE n WHEN 1 THEN NULL WHEN 2 THEN repeat('f',64)
-               WHEN 3 THEN '__CLAUDE_HASH__' ELSE repeat('e',64) END,
+        CASE WHEN n IN (3,4) THEN '__GPT_CHANNEL__' ELSE '__CLAUDE_CHANNEL__' END,
+        CASE n WHEN 1 THEN NULL WHEN 2 THEN wrong_email
+             WHEN 3 THEN fixture_email ELSE wrong_email END,
         'fixture-proposer-01','fixture-recorder-01',clock_timestamp(),lit,sc);
       RAISE EXCEPTION 'NEG_UNAUTHORIZED_SESSION_ACCEPTED:%',n;
     EXCEPTION WHEN OTHERS THEN
@@ -186,6 +193,8 @@ BEGIN
       IF SQLERRM NOT LIKE 'CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED%'
       THEN RAISE EXCEPTION 'NEG_SESSION_WRONG_REASON:%:%',n,SQLERRM; END IF;
     END;
+    IF n=3 THEN UPDATE private.lf_owner_chat_authorized_accounts_v1
+      SET activo=true WHERE channel_code='__GPT_CHANNEL__'; END IF;
   END LOOP;
   IF EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace
     WHERE ns.nspname='private' AND p.proname='fn_lf_owner_chat_register_v1'
@@ -204,7 +213,7 @@ BEGIN
   BEGIN
     PERFORM private.fn_lf_owner_chat_register_v1(
       'fixture-recovery-chat-0001','fixture-recovery-wrong-owner-01',
-      '__CHANNEL__','__OTHER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01',
+      '__CHANNEL__','__OTHER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01',
       'fixture-recorder-01',clock_timestamp(),lit,sc);
     RAISE EXCEPTION 'RECOVERY_WRONG_OWNER_SUB_ACCEPTED';
   EXCEPTION WHEN OTHERS THEN
@@ -235,7 +244,7 @@ BEGIN
       ' '||programacion.fn_v09_canonical_jsonb_text(wrong_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-wrong-scope-01','__CHANNEL__',
-   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),msg,wrong_sc);
   oid:=(v->>'order_id')::uuid;
   BEGIN
@@ -249,7 +258,7 @@ BEGIN
   END;
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-expired-0001','__CHANNEL__',
-   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   UPDATE private.lf_owner_chat_orders_v1 SET
@@ -266,11 +275,11 @@ BEGIN
   END;
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-revoked-0001','__CHANNEL__',
-   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_revoke_v1(oid,'fixture-recovery-revoke-msg',
-     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-only');
+     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_sha,'fixture-only');
   IF v->>'status' IS DISTINCT FROM 'REVOKED'
     THEN RAISE EXCEPTION 'NEG_REVOKE_SETUP:%',v; END IF;
   BEGIN
@@ -285,7 +294,7 @@ BEGIN
   BEGIN
     PERFORM private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
      'fixture-recovery-self-000001','__CHANNEL__',
-     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-proposer-01',
+     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-proposer-01',
      clock_timestamp(),lit,sc);
     RAISE EXCEPTION 'NEG_SELF_APPROVAL_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
@@ -299,12 +308,12 @@ BEGIN
   -- Valid original owner USER order: real decide_v1 and real apply_v1.
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-valid-000001','__CHANNEL__',
-   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1 o
     WHERE o.order_id=oid AND o.channel_code='__CLAUDE_CHANNEL__'
-      AND o.session_account_sha256='__CLAUDE_HASH__'
+      AND o.session_account_sha256=fixture_sha
       AND o.identity_mode='ACCOUNT_SESSION' AND o.sent_at_lima LIKE '%-05:00'
       AND o.literal_text=lit)
   THEN RAISE EXCEPTION 'RECOVERY_CLAUDE_RECEIPT_NOT_VERIFIED'; END IF;
@@ -332,7 +341,7 @@ BEGIN
        ' '||programacion.fn_v09_canonical_jsonb_text(pr_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
     'fixture-recovery-merge-000001','__CHANNEL__',
-    '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
+    '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
     clock_timestamp(),msg,pr_sc);
   pr_order:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_train_merge_gate_v1(pr_order,
