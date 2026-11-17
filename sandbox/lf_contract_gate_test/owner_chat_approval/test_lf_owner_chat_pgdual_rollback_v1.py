@@ -274,7 +274,8 @@ BEGIN
   THEN RAISE EXCEPTION 'RECOVERY_MERGE_REPLAY_UNBLOCKED:%',v; END IF;
   RAISE NOTICE 'PASS_RECOVERY_B2B_AUTH_002_REAL_DECIDE_APPLY_6_PROMOTIONS_AND_MERGE_HEAD PG';
 END $e2e$;
-""" % {"codes":sqlarr(PROMOTABLE),"run":RUN,"head":"b"*40}
+"""
+TEST=TEST.replace("%(codes)s",sqlarr(PROMOTABLE)).replace("%(run)s",RUN).replace("%(head)s","b"*40)
 
 class RecoveryRealDecidePgDual(unittest.TestCase):
     def test_pg17_pg18_real_patched_decide_with_rollback(self):
