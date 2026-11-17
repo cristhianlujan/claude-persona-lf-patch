@@ -14,6 +14,7 @@ import time
 import unittest
 import uuid
 from pathlib import Path
+from sandbox.lf_contract_gate_test.owner_chat_approval.owner_chat_fixture_v1 import OWNER, OWNER_NAME, OTHER_SUB, REPO, CHANNEL
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "sandbox/lf_contract_gate_test/edge_function_operation"))
@@ -57,6 +58,12 @@ CREATE FUNCTION programacion.fn_v09_canonical_jsonb_text(j jsonb)
 CREATE FUNCTION programacion.fn_v09_sha256_jsonb(j jsonb)
  RETURNS text LANGUAGE SQL IMMUTABLE STRICT AS $$
  SELECT encode(extensions.digest(convert_to(programacion.fn_v09_canonical_jsonb_text(j),'UTF8'),'sha256'),'hex') $$;
+CREATE TABLE public.lf_ig_project_owner_v2(
+ project_code text PRIMARY KEY, owner_sub uuid NOT NULL, owner_name text NOT NULL);
+INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,owner_name)
+ VALUES('LF','__OWNER_SUB__'::uuid,'__OWNER_NAME__');
+INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,owner_name)
+ VALUES('SALY','__OTHER_SUB__'::uuid,'__OWNER_NAME__');
 CREATE TABLE lf_ops.pantallas(id integer PRIMARY KEY,codigo text,nombre text,flujo text);
 CREATE TABLE lf_ops.reglas_pantallas(regla_codigo text,pantalla_id integer);
 INSERT INTO lf_ops.pantallas VALUES
@@ -141,11 +148,11 @@ BEGIN
   THEN RAISE EXCEPTION 'RECOVERY_PROMOTION_COHORT_DRIFT'; END IF;
   first_id:=ids[1];
   v_direct:=public.lf_rule_promotion_decide_v1(first_id,'APPROVE',
-    'HUMAN:Cristhian Lujan','DIRECT_WITHOUT_CHAT');
+    'HUMAN:__OWNER_SUB__','DIRECT_WITHOUT_CHAT');
   IF v_direct->>'blocking_code' IS DISTINCT FROM 'CHAT_OWNER_HUMAN_BATCH_RECEIPT_REQUIRED'
   THEN RAISE EXCEPTION 'RECOVERY_DIRECT_HUMAN_BYPASS:%',v_direct; END IF;
   sc:=jsonb_build_object('action','PROMOTE_RULE_BATCH',
-   'repository','cristhianlujan/claude-persona-lf-patch',
+   'repository','__REPO__',
    'execution_id','%(run)s','rule_codes',to_jsonb(codes),
    'rule_snapshots_sha256',snap);
   lit:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(sc),12)||
@@ -153,7 +160,7 @@ BEGIN
   -- No order: must fail and leave all 6 pending.
   BEGIN
     PERFORM private.fn_lf_owner_chat_promote_batch_v1(gen_random_uuid(),ids,
-      'Cristhian Lujan','fixture');
+      'fixture');
     RAISE EXCEPTION 'NEG_NO_ORDER_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM='NEG_NO_ORDER_UNBLOCKED' THEN RAISE; END IF;
@@ -165,13 +172,13 @@ BEGIN
   msg:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(wrong_sc),12)||
       ' '||programacion.fn_v09_canonical_jsonb_text(wrong_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
-   'fixture-recovery-wrong-scope-01','CHAT_ORCHESTRATOR_USER_TURN',
-   'Cristhian Lujan','fixture-proposer-01','fixture-recorder-01',
+   'fixture-recovery-wrong-scope-01','__CHANNEL__',
+   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),msg,wrong_sc);
   oid:=(v->>'order_id')::uuid;
   BEGIN
     PERFORM private.fn_lf_owner_chat_promote_batch_v1(oid,ids,
-      'Cristhian Lujan','fixture');
+      'fixture');
     RAISE EXCEPTION 'NEG_SCOPE_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM='NEG_SCOPE_UNBLOCKED' THEN RAISE; END IF;
@@ -179,8 +186,8 @@ BEGIN
     THEN RAISE EXCEPTION 'NEG_SCOPE_OTHER_ERROR:%',SQLERRM; END IF;
   END;
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
-   'fixture-recovery-expired-0001','CHAT_ORCHESTRATOR_USER_TURN',
-   'Cristhian Lujan','fixture-proposer-01','fixture-recorder-01',
+   'fixture-recovery-expired-0001','__CHANNEL__',
+   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   UPDATE private.lf_owner_chat_orders_v1 SET
@@ -188,7 +195,7 @@ BEGIN
     expires_at=transaction_timestamp()-interval '5 minutes' WHERE order_id=oid;
   BEGIN
     PERFORM private.fn_lf_owner_chat_promote_batch_v1(oid,ids,
-      'Cristhian Lujan','fixture');
+      'fixture');
     RAISE EXCEPTION 'NEG_EXPIRED_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM='NEG_EXPIRED_UNBLOCKED' THEN RAISE; END IF;
@@ -196,17 +203,17 @@ BEGIN
     THEN RAISE EXCEPTION 'NEG_EXPIRED_OTHER_ERROR:%',SQLERRM; END IF;
   END;
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
-   'fixture-recovery-revoked-0001','CHAT_ORCHESTRATOR_USER_TURN',
-   'Cristhian Lujan','fixture-proposer-01','fixture-recorder-01',
+   'fixture-recovery-revoked-0001','__CHANNEL__',
+   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_revoke_v1(oid,'fixture-recovery-revoke-msg',
-     'Cristhian Lujan','fixture-only');
+     '__OWNER_SUB__','fixture-only');
   IF v->>'status' IS DISTINCT FROM 'REVOKED'
     THEN RAISE EXCEPTION 'NEG_REVOKE_SETUP:%',v; END IF;
   BEGIN
     PERFORM private.fn_lf_owner_chat_promote_batch_v1(oid,ids,
-      'Cristhian Lujan','fixture');
+      'fixture');
     RAISE EXCEPTION 'NEG_REVOKED_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM='NEG_REVOKED_UNBLOCKED' THEN RAISE; END IF;
@@ -215,8 +222,8 @@ BEGIN
   END;
   BEGIN
     PERFORM private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
-     'fixture-recovery-self-000001','CHAT_ORCHESTRATOR_USER_TURN',
-     'Cristhian Lujan','fixture-proposer-01','fixture-proposer-01',
+     'fixture-recovery-self-000001','__CHANNEL__',
+     '__OWNER_SUB__','fixture-proposer-01','fixture-proposer-01',
      clock_timestamp(),lit,sc);
     RAISE EXCEPTION 'NEG_SELF_APPROVAL_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
@@ -229,12 +236,12 @@ BEGIN
   THEN RAISE EXCEPTION 'NEGATIVE_SIDE_EFFECT_LEAK'; END IF;
   -- Valid original owner USER order: real decide_v1 and real apply_v1.
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
-   'fixture-recovery-valid-000001','CHAT_ORCHESTRATOR_USER_TURN',
-   'Cristhian Lujan','fixture-proposer-01','fixture-recorder-01',
+   'fixture-recovery-valid-000001','__CHANNEL__',
+   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_promote_batch_v1(oid,ids,
-     'Cristhian Lujan','RECOVERY_FIXTURE_ONLY');
+     'RECOVERY_FIXTURE_ONLY');
   IF v->>'status' IS DISTINCT FROM 'APPLIED' OR (v->>'count')::integer<>6
   THEN RAISE EXCEPTION 'RECOVERY_VALID_ORDER_NOT_APPLIED:%',v; END IF;
   SELECT count(*) INTO n FROM public.lf_rule_promotion_v1 WHERE status='APPLIED';
@@ -243,39 +250,45 @@ BEGIN
      (SELECT estado FROM lf_ops.reglas WHERE codigo='B2B-RULE-THEME-002')<>'CANDIDATO'
   THEN RAISE EXCEPTION 'RECOVERY_APPLY_READBACK_MISMATCH'; END IF;
   v:=private.fn_lf_owner_chat_consume_v1(oid,'PROMOTE_RULE_BATCH',sc,
-      'Cristhian Lujan','REPLAY');
+      'REPLAY');
   IF v->>'code' IS DISTINCT FROM 'CHAT_ORDER_REUSED'
   THEN RAISE EXCEPTION 'NEG_REPLAY_UNBLOCKED:%',v; END IF;
   -- Exact HEAD for governance PR, independent action and second unique order.
   pr_sc:=jsonb_build_object('action','MERGE_GOVERNANCE_PR',
-    'repository','cristhianlujan/claude-persona-lf-patch',
+    'repository','__REPO__',
     'pr_number',4063,'head_sha','%(head)s');
   msg:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(pr_sc),12)||
        ' '||programacion.fn_v09_canonical_jsonb_text(pr_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
-    'fixture-recovery-merge-000001','CHAT_ORCHESTRATOR_USER_TURN',
-    'Cristhian Lujan','fixture-proposer-01','fixture-recorder-01',
+    'fixture-recovery-merge-000001','__CHANNEL__',
+    '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
     clock_timestamp(),msg,pr_sc);
   pr_order:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_train_merge_gate_v1(pr_order,
-     'cristhianlujan/claude-persona-lf-patch',4063,repeat('c',40),
-     'Cristhian Lujan','TRAIN-TEST-RECOVERY');
+     '__REPO__',4063,repeat('c',40),
+     'TRAIN-TEST-RECOVERY');
   IF v->>'status' IS DISTINCT FROM 'BLOCKED'
   THEN RAISE EXCEPTION 'RECOVERY_MERGE_WRONG_HEAD_UNBLOCKED:%',v; END IF;
   v:=private.fn_lf_owner_chat_train_merge_gate_v1(pr_order,
-     'cristhianlujan/claude-persona-lf-patch',4063,'%(head)s',
-     'Cristhian Lujan','TRAIN-TEST-RECOVERY');
+     '__REPO__',4063,'%(head)s',
+     'TRAIN-TEST-RECOVERY');
   IF v->>'status' IS DISTINCT FROM 'AUTHORIZED_FOR_TRAIN_ONLY'
   THEN RAISE EXCEPTION 'RECOVERY_MERGE_VALID_HEAD_BLOCKED:%',v; END IF;
   v:=private.fn_lf_owner_chat_train_merge_gate_v1(pr_order,
-     'cristhianlujan/claude-persona-lf-patch',4063,'%(head)s',
-     'Cristhian Lujan','TRAIN-TEST-RECOVERY');
+     '__REPO__',4063,'%(head)s',
+     'TRAIN-TEST-RECOVERY');
   IF v->>'status' IS DISTINCT FROM 'BLOCKED'
   THEN RAISE EXCEPTION 'RECOVERY_MERGE_REPLAY_UNBLOCKED:%',v; END IF;
   RAISE NOTICE 'PASS_RECOVERY_B2B_AUTH_002_REAL_DECIDE_APPLY_6_PROMOTIONS_AND_MERGE_HEAD PG';
 END $e2e$;
 """
 TEST=TEST.replace("%(codes)s",sqlarr(PROMOTABLE)).replace("%(run)s",RUN).replace("%(head)s","b"*40)
+SETUP=(SETUP.replace("__OWNER_SUB__",OWNER).replace("__OTHER_SUB__",OTHER_SUB)
+       .replace("__OWNER_NAME__",OWNER_NAME))
+TEST=(TEST.replace("__OWNER_SUB__",OWNER).replace("__OTHER_SUB__",OTHER_SUB)
+       .replace("__OWNER_NAME__",OWNER_NAME).replace("__REPO__",REPO)
+       .replace("__CHANNEL__",CHANNEL))
+
 
 class RecoveryRealDecidePgDual(unittest.TestCase):
     def test_pg17_pg18_real_patched_decide_with_rollback(self):
