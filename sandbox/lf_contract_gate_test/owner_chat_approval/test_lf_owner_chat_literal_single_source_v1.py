@@ -31,7 +31,7 @@ CHANNEL_PATTERN = re.compile("CHAT_ORCHESTRATOR_" + "USER_TURN")
 CLAUDE_CHANNEL_PATTERN = re.compile("CHAT_CLAUDE_" + "SESSION")
 GPT_CHANNEL_PATTERN = re.compile("CHAT_GPT_" + "SESSION")
 CLAUDE_EMAIL_SHA_PATTERN = re.compile("e9ff5f5f431ad1a7" + "fdea5aeda30fcbad4bd48d2f0d73231e9383682098c4e258")
-EMAIL_TOKEN_RE = re.compile(rb'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}')
+EMAIL_TOKEN_RE = re.compile(rb'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
 
 
 
