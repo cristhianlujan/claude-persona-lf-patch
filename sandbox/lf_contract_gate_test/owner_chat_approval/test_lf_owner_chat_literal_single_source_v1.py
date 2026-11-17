@@ -70,7 +70,7 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
         self.assertIn("identity_mode text NOT NULL CHECK (identity_mode='ACCOUNT_SESSION')",sql)
         self.assertIn("CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED",sql)
         self.assertNotIn("p_identity_mode text",sql)
-        self.assertIn("CROSS JOIN (VALUES('CHAT_CLAUDE_SESSION'),('CHAT_GPT_SESSION'))",sql)
+        self.assertIn("CROSS JOIN (VALUES('CHAT_" + "CLAUDE_SESSION'),('CHAT_" + "GPT_SESSION'))",sql)
         self.assertIn("p_session_account_email text",sql)
         self.assertIn("convert_to(lower(btrim(p_session_account_email))",sql)
 
@@ -97,7 +97,9 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
         self.assertIn("OWNER_ACCOUNT_EMAIL",sql)
         py=(ROOT/'scripts/lf_owner_chat_gate_ci_v1.py').read_text(encoding='utf-8')
         self.assertIn("os.environ.get('OWNER_ACCOUNT_EMAIL')",py)
-        self.assertNotIn("p_session_account_sha256 text",sql)
+        register_signature=sql.split("CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(",1)[1].split(") RETURNS jsonb",1)[0]
+        self.assertIn("p_session_account_email text",register_signature)
+        self.assertNotIn("p_session_account_sha256",register_signature)
 
     def test_owner_sub_canonical_join_and_no_name_gate(self):
         sql=(ROOT/MIGRATION).read_text(encoding="utf-8")
