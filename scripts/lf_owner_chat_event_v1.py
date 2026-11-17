@@ -37,6 +37,13 @@ def sha256_literal(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def sha256_normalized_account_email(value: str) -> str:
+    """SHA256(lower(trim(email))) sin devolver ni almacenar el correo."""
+    if not isinstance(value,str) or not value.strip():
+        raise ChatOrderRejected("ACCOUNT_EMAIL_MISSING")
+    return sha256_literal(value.strip().lower())
+
+
 def validate_scope(scope: Any, catalog: dict | None = None) -> dict:
     allowed = catalog if catalog is not None else DEFAULT_CATALOG
     if not isinstance(scope, dict) or not isinstance(scope.get("action"), str):
@@ -77,7 +84,8 @@ def _utc(s: Any) -> datetime:
 
 def verify_order(*, event: dict, expected_scope: dict,
                  owner_sub: str, channel_code: str, repository_full_name: str,
-                 authorized_accounts: tuple[tuple[str,str,bool],...], proposer_subject: str,
+                 authorized_accounts: tuple[tuple[str,str,bool],...], owner_account_email: str,
+                 proposer_subject: str,
                  registrar_subject: str, now: datetime,
                  catalog: dict | None = None) -> dict:
     """Llamar SOLO despues del readback del evento USER del orquestador.
@@ -107,8 +115,12 @@ def verify_order(*, event: dict, expected_scope: dict,
     sess_sha = event["session_account_sha256"]
     if not isinstance(sess_channel,str) or not isinstance(sess_sha,str) or not SHA64.fullmatch(sess_sha):
         raise ChatOrderRejected("ACCOUNT_SESSION_INVALID")
-    if not isinstance(authorized_accounts,tuple) or not any(
-        entry == (sess_channel,sess_sha,True) for entry in authorized_accounts
+    # OWNER_ACCOUNT_EMAIL arrives only from private installation configuration.
+    # Event hash must agree with the normalized installation email and
+    # the active channel row; no plaintext email is retained in the receipt.
+    expected_email_sha = sha256_normalized_account_email(owner_account_email)
+    if sess_sha != expected_email_sha or not isinstance(authorized_accounts,tuple) or not any(
+        entry == (sess_channel,expected_email_sha,True) for entry in authorized_accounts
     ):
         raise ChatOrderRejected("ACCOUNT_SESSION_NOT_AUTHORIZED")
     for key in ("conversation_id", "message_id"):
