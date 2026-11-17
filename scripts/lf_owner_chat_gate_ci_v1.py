@@ -26,7 +26,7 @@ def main(argv=None):
     if not cfg_path:
         raise ChatOrderRejected('CANONICAL_OWNER_CONFIG_READBACK_MISSING')
     cfg=json.loads(Path(cfg_path).read_text(encoding='utf-8'))
-    if not isinstance(cfg,dict) or set(cfg)!={'source','config_key','owner_sub','repository_full_name','channel_code','fixed','authorized_accounts'} or cfg.get('source')!='private.lf_owner_chat_identity_v1' or cfg.get('config_key')!='LF_OWNER' or cfg.get('fixed') is not True:
+    if not isinstance(cfg,dict) or set(cfg)!={'source','config_key','owner_sub','repository_full_name','channel_code','fixed','authorized_accounts','parameter_source'} or cfg.get('source')!='private.lf_owner_chat_identity_v1' or cfg.get('config_key')!='LF_OWNER' or cfg.get('fixed') is not True or cfg.get('parameter_source')!='private.lf_ig_parameters_v1':
         raise ChatOrderRejected('CANONICAL_OWNER_CONFIG_READBACK_INVALID')
     owner_sub=cfg['owner_sub']
     channel_code=cfg['channel_code']
