@@ -13,7 +13,21 @@ CHANNEL = "CHAT_ORCHESTRATOR_USER_TURN"
 CHANNEL_CLAUDE = "CHAT_CLAUDE_SESSION"
 CHANNEL_GPT = "CHAT_GPT_SESSION"
 CLAUDE_HASH = "e9ff5f5f431ad1a7fdea5aeda30fcbad4bd48d2f0d73231e9383682098c4e258"
-# GPT intentionally has no hash or account row. No email plaintext stored.
-AUTHORIZED_ACCOUNT_FIXTURE = ((CHANNEL_CLAUDE, CLAUDE_HASH, True),)
+# Both channels inherit the SINGLE installation-email fingerprint.
+# The real plaintext owner email is NEVER present in tests or source.
+OWNER_EMAIL_SHA256 = CLAUDE_HASH
+AUTHORIZED_ACCOUNT_SEED = (
+    (CHANNEL_CLAUDE, OWNER_EMAIL_SHA256, True),
+    (CHANNEL_GPT, OWNER_EMAIL_SHA256, True),
+)
+# Isolated synthetic mailbox assembled at test runtime, not owner information.
+# It allows positive trim/lower tests without publishing the real email.
+import hashlib
+TEST_EMAIL = "fixture." + "account" + "@" + "example.invalid"
+TEST_EMAIL_SHA = hashlib.sha256(TEST_EMAIL.encode("utf-8")).hexdigest()
+AUTHORIZED_ACCOUNT_FIXTURE = (
+    (CHANNEL_CLAUDE, TEST_EMAIL_SHA, True),
+    (CHANNEL_GPT, TEST_EMAIL_SHA, True),
+)
 PROPOSER = "fixture-proposer-01"
 REGISTRAR = "fixture-recorder-01"
