@@ -88,7 +88,7 @@ def verify_order(*, event: dict, expected_scope: dict,
     validate_scope(expected_scope, catalog)
     if expected_scope['repository'] != repository_full_name:
         raise ChatOrderRejected('REPOSITORY_CONFIG_MISMATCH')
-    if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_sub", "channel_code", "session_account_sha256", "conversation_id", "message_id", "text_literal", "sent_at", "scope":
+    if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_sub", "channel_code", "session_account_sha256", "conversation_id", "message_id", "text_literal", "sent_at", "scope"}:
         raise ChatOrderRejected("EVENT_CONTRACT_INVALID")
     if event["event_kind"] != "USER_MESSAGE" or event["origin"] != channel_code:
         raise ChatOrderRejected("NOT_AN_ORCHESTRATED_USER_TURN")
