@@ -25,6 +25,10 @@ TARGETS = [
 OWNER_NAME_PATTERN = re.compile(r"Cristhian" + r" Luj[aá]n", re.IGNORECASE)
 REPO_PATTERN = re.compile(re.escape("cristhianlujan") + "/" + re.escape("claude-persona-lf-patch"), re.IGNORECASE)
 CHANNEL_PATTERN = re.compile("CHAT_ORCHESTRATOR_" + "USER_TURN")
+CLAUDE_CHANNEL_PATTERN = re.compile("CHAT_CLAUDE_" + "SESSION")
+GPT_CHANNEL_PATTERN = re.compile("CHAT_GPT_" + "SESSION")
+CLAUDE_EMAIL_SHA_PATTERN = re.compile("e9ff5f5f431ad1a7" + "fdea5aeda30fcbad4bd48d2f0d73231e9383682098c4e258")
+
 
 
 class SingleAuthorityLiteralGuard(unittest.TestCase):
@@ -45,6 +49,25 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
             value=(ROOT / path).read_text(encoding="utf-8")
             expected=1 if path in (MIGRATION,FIXTURE) else 0
             self.assertEqual(len(CHANNEL_PATTERN.findall(value)),expected,path)
+
+    def test_account_hash_and_session_channels_only_in_seed_and_fixture(self):
+        for path in TARGETS:
+            value=(ROOT / path).read_text(encoding="utf-8")
+            sha_expected=1 if path in (MIGRATION,FIXTURE) else 0
+            claude_expected=2 if path==MIGRATION else (1 if path==FIXTURE else 0)
+            gpt_expected=1 if path in (MIGRATION,FIXTURE) else 0
+            self.assertEqual(len(CLAUDE_EMAIL_SHA_PATTERN.findall(value)),sha_expected,path)
+            self.assertEqual(len(CLAUDE_CHANNEL_PATTERN.findall(value)),claude_expected,path)
+            self.assertEqual(len(GPT_CHANNEL_PATTERN.findall(value)),gpt_expected,path)
+
+    def test_session_table_references_canonical_owner_and_never_seeds_gpt(self):
+        sql=(ROOT/MIGRATION).read_text(encoding="utf-8")
+        self.assertIn("REFERENCES private.lf_owner_chat_identity_v1(owner_sub)",sql)
+        self.assertIn("account_email_sha256",sql)
+        self.assertIn("identity_mode text NOT NULL CHECK (identity_mode='ACCOUNT_SESSION')",sql)
+        self.assertIn("CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED",sql)
+        self.assertNotIn("p_identity_mode text",sql)
+        self.assertNotIn("INSERT INTO private.lf_owner_chat_authorized_accounts_v1\n (owner_sub,channel_code,account_email_sha256,activo)\nSELECT owner_sub,'CHAT_GPT_",sql)
 
     def test_owner_sub_canonical_join_and_no_name_gate(self):
         sql=(ROOT/MIGRATION).read_text(encoding="utf-8")
