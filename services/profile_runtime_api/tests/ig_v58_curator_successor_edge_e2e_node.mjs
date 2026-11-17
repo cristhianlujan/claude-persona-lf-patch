@@ -99,7 +99,19 @@ for (const scenario of scenarios) {
       fetch:mockedFetch,console,
       setTimeout,clearTimeout,
     };
-    vm.runInNewContext(source,scope,{filename:filepath,timeout:10000});
+    // VM Script cannot execute actual ES module imports. Evaluate the *real*
+    // Edge module and its real shared transport guard as linked TS-stripped ESM.
+    // No mock of validateLfIgTransport: the negative cases must still test it.
+    const context=vm.createContext(scope);
+    const mod=new vm.SourceTextModule(source,{identifier:filepath,context});
+    await mod.link(async (specifier) => {
+      assert.equal(specifier,"../_shared/lf_ig_transport_guard_v1.ts",
+        "UNEXPECTED_EDGE_MODULE_IMPORT_"+slug);
+      const guardPath="supabase/functions/_shared/lf_ig_transport_guard_v1.ts";
+      const shared=stripTypeScriptTypes(fs.readFileSync(guardPath,"utf8"),{mode:"strip"});
+      return new vm.SourceTextModule(shared,{identifier:guardPath,context});
+    });
+    await mod.evaluate({timeout:10000});
     assert.ok(handlers.has(slug),"HANDLER_NOT_REGISTERED_"+slug);
   }
   const outcome=await handlers.get("input-governance-agent-v1")(
