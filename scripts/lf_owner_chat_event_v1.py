@@ -76,7 +76,8 @@ def _utc(s: Any) -> datetime:
 
 
 def verify_order(*, event: dict, expected_scope: dict,
-                 owner_sub: str, channel_code: str, repository_full_name: str, proposer_subject: str,
+                 owner_sub: str, channel_code: str, repository_full_name: str,
+                 authorized_accounts: tuple[tuple[str,str,bool],...], proposer_subject: str,
                  registrar_subject: str, now: datetime,
                  catalog: dict | None = None) -> dict:
     """Llamar SOLO despues del readback del evento USER del orquestador.
@@ -87,7 +88,7 @@ def verify_order(*, event: dict, expected_scope: dict,
     validate_scope(expected_scope, catalog)
     if expected_scope['repository'] != repository_full_name:
         raise ChatOrderRejected('REPOSITORY_CONFIG_MISMATCH')
-    if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_sub", "conversation_id", "message_id", "text_literal", "sent_at", "scope"}:
+    if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_sub", "channel_code", "session_account_sha256", "conversation_id", "message_id", "text_literal", "sent_at", "scope":
         raise ChatOrderRejected("EVENT_CONTRACT_INVALID")
     if event["event_kind"] != "USER_MESSAGE" or event["origin"] != channel_code:
         raise ChatOrderRejected("NOT_AN_ORCHESTRATED_USER_TURN")
@@ -102,6 +103,14 @@ def verify_order(*, event: dict, expected_scope: dict,
         raise ChatOrderRejected("WRONG_OWNER")
     if proposer_subject == registrar_subject or registrar_subject == owner_sub:
         raise ChatOrderRejected("NO_PROPOSER_REGISTRAR_SEPARATION")
+    sess_channel = event["channel_code"]
+    sess_sha = event["session_account_sha256"]
+    if not isinstance(sess_channel,str) or not isinstance(sess_sha,str) or not SHA64.fullmatch(sess_sha):
+        raise ChatOrderRejected("ACCOUNT_SESSION_INVALID")
+    if not isinstance(authorized_accounts,tuple) or not any(
+        entry == (sess_channel,sess_sha,True) for entry in authorized_accounts
+    ):
+        raise ChatOrderRejected("ACCOUNT_SESSION_NOT_AUTHORIZED")
     for key in ("conversation_id", "message_id"):
         if not isinstance(event[key],str) or len(event[key]) < 12:
             raise ChatOrderRejected("MISSING_CHAT_MESSAGE_REF")
@@ -116,6 +125,8 @@ def verify_order(*, event: dict, expected_scope: dict,
         raise ChatOrderRejected("EXPIRED_ORDER")
     return {"schema_version":"LF_OWNER_CHAT_ORDER_V2", "channel":"ORCHESTRATION_CHAT",
             "event_kind":"USER_MESSAGE", "actor_sub": owner_sub,
+            "identity_mode":"ACCOUNT_SESSION","channel_code":sess_channel,
+            "session_account_sha256":sess_sha,
             "proposer_subject": proposer_subject, "registrar_subject": registrar_subject,
             "message_id":event["message_id"], "conversation_id":event["conversation_id"],
             "text_literal":event["text_literal"],
