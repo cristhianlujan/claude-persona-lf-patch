@@ -49,7 +49,8 @@ REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_owner_sub_v1()
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- Child of LF_OWNER: SHA256(lower(trim(email))) only; never plaintext email.
--- GPT deliberately unseeded pending the actual authenticated ChatGPT account.
+-- Both allowed channels share the SHA-256 of the normalized installation email.
+-- The plaintext value is configured externally as OWNER_ACCOUNT_EMAIL only.
 ALTER TABLE private.lf_owner_chat_identity_v1
  ADD CONSTRAINT lf_owner_chat_identity_owner_sub_uq UNIQUE(owner_sub);
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_authorized_accounts_v1 (
@@ -61,9 +62,11 @@ CREATE TABLE IF NOT EXISTS private.lf_owner_chat_authorized_accounts_v1 (
 );
 INSERT INTO private.lf_owner_chat_authorized_accounts_v1
  (owner_sub,channel_code,account_email_sha256,activo)
-SELECT owner_sub,'CHAT_CLAUDE_SESSION',
+SELECT c.owner_sub,ch.channel_code,
  'e9ff5f5f431ad1a7fdea5aeda30fcbad4bd48d2f0d73231e9383682098c4e258',true
-FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER'
+FROM private.lf_owner_chat_identity_v1 c
+CROSS JOIN (VALUES('CHAT_CLAUDE_SESSION'),('CHAT_GPT_SESSION')) AS ch(channel_code)
+WHERE c.config_key='LF_OWNER'
 ON CONFLICT DO NOTHING;
 REVOKE ALL ON private.lf_owner_chat_authorized_accounts_v1
  FROM PUBLIC,anon,authenticated,service_role;
@@ -119,11 +122,14 @@ REVOKE ALL ON private.lf_owner_chat_action_catalog_v1,
   private.lf_owner_chat_orders_v1,private.lf_owner_chat_revocations_v1
   FROM PUBLIC,anon,authenticated,service_role;
 
--- Called ONLY by a trusted, already-authorized orchestrator writer.
--- Function arguments are not human-authentication evidence by themselves.
+-- Called ONLY by a trusted orchestrator writer with the email obtained from
+-- a verified platform account session. OWNER_ACCOUNT_EMAIL is an external
+-- installation input, never a message/PR literal or user-controllable claim.
+-- Plaintext must not be logged, returned or persisted. Function arguments
+-- alone do NOT prove ownership of the platform session.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(
   p_source_chat_id text,p_source_message_id text,p_source_kind text,
-  p_actor_sub uuid,p_channel_code text,p_session_account_sha256 text,
+  p_actor_sub uuid,p_channel_code text,p_session_account_email text,
   p_proposer_subject text,p_registrar_subject text,
   p_sent_at timestamptz,p_literal_text text,p_scope jsonb
 ) RETURNS jsonb
@@ -131,6 +137,7 @@ LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
 DECLARE v_action text; v_catalog private.lf_owner_chat_action_catalog_v1%ROWTYPE;
   v_sha text;v_text text;v_order uuid;v_keys text[];v_count int;v_unique int;
+  v_account_sha text;
 BEGIN
  IF p_source_kind IS DISTINCT FROM
       (SELECT channel_code FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
@@ -144,12 +151,17 @@ BEGIN
     p_actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() THEN
    RAISE EXCEPTION 'CHAT_OWNER_ORCHESTRATOR_EVENT_OR_SEPARATION_INVALID';
  END IF;
+ -- Never log or store the raw input; derive SHA256(lower(trim(email))) here.
  -- Model cannot choose identity_mode; valid account session is mandatory.
- IF p_channel_code IS NULL OR p_session_account_sha256 IS NULL OR
-    p_session_account_sha256 !~ '^[a-f0-9]{64}$' OR NOT EXISTS(
+ IF p_session_account_email IS NULL OR
+    nullif(btrim(p_session_account_email),'') IS NULL
+ THEN RAISE EXCEPTION 'CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED'; END IF;
+ v_account_sha:=encode(extensions.digest(
+     convert_to(lower(btrim(p_session_account_email)),'UTF8'),'sha256'),'hex');
+ IF p_channel_code IS NULL OR NOT EXISTS(
       SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
        WHERE a.owner_sub=p_actor_sub AND a.channel_code=p_channel_code
-         AND a.account_email_sha256=p_session_account_sha256 AND a.activo)
+         AND a.account_email_sha256=v_account_sha AND a.activo)
  THEN RAISE EXCEPTION 'CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED'; END IF;
  IF p_sent_at IS NULL OR p_sent_at > clock_timestamp()+interval '30 seconds'
     OR p_sent_at+interval '15 minutes' <= clock_timestamp() THEN
@@ -207,7 +219,7 @@ BEGIN
    proposer_subject,registrar_subject,action_code,scope,scope_sha256,
    literal_text,literal_sha256,sent_at,expires_at)
  VALUES(p_source_chat_id,p_source_message_id,p_source_kind,p_actor_sub,
-   p_channel_code,p_session_account_sha256,'ACCOUNT_SESSION',
+   p_channel_code,v_account_sha,'ACCOUNT_SESSION',
    to_char(p_sent_at AT TIME ZONE 'America/Lima','YYYY-MM-DD"T"HH24:MI:SS')||'-05:00',
    p_proposer_subject,p_registrar_subject,v_action,p_scope,v_sha,
    p_literal_text,encode(extensions.digest(convert_to(p_literal_text,'UTF8'),'sha256'),'hex'),
@@ -216,7 +228,7 @@ BEGIN
  RETURN jsonb_build_object('status','RECORDED_USER_CHAT_ORDER','order_id',v_order,
    'source_message_id',p_source_message_id,'action',v_action,
    'identity_mode','ACCOUNT_SESSION','channel_code',p_channel_code,
-   'session_account_sha256',p_session_account_sha256,
+   'session_account_sha256',v_account_sha,
    'scope_sha256',v_sha,'literal_sha256',
    encode(extensions.digest(convert_to(p_literal_text,'UTF8'),'sha256'),'hex'),
    'sent_at_lima',to_char(p_sent_at AT TIME ZONE 'America/Lima','YYYY-MM-DD"T"HH24:MI:SS')||'-05:00',
