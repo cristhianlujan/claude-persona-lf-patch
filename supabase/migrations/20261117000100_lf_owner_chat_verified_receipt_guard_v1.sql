@@ -48,27 +48,52 @@ $fn$;
 REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_owner_sub_v1()
  FROM PUBLIC,anon,authenticated,service_role;
 
--- Child of LF_OWNER: SHA256(lower(trim(email))) only; never plaintext email.
--- Both allowed channels share the SHA-256 of the normalized installation email.
--- The plaintext value is configured externally as OWNER_ACCOUNT_EMAIL only.
+-- One canonical extensible IG parameter table, usable for future notifications.
+-- The owner account is an active SHA256 parameter; never persist email plaintext.
+-- No editor/agent roles receive table privileges or EXECUTE.
 ALTER TABLE private.lf_owner_chat_identity_v1
  ADD CONSTRAINT lf_owner_chat_identity_owner_sub_uq UNIQUE(owner_sub);
-CREATE TABLE IF NOT EXISTS private.lf_owner_chat_authorized_accounts_v1 (
- owner_sub uuid NOT NULL REFERENCES private.lf_owner_chat_identity_v1(owner_sub),
- channel_code text NOT NULL CHECK (channel_code IN ('CHAT_GPT_SESSION','CHAT_CLAUDE_SESSION')),
- account_email_sha256 text NOT NULL CHECK (account_email_sha256 ~ '^[a-f0-9]{64}$'),
+CREATE TABLE IF NOT EXISTS private.lf_ig_parameters_v1 (
+ parameter_namespace text NOT NULL CHECK
+   (parameter_namespace IN ('OWNER_CHAT','INPUT_GOVERNANCE','NOTIFICATIONS')),
+ parameter_code text NOT NULL CHECK (parameter_code ~ '^[A-Z0-9_]{5,96}$'),
+ channel_code text NOT NULL DEFAULT '',
+ owner_sub uuid REFERENCES private.lf_owner_chat_identity_v1(owner_sub),
+ value_kind text NOT NULL CHECK (value_kind IN ('SHA256','JSONB')),
+ value_sha256 text CHECK (value_sha256 ~ '^[a-f0-9]{64}$'),
+ value_jsonb jsonb,
  activo boolean NOT NULL DEFAULT false,
- PRIMARY KEY(owner_sub,channel_code,account_email_sha256)
+ revision integer NOT NULL DEFAULT 1 CHECK (revision>=1),
+ updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ last_approved_order_id uuid,
+ PRIMARY KEY(parameter_namespace,parameter_code,channel_code),
+ CHECK (
+  (parameter_namespace='OWNER_CHAT' AND parameter_code='SESSION_EMAIL_SHA256'
+   AND channel_code IN ('CHAT_GPT_SESSION','CHAT_CLAUDE_SESSION')
+   AND owner_sub IS NOT NULL AND value_kind='SHA256'
+   AND value_sha256 IS NOT NULL AND value_jsonb IS NULL)
+  OR
+  (parameter_namespace IN ('INPUT_GOVERNANCE','NOTIFICATIONS')
+   AND channel_code='' AND owner_sub IS NULL
+   AND ((value_kind='JSONB' AND value_jsonb IS NOT NULL AND value_sha256 IS NULL)
+     OR (value_kind='SHA256' AND value_sha256 IS NOT NULL AND value_jsonb IS NULL)))
+ )
 );
-INSERT INTO private.lf_owner_chat_authorized_accounts_v1
- (owner_sub,channel_code,account_email_sha256,activo)
-SELECT c.owner_sub,ch.channel_code,
+INSERT INTO private.lf_ig_parameters_v1
+ (parameter_namespace,parameter_code,channel_code,owner_sub,value_kind,value_sha256,activo)
+SELECT 'OWNER_CHAT','SESSION_EMAIL_SHA256',ch.channel_code,c.owner_sub,'SHA256',
  'e9ff5f5f431ad1a7fdea5aeda30fcbad4bd48d2f0d73231e9383682098c4e258',true
 FROM private.lf_owner_chat_identity_v1 c
 CROSS JOIN (VALUES('CHAT_CLAUDE_SESSION'),('CHAT_GPT_SESSION')) AS ch(channel_code)
 WHERE c.config_key='LF_OWNER'
 ON CONFLICT DO NOTHING;
-REVOKE ALL ON private.lf_owner_chat_authorized_accounts_v1
+-- Read-only compatibility VIEW: one data store, no duplicate session rows.
+CREATE VIEW private.lf_owner_chat_authorized_accounts_v1 AS
+ SELECT owner_sub,channel_code,value_sha256 AS account_email_sha256,activo
+ FROM private.lf_ig_parameters_v1
+ WHERE parameter_namespace='OWNER_CHAT' AND parameter_code='SESSION_EMAIL_SHA256';
+REVOKE ALL ON private.lf_ig_parameters_v1,
+ private.lf_owner_chat_authorized_accounts_v1
  FROM PUBLIC,anon,authenticated,service_role;
 
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_action_catalog_v1 (
