@@ -12,14 +12,13 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
+from uuid import UUID
 
 REPO_PATTERN = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
 SHA40 = re.compile(r"[a-f0-9]{40}\Z")
 SHA64 = re.compile(r"[a-f0-9]{64}\Z")
 CODE = re.compile(r"[A-Z0-9_-]{3,128}\Z")
 ORDER = re.compile(r"\AAPRUEBO ([0-9a-f]{12}) (.+)\Z", re.DOTALL)
-OWNER_IDENTITY = 'Cristhian Lujan'
-OWNER_CHAT_CHANNEL = 'CHAT_ORCHESTRATOR_USER_TURN'
 DEFAULT_CATALOG = {
     "MERGE_GOVERNANCE_PR": frozenset({"action", "repository", "pr_number", "head_sha"}),
     "PROMOTE_RULE_BATCH": frozenset({"action", "repository", "execution_id", "rule_codes", "rule_snapshots_sha256"}),
@@ -77,24 +76,29 @@ def _utc(s: Any) -> datetime:
 
 
 def verify_order(*, event: dict, expected_scope: dict,
-                 owner_subject: str, proposer_subject: str,
+                 owner_sub: str, channel_code: str, proposer_subject: str,
                  registrar_subject: str, now: datetime,
                  catalog: dict | None = None) -> dict:
     """Llamar SOLO despues del readback del evento USER del orquestador.
 
-    owner_subject y expected_scope deben proceder de configuracion y del
-    consumidor canonico, NO del mensaje ni del modelo.
+    owner_sub, channel_code y expected_scope deben proceder del readback
+    protegido de configuracion LF y consumidor, NO de la orden del modelo.
     """
     validate_scope(expected_scope, catalog)
-    if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_subject", "conversation_id", "message_id", "text_literal", "sent_at", "scope"}:
+    if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_sub", "conversation_id", "message_id", "text_literal", "sent_at", "scope"}:
         raise ChatOrderRejected("EVENT_CONTRACT_INVALID")
-    if event["event_kind"] != "USER_MESSAGE" or event["origin"] != OWNER_CHAT_CHANNEL:
+    if event["event_kind"] != "USER_MESSAGE" or event["origin"] != channel_code:
         raise ChatOrderRejected("NOT_AN_ORCHESTRATED_USER_TURN")
-    if not all(isinstance(v,str) and len(v)>=8 for v in [owner_subject,proposer_subject,registrar_subject]):
+    if not all(isinstance(v,str) and len(v)>=8 for v in [owner_sub,channel_code,proposer_subject,registrar_subject]):
         raise ChatOrderRejected("ACTOR_CONTRACT_INVALID")
-    if owner_subject != OWNER_IDENTITY or event["actor_subject"] != OWNER_IDENTITY:
+    try:
+        normalized_sub = str(UUID(owner_sub))
+        actual_sub = str(UUID(event["actor_sub"]))
+    except (ValueError, AttributeError, TypeError) as exc:
+        raise ChatOrderRejected("OWNER_SUB_INVALID") from exc
+    if normalized_sub != owner_sub or actual_sub != normalized_sub:
         raise ChatOrderRejected("WRONG_OWNER")
-    if proposer_subject == registrar_subject or registrar_subject == owner_subject:
+    if proposer_subject == registrar_subject or registrar_subject == owner_sub:
         raise ChatOrderRejected("NO_PROPOSER_REGISTRAR_SEPARATION")
     for key in ("conversation_id", "message_id"):
         if not isinstance(event[key],str) or len(event[key]) < 12:
@@ -109,7 +113,7 @@ def verify_order(*, event: dict, expected_scope: dict,
     if now.astimezone(timezone.utc) >= sent + timedelta(minutes=15):
         raise ChatOrderRejected("EXPIRED_ORDER")
     return {"schema_version":"LF_OWNER_CHAT_ORDER_V2", "channel":"ORCHESTRATION_CHAT",
-            "event_kind":"USER_MESSAGE", "actor_subject": owner_subject,
+            "event_kind":"USER_MESSAGE", "actor_sub": owner_sub,
             "proposer_subject": proposer_subject, "registrar_subject": registrar_subject,
             "message_id":event["message_id"], "conversation_id":event["conversation_id"],
             "text_literal":event["text_literal"],
