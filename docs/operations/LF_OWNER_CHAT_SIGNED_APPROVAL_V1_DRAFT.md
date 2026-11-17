@@ -105,3 +105,38 @@ El campo de auditoría decided_by de HUMAN contiene identificador UUID,
 no nombre. El workflow conserva su allowlist histórica paulozterra,
 cristhianlujan: es una admisión de actor de GitHub distinta de autoridad
 de la orden chat, no normalizarla sin un cambio separado gobernado.
+
+
+## Lote IG 23:05 — ACCOUNT_SESSION dual-channel
+
+**Fuente única:** la fila LF_OWNER de private.lf_owner_chat_identity_v1 conserva
+el owner_sub canónico unido a public.lf_ig_project_owner_v2. La tabla hija
+private.lf_owner_chat_authorized_accounts_v1 almacena únicamente SHA-256
+hexadecimal del correo de cuenta normalizado a minúsculas y el canal. Nunca
+correos claros. Solo se siembra el hash de Claude aportado por el dueño, sin
+sembrar fila de ChatGPT: la autenticación ChatGPT permanece bloqueada hasta
+recibir hash respaldado por sesión realmente autenticada.
+
+**Regla de autoridad:** el registrador únicamente acepta una sesión si
+owner_sub, canal, session_account_sha256 y activo coinciden exactamente
+con una fila vigente de esa tabla. identity_mode del RECIBO se deriva a
+ACCOUNT_SESSION solo en ese caso, nunca se recibe de un modelo ni de la orden.
+No se altera por ello identity_mode de public.lf_ig_project_owner_v2;
+conservar UNVERIFIED_CHAT_DECLARATION allí es correcto hasta una operación
+oficial y distinta, además de que su constraint actual la requiere.
+Si no hay sesión autorizada se lanza error, no se crea recibo y el estado
+no evoluciona. Los recibos guardan canal, hash, literal y sent_at_lima;
+el consumidor Train vuelve a comprobar que la cuenta permanece activa.
+La revocación exige canal/hash igualmente.
+
+**Límite material:** ACCOUNT_SESSION acredita coincidencia de cuenta/canal
+según transporte protegido, más fuerte que una declaración del modelo,
+pero NO equivale a una firma por mensaje por parte de ChatGPT o Claude.
+Un hash conocido, incluso el del dueño, tampoco es prueba de sesión
+si lo aporta un modelo o un archivo manipulable. Falta readback autorizado
+de la sesión real en cada plataforma y la vinculación segura con el evento
+USER original, sin aceptar metadatos declarados por el agente.
+
+**Permisos/cutover:** no se añaden grants, no se ejecutan migraciones
+ni Train sobre un PR productivo. La ruta pull_request_target sigue usando
+main confiable y requiere bootstrap oficial de forma separada.
