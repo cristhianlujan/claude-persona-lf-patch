@@ -80,8 +80,8 @@ BEGIN
  'CHAT_ORCHESTRATOR_USER_TURN','fixture-owner-123','fixture-proposer-123',
  'fixture-recorder-123',clock_timestamp(),lit,sc);
  oid:=(r->>'order_id')::uuid;
- UPDATE private.lf_owner_chat_orders_v1 SET sent_at=clock_timestamp()-interval '20 minutes',
- expires_at=clock_timestamp()-interval '5 minutes' WHERE order_id=oid;
+ UPDATE private.lf_owner_chat_orders_v1 SET sent_at=transaction_timestamp()-interval '20 minutes',
+ expires_at=transaction_timestamp()-interval '5 minutes' WHERE order_id=oid;
  r:=private.fn_lf_owner_chat_consume_v1(oid,'MERGE_GOVERNANCE_PR',sc,
  'fixture-owner-123','TRAIN-TEST-00000001');
  IF r->>'code'<>'CHAT_ORDER_EXPIRED' THEN RAISE EXCEPTION 'NEG_EXPIRED:%',r; END IF;
