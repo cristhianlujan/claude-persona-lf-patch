@@ -308,7 +308,7 @@ BEGIN
   -- Valid original owner USER order: real decide_v1 and real apply_v1.
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-valid-000001','__CHANNEL__',
-   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',('   '||upper(fixture_email)||'   '),'fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1 o
@@ -341,9 +341,14 @@ BEGIN
        ' '||programacion.fn_v09_canonical_jsonb_text(pr_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
     'fixture-recovery-merge-000001','__CHANNEL__',
-    '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',fixture_email,'fixture-proposer-01','fixture-recorder-01',
+    '__OWNER_SUB__'::uuid,'__GPT_CHANNEL__',('  '||upper(fixture_email)||' '),'fixture-proposer-01','fixture-recorder-01',
     clock_timestamp(),msg,pr_sc);
   pr_order:=(v->>'order_id')::uuid;
+  IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1 o
+      WHERE o.order_id=pr_order AND o.channel_code='__GPT_CHANNEL__'
+        AND o.session_account_sha256=fixture_sha
+        AND o.identity_mode='ACCOUNT_SESSION' AND o.literal_text=msg)
+  THEN RAISE EXCEPTION 'RECOVERY_GPT_NORMALIZED_EMAIL_RECEIPT_MISSING'; END IF;
   v:=private.fn_lf_owner_chat_train_merge_gate_v1(pr_order,
      '__REPO__',4063,repeat('c',40),
      'TRAIN-TEST-RECOVERY');
