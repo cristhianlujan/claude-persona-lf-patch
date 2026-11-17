@@ -111,11 +111,11 @@ de la orden chat, no normalizarla sin un cambio separado gobernado.
 
 **Fuente única:** la fila LF_OWNER de private.lf_owner_chat_identity_v1 conserva
 el owner_sub canónico unido a public.lf_ig_project_owner_v2. La tabla hija
-private.lf_owner_chat_authorized_accounts_v1 almacena únicamente SHA-256
-hexadecimal del correo de cuenta normalizado a minúsculas y el canal. Nunca
-correos claros. La fuente de instalación es exclusivamente la variable externa
-OWNER_ACCOUNT_EMAIL. La huella del correo normalizado está en la migración,
-sembrada para ambos canales (Claude y ChatGPT), compartiendo una sola identidad.
+private.lf_ig_parameters_v1 es la TABLA ÚNICA de parámetros. El dominio
+OWNER_CHAT contiene solamente SHA-256 hexadecimal de lower(trim(correo))
+para cada canal activo; la vista de compatibilidad
+private.lf_owner_chat_authorized_accounts_v1 no duplica almacenamiento.
+No existe dependencia de correo externo ni un valor claro persistente.
 **No se interpreta el simple conocimiento del correo como prueba de sesión.**
 
 **Regla de autoridad:** el registrador únicamente acepta una sesión si
@@ -145,11 +145,10 @@ main confiable y requiere bootstrap oficial de forma separada.
 
 ## Lote IG 23:25 — Correo único externo, dos canales activos (candidato)
 
-- Aprobación del dueño: una sola variable de instalación `OWNER_ACCOUNT_EMAIL`,
-  proporcionada fuera del repositorio. La configuración debe llegar al
-  orquestador desde su gestor de secretos; no insertar el valor claro en
-  documentación, migraciones, fixtures, tests, acciones GitHub ni logs.
-  **Esta PR no instala ni acredita que el secreto ya exista en producción.**
+- Decisión posterior del dueño: la huella de la cuenta solo se almacena en
+  una tabla de parámetros gobernada, nunca como variable de instalación;
+  los consumidores reciben únicamente un readback protegido. No publicar
+  el correo en claro en documentación, migraciones, fixtures, tests o logs.
 - El SHA256(lower(trim(email))) entregado coincide exactamente con la huella
   previa de Claude. La misma huella se siembra para `canal Claude configurado`
   y `canal ChatGPT configurado` a partir de una sola constante SQL, uniendo al
@@ -160,11 +159,11 @@ main confiable y requiere bootstrap oficial de forma separada.
   del canal. No persiste ni devuelve el texto del correo; el recibo conserva
   solo SHA, canal, identidad derivada, fecha Lima y orden literal.
   La revocación aplica exactamente la misma normalización.
-- El validador Python exige `OWNER_ACCOUNT_EMAIL` en el entorno privado
-  de instalación; sin esa variable bloquea. Calcula SHA256 del correo
-  normalizado y exige concordancia con hash de evento de sesión (el evento
-  debe ser autentificado por proveedor) y la fila del canal activa. No
-  autoriza una orden a partir del correo de instalación por sí solo.
+- El validador Python exige un readback protegido de la configuración,
+  incluida la lista de cuentas y canales activos. Compara el hash de sesión
+  proveniente del transporte autorizado con la tabla canónica; si no
+  existe fila activa, bloquea. La ausencia de credenciales de sesión
+  acreditadas sigue siendo un bloqueo distinto de la coincidencia de hash.
 - Tests aislados PG17.6/PG18.7: una cuenta **ficticia** ensamblada en
   memoria permite probar minúsculas, mayúsculas y espacios sin depositar el
   correo real en CI; primero se comprueba el seed real para los dos canales,
@@ -179,3 +178,62 @@ main confiable y requiere bootstrap oficial de forma separada.
   mensaje ni acredita por sí solo el ingreso autenticado de ChatGPT/Claude.
   **No realizar promociones reales ni merge por la coincidencia de este
   hash:** se exige evento de sesión protegido y readback de autoría.
+
+
+## IG 07:08 — parámetros únicos, gobernanza de cambios y mantenimiento (propuesta)
+
+**Decisión fuente:** la tabla hija especializada no permite administrar
+parámetros generales de IG y notificaciones. Se usa una sola tabla canónica
+`private.lf_ig_parameters_v1` con clave (namespace, parameter_code, channel_code),
+`value_kind`, valor tipado SHA256/JSONB, `activo`, `revision`,
+`updated_at` y `last_approved_order_id`. Para OWNER_CHAT solo admite
+SESSION_EMAIL_SHA256 por canal, vinculado a owner_sub canónico.
+El hash del correo existente se sembró una única vez en SQL, en ambas filas.
+Una vista de lectura mantiene las consultas de consumidores ya existentes;
+no hay segundo almacén. No crear keys/notificaciones reales en este lote.
+
+**Escritura controlada (candidato no desplegado):**
+1. Solicitud de cambio con namespace, código, canal, valor hash objetivo,
+   activo y revisión esperada; pantalla solo muestra propuesta.
+2. Se congela alcance JSON + SHA. Dueño confirma literal `APRUEBO`
+   en este chat como evento USER de sesión autenticado, distinto del
+   productor. No se confunde esta autorización general de desarrollo con
+   una orden futura para un cambio de fila concreto.
+3. Registrador autorizado y diferente del proponente crea recibo único,
+   `UPDATE_IG_PARAMETER` con TTL y alcance cerrado. El modelo no puede
+   escribir recibos ni decidir su propio `identity_mode`.
+4. `private.fn_lf_ig_parameter_update_v1` consume el recibo de forma
+   transaccional, verifica versión/estado/alcance, y el trigger
+   `lf_ig_parameter_governed_write_v1` rechaza INSERT/DELETE y UPDATE
+   sin recibo consumido en esa misma transacción.
+5. Una fila inmutable de `private.lf_ig_parameter_change_audit_v1`
+   registra valor anterior/nuevo (solo hash), versiones, actor UUID,
+   referencia del mensaje, hash de alcance y hora. Se exige readback
+   posterior para considerar el cambio realizado.
+6. Sin grants EXECUTE ni modificación en BD de producción. El escritor
+   candidato por ahora admite solo cambio de cuenta OWNER_CHAT; futuros
+   parámetros IG y NOTIFICATIONS necesitarán política/contratos propios.
+
+**Pantalla de mantenimiento — DISEÑO/PROPUESTA, NO IMPLEMENTADA:**
+
+`Mantenimiento > Parámetros` (uso exclusivo de operador autorizado).
+Listado compacto con filtros por dominio, estado y código; columnas
+`Parámetro | Canal/ámbito | Valor protegido (SHA abreviado) | Activo |
+Revisión | Última aprobación | Última modificación`. Detalle muestra
+definición del parámetro, versión vigente, historial de auditoría y
+formulario de propuesta. Para correo, el valor en claro se ingresa solo de
+forma transitoria (no persistir en frontend, telemetría, URL ni logs),
+se normaliza a lowercase/trim, se transforma a SHA-256 y se descarta.
+Acción `Solicitar aprobación` genera solicitud de alcance inmutable,
+no actualiza la base. `Aplicar` se habilitará exclusivamente cuando
+exista recibo autenticado, independiente, vigente, idéntico y sin consumir;
+toda confirmación muestra readback. Proteger contra autoaprobación de modelos,
+replay, version drift y bloqueo de ambos canales simultáneamente.
+
+**Límites:** es propuesta de UI sin rutas, componentes ni permisos creados.
+El hash de email es identificador de cuenta configurada, no autenticación
+de proveedor ni firma individual del mensaje. Antes de activar cambios
+en producción se requiere enlace efectivo del USER turn del orquestador
+con un sujeto de cuenta validado, bootstrap gobernado y verificación de
+permisos, incluido un mecanismo de recuperación si se rota el único
+correo registrado en ambos canales. No hay cambios en PR #4061/#4062.
