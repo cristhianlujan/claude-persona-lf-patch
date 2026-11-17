@@ -105,8 +105,70 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
                             runner.exact_sql()
             finally:os.chdir(cwd)
 
+    def test_09_real_assembled_sql_accepts_temp_table_commit_clauses(self):
+        # The checkout at candidate-readonly is the exact immutable #4064 HEAD.
+        # No SQL is executed against PostgreSQL in this test.
+        sql, digests = runner.assembled_sql()
+        self.assertEqual(digests[runner.MIGRATION],
+                         "8677dce173327175341b50075d9d1eddd3452d50541ba252f359a4ef0d2e279c")
+        self.assertEqual(digests[runner.HARNESS],
+                         "4e13b49f2cf5d91a41e5aa0b972b0d72023052f72f17b23a799d849895ec49a9")
+        self.assertIn("ON COMMIT DROP", sql)
+        self.assertIn("DO $ig$", sql)
+        self.assertIn("DO $test$", sql)
+        self.assertIn("IG4064_TX_ROLLBACK_DONE", sql)
+        statements = runner.top_level_sql_statements(sql)
+        self.assertEqual(sum(head[0] == "BEGIN" for head in statements), 1)
+        self.assertEqual(sum(head[0] == "ROLLBACK" for head in statements), 1)
+        self.assertTrue(any(head[:2] == ("CREATE", "TEMP") and
+                            "COMMIT" in head for head in statements))
+        print("PASS_IG4064_REAL_ASSEMBLED_SQL_GUARD "
+              f"head={runner.HEAD} statements={len(statements)} "
+              f"sql_sha256={runner.sha256(sql.encode())} "
+              f"migration_sha256={digests[runner.MIGRATION]} "
+              f"harness_sha256={digests[runner.HARNESS]}")
+
+    def test_10_real_assembled_sql_rejects_commit_commands(self):
+        sql, _ = runner.assembled_sql()
+        injection_marker = r"\echo IG4064_TX_ROLLBACK_START"
+        self.assertEqual(sql.count(injection_marker), 1)
+        # Inject genuine top-level SQL into the complete real #4064 script.
+        dangerous = (
+            "COMMIT;",
+            "COMMIT AND CHAIN;",
+            "END;",
+            "END WORK;",
+            "COMMIT PREPARED 'ig-test-gid';",
+            "PREPARE TRANSACTION 'ig-test-gid';",
+            "ROLLBACK PREPARED 'ig-test-gid';",
+        )
+        for command in dangerous:
+            with self.subTest(sql_command=command):
+                injected = sql.replace(injection_marker, command + "\n" +
+                                       injection_marker, 1)
+                with self.assertRaisesRegex(RuntimeError, "^COMMIT_FORBIDDEN$"):
+                    runner.assert_safe_transaction_control(injected)
+        # These are SQL data/syntax, not transaction-ending commands.
+        benign = (
+            "CREATE TEMP TABLE ig4064_test_delete(x text) ON COMMIT DELETE ROWS;",
+            "CREATE TEMP TABLE ig4064_test_drop(x text) ON COMMIT DROP;",
+            "SELECT 'COMMIT; END; PREPARE TRANSACTION', $COMMIT; END;$;",
+            "/* COMMIT; /* END; */ PREPARE TRANSACTION 'x'; */",
+            "-- COMMIT AND CHAIN;\nSELECT 'END;';",
+        )
+        for statement in benign:
+            with self.subTest(benign_sql=statement):
+                candidate = sql.replace(injection_marker, statement + "\n" +
+                                        injection_marker, 1)
+                runner.assert_safe_transaction_control(candidate)
+        print("PASS_IG4064_REAL_ASSEMBLED_SQL_NEGATIVE "
+              f"blocked={len(dangerous)}/{len(dangerous)} "
+              f"benign_accepted={len(benign)}/{len(benign)} "
+              f"original_sha256={runner.sha256(sql.encode())}")
+
+
 if __name__=="__main__":
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(IG4064AdvisoryPathTests)
     result=unittest.TextTestRunner(verbosity=2).run(suite)
-    if result.wasSuccessful():print("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS 8/8")
+    if result.wasSuccessful():print("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS 10/10")
     raise SystemExit(0 if result.wasSuccessful() else 1)
