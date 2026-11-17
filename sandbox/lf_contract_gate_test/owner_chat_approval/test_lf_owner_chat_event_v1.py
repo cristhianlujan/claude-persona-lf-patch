@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta, timezone
 import pytest
+from sandbox.lf_contract_gate_test.owner_chat_approval.owner_chat_fixture_v1 import OWNER, OTHER_SUB, REPO, CHANNEL
 from scripts.lf_owner_chat_event_v1 import (
     ChatOrderRejected, canonical, expected_order, sha256_literal, verify_order
 )
 
 NOW=datetime(2026,11,17,2,38,tzinfo=timezone.utc)
-SCOPE={"action":"MERGE_GOVERNANCE_PR","repository":"cristhianlujan/claude-persona-lf-patch","pr_number":4063,"head_sha":"a"*40}
+SCOPE={"action":"MERGE_GOVERNANCE_PR","repository":REPO,"pr_number":4063,"head_sha":"a"*40}
 RULE_SCOPE={"action":"PROMOTE_RULE_BATCH","repository":SCOPE["repository"],"execution_id":"EXEC-TEST-1234567890","rule_codes":["RULE-001","RULE-002"],"rule_snapshots_sha256":"b"*64}
-ACTORS={"owner_subject":"Cristhian Lujan","proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
+ACTORS={"owner_sub":OWNER,"channel_code":CHANNEL,"proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
 
 def event(scope=None, catalog=None, **patch):
     scope=scope or SCOPE
-    ev={"event_kind":"USER_MESSAGE","origin":"CHAT_ORCHESTRATOR_USER_TURN","actor_subject":ACTORS["owner_subject"],"conversation_id":"conversation-test-001","message_id":"message-test-001","text_literal":expected_order(scope,catalog),"sent_at":(NOW-timedelta(minutes=1)).isoformat().replace("+00:00","Z"),"scope":scope}
+    ev={"event_kind":"USER_MESSAGE","origin":CHANNEL,"actor_sub":ACTORS["owner_sub"],"conversation_id":"conversation-test-001","message_id":"message-test-001","text_literal":expected_order(scope,catalog),"sent_at":(NOW-timedelta(minutes=1)).isoformat().replace("+00:00","Z"),"scope":scope}
     ev.update(patch)
     return ev
 
@@ -32,11 +33,11 @@ def test_no_order(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_lit
 def test_wrong_scope(): reject('WRONG_EXACT_SCOPE', event(),{**SCOPE,'pr_number':4062})
 def test_wrong_head(): reject('WRONG_EXACT_SCOPE', event(),{**SCOPE,'head_sha':'b'*40})
 def test_expired(): reject('EXPIRED_ORDER',event(sent_at=(NOW-timedelta(minutes=16)).isoformat().replace('+00:00','Z')))
-def test_wrong_owner(): reject('WRONG_OWNER',event(actor_subject='untrusted-model'))
+def test_wrong_owner(): reject('WRONG_OWNER',event(actor_sub=OTHER_SUB))
 def test_model_claim(): reject('NOT_AN_ORCHESTRATED_USER_TURN',event(event_kind='ASSISTANT_MESSAGE'))
 def test_forged_origin(): reject('NOT_AN_ORCHESTRATED_USER_TURN',event(origin='MODEL_GENERATED_JSON'))
 def test_same_proposer_and_registrar(): reject('NO_PROPOSER_REGISTRAR_SEPARATION',event(),registrar_subject=ACTORS['proposer_subject'])
-def test_registrar_same_owner(): reject('NO_PROPOSER_REGISTRAR_SEPARATION',event(),registrar_subject=ACTORS['owner_subject'])
+def test_registrar_same_owner(): reject('NO_PROPOSER_REGISTRAR_SEPARATION',event(),registrar_subject=ACTORS['owner_sub'])
 def test_tamper_literal(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_literal=expected_order(SCOPE)+'-EDIT'))
 def test_hash_truncated_wrong(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_literal='APRUEBO deadbeefdead '+canonical(SCOPE)))
 def test_duplicate_rules(): reject('INVALID_RULE_SET',event(),{**RULE_SCOPE,'rule_codes':['RULE-001','RULE-001']})
