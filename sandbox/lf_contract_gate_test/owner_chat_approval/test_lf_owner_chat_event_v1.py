@@ -8,7 +8,7 @@ from scripts.lf_owner_chat_event_v1 import (
 NOW=datetime(2026,11,17,2,38,tzinfo=timezone.utc)
 SCOPE={"action":"MERGE_GOVERNANCE_PR","repository":REPO,"pr_number":4063,"head_sha":"a"*40}
 RULE_SCOPE={"action":"PROMOTE_RULE_BATCH","repository":SCOPE["repository"],"execution_id":"EXEC-TEST-1234567890","rule_codes":["RULE-001","RULE-002"],"rule_snapshots_sha256":"b"*64}
-ACTORS={"owner_sub":OWNER,"channel_code":CHANNEL,"repository_full_name":REPO,"authorized_accounts":AUTHORIZED_ACCOUNT_FIXTURE,"owner_account_email":TEST_EMAIL,"proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
+ACTORS={"owner_sub":OWNER,"channel_code":CHANNEL,"repository_full_name":REPO,"authorized_accounts":AUTHORIZED_ACCOUNT_FIXTURE,"proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
 
 def event(scope=None, catalog=None, **patch):
     scope=scope or SCOPE
@@ -42,11 +42,13 @@ def test_gpt_session_happy(): assert verify(event(channel_code=CHANNEL_GPT))['id
 def test_both_channels_use_one_shared_hash():
     assert len(AUTHORIZED_ACCOUNT_FIXTURE)==2
     assert {entry[1] for entry in AUTHORIZED_ACCOUNT_FIXTURE}=={TEST_EMAIL_SHA}
-def test_email_uppercase_whitespace_is_normalized():
-    assert verify(event(),owner_account_email=" \t"+TEST_EMAIL.upper()+"  \n")['identity_mode']=='ACCOUNT_SESSION'
-def test_different_installation_email_rejected():
-    reject('ACCOUNT_SESSION_NOT_AUTHORIZED',event(),owner_account_email="different"+"@"+"example.invalid")
-def test_missing_owner_installation_email(): reject('ACCOUNT_EMAIL_MISSING',event(),owner_account_email='')
+def test_known_channel_hash_from_parameter_readback():
+    assert verify(event(channel_code=CHANNEL_GPT))['session_account_sha256']==TEST_EMAIL_SHA
+def test_changed_parameter_hash_rejected():
+    reject('ACCOUNT_SESSION_NOT_AUTHORIZED',event(),
+           authorized_accounts=((CHANNEL_CLAUDE,'a'*64,True),))
+def test_missing_parameter_readback_rejected():
+    reject('ACCOUNT_SESSION_NOT_AUTHORIZED',event(),authorized_accounts=())
 def test_missing_account_sha(): reject('ACCOUNT_SESSION_INVALID',event(session_account_sha256=''))
 def test_inactive_claude_account(): reject('ACCOUNT_SESSION_NOT_AUTHORIZED',event(),authorized_accounts=((CHANNEL_CLAUDE,TEST_EMAIL_SHA,False),))
 def test_model_cannot_set_mode(): reject('EVENT_CONTRACT_INVALID',event(identity_mode='ACCOUNT_SESSION'))
