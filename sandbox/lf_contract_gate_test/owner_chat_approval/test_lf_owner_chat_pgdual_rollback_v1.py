@@ -266,8 +266,13 @@ BEGIN
     WHERE ns.nspname='private' AND p.proname='fn_lf_owner_chat_register_v1'
       AND pg_get_function_arguments(p.oid) LIKE '%p_identity_mode%')
   THEN RAISE EXCEPTION 'NEG_MODEL_CAN_FIX_SESSION_MODE'; END IF;
-  IF EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1)
-  THEN RAISE EXCEPTION 'NEG_SESSION_CREATED_RECEIPT'; END IF;
+  -- The two authenticated parameter-change receipts above MUST exist;
+  -- only the four deliberately rejected session attempts are prohibited.
+  IF EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1
+      WHERE source_message_id LIKE 'fixture-recovery-neg-session-%') OR
+     (SELECT count(*) FROM private.lf_owner_chat_orders_v1
+      WHERE action_code='UPDATE_IG_PARAMETER' AND consumed_at IS NOT NULL)<>2
+  THEN RAISE EXCEPTION 'NEG_SESSION_CREATED_RECEIPT_OR_AUDIT_DRIFT'; END IF;
   -- Same displayed name is NOT identity: a different owner_sub must fail.
   IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_identity_v1 c
     JOIN public.lf_ig_project_owner_v2 p
