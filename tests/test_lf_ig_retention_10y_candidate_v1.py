@@ -6,6 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 M = (ROOT / "supabase/migrations/20261117084800_lf_ig_retention_10y_parameter_candidate_v1.sql").read_text()
 H = (ROOT / "sandbox/lf_contract_gate_test/input_governance/retention_10y_candidate_rollback_v1.sql").read_text()
 D = (ROOT / "docs/ig/retention_10y_governance_design_v1.md").read_text()
+S = (ROOT / "sandbox/lf_contract_gate_test/input_governance/compose_retention_10y_pg_rollback_v1.sh").read_text()
 
 class CandidateSource(unittest.TestCase):
     def test_central_parameters_only(self):
@@ -26,8 +27,10 @@ class CandidateSource(unittest.TestCase):
         for x in ("UPDATE lf_ops.reglas", "INSERT INTO lf_ops.reglas", "DELETE FROM lf_ops.reglas"):
             self.assertNotIn(x, M)
     def test_rollback_harness_not_fake_pass(self):
-        self.assertIn("\nBEGIN;\n", H)
-        self.assertTrue(H.rstrip().endswith("ROLLBACK;"))
+        self.assertIn("print(\u0027BEGIN;\u0027)", S)
+        self.assertIn("print(\u0027ROLLBACK;\u0027)", S)
+        self.assertIn("LF_PG_ISOLATED_TEST", S)
+        self.assertNotIn("\\ir", H)
         self.assertIn("PASS_IG_RETENTION_CANDIDATE_PARAMETERS_2_AUDIT_2_FAIL_CLOSED", H)
         self.assertIn("NOT_EXECUTED", H)
     def test_historical_protection(self):
