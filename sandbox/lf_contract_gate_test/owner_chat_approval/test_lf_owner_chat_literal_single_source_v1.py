@@ -77,19 +77,18 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
     def test_no_owner_cleartext_email_in_any_tracked_repository_file(self):
         # Compare hashes, never embed or print the owner's plaintext email.
         assert len(CLAUDE_HASH)==64
-        files=subprocess.check_output(['git','ls-files','-z'],cwd=ROOT).split(b'\x00')
-        # Mailbox-shaped tokens are hashed after lower/trim; the error displays
-        # only filename, never the sensitive email found.
-        pattern=re.compile(rb'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}')
-        for raw in files:
-            if not raw:
-                continue
-            file=ROOT / raw.decode('utf-8','surrogateescape')
-            if not file.is_file():
-                continue
-            for matched in pattern.findall(file.read_bytes()):
-                fingerprint=hashlib.sha256(matched.strip().lower()).hexdigest()
-                self.assertNotEqual(fingerprint,CLAUDE_HASH,str(file.relative_to(ROOT)))
+        # Native git scan covers ALL tracked blobs, including binary bytes;
+        # it is faster than opening files one by one in Python.
+        result=subprocess.run(
+            ['git','grep','--cached','-a','-n','-o','--no-color','-E',
+             r'[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}'],
+            cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
+        self.assertIn(result.returncode,(0,1),'GIT_EMAIL_SCAN_FAILED')
+        for hit in result.stdout.splitlines():
+            path,line,email=hit.split(b':',2)
+            fingerprint=hashlib.sha256(email.strip().lower()).hexdigest()
+            self.assertNotEqual(fingerprint,CLAUDE_HASH,
+                path.decode('utf-8','replace')+':'+line.decode('ascii','replace'))
 
     def test_single_shared_hash_seed_and_external_installation_variable(self):
         sql=(ROOT/MIGRATION).read_text(encoding='utf-8')
