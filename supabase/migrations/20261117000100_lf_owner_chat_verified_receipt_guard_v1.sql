@@ -5,25 +5,48 @@
 -- a model/proposer assertion as proof of the human speaker.
 BEGIN;
 
--- Fixed LF human authority: never inferred from a PR, profile, screen or order.
+-- Canonical human authority: ONE config row, UUID from LF project owner.
+-- Name is read from the public source by JOIN; never compared as text.
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_identity_v1(
   config_key text PRIMARY KEY CHECK (config_key='LF_OWNER'),
-  owner_identity text NOT NULL CHECK (owner_identity='Cristhian Lujan'),
-  channel_code text NOT NULL CHECK (channel_code='CHAT_ORCHESTRATOR_USER_TURN'),
+  project_code text NOT NULL,
+  owner_sub uuid NOT NULL,
+  repository_full_name text NOT NULL CHECK
+    (repository_full_name ~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'),
+  channel_code text NOT NULL CHECK (length(channel_code)>=8),
+  authority_role_code text NOT NULL CHECK (length(authority_role_code)>=8),
   fixed boolean NOT NULL DEFAULT true CHECK (fixed)
 );
-INSERT INTO private.lf_owner_chat_identity_v1(config_key,owner_identity,channel_code)
-VALUES ('LF_OWNER','Cristhian Lujan','CHAT_ORCHESTRATOR_USER_TURN')
+INSERT INTO private.lf_owner_chat_identity_v1
+ (config_key,project_code,owner_sub,repository_full_name,channel_code,authority_role_code)
+SELECT 'LF_OWNER',p.project_code,p.owner_sub,
+  'cristhianlujan/claude-persona-lf-patch',
+  'CHAT_ORCHESTRATOR_USER_TURN','SUPER_ADMIN'
+FROM public.lf_ig_project_owner_v2 p WHERE p.project_code='LF'
 ON CONFLICT(config_key) DO NOTHING;
 DO $fixed_owner$
 BEGIN
- IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_identity_v1
-   WHERE config_key='LF_OWNER' AND owner_identity='Cristhian Lujan'
-   AND channel_code='CHAT_ORCHESTRATOR_USER_TURN' AND fixed=true)
+ IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_identity_v1 c
+   JOIN public.lf_ig_project_owner_v2 p
+     ON p.project_code=c.project_code AND p.owner_sub=c.owner_sub
+   WHERE c.config_key='LF_OWNER' AND c.fixed
+     AND c.repository_full_name IS NOT NULL AND c.channel_code IS NOT NULL
+     AND c.authority_role_code IS NOT NULL)
  THEN RAISE EXCEPTION 'CHAT_OWNER_FIXED_IDENTITY_CONTRACT_DRIFT'; END IF;
 END $fixed_owner$;
 REVOKE ALL ON private.lf_owner_chat_identity_v1
-FROM PUBLIC,anon,authenticated,service_role;
+ FROM PUBLIC,anon,authenticated,service_role;
+
+CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_owner_sub_v1()
+RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO ''
+AS $fn$
+ SELECT c.owner_sub FROM private.lf_owner_chat_identity_v1 c
+ JOIN public.lf_ig_project_owner_v2 p
+   ON p.project_code=c.project_code AND p.owner_sub=c.owner_sub
+ WHERE c.config_key='LF_OWNER' AND c.fixed
+$fn$;
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_owner_sub_v1()
+ FROM PUBLIC,anon,authenticated,service_role;
 
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_action_catalog_v1 (
   action_code text PRIMARY KEY,
