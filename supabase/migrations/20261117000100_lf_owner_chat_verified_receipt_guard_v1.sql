@@ -632,8 +632,7 @@ BEGIN
  IF p_namespace IS DISTINCT FROM 'OWNER_CHAT' OR
     p_code IS DISTINCT FROM 'SESSION_EMAIL_SHA256' OR
     p_channel_code NOT IN ('CHAT_CLAUDE_SESSION','CHAT_GPT_SESSION') OR
-    coalesce(p_new_sha256,'') !~ '^[a-f0-9]{64}
- OR
+    coalesce(p_new_sha256,'') !~ '^[a-f0-9]{64}$' OR
     p_new_activo IS NULL OR coalesce(p_expected_revision,0)<1
  THEN RAISE EXCEPTION 'IG_PARAMETER_CHANGE_NOT_CATALOGUED'; END IF;
  SELECT * INTO oldrow FROM private.lf_ig_parameters_v1
