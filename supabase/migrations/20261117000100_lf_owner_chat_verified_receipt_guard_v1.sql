@@ -286,7 +286,7 @@ REVOKE ALL ON private.lf_owner_chat_promotion_leases_v1
   FROM PUBLIC,anon,authenticated,service_role;
 
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_promote_batch_v1(
- p_order_id uuid,p_promotion_ids text[],p_expected_owner_subject text,p_note text
+ p_order_id uuid,p_promotion_ids text[],p_note text
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
@@ -296,13 +296,9 @@ DECLARE
   v_promotion_id text;v_r record;v_dec jsonb;v_apply jsonb;v_done integer:=0;
   v_xid text:=pg_current_xact_id()::text;
 BEGIN
-  IF p_expected_owner_subject IS DISTINCT FROM
-      (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
-  THEN RAISE EXCEPTION 'CHAT_OWNER_FIXED_OWNER_REQUIRED'; END IF;
   IF coalesce(array_length(p_promotion_ids,1),0)=0
     OR array_position(p_promotion_ids,NULL) IS NOT NULL
     OR (SELECT count(*) <> count(DISTINCT i) FROM unnest(p_promotion_ids) AS i)
-    OR nullif(btrim(coalesce(p_expected_owner_subject,'')),'') IS NULL
     OR nullif(btrim(coalesce(p_note,'')),'') IS NULL
   THEN RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_BATCH_INPUT_INVALID'; END IF;
 
@@ -329,11 +325,11 @@ BEGIN
     RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_COHORT_OR_SNAPSHOT_STALE';
   END IF;
   v_scope:=jsonb_build_object('action','PROMOTE_RULE_BATCH',
-    'repository','cristhianlujan/claude-persona-lf-patch',
+    'repository',(SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER'),
     'execution_id',v_run,'rule_codes',to_jsonb(v_codes),
     'rule_snapshots_sha256',v_snap);
   v_receipt:=private.fn_lf_owner_chat_consume_v1(
-    p_order_id,'PROMOTE_RULE_BATCH',v_scope,p_expected_owner_subject,
+    p_order_id,'PROMOTE_RULE_BATCH',v_scope,
     'PROMOTION_BATCH_TX:'||v_xid);
   IF v_receipt->>'status' IS DISTINCT FROM 'CONSUMED' THEN
     RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_NO_VALID_ORDER:%',v_receipt;
@@ -349,7 +345,7 @@ BEGIN
     WHERE promotion_id=ANY(p_promotion_ids) ORDER BY rule_code
   LOOP
     v_dec:=public.lf_rule_promotion_decide_v1(v_promotion_id,'APPROVE',
-      'HUMAN:'||p_expected_owner_subject,
+      'HUMAN:'||private.fn_lf_owner_chat_owner_sub_v1()::text,
       'ORQUESTACION_CHAT_ORDER:'||p_order_id::text||' '||p_note);
     IF v_dec->>'status' IS DISTINCT FROM 'APPROVED' THEN
       RAISE EXCEPTION 'CHAT_OWNER_PROMOTION_DECIDE_DENIED:%',v_dec;
@@ -370,7 +366,7 @@ BEGIN
     'snapshot_cohort_sha256',v_snap);
 END;
 $fn$;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_promote_batch_v1(uuid,text[],text,text)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_promote_batch_v1(uuid,text[],text)
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- Guard the exact live HUMAN consumer; preserve AUTO_SCORE_V1 logic.
