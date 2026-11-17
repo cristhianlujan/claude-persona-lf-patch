@@ -16,6 +16,7 @@ from unittest import mock
 
 ROOT=Path(__file__).resolve().parents[3]
 HERE=Path(__file__).resolve().parent
+sys.path.insert(0,str(HERE))
 sys.path.insert(0,str(ROOT/"sandbox/lf_contract_gate_test/s28_ci_lane_router"))
 import lf_pase_merge_route_v1 as route
 import lf_repository_path_admission as admission
