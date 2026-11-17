@@ -596,7 +596,7 @@ BEGIN
   'parameter_namespace',OLD.parameter_namespace,'parameter_code',OLD.parameter_code,
   'channel_code',OLD.channel_code,'expected_revision',OLD.revision,
   'new_value_sha256',NEW.value_sha256,'new_activo',NEW.activo);
- IF NOT FOUND OR ord.action_code IS DISTINCT FROM 'UPDATE_IG_PARAMETER' OR
+ IF ord.order_id IS NULL OR ord.action_code IS DISTINCT FROM 'UPDATE_IG_PARAMETER' OR
     ord.actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() OR
     ord.identity_mode IS DISTINCT FROM 'ACCOUNT_SESSION' OR
     ord.proposer_subject=ord.registrar_subject OR
