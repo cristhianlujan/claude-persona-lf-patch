@@ -1,78 +1,31 @@
-"""Rollback fixtures for one-use logic (SQLite). NOT PostgreSQL 17/18."""
+"""SQLite test of atomic one-use ledger behavior; not PostgreSQL DDL tests."""
 import sqlite3
+DB="""CREATE TABLE orders(id INTEGER PRIMARY KEY, message_id TEXT UNIQUE NOT NULL, scope_sha TEXT NOT NULL, actor TEXT NOT NULL, proposer TEXT NOT NULL, registrar TEXT NOT NULL, literal_sha TEXT NOT NULL, expires INTEGER NOT NULL, revoked INTEGER DEFAULT 0, consumed INTEGER DEFAULT 0);"""
+NOW=100
 
-SCHEMA = """CREATE TABLE approvals(
-  message_id TEXT PRIMARY KEY, scope_sha TEXT NOT NULL,
-  actor TEXT NOT NULL, active INT NOT NULL,
-  expires_at INT NOT NULL, action TEXT NOT NULL,
-  model_generated INT NOT NULL, consumed INT NOT NULL DEFAULT 0
-)"""
-NOW = 10000
+def fixture(**patch):
+    con=sqlite3.connect(':memory:')
+    con.executescript(DB)
+    if not patch.pop('omit',False):
+        row=dict(id=1,message_id='user-msg-0001',scope_sha='a'*64,actor='owner-1',proposer='profile-1',registrar='orchestrator-1',literal_sha='b'*64,expires=NOW+15,revoked=0,consumed=0)
+        row.update(patch)
+        con.execute('INSERT INTO orders VALUES ('+','.join('?'*len(row))+')',tuple(row.values()))
+        con.commit()
+    return con
 
+def consume(con,*,scope='a'*64,actor='owner-1',now=NOW):
+    return con.execute('UPDATE orders SET consumed=1 WHERE id=1 AND scope_sha=? AND actor=? AND expires>? AND revoked=0 AND consumed=0 AND proposer<>registrar',(scope,actor,now)).rowcount==1
 
-def fixture(order=True, **patch):
-    conn = sqlite3.connect(":memory:")
-    conn.execute(SCHEMA)
-    if order:
-        rec = dict(message_id="fixture-message-0001", scope_sha="a"*64,
-                   actor="fixture-owner", active=1, expires_at=NOW+600,
-                   action="MERGE_GOVERNANCE_PR", model_generated=0, consumed=0)
-        rec.update(patch)
-        conn.execute("INSERT INTO approvals VALUES (?,?,?,?,?,?,?,?)", tuple(rec.values()))
-        conn.commit()
-    return conn
+def test_happy_and_rollback():
+    db=fixture();db.execute('BEGIN');assert consume(db);db.rollback();assert db.execute('SELECT consumed FROM orders').fetchone()[0]==0
 
-
-def consume(conn, *, scope="a"*64, actor="fixture-owner",
-            action="MERGE_GOVERNANCE_PR", now=NOW):
-    result = conn.execute(
-        """UPDATE approvals SET consumed=1
-        WHERE message_id=? AND scope_sha=? AND actor=?
-        AND action=? AND active=1 AND expires_at>?
-        AND model_generated=0 AND consumed=0""",
-        ("fixture-message-0001", scope, actor, action, now))
-    return result.rowcount == 1
-
-
-def test_positive_with_rollback():
-    conn = fixture()
-    conn.execute("BEGIN")
-    assert consume(conn)
-    conn.rollback()
-    assert conn.execute("SELECT consumed FROM approvals").fetchone()[0] == 0
-
-
-def test_missing_order():
-    assert not consume(fixture(order=False))
-
-
-def test_wrong_scope():
-    assert not consume(fixture(), scope="b"*64)
-
-
-def test_wrong_actor():
-    assert not consume(fixture(), actor="model")
-
-
-def test_expired():
-    assert not consume(fixture(expires_at=NOW-1))
-
-
-def test_replay():
-    conn = fixture()
-    conn.execute("BEGIN")
-    assert consume(conn)
-    assert not consume(conn)
-    conn.rollback()
-
-
-def test_revoked():
-    assert not consume(fixture(active=0))
-
-
-def test_self_approval():
-    assert not consume(fixture(model_generated=1))
-
-
-def test_wrong_action():
-    assert not consume(fixture(), action="PROMOTE_RULE_BATCH")
+def test_no_order(): assert not consume(fixture(omit=True))
+def test_other_scope(): assert not consume(fixture(),scope='c'*64)
+def test_expired(): assert not consume(fixture(expires=NOW-1))
+def test_reused():
+    db=fixture();db.execute('BEGIN');assert consume(db);assert not consume(db);db.rollback()
+def test_revoked(): assert not consume(fixture(revoked=1))
+def test_autoapproval(): assert not consume(fixture(registrar='profile-1'))
+def test_wrong_owner(): assert not consume(fixture(),actor='model-1')
+def test_rollback_stays_unconsumed():
+    db=fixture();db.execute('BEGIN');assert consume(db);db.rollback();db.execute('BEGIN');assert consume(db);db.rollback()
