@@ -27,8 +27,8 @@ class CandidateSource(unittest.TestCase):
         for x in ("UPDATE lf_ops.reglas", "INSERT INTO lf_ops.reglas", "DELETE FROM lf_ops.reglas"):
             self.assertNotIn(x, M)
     def test_rollback_harness_not_fake_pass(self):
-        self.assertIn("print(\u0027BEGIN;\u0027)", S)
-        self.assertIn("print(\u0027ROLLBACK;\u0027)", S)
+        self.assertIn("print('BEGIN;')", S)
+        self.assertIn("print('ROLLBACK;')", S)
         self.assertIn("LF_PG_ISOLATED_TEST", S)
         self.assertNotIn("\\ir", H)
         self.assertIn("PASS_IG_RETENTION_CANDIDATE_PARAMETERS_2_AUDIT_2_FAIL_CLOSED", H)
