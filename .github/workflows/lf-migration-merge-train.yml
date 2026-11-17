@@ -583,9 +583,12 @@ jobs:
             CROSS JOIN target t
             JOIN private.lf_owner_chat_identity_v1 cfg
               ON cfg.config_key='LF_OWNER'
+            JOIN public.lf_ig_project_owner_v2 po
+              ON po.owner_sub=cfg.owner_sub AND po.project_code=cfg.project_code
             WHERE o.action_code='MERGE_GOVERNANCE_PR'
               AND o.scope=t.closed_scope
-              AND o.actor_subject=cfg.owner_identity
+              AND o.actor_sub=cfg.owner_sub
+              AND cfg.repository_full_name=:'lf_repo'
               AND o.source_kind=cfg.channel_code
               AND o.consumed_at IS NULL
               AND o.expires_at>clock_timestamp()
@@ -597,9 +600,6 @@ jobs:
           SELECT CASE WHEN selected.n=1
            THEN coalesce((private.fn_lf_owner_chat_train_merge_gate_v1(
               selected.id,:'lf_repo',(:'lf_pr')::integer,:'lf_head',
-              (SELECT owner_identity
-                FROM private.lf_owner_chat_identity_v1
-                WHERE config_key='LF_OWNER'),
               'TRAIN-'||:'lf_run'))->>'status','BLOCKED')
            ELSE 'BLOCKED_NO_UNIQUE_OWNER_CHAT_ORDER' END
           FROM selected;
