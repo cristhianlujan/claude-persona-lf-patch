@@ -60,7 +60,9 @@ CREATE FUNCTION programacion.fn_v09_sha256_jsonb(j jsonb)
  RETURNS text LANGUAGE SQL IMMUTABLE STRICT AS $$
  SELECT encode(extensions.digest(convert_to(programacion.fn_v09_canonical_jsonb_text(j),'UTF8'),'sha256'),'hex') $$;
 CREATE TABLE public.lf_ig_project_owner_v2(
- project_code text PRIMARY KEY, owner_sub uuid NOT NULL, owner_name text NOT NULL);
+ project_code text PRIMARY KEY, owner_sub uuid NOT NULL, owner_name text NOT NULL,
+ identity_mode text NOT NULL DEFAULT 'UNVERIFIED_CHAT_DECLARATION'
+ CHECK (identity_mode='UNVERIFIED_CHAT_DECLARATION'));
 INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,owner_name)
  VALUES('LF','__OWNER_SUB__'::uuid,'__OWNER_NAME__');
 INSERT INTO public.lf_ig_project_owner_v2(project_code,owner_sub,owner_name)
@@ -158,6 +160,39 @@ BEGIN
    'rule_snapshots_sha256',snap);
   lit:='APRUEBO '||left(programacion.fn_v09_sha256_jsonb(sc),12)||
      ' '||programacion.fn_v09_canonical_jsonb_text(sc);
+  -- Claude active session; GPT intentionally has no account row.
+  IF (SELECT count(*) FROM private.lf_owner_chat_authorized_accounts_v1
+        WHERE channel_code='__CLAUDE_CHANNEL__' AND activo
+          AND account_email_sha256='__CLAUDE_HASH__')<>1 OR
+     (SELECT count(*) FROM private.lf_owner_chat_authorized_accounts_v1
+        WHERE channel_code='__GPT_CHANNEL__')<>0
+  THEN RAISE EXCEPTION 'SESSION_ACCOUNT_SEED_DRIFT'; END IF;
+  -- No hash, wrong SHA, unseeded GPT, inactive Claude: all fail closed.
+  INSERT INTO private.lf_owner_chat_authorized_accounts_v1
+    (owner_sub,channel_code,account_email_sha256,activo)
+    VALUES ('__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__',repeat('e',64),false);
+  FOR n IN 1..4 LOOP
+    BEGIN
+      PERFORM private.fn_lf_owner_chat_register_v1(
+        'fixture-recovery-chat-0001','fixture-recovery-neg-session-'||n,
+        '__CHANNEL__','__OWNER_SUB__'::uuid,
+        CASE WHEN n=3 THEN '__GPT_CHANNEL__' ELSE '__CLAUDE_CHANNEL__' END,
+        CASE n WHEN 1 THEN NULL WHEN 2 THEN repeat('f',64)
+               WHEN 3 THEN '__CLAUDE_HASH__' ELSE repeat('e',64) END,
+        'fixture-proposer-01','fixture-recorder-01',clock_timestamp(),lit,sc);
+      RAISE EXCEPTION 'NEG_UNAUTHORIZED_SESSION_ACCEPTED:%',n;
+    EXCEPTION WHEN OTHERS THEN
+      IF SQLERRM LIKE 'NEG_UNAUTHORIZED_SESSION_ACCEPTED:%' THEN RAISE; END IF;
+      IF SQLERRM NOT LIKE 'CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED%'
+      THEN RAISE EXCEPTION 'NEG_SESSION_WRONG_REASON:%:%',n,SQLERRM; END IF;
+    END;
+  END LOOP;
+  IF EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace
+    WHERE ns.nspname='private' AND p.proname='fn_lf_owner_chat_register_v1'
+      AND pg_get_function_arguments(p.oid) LIKE '%p_identity_mode%')
+  THEN RAISE EXCEPTION 'NEG_MODEL_CAN_FIX_SESSION_MODE'; END IF;
+  IF EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1)
+  THEN RAISE EXCEPTION 'NEG_SESSION_CREATED_RECEIPT'; END IF;
   -- Same displayed name is NOT identity: a different owner_sub must fail.
   IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_identity_v1 c
     JOIN public.lf_ig_project_owner_v2 p
@@ -267,6 +302,15 @@ BEGIN
    '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
+  IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_orders_v1 o
+    WHERE o.order_id=oid AND o.channel_code='__CLAUDE_CHANNEL__'
+      AND o.session_account_sha256='__CLAUDE_HASH__'
+      AND o.identity_mode='ACCOUNT_SESSION' AND o.sent_at_lima LIKE '%-05:00'
+      AND o.literal_text=lit)
+  THEN RAISE EXCEPTION 'RECOVERY_CLAUDE_RECEIPT_NOT_VERIFIED'; END IF;
+  IF (SELECT identity_mode FROM public.lf_ig_project_owner_v2 WHERE project_code='LF')
+       IS DISTINCT FROM 'UNVERIFIED_CHAT_DECLARATION'
+  THEN RAISE EXCEPTION 'RECOVERY_PUBLIC_OWNER_MODE_MUTATED'; END IF;
   v:=private.fn_lf_owner_chat_promote_batch_v1(oid,ids,
      'RECOVERY_FIXTURE_ONLY');
   IF v->>'status' IS DISTINCT FROM 'APPLIED' OR (v->>'count')::integer<>6
