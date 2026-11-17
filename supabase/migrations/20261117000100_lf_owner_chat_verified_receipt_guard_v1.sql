@@ -298,21 +298,26 @@ $fn$;
 
 -- Revocation is a separate owner USER event, registered by trusted transport.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_revoke_v1(
- p_order_id uuid,p_revocation_message_id text,p_owner_sub uuid,p_channel_code text,p_session_account_sha256 text,p_reason text
+ p_order_id uuid,p_revocation_message_id text,p_owner_sub uuid,p_channel_code text,p_session_account_email text,p_reason text
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
 DECLARE v private.lf_owner_chat_orders_v1%ROWTYPE;
+  v_email_sha text;
 BEGIN
+ IF p_session_account_email IS NULL OR nullif(btrim(p_session_account_email),'') IS NULL
+ THEN RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_REVOKE_INVALID'); END IF;
+ v_email_sha:=encode(extensions.digest(
+      convert_to(lower(btrim(p_session_account_email)),'UTF8'),'sha256'),'hex');
  SELECT * INTO v FROM private.lf_owner_chat_orders_v1 WHERE order_id=p_order_id FOR UPDATE;
  IF NOT FOUND OR v.actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1()
     OR p_owner_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() OR
     p_channel_code IS DISTINCT FROM v.channel_code OR
-    p_session_account_sha256 IS DISTINCT FROM v.session_account_sha256 OR
+    v_email_sha IS DISTINCT FROM v.session_account_sha256 OR
     v.identity_mode IS DISTINCT FROM 'ACCOUNT_SESSION' OR
     NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
       WHERE a.owner_sub=v.actor_sub AND a.channel_code=p_channel_code
-        AND a.account_email_sha256=p_session_account_sha256 AND a.activo) OR
+        AND a.account_email_sha256=v_email_sha AND a.activo) OR
     v.consumed_at IS NOT NULL OR length(coalesce(p_revocation_message_id,''))<12
     OR nullif(btrim(p_reason),'') IS NULL OR
     p_revocation_message_id=v.source_message_id THEN
