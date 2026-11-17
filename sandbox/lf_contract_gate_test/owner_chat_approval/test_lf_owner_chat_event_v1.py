@@ -1,134 +1,48 @@
-"""Synthetic cryptographically real fixtures, NEVER real ChatGPT receipts."""
-import base64
 from datetime import datetime, timedelta, timezone
 import pytest
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from scripts.lf_owner_chat_event_v1 import ApprovalRejected, canonical, digest, verify_event
+from scripts.lf_owner_chat_event_v1 import (
+    ChatOrderRejected, canonical, expected_order, sha256_literal, verify_order
+)
 
-NOW = datetime(2026, 11, 16, 23, 54, tzinfo=timezone.utc)
-CHALLENGE = "LF-ABCDE1234567"
-OWNER = "test-provider-subject-owner"
-RULES = ["B2B-RULE-AUTH-004", "B2B-RULE-AUTH-005"]
-PR_SCOPE = {"action":"MERGE_GOVERNANCE_PR", "repository":"cristhianlujan/claude-persona-lf-patch",
-            "pr_number":4061, "head_sha":"a"*40}
-RULE_SCOPE = {"action":"PROMOTE_RULE_BATCH", "repository":PR_SCOPE["repository"],
-              "pr_number":4061, "head_sha":"a"*40,
-              "execution_id":"EXEC-TEST-SYNTHETIC-ONLY", "rule_codes":RULES,
-              "rule_snapshots_sha256":"b"*64}
+NOW=datetime(2026,11,17,2,38,tzinfo=timezone.utc)
+SCOPE={"action":"MERGE_GOVERNANCE_PR","repository":"cristhianlujan/claude-persona-lf-patch","pr_number":4063,"head_sha":"a"*40}
+RULE_SCOPE={"action":"PROMOTE_RULE_BATCH","repository":SCOPE["repository"],"execution_id":"EXEC-TEST-1234567890","rule_codes":["RULE-001","RULE-002"],"rule_snapshots_sha256":"b"*64}
+ACTORS={"owner_subject":"orchestrator-owner-1","proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
 
+def event(scope=None, catalog=None, **patch):
+    scope=scope or SCOPE
+    ev={"event_kind":"USER_MESSAGE","origin":"CHAT_ORCHESTRATOR_USER_TURN","actor_subject":ACTORS["owner_subject"],"conversation_id":"conversation-test-001","message_id":"message-test-001","text_literal":expected_order(scope,catalog),"sent_at":(NOW-timedelta(minutes=1)).isoformat().replace("+00:00","Z"),"scope":scope}
+    ev.update(patch)
+    return ev
 
-def packet_for(key, scope=None, **patch):
-    event = dict(schema_version="LF_OWNER_CHAT_SIGNED_MESSAGE_V1",
-                 event_type="USER_MESSAGE", source_platform="CHATGPT",
-                 issuer_kind="TRUSTED_FIRST_PARTY_INGRESS", actor_subject=OWNER,
-                 conversation_id="fixture-conversation-001", message_id="fixture-message-0001",
-                 challenge_id=CHALLENGE, literal_text=f"APRUEBO {CHALLENGE}",
-                 sent_at=NOW.isoformat().replace("+00:00", "Z"),
-                 expires_at=(NOW+timedelta(minutes=10)).isoformat().replace("+00:00", "Z"),
-                 scope=scope or PR_SCOPE)
-    event.update(patch)
-    raw = canonical(event)
-    b = lambda x: base64.urlsafe_b64encode(x).rstrip(b"=").decode()
-    return {"key_id":"fixture-only-kid", "payload_b64":b(raw),
-            "signature_b64":b(key.sign(raw))}
+def verify(ev=None, scope=None, **changes):
+    return verify_order(event=ev if ev is not None else event(scope),expected_scope=scope or SCOPE,now=NOW,**(ACTORS|changes))
 
+def reject(code, ev=None, scope=None, **changes):
+    with pytest.raises(ChatOrderRejected,match=code): verify(ev,scope,**changes)
 
-def verified(packet, pub, expected=PR_SCOPE, **kwargs):
-    args = dict(trusted_public_key=pub, trusted_key_id="fixture-only-kid",
-                trusted_owner_subject=OWNER, expected_scope=expected,
-                now=NOW+timedelta(minutes=1))
-    args.update(kwargs)
-    return verify_event(packet, **args)
+def test_happy_pr_and_batch():
+    for scope in (SCOPE,RULE_SCOPE):
+        r=verify(scope=scope)
+        assert r['scope_sha256']==sha256_literal(canonical(scope))
+        assert r['sent_at_lima'].endswith('-05:00')
+        assert r['text_literal'].startswith('APRUEBO ')
 
-
-def deny(code, packet, pub, **kwargs):
-    with pytest.raises(ApprovalRejected, match=code):
-        verified(packet, pub, **kwargs)
-
-
-def test_positive_pr_and_rule_scopes():
-    key = Ed25519PrivateKey.generate()
-    for scope in (PR_SCOPE, RULE_SCOPE):
-        receipt = verified(packet_for(key, scope), key.public_key(), expected=scope)
-        assert receipt["scope_sha256"] == digest(canonical(scope))
-        assert receipt["consumed"] is False and receipt["signature_verified"] is True
-
-
-def test_absent():
-    key = Ed25519PrivateKey.generate()
-    deny("PACKET_FORMAT_INVALID", {}, key.public_key())
-
-
-def test_wrong_scope():
-    key = Ed25519PrivateKey.generate()
-    deny("EXACT_SCOPE_MISMATCH", packet_for(key), key.public_key(),
-         expected={**PR_SCOPE, "pr_number":4062})
-
-
-def test_wrong_head():
-    key = Ed25519PrivateKey.generate()
-    deny("EXACT_SCOPE_MISMATCH", packet_for(key), key.public_key(),
-         expected={**PR_SCOPE, "head_sha":"c"*40})
-
-
-def test_expired():
-    key = Ed25519PrivateKey.generate()
-    deny("CHAT_APPROVAL_EXPIRED_OR_FUTURE", packet_for(key), key.public_key(),
-         now=NOW+timedelta(minutes=11))
-
-
-def test_wrong_identity():
-    key = Ed25519PrivateKey.generate()
-    deny("WRONG_OWNER_IDENTITY", packet_for(key, actor_subject="model"),
-         key.public_key())
-
-
-def test_model_self_approval():
-    key = Ed25519PrivateKey.generate()
-    deny("NO_EXPLICIT_CHALLENGE_APPROVAL",
-         packet_for(key, literal_text="El asistente aprueba la propuesta"), key.public_key())
-
-
-def test_wrong_signer():
-    key = Ed25519PrivateKey.generate()
-    deny("INVALID_SIGNATURE", packet_for(key), Ed25519PrivateKey.generate().public_key())
-
-
-def test_tampered_payload():
-    key = Ed25519PrivateKey.generate()
-    packet = packet_for(key)
-    raw = base64.urlsafe_b64decode(packet["payload_b64"] + "="*(-len(packet["payload_b64"])%4))
-    packet["payload_b64"] = base64.urlsafe_b64encode(raw.replace(b"4061",b"4062")).rstrip(b"=").decode()
-    deny("INVALID_SIGNATURE", packet, key.public_key())
-
-
-def test_missing_trust_root():
-    key = Ed25519PrivateKey.generate()
-    deny("TRUSTED_CHAT_INGRESS_NOT_CONFIGURED", packet_for(key),
-         key.public_key(), trusted_public_key=None)
-
-
-def test_wrong_rule_cohort():
-    key = Ed25519PrivateKey.generate()
-    deny("EXACT_SCOPE_MISMATCH", packet_for(key, RULE_SCOPE), key.public_key(),
-         expected={**RULE_SCOPE,"rule_codes":[RULES[0]]})
-
-
-def test_duplicate_rule_codes():
-    key = Ed25519PrivateKey.generate()
-    deny("NONEXACT_RULE_COHORT", packet_for(key,
-         {**RULE_SCOPE, "rule_codes":[RULES[0],RULES[0]]}),
-         key.public_key(), expected=RULE_SCOPE)
-
-
-def test_future_message_timestamp():
-    key = Ed25519PrivateKey.generate()
-    deny("CHAT_APPROVAL_EXPIRED_OR_FUTURE",
-         packet_for(key, sent_at=(NOW+timedelta(minutes=5)).isoformat().replace("+00:00","Z")),
-         key.public_key())
-
-
-def test_wrong_challenge():
-    key = Ed25519PrivateKey.generate()
-    deny("NO_EXPLICIT_CHALLENGE_APPROVAL",
-         packet_for(key, literal_text="APRUEBO LF-ZYXWV9876543"), key.public_key())
+def test_no_order(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_literal=''))
+def test_wrong_scope(): reject('WRONG_EXACT_SCOPE', event(),{**SCOPE,'pr_number':4062})
+def test_wrong_head(): reject('WRONG_EXACT_SCOPE', event(),{**SCOPE,'head_sha':'b'*40})
+def test_expired(): reject('EXPIRED_ORDER',event(sent_at=(NOW-timedelta(minutes=16)).isoformat().replace('+00:00','Z')))
+def test_wrong_owner(): reject('WRONG_OWNER',event(actor_subject='untrusted-model'))
+def test_model_claim(): reject('NOT_AN_ORCHESTRATED_USER_TURN',event(event_kind='ASSISTANT_MESSAGE'))
+def test_forged_origin(): reject('NOT_AN_ORCHESTRATED_USER_TURN',event(origin='MODEL_GENERATED_JSON'))
+def test_same_proposer_and_registrar(): reject('NO_PROPOSER_REGISTRAR_SEPARATION',event(),registrar_subject=ACTORS['proposer_subject'])
+def test_registrar_same_owner(): reject('NO_PROPOSER_REGISTRAR_SEPARATION',event(),registrar_subject=ACTORS['owner_subject'])
+def test_tamper_literal(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_literal=expected_order(SCOPE)+'-EDIT'))
+def test_hash_truncated_wrong(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_literal='APRUEBO deadbeefdead '+canonical(SCOPE)))
+def test_duplicate_rules(): reject('INVALID_RULE_SET',event(),{**RULE_SCOPE,'rule_codes':['RULE-001','RULE-001']})
+def test_invalid_action(): reject('ACTION_OR_FIELDS_NOT_CATALOGUED',event(),{**SCOPE,'action':'DELETE_DATABASE'})
+def test_future(): reject('FUTURE_MESSAGE',event(sent_at=(NOW+timedelta(minutes=2)).isoformat().replace('+00:00','Z')))
+def test_catalog_extension():
+    scope={'action':'FUTURE_SCOPED_ACTION','repository':SCOPE['repository'],'thing':'immutable'}
+    catalog={'FUTURE_SCOPED_ACTION':frozenset(scope)}
+    assert verify_order(event=event(scope,catalog=catalog),expected_scope=scope,now=NOW,catalog=catalog,**ACTORS)['scope']==scope
