@@ -15,7 +15,7 @@ import unittest
 import uuid
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from sandbox.lf_contract_gate_test.owner_chat_approval.owner_chat_fixture_v1 import OWNER, OWNER_NAME, OTHER_SUB, REPO, CHANNEL
+from sandbox.lf_contract_gate_test.owner_chat_approval.owner_chat_fixture_v1 import OWNER, OWNER_NAME, OTHER_SUB, REPO, CHANNEL, CHANNEL_CLAUDE, CHANNEL_GPT, CLAUDE_HASH
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "sandbox/lf_contract_gate_test/edge_function_operation"))
@@ -200,7 +200,7 @@ BEGIN
       ' '||programacion.fn_v09_canonical_jsonb_text(wrong_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-wrong-scope-01','__CHANNEL__',
-   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),msg,wrong_sc);
   oid:=(v->>'order_id')::uuid;
   BEGIN
@@ -214,7 +214,7 @@ BEGIN
   END;
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-expired-0001','__CHANNEL__',
-   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   UPDATE private.lf_owner_chat_orders_v1 SET
@@ -231,11 +231,11 @@ BEGIN
   END;
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-revoked-0001','__CHANNEL__',
-   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_revoke_v1(oid,'fixture-recovery-revoke-msg',
-     '__OWNER_SUB__','fixture-only');
+     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-only');
   IF v->>'status' IS DISTINCT FROM 'REVOKED'
     THEN RAISE EXCEPTION 'NEG_REVOKE_SETUP:%',v; END IF;
   BEGIN
@@ -250,7 +250,7 @@ BEGIN
   BEGIN
     PERFORM private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
      'fixture-recovery-self-000001','__CHANNEL__',
-     '__OWNER_SUB__','fixture-proposer-01','fixture-proposer-01',
+     '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-proposer-01',
      clock_timestamp(),lit,sc);
     RAISE EXCEPTION 'NEG_SELF_APPROVAL_UNBLOCKED';
   EXCEPTION WHEN OTHERS THEN
@@ -264,7 +264,7 @@ BEGIN
   -- Valid original owner USER order: real decide_v1 and real apply_v1.
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
    'fixture-recovery-valid-000001','__CHANNEL__',
-   '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
+   '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
    clock_timestamp(),lit,sc);
   oid:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_promote_batch_v1(oid,ids,
@@ -288,7 +288,7 @@ BEGIN
        ' '||programacion.fn_v09_canonical_jsonb_text(pr_sc);
   v:=private.fn_lf_owner_chat_register_v1('fixture-recovery-chat-0001',
     'fixture-recovery-merge-000001','__CHANNEL__',
-    '__OWNER_SUB__','fixture-proposer-01','fixture-recorder-01',
+    '__OWNER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01','fixture-recorder-01',
     clock_timestamp(),msg,pr_sc);
   pr_order:=(v->>'order_id')::uuid;
   v:=private.fn_lf_owner_chat_train_merge_gate_v1(pr_order,
@@ -314,7 +314,9 @@ SETUP=(SETUP.replace("__OWNER_SUB__",OWNER).replace("__OTHER_SUB__",OTHER_SUB)
        .replace("__OWNER_NAME__",OWNER_NAME))
 TEST=(TEST.replace("__OWNER_SUB__",OWNER).replace("__OTHER_SUB__",OTHER_SUB)
        .replace("__OWNER_NAME__",OWNER_NAME).replace("__REPO__",REPO)
-       .replace("__CHANNEL__",CHANNEL))
+       .replace("__CHANNEL__",CHANNEL)
+       .replace("__CLAUDE_CHANNEL__",CHANNEL_CLAUDE).replace("__GPT_CHANNEL__",CHANNEL_GPT)
+       .replace("__CLAUDE_HASH__",CLAUDE_HASH))
 
 
 class RecoveryRealDecidePgDual(unittest.TestCase):
