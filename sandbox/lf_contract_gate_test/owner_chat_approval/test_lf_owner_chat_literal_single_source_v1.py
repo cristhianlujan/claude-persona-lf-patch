@@ -31,6 +31,7 @@ CHANNEL_PATTERN = re.compile("CHAT_ORCHESTRATOR_" + "USER_TURN")
 CLAUDE_CHANNEL_PATTERN = re.compile("CHAT_CLAUDE_" + "SESSION")
 GPT_CHANNEL_PATTERN = re.compile("CHAT_GPT_" + "SESSION")
 CLAUDE_EMAIL_SHA_PATTERN = re.compile("e9ff5f5f431ad1a7" + "fdea5aeda30fcbad4bd48d2f0d73231e9383682098c4e258")
+EMAIL_TOKEN_RE = re.compile(rb'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}')
 
 
 
@@ -74,6 +75,12 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
         self.assertIn("p_session_account_email text",sql)
         self.assertIn("convert_to(lower(btrim(p_session_account_email))",sql)
 
+    def test_mailbox_scanner_detects_mixed_case_plaintext(self):
+        sample=(b'fixture.account'+b'@'+b'GmAiL.CoM')
+        self.assertEqual(EMAIL_TOKEN_RE.findall(sample),[sample])
+        self.assertEqual(hashlib.sha256(sample.lower()).hexdigest(),
+                         hashlib.sha256(sample.strip().lower()).hexdigest())
+
     def test_no_owner_cleartext_email_in_any_tracked_repository_file(self):
         # Compare hashes, never embed or print the owner's plaintext email.
         assert len(CLAUDE_HASH)==64
@@ -86,7 +93,7 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
              '@gmail.com'],
             cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
         self.assertIn(result.returncode,(0,1),'GIT_EMAIL_SCAN_FAILED')
-        tokens=re.compile(rb'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
+        tokens=EMAIL_TOKEN_RE
         for hit in result.stdout.splitlines():
             path,line,content=hit.split(b':',2)
             for email in tokens.findall(content):
