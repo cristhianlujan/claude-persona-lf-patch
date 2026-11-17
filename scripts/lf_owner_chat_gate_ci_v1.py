@@ -38,10 +38,8 @@ def main(argv=None):
     ):
         raise ChatOrderRejected('CANONICAL_ACCOUNT_SESSION_READBACK_INVALID')
     accounts=tuple((x['channel_code'],x['account_email_sha256'],x['activo']) for x in entries)
-    # One installation variable outside repository, not a user/event field.
-    owner_account_email=os.environ.get('OWNER_ACCOUNT_EMAIL')
-    if not owner_account_email:
-        raise ChatOrderRejected('OWNER_ACCOUNT_EMAIL_NOT_CONFIGURED')
+    # active channel account hashes arrive from the protected parameter table
+    # readback only; no OWNER mailbox environment variable is requested.
     proposer=os.getenv('LF_OWNER_CHAT_PROPOSER_SUBJECT')
     registrar=os.getenv('LF_OWNER_CHAT_REGISTRAR_SUBJECT')
     ingress=os.getenv('LF_OWNER_CHAT_INGRESS')
@@ -52,7 +50,6 @@ def main(argv=None):
     ev=json.loads(Path(args.orchestrator_user_event).read_text(encoding='utf-8'))
     scope=json.loads(Path(args.exact_expected_scope).read_text(encoding='utf-8'))
     receipt=verify_order(event=ev, expected_scope=scope, owner_sub=owner_sub, channel_code=channel_code, repository_full_name=repository_full_name,authorized_accounts=accounts,
-                         owner_account_email=owner_account_email,
                          proposer_subject=proposer, registrar_subject=registrar,
                          now=datetime.now(timezone.utc))
     Path(args.out_receipt).write_text(json.dumps(receipt,sort_keys=True,ensure_ascii=False)+'\n',encoding='utf-8')
