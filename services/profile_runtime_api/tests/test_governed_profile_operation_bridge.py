@@ -1690,7 +1690,7 @@ class IgV58CurrentSourceRecurationPg17Pg18(unittest.TestCase):
         import uuid
         self.assertIsNotNone(shutil.which("docker"), "DOCKER_REQUIRED")
         s=(ROOT/"supabase/migrations/"
-           "20261114051000_lf_ig_v58_recuration_finding_v1.sql").read_text()
+           "20261114131843_lf_ig_v58_recuration_finding_v1.sql").read_text()
         expected=(
             "fn_input_v58_build_assertions",
             "fn_input_governance_validator_rebind_v1",
