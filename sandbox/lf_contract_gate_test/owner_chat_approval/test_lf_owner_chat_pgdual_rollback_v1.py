@@ -176,10 +176,10 @@ BEGIN
        convert_to(lower(btrim(fixture_email)),'UTF8'),'sha256'),'hex');
   -- Fixture substitution under rollback only; prove the runtime write trigger
   -- remains fail closed after immediately re-enabling it.
-  ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1;
+  EXECUTE 'ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1';
   UPDATE private.lf_ig_parameters_v1 SET value_sha256=fixture_sha
    WHERE owner_sub='__OWNER_SUB__'::uuid AND parameter_namespace='OWNER_CHAT';
-  ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1;
+  EXECUTE 'ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1';
   BEGIN
     UPDATE private.lf_ig_parameters_v1 SET activo=false
      WHERE parameter_namespace='OWNER_CHAT' AND channel_code='__GPT_CHANNEL__';
@@ -236,10 +236,10 @@ BEGIN
   -- Missing email, different email, inactive channel, and session cross-bind.
   FOR n IN 1..4 LOOP
     IF n=3 THEN
-      ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1;
+      EXECUTE 'ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1';
       UPDATE private.lf_ig_parameters_v1 SET activo=false
        WHERE channel_code='__GPT_CHANNEL__';
-      ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1;
+      EXECUTE 'ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1';
     END IF;
     BEGIN
       PERFORM private.fn_lf_owner_chat_register_v1(
@@ -256,10 +256,10 @@ BEGIN
       THEN RAISE EXCEPTION 'NEG_SESSION_WRONG_REASON:%:%',n,SQLERRM; END IF;
     END;
     IF n=3 THEN
-      ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1;
+      EXECUTE 'ALTER TABLE private.lf_ig_parameters_v1 DISABLE TRIGGER lf_ig_parameter_governed_write_v1';
       UPDATE private.lf_ig_parameters_v1 SET activo=true
        WHERE channel_code='__GPT_CHANNEL__';
-      ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1;
+      EXECUTE 'ALTER TABLE private.lf_ig_parameters_v1 ENABLE TRIGGER lf_ig_parameter_governed_write_v1';
     END IF;
   END LOOP;
   IF EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace
