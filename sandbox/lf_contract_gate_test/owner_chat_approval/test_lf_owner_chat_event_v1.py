@@ -8,7 +8,7 @@ from scripts.lf_owner_chat_event_v1 import (
 NOW=datetime(2026,11,17,2,38,tzinfo=timezone.utc)
 SCOPE={"action":"MERGE_GOVERNANCE_PR","repository":REPO,"pr_number":4063,"head_sha":"a"*40}
 RULE_SCOPE={"action":"PROMOTE_RULE_BATCH","repository":SCOPE["repository"],"execution_id":"EXEC-TEST-1234567890","rule_codes":["RULE-001","RULE-002"],"rule_snapshots_sha256":"b"*64}
-ACTORS={"owner_sub":OWNER,"channel_code":CHANNEL,"proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
+ACTORS={"owner_sub":OWNER,"channel_code":CHANNEL,"repository_full_name":REPO,"proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
 
 def event(scope=None, catalog=None, **patch):
     scope=scope or SCOPE
@@ -32,6 +32,7 @@ def test_happy_pr_and_batch():
 def test_no_order(): reject('INVALID_ORDER_LITERAL_OR_SHORT_HASH',event(text_literal=''))
 def test_wrong_scope(): reject('WRONG_EXACT_SCOPE', event(),{**SCOPE,'pr_number':4062})
 def test_wrong_head(): reject('WRONG_EXACT_SCOPE', event(),{**SCOPE,'head_sha':'b'*40})
+def test_repo_must_match_canonical_config(): reject('REPOSITORY_CONFIG_MISMATCH', event(), repository_full_name='other/repository')
 def test_expired(): reject('EXPIRED_ORDER',event(sent_at=(NOW-timedelta(minutes=16)).isoformat().replace('+00:00','Z')))
 def test_wrong_owner(): reject('WRONG_OWNER',event(actor_sub=OTHER_SUB))
 def test_model_claim(): reject('NOT_AN_ORCHESTRATED_USER_TURN',event(event_kind='ASSISTANT_MESSAGE'))
