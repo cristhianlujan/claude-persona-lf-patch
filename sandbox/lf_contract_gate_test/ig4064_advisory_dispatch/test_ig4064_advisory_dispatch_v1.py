@@ -143,24 +143,23 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
             "ROLLBACK PREPARED 'ig-test-gid';",
         )
         for command in dangerous:
-            with self.subTest(sql_command=command):
-                injected = sql.replace(injection_marker, command + "\n" +
-                                       injection_marker, 1)
-                with self.assertRaisesRegex(RuntimeError, "^COMMIT_FORBIDDEN$"):
-                    runner.assert_safe_transaction_control(injected)
+            injected = sql.replace(injection_marker, command + "\n" +
+                                   injection_marker, 1)
+            with self.assertRaisesRegex(RuntimeError, "^COMMIT_FORBIDDEN$",
+                                        msg=command):
+                runner.assert_safe_transaction_control(injected)
         # These are SQL data/syntax, not transaction-ending commands.
         benign = (
             "CREATE TEMP TABLE ig4064_test_delete(x text) ON COMMIT DELETE ROWS;",
             "CREATE TEMP TABLE ig4064_test_drop(x text) ON COMMIT DROP;",
-            "SELECT 'COMMIT; END; PREPARE TRANSACTION', $COMMIT; END;$;",
+            "SELECT 'COMMIT; END; PREPARE TRANSACTION', $q$COMMIT; END;$q$;",
             "/* COMMIT; /* END; */ PREPARE TRANSACTION 'x'; */",
             "-- COMMIT AND CHAIN;\nSELECT 'END;';",
         )
         for statement in benign:
-            with self.subTest(benign_sql=statement):
-                candidate = sql.replace(injection_marker, statement + "\n" +
-                                        injection_marker, 1)
-                runner.assert_safe_transaction_control(candidate)
+            candidate = sql.replace(injection_marker, statement + "\n" +
+                                    injection_marker, 1)
+            runner.assert_safe_transaction_control(candidate)
         print("PASS_IG4064_REAL_ASSEMBLED_SQL_NEGATIVE "
               f"blocked={len(dangerous)}/{len(dangerous)} "
               f"benign_accepted={len(benign)}/{len(benign)} "
