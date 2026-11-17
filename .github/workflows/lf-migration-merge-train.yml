@@ -590,6 +590,10 @@ jobs:
               AND o.actor_sub=cfg.owner_sub
               AND cfg.repository_full_name=:'lf_repo'
               AND o.source_kind=cfg.channel_code
+              AND o.identity_mode='ACCOUNT_SESSION'
+              AND EXISTS(SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
+                 WHERE a.owner_sub=o.actor_sub AND a.channel_code=o.channel_code
+                   AND a.account_email_sha256=o.session_account_sha256 AND a.activo)
               AND o.consumed_at IS NULL
               AND o.expires_at>clock_timestamp()
               AND NOT EXISTS(SELECT 1
