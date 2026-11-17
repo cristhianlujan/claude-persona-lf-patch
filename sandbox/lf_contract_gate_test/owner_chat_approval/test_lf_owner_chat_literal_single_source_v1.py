@@ -79,16 +79,20 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
         assert len(CLAUDE_HASH)==64
         # Native git scan covers ALL tracked blobs, including binary bytes;
         # it is faster than opening files one by one in Python.
+        # Fixed-string prefilter for the authorized account's domain is fast
+        # even for binary blobs; compute hash on complete mailbox tokens only.
         result=subprocess.run(
-            ['git','grep','--cached','-a','-n','-o','--no-color','-E',
-             r'[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}'],
+            ['git','grep','--cached','-a','-n','--no-color','-i','-F',
+             '@gmail.com'],
             cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
         self.assertIn(result.returncode,(0,1),'GIT_EMAIL_SCAN_FAILED')
+        tokens=re.compile(rb'[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}')
         for hit in result.stdout.splitlines():
-            path,line,email=hit.split(b':',2)
-            fingerprint=hashlib.sha256(email.strip().lower()).hexdigest()
-            self.assertNotEqual(fingerprint,CLAUDE_HASH,
-                path.decode('utf-8','replace')+':'+line.decode('ascii','replace'))
+            path,line,content=hit.split(b':',2)
+            for email in tokens.findall(content):
+                fingerprint=hashlib.sha256(email.strip().lower()).hexdigest()
+                self.assertNotEqual(fingerprint,CLAUDE_HASH,
+                    path.decode('utf-8','replace')+':'+line.decode('ascii','replace'))
 
     def test_single_shared_hash_seed_and_external_installation_variable(self):
         sql=(ROOT/MIGRATION).read_text(encoding='utf-8')
