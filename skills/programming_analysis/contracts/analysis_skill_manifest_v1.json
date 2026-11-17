@@ -5,7 +5,7 @@
   "package_scope": "WHOLE_ANALYSIS_STAGE",
   "former_standalone_a1_code": "PROGRAMMING_ANALYSIS_A1",
   "standalone_a1_registration_allowed": false,
-  "status": "CANDIDATE_SOURCE_ONLY_NOT_REGISTERED",
+  "status": "REGISTERED_CANDIDATE_RUNTIME_DISABLED",
   "profile_consumer": "PROGRAMMING_AGENT_GOVERNED_PROFILE",
   "operation_code": "EJECUCION_SKILL_LF",
   "external_invocations": 1,
@@ -18,7 +18,7 @@
     "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
     "PROGRAMMING_CONTEXT_SNAPSHOT_V1"
   ],
-  "current_readiness": "BLOCKED_A2_A15_UNWIRED",
+  "current_readiness": "BLOCKED_A1_SEMANTIC_A2_SOURCE_ATTESTATION_A3_A15_UNWIRED",
   "real_model_receipts": false,
   "independent_judge_receipts": false,
   "no_router_to_skill_direct": true,
@@ -52,9 +52,11 @@
         "REQUEST_CONTEXT_V1"
       ],
       "guard": "Material unknown -> at least L2 and NEED_MORE_EVIDENCE; L3 high-risk dominates; no weights or case hardcoding.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_TYPED_POLICY_PROJECTION_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a2/validators/run.py:run",
+      "operationally_verified": false,
+      "source_attested": false,
+      "next_step_allowed": false
     },
     {
       "step_id": "A3",
@@ -68,9 +70,12 @@
         "ANALYSIS_CHANGE_CLASSIFICATION_V1"
       ],
       "guard": "Missing/stale/contradictory material authority -> NEED_MORE_EVIDENCE or BLOCKED; no speculative full search.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_SOURCE_READBACK_CONSUMER_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a3/validators/run.py:run",
+      "operationally_verified": false,
+      "source_attested": false,
+      "next_step_allowed": false,
+      "integration_note": "Consumes A2 existing exact two-input preview plus host-provided governed LF source readback; no live dispatch, source attestation, independent judge or A4 admission."
     },
     {
       "step_id": "A4",
@@ -84,9 +89,14 @@
         "ANALYSIS_CHANGE_CLASSIFICATION_V1"
       ],
       "guard": "Unknown impact is visible, never silently excluded; no new parallel impact engine.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_DETERMINISTIC_SOURCE_PROJECTION_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a4/validators/run.py:run",
+      "operationally_verified": false,
+      "source_set_contract": "steps/a4/contracts/deterministic_source_set_v1.json",
+      "integration_note": "A3+A2 fixed sources, planned vs existing modes. Existing definitions reused for new target implementation (CREATE on target, REUSE on rule/policy definition). Existing graph edges => UNKNOWN item action until exact delta. Missing target path never blocks new screen. No live RUN/currentness/judge/A5 admission.",
+      "source_attested": false,
+      "next_step_allowed": false,
+      "operation_output": "requested_change_type (A2 literal) + target_change_action (CREATE/MODIFY/DELETE/REPLACE/REUSE/NO_CHANGE/UNKNOWN) + direct_impacts[].change_action/definition_action (source-backed only)"
     },
     {
       "step_id": "A5",
@@ -101,9 +111,18 @@
         "SHARED_CHANGE_IMPACT_ANALYSIS"
       ],
       "guard": "Required new ADR or unresolved owner decision -> REQUIRES_DECISION; analysis cannot approve itself; local HOW remains PG-03.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_DECISION_AND_ADR_SOURCE_PROJECTION_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a5/validators/run.py:run",
+      "operationally_verified": false,
+      "source_set_contract": "steps/a5/contracts/deterministic_decision_sources_v1.json",
+      "integration_note": "A1-A4 source-only full material ledger and rule_profiles consolidated per exact rule_code+source_ref, with per-FRONTEND/BACKEND applicability UNKNOWN without explicit source-bound readback. Approved/candidate inheritance and typed policy dependencies retained. Existing ADR/ASOF unchanged. Independent semantic review, runtime currentness, A6 admission absent.",
+      "source_attested": false,
+      "next_step_allowed": false,
+      "material_output_contract": "steps/a5/contracts/a5_material_decision_output_v1.json",
+      "material_parity_judge": "steps/a5/judges/material_parity_v1.py",
+      "semantic_judge_packet": "steps/a5/judges/semantic_review_packet_v1.py",
+      "rule_consolidation_adapter": "steps/a5/adapters/rule_layer_consolidation_v1.py",
+      "rule_layer_parity_judge": "steps/a5/judges/rule_layer_parity_v1.py"
     },
     {
       "step_id": "A6",
@@ -268,5 +287,18 @@
       "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
       "no_input_inference_allowed": true
     }
+  ],
+  "asset_registration": {
+    "code": "PROGRAMMING_ANALYSIS_LF",
+    "asset_id": 414,
+    "documented_from": "public.lf_activos",
+    "documentary_status": "CANDIDATO",
+    "operational_status": "READ_ONLY",
+    "runtime_binding_enabled": false,
+    "registration_execution": "EXEC-DB-TRAIN-PR3589-20261105010000-R41963330970",
+    "note": "Observed as of the registration readback; verify source/authority currentness again before activation."
+  },
+  "internal_candidate_bridges": [
+    "adapters/a1_a2_candidate_bridge_v1.py"
   ]
 }

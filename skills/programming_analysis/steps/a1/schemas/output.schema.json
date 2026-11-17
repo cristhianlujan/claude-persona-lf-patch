@@ -98,12 +98,28 @@
       "enum": [
         "PRESTRUCTURED_UNATTESTED",
         "SEMANTIC_CANDIDATE_UNATTESTED",
-        "NO_VALID_INTERPRETATION"
+        "NO_VALID_INTERPRETATION",
+        "SEMANTIC_REVIEWED_CANDIDATE"
       ],
       "description": "No representa aprobación semántica ni habilita el paso A2."
     },
     "step_code": {
       "const": "A1"
+    },
+    "intent_analysis": {
+      "type": "object",
+      "description": "Validated against schemas/intent_analysis_candidate_v1.schema.json by semantic adapter; no unresolved JSON Schema refs"
+    },
+    "semantic_candidate_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "semantic_reviewer_ref": {
+      "type": "string",
+      "minLength": 3
+    },
+    "semantic_review_identity_verified": {
+      "const": false
     }
   }
 }

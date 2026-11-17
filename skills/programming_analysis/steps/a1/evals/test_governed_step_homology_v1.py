@@ -20,8 +20,20 @@ def check(candidate):
         "historical_analysis_unit", "historical_qualification_unit"
     )):
         problems.append("HISTORICAL_DONE_REPLAY")
-    if identities["new_skill"]["runtime_activation_allowed"] or identities["new_skill"]["observed_asset_count"] != 0:
+    asset = identities["new_skill"]
+    if (asset["runtime_activation_allowed"] or asset.get("runtime_binding_enabled") is not False
+            or asset.get("approval_status") != "NOT_APPROVED"):
         problems.append("FALSE_SKILL_RELEASE")
+    registered = candidate["source_basis"].get("registration_readback", {})
+    if (asset.get("observed_asset_count") != 1 or asset.get("registered_asset_id") != 414
+            or registered.get("asset_count") != 1 or registered.get("asset_id") != 414
+            or registered.get("runtime_binding_enabled") is not False):
+        problems.append("ASSET_REGISTRATION_READBACK_DRIFT")
+    if (registered.get("main_blob_parity_verified") is not True
+            or registered.get("registered_main_skill_blob_sha1")
+                 != registered.get("github_main_skill_blob_sha1")
+            or not registered.get("registered_main_skill_blob_sha1")):
+        problems.append("MAIN_SOURCE_PARITY_DRIFT")
     required_names = {x["name"]:x for x in candidate["observed_paths"]}
     if len(required_names) != len(candidate["observed_paths"]) or set(required_names) != {
         "INPUT_GOVERNANCE", "PROFILE_UPDATER", "PROFILE_CREATOR", "SKILL_CREATOR", "ANALYSIS_SKILL_EXECUTION"
@@ -94,6 +106,38 @@ class GovernedStepHomologyTests(unittest.TestCase):
         tampered=copy.deepcopy(CONTRACT)
         tampered["identity_separation"]["new_skill"]["runtime_activation_allowed"] = True
         self.assertIn("FALSE_SKILL_RELEASE",check(tampered))
+
+    def test_09b_registered_does_not_mean_released(self):
+        self.assertEqual(CONTRACT["identity_separation"]["new_skill"]["observed_asset_count"], 1)
+        self.assertEqual(CONTRACT["identity_separation"]["new_skill"]["registered_asset_id"], 414)
+        self.assertFalse(CONTRACT["identity_separation"]["new_skill"]["runtime_binding_enabled"])
+        self.assertFalse(OPERATION["asset_readback"]["runtime_binding_enabled"])
+        self.assertFalse(OPERATION["release_approved"])
+
+    def test_09c_old_zero_count_is_stale_not_a_pass(self):
+        tampered=copy.deepcopy(CONTRACT)
+        tampered["identity_separation"]["new_skill"]["observed_asset_count"] = 0
+        self.assertIn("ASSET_REGISTRATION_READBACK_DRIFT",check(tampered))
+
+    def test_09d_duplicate_asset_count_detected(self):
+        tampered=copy.deepcopy(CONTRACT)
+        tampered["source_basis"]["registration_readback"]["asset_count"] = 2
+        self.assertIn("ASSET_REGISTRATION_READBACK_DRIFT",check(tampered))
+
+    def test_09e_runtime_binding_true_is_not_authority(self):
+        tampered=copy.deepcopy(CONTRACT)
+        tampered["identity_separation"]["new_skill"]["runtime_binding_enabled"] = True
+        self.assertIn("FALSE_SKILL_RELEASE",check(tampered))
+
+    def test_09f_main_source_blob_drift_detected(self):
+        tampered=copy.deepcopy(CONTRACT)
+        tampered["source_basis"]["registration_readback"]["registered_main_skill_blob_sha1"] = "0"*40
+        self.assertIn("MAIN_SOURCE_PARITY_DRIFT",check(tampered))
+
+    def test_09g_registered_asset_identity_drift_detected(self):
+        tampered=copy.deepcopy(CONTRACT)
+        tampered["identity_separation"]["new_skill"]["registered_asset_id"] = 999
+        self.assertIn("ASSET_REGISTRATION_READBACK_DRIFT",check(tampered))
 
     def test_10_no_completed_claim_without_readback(self):
         tampered=copy.deepcopy(CONTRACT)

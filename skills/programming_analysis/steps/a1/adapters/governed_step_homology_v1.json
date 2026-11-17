@@ -4,7 +4,7 @@
   "status": "CANDIDATE_SOURCE_ONLY_NOT_WIRED",
   "authority_principle": "AUTHORIZED_EXECUTOR_WRITES; READ_ONLY_CONSUMER_OBSERVES",
   "source_basis": {
-    "supabase_inspected_at": "2026-11-04",
+    "supabase_inspected_at": "2026-11-09",
     "source_tables": [
       "public.lf_operation_registry",
       "public.lf_operation_steps",
@@ -20,7 +20,21 @@
       "supabase/functions/lf-profiles-governance-caller-v1/caller.ts",
       "CLAUDE.md",
       "gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml"
-    ]
+    ],
+    "registration_readback": {
+      "asset_table": "public.lf_activos",
+      "asset_id": 414,
+      "asset_count": 1,
+      "asset_state": "CANDIDATO",
+      "operational_state": "READ_ONLY",
+      "runtime_state": "CANDIDATE_READ_ONLY",
+      "runtime_binding_enabled": false,
+      "registered_main_skill_blob_sha1": "9abb2ce0513bcb3241dec459420c394e2c93a03c",
+      "github_main_skill_blob_sha1": "9abb2ce0513bcb3241dec459420c394e2c93a03c",
+      "main_blob_parity_verified": true,
+      "execution_count": 0,
+      "source": "2026-11-09 provider SELECT + GitHub main exact blob; source-only"
+    }
   },
   "identity_separation": {
     "historical_analysis_unit": {
@@ -38,10 +52,13 @@
     "new_skill": {
       "skill_code": "PROGRAMMING_ANALYSIS_LF",
       "asset_type": "SKILL",
-      "observed_asset_count": 0,
-      "source_status": "DRAFT_PR_3529",
+      "observed_asset_count": 1,
+      "source_status": "REGISTERED_MAIN_CANDIDATE_READ_ONLY",
       "runtime_activation_allowed": false,
-      "internal_steps": "A1-A15"
+      "internal_steps": "A1-A15",
+      "registered_asset_id": 414,
+      "runtime_binding_enabled": false,
+      "approval_status": "NOT_APPROVED"
     }
   },
   "observed_paths": [
@@ -161,7 +178,7 @@
     "new_parallel_runtime_allowed": false
   },
   "gates_before_operational_integration": [
-    "A1_REGISTERED_AS_SKILL_WITH_EXACT_RELEASED_SOURCE",
+    "WHOLE_ANALYSIS_SKILL_REGISTERED_AND_EXACT_RUNTIME_RELEASE_STILL_REQUIRED",
     "EJECUCION_SKILL_LF_OPERATION_QUALIFIED_FOR_CONSUMPTION",
     "GOVERNED_EXECUTOR_APPROVED_FOR_SKILL_TARGET",
     "OPERATION_SCOPED_SERVER_TRUST_AND_RECORDER_QUALIFIED",
@@ -183,9 +200,13 @@
   ],
   "asset_registration_out_of_scope": {
     "asset_registry": "public.lf_activos",
-    "requires_separate_governed_creation_and_authorized_write": true,
+    "requires_separate_governed_creation_and_authorized_write": false,
     "db_migration_if_needed": "EXACT_VERSION_DB_WRITE_TRANSPORT_VIA_MIGRATION_MERGE_TRAIN",
-    "this_document_is_not_asset_registration": true
+    "this_document_is_not_asset_registration": true,
+    "registration_verified": true,
+    "new_registration_required": false,
+    "existing_asset_id": 414,
+    "explanation": "Registration completed via governed migration; no duplicate asset or update authorized here."
   },
   "existing_profile_skill_invoker": {
     "function": "public.lf_skill_invoke_v1(text,text,jsonb)",
