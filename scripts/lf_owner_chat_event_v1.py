@@ -84,7 +84,7 @@ def _utc(s: Any) -> datetime:
 
 def verify_order(*, event: dict, expected_scope: dict,
                  owner_sub: str, channel_code: str, repository_full_name: str,
-                 authorized_accounts: tuple[tuple[str,str,bool],...], owner_account_email: str,
+                 authorized_accounts: tuple[tuple[str,str,bool],...],
                  proposer_subject: str,
                  registrar_subject: str, now: datetime,
                  catalog: dict | None = None) -> dict:
@@ -115,12 +115,11 @@ def verify_order(*, event: dict, expected_scope: dict,
     sess_sha = event["session_account_sha256"]
     if not isinstance(sess_channel,str) or not isinstance(sess_sha,str) or not SHA64.fullmatch(sess_sha):
         raise ChatOrderRejected("ACCOUNT_SESSION_INVALID")
-    # OWNER_ACCOUNT_EMAIL arrives only from private installation configuration.
-    # Event hash must agree with the normalized installation email and
-    # the active channel row; no plaintext email is retained in the receipt.
-    expected_email_sha = sha256_normalized_account_email(owner_account_email)
-    if sess_sha != expected_email_sha or not isinstance(authorized_accounts,tuple) or not any(
-        entry == (sess_channel,expected_email_sha,True) for entry in authorized_accounts
+    # Trusted account identity proof is the platform session SHA, checked
+    # against the ACTIVE canonical parameter readback. Never read environment.
+    # A model-supplied hash alone is NOT authenticated ingress.
+    if not isinstance(authorized_accounts,tuple) or not any(
+        entry == (sess_channel,sess_sha,True) for entry in authorized_accounts
     ):
         raise ChatOrderRejected("ACCOUNT_SESSION_NOT_AUTHORIZED")
     for key in ("conversation_id", "message_id"):
