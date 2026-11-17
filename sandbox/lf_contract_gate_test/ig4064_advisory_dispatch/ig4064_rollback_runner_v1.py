@@ -140,6 +140,116 @@ def governance_check() -> dict:
     require(pr.get("base", {}).get("ref") == "main", "PR4064_BASE_NOT_MAIN")
     return {"pr": PR, "head": HEAD, "draft": True, "base": "main"}
 
+def top_level_sql_statements(sql: str) -> list[tuple[str, ...]]:
+    """Lex PostgreSQL statement heads; exclude comments, literals and DO bodies.
+
+    A keyword is a transaction command only at the start of a top-level
+    statement.  In particular, ON COMMIT DROP/DELETE ROWS is CREATE TABLE
+    syntax, not a COMMIT.  PL/pgSQL END is inside a dollar-quoted DO body.
+    """
+    statements: list[tuple[str, ...]] = []
+    words: list[str] = []
+    n, i = len(sql), 0
+    line_start = True
+    while i < n:
+        ch = sql[i]
+        if ch in " \t\f\v":
+            i += 1
+            continue
+        if ch in "\r\n":
+            line_start = True
+            i += 1
+            continue
+        if ch == "\\" and line_start:
+            end = sql.find("\n", i)
+            end = n if end < 0 else end
+            directive = sql[i:end].strip()
+            require(not words and (directive == r"\set ON_ERROR_STOP on" or
+                                   directive.startswith(r"\echo IG4064_")),
+                    "UNEXPECTED_PSQL_META")
+            i = end
+            continue
+        line_start = False
+        if sql.startswith("--", i):
+            end = sql.find("\n", i)
+            i = n if end < 0 else end
+            continue
+        if sql.startswith("/*", i):
+            depth = 1
+            i += 2
+            while i < n and depth:
+                if sql.startswith("/*", i):
+                    depth += 1
+                    i += 2
+                elif sql.startswith("*/", i):
+                    depth -= 1
+                    i += 2
+                else:
+                    i += 1
+            require(depth == 0, "SQL_UNTERMINATED_COMMENT")
+            continue
+        if ch in "\"'":
+            quoted = ch
+            # PostgreSQL E'...' accepts backslash escaping in addition to ''.
+            escaped = (ch == "'" and i > 0 and sql[i - 1] in "eE" and
+                       (i == 1 or not (sql[i - 2].isalnum() or sql[i - 2] == "_")))
+            i += 1
+            while i < n:
+                if sql[i] == quoted:
+                    if i + 1 < n and sql[i + 1] == quoted:
+                        i += 2
+                        continue
+                    i += 1
+                    break
+                if escaped and sql[i] == "\\" and i + 1 < n:
+                    i += 2
+                else:
+                    i += 1
+            else:
+                raise RuntimeError("SQL_UNTERMINATED_QUOTE")
+            continue
+        if ch == "$":
+            # Real PL/pgSQL statements are opaque to the outer SQL parser.
+            tag = re.match(r"\$(?:[A-Za-z_][A-Za-z_0-9]*)?\$", sql[i:])
+            if tag:
+                marker = tag.group(0)
+                close = sql.find(marker, i + len(marker))
+                require(close >= 0, "SQL_UNTERMINATED_DOLLAR_QUOTE")
+                i = close + len(marker)
+                continue
+        if ch == ";":
+            if words:
+                statements.append(tuple(words))
+                words = []
+            i += 1
+            continue
+        if ch.isascii() and (ch.isalpha() or ch == "_"):
+            end = i + 1
+            while end < n and sql[end].isascii() and (
+                    sql[end].isalnum() or sql[end] == "_"):
+                end += 1
+            words.append(sql[i:end].upper())
+            i = end
+            continue
+        i += 1
+    require(not words, "SQL_UNTERMINATED_STATEMENT")
+    return statements
+
+
+def assert_safe_transaction_control(sql: str) -> None:
+    """Fail closed on actual transaction-ending/preparing SQL statements."""
+    statements = top_level_sql_statements(sql)
+    for head in statements:
+        require(not (head[0] in ("COMMIT", "END") or
+                     head[:2] == ("PREPARE", "TRANSACTION") or
+                     head[:2] == ("ROLLBACK", "PREPARED")),
+                "COMMIT_FORBIDDEN")
+    require(sum(head[0] == "BEGIN" for head in statements) == 1,
+            "MULTIPLE_OR_MISSING_BEGIN")
+    require(sum(head[0] == "ROLLBACK" for head in statements) == 1,
+            "MULTIPLE_OR_MISSING_ROLLBACK")
+
+
 def assembled_sql() -> tuple[str, dict]:
     migration, harness, digests = exact_sql()
     require(TEMPLATE.is_file(), "TRUSTED_SQL_TEMPLATE_MISSING")
@@ -154,9 +264,7 @@ def assembled_sql() -> tuple[str, dict]:
            .replace("@@MIGRATION_DO@@", migration)
            .replace("@@HARNESS_DO@@", harness))
     # A single BEGIN and ROLLBACK in the same script/psql process.
-    require(len(re.findall(r"(?m)^BEGIN;\s*$", sql)) == 1, "MULTIPLE_OR_MISSING_BEGIN")
-    require(len(re.findall(r"(?m)^ROLLBACK;\s*$", sql)) == 1, "MULTIPLE_OR_MISSING_ROLLBACK")
-    require(not re.search(r"\bCOMMIT\b", sql, re.I), "COMMIT_FORBIDDEN")
+    assert_safe_transaction_control(sql)
     require(sql.index("\nBEGIN;") < sql.index("DO $ig$") < sql.index("DO $test$")
             < sql.index("\nROLLBACK;") < sql.index("DO $post$"),
             "TX_STEP_ORDER_INVALID")
