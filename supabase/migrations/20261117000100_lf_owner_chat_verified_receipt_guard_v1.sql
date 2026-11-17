@@ -286,7 +286,7 @@ $fn$;
 
 -- Revocation is a separate owner USER event, registered by trusted transport.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_revoke_v1(
- p_order_id uuid,p_revocation_message_id text,p_owner_sub uuid,p_reason text
+ p_order_id uuid,p_revocation_message_id text,p_owner_sub uuid,p_channel_code text,p_session_account_sha256 text,p_reason text
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
@@ -295,6 +295,12 @@ BEGIN
  SELECT * INTO v FROM private.lf_owner_chat_orders_v1 WHERE order_id=p_order_id FOR UPDATE;
  IF NOT FOUND OR v.actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1()
     OR p_owner_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() OR
+    p_channel_code IS DISTINCT FROM v.channel_code OR
+    p_session_account_sha256 IS DISTINCT FROM v.session_account_sha256 OR
+    v.identity_mode IS DISTINCT FROM 'ACCOUNT_SESSION' OR
+    NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
+      WHERE a.owner_sub=v.actor_sub AND a.channel_code=p_channel_code
+        AND a.account_email_sha256=p_session_account_sha256 AND a.activo) OR
     v.consumed_at IS NOT NULL OR length(coalesce(p_revocation_message_id,''))<12
     OR nullif(btrim(p_reason),'') IS NULL OR
     p_revocation_message_id=v.source_message_id THEN
@@ -311,7 +317,7 @@ REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_register_v1(text,text,text,uuid,
  FROM PUBLIC,anon,authenticated,service_role;
 REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_consume_v1(uuid,text,jsonb,text)
  FROM PUBLIC,anon,authenticated,service_role;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_revoke_v1(uuid,text,uuid,text)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_revoke_v1(uuid,text,uuid,text,text,text)
  FROM PUBLIC,anon,authenticated,service_role;
 
 -- HUMAN consumer: one immutable order -> one complete closed rule batch -> one
@@ -431,6 +437,10 @@ BEGIN
      AND l.tx_id=pg_current_xact_id()::text
      AND o.action_code='PROMOTE_RULE_BATCH'
      AND o.actor_sub=private.fn_lf_owner_chat_owner_sub_v1()
+     AND o.identity_mode='ACCOUNT_SESSION'
+     AND EXISTS(SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
+       WHERE a.owner_sub=o.actor_sub AND a.channel_code=o.channel_code
+         AND a.account_email_sha256=o.session_account_sha256 AND a.activo)
      AND p_decided_by='HUMAN:'||o.actor_sub::text
      AND o.consumed_by='PROMOTION_BATCH_TX:'||pg_current_xact_id()::text
      AND o.consumed_at IS NOT NULL
