@@ -5,6 +5,26 @@
 -- a model/proposer assertion as proof of the human speaker.
 BEGIN;
 
+-- Fixed LF human authority: never inferred from a PR, profile, screen or order.
+CREATE TABLE IF NOT EXISTS private.lf_owner_chat_identity_v1(
+  config_key text PRIMARY KEY CHECK (config_key='LF_OWNER'),
+  owner_identity text NOT NULL CHECK (owner_identity='Cristhian Lujan'),
+  channel_code text NOT NULL CHECK (channel_code='CHAT_ORCHESTRATOR_USER_TURN'),
+  fixed boolean NOT NULL DEFAULT true CHECK (fixed)
+);
+INSERT INTO private.lf_owner_chat_identity_v1(config_key,owner_identity,channel_code)
+VALUES ('LF_OWNER','Cristhian Lujan','CHAT_ORCHESTRATOR_USER_TURN')
+ON CONFLICT(config_key) DO NOTHING;
+DO $fixed_owner$
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_identity_v1
+   WHERE config_key='LF_OWNER' AND owner_identity='Cristhian Lujan'
+   AND channel_code='CHAT_ORCHESTRATOR_USER_TURN' AND fixed=true)
+ THEN RAISE EXCEPTION 'CHAT_OWNER_FIXED_IDENTITY_CONTRACT_DRIFT'; END IF;
+END $fixed_owner$;
+REVOKE ALL ON private.lf_owner_chat_identity_v1
+FROM PUBLIC,anon,authenticated,service_role;
+
 CREATE TABLE IF NOT EXISTS private.lf_owner_chat_action_catalog_v1 (
   action_code text PRIMARY KEY,
   required_scope_keys text[] NOT NULL,
@@ -70,7 +90,11 @@ BEGIN
     p_actor_subject IS NULL OR length(p_actor_subject)<8 OR
     p_proposer_subject IS NULL OR length(p_proposer_subject)<8 OR
     p_registrar_subject IS NULL OR length(p_registrar_subject)<8 OR
-    p_proposer_subject=p_registrar_subject OR p_actor_subject=p_registrar_subject THEN
+    p_proposer_subject=p_registrar_subject OR p_actor_subject=p_registrar_subject OR
+    p_actor_subject IS DISTINCT FROM
+       (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
+    p_source_kind IS DISTINCT FROM
+       (SELECT channel_code FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') THEN
    RAISE EXCEPTION 'CHAT_OWNER_ORCHESTRATOR_EVENT_OR_SEPARATION_INVALID';
  END IF;
  IF p_sent_at IS NULL OR p_sent_at > clock_timestamp()+interval '30 seconds'
@@ -161,7 +185,11 @@ BEGIN
  IF clock_timestamp()>=v.expires_at THEN
    RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_EXPIRED');
  END IF;
- IF v.actor_subject IS DISTINCT FROM p_expected_owner_subject OR
+ IF v.actor_subject IS DISTINCT FROM
+    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
+    OR p_expected_owner_subject IS DISTINCT FROM
+    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
+    OR
     v.action_code IS DISTINCT FROM p_action_code OR
     v.scope IS DISTINCT FROM p_expected_scope OR
     v.proposer_subject=v.registrar_subject OR
@@ -199,7 +227,10 @@ AS $fn$
 DECLARE v private.lf_owner_chat_orders_v1%ROWTYPE;
 BEGIN
  SELECT * INTO v FROM private.lf_owner_chat_orders_v1 WHERE order_id=p_order_id FOR UPDATE;
- IF NOT FOUND OR v.actor_subject IS DISTINCT FROM p_owner_subject OR
+ IF NOT FOUND OR v.actor_subject IS DISTINCT FROM
+    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
+    OR p_owner_subject IS DISTINCT FROM
+    (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
     v.consumed_at IS NOT NULL OR length(coalesce(p_revocation_message_id,''))<12
     OR nullif(btrim(p_reason),'') IS NULL OR
     p_revocation_message_id=v.source_message_id THEN
@@ -244,6 +275,9 @@ DECLARE
   v_promotion_id text;v_r record;v_dec jsonb;v_apply jsonb;v_done integer:=0;
   v_xid text:=pg_current_xact_id()::text;
 BEGIN
+  IF p_expected_owner_subject IS DISTINCT FROM
+      (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
+  THEN RAISE EXCEPTION 'CHAT_OWNER_FIXED_OWNER_REQUIRED'; END IF;
   IF coalesce(array_length(p_promotion_ids,1),0)=0
     OR array_position(p_promotion_ids,NULL) IS NOT NULL
     OR (SELECT count(*) <> count(DISTINCT i) FROM unnest(p_promotion_ids) AS i)
@@ -363,6 +397,9 @@ LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
 AS $fn$
 DECLARE v_scope jsonb;v jsonb;
 BEGIN
+ IF p_expected_owner_subject IS DISTINCT FROM
+     (SELECT owner_identity FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER')
+ THEN RETURN jsonb_build_object('status','BLOCKED','code','CHAT_OWNER_FIXED_OWNER_REQUIRED'); END IF;
  IF p_pr_number IS NULL OR p_pr_number<=0 OR
    coalesce(p_final_head_sha,'') !~ '^[a-f0-9]{40}$' OR
    coalesce(p_repository,'') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
