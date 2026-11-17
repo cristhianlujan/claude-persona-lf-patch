@@ -7,7 +7,7 @@ from scripts.lf_owner_chat_event_v1 import (
 NOW=datetime(2026,11,17,2,38,tzinfo=timezone.utc)
 SCOPE={"action":"MERGE_GOVERNANCE_PR","repository":"cristhianlujan/claude-persona-lf-patch","pr_number":4063,"head_sha":"a"*40}
 RULE_SCOPE={"action":"PROMOTE_RULE_BATCH","repository":SCOPE["repository"],"execution_id":"EXEC-TEST-1234567890","rule_codes":["RULE-001","RULE-002"],"rule_snapshots_sha256":"b"*64}
-ACTORS={"owner_subject":"orchestrator-owner-1","proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
+ACTORS={"owner_subject":"Cristhian Lujan","proposer_subject":"profile-proposer-1","registrar_subject":"orchestration-recorder-1"}
 
 def event(scope=None, catalog=None, **patch):
     scope=scope or SCOPE
