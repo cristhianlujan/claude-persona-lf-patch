@@ -108,7 +108,7 @@ def main():
     r = evaluate_pr_integrity([legacy_root])
     assert r["classification_required"] and r["violations"] == [f"UNDECLARED_PATH:{legacy_root}"]
     checks += 1
-    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/11 PASS")
+    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/13 PASS")
 
     r = evaluate_pr_integrity(
         [manifest("SOL-3"), "other/a.txt"],
