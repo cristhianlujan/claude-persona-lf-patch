@@ -45,7 +45,7 @@ class GovernedRollbackContract(unittest.TestCase):
         self.assertIn("COMMIT_FORBIDDEN", self.script)
 
     def test_real_coverage_assertions(self):
-        for s in ("total=1974", "target_n<>141", "target_app<>130", "target_na<>11",
+        for s in ("assessments=1974", "target_n<>141", "target_app<>130", "target_na<>11",
                   "other_screens<>39", "other_n<>1833", "other_app<>1824",
                   "other_na<>9", "hits<>45", "nas<>2", "refs<>2",
                   "losses<>0", "IG4064_NA_SOURCE_REFS_REAL="):
