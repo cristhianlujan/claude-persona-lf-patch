@@ -88,6 +88,10 @@ CREATE TABLE IF NOT EXISTS private.lf_owner_chat_orders_v1 (
   source_message_id text NOT NULL UNIQUE CHECK (length(source_message_id)>=12),
   source_kind text NOT NULL CHECK (length(source_kind)>=8),
   actor_sub uuid NOT NULL,
+  channel_code text NOT NULL,
+  session_account_sha256 text NOT NULL CHECK (session_account_sha256 ~ '^[a-f0-9]{64}$'),
+  identity_mode text NOT NULL CHECK (identity_mode='ACCOUNT_SESSION'),
+  sent_at_lima text NOT NULL,
   proposer_subject text NOT NULL CHECK (length(proposer_subject)>=8),
   registrar_subject text NOT NULL CHECK (length(registrar_subject)>=8),
   action_code text NOT NULL REFERENCES private.lf_owner_chat_action_catalog_v1(action_code),
@@ -119,7 +123,8 @@ REVOKE ALL ON private.lf_owner_chat_action_catalog_v1,
 -- Function arguments are not human-authentication evidence by themselves.
 CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(
   p_source_chat_id text,p_source_message_id text,p_source_kind text,
-  p_actor_sub uuid,p_proposer_subject text,p_registrar_subject text,
+  p_actor_sub uuid,p_channel_code text,p_session_account_sha256 text,
+  p_proposer_subject text,p_registrar_subject text,
   p_sent_at timestamptz,p_literal_text text,p_scope jsonb
 ) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path TO ''
@@ -139,6 +144,13 @@ BEGIN
     p_actor_sub IS DISTINCT FROM private.fn_lf_owner_chat_owner_sub_v1() THEN
    RAISE EXCEPTION 'CHAT_OWNER_ORCHESTRATOR_EVENT_OR_SEPARATION_INVALID';
  END IF;
+ -- Model cannot choose identity_mode; valid account session is mandatory.
+ IF p_channel_code IS NULL OR p_session_account_sha256 IS NULL OR
+    p_session_account_sha256 !~ '^[a-f0-9]{64}$' OR NOT EXISTS(
+      SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
+       WHERE a.owner_sub=p_actor_sub AND a.channel_code=p_channel_code
+         AND a.account_email_sha256=p_session_account_sha256 AND a.activo)
+ THEN RAISE EXCEPTION 'CHAT_OWNER_ACCOUNT_SESSION_NOT_AUTHORIZED'; END IF;
  IF p_sent_at IS NULL OR p_sent_at > clock_timestamp()+interval '30 seconds'
     OR p_sent_at+interval '15 minutes' <= clock_timestamp() THEN
    RAISE EXCEPTION 'CHAT_OWNER_ORDER_EXPIRED_OR_FUTURE';
@@ -191,15 +203,20 @@ BEGIN
  END IF;
  INSERT INTO private.lf_owner_chat_orders_v1(
    source_chat_id,source_message_id,source_kind,actor_sub,
+   channel_code,session_account_sha256,identity_mode,sent_at_lima,
    proposer_subject,registrar_subject,action_code,scope,scope_sha256,
    literal_text,literal_sha256,sent_at,expires_at)
  VALUES(p_source_chat_id,p_source_message_id,p_source_kind,p_actor_sub,
+   p_channel_code,p_session_account_sha256,'ACCOUNT_SESSION',
+   to_char(p_sent_at AT TIME ZONE 'America/Lima','YYYY-MM-DD"T"HH24:MI:SS')||'-05:00',
    p_proposer_subject,p_registrar_subject,v_action,p_scope,v_sha,
    p_literal_text,encode(extensions.digest(convert_to(p_literal_text,'UTF8'),'sha256'),'hex'),
    p_sent_at,p_sent_at + make_interval(secs=>v_catalog.max_ttl_seconds))
  RETURNING order_id INTO v_order;
  RETURN jsonb_build_object('status','RECORDED_USER_CHAT_ORDER','order_id',v_order,
    'source_message_id',p_source_message_id,'action',v_action,
+   'identity_mode','ACCOUNT_SESSION','channel_code',p_channel_code,
+   'session_account_sha256',p_session_account_sha256,
    'scope_sha256',v_sha,'literal_sha256',
    encode(extensions.digest(convert_to(p_literal_text,'UTF8'),'sha256'),'hex'),
    'sent_at_lima',to_char(p_sent_at AT TIME ZONE 'America/Lima','YYYY-MM-DD"T"HH24:MI:SS')||'-05:00',
@@ -233,6 +250,10 @@ BEGIN
       (SELECT channel_code FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
     v.scope->>'repository' IS DISTINCT FROM
       (SELECT repository_full_name FROM private.lf_owner_chat_identity_v1 WHERE config_key='LF_OWNER') OR
+    v.identity_mode IS DISTINCT FROM 'ACCOUNT_SESSION' OR
+    NOT EXISTS(SELECT 1 FROM private.lf_owner_chat_authorized_accounts_v1 a
+       WHERE a.owner_sub=v.actor_sub AND a.channel_code=v.channel_code
+         AND a.account_email_sha256=v.session_account_sha256 AND a.activo) OR
     v.action_code IS DISTINCT FROM p_action_code OR
     v.scope IS DISTINCT FROM p_expected_scope OR
     v.proposer_subject=v.registrar_subject OR
@@ -257,6 +278,8 @@ BEGIN
  IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','code','CHAT_ORDER_REUSED'); END IF;
  RETURN jsonb_build_object('status','CONSUMED','order_id',p_order_id,
   'scope_sha256',v_sha,'source_message_id',v.source_message_id,
+  'identity_mode',v.identity_mode,'channel_code',v.channel_code,
+  'session_account_sha256',v.session_account_sha256,'sent_at_lima',v.sent_at_lima,
   'consumer_ref',p_consumer_ref);
 END;
 $fn$;
@@ -284,7 +307,7 @@ BEGIN
  RETURN jsonb_build_object('status','REVOKED','order_id',p_order_id);
 END;
 $fn$;
-REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_register_v1(text,text,text,uuid,text,text,timestamptz,text,jsonb)
+REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_register_v1(text,text,text,uuid,text,text,text,text,timestamptz,text,jsonb)
  FROM PUBLIC,anon,authenticated,service_role;
 REVOKE ALL ON FUNCTION private.fn_lf_owner_chat_consume_v1(uuid,text,jsonb,text)
  FROM PUBLIC,anon,authenticated,service_role;
