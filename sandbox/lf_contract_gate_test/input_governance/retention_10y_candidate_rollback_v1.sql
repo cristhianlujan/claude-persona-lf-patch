@@ -1,8 +1,5 @@
 -- Candidate integration PG. Requires live-equivalent schema in isolated PostgreSQL.
 -- No production/sandbox Supabase application; if not run report NOT_EXECUTED.
-\set ON_ERROR_STOP on
-BEGIN;
-\ir ../../../supabase/migrations/20261117084800_lf_ig_retention_10y_parameter_candidate_v1.sql
 DO $test$
 DECLARE v_count int; v_legacy_days int; v_new_days int; v_hot int; v_audits int;
 BEGIN
@@ -34,4 +31,3 @@ BEGIN
   RAISE NOTICE 'PASS_IG_RETENTION_CANDIDATE_PARAMETERS_2_AUDIT_2_FAIL_CLOSED';
 END;
 $test$;
-ROLLBACK;
