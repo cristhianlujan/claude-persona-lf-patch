@@ -120,6 +120,7 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
         self.assertNotIn('owner_account_email',verifier)
         self.assertIn('private.lf_ig_parameters_v1',sql)
         self.assertIn('SESSION_EMAIL_SHA256',sql)
+        self.assertIn("cfg.get('parameter_source')!='private.lf_ig_parameters_v1'",py)
         register_signature=sql.split("CREATE OR REPLACE FUNCTION private.fn_lf_owner_chat_register_v1(",1)[1].split(") RETURNS jsonb",1)[0]
         self.assertIn("p_session_account_email text",register_signature)
         self.assertNotIn("p_session_account_sha256",register_signature)
