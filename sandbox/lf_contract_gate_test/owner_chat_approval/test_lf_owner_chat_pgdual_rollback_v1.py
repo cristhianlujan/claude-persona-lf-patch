@@ -204,7 +204,7 @@ BEGIN
   BEGIN
     PERFORM private.fn_lf_owner_chat_register_v1(
       'fixture-recovery-chat-0001','fixture-recovery-wrong-owner-01',
-      '__CHANNEL__','__OTHER_SUB__'::uuid,'fixture-proposer-01',
+      '__CHANNEL__','__OTHER_SUB__'::uuid,'__CLAUDE_CHANNEL__','__CLAUDE_HASH__','fixture-proposer-01',
       'fixture-recorder-01',clock_timestamp(),lit,sc);
     RAISE EXCEPTION 'RECOVERY_WRONG_OWNER_SUB_ACCEPTED';
   EXCEPTION WHEN OTHERS THEN
