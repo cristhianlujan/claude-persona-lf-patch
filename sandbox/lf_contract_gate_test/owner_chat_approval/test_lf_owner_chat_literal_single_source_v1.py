@@ -86,7 +86,7 @@ class SingleAuthorityLiteralGuard(unittest.TestCase):
              '@gmail.com'],
             cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
         self.assertIn(result.returncode,(0,1),'GIT_EMAIL_SCAN_FAILED')
-        tokens=re.compile(rb'[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}')
+        tokens=re.compile(rb'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
         for hit in result.stdout.splitlines():
             path,line,content=hit.split(b':',2)
             for email in tokens.findall(content):
