@@ -76,15 +76,17 @@ def _utc(s: Any) -> datetime:
 
 
 def verify_order(*, event: dict, expected_scope: dict,
-                 owner_sub: str, channel_code: str, proposer_subject: str,
+                 owner_sub: str, channel_code: str, repository_full_name: str, proposer_subject: str,
                  registrar_subject: str, now: datetime,
                  catalog: dict | None = None) -> dict:
     """Llamar SOLO despues del readback del evento USER del orquestador.
 
-    owner_sub, channel_code y expected_scope deben proceder del readback
-    protegido de configuracion LF y consumidor, NO de la orden del modelo.
+    owner_sub, channel_code y repository_full_name deben provenir del readback
+    protegido de private.lf_owner_chat_identity_v1, nunca de la orden.
     """
     validate_scope(expected_scope, catalog)
+    if expected_scope['repository'] != repository_full_name:
+        raise ChatOrderRejected('REPOSITORY_CONFIG_MISMATCH')
     if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_sub", "conversation_id", "message_id", "text_literal", "sent_at", "scope"}:
         raise ChatOrderRejected("EVENT_CONTRACT_INVALID")
     if event["event_kind"] != "USER_MESSAGE" or event["origin"] != channel_code:
