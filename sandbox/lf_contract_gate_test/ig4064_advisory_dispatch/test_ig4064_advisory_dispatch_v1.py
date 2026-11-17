@@ -93,7 +93,7 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
                 os.chdir(tmp)
                 with mock.patch.object(runner,"BLOBS",fake_hash),mock.patch.object(
                         runner.subprocess,"check_output",return_value=runner.HEAD+"\n"):
-                    self.assertEqual(runner.exact_sql()[0],m)
+                    self.assertEqual(runner.exact_sql()[0],m.strip())
                     p=root/runner.MIGRATION
                     p.write_text(m.replace("RAISE NOTICE 'ok';","COMMIT;"))
                     with self.assertRaisesRegex(RuntimeError,"PINNED_BLOB_DRIFT"):
