@@ -18,6 +18,8 @@ SHA40 = re.compile(r"[a-f0-9]{40}\Z")
 SHA64 = re.compile(r"[a-f0-9]{64}\Z")
 CODE = re.compile(r"[A-Z0-9_-]{3,128}\Z")
 ORDER = re.compile(r"\AAPRUEBO ([0-9a-f]{12}) (.+)\Z", re.DOTALL)
+OWNER_IDENTITY = 'Cristhian Lujan'
+OWNER_CHAT_CHANNEL = 'CHAT_ORCHESTRATOR_USER_TURN'
 DEFAULT_CATALOG = {
     "MERGE_GOVERNANCE_PR": frozenset({"action", "repository", "pr_number", "head_sha"}),
     "PROMOTE_RULE_BATCH": frozenset({"action", "repository", "execution_id", "rule_codes", "rule_snapshots_sha256"}),
@@ -86,11 +88,11 @@ def verify_order(*, event: dict, expected_scope: dict,
     validate_scope(expected_scope, catalog)
     if not isinstance(event, dict) or set(event) != {"event_kind", "origin", "actor_subject", "conversation_id", "message_id", "text_literal", "sent_at", "scope"}:
         raise ChatOrderRejected("EVENT_CONTRACT_INVALID")
-    if event["event_kind"] != "USER_MESSAGE" or event["origin"] != "CHAT_ORCHESTRATOR_USER_TURN":
+    if event["event_kind"] != "USER_MESSAGE" or event["origin"] != OWNER_CHAT_CHANNEL:
         raise ChatOrderRejected("NOT_AN_ORCHESTRATED_USER_TURN")
     if not all(isinstance(v,str) and len(v)>=8 for v in [owner_subject,proposer_subject,registrar_subject]):
         raise ChatOrderRejected("ACTOR_CONTRACT_INVALID")
-    if event["actor_subject"] != owner_subject:
+    if owner_subject != OWNER_IDENTITY or event["actor_subject"] != OWNER_IDENTITY:
         raise ChatOrderRejected("WRONG_OWNER")
     if proposer_subject == registrar_subject or registrar_subject == owner_subject:
         raise ChatOrderRejected("NO_PROPOSER_REGISTRAR_SEPARATION")
