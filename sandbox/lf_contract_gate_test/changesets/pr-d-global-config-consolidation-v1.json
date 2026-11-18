@@ -1,0 +1,11 @@
+{
+  "solution_ref": "pr-d-global-config-consolidation-v1",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/pr-d-global-config-consolidation-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/pr_d_global_config_rollback.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/run_pr_d_global_config_pg17_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/test_pr_d_global_config_source_v1.py": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261118064500_lf_global_config_consolidation_v1.sql": "MIGRATION"
+  }
+}
