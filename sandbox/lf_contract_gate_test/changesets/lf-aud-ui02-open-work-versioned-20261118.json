@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-aud-ui02-open-work-versioned-20261118",
+  "paths": {
+    "supabase/migrations/20261118154500_lf_aud_ui02_versioned_open_work_envelope_v2.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ui02_open_work_v6_pgdual.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-aud-ui02-open-work-versioned-20261118.json": "CHANGESET_MANIFEST"
+  }
+}
