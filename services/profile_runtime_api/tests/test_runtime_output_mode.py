@@ -466,6 +466,23 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertEqual(gate["status"], "FAIL")
         self.assertIn("JSON_SCHEMA_VALIDATION_FAILED", gate["blocking_codes"])
 
+    def test_audit_ui06_reject_canonical_receipt_with_status_blocked(self) -> None:
+        # Positive and negative runtime receiver assertions.
+        from pydantic import ValidationError
+        from profile_runtime_api.hashing import canonical_json_sha256
+        from profile_runtime_api.models import InputGovernanceReceipt
+
+        context = {"screen_code": "B2B-AUTH-001"}
+        body = {
+            "receipt_ref": "fixture://ig/01",
+            "current": True, "ready": True,
+            "context_sha256": canonical_json_sha256(context),
+            "context": context, "status": "READY",
+        }
+        self.assertEqual(InputGovernanceReceipt.model_validate(body).status, "READY")
+        with self.assertRaisesRegex(ValidationError, "INPUT_GOVERNANCE_STATUS_CONTRADICTS_READY"):
+            InputGovernanceReceipt.model_validate(body | {"status": "BLOCKED"})
+
 
 if __name__ == "__main__":
     unittest.main()
