@@ -156,6 +156,9 @@ on:
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
       - 'sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py'
       - 'sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/test_ig4064_advisory_dispatch_v1.py'
+      - 'supabase/migrations/20261118052000_lf_ig_m36_noncurrent_candidate_authority_v1.sql'
+      - 'sandbox/lf_contract_gate_test/input_governance/ig_m36_noncurrent_field_42_screen_rollback.sql'
+      - 'tests/test_ig_m36_noncurrent_candidate_authority_v1.py'
       - 'sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py'
       - 'sandbox/lf_contract_gate_test/input_governance/test_ig_m36_protected_runner_v1.py'
   workflow_dispatch:
@@ -1021,6 +1024,33 @@ jobs:
             .lf_ci/ig4064_advisory/independent_readback.log
           if-no-files-found: warn
           retention-days: 30
+
+  ig-m36-noncurrent-static:
+    name: IG M36 NONCURRENT candidate authority static guards
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout candidate without DB credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check source guard and rollback harness negative assertions
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import runpy
+          path='tests/test_ig_m36_noncurrent_candidate_authority_v1.py'
+          n=runpy.run_path(path)
+          tests=sorted((name,fn) for name,fn in n.items() if name.startswith('test_') and callable(fn))
+          assert len(tests)==3, f'IG_M36_STATIC_TEST_COUNT:{len(tests)}'
+          for name,fn in tests:
+              fn()
+              print('PASS_'+name.upper())
+          print('IG_M36_NONCURRENT_STATIC_PASS 3/3')
+          PY
 
   profile-runtime-binding-fleet-conformance:
     name: profile-runtime-binding-fleet-conformance
