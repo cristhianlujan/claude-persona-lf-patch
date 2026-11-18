@@ -152,17 +152,38 @@ CREATE TRIGGER trg_politicas_rate_limit_parameter_provenance
         check("CHAT9_D1_POSITIVE_IN_TX_PASS" in positive.stdout,"POSTIMAGE_IN_TX_MISMATCH")
         check(readback()==before,"POSITIVE_SEPARATE_READBACK_NOT_RESTORED")
         checks={"positive_begin_rollback":True,"independent_readback":True}
+        # Every preimage tamper must itself obey the live provenance guard;
+        # otherwise the fixture only tests the tamper's rejection, not the migration.
+        legacy_provenance=("jsonb_build_object("
+                           "'origin_type','UNCLASSIFIED_LEGACY',"
+                           "'value_status','LEGACY_UNCLASSIFIED')")
         negatives={
-            "wrong_login_scope":("UPDATE lf_ops.politicas_rate_limit SET scope_key='IP' WHERE rate_limit_policy_id=1;",
-                                  "CHAT9_D1_EXACT_SOURCE_POLICY_DRIFT"),
-            "wrong_otp_burst":("UPDATE lf_ops.politicas_rate_limit SET burst_limit=7 WHERE rate_limit_policy_id=7;",
-                                "CHAT9_D1_EXACT_SOURCE_POLICY_DRIFT"),
-            "duplicate_target":("INSERT INTO lf_ops.politicas_rate_limit(policy_code,resource_code,window_seconds,max_requests,burst_limit,scope_key,status,rate_limit_policy_id) VALUES('EXISTING','AUTH_LOGIN_FAILED_PASSWORD',900,5,5,'USER','CANDIDATO',10);",
-                                "CHAT9_D1_RATE_POLICY_COUNT_OR_TARGET_DRIFT"),
-            "rules_count_drift":("DELETE FROM lf_ops.reglas WHERE codigo='RULE_0579';",
-                                  "CHAT9_D1_RULE_BASELINE_DRIFT"),
-            "rate_count_drift":("DELETE FROM lf_ops.politicas_rate_limit WHERE rate_limit_policy_id=9;",
-                                "CHAT9_D1_RATE_POLICY_COUNT_OR_TARGET_DRIFT"),
+            "wrong_login_scope":(
+                f"UPDATE lf_ops.politicas_rate_limit SET scope_key='IP', "
+                f"parameter_provenance=jsonb_build_object('scope_key',{legacy_provenance}) "
+                f"WHERE rate_limit_policy_id=1;",
+                "CHAT9_D1_EXACT_SOURCE_POLICY_DRIFT"),
+            "wrong_otp_burst":(
+                f"UPDATE lf_ops.politicas_rate_limit SET burst_limit=7, "
+                f"parameter_provenance=jsonb_build_object('burst_limit',{legacy_provenance}) "
+                f"WHERE rate_limit_policy_id=7;",
+                "CHAT9_D1_EXACT_SOURCE_POLICY_DRIFT"),
+            "duplicate_target":(
+                "INSERT INTO lf_ops.politicas_rate_limit("
+                "policy_code,resource_code,window_seconds,max_requests,burst_limit,"
+                "scope_key,status,rate_limit_policy_id,parameter_provenance) "
+                "VALUES('EXISTING','AUTH_LOGIN_FAILED_PASSWORD',900,5,5,'USER','CANDIDATO',10,"
+                f"jsonb_build_object('window_seconds',{legacy_provenance},"
+                f"'max_requests',{legacy_provenance},"
+                f"'burst_limit',{legacy_provenance},"
+                f"'scope_key',{legacy_provenance}));",
+                "CHAT9_D1_RATE_POLICY_COUNT_OR_TARGET_DRIFT"),
+            "rules_count_drift":(
+                "DELETE FROM lf_ops.reglas WHERE codigo='RULE_0579';",
+                "CHAT9_D1_RULE_BASELINE_DRIFT"),
+            "rate_count_drift":(
+                "DELETE FROM lf_ops.politicas_rate_limit WHERE rate_limit_policy_id=9;",
+                "CHAT9_D1_RATE_POLICY_COUNT_OR_TARGET_DRIFT"),
             "missing_parameter_provenance":(
                 "UPDATE lf_ops.politicas_rate_limit SET scope_key='USER' WHERE rate_limit_policy_id=1;",
                 "PARAMETER_PROVENANCE_REQUIRED")
