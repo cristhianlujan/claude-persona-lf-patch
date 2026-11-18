@@ -840,7 +840,7 @@ Deno.test("CP2: E21 runtime pantalla_id from SQL ticket rejects foreign worker s
   assertEquals(r2.payload.pantalla_id,51);
 });
 
-Deno.test("LF-AUD-UI-04: direct BLOCKED cannot be promoted by nested READY", async () => {
+Deno.test("CP2: LF-AUD-UI-04: direct BLOCKED cannot be promoted by nested READY", async () => {
   const h = harness({inputStatus:"READY",runtimeDirectStatus:"BLOCKED"});
   const {response,payload}=await invokeRuntime(h,{
     action:"input_readiness_context_pack_runtime_v1",
@@ -853,7 +853,7 @@ Deno.test("LF-AUD-UI-04: direct BLOCKED cannot be promoted by nested READY", asy
   assertEquals((payload.result as Record<string,unknown>).status,"BLOCKED");
 });
 
-Deno.test("LF-AUD-UI-04: direct HUMAN_DECISION cannot be promoted by nested READY", async () => {
+Deno.test("CP2: LF-AUD-UI-04: direct HUMAN_DECISION cannot be promoted by nested READY", async () => {
   const h = harness({inputStatus:"READY",runtimeDirectStatus:"HUMAN_DECISION_REQUIRED"});
   const {response,payload}=await invokeRuntime(h,{
     action:"input_readiness_context_pack_runtime_v1",
