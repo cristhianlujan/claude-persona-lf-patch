@@ -675,6 +675,15 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         const governed = result.result && typeof result.result === "object" && !Array.isArray(result.result)
           ? result.result as Record<string, unknown>
           : {};
+        // Identity scope precedes any material BLOCKED/READY response,
+        // including a contradictory top-level 409 carrying third-party findings.
+        if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
+          return json({
+            outcome:"BLOCKED", code:"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH",
+            execution_id:executionId, pantalla_id:pantallaId,
+            consumer:CONTEXT_PACK_CONSUMER,
+          },409);
+        }
         const terminalStatus = typeof governed.status === "string" ? governed.status : directStatus;
         // LF-AUD-UI-04: a contradictory BLOCKED/HUMAN result is never READY.
         // Retain the source RAW for the same profile/IG continuation decision.
@@ -729,6 +738,37 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             transport: "DIRECT_EDGE_INVOCATION",
             result,
           }, 409);
+        }
+
+        // LF-AUD-UI-03: a READY IG receipt must identify the exact screen,
+        // consumer and current run; no sibling/stale result may be reused.
+        if (terminalStatus === "READY") {
+          const observedRun = governed.run_id;
+          const observedTime = governed.generated_at;
+          const generatedMs = typeof observedTime === "string"
+            ? Date.parse(observedTime) : Number.NaN;
+          const ageMs = Date.now() - generatedMs;
+          if (governed.pantalla_id !== pantallaId ||
+              governed.consumer !== CONTEXT_PACK_CONSUMER ||
+              typeof observedRun !== "number" ||
+              !Number.isSafeInteger(observedRun) || observedRun < 1) {
+            return json({
+              outcome:"BLOCKED",code:"IG_CONTEXT_PACK_READY_IDENTITY_INVALID",
+              execution_id:executionId,pantalla_id:pantallaId,
+              consumer:CONTEXT_PACK_CONSUMER,terminal_status:terminalStatus,
+              result,
+            },409);
+          }
+          if (governed.execution_mode !== "REUSE_COMPLETED_CURRENT_RUN" ||
+              !Number.isFinite(generatedMs) ||
+              ageMs < -300_000 || ageMs > 300_000) {
+            return json({
+              outcome:"BLOCKED",code:"IG_CONTEXT_PACK_READY_CURRENTNESS_UNVERIFIED",
+              execution_id:executionId,pantalla_id:pantallaId,
+              consumer:CONTEXT_PACK_CONSUMER,terminal_status:terminalStatus,
+              result,
+            },409);
+          }
         }
 
         if (terminalStatus !== "READY") {
