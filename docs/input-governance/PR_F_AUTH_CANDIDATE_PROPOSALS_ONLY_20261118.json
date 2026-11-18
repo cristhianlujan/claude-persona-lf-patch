@@ -1,0 +1,127 @@
+{
+  "schema_version": "LF_PR_F_AUTH_RULE_PROPOSALS_DOCUMENT_ONLY_V1",
+  "state": "NOT_STAGED_NOT_APPROVED",
+  "source_decision": "OWNER_DECLARATION_2026-11-18_02:30_LIMA_NON_IDENTITY_VERIFIED",
+  "creation_mechanism_readback": {
+    "legacy_candidate_writer": "public.lf_regla_candidate_write_v1",
+    "legacy_requires": "Active governed CREACION_REGLA_LF execution with target rule and enabled mode binding; no signature or V2 receipt checked by this legacy function",
+    "modern_v2": "public.lf_ig_rule_owner_decide_v2 / lf_skill_o_rule_create_v2",
+    "modern_requires": "Individual owner decision record, independent semantic judge, source/proposal SHA and proper parent RUN; creates and finalizes in one transaction",
+    "result": "NO_LOAD: no valid governed rule-creation execution supplied; do not bypass V2 by INSERT migration or mint IDs/receipts."
+  },
+  "new_rule_proposals": [
+    {
+      "proposed_code": "PROP-B2B-AUTH-MFA-CONDITIONAL-001",
+      "estado_propuesto": "CANDIDATO",
+      "categoria": "AUTENTICACION",
+      "titulo": "MFA condicional por inactividad de dispositivo o antiguedad de clave",
+      "descripcion": "Para los perfiles humanos B2B 1 a 6, el servidor exige MFA por OTP al correo registrado cuando el dispositivo no se ha utilizado durante el periodo configurado AUTH/MFA_DEVICE_IDLE_DAYS o cuando la contrasena del usuario supera el periodo configurado AUTH/MFA_PASSWORD_AGE_MONTHS desde el ultimo cambio. Los periodos son parametros globales; nunca umbrales embebidos en la regla. El primer factor sigue siendo obligatorio, y antes de un OTP requerido no se emite una sesion operativa. Las condiciones se evaluan en backend con evidencia verificable y sin que el cliente modifique el estado de autenticacion.",
+      "razon": "Propuesta derivada de la decision del dueno IG 02:30; no equivale a firma ni promocion. Requiere reconciliar el estado vigente de SEC-B2B-MFA (id 3), politica 19 y reglas AUTH-018/019 antes de uso.",
+      "valor_config": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "scope": "AUTH",
+        "idle_days_parameter_ref": "AUTH/MFA_DEVICE_IDLE_DAYS",
+        "password_age_months_parameter_ref": "AUTH/MFA_PASSWORD_AGE_MONTHS",
+        "mfa_factor": "EMAIL_OTP",
+        "decision_authority": "SERVER_ONLY",
+        "session_before_required_mfa": "DENY",
+        "production_authorized": false,
+        "pending_policies": [
+          "SEC-B2B-MFA",
+          "SEC-B2B-MFA-FACTOR-ELIGIBILITY"
+        ],
+        "implementation_status": "PENDING_GOVERNED_RULE_RUN_POLICY_RECONCILIATION_QA"
+      }
+    },
+    {
+      "proposed_code": "PROP-B2B-AUTH-TRUSTED-DEVICE-C-001",
+      "estado_propuesto": "CANDIDATO",
+      "categoria": "AUTENTICACION",
+      "titulo": "Dispositivo confiable opcion C: 30 dias sin uso por dispositivo",
+      "descripcion": "Cada dispositivo confiable es la unidad de medicion de actividad. El backend comprueba ultimo uso autenticado registrado en servidor. Un dispositivo nuevo, no reconocido o sin uso por el periodo AUTH/MFA_DEVICE_IDLE_DAYS obliga a un OTP por correo verificado por servidor antes de sesion operativa. El acceso desde otro dispositivo no reinicia el contador de este dispositivo. La confianza se revoca ante eventos de seguridad; no se permite reconocimiento decidido por cliente.",
+      "razon": "No asumir que la duracion absoluta configurable por empresa de SEC-B2B-TRUSTED-DEVICE (id 25) equivale a inactividad por dispositivo. Reconciliar politica id 25 y AUTH-033 bajo governance.",
+      "valor_config": {
+        "device_activity_unit": "PER_USER_DEVICE_SERVER_VERIFIED",
+        "new_or_unrecognized_device_outcome": "EMAIL_OTP_REQUIRED",
+        "idle_parameter_ref": "AUTH/MFA_DEVICE_IDLE_DAYS",
+        "trust_scope": "DEVICE",
+        "other_device_activity_resets_idle": false,
+        "device_recognition_authority": "SERVER_ONLY",
+        "mfa_before_operational_session": "REQUIRED_ON_TRIGGER",
+        "policy_id": 25,
+        "production_authorized": false,
+        "implementation_status": "PENDING_GOVERNED_RULE_RUN_POLICY_RECONCILIATION_QA"
+      }
+    },
+    {
+      "proposed_code": "PROP-B2B-AUTH-INTICO-SMS-CONTINGENCY-001",
+      "estado_propuesto": "CANDIDATO",
+      "categoria": "AUTENTICACION",
+      "titulo": "SMS Intico solo por contingencia autorizada de soporte",
+      "descripcion": "Cuando el usuario informa que el OTP por correo no llega, el soporte verifica identidad y habilita temporalmente una contingencia SMS con proveedor Intico para esa solicitud, por servidor, con autorizacion y auditoria. No existe fallback SMS automatico ante un solo retraso, y el usuario no puede habilitar el canal. El OTP SMS debe verificarse del lado servidor antes de habilitar acceso, sin rebajar el control normal ni alterar el metodo por defecto.",
+      "razon": "Intico es proveedor propuesto por el dueno, no se acredita contrato, credenciales ni implementacion; la politica central 19 sigue CANDIDATO y debe reconciliarse.",
+      "valor_config": {
+        "provider": "INTICO",
+        "default_enabled": false,
+        "activation_authority": "SUPPORT_PERMISSION_VERIFIED",
+        "activation_condition": "EMAIL_DELIVERY_FAILURE_CONFIRMED_AND_IDENTITY_VERIFIED",
+        "automatic_fallback": "DENY",
+        "client_activates_fallback": false,
+        "server_verified_otp": true,
+        "activation_audit_required": true,
+        "policy_dependency_id": 19,
+        "provider_connection_status": "NOT_VERIFIED",
+        "production_authorized": false
+      }
+    },
+    {
+      "proposed_code": "PROP-B2B-AUTH-PASSWORD-LOCKOUT-TIERS-001",
+      "estado_propuesto": "CANDIDATO",
+      "categoria": "AUTENTICACION",
+      "titulo": "Bloqueo escalonado ante fallas de contrasena con parametros AUTH",
+      "descripcion": "El servidor contabiliza solamente eventos de fallo de contrasena validada, separados de solicitudes HTTP, OTP y rate limiting. Los tres tramos consecutivos se parametrizan por AUTH/LOGIN_LOCKOUT_ATTEMPTS_1, AUTH/LOGIN_LOCKOUT_MINUTES_1, AUTH/LOGIN_LOCKOUT_ATTEMPTS_2, AUTH/LOGIN_LOCKOUT_MINUTES_2, AUTH/LOGIN_LOCKOUT_ATTEMPTS_3 y AUTH/LOGIN_LOCKOUT_MINUTES_3. No activar enforcement mientras no exista definicion del sujeto del contador (cuenta, IP, dispositivo o combinacion), la ventana de medicion y los eventos de reinicio; dejar estos tres campos explicitamente PENDIENTES para decision del dueno, sin inventar.",
+      "razon": "Separa intentos de contrasena fallidos de RATE-B2B-LOGIN y de MFA; AUTH-047/049 ya declaran esta dependencia MISSING/CANDIDATO. La aprobacion de constantes no aprueba unidad, ventana o reseteo.",
+      "valor_config": {
+        "parameter_refs": [
+          "AUTH/LOGIN_LOCKOUT_ATTEMPTS_1",
+          "AUTH/LOGIN_LOCKOUT_MINUTES_1",
+          "AUTH/LOGIN_LOCKOUT_ATTEMPTS_2",
+          "AUTH/LOGIN_LOCKOUT_MINUTES_2",
+          "AUTH/LOGIN_LOCKOUT_ATTEMPTS_3",
+          "AUTH/LOGIN_LOCKOUT_MINUTES_3"
+        ],
+        "countable_event": "PASSWORD_INVALID_CREDENTIALS",
+        "excluded_events": [
+          "HTTP_RATE_LIMITED",
+          "MFA_REQUIRED",
+          "OTP_INVALID",
+          "SERVICE_UNAVAILABLE"
+        ],
+        "counter_subject": "PENDING_OWNER_DECISION",
+        "measurement_window": "PENDING_OWNER_DECISION",
+        "counter_reset_conditions": "PENDING_OWNER_DECISION",
+        "enforcement_enabled": false,
+        "related_existing_rules": [
+          "B2B-RULE-AUTH-047",
+          "B2B-RULE-AUTH-049"
+        ],
+        "production_authorized": false
+      }
+    }
+  ],
+  "forbidden_effects": [
+    "INSERT INTO lf_ops.reglas",
+    "UPDATE lf_ops.reglas",
+    "RULE_CREATE_APPLY",
+    "lf_regla_candidate_write_v1 without valid governed RUN",
+    "Promotion to VIGENTE"
+  ],
+  "status": "PROPOSALS_ONLY_UNTIL_GOVERNED_CREATION_RUN_AND_OWNERSHIP_EVIDENCE"
+}
