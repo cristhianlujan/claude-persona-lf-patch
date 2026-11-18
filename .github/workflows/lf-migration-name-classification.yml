@@ -659,7 +659,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
 
-pr-j3-native-v2-guard-pg17:
+  pr-j3-native-v2-guard-pg17:
     name: PR-J3A owner V2 source-bound PG17 rollback and independent readback
     if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j3-owner-v2-no-promotion-guard-20261118'
     runs-on: ubuntu-latest
