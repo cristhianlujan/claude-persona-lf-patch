@@ -211,5 +211,5 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
 if __name__=="__main__":
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(IG4064AdvisoryPathTests)
     result=unittest.TextTestRunner(verbosity=2).run(suite)
-    if result.wasSuccessful():print("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS 10/10")
+    if result.wasSuccessful():print("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS 13/13")
     raise SystemExit(0 if result.wasSuccessful() else 1)
