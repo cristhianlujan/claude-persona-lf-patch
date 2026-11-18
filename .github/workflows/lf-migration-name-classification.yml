@@ -126,3 +126,78 @@ jobs:
             .lf_ci/pr_c_payment_provider_config/postgresql.log
           if-no-files-found: warn
           retention-days: 30
+
+  # Only PR-D; no production secrets. PG17 Docker service is disposable.
+  pr-d-global-config-pg17-real-rollback:
+    name: PR-D 4079 real PostgreSQL 17 BEGIN/ROLLBACK global config
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4079 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_d_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_d_ephemeral_pg17_only
+      PR_D_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-D exact HEAD, no persistent credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Validate PR-D migration source and rollback harness
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_d_global_config_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_d_global_config_pg17_v1.py
+      - name: Install PostgreSQL client, check local container
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Execute real PR-D BEGIN/ROLLBACK and independent source readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_d_global_config_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_d_global_config/report.json').read_text())
+          assert r['status']=='PASS' and r['sql_exit_code']==0
+          assert r['independent_readback']=='RESTORED'
+          assert r['source_snapshot_rows']==1 and all(r['assertions'].values())
+          assert r['remote_supabase_tested'] is False
+          print('PR_D_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive real PG17 evidence and hashes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-d-4079-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_d_global_config/report.json
+            .lf_ci/pr_d_global_config/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
