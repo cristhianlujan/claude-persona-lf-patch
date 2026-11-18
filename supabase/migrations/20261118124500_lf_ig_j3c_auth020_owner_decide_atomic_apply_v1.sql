@@ -4,6 +4,27 @@
 -- until the separately governed Step80/report closure.
 -- No changes to PR-H code, AUTH-018/019, policy20, permission38, RLS or rulesets.
 BEGIN;
+-- EKB ACTIVE LF-OWNER-OVERRIDE-NO_PROMOTION-MANIFEST-20261115-001:
+-- A documentary no_promotion flag is NOT an authorization veto.
+-- Keep parent EXECUTION, exact request SHA, invoker, source and owner guards.
+DO $j3c_guard$
+DECLARE d text; d0 text;
+BEGIN
+ d:=pg_get_functiondef('public.lf_ig_rule_child_guard_v2(text,jsonb,text,text,text,text)'::regprocedure);
+ IF md5(d) <> 'ce5d02fc728ec18fc0ab1963364c392c'
+ THEN RAISE EXCEPTION 'PR_J3C_CHILD_GUARD_PREIMAGE_DRIFT'; END IF;
+ d0:=d;
+ d:=replace(d,
+   $from_j3c$ AND manifest->>'no_promotion'='true';$from_j3c$,
+   $to_j3c$;$to_j3c$);
+ IF d=d0 OR position($no_promotion_j3c$manifest->>'no_promotion'='true'$no_promotion_j3c$ IN d)>0
+ THEN RAISE EXCEPTION 'PR_J3C_CHILD_GUARD_REPLACEMENT_FAILED'; END IF;
+ IF position($sha_j3c$p_request_sha IS DISTINCT FROM v_par.request_sha256$sha_j3c$ IN d)=0
+    OR position($write_j3c$manifest->>'read_only'='true' AND manifest->>'no_write'='true'$write_j3c$ IN d)=0
+ THEN RAISE EXCEPTION 'PR_J3C_CHILD_GUARD_SECURITY_GATES_MISSING'; END IF;
+ EXECUTE d;
+END $j3c_guard$;
+
 DO $j3c$
 DECLARE parent_run CONSTANT text:='EXEC-PROFILE-GATE2-D53B143BD852CB33AB25257F';
         rule CONSTANT text:='B2B-RULE-AUTH-020';
