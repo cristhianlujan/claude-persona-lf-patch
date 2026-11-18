@@ -888,3 +888,73 @@ jobs:
           path: .lf_ci/niubiz_unique_email/report.json
           if-no-files-found: warn
           retention-days: 30
+
+  # IG Chat9: policy-only migration test, ephemeral PG17, no Supabase credentials.
+  chat9-d1-rate-limits-pg17-rollback:
+    name: Chat9 D1-D1b-D1c real PG17 rollback and independent readback
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-d1-rate-limits-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_ephemeral_pg17_only
+      CHAT9_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact candidate HEAD without storing credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Compile D1 PG test and verify isolated PostgreSQL client
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_d1_rate_limits_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute genuine PG17 D1 positive and negatives with transaction ROLLBACK
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_d1_rate_limits_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path(".lf_ci/chat9_d1_rate_limits/report.json").read_text())
+          assert report["status"]=="PASS"
+          assert report["positive_sql_exit_code"]==0
+          assert all(report["checks"].values()) and len(report["checks"])==7
+          assert report["preimage"]==report["separate_readback"]
+          assert report["remote_supabase_written"] is False
+          assert report["owner_v2_rule_run"]=="NOT_APPLICABLE_POLICIES_ONLY"
+          print("CHAT9_D1_REAL_POSTGRESQL17_BEGIN_ROLLBACK_PASS_7_OF_7")
+          PY
+      - name: Archive exact HEAD ephemeral PostgreSQL proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat9-d1-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat9_d1_rate_limits/report.json
+          if-no-files-found: warn
+          retention-days: 30
