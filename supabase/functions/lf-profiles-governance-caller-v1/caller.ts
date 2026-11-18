@@ -399,6 +399,7 @@ async function callRuntime(
   slug: string,
   body: Record<string, unknown>,
   timeoutMs = config.defaultTimeoutMs,
+  preserveBlocked409 = false,
 ): Promise<Record<string, unknown>> {
   const preflight=validateLfIgTransport("CALLER_EDGE:"+slug,body,IG_RUNTIME_REQUIRED[slug] ?? []);
   if(preflight) throw new CallerFault(preflight.code,400,{field:preflight.field,downstream_call_attempted:false});
@@ -420,6 +421,13 @@ async function callRuntime(
     payload = { raw: text.slice(0, 1000) };
   }
   if (!response.ok) {
+    // LF-AUD-UI-05: preserve complete findings on governed HTTP409 BLOCKED.
+    const nested = payload.result && typeof payload.result === "object" &&
+      !Array.isArray(payload.result) ? payload.result as Record<string, unknown> : {};
+    if (preserveBlocked409 && response.status === 409 &&
+        (payload.status === "BLOCKED" || nested.status === "BLOCKED")) {
+      return payload;
+    }
     throw new Error(`${slug.toUpperCase()}_${response.status}:${JSON.stringify(payload).slice(0, 1500)}`);
   }
   return payload;
@@ -669,6 +677,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           config.inputGovernanceSlug,
           { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER, ticket: runtimeTicket },
           config.recurationTimeoutMs,
+          true, // only this ticket-bound IG route preserves HTTP409 BLOCKED
         );
 
         const directStatus = typeof result.status === "string" ? result.status : "";

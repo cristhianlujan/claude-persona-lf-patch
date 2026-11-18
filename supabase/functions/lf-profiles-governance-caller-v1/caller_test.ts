@@ -112,6 +112,8 @@ type HarnessOptions = {
   inputStatus?: string;
   runtimeDirectStatus?: string;
   runtimeResultOverrides?: Record<string, unknown>;
+  runtimeHttpStatus?: number;
+  runtimeFindings?: Array<Record<string, unknown>>;
   runtimeResultPantallaId?: number;
   runtimeTicketAuthorized?: boolean;
   agentRequiresTicket?: boolean;
@@ -165,7 +167,8 @@ function harness(options: HarnessOptions = {}) {
           pantalla_id:options.runtimeResultPantallaId ?? id,
           consumer:"CONTEXT_PACK",execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
           generated_at:new Date().toISOString(),
-          ...(options.runtimeResultOverrides ?? {}) } }), { status: 200 });
+          ...(options.runtimeResultOverrides ?? {}),
+          findings:options.runtimeFindings ?? [] } }), { status: options.runtimeHttpStatus ?? 200 });
       }
       if (url.includes("/rest/v1/lf_operation_execution?")) {
         const executionId = decodeURIComponent(url.split("execution_id=eq.")[1]?.split("&")[0] ?? "");
@@ -905,4 +908,31 @@ Deno.test("CP2: LF-AUD-UI-03: current READY source-bound run is accepted", async
   });
   assertEquals(response.status,200);
   assertEquals(payload.run_id,10051);
+});
+
+Deno.test("CP2: LF-AUD-UI-05: HTTP 409 BLOCKED preserves all IG findings",async()=>{
+  const sourceFindings=[
+    {code:"RULE_FAMILY_MISSING",family_code:"SECURITY",severity:"HIGH"},
+    {code:"SOURCE_NOT_CURRENT",family_code:"AUDIT",severity:"MEDIUM"},
+  ];
+  const h=harness({inputStatus:"BLOCKED",runtimeHttpStatus:409,runtimeFindings:sourceFindings});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.outcome,"BLOCKED");
+  assertEquals((payload.result as {result:{findings:unknown}}).result.findings,sourceFindings);
+});
+
+Deno.test("CP2: LF-AUD-UI-05: a malformed HTTP 409 is still a transport fault",async()=>{
+  const h=harness({inputStatus:"READY",runtimeHttpStatus:409});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assert(response.status!==200,"Non-blocked 409 must not be READY");
+  assert(payload.outcome!=="TERMINAL");
 });
