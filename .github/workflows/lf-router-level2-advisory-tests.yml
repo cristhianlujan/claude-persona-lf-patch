@@ -156,6 +156,8 @@ on:
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
       - 'sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py'
       - 'sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/test_ig4064_advisory_dispatch_v1.py'
+      - 'sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py'
+      - 'sandbox/lf_contract_gate_test/input_governance/test_ig_m36_protected_runner_v1.py'
   workflow_dispatch:
     inputs:
       ig4064_rollback_only:
@@ -1056,3 +1058,103 @@ jobs:
             test_runtime_output_mode.RuntimeOutputModeTest.test_focused_mode_uses_schema_not_production_only_validator \
             test_runtime_output_mode.RuntimeOutputModeTest.test_focused_schema_still_fails_closed_on_missing_required_field
           python -m unittest discover -s services/profile_runtime_api/tests -p 'test_generic_profile_runtime_binding.py' -v
+
+  # A2 has no protected secrets in PR context; HEAD and git blobs are fixed.
+  ig-m36-4075-trusted-static:
+    name: IG M36 PR4075 exact-source pins and nine negatives (no DB)
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout candidate code for unprivileged static verification
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout frozen PR4075 as inert SQL data
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: 55f7f74f1b626ce965efa564dedd890fc417cbfb
+          path: candidate-readonly
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Reject other HEAD blobs psql meta and transaction escape
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py
+          python3 -I sandbox/lf_contract_gate_test/input_governance/test_ig_m36_protected_runner_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py preflight
+
+  # Executes only after Train bot merges A2 itself. Code is trusted main;
+  # PR4075 is still frozen DRAFT inert SQL. Never run a candidate script.
+  ig-m36-4075-rollback-after-a2-train:
+    name: IG M36 PR4075 protected real PG BEGIN ROLLBACK after A2 Train
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
+      github.actor == 'lf-migration-train[bot]' &&
+      startsWith(github.event.head_commit.message, 'merge(train): PR #4076')
+    runs-on: ubuntu-latest
+    environment: lf-merge-train
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      pull-requests: read
+    concurrency:
+      group: ig-m36-pr4075-rollback-serial
+      cancel-in-progress: false
+    steps:
+      - name: Checkout only trusted main workflow and runner code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Checkout frozen #4075 SQL as inert data (no secrets)
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: 55f7f74f1b626ce965efa564dedd890fc417cbfb
+          path: candidate-readonly
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify exact HEAD and blob pins before protected execution
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -I sandbox/lf_contract_gate_test/input_governance/test_ig_m36_protected_runner_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py preflight
+      - name: Install psql client if missing
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+      - name: Execute pinned M36 within single BEGIN ROLLBACK and independent readback
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGSSLMODE: require
+        run: |
+          set -euo pipefail
+          test -n "$PGPASSWORD" || { echo BLOCK_PROTECTED_DB_SECRET_UNAVAILABLE; exit 2; }
+          python3 sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py execute
+      - name: Publish protected SQL logs and SHA256 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-m36-pr4075-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/ig_m36_4075/report.json
+            .lf_ci/ig_m36_4075/postgresql.log
+            .lf_ci/ig_m36_4075/independent_readback.log
+          if-no-files-found: warn
+          retention-days: 30
