@@ -46,7 +46,7 @@ BEGIN
 END;
 $baseline$;
 
-\ir ../../../supabase/migrations/20261118052000_ig_m36_noncurrent_candidate_authority_v1.sql
+\ir ../../../supabase/migrations/20261118052000_lf_ig_m36_noncurrent_candidate_authority_v1.sql
 
 CREATE TEMP TABLE ig_m36_graph ON COMMIT DROP AS
 SELECT z.pantalla_id,programacion.fn_input_screen_canonical_graph(z.pantalla_id,19) graph
