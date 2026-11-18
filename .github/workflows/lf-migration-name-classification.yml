@@ -1203,3 +1203,71 @@ jobs:
           path: .lf_ci/chat9_client_config/report.json
           if-no-files-found: warn
           retention-days: 30
+
+  chat9-client-v2-proof-pg17:
+    name: IG Chat9 two source-bound rules PG17 rollback functional
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-client-v2-proof-readback-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_v2proof_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_v2proof_only
+      CHAT9_V2_PROOF_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight real PostgreSQL client
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_client_v2_functional_proof_pg17.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute real PG17 positive and negative with BEGIN ROLLBACK, independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_client_v2_functional_proof_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('.lf_ci/chat9_client_v2_functional_proof/report.json').read_text())
+          assert j["status"]=="PASS"
+          assert len(j["checks"])==9 and all(j["checks"].values())
+          assert j["preimage"]==j["independent_readback"]
+          assert j["executed_pg17_real"] and j["simulated_functional_test"]
+          assert not j["remote_supabase_written"]
+          assert j["owner_decide_v2"]=="NOT_CALLED"
+          print("CHAT9_L2_PG17_FUNCTIONAL_CONTRACT_9_OF_9_PASS")
+          PY
+      - name: Archive source-bound PG17 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat9-v2-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat9_client_v2_functional_proof/report.json
+          if-no-files-found: warn
+          retention-days: 30

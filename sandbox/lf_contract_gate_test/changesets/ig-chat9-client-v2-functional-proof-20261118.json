@@ -1,0 +1,10 @@
+{
+  "solution_ref": "ig-chat9-client-v2-functional-proof-20261118",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "docs/input-governance/IG_CHAT9_CLIENT_RULE_V2_EXACT_SOURCE_PATCH_20261118.json": "DOCUMENTATION",
+    "sandbox/lf_contract_gate_test/changesets/ig-chat9-client-v2-functional-proof-20261118.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/run_chat9_client_v2_functional_proof_pg17.py": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261118233636_lf_ig_chat9_client_v2_preflight_proof_only_v1.sql": "MIGRATION"
+  }
+}
