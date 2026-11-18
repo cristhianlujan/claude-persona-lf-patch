@@ -2,6 +2,8 @@
 -- The Migration Train event is a proof anchor only; actual PG17 functional
 -- rollback and negatives are separately required before inserting an evidence row.
 -- Step70/Owner V2 remain pending; never infer them from this migration alone.
+-- Other chats may add unrelated CANDIDATO rows. Source-bound codes+SHA, not
+-- global inventory counts, are the exact correctness and collision guard.
 BEGIN;
 DO $ig_chat9_l2_proof$
 DECLARE
@@ -9,11 +11,9 @@ DECLARE
  n int;
 BEGIN
  IF to_regclass('public.lf_ig_functional_train_evidence_v1') IS NULL
- OR (SELECT count(*) FROM public.lf_global_config)<>46
+ OR (SELECT count(*) FROM public.lf_global_config)<46
  OR (SELECT count(*) FROM public.lf_global_config WHERE scope='CLIENT')<>6
- OR (SELECT count(*) FROM lf_ops.reglas)<>579
- OR (SELECT count(*) FROM lf_ops.reglas WHERE estado='VIGENTE')<>438
- OR (SELECT count(*) FROM lf_ops.reglas WHERE estado='CANDIDATO')<>141
+ OR (SELECT count(*) FROM lf_ops.reglas WHERE codigo IN ('REG_SES_003','REG_ATQ_016') AND estado='VIGENTE')<>2
  THEN RAISE EXCEPTION 'CHAT9_L2_PROOF_SOURCE_BASELINE_DRIFT'; END IF;
  FOR r IN SELECT * FROM (VALUES
    ('REG_ATQ_016','EXEC-PROFILE-GATE2-20142FEB637CF8230EFB86E5','c16436927a07128022e33b932ea8ee6f8e3dc550264b059b8130e56e4ce143c7','b7b4f96167366592d1da5b7ea167f32525d9a7bb91b02d04eadbe1908e422293','37c1394198971e65902d444205dc0cf48a8c839958df53f14fb2db7914b58bae'),
