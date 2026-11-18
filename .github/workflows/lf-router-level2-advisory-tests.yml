@@ -1198,7 +1198,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
       github.actor == 'lf-migration-train[bot]' &&
-      startsWith(github.event.head_commit.message, 'merge(train): PR #0')
+      startsWith(github.event.head_commit.message, 'merge(train): PR #4077')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -1211,7 +1211,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          result="$(gh api "repos/$GITHUB_REPOSITORY/pulls/0")"
+          result="$(gh api "repos/$GITHUB_REPOSITORY/pulls/4077")"
           jq -e --arg sha "$GITHUB_SHA" --arg repo "$GITHUB_REPOSITORY" '
             .merged_at != null and
             .merge_commit_sha == $sha and
@@ -1219,7 +1219,7 @@ jobs:
             .head.repo.full_name == $repo and
             .base.ref == "main"
           ' <<< "$result" >/dev/null
-          files="$(gh api "repos/$GITHUB_REPOSITORY/pulls/0/files?per_page=100")"
+          files="$(gh api "repos/$GITHUB_REPOSITORY/pulls/4077/files?per_page=100")"
           jq -e '
             length == 4 and
             (map(.filename)|sort) == ([
