@@ -110,11 +110,11 @@ VALUES
 CREATE FUNCTION lf_ops.fn_b2b_backoffice_login_contract(text,text,text)
 RETURNS TABLE(policy_code text,max_requests integer)
 LANGUAGE sql STABLE
-AS $fx$ SELECT rp.policy_code,rp.max_requests FROM lf_ops.politicas_rate_limit rp $fx$;
+AS $fx$ SELECT rp.policy_code,rp.max_requests from lf_ops.politicas_rate_limit rp $fx$;
 CREATE FUNCTION lf_ops.fn_screen_contract_v1(text,text,text)
 RETURNS TABLE(policy_code text,max_requests integer)
 LANGUAGE sql STABLE
-AS $fx$ SELECT rp.policy_code,rp.max_requests FROM lf_ops.politicas_rate_limit rp $fx$;
+AS $fx$ SELECT rp.policy_code,rp.max_requests from lf_ops.politicas_rate_limit rp $fx$;
 """
         sql_ok(setup,"SETUP_FAILED")
         before=readback()
