@@ -1,0 +1,83 @@
+name: IG Niubiz per-client email config transactional verification
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*_lf_niubiz_unique_client_email_params_v1.sql"
+      - "sandbox/lf_contract_gate_test/input_governance/run_niubiz_unique_email_pg_v1.py"
+      - ".github/workflows/lf-niubiz-unique-email-rollback.yml"
+permissions:
+  contents: read
+jobs:
+  niubiz-pg-rollback:
+    if: github.head_ref == 'lf/ig-niubiz-unique-email-20261118'
+    name: NIUBIZ real PostgreSQL ${{ matrix.pg }} rollback and readback
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['17', '18']
+    services:
+      postgres:
+        image: postgres:${{ matrix.pg }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_email_ephemeral_ci_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_email_ephemeral_ci_only
+      NIUBIZ_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR exact HEAD, no persisted credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Install PostgreSQL client and validate Python source
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_niubiz_unique_email_pg_v1.py
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Real BEGIN/ROLLBACK; negative cases; independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_niubiz_unique_email_pg_v1.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path(".lf_ci/niubiz_unique_email/report.json").read_text())
+          assert r["status"]=="PASS"
+          assert len(r["checks"])==6 and all(r["checks"].values())
+          assert r["independent_readback"]==r["preimage"]
+          assert r["preimage"]["config"]==11 and r["projected"]["config"]==12
+          assert r["preimage"]["rules"]==r["projected"]["rules"]==579
+          assert r["niubiz_hyphen_sandbox"]=="NOT_TESTED"
+          assert r["source_bound_gov_v2"]=="NOT_INVOKED_RULES_ABSENT"
+          assert r["remote_supabase_written"] is False
+          print("NIUBIZ_PER_CLIENT_EMAIL_CONFIG_REAL_PG_BEGIN_ROLLBACK_PASS")
+          PY
+      - name: Archive exact-head PostgreSQL report and hashes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niubiz-email-pg${{ matrix.pg }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/niubiz_unique_email/report.json
+          if-no-files-found: warn
+          retention-days: 30
