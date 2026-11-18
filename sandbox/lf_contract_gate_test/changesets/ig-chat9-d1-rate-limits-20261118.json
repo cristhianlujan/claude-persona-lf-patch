@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ig-chat9-d1-rate-limits-20261118",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ig-chat9-d1-rate-limits-20261118.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/run_chat9_d1_rate_limits_pg17_v1.py": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261118212347_lf_ig_chat9_d1_b2b_rate_limits_v1.sql": "MIGRATION"
+  }
+}
