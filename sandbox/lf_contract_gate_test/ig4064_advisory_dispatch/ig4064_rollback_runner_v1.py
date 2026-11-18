@@ -23,6 +23,9 @@ HEAD = "6d9f33fe300432270fdf078a35d1ae56cc1c8fab"
 MIGRATION = "supabase/migrations/20261117073400_lf_ig_recovery_family_positive_na_v1.sql"
 HARNESS = "sandbox/ig_recovery_family_positive_na_v1/rollback_test.sql"
 TEMPLATE = Path("sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_template_v1.sql")
+# Both Git blobs and the PR HEAD are exact/current as of PR-A. Future #4064
+# rebases MUST update all three literals in one trusted-main change; no
+# dynamic PR-head trust or auto-discovery is allowed.
 BLOBS = {
     MIGRATION: "370bfb1682bac0ca8e30f9cef179f7939d5a659f",
     HARNESS: "3df03ef574f2cd6e653ab7c38194c8bc04f6851d",
@@ -270,6 +273,26 @@ def assembled_sql() -> tuple[str, dict]:
             "TX_STEP_ORDER_INVALID")
     return sql, digests
 
+def independent_readback_sql(sql: str) -> str:
+    """Extract only the post-ROLLBACK DO block, never the comment's prose.
+
+    The trusted SQL template uses a same-line prose comment following
+    '-- Same psql session, AFTER rollback.'. Splitting on that substring
+    used to promote the remainder of the comment into executable SQL.
+    """
+    marker = "-- Same psql session, AFTER rollback."
+    require(sql.count(marker) == 1, "INDEPENDENT_READBACK_MARKER_DRIFT")
+    suffix = sql.split(marker, 1)[1]
+    _, newline, body = suffix.partition("\n")
+    require(bool(newline), "INDEPENDENT_READBACK_COMMENT_NOT_TERMINATED")
+    post_sql = body.strip()
+    require(post_sql.startswith("DO $post$\n") and post_sql.endswith("\n$post$;"),
+            "INDEPENDENT_READBACK_POST_DO_MISSING")
+    require(top_level_sql_statements(post_sql) == [("DO",)],
+            "INDEPENDENT_READBACK_EXTRA_STATEMENT")
+    return post_sql + "\n"
+
+
 def pg_env() -> dict[str, str]:
     env = dict(os.environ)
     require(bool(env.get("PGPASSWORD")), "PROTECTED_DB_SECRET_UNAVAILABLE")
@@ -309,11 +332,9 @@ def execute() -> int:
         report["postgresql_log_sha256"] = sha256(evidence.encode())
 
         # Independent connection AFTER original session closed: read only.
-        post_marker = "-- Same psql session, AFTER rollback."
-        require(post_marker in sql, "INDEPENDENT_READBACK_BLOCK_MISSING")
-        post_sql = sql.split(post_marker, 1)[1].strip()
+        post_sql = independent_readback_sql(sql)
         rb = OUT / "independent_readback.sql"
-        rb.write_text(post_sql + "\n", encoding="utf-8")
+        rb.write_text(post_sql, encoding="utf-8")
         rb_rc, rb_log = psql(rb, limit=90)
         (OUT / "independent_readback.log").write_text(rb_log, encoding="utf-8")
         report["independent_readback_exit_code"] = rb_rc
