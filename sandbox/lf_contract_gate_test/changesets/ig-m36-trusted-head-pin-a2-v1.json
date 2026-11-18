@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ig-m36-trusted-head-pin-a2-v1",
+  "paths": {
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ig-m36-trusted-head-pin-a2-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/ig_m36_protected_runner_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/test_ig_m36_protected_runner_v1.py": "INPUT_GOVERNANCE"
+  }
+}
