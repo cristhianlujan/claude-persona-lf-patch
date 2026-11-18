@@ -36,7 +36,7 @@ BEGIN
        SELECT 1 FROM public.lf_ig_rule_change_v2 c
        WHERE c.rule_code='B2B-RULE-AUTH-020'
          AND c.state='VIGENTE_VERIFIED'
-         AND c.candidate_snapshot_sha256='16729473fcfc98cb04a04d2489cfa6338cb59f1c1cace12ce9443a4c24bee061'
+         AND c.finalized_snapshot_sha256='16729473fcfc98cb04a04d2489cfa6338cb59f1c1cace12ce9443a4c24bee061'
     )
  THEN RAISE EXCEPTION 'PR_J4_AUTH020_V2_FINALIZED_PREREQUISITE_MISSING'; END IF;
  IF NOT EXISTS (
