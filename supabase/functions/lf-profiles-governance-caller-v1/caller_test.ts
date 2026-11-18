@@ -111,6 +111,7 @@ type HarnessOptions = {
   allowlistPayload?: unknown;
   inputStatus?: string;
   runtimeDirectStatus?: string;
+  runtimeResultOverrides?: Record<string, unknown>;
   runtimeResultPantallaId?: number;
   runtimeTicketAuthorized?: boolean;
   agentRequiresTicket?: boolean;
@@ -161,8 +162,10 @@ function harness(options: HarnessOptions = {}) {
         }
         const id = Number(body?.pantalla_id ?? 0);
         return new Response(JSON.stringify({ ...(options.runtimeDirectStatus ? {status:options.runtimeDirectStatus} : {}), result: { status: inputStatus, run_id: 10000 + id,
-          ...(options.runtimeResultPantallaId === undefined ? {} :
-            {pantalla_id:options.runtimeResultPantallaId}) } }), { status: 200 });
+          pantalla_id:options.runtimeResultPantallaId ?? id,
+          consumer:"CONTEXT_PACK",execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
+          generated_at:new Date().toISOString(),
+          ...(options.runtimeResultOverrides ?? {}) } }), { status: 200 });
       }
       if (url.includes("/rest/v1/lf_operation_execution?")) {
         const executionId = decodeURIComponent(url.split("execution_id=eq.")[1]?.split("&")[0] ?? "");
@@ -862,4 +865,44 @@ Deno.test("CP2: LF-AUD-UI-04: direct HUMAN_DECISION cannot be promoted by nested
   });
   assertEquals(response.status,409);
   assertEquals(payload.code,"IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: READY with no run identity must fail", async () => {
+  const h = harness({runtimeResultOverrides:{run_id:null}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: READY from wrong consumer must fail", async () => {
+  const h = harness({runtimeResultOverrides:{consumer:"STORY_CREATOR"}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: stale READY cannot authorize continuation", async () => {
+  const h = harness({runtimeResultOverrides:{generated_at:"2020-01-01T00:00:00.000Z"}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_READY_CURRENTNESS_UNVERIFIED");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: current READY source-bound run is accepted", async () => {
+  const h=harness();
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,200);
+  assertEquals(payload.run_id,10051);
 });

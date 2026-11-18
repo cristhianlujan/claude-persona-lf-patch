@@ -134,7 +134,7 @@ const PROFILE_RUNTIME_FOR_TEST = {
   execution_id: PROFILE_EXECUTION_FOR_TEST,
   pantalla_id: 51,
 };
-function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; directStatus?: string } = {}) {
+function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; directStatus?: string; readyOverrides?: Record<string, unknown> } = {}) {
   const repo = "cristhianlujan/claude-persona-lf-patch";
   const ref = "refs/heads/main";
   const env: Record<string, string> = {
@@ -172,7 +172,11 @@ function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; di
           result = { error: "IG_PROFILE_TICKET_REQUIRED" };
         } else {
           result = { ...(options.directStatus ? {status:options.directStatus} : {}),
-            result: { status: options.agentState ?? "READY", run_id: 10051 } };
+            result: { status: options.agentState ?? "READY", run_id: 10051,
+              pantalla_id:51,consumer:"CONTEXT_PACK",
+              execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
+              generated_at:new Date().toISOString(),
+              ...(options.readyOverrides ?? {}) } };
         }
       } else {
         throw new Error("TEST_UNEXPECTED_ROUTE " + url);
@@ -242,4 +246,40 @@ Deno.test("LF-AUD-UI-04 executable negative: HUMAN with inner READY stays 409",a
   const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
   eq(o.response.status,409);
   eq(o.payload.code,"IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED");
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: READY missing run ID is 409",async()=>{
+  const h=ticketBridgeHarness({readyOverrides:{run_id:null}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: READY consumer mismatch is 409",async()=>{
+  const h=ticketBridgeHarness({readyOverrides:{consumer:"STORY_CREATOR"}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: historical READY generated_at is stale",async()=>{
+  const h=ticketBridgeHarness({readyOverrides:{generated_at:"2020-01-01T00:00:00Z"}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_READY_CURRENTNESS_UNVERIFIED");
+});
+
+Deno.test("LF-AUD-UI-03 executable positive: bound fresh READY continues",async()=>{
+  const h=ticketBridgeHarness();
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,200);
+  eq(o.payload.run_id,10051);
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: foreign screen blocked without foreign RAW",async()=>{
+  const h=ticketBridgeHarness({agentState:"BLOCKED",readyOverrides:{pantalla_id:52}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH");
+  assert(o.payload.result===undefined,"Foreign governance RAW must not be disclosed");
 });
