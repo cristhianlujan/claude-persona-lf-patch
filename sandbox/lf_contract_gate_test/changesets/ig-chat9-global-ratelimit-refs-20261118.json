@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ig-chat9-global-ratelimit-refs-20261118",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ig-chat9-global-ratelimit-refs-20261118.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/run_chat9_global_rate_refs_pg17_v1.py": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261118220000_lf_ig_global_rate_limit_config_refs_v1.sql": "MIGRATION"
+  }
+}
