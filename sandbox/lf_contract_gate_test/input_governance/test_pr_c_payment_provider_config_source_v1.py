@@ -5,7 +5,9 @@ import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20261118061500_lf_payment_provider_config_niubiz_generic_v1.sql"
+MIGRATIONS = list((ROOT / "supabase/migrations").glob("*_lf_payment_provider_config_niubiz_generic_v1.sql"))
+assert len(MIGRATIONS) == 1, f"PR_C_MIGRATION_SOURCE_NOT_UNIQUE:{MIGRATIONS}"
+MIGRATION = MIGRATIONS[0]
 HARNESS = ROOT / "sandbox/lf_contract_gate_test/input_governance/pr_c_payment_provider_config_rollback.sql"
 EMAIL = "niubiz-generico@lf-ficticio.invalid"
 
@@ -46,7 +48,7 @@ class PaymentProviderConfigSourceTest(unittest.TestCase):
         self.assertEqual(sql.splitlines().count("BEGIN;"), 1)
         self.assertEqual(sql.splitlines().count("ROLLBACK;"), 1)
         self.assertEqual(sql.splitlines().count("COMMIT;"), 0)
-        self.assertIn("\\ir ../../../supabase/migrations/20261118061500_lf_payment_provider_config_niubiz_generic_v1.sql", sql)
+        self.assertEqual(sql.count("@@MIGRATION_SQL@@"), 1)
         for claim in (
             "PR_C_IN_TRANSACTION_PASS",
             "PR_C_DUPLICATE_REJECTED_PASS",
