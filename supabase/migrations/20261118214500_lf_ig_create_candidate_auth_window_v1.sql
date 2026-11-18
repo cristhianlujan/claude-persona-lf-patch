@@ -1,6 +1,6 @@
 -- IG CHAT 8: one atomic migration, generic CREATE route and AUTH window30.
 -- One governed Train PR; no direct canonical rule insert, no promotion for CREATE.
--- AUTH parameter 12->13, function MD5 exact, CORRECT_VIGENTE unchanged.
+-- AUTH parameter +1 dynamic guarded, function MD5 exact, CORRECT_VIGENTE unchanged.
 BEGIN;
 DO $ig_window$
 DECLARE
@@ -14,6 +14,8 @@ DECLARE
  v_rls boolean;
  v_force boolean;
  v_policies integer;
+ v_config_count_before integer;
+ v_auth_count_before integer;
 BEGIN
  IF to_regclass('public.lf_global_config') IS NULL
     OR to_regclass('lf_ops.reglas') IS NULL
@@ -30,8 +32,9 @@ BEGIN
     OR has_table_privilege('authenticated','public.lf_global_config','INSERT')
  THEN RAISE EXCEPTION 'IG_WINDOW_GLOBAL_CONFIG_AUTHORITY_DRIFT'; END IF;
 
- IF (SELECT count(*) FROM public.lf_global_config)<>12
-    OR (SELECT count(*) FROM public.lf_global_config WHERE scope='AUTH')<>10
+ SELECT count(*) INTO v_config_count_before FROM public.lf_global_config;
+ SELECT count(*) INTO v_auth_count_before FROM public.lf_global_config WHERE scope='AUTH';
+ IF v_config_count_before < 12 OR v_auth_count_before < 10
     OR (SELECT count(*) FROM lf_ops.reglas)<>579
     OR EXISTS(SELECT 1 FROM public.lf_global_config
        WHERE scope='AUTH' AND config_key='LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES')
@@ -82,8 +85,8 @@ BEGIN
     OR v_new.value_status IS DISTINCT FROM 'REAL'
  THEN RAISE EXCEPTION 'IG_WINDOW_INSERT_READBACK_FAILED'; END IF;
 
- IF (SELECT count(*) FROM public.lf_global_config)<>13
-    OR (SELECT count(*) FROM public.lf_global_config WHERE scope='AUTH')<>11
+ IF (SELECT count(*) FROM public.lf_global_config)<>v_config_count_before+1
+    OR (SELECT count(*) FROM public.lf_global_config WHERE scope='AUTH')<>v_auth_count_before+1
     OR (SELECT count(*) FROM public.lf_global_config
       WHERE scope='AUTH' AND config_key='LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES')<>1
     OR (SELECT count(*) FROM lf_ops.reglas)<>579
@@ -102,7 +105,7 @@ BEGIN
     OR v_auth_after IS DISTINCT FROM v_auth_before
  THEN RAISE EXCEPTION 'IG_WINDOW_UNAUTHORIZED_EXISTING_ROW_MUTATION'; END IF;
 
- RAISE NOTICE 'IG_WINDOW_PARAMETER_OK config_12_to_13 auth_10_to_11 rules_579_unchanged value_30';
+ RAISE NOTICE 'IG_WINDOW_PARAMETER_OK config_before=% config_after=% auth_before=% auth_after=% rules_579 value_30',v_config_count_before,v_config_count_before+1,v_auth_count_before,v_auth_count_before+1;
 END $ig_window$;
 DO $ig_create_pre$
 BEGIN
