@@ -169,7 +169,7 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
         # Real template has prose on the SAME line as the trusted marker.
         sql=TEMPLATE.read_text()
         block=runner.independent_readback_sql(sql)
-        self.assertTrue(block.startswith("DO $post$\\n"))
+        self.assertTrue(block.startswith("DO $post$\n"))
         self.assertTrue(block.rstrip().endswith("$post$;"))
         self.assertNotIn("Fail if definitions or historical rows drifted.",block)
         self.assertEqual(runner.top_level_sql_statements(block),[("DO",)])
@@ -181,16 +181,16 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
         self.assertEqual(template.count(marker),1)
         bad_cases={
             "missing":template.replace(marker,"-- wrong marker",1),
-            "duplicate":template+ "\\n" + marker+" another copy\\n",
+            "duplicate":template+ "\n" + marker+" another copy\n",
             "unterminated":template.split(marker,1)[0]+marker,
             "prose_as_sql":template.replace(
-                marker+" Fail if definitions or historical rows drifted.\\n",
-                marker+"\\nFail if definitions or historical rows drifted.\\n",1),
+                marker+" Fail if definitions or historical rows drifted.\n",
+                marker+"\nFail if definitions or historical rows drifted.\n",1),
             "extra_sql":template.replace(
-                marker+" Fail if definitions or historical rows drifted.\\n",
-                marker+" note\\nSELECT 1;\\n",1),
+                marker+" Fail if definitions or historical rows drifted.\n",
+                marker+" note\nSELECT 1;\n",1),
             "no_post_do":template.replace("DO $post$","DO $other$",1),
-            "trailing_sql":template+"\\nSELECT 1;\\n",
+            "trailing_sql":template+"\nSELECT 1;\n",
         }
         for name,sql in bad_cases.items():
             with self.subTest(case=name):
