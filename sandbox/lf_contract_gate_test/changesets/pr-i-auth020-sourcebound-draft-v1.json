@@ -1,0 +1,12 @@
+{
+  "solution_ref": "pr-i-auth020-sourcebound-draft-v1",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "docs/input-governance/PR_I_AUTH020_SOURCE_BOUND_PATCH_20261118.json": "DOCUMENTARY_ONLY",
+    "docs/input-governance/PR_I_AUTH020_GATE_READBACK_AND_TEST_MATRIX_20261118.md": "DOCUMENTARY_ONLY",
+    "sandbox/lf_contract_gate_test/changesets/pr-i-auth020-sourcebound-draft-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/pr_i_auth020_projection_rollback.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/run_pr_i_auth020_projection_pg17_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py": "INPUT_GOVERNANCE"
+  }
+}

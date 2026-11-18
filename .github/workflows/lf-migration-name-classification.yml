@@ -428,3 +428,157 @@ jobs:
             .lf_ci/pr_h_functional_impact/postgresql.log
           if-no-files-found: warn
           retention-days: 30
+
+  # PR-I only: evidence is a SQL config projection, never actual login runtime.
+  pr-i-auth020-projection-pg17-rollback:
+    name: PR-I 4084 real PostgreSQL 17 AUTH020 source projection rollback
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4084 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_i_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_i_ephemeral_pg17_only
+      PR_I_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-I exact HEAD with no stored credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Validate exact patch and NOT_TESTED functional evidence labels
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_i_auth020_projection_pg17_v1.py
+      - name: PostgreSQL17 client
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Real PR-I SQL projection BEGIN/ROLLBACK with separate connection readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_i_auth020_projection_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_i_auth020/report.json').read_text())
+          assert r['status']=='PASS_CONFIG_ONLY' and r['sql_exit_code']==0
+          assert r['readback']=='PR_I_RESTORED_SOURCE_AUTH020_UNCHANGED'
+          assert r['actual_login_runtime_functional_checks']=='NOT_TESTED'
+          assert r['actual_login_runtime_negative_checks']=='NOT_TESTED'
+          assert r['is_pr_h_functional_evidence']=='NO'
+          assert r['remote_db_writes'] is False
+          assert r['owner_v2_decision_recorded'] is False
+          assert all(r['assertions'].values())
+          print('PR_I_PG17_CONFIG_ONLY_ROLLBACK_PASS_NOT_FUNCTIONAL_RECEIPT')
+          PY
+      - name: Archive PR-I SQL configuration projection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-i-4084-pg17-config-only-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_i_auth020/report.json
+            .lf_ci/pr_i_auth020/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR-J inherits the ordinary workflow entrypoint; no new PR workflow.
+  rule-contract-postgres17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j-auth020-rule-contract-evidence-20261118'
+    name: PR-J AUTH020 RULE_CONTRACT_LEVEL real PG17 16 checks and rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_i_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_i_ephemeral_pg17_only
+      PR_J_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact PR-J HEAD with no persisted token
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Check source package and compile contract runner
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_j_auth020_rule_contract_pg17_v1.py
+      - name: Check isolated PG17 service
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute positive and negative RULE_CONTRACT_LEVEL model, BEGIN ROLLBACK and separate readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j_auth020_rule_contract_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path(".lf_ci/pr_j_auth020/report.json").read_text())
+          assert r["status"]=="PASS_RULE_CONTRACT_LEVEL"
+          assert len(r["checks"])==16 and all(r["checks"].values())
+          assert r["readback"]=="PR_J_INDEPENDENT_READBACK_RESTORED"
+          assert r["sql_exit_code"]==0 and r["readback_exit_code"]==0
+          assert r["login_backend_e2e"]=="NOT_TESTED"
+          assert r["remote_supabase_written"] is False
+          assert r["owner_v2_decision_recorded"] is False
+          print("PR_J_RULE_CONTRACT_LEVEL_REAL_PG17_16_16_PASS")
+          PY
+      - name: Archive reproducible evidence hashes and PostgreSQL logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-j-auth020-rule-contract-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_j_auth020/report.json
+            .lf_ci/pr_j_auth020/postgresql.log
+          if-no-files-found: warn
+          retention-days: 90
