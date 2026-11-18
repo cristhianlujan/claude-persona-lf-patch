@@ -88,7 +88,7 @@ ROLLBACK;
                                "IG_CHAT9_L2_CLIENT_BASELINE_DRIFT"),
          "rule_atq_drift":("UPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo='REG_ATQ_016';",
                           "IG_CHAT9_L2_CLIENT_BASELINE_DRIFT"),
-         "config_collision":("INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status) VALUES('CLIENT','ONBOARDING_ACCOUNT_MAX_CONCURRENT_SESSIONS','9','INTEGER','REAL');",
+         "config_collision":("DELETE FROM public.lf_global_config WHERE scope='AUTH' AND config_key='BASELINE_40'; INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status) VALUES('CLIENT','ONBOARDING_ACCOUNT_MAX_CONCURRENT_SESSIONS','9','INTEGER','REAL');",
                               "IG_CHAT9_L2_KEY_EXISTS")
         }
         for name,(tamper,error) in negatives.items():
