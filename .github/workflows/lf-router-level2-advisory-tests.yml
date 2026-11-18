@@ -5,6 +5,15 @@ name: LF Router Level2 Advisory Tests
 on:
   pull_request:
     paths:
+      - 'profiles/**/contracts/runtime_binding.json'
+      - 'profiles/product_director_lf/validators/runtime_semantic_utility.py'
+      - 'services/profile_runtime_api/profile_runtime_api/repository.py'
+      - 'services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py'
+      - 'services/profile_runtime_api/tests/test_runtime_binding_fleet_conformance.py'
+      - 'services/profile_runtime_api/tests/test_repository_runtime_schema.py'
+      - 'services/profile_runtime_api/tests/test_runtime_output_mode.py'
+      - 'scripts/lf_profile_native_resume.py'
+      - 'skills/profile_creator/validators/run_bound_profile_output_validator_v1.py'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02_qualification/**'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c7_material_sufficiency_v1.py'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c7_material_sufficiency_v1.py'
@@ -1008,3 +1017,40 @@ jobs:
             .lf_ci/ig4064_advisory/independent_readback.log
           if-no-files-found: warn
           retention-days: 30
+
+  profile-runtime-binding-fleet-conformance:
+    name: profile-runtime-binding-fleet-conformance
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact candidate (no production credentials)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deterministic consumer dependencies
+        run: python -m pip install 'jsonschema==4.26.0' 'pydantic==2.13.4'
+      - name: Fleet, canonical schema and negative selection regressions
+        env:
+          PYTHONPATH: services/profile_runtime_api
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s services/profile_runtime_api/tests -p 'test_runtime_binding_fleet_conformance.py' -v
+          python -m unittest discover -s services/profile_runtime_api/tests -p 'test_repository_runtime_schema.py' -v
+          # Only binding selection/contract gates; semantic-utility negatives are
+          # explicitly outside this PR (LF-UI-AUD-04) and remain visible in
+          # their separate legacy suite, not converted to PASS here.
+          PYTHONPATH=services/profile_runtime_api:services/profile_runtime_api/tests python -m unittest -v \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_focused_mode_is_typed_and_allowed \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_mode_on_non_ui_profile_fails_closed \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_focused_mode_binds_exact_single_schema \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_ui_auto_uses_declared_production_default_schema \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_unsupported_repository_mode_fails_closed \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_focused_mode_uses_schema_not_production_only_validator \
+            test_runtime_output_mode.RuntimeOutputModeTest.test_focused_schema_still_fails_closed_on_missing_required_field
+          python -m unittest discover -s services/profile_runtime_api/tests -p 'test_generic_profile_runtime_binding.py' -v

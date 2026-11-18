@@ -11,22 +11,22 @@ class RepositoryRuntimeSchemaTest(unittest.TestCase):
         self.repo = Path(__file__).resolve().parents[3]
         self.bindings = RepositoryBindings(self.repo, max_prompt_chars=100_000)
 
-    def test_product_director_auto_ambiguity_fails_before_schema_synthesis(self) -> None:
-        with self.assertRaises(RepositoryError) as raised:
-            self.bindings.runtime_schema("product_director_lf", "AUTO")
-        self.assertEqual(raised.exception.code, "PROFILE_RUNTIME_SCHEMA_AMBIGUOUS")
+    def test_product_director_auto_uses_declared_default_without_synthesis(self) -> None:
+        selected = self.bindings.runtime_schema("product_director_lf", "AUTO")
+        self.assertEqual(selected.source_refs, ("profiles/product_director_lf/schemas/product_direction_spec.schema.json",))
+        self.assertEqual(selected.raw, (self.repo / selected.source_refs[0]).read_bytes())
 
-    def test_ui_architect_auto_ambiguity_fails_before_schema_synthesis(self) -> None:
-        with self.assertRaises(RepositoryError) as raised:
-            self.bindings.runtime_schema("ui_architect", "AUTO")
-        self.assertEqual(raised.exception.code, "PROFILE_RUNTIME_SCHEMA_AMBIGUOUS")
+    def test_ui_architect_auto_uses_declared_default_without_synthesis(self) -> None:
+        selected = self.bindings.runtime_schema("ui_architect", "AUTO")
+        self.assertEqual(selected.source_refs, ("profiles/ui_architect/schemas/ui_production_spec.schema.json",))
+        self.assertEqual(selected.raw, (self.repo / selected.source_refs[0]).read_bytes())
 
     def test_quality_explicit_runtime_schema_remains_byte_bound(self) -> None:
         schema = self.bindings.runtime_schema("quality_pack", "AUTO")
         self.assertEqual(len(schema.source_refs), 1)
         self.assertEqual(
             schema.source_refs[0],
-            "profiles/quality_pack/schemas/runtime_output.schema.json",
+            "profiles/quality_pack/schemas/quality_review.schema.json",
         )
         self.assertEqual(len(schema.sha256), 64)
         self.assertEqual(schema.raw, (self.repo / schema.source_refs[0]).read_bytes())
