@@ -27,6 +27,10 @@ Fuente consultada: `public.lf_global_config` (11 filas), `lf_ops.reglas` (579 fi
 - **R-PAY-043 (no intervenida):** los recibos van al email real del cliente. La regla fuente no está registrada aquí; no se declara verificada.
 - **R-PAY-045 (pendiente sandbox):** verificar con Niubiz que el guion `-` funciona en el identificador local `lf-codigo` del formulario alojado. Se debe registrar PASS real, rechazo explícito o alternativa autorizada. Actualmente **NOT_TESTED**.
 
+## Restricción externa verificada: Gmail
+
+La [documentación oficial de Gmail](https://support.google.com/mail/answer/9211434?hl=es) indica que los nombres de usuario `@gmail.com` **no pueden contener guiones (-)** y deben tener entre 6 y 30 caracteres. Por tanto, el formato literal solicitado `nombre.apellido.lf-codigo@gmail.com` **no puede registrarse como una cuenta Gmail nueva**; se mantiene como parámetro decidido, **no como dirección entregable ni identidad de buzón real**. Como el dueño acepta rebotes, este hecho no altera el formato aprobado, pero convierte en obligatoria la validación de aceptación del identificador por **Niubiz sandbox** antes de usarlo en checkout; además deben validarse privacidad y límites de longitud. No declarar PASS del proveedor por haber pasado un test PostgreSQL.
+
 ## Riesgos no cerrados
 
 1. **Guion sin prueba en Niubiz:** no se declara PASS ni que la interfaz deja de temblar. El fallo de inicio numérico proviene del reporte operativo del dueño, no de un ensayo controlado.
