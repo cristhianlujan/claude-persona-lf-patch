@@ -26,6 +26,8 @@ BEGIN
  EXECUTE after_ddl;
  post_md5:=md5(pg_get_functiondef('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)'::regprocedure));
  IF post_md5<>md5(after_ddl) THEN RAISE EXCEPTION 'PR_J3_OWNER_V2_POSTIMAGE_UNEXPECTED'; END IF;
+ IF post_md5<>'d537e91abe7da40fb54636ccfb8c51ef' THEN
+  RAISE EXCEPTION 'PR_J3_OWNER_V2_EXACT_CANDIDATE_MD5_DRIFT:%',post_md5; END IF;
  IF has_function_privilege('anon','public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)','EXECUTE')
  OR has_function_privilege('authenticated','public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)','EXECUTE')
  THEN RAISE EXCEPTION 'PR_J3_OWNER_V2_ACL_EXPOSED'; END IF;
