@@ -1,0 +1,156 @@
+{
+  "schema_version": "LF_NIUBIZ_THREE_CANDIDATE_PROPOSALS_V1",
+  "status": "PROPOSAL_AND_TESTS_ONLY_NO_CANONICAL_WRITES",
+  "source": {
+    "main_head": "35d981b7b1845b05049a2f200b63af37f4c8b99d",
+    "migration_version": "20261118214500",
+    "canonical_rules_before": 579,
+    "config_rows_before": 40
+  },
+  "target": {
+    "canonical_rules_after": 582,
+    "all_new_rules_state": "CANDIDATO",
+    "promotion_authorized": false
+  },
+  "blocked_dependency": "RESOLVED_PR_4097_MERGED_TRAIN_44406065297_CHECK_SOURCE_BOUND_V2_GATE_PER_RULE",
+  "governance": {
+    "decision_user": "Cristhian Lujan",
+    "decision_type": "ONE_OWNER_DECISION_V2_PER_RULE",
+    "source_snapshot_kind": "REGLA_ABSENT_SHA256_FROM_CANONICAL",
+    "require_official_product_director_run": true,
+    "require_step_70_evidence": true,
+    "require_real_train_source_bound_receipt": true,
+    "require_real_begin_rollback_and_independent_readback": true,
+    "no_fabricated_run_or_pass": true,
+    "no_direct_insert_into_lf_ops_reglas": true,
+    "no_production_activation": true,
+    "requires_rule_contract_level_train_evidence_per_rule": true
+  },
+  "rules": [
+    {
+      "code": "REG_CLIENT_NIUBIZ_UNIQUE_EMAIL_001",
+      "screen_code": "CHECKOUT_ESTADO_TARJETA",
+      "change_kind": "CREATE",
+      "changes": {
+        "categoria": "pago",
+        "titulo": "Identificador de correo técnico único por cliente para Niubiz",
+        "descripcion": "En cada intento de pago con Niubiz, el servidor consulta en public.lf_global_config los parámetros PAGOS/NIUBIZ_EMAIL_TEMPLATE y PAGOS/NIUBIZ_EMAIL_DOMAIN mediante scope/config_key; construye con esos valores vigentes un identificador técnico único, estable y reutilizable por cliente. Normaliza nombre y apellido a minúsculas, sin tildes ni espacios; el código es interno, persistente y único por cliente; el identificador no comienza con dígitos. Si faltan parámetros o identidad, ocurre colisión o Niubiz rechaza el identificador, bloquea el envío con error trazable, sin reutilizar un correo compartido ni inventar valores. El correo técnico no sustituye al correo real para los recibos. La aceptación por Niubiz de los caracteres de la plantilla, incluido el guion cuando corresponda, está NOT_TESTED y requiere prueba en sandbox; no habilita producción.",
+        "razon": "Elimina la repetición de correos ante Niubiz y mantiene separado el identificador técnico del canal de entrega real. Evita el defecto observado en formularios cuyo correo comienza con dígito sin asumir que el guion ya fue validado.",
+        "valor_config": {
+          "provider": "NIUBIZ",
+          "technical_email_usage": "PROVIDER_IDENTIFIER_ONLY",
+          "real_email_receipt_ref": "REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001",
+          "normalization": [
+            "LOWERCASE",
+            "REMOVE_DIACRITICS",
+            "REMOVE_WHITESPACE"
+          ],
+          "first_character": "LETTER_REQUIRED",
+          "client_code": "SHORT_STABLE_UNIQUE_INTERNAL_CLIENT_CODE",
+          "uniqueness_scope": "CLIENT_GLOBAL",
+          "reuse_same_client": true,
+          "on_missing_or_collision": "BLOCK_WITH_TRACEABLE_ERROR",
+          "on_provider_rejection": "BLOCK_WITH_TRACEABLE_ERROR",
+          "on_technical_mailbox_not_existing": "NOT_BLOCKING_AFTER_PROVIDER_ACCEPTANCE",
+          "hyphen_niubiz_sandbox": "NOT_TESTED",
+          "production_authorized": false,
+          "niubiz_email_config_refs": [
+            {
+              "scope": "PAGOS",
+              "config_key": "NIUBIZ_EMAIL_TEMPLATE"
+            },
+            {
+              "scope": "PAGOS",
+              "config_key": "NIUBIZ_EMAIL_DOMAIN"
+            }
+          ]
+        },
+        "es_transversal": false,
+        "origen": "LF_IG_NIUBIZ_EMAIL_UNICO_20261118"
+      }
+    },
+    {
+      "code": "REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001",
+      "screen_code": "CHECKOUT_PAGO_EXITOSO",
+      "change_kind": "CREATE",
+      "changes": {
+        "categoria": "pago",
+        "titulo": "Los recibos de pago llegan al correo real del cliente",
+        "descripcion": "El recibo o comprobante de un pago confirmado se dirige exclusivamente al correo real del cliente registrado y validado por LF, nunca al identificador técnico Niubiz derivado de public.lf_global_config (scope PAGOS; config_key NIUBIZ_EMAIL_TEMPLATE y NIUBIZ_EMAIL_DOMAIN). El backend conserva separados customer_email y niubiz_technical_email, destinados respectivamente a recibos y al proveedor. La emisión del recibo exige PAYMENT_CONFIRMED autoritativo; la aceptación preliminar y los rebotes del correo técnico no confirman el pago ni modifican el destinatario. Si falta correo real, se registra y atiende la incidencia sin sustituirlo por correo técnico o genérico.",
+        "razon": "Preserva la entrega de comprobantes al cliente y evita que el identificador del formulario Niubiz se use como canal de comunicación o evidencia del pago.",
+        "valor_config": {
+          "receipt_email_source": "CUSTOMER_REAL_REGISTERED_VERIFIED_EMAIL",
+          "provider_identifier_source": "NIUBIZ_UNIQUE_TECHNICAL_EMAIL",
+          "customer_receipt_destination": "REAL_EMAIL_ONLY",
+          "separate_fields": [
+            "customer_email",
+            "niubiz_technical_email"
+          ],
+          "receipt_trigger": "PAYMENT_CONFIRMED_AUTHORITATIVE",
+          "on_missing_real_email": "TRACEABLE_INCIDENT_NO_GENERIC_FALLBACK",
+          "provider_technical_email_not_receipt_destination": true,
+          "production_authorized": false,
+          "niubiz_email_config_refs": [
+            {
+              "scope": "PAGOS",
+              "config_key": "NIUBIZ_EMAIL_TEMPLATE"
+            },
+            {
+              "scope": "PAGOS",
+              "config_key": "NIUBIZ_EMAIL_DOMAIN"
+            }
+          ]
+        },
+        "es_transversal": false,
+        "origen": "LF_IG_NIUBIZ_EMAIL_UNICO_20261118"
+      }
+    },
+    {
+      "code": "REG_CLIENT_NIUBIZ_GENERIC_BOUNCE_001",
+      "screen_code": "CHECKOUT_ESTADO_CONFIRMANDO",
+      "change_kind": "CREATE",
+      "changes": {
+        "categoria": "pago",
+        "titulo": "Los rebotes del correo técnico Niubiz no invalidan el pago",
+        "descripcion": "El identificador técnico usado para Niubiz se deriva de public.lf_global_config mediante scope PAGOS y config_key NIUBIZ_EMAIL_TEMPLATE y NIUBIZ_EMAIL_DOMAIN; no necesita corresponder a un buzón existente. Si Niubiz admite el identificador y luego ocurre un rebote, LF lo acepta como evento informativo registrado en el reporte operativo del proveedor. El rebote por sí solo no confirma ni rechaza un pago ni modifica el envío del recibo al correo real. Si Niubiz rechaza el identificador por validación de formulario o API, es error trazable y bloquea el intento; nunca se fabrica PAYMENT_CONFIRMED. La aceptación de los caracteres de la plantilla vigente, incluido el guion si aparece, sigue NOT_TESTED hasta verificación real en sandbox Niubiz.",
+        "razon": "Distingue validación técnica del identificador, entregabilidad de correo y confirmación financiera, sin tratar un rebote aceptado como rechazo de pago.",
+        "valor_config": {
+          "provider": "NIUBIZ",
+          "technical_email_mailbox_required": false,
+          "generic_email_bounce_policy": "ACCEPT_AFTER_PROVIDER_ACCEPTANCE",
+          "bounce_source": "NIUBIZ_OPERATIONAL_REPORTS",
+          "bounce_is_payment_rejection": false,
+          "bounce_is_payment_confirmation": false,
+          "provider_format_rejection": "BLOCK_AND_TRACE",
+          "customer_receipt_email_source": "REAL_CUSTOMER_EMAIL",
+          "hyphen_niubiz_sandbox": "NOT_TESTED",
+          "sandbox_expected_evidence": "PROVIDER_HOSTED_FORM_ACTUAL_RESULT",
+          "production_authorized": false,
+          "niubiz_email_config_refs": [
+            {
+              "scope": "PAGOS",
+              "config_key": "NIUBIZ_EMAIL_TEMPLATE"
+            },
+            {
+              "scope": "PAGOS",
+              "config_key": "NIUBIZ_EMAIL_DOMAIN"
+            }
+          ]
+        },
+        "es_transversal": false,
+        "origen": "LF_IG_NIUBIZ_EMAIL_UNICO_20261118"
+      }
+    }
+  ],
+  "pending_provider_validation": {
+    "code": "NIUBIZ_SANDBOX_HYPHEN",
+    "status": "NOT_TESTED",
+    "risk": "Niubiz hosted form may reject '-' even when the technical email is allowed to bounce; provider acceptance must be verified independently."
+  },
+  "no_mailbox_requirement": {
+    "value": true,
+    "scope": "only provider technical email; never customer real email"
+  },
+  "parameter_policy": "Rules reference public.lf_global_config by scope/config_key only; config_value is read at runtime, never copied into rule description or valor_config.",
+  "implementation_status": "PROPOSALS_TESTS_ONLY_NO_PARENT_RUNS_NO_OWNER_DECISIONS"
+}
