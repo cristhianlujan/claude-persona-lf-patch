@@ -121,6 +121,12 @@ class InputGovernanceReceipt(StrictModel):
             raise ValueError("INPUT_GOVERNANCE_NOT_CURRENT")
         if self.ready is not True:
             raise ValueError("INPUT_GOVERNANCE_NOT_READY")
+        # LF-AUD-UI-06: READY booleans must match the canonical IG state.
+        if self.subject_mode == "NON_CANONICAL_ARTIFACT":
+            if self.status != "ADVISORY_READ_ONLY":
+                raise ValueError("INPUT_GOVERNANCE_STATUS_CONTRADICTS_READY")
+        elif self.status != "READY":
+            raise ValueError("INPUT_GOVERNANCE_STATUS_CONTRADICTS_READY")
         if canonical_json_sha256(self.context) != self.context_sha256:
             raise ValueError("INPUT_GOVERNANCE_CONTEXT_SHA256_MISMATCH")
 
