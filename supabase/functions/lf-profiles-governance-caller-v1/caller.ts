@@ -676,6 +676,25 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           ? result.result as Record<string, unknown>
           : {};
         const terminalStatus = typeof governed.status === "string" ? governed.status : directStatus;
+        // LF-AUD-UI-04: a contradictory BLOCKED/HUMAN result is never READY.
+        // Retain the source RAW for the same profile/IG continuation decision.
+        if (["BLOCKED", "HUMAN_DECISION_REQUIRED"].includes(directStatus) ||
+            ["BLOCKED", "HUMAN_DECISION_REQUIRED"].includes(terminalStatus)) {
+          const blockedStatus = [directStatus, terminalStatus].includes("HUMAN_DECISION_REQUIRED")
+            ? "HUMAN_DECISION_REQUIRED" : "BLOCKED";
+          return json({
+            outcome: "BLOCKED",
+            code: blockedStatus === "HUMAN_DECISION_REQUIRED"
+              ? "IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED"
+              : "IG_CONTEXT_PACK_BLOCKED",
+            execution_id: executionId,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            terminal_status: blockedStatus,
+            transport: "DIRECT_EDGE_INVOCATION",
+            result,
+          }, 409);
+        }
         if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
           return json({outcome:"BLOCKED",code:"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH",
             execution_id:executionId,pantalla_id:pantallaId,consumer:CONTEXT_PACK_CONSUMER},409);
