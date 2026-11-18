@@ -276,3 +276,79 @@ jobs:
             .lf_ci/pr_f_global_auth/postgresql.log
           if-no-files-found: warn
           retention-days: 30
+
+  # PR-G only: exact-head PostgreSQL 17 local BEGIN/ROLLBACK, reject foreign username.
+  pr-g-owner-username-pg17-rollback:
+    name: PR-G 4082 real PostgreSQL 17 owner username V2 rollback
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4082 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_g_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_g_ephemeral_pg17_only
+      PR_G_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-G exact HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Check PR-G static scope and deterministic preimage postimage
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_g_owner_username_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_g_owner_username_pg17_v1.py
+      - name: Ensure local PostgreSQL client ready
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Run PR-G authentic V2 code in disposable PostgreSQL17 BEGIN/ROLLBACK
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_g_owner_username_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_g_username_decision/report.json').read_text())
+          assert r['status']=='PASS' and r['sql_exit_code']==0
+          assert r['readback']=='PRG_RESTORED_0_3_ORIGINAL_MD5'
+          assert r['remote_supabase_written'] is False
+          assert r['live_user_decision_recorded'] is False
+          assert all(r['assertions'].values())
+          print('PR_G_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive PR-G PostgreSQL17 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-g-4082-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_g_username_decision/report.json
+            .lf_ci/pr_g_username_decision/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
