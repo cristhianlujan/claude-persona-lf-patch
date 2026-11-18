@@ -352,3 +352,79 @@ jobs:
             .lf_ci/pr_g_username_decision/postgresql.log
           if-no-files-found: warn
           retention-days: 30
+
+  # PR-H only: local ephemeral PostgreSQL17, exact SHA, full BEGIN/ROLLBACK.
+  pr-h-functional-train-gate-pg17-rollback:
+    name: PR-H 4083 real PostgreSQL 17 FUNCTIONAL Train gate rollback
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4083 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_h_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_h_ephemeral_pg17_only
+      PR_H_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact HEAD with no credential persistence
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Static gate and scope
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_h_functional_train_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_h_functional_train_pg17_v1.py
+      - name: Local PostgreSQL17 client
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Real PR-H positive FUNCTIONAL and negative source-bound tests under rollback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_h_functional_train_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.lf_ci/pr_h_functional_impact/report.json').read_text())
+          assert d['status']=='PASS' and d['sql_exit_code']==0
+          assert d['readback']=='PRH_RESTORED_0_0_3_ORIGINAL_MD5'
+          assert d['remote_supabase_written'] is False
+          assert d['test_fixture_not_real_owner_or_train_receipt'] is True
+          assert all(d['assertions'].values())
+          print('PR_H_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive hashes, logs and PG readback
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-h-4083-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_h_functional_impact/report.json
+            .lf_ci/pr_h_functional_impact/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30

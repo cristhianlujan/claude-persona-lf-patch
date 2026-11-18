@@ -1,0 +1,12 @@
+{
+  "solution_ref": "pr-h-functional-train-impact-gate-v1",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "docs/input-governance/PR_H_FUNCTIONAL_TRAIN_GATE_20261118.md": "DOCUMENTARY_ONLY",
+    "sandbox/lf_contract_gate_test/changesets/pr-h-functional-train-impact-gate-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/pr_h_functional_train_rollback.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/run_pr_h_functional_train_pg17_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/test_pr_h_functional_train_source_v1.py": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261118094000_lf_ig_functional_train_impact_gate_pr_h_v1.sql": "MIGRATION"
+  }
+}
