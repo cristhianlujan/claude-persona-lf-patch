@@ -156,7 +156,7 @@ on:
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
       - 'sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py'
       - 'sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/test_ig4064_advisory_dispatch_v1.py'
-      - 'supabase/migrations/20261118052000_ig_m36_noncurrent_candidate_authority_v1.sql'
+      - 'supabase/migrations/20261118052000_lf_ig_m36_noncurrent_candidate_authority_v1.sql'
       - 'sandbox/lf_contract_gate_test/input_governance/ig_m36_noncurrent_field_42_screen_rollback.sql'
       - 'tests/test_ig_m36_noncurrent_candidate_authority_v1.py'
   workflow_dispatch:
