@@ -66,7 +66,7 @@ def main():
               and source.count("UPDATE lf_ops.politicas_rate_limit")==2
               and source.count("INSERT INTO lf_ops.politicas_rate_limit")==1,
               "MIGRATION_WRITER_SHAPE_DRIFT")
-        check(not re.search(r"\\b(?:UPDATE|INSERT\\s+INTO|DELETE\\s+FROM)\\s+lf_ops\\.reglas\\b",source,re.I),
+        check(not re.search(r"\b(?:UPDATE|INSERT\s+INTO|DELETE\s+FROM)\s+lf_ops\.reglas\b",source,re.I),
               "RULE_DML_OUT_OF_SCOPE")
         report["migration"]=str(files[0].relative_to(ROOT))
         report["migration_sha256"]=hashlib.sha256(source.encode()).hexdigest()
