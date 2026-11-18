@@ -73,7 +73,7 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
         self.assertIn("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS",s)
 
     def test_07_exact_candidate_hash_pin(self):
-        self.assertEqual(runner.HEAD,"6d9f33fe300432270fdf078a35d1ae56cc1c8fab")
+        self.assertEqual(runner.HEAD,"ade493bbd425a337dc81d175410eff2abea956f0")
         self.assertEqual(runner.BLOBS[runner.MIGRATION],"370bfb1682bac0ca8e30f9cef179f7939d5a659f")
         self.assertEqual(runner.BLOBS[runner.HARNESS],"3df03ef574f2cd6e653ab7c38194c8bc04f6851d")
         self.assertEqual(runner.TEMPLATE,TEMPLATE.relative_to(ROOT))
@@ -199,7 +199,7 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
 
     def test_13_trusted_source_pins_exact_not_dynamic(self):
         self.assertEqual(runner.PR,4064)
-        self.assertEqual(runner.HEAD,"6d9f33fe300432270fdf078a35d1ae56cc1c8fab")
+        self.assertEqual(runner.HEAD,"ade493bbd425a337dc81d175410eff2abea956f0")
         self.assertEqual(runner.BLOBS,{
             runner.MIGRATION:"370bfb1682bac0ca8e30f9cef179f7939d5a659f",
             runner.HARNESS:"3df03ef574f2cd6e653ab7c38194c8bc04f6851d",
