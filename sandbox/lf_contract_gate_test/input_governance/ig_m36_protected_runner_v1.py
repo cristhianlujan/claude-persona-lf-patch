@@ -22,7 +22,7 @@ import ig4064_rollback_runner_v1 as guard
 
 REPO = "cristhianlujan/claude-persona-lf-patch"
 PR = 4075
-TRIGGER_PR = 0  # Replaced with actual A2 PR number before Ready.
+TRIGGER_PR = 4076  # Exact owner-authorized A2 Train merge receipt.
 HEAD = "55f7f74f1b626ce965efa564dedd890fc417cbfb"
 MIGRATION = "supabase/migrations/20261118052000_lf_ig_m36_noncurrent_candidate_authority_v1.sql"
 HARNESS = "sandbox/lf_contract_gate_test/input_governance/ig_m36_noncurrent_field_42_screen_rollback.sql"
