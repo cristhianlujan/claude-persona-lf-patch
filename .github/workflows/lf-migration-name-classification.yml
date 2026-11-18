@@ -12,6 +12,8 @@ on:
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py"
       - "sandbox/lf_contract_gate_test/input_governance/test_pr_f_auth_params_source_v1.py"
       - "sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py"
+      - "sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_auth_window_pg17.py"
+      - "sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py"
       - "docs/input-governance/PR_K_LOGIN_LOCKOUT_RESET_AND_FOUR_RULES_DOCUMENT_ONLY_20261118.json"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_reconciliation_source.py"
       - ".github/workflows/lf-migration-route-guard.yml"
@@ -22,6 +24,94 @@ permissions:
   contents: read
 
 jobs:
+  # Exact-HEAD source fixture; no remote Supabase credentials.
+  ig-chat8-auth-window30-pg17:
+    name: IG Chat8 PG17 BEGIN/ROLLBACK auth window 30m
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'lf/ig-chat8-auth-login-window30-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ig_chat8_ephemeral_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: ig_chat8_ephemeral_only
+    steps:
+      - name: Exact branch HEAD checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: PostgreSQL 17 readiness
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres
+      - name: One positive and four negative transaction readbacks
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_auth_window_pg17.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_auth_window_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/ig_chat8_auth_window/report.json').read_text())
+          assert r['status']=='PASS'
+          assert r['independent_readback']=='RESTORED_12_10_0_579'
+          assert len(r['negative_checks'])==4
+          assert r['candidate_rules_created']==0
+          assert r['remote_supabase_tested'] is False
+          print('IG_CHAT8_PG17_EXACT_ROLLBACK_1_POSITIVE_4_NEGATIVE_PASS')
+          PY
+      - name: Execute exact CREATE Step70/owner PG17 synthetic rollback test
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/ig_chat8_create_candidate/report.json').read_text())
+          assert r['status']=='PASS' and r['remote_supabase_tested'] is False
+          assert r['independent_readback']=='ROLLBACK_RESTORED'
+          assert len(r['checks'])==6 and all(r['checks'].values())
+          print('IG_CHAT8_CREATE_PG17_6_CHECKS_AND_INDEPENDENT_READBACK_PASS')
+          PY
+      - name: Archive exact source hash and rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-chat8-auth-window30-pg17-report
+          path: |
+            .lf_ci/ig_chat8_auth_window/report.json
+            .lf_ci/ig_chat8_create_candidate/report.json
+            .lf_ci/ig_chat8_create_candidate/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
   classify-migration-names:
     runs-on: ubuntu-latest
     steps:
