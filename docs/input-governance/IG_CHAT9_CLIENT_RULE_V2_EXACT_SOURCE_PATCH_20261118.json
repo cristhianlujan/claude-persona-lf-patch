@@ -1,0 +1,198 @@
+{
+  "schema_version": "IG_CHAT9_CLIENT_RULE_V2_SOURCE_BOUND_PG17_V1",
+  "evidence_scope": "FUNCTIONAL_RULE_CONTRACT_ONLY",
+  "backend_e2e_status": "NOT_TESTED",
+  "profile_runs_source": "ACT0001_ROUTER_GATE2_GITHUB_OIDC_GPT_NATIVE",
+  "rule_entries": [
+    {
+      "codigo": "REG_ATQ_016",
+      "source_row": {
+        "id": 136,
+        "razon": "Credential stuffing usa bases de datos filtradas de DNIs y celulares reales. El patrón es volumen alto con variación de identidades.",
+        "codigo": "REG_ATQ_016",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Detección de patrones de credential stuffing",
+        "categoria": "ataques",
+        "created_at": "2026-06-23T19:14:00.084703+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:14:00.084703+00:00",
+        "descripcion": "El sistema monitorea: más de 20 DNIs distintos desde la misma IP en 10 minutos, o el mismo DNI desde más de 5 IPs distintas en 10 minutos. Al detectar el patrón, bloqueo de IP por 1 hora y alerta.",
+        "valor_config": {
+          "accion": "bloqueo_ip_1h_y_alerta",
+          "patron_1": {
+            "ventana_minutos": 10,
+            "dni_distintos_por_ip": 20
+          },
+          "patron_2": {
+            "ips_por_dni": 5,
+            "ventana_minutos": 10
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_snapshot_sha256": "c16436927a07128022e33b932ea8ee6f8e3dc550264b059b8130e56e4ce143c7",
+      "governed_rule_patch": {
+        "changes": {
+          "razon": "Decisión del dueño LF 18/11/2026 18:10: eliminar falso positivo colectivo del bloqueo IP compartida y conservar señales antifraude acotando efectos a cuenta validada. Se mantienen las fuentes históricas solo como procedencia; los parámetros operativos proceden exclusivamente de lf_global_config.",
+          "descripcion": "El sistema detecta patrones de múltiples documentos observados desde una IP y de una identidad observada desde distintas IP como señales preventivas, nunca como prueba suficiente para bloquear a todos los usuarios de una IP. Los umbrales se leen desde public.lf_global_config (scope CLIENT, config_key ATQ_DISTINCT_DNI_PER_IP_SIGNAL_LIMIT y ATQ_DISTINCT_IP_PER_DNI_SIGNAL_LIMIT) y la ventana desde CLIENT/ATQ_SIGNAL_WINDOW_MINUTES. Ante coincidencia se genera alerta de riesgo y evaluación con señal independiente; solo si el backend vincula de forma segura la conducta anómala con una cuenta/usuario específico y valida evidencia adicional puede aplicar restricción individual cuya duración proviene de CLIENT/ATQ_ACCOUNT_HOLD_MINUTES. Cuando no hay cuenta individual identificada, el resultado es escalado de riesgo/antibot sin bloqueo por IP; nunca revelar existencia de cuentas ni exponer DNI en logs. Las señales no equivalen a fraude confirmado; implementación y QA pendientes.",
+          "valor_config": {
+            "signal_mode": "PREVENTIVE_ALERT_ONLY",
+            "dni_raw_logs": "DENY",
+            "signal_subjects": [
+              "NETWORK_IP_AGGREGATE",
+              "PRIVACY_PROTECTED_IDENTITY"
+            ],
+            "decision_authority": "SERVER_SIDE_RISK_POLICY_ONLY",
+            "shared_ip_hard_block": "DENY",
+            "implementation_status": "PENDING_BACKEND_RISK_PROOF_AND_QA",
+            "account_restriction_scope": "RESOLVED_USER_ACCOUNT_ONLY",
+            "additional_abuse_evidence": "REQUIRED",
+            "unresolved_account_action": "ALERT_AND_CHALLENGE_NO_HARD_IP_BLOCK",
+            "numeric_thresholds_in_rule": "DENY",
+            "account_hold_minutes_config_ref": {
+              "scope": "CLIENT",
+              "family": "CLIENT_ABUSE_DETECTION",
+              "config_key": "ATQ_ACCOUNT_HOLD_MINUTES",
+              "inheritance": "GLOBAL_CANONICAL"
+            },
+            "signal_window_minutes_config_ref": {
+              "scope": "CLIENT",
+              "family": "CLIENT_ABUSE_DETECTION",
+              "config_key": "ATQ_SIGNAL_WINDOW_MINUTES",
+              "inheritance": "GLOBAL_CANONICAL"
+            },
+            "distinct_ips_signal_limit_config_ref": {
+              "scope": "CLIENT",
+              "family": "CLIENT_ABUSE_DETECTION",
+              "config_key": "ATQ_DISTINCT_IP_PER_DNI_SIGNAL_LIMIT",
+              "inheritance": "GLOBAL_CANONICAL"
+            },
+            "distinct_documents_signal_limit_config_ref": {
+              "scope": "CLIENT",
+              "family": "CLIENT_ABUSE_DETECTION",
+              "config_key": "ATQ_DISTINCT_DNI_PER_IP_SIGNAL_LIMIT",
+              "inheritance": "GLOBAL_CANONICAL"
+            }
+          }
+        },
+        "rule_code": "REG_ATQ_016",
+        "change_kind": "FUNCTIONAL"
+      },
+      "proposal_sha256": "b7b4f96167366592d1da5b7ea167f32525d9a7bb91b02d04eadbe1908e422293",
+      "candidate_snapshot_sha256": "37c1394198971e65902d444205dc0cf48a8c839958df53f14fb2db7914b58bae",
+      "profile_candidate_digest": "sha256:f83687dab7f72736f8c2d96e21c9771e27ebb7205046ca1d07e1e5434cc256ad",
+      "parent_execution_id": "EXEC-PROFILE-GATE2-20142FEB637CF8230EFB86E5"
+    },
+    {
+      "codigo": "REG_SES_003",
+      "source_row": {
+        "id": 16,
+        "razon": "Antifraude. Evita registro masivo automatizado.",
+        "codigo": "REG_SES_003",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Una sesión activa por dispositivo/IP en onboarding",
+        "categoria": "sesion",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "No se permite más de una sesión de onboarding activa simultánea desde el mismo IP en un período de 5 minutos.",
+        "valor_config": {
+          "max_sesiones": 1,
+          "ventana_minutos": 5
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_snapshot_sha256": "cd4ddc5dbf5e4dfbf93023bf08df60b870330a29bb79c4fb731b4904c0da7321",
+      "governed_rule_patch": {
+        "changes": {
+          "razon": "Corrección funcional autorizada por el dueño LF el 18/11/2026 18:10: remueve limitación IP compartida incompatible con SESSION-CLIENT-DEFAULT VIGENTE y centraliza el parámetro en lf_global_config. Definición no acredita implementación backend ni producción.",
+          "descripcion": "La concurrencia de onboarding Cliente se controla por usuario/cuenta resuelta por el servidor, no por dirección IP ni dispositivo compartido. El máximo concurrente se lee en cada evaluación desde public.lf_global_config (scope CLIENT, config_key ONBOARDING_ACCOUNT_MAX_CONCURRENT_SESSIONS) y la ventana de observación desde CLIENT/ONBOARDING_ACCOUNT_WINDOW_MINUTES, sin valores numéricos copiados. Antes de resolver cuenta, aplicar únicamente control al identificador provisional de sesión generado por servidor y separado de terceros; al autenticar, asociar la sesión a la cuenta conforme a SESSION-CLIENT-DEFAULT. El uso de la misma IP por personas distintas no consume cupos de otras cuentas ni provoca bloqueo global. Toda denegación registra motivo y referencia segura sin exponer datos sensibles; implementación y QA siguen pendientes.",
+          "valor_config": {
+            "concurrency_subject": "RESOLVED_USER_ACCOUNT",
+            "session_policy_code": "SESSION-CLIENT-DEFAULT",
+            "unidentified_subject": "SERVER_ISSUED_ONBOARDING_SESSION_KEY",
+            "implementation_status": "PENDING_BACKEND_ENFORCEMENT_AND_QA",
+            "global_ip_session_lock": "DENY",
+            "account_binding_at_login": "SERVER_SIDE_ONLY",
+            "numeric_thresholds_in_rule": "DENY",
+            "shared_ip_cross_account_counter": "DENY",
+            "max_concurrent_sessions_config_ref": {
+              "scope": "CLIENT",
+              "family": "CLIENT_ONBOARDING_SESSION",
+              "config_key": "ONBOARDING_ACCOUNT_MAX_CONCURRENT_SESSIONS",
+              "inheritance": "GLOBAL_CANONICAL"
+            },
+            "observation_window_minutes_config_ref": {
+              "scope": "CLIENT",
+              "family": "CLIENT_ONBOARDING_SESSION",
+              "config_key": "ONBOARDING_ACCOUNT_WINDOW_MINUTES",
+              "inheritance": "GLOBAL_CANONICAL"
+            }
+          }
+        },
+        "rule_code": "REG_SES_003",
+        "change_kind": "FUNCTIONAL"
+      },
+      "proposal_sha256": "93865ab6d1e4c541136cac3f5d2a58b52687cfe2a9aa47290b96ec704a951117",
+      "candidate_snapshot_sha256": "4e03594096ae2eb2f5d986a19e941408f9b0f028ef0207a38788b977dbe8ed66",
+      "profile_candidate_digest": "sha256:a57cb48933a028878fe0d7b3e6cb875a69f955172cd80bb4777799ce5737d708",
+      "parent_execution_id": "EXEC-PROFILE-GATE2-CE703F89151A142D1B6630D8"
+    }
+  ],
+  "global_config": [
+    {
+      "scope": "CLIENT",
+      "config_key": "ATQ_ACCOUNT_HOLD_MINUTES",
+      "config_value": "60",
+      "value_type": "INTEGER",
+      "value_status": "REAL"
+    },
+    {
+      "scope": "CLIENT",
+      "config_key": "ATQ_DISTINCT_DNI_PER_IP_SIGNAL_LIMIT",
+      "config_value": "20",
+      "value_type": "INTEGER",
+      "value_status": "REAL"
+    },
+    {
+      "scope": "CLIENT",
+      "config_key": "ATQ_DISTINCT_IP_PER_DNI_SIGNAL_LIMIT",
+      "config_value": "5",
+      "value_type": "INTEGER",
+      "value_status": "REAL"
+    },
+    {
+      "scope": "CLIENT",
+      "config_key": "ATQ_SIGNAL_WINDOW_MINUTES",
+      "config_value": "10",
+      "value_type": "INTEGER",
+      "value_status": "REAL"
+    },
+    {
+      "scope": "CLIENT",
+      "config_key": "ONBOARDING_ACCOUNT_MAX_CONCURRENT_SESSIONS",
+      "config_value": "3",
+      "value_type": "INTEGER",
+      "value_status": "REAL"
+    },
+    {
+      "scope": "CLIENT",
+      "config_key": "ONBOARDING_ACCOUNT_WINDOW_MINUTES",
+      "config_value": "5",
+      "value_type": "INTEGER",
+      "value_status": "REAL"
+    }
+  ],
+  "forbidden_effects": [
+    "No mutation on remote Supabase by test",
+    "No direct lf_ops.reglas update in migration",
+    "No automatic VIGENTE claim",
+    "No fake TRAIN receipts"
+  ]
+}
