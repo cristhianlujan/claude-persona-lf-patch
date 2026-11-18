@@ -142,12 +142,12 @@ SELECT 'PREFLIGHT_SOURCE_PASS';
 """+setup_sim
         for r in entries:
             p=r["governed_rule_patch"]["changes"]
-            pos+="\nUPDATE lf_ops.reglas SET descripcion="+literal(p["descripcion"])+
+            pos+=("\nUPDATE lf_ops.reglas SET descripcion="+literal(p["descripcion"])+
                  ",razon="+literal(p["razon"])+",valor_config="+literal(json.dumps(p["valor_config"],ensure_ascii=False))+
-                 "::jsonb,pendiente_decision=false,pendiente_detalle=NULL WHERE codigo="+literal(r["codigo"])+";\n"
-            pos+="SELECT CASE WHEN public.lf_asset_snapshot_sha_v1('REGLA',"+literal(r["codigo"])+")="+
+                 "::jsonb,pendiente_decision=false,pendiente_detalle=NULL WHERE codigo="+literal(r["codigo"])+";\n")
+            pos+=("SELECT CASE WHEN public.lf_asset_snapshot_sha_v1('REGLA',"+literal(r["codigo"])+")="+
                literal(r["candidate_snapshot_sha256"])+" THEN 'CANDIDATE_SHA_PASS_"+r["codigo"]+
-               "' ELSE 'CANDIDATE_SHA_FAIL_"+r["codigo"]+"' END;\n"
+               "' ELSE 'CANDIDATE_SHA_FAIL_"+r["codigo"]+"' END;\n")
         pos+="""
 SELECT CASE WHEN
  (SELECT count(*) FROM lf_ops.reglas WHERE codigo IN ('REG_SES_003','REG_ATQ_016')
