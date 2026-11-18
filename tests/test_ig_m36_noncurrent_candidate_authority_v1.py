@@ -12,7 +12,7 @@ def test_m36_exact_source_guard_and_type():
     sql = MIGRATION.read_text()
     assert "61d47a6400cf910ace71936413863e16" in sql
     assert "EXPLICIT_FIELD_REFERENCE_NONCURRENT" in sql
-    assert sql.count("then 'CANDIDATE_AUTHORITY'") == 2
+    assert sql.count("then 'CANDIDATE_AUTHORITY'") == 3  # 1 original anchor + 2 in replacement
     assert "IG_M36_PREIMAGE_SOURCE_DRIFT" in sql
     assert "IG_M36_NONCURRENT_MAPPING_ANCHOR_NOT_UNIQUE" in sql
     assert "IG_M36_NONCURRENT_CANDIDATE_SOURCE_READBACK_FAIL" in sql
