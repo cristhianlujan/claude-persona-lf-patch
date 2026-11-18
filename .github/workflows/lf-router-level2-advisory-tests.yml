@@ -1096,7 +1096,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
       github.actor == 'lf-migration-train[bot]' &&
-      startsWith(github.event.head_commit.message, 'merge(train): PR #0')
+      startsWith(github.event.head_commit.message, 'merge(train): PR #4076')
     runs-on: ubuntu-latest
     environment: lf-merge-train
     timeout-minutes: 40
