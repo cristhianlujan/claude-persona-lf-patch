@@ -1119,6 +1119,25 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  # Documentary-only tests for three NIUBIZ candidate proposals; no DB or CREATE route.
+  niubiz-three-candidate-contract-static:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-niubiz-three-candidate-spec-20261118'
+    name: NIUBIZ candidate contract 20/20 scope-key checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run source-bound negative/documentary contract tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/test_niubiz_three_candidate_spec_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/test_niubiz_three_candidate_spec_v1.py
+          echo "NIUBIZ_3_CANDIDATE_SPEC_ONLY_PASS_NO_V2_NO_DB_WRITE"
   # IG Chat9 L2 prerequisite: six Client global variables only.
   chat9-client-config-pg17:
     name: IG Chat9 Client config real PG17 rollback 7/7

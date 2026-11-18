@@ -69,11 +69,28 @@ class ProductDirectorOutputModes(unittest.TestCase):
         bound,_=self.run_case({"output_type":"BLOCKED_PRODUCT_RISK"})
         self.assertEqual(bound["schema_ref"],"profiles/product_director_lf/schemas/product_blocked_risk.schema.json")
 
-    def test_unknown_or_absent_mode_fails_closed(self):
-        for raw in ({"output_type":"SOME_UNDECLARED_MODE"},{}):
-            with self.subTest(raw=raw),patch.object(Path,"cwd",return_value=self.root):
-                with self.assertRaisesRegex(ValueError,"PROFILE_OUTPUT_MODE_UNDECLARED"):
-                    self.fn(self.target,self.profile,raw)
+    def test_unknown_mode_fails_closed_at_selector(self):
+        with patch.object(Path,"cwd",return_value=self.root):
+            with self.assertRaisesRegex(ValueError,"PROFILE_OUTPUT_MODE_UNDECLARED"):
+                self.fn(self.target,self.profile,{"output_type":"SOME_UNDECLARED_MODE"})
+
+    def test_absent_mode_selects_declared_default_but_schema_rejects_missing_type(self):
+        # The shared selector deliberately resolves AUTO/absent form to default.
+        # Absence is rejected by the canonical schema, not by mode dispatch.
+        from jsonschema import Draft202012Validator
+        import importlib.util
+
+        binding=json.loads((self.root/"profiles/product_director_lf/contracts/runtime_binding.json").read_text())
+        selector_path=ROOT/"services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py"
+        spec=importlib.util.spec_from_file_location("lf_p2_real_selector",selector_path)
+        selector=importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(selector)
+        selected=selector.select_schema_relative(binding["runtime_schema"],payload={})
+        self.assertEqual(selected,"schemas/product_direction_spec.schema.json")
+        schema=json.loads((self.root/"profiles/product_director_lf"/selected).read_text())
+        missing=list(Draft202012Validator(schema).iter_errors({}))
+        self.assertTrue(missing)
+        self.assertTrue(any("output_type" in err.message for err in missing))
 
     def test_actual_canonical_json_schema_positive_and_negative(self):
         from jsonschema import Draft202012Validator
