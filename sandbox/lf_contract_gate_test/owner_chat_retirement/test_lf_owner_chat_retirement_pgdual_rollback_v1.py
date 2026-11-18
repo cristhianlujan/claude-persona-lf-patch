@@ -158,7 +158,7 @@ class PgDualRetirement(unittest.TestCase):
                        "\nROLLBACK;\n"
                        "SELECT CASE WHEN to_regclass('private.lf_owner_chat_identity_v1') IS NULL "
                        "AND md5(pg_get_functiondef('public.lf_rule_promotion_decide_v1(text,text,text,text)'::regprocedure)) "
-                       "<>'98f1be74469c91d577e5eca66b81cba5' "
+                       "='98f1be74469c91d577e5eca66b81cba5' "
                        "THEN 'PASS_LF_TEARDOWN_ROLLBACK_CLEAN' ELSE 'FAIL_ROLLBACK' END;\n")
                     self.assertIn("PASS_LF_OWNER_CHAT_RETIRED_BEFORE_ROLLBACK",result)
                     self.assertIn("PASS_LF_TEARDOWN_ROLLBACK_CLEAN",result)
