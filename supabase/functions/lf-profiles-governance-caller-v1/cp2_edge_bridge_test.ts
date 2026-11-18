@@ -134,7 +134,7 @@ const PROFILE_RUNTIME_FOR_TEST = {
   execution_id: PROFILE_EXECUTION_FOR_TEST,
   pantalla_id: 51,
 };
-function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; directStatus?: string; readyOverrides?: Record<string, unknown> } = {}) {
+function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; directStatus?: string; readyOverrides?: Record<string, unknown>; agentHttp?: number; findings?: unknown[] } = {}) {
   const repo = "cristhianlujan/claude-persona-lf-patch";
   const ref = "refs/heads/main";
   const env: Record<string, string> = {
@@ -176,7 +176,9 @@ function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; di
               pantalla_id:51,consumer:"CONTEXT_PACK",
               execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
               generated_at:new Date().toISOString(),
-              ...(options.readyOverrides ?? {}) } };
+              ...(options.readyOverrides ?? {}),
+              findings:options.findings ?? [] } };
+          status=options.agentHttp ?? 200;
         }
       } else {
         throw new Error("TEST_UNEXPECTED_ROUTE " + url);
@@ -282,4 +284,22 @@ Deno.test("LF-AUD-UI-03 executable negative: foreign screen blocked without fore
   eq(o.response.status,409);
   eq(o.payload.code,"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH");
   assert(o.payload.result===undefined,"Foreign governance RAW must not be disclosed");
+});
+
+Deno.test("LF-AUD-UI-05 executable negative: HTTP 409 BLOCKED retains full findings",async()=>{
+  const findings=[{code:"FAMILY_GAP",family_code:"SECURITY"},
+                  {code:"SOURCE_STALE",family_code:"AUDIT"}];
+  const h=ticketBridgeHarness({agentState:"BLOCKED",agentHttp:409,findings});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.outcome,"BLOCKED");
+  eq(o.payload.code,"IG_CONTEXT_PACK_BLOCKED");
+  eq(o.payload.result.result.findings,findings);
+});
+
+Deno.test("LF-AUD-UI-05 executable negative: invalid 409 READY must not authorize",async()=>{
+  const h=ticketBridgeHarness({agentState:"READY",agentHttp:409});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  assert(o.response.status!==200);
+  assert(o.payload.outcome!=="TERMINAL");
 });
