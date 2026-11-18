@@ -165,9 +165,51 @@ class IG4064AdvisoryPathTests(unittest.TestCase):
               f"benign_accepted={len(benign)}/{len(benign)} "
               f"original_sha256={runner.sha256(sql.encode())}")
 
+    def test_11_independent_readback_exact_comment_boundary(self):
+        # Real template has prose on the SAME line as the trusted marker.
+        sql=TEMPLATE.read_text()
+        block=runner.independent_readback_sql(sql)
+        self.assertTrue(block.startswith("DO $post$\n"))
+        self.assertTrue(block.rstrip().endswith("$post$;"))
+        self.assertNotIn("Fail if definitions or historical rows drifted.",block)
+        self.assertEqual(runner.top_level_sql_statements(block),[("DO",)])
+        self.assertIn("IG4064_POST_ROLLBACK_PASS",block)
+
+    def test_12_independent_readback_negative_untrusted_sql(self):
+        template=TEMPLATE.read_text()
+        marker="-- Same psql session, AFTER rollback."
+        self.assertEqual(template.count(marker),1)
+        bad_cases={
+            "missing":template.replace(marker,"-- wrong marker",1),
+            "duplicate":template+ "\n" + marker+" another copy\n",
+            "unterminated":template.split(marker,1)[0]+marker,
+            "prose_as_sql":template.replace(
+                marker+" Fail if definitions or historical rows drifted.\n",
+                marker+"\nFail if definitions or historical rows drifted.\n",1),
+            "extra_sql":template.replace(
+                marker+" Fail if definitions or historical rows drifted.\n",
+                marker+" note\nSELECT 1;\n",1),
+            "no_post_do":template.replace("DO $post$","DO $other$",1),
+            "trailing_sql":template+"\nSELECT 1;\n",
+        }
+        for name,sql in bad_cases.items():
+            with self.subTest(case=name):
+                with self.assertRaisesRegex(RuntimeError, "INDEPENDENT_READBACK_"):
+                    runner.independent_readback_sql(sql)
+
+    def test_13_trusted_source_pins_exact_not_dynamic(self):
+        self.assertEqual(runner.PR,4064)
+        self.assertEqual(runner.HEAD,"6d9f33fe300432270fdf078a35d1ae56cc1c8fab")
+        self.assertEqual(runner.BLOBS,{
+            runner.MIGRATION:"370bfb1682bac0ca8e30f9cef179f7939d5a659f",
+            runner.HARNESS:"3df03ef574f2cd6e653ab7c38194c8bc04f6851d",
+        })
+        self.assertIn("PR4064_LIVE_HEAD_DRIFT",SCRIPT.read_text())
+        self.assertIn("PINNED_BLOB_DRIFT:",SCRIPT.read_text())
+
 
 if __name__=="__main__":
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(IG4064AdvisoryPathTests)
     result=unittest.TextTestRunner(verbosity=2).run(suite)
-    if result.wasSuccessful():print("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS 10/10")
+    if result.wasSuccessful():print("IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS 13/13")
     raise SystemExit(0 if result.wasSuccessful() else 1)
