@@ -1,6 +1,6 @@
 -- PR-D REAL PostgreSQL 17 BEGIN/ROLLBACK: PR-C fixture pre-exists.
--- @@PRC_SOURCE_SQL@@ executes BEFORE BEGIN in isolated temporary PostgreSQL.
--- @@PRD_MIGRATION_SQL@@ executes INSIDE BEGIN. No remote database is used.
+-- The PR-C source fixture executes BEFORE BEGIN in isolated temporary PostgreSQL.
+-- The PR-D migration executes INSIDE BEGIN. No remote database is used.
 \set ON_ERROR_STOP on
 @@PRC_SOURCE_SQL@@
 
