@@ -11,6 +11,8 @@ on:
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py"
       - "sandbox/lf_contract_gate_test/input_governance/test_pr_f_auth_params_source_v1.py"
+      - "sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py"
+      - "docs/input-governance/PR_K_LOGIN_LOCKOUT_RESET_AND_FOUR_RULES_DOCUMENT_ONLY_20261118.json"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_reconciliation_source.py"
       - ".github/workflows/lf-migration-route-guard.yml"
       - "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_legacy_reintroduction_guard_v1.py"
@@ -741,3 +743,74 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           python3 sandbox/lf_contract_gate_test/input_governance/test_pr_f_auth_params_source_v1.py
+
+  # PR-K only. Ephemeral PG17; no cloud credentials, no writes to Supabase.
+  pr-k-auth-reset-pg17:
+    name: PR-K 4095 real PG17 BEGIN/ROLLBACK lockout reset and 4 negative tests
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4095 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_k_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_k_ephemeral_pg17_only
+    steps:
+      - name: Checkout exact PR-K HEAD without stored credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify ephemeral PG17, install psql if missing
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres
+      - name: Exact-source static rules and real PG17 rollback with independent readback
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_k_lockout_reset/report.json').read_text())
+          assert r['status']=='PASS' and r['remote_supabase_tested'] is False
+          assert r['independent_readback']=='RESTORED_10_9_0_579'
+          assert len(r['negative_checks'])==4
+          assert r['four_rules']=='DOCUMENT_ONLY_NO_RUN'
+          print('PR_K_PG17_REAL_ROLLBACK_ALL_CHECKS_PASS')
+          PY
+      - name: Preserve real PG17 readback + exact source SHA256
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-k-4095-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/pr_k_lockout_reset/report.json
+          if-no-files-found: warn
+          retention-days: 30
