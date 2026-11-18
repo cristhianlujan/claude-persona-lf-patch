@@ -582,3 +582,79 @@ jobs:
             .lf_ci/pr_j_auth020/postgresql.log
           if-no-files-found: warn
           retention-days: 90
+
+# PR-J2 consumes an ACTUAL previously completed Train, tested in local PG17 fixture.
+  pr-j2-auth020-receipt-pg17:
+    name: PR-J2 protected receipt PG17 BEGIN ROLLBACK and independent readback
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j2-auth020-train-evidence-20261118'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_i_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_i_ephemeral_pg17_only
+      PR_J2_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact J2 HEAD without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Check J2 migration provenance and compile runner
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_j2_auth020_train_evidence_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py
+      - name: Ensure PostgreSQL17 client
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: J2 source-bound SQL insertion and tamper-negative, rollback and readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j2_auth020_train_evidence_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path(".lf_ci/pr_j2/report.json").read_text())
+          assert r["status"]=="PASS_RULE_CONTRACT_LEVEL_PROTECTED_RECEIPT"
+          assert r["sql_exit_code"]==0 and r["readback_exit_code"]==0
+          assert r["readback"]=="PR_J2_INDEPENDENT_POST_ROLLBACK_PASS"
+          assert len(r["checks"])==4 and all(r["checks"].values())
+          assert r["remote_supabase_written"] is False
+          assert r["actual_train_fixture"]=="SYNTHETIC_FOR_SQL_GATE_TEST"
+          print("PR_J2_REAL_PG17_ROLLBACK_AND_SEPARATE_READBACK_PASS")
+          PY
+      - name: Archive source-bound J2 ephemeral evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-j2-auth020-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_j2/report.json
+            .lf_ci/pr_j2/postgresql.log
+          if-no-files-found: warn
+          retention-days: 90
