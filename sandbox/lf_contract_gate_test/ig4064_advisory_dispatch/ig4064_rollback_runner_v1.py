@@ -19,7 +19,7 @@ from urllib.request import Request, urlopen
 
 REPO = "cristhianlujan/claude-persona-lf-patch"
 PR = 4064
-HEAD = "6d9f33fe300432270fdf078a35d1ae56cc1c8fab"
+HEAD = "ade493bbd425a337dc81d175410eff2abea956f0"
 MIGRATION = "supabase/migrations/20261117073400_lf_ig_recovery_family_positive_na_v1.sql"
 HARNESS = "sandbox/ig_recovery_family_positive_na_v1/rollback_test.sql"
 TEMPLATE = Path("sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_template_v1.sql")
