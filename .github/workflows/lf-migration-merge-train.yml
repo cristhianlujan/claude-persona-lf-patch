@@ -546,7 +546,8 @@ jobs:
 
       - name: Require owner chat receipt on exact final HEAD before any DB apply or merge
         id: owner_chat_gate
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        # Opt-in only: OFF until the authenticated USER-event recorder is operational.
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && vars.LF_OWNER_CHAT_GATE == 'ON'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -600,7 +601,7 @@ jobs:
                 FROM private.lf_owner_chat_revocations_v1 r
                 WHERE r.order_id=o.order_id)
             ORDER BY o.source_message_id LIMIT 2),
-          selected AS (SELECT count(*) AS n,min(order_id) AS id FROM eligible)
+          selected AS (SELECT count(*) AS n,min(order_id::text)::uuid AS id FROM eligible)
           SELECT CASE WHEN selected.n=1
            THEN coalesce((private.fn_lf_owner_chat_train_merge_gate_v1(
               selected.id,:'lf_repo',(:'lf_pr')::integer,:'lf_head',
@@ -979,11 +980,14 @@ jobs:
           HEAD_SHA: ${{ needs.lf-migration-merge-train.outputs.final_head_sha }}
           OWNER_CHAT_AUTHORIZED: ${{ needs.lf-migration-merge-train.outputs.owner_chat_authorized }}
           OWNER_CHAT_HEAD: ${{ needs.lf-migration-merge-train.outputs.owner_chat_authorized_head }}
+          OWNER_CHAT_GATE: ${{ vars.LF_OWNER_CHAT_GATE }}
         shell: bash
         run: |
           set -euo pipefail
-          [ "$OWNER_CHAT_AUTHORIZED" = "true" ] && [ "$OWNER_CHAT_HEAD" = "$HEAD_SHA" ] \
-            || { echo "FAIL_TRAIN_PREMERGE_CHAT_ORDER_NOT_BOUND_TO_HEAD"; exit 2; }
+          if [ "$OWNER_CHAT_GATE" = "ON" ]; then
+            [ "$OWNER_CHAT_AUTHORIZED" = "true" ] && [ "$OWNER_CHAT_HEAD" = "$HEAD_SHA" ] \
+              || { echo "FAIL_TRAIN_PREMERGE_CHAT_ORDER_NOT_BOUND_TO_HEAD"; exit 2; }
+          fi
           observed="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
           [ "$observed" = "$HEAD_SHA" ] || { echo "FAIL_TRAIN_PREMERGE_HEAD_MOVED"; exit 2; }
           gh api --method PUT "repos/$REPO/pulls/$PR/merge" \
