@@ -134,7 +134,7 @@ const PROFILE_RUNTIME_FOR_TEST = {
   execution_id: PROFILE_EXECUTION_FOR_TEST,
   pantalla_id: 51,
 };
-function ticketBridgeHarness(options: { valid?: boolean; agentState?: string } = {}) {
+function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; directStatus?: string } = {}) {
   const repo = "cristhianlujan/claude-persona-lf-patch";
   const ref = "refs/heads/main";
   const env: Record<string, string> = {
@@ -171,7 +171,8 @@ function ticketBridgeHarness(options: { valid?: boolean; agentState?: string } =
           status = 403;
           result = { error: "IG_PROFILE_TICKET_REQUIRED" };
         } else {
-          result = { result: { status: options.agentState ?? "READY", run_id: 10051 } };
+          result = { ...(options.directStatus ? {status:options.directStatus} : {}),
+            result: { status: options.agentState ?? "READY", run_id: 10051 } };
         }
       } else {
         throw new Error("TEST_UNEXPECTED_ROUTE " + url);
@@ -226,4 +227,19 @@ Deno.test("ticket bridge: Validator continuation stays bound to ticket without q
   eq(payload.queue_required, false);
   eq(payload.polling_required, false);
   assert(h.calls.some(c => c.url.endsWith("/functions/v1/input-governance-agent-v1") && c.body.ticket === PROFILE_TICKET_FOR_TEST));
+});
+
+Deno.test("LF-AUD-UI-04 executable negative: outer BLOCKED with inner READY stays 409",async()=>{
+  const h=ticketBridgeHarness({directStatus:"BLOCKED",agentState:"READY"});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_BLOCKED");
+  eq(o.payload.terminal_status,"BLOCKED");
+});
+
+Deno.test("LF-AUD-UI-04 executable negative: HUMAN with inner READY stays 409",async()=>{
+  const h=ticketBridgeHarness({directStatus:"HUMAN_DECISION_REQUIRED",agentState:"READY"});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED");
 });
