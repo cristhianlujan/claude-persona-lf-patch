@@ -1,0 +1,20 @@
+{
+  "solution_ref": "lf-profile-runtime-binding-fleet-20261116-v1",
+  "paths": {
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "profiles/customer_financial_ux_decisioning/contracts/runtime_binding.json": "SERVICE_RUNTIME",
+    "profiles/product_director_lf/contracts/runtime_binding.json": "SERVICE_RUNTIME",
+    "profiles/product_director_lf/validators/runtime_semantic_utility.py": "SERVICE_RUNTIME",
+    "profiles/programming_analysis_lf/contracts/runtime_binding.json": "SERVICE_RUNTIME",
+    "profiles/ui_architect/contracts/runtime_binding.json": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-runtime-binding-fleet-20261116-v1.json": "CHANGESET_MANIFEST",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/profile_runtime_api/repository.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_generic_profile_runtime_binding.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_repository_runtime_schema.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_runtime_binding_fleet_conformance.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_runtime_output_mode.py": "SERVICE_RUNTIME",
+    "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py": "SERVICE_RUNTIME"
+  }
+}

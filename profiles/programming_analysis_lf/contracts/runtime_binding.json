@@ -8,7 +8,8 @@
   },
   "canonical_validator": {
     "path": "validators/runtime_validate.py",
-    "callable": "validate"
+    "callable": "validate",
+    "transport": "STDIN_JSON"
   },
   "semantic_utility": {
     "path": "validators/runtime_semantic_utility.py",
