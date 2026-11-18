@@ -67,7 +67,7 @@ VALUES
  ('PRG-EPHEMERAL-PARENT','semantic_judge','STEP_PASS_WITH_EVIDENCE',
   '{"blocking_codes":[],"semantic_judge_result":{"verdict":"PASS_INDEPENDENT_SEMANTIC"}}'),
  ('PRG-EPHEMERAL-PARENT','execute_profile','STEP_PASS_WITH_EVIDENCE',
-  '{"worker":"product_director_lf","output_type":"PRODUCT_DIRECTION_SPEC",
+  '{"profile_output":{"worker":"product_director_lf","output_type":"PRODUCT_DIRECTION_SPEC",
     "self_verdict":"PASS",
     "deliverable_created":{
       "product_decision":{"proposed_by":"PRODUCER_FIXTURE_NOT_OWNER"},
@@ -77,7 +77,7 @@ VALUES
         "changes":{"titulo":"Test isolated PG decision","descripcion":"Only test rejection, no production write"}
       }
     }
-  }');
+  }}');
 
 DO $pre$
 BEGIN
@@ -98,7 +98,6 @@ DECLARE
  v_source text;
  v_out jsonb;
  v_dec public.lf_ig_owner_decision_v2%ROWTYPE;
- v_patch jsonb;
  v_expected text;
 BEGIN
  IF md5(pg_get_functiondef('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)'::regprocedure))
@@ -106,14 +105,6 @@ BEGIN
  THEN RAISE EXCEPTION 'PR_G_POST_MIGRATION_FUNCTION_MD5_FAILED'; END IF;
  IF (SELECT count(*) FROM public.lf_ig_owner_decision_v2)<>0
  THEN RAISE EXCEPTION 'PR_G_PRETRIAL_DECISION_COUNT_NOT_ZERO'; END IF;
- SELECT evidence_payload#>'{deliverable_created,governed_rule_patch}' INTO v_patch
- FROM public.lf_operation_execution_steps
- WHERE execution_id='PRG-EPHEMERAL-PARENT' AND step_id='execute_profile';
- -- Payload is nested under profile_output in the deployed contract.
- SELECT evidence_payload->'profile_output' INTO v_patch
- FROM public.lf_operation_execution_steps WHERE false;
- -- Use the actual nested source in the record below (the fixture is materialized
- -- by the SQL setup prior to issuing the call).
  v_source:=encode(extensions.digest(convert_to(
   'LF_RULE_ABSENT:B2B-PRG-TEST-001','UTF8'),'sha256'),'hex');
  BEGIN
@@ -139,7 +130,7 @@ BEGIN
   OR v_dec.verdict<>'RECHAZAR' OR v_dec.owner_sub<>'00000000-0000-4000-8000-000000000001'
   OR v_dec.proponente='Cristhian Luján'
  THEN RAISE EXCEPTION 'PR_G_OWNER_USERNAME_RECORD_INVALID'; END IF;
- IF jsonb_object_length(v_dec.decision_record)<>6
+ IF (SELECT count(*) FROM jsonb_object_keys(v_dec.decision_record))<>6
  OR v_dec.decision_record->>'decisor'<>'Cristhian Luján'
  OR v_dec.decision_record->>'codigo_regla'<>'B2B-PRG-TEST-001'
  OR v_dec.decision_record->>'veredicto'<>'RECHAZAR'
