@@ -49,6 +49,11 @@ def main() -> int:
               "PR_ONLY_NO_TRUSTED_DB")
         guard(os.environ.get("GITHUB_REPOSITORY") ==
               "cristhianlujan/claude-persona-lf-patch", "REPO_MISMATCH")
+        exact_head = os.environ.get("PR_C_EXACT_HEAD")
+        observed = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                                           text=True).strip()
+        guard(bool(exact_head) and observed == exact_head, "PR_C_EXACT_HEAD_DRIFT")
+        report["candidate_head"] = exact_head
         guard(os.environ.get("PGHOST") == "127.0.0.1", "REMOTE_HOST_FORBIDDEN")
         guard(os.environ.get("PGUSER") == "postgres", "ROLE_MISMATCH")
         guard(os.environ.get("PGDATABASE") == "postgres", "DB_MISMATCH")
