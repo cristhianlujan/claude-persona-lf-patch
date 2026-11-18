@@ -110,6 +110,7 @@ type HarnessOptions = {
   allowlistStatus?: number;
   allowlistPayload?: unknown;
   inputStatus?: string;
+  runtimeDirectStatus?: string;
   runtimeResultPantallaId?: number;
   runtimeTicketAuthorized?: boolean;
   agentRequiresTicket?: boolean;
@@ -159,7 +160,7 @@ function harness(options: HarnessOptions = {}) {
           return new Response(JSON.stringify({ error: "IG_PROFILE_TICKET_REQUIRED" }), { status: 403 });
         }
         const id = Number(body?.pantalla_id ?? 0);
-        return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id,
+        return new Response(JSON.stringify({ ...(options.runtimeDirectStatus ? {status:options.runtimeDirectStatus} : {}), result: { status: inputStatus, run_id: 10000 + id,
           ...(options.runtimeResultPantallaId === undefined ? {} :
             {pantalla_id:options.runtimeResultPantallaId}) } }), { status: 200 });
       }
@@ -837,4 +838,28 @@ Deno.test("CP2: E21 runtime pantalla_id from SQL ticket rejects foreign worker s
   });
   assertEquals(r2.response.status,200);
   assertEquals(r2.payload.pantalla_id,51);
+});
+
+Deno.test("LF-AUD-UI-04: direct BLOCKED cannot be promoted by nested READY", async () => {
+  const h = harness({inputStatus:"READY",runtimeDirectStatus:"BLOCKED"});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.outcome,"BLOCKED");
+  assertEquals(payload.terminal_status,"BLOCKED");
+  assertEquals((payload.result as Record<string,unknown>).status,"BLOCKED");
+});
+
+Deno.test("LF-AUD-UI-04: direct HUMAN_DECISION cannot be promoted by nested READY", async () => {
+  const h = harness({inputStatus:"READY",runtimeDirectStatus:"HUMAN_DECISION_REQUIRED"});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED");
 });
