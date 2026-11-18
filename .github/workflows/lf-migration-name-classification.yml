@@ -958,3 +958,73 @@ jobs:
           path: .lf_ci/chat9_d1_rate_limits/report.json
           if-no-files-found: warn
           retention-days: 30
+
+  # Chat9 owner correction 16:35: global config replaces numeric rate limits.
+  chat9-global-config-pg17:
+    name: IG Chat9 global rate refs PG17 actual rollback and dynamic values
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-global-ratelimit-refs-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_config_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_config_pg17_only
+      CHAT9_REF_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact HEAD and no persistent token
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Python syntax and PG17 preflight
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_global_rate_refs_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Run actual DDL/DML in BEGIN ROLLBACK, negatives and independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_global_rate_refs_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/chat9_global_rate_refs/report.json').read_text())
+          assert r['status']=='PASS' and len(r['checks'])==8
+          assert all(r['checks'].values())
+          assert r['positive_sql_exit_code']==0
+          assert r['independent_readback']==r['preimage']
+          assert r['remote_supabase_written'] is False
+          assert r['backend_enforcement_e2e']=='NOT_TESTED'
+          print('IG_CHAT9_CONFIG_REAL_PG17_BEGIN_ROLLBACK_DYNAMIC_8_OF_8_PASS')
+          PY
+      - name: Archive live PostgreSQL PG17 rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat9-config-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat9_global_rate_refs/report.json
+          if-no-files-found: warn
+          retention-days: 30
