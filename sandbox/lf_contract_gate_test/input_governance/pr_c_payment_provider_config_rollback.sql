@@ -11,7 +11,7 @@ $pre$;
 
 \echo PR_C_BEGIN
 BEGIN;
-\ir ../../../supabase/migrations/20261118061500_lf_payment_provider_config_niubiz_generic_v1.sql
+@@MIGRATION_SQL@@
 
 DO $readback$
 DECLARE
