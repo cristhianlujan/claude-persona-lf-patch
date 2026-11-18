@@ -6,7 +6,7 @@
 -- No changes to AUTH-018/019/020, permission38, policies, RLS or finalizer.
 DO $j3$
 DECLARE before_ddl text; after_ddl text; old_guard text;
-DECLARE old_count integer; post_md5 text;
+        old_count integer; post_md5 text;
 BEGIN
  IF to_regprocedure('public.lf_ig_rule_owner_decide_v2(text,text,text,jsonb)') IS NULL
  THEN RAISE EXCEPTION 'PR_J3_OWNER_V2_FUNCTION_MISSING'; END IF;
