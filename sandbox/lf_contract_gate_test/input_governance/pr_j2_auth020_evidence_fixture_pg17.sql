@@ -1,5 +1,10 @@
 -- PR-J2 CI only. Minimal Train/event fixture, explicitly SYNTHETIC.
 -- The actual producer #4085 and event 21937 were independently SELECT-verified.
+-- Bring the disposable fixture's total to 579 without changing AUTH-020.
+INSERT INTO lf_ops.reglas(id,codigo,categoria,titulo,descripcion,estado,created_at,updated_at,pendiente_decision,es_transversal)
+SELECT 10000+g,'PRJ2-SYN-'||g,'TEST','TEST','fixture only','CANDIDATO',now(),now(),false,false
+FROM generate_series(1,578) AS g;
+
 CREATE TABLE public.lf_operation_execution(
  execution_id text PRIMARY KEY,operation_code text,status text,
  manifest jsonb,updated_by_execution_id text
