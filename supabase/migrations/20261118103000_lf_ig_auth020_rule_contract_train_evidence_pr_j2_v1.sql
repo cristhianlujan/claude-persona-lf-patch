@@ -43,7 +43,8 @@ BEGIN
    AND evt.payload#>>'{receipt,terminal_status}'='COMPLETED'
    AND evt.payload#>>'{receipt,parity,migration_source_parity}'='PASS'
    AND evt.payload#>>'{receipt,ledger_readback,matches_target}'='true'
-   AND evt.payload->>'receipt_sha256' ~ '^[0-9a-f]{64}   AND encode(extensions.digest(convert_to((evt.payload->'receipt')::text,'UTF8'),'sha256'),'hex')
+   AND evt.payload->>'receipt_sha256' ~ '^[0-9a-f]{64}$'
+   AND encode(extensions.digest(convert_to((evt.payload->'receipt')::text,'UTF8'),'sha256'),'hex')
        =evt.payload->>'receipt_sha256';
  IF v_event_id IS NULL
  THEN RAISE EXCEPTION 'PR_J2_COMPLETED_TRAIN_SOURCE_OR_RECEIPT_UNVERIFIED'; END IF;
