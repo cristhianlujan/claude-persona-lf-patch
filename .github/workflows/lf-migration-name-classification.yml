@@ -15,11 +15,16 @@ on:
       - "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_legacy_reintroduction_guard_v1.py"
       - "sandbox/lf_contract_gate_test/migration_route_guard/**"
 
+  push:
+    branches:
+      - lf/retire-owner-chat-governance-20261117
+
 permissions:
   contents: read
 
 jobs:
   classify-migration-names:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +58,7 @@ jobs:
             "${migration_paths[@]}"
 
   owner-chat-pgdual-rollback:
+    if: github.event_name == 'pull_request'
     name: owner-chat-pg17-pg18-begin-rollback
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -85,3 +91,20 @@ jobs:
           else
             echo "SKIP_OWNER_CHAT_PGDUAL_NOT_IN_DIFF"
           fi
+
+  pg17-pg18-retirement-pre-pr:
+    name: PG17 and PG18 owner-chat retirement pre-PR verification
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Transactional teardown PG17.6 and PG18.7
+        run: python3 sandbox/lf_contract_gate_test/owner_chat_retirement/test_lf_owner_chat_retirement_pgdual_rollback_v1.py
