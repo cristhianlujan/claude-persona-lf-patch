@@ -45,6 +45,38 @@ class ModelGovernanceTest(unittest.TestCase):
             with self.assertRaises(ValidationError):
                 InputGovernanceReceipt.model_validate(valid | change)
 
+    def test_audit_ui06_ready_flags_cannot_conceal_blocked_status(self) -> None:
+        context = {"screen": "B2B-AUTH-001", "scope": ["read"]}
+        base = {
+            "receipt_ref": "fixture://governance/ready-conflict",
+            "current": True,
+            "ready": True,
+            "context_sha256": canonical_json_sha256(context),
+            "context": context,
+            "status": "READY",
+        }
+        self.assertEqual(InputGovernanceReceipt.model_validate(base).status, "READY")
+        for status in ("BLOCKED", "HUMAN_DECISION_REQUIRED",
+                       "VALIDATOR_RESUME_REQUIRED", "COMPLETED", "UNKNOWN"):
+            with self.subTest(status=status):
+                with self.assertRaisesRegex(
+                    ValidationError, "INPUT_GOVERNANCE_STATUS_CONTRADICTS_READY"
+                ):
+                    InputGovernanceReceipt.model_validate(base | {"status": status})
+
+    def test_audit_ui06_advisory_requires_explicit_noncanonical_context(self) -> None:
+        context = {"source": "router://ACT-0001"}
+        base = {
+            "receipt_ref": "fixture://advisory",
+            "current": True,
+            "ready": True,
+            "context_sha256": canonical_json_sha256(context),
+            "context": context,
+            "status": "ADVISORY_READ_ONLY",
+            "decision": "ADVISORY",
+        }
+        with self.assertRaises(ValidationError):
+            InputGovernanceReceipt.model_validate(base)
     def test_canonical_governance_receipt_is_source_bound(self) -> None:
         context = {"screen": "B2B-CARGA-001", "scope": ["read"]}
         payload = {
