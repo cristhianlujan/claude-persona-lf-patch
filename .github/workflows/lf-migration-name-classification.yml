@@ -944,11 +944,11 @@ jobs:
           report=json.loads(Path(".lf_ci/chat9_d1_rate_limits/report.json").read_text())
           assert report["status"]=="PASS"
           assert report["positive_sql_exit_code"]==0
-          assert all(report["checks"].values()) and len(report["checks"])==7
+          assert all(report["checks"].values()) and len(report["checks"])==8
           assert report["preimage"]==report["separate_readback"]
           assert report["remote_supabase_written"] is False
           assert report["owner_v2_rule_run"]=="NOT_APPLICABLE_POLICIES_ONLY"
-          print("CHAT9_D1_REAL_POSTGRESQL17_BEGIN_ROLLBACK_PASS_7_OF_7")
+          print("CHAT9_D1_REAL_POSTGRESQL17_BEGIN_ROLLBACK_PASS_8_OF_8")
           PY
       - name: Archive exact HEAD ephemeral PostgreSQL proof
         if: always()
