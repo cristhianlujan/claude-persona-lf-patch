@@ -1138,3 +1138,68 @@ jobs:
           python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/test_niubiz_three_candidate_spec_v1.py
           python3 sandbox/lf_contract_gate_test/input_governance/test_niubiz_three_candidate_spec_v1.py
           echo "NIUBIZ_3_CANDIDATE_SPEC_ONLY_PASS_NO_V2_NO_DB_WRITE"
+  # IG Chat9 L2 prerequisite: six Client global variables only.
+  chat9-client-config-pg17:
+    name: IG Chat9 Client config real PG17 rollback 7/7
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-client-controls-config-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_client_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_client_pg17_only
+      CLIENT_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Python syntax and PostgreSQL readiness
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_client_controls_config_pg17.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Verify real positive/negative rollback and independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_client_controls_config_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/chat9_client_config/report.json').read_text())
+          assert r['status']=='PASS' and len(r['checks'])==7 and all(r['checks'].values())
+          assert r['readback']==r['preimage']
+          assert not r['remote_writes'] and r['rules_updated']==0
+          print('IG_CHAT9_CLIENT_CONFIG_REAL_PG17_7_OF_7_PASS')
+          PY
+      - name: Preserve test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-chat9-client-config-${{ github.run_id }}
+          path: .lf_ci/chat9_client_config/report.json
+          if-no-files-found: warn
+          retention-days: 30
