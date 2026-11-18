@@ -110,6 +110,27 @@ VALUES
  ('RATE-CLIENT-OTP-PHONE-CROSSSESSION','CLIENT_OTP_SEND',3600,5,5,'PHONE_HASH','VIGENTE',9);
 """
         ok_sql(setup,"SCHEMA_FIXTURE_SETUP")
+        # Install EXACT source functions of the live provenance guard, not a
+        # hand-written permissive mock. The previous Train attempt exposed
+        # the missing trigger (PARAMETER_PROVENANCE_REQUIRED).
+        canonical=(ROOT/"supabase/migrations"/
+                   "20260826185924_lf_input_governance_stage_parameter_authority_v1.sql").read_text()
+        def function_ddl(marker):
+            start=canonical.index(marker)
+            end=canonical.index("$function$;",start)+len("$function$;")
+            return canonical[start:end]
+        validator=function_ddl(
+            "create or replace function programacion.fn_input_parameter_provenance_valid_v1(")
+        trigger_fn=function_ddl(
+            "create or replace function programacion.fn_guard_input_parameter_provenance_v1()")
+        ok_sql("CREATE SCHEMA programacion;\n"+validator+"\n"+trigger_fn+"""
+ALTER TABLE lf_ops.politicas_rate_limit
+ ADD CONSTRAINT politicas_rate_limit_parameter_provenance_ck
+ CHECK(programacion.fn_input_parameter_provenance_valid_v1(parameter_provenance));
+CREATE TRIGGER trg_politicas_rate_limit_parameter_provenance
+ BEFORE INSERT OR UPDATE ON lf_ops.politicas_rate_limit
+ FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_parameter_provenance_v1();
+""","CANONICAL_PROVENANCE_TRIGGER_SETUP_FAILED")
         before=readback()
         check((before["policy_rows"],before["rules"],before["vigente_rules"],
                before["candidate_rules"],before["target"],before["login_scope"],
@@ -141,7 +162,10 @@ VALUES
             "rules_count_drift":("DELETE FROM lf_ops.reglas WHERE codigo='RULE_0579';",
                                   "CHAT9_D1_RULE_BASELINE_DRIFT"),
             "rate_count_drift":("DELETE FROM lf_ops.politicas_rate_limit WHERE rate_limit_policy_id=9;",
-                                "CHAT9_D1_RATE_POLICY_COUNT_OR_TARGET_DRIFT")
+                                "CHAT9_D1_RATE_POLICY_COUNT_OR_TARGET_DRIFT"),
+            "missing_parameter_provenance":(
+                "UPDATE lf_ops.politicas_rate_limit SET scope_key='USER' WHERE rate_limit_policy_id=1;",
+                "PARAMETER_PROVENANCE_REQUIRED")
         }
         for name,(tamper,error_code) in negatives.items():
             neg=sql("BEGIN;\n"+tamper+"\n"+body+"\nROLLBACK;\n")
@@ -150,6 +174,7 @@ VALUES
             check(readback()==before,"NEGATIVE_READBACK_FAILED:"+name)
             checks[name]=True
         report.update(status="PASS", checks=checks, preimage=before,
+          canonical_provenance_trigger_installed=True,
           projected={"policy_rows":10,"new_candidate_policy":1,
                      "modified_policies":3,"rule_rows":579},
           separate_readback=readback(),
