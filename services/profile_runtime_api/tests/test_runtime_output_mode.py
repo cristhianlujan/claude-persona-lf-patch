@@ -97,6 +97,26 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         self.assertEqual(utility["status"], "PASS", utility)
 
+        # Always selected by the existing fleet CI job: negative reproducer
+        # must execute, not only exist in an unselected unittest method.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        bypass = self.focused_payload()
+        bypass["decision_subject"] = "UI decision"
+        bypass["selected_visual_type"] = "horizontal overflow"
+        bypass["hard_exclusions"] = ["horizontal overflow"]
+        local = SimpleNamespace(evaluate=lambda _payload, _gate: {
+            "status": "PASS", "blocking_codes": []
+        })
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            blocked = self.gates.semantic_utility(
+                profile_slug="ui_architect", payload=bypass,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(blocked["status"], "FAIL", blocked)
+        self.assertIn("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED", blocked["blocking_codes"])
+
     def test_focused_utility_rejects_selected_treatment_also_excluded(self) -> None:
         payload = self.focused_payload()
         payload["selected_visual_type"] = "horizontal overflow"
