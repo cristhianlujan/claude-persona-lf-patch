@@ -349,7 +349,69 @@
       "recovery_audit_no_raw_secrets_or_dni_image"
     ],
     "provenance_guidance": "Refresh parameter_provenance for every changed key with LF_PROVISIONAL_DEFAULT / LF_PROVISIONAL; do not invent signed owner decision ID. Governed Train required. Do not promote policy to VIGENTE.",
-    "applied": false
+    "applied": false,
+    "source_parameter_provenance": {
+      "provider_binding": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "value_status": "LF_PROVISIONAL",
+        "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+        "origin_version": "2026-09-28",
+        "origin_reference": "public.lf_decisiones_gov:136",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      },
+      "idv_disabled_resolution": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DOC-OWNER-20261114-0452-IDV-FACEPHI",
+        "value_status": "LF_PROVISIONAL",
+        "origin_version": "2026-11-14",
+        "origin_reference": "OWNER_CHAT_DOCUMENTARY_NOT_IDENTITY_VERIFIED",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      },
+      "idv_provider_policy_code": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DOC-OWNER-20261114-0452-IDV-FACEPHI",
+        "value_status": "LF_PROVISIONAL",
+        "origin_version": "2026-11-14",
+        "origin_reference": "OWNER_CHAT_DOCUMENTARY_NOT_IDENTITY_VERIFIED",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      },
+      "idv_optional_branch_enabled": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DOC-OWNER-20261114-0452-IDV-FACEPHI",
+        "value_status": "LF_PROVISIONAL",
+        "origin_version": "2026-11-14",
+        "origin_reference": "OWNER_CHAT_DOCUMENTARY_NOT_IDENTITY_VERIFIED",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      },
+      "regular_login_mfa_unchanged": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DOC-OWNER-20261114-0452-IDV-FACEPHI",
+        "value_status": "LF_PROVISIONAL",
+        "origin_version": "2026-11-14",
+        "origin_reference": "OWNER_CHAT_DOCUMENTARY_NOT_IDENTITY_VERIFIED",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      },
+      "idv_gate_applies_only_to_idv_branch": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DOC-OWNER-20261114-0452-IDV-FACEPHI",
+        "value_status": "LF_PROVISIONAL",
+        "origin_version": "2026-11-14",
+        "origin_reference": "OWNER_CHAT_DOCUMENTARY_NOT_IDENTITY_VERIFIED",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      },
+      "provider_architecture_security_policy_id": {
+        "origin_type": "LF_PROVISIONAL_DEFAULT",
+        "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "value_status": "LF_PROVISIONAL",
+        "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+        "origin_version": "2026-09-28",
+        "origin_reference": "public.lf_decisiones_gov:136",
+        "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+      }
+    },
+    "source_created_at": "2026-08-12 05:56:19.239592+00",
+    "source_updated_at": "2026-11-14 09:49:25.366731+00"
   },
   "prerequisites": {
     "owner_profile_run": "MISSING_AUTH020_SOURCE_BOUND_ACTIVE_PARENT_WITH_STEP50_AND_INDEPENDENT_STEP70",
