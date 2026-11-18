@@ -1206,7 +1206,7 @@ jobs:
 
   chat9-client-v2-proof-pg17:
     name: IG Chat9 two source-bound rules PG17 rollback functional
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-client-rule-v2-functional-proof-20261118' }}
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-client-v2-proof-readback-20261118' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
