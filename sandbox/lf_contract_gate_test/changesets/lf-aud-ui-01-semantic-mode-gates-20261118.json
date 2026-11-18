@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-aud-ui-01-semantic-mode-gates-20261118",
+  "paths": {
+    "services/profile_runtime_api/profile_runtime_api/validation.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_runtime_output_mode.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-aud-ui-01-semantic-mode-gates-20261118.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -97,6 +97,26 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         self.assertEqual(utility["status"], "PASS", utility)
 
+        # Always selected by the existing fleet CI job: negative reproducer
+        # must execute, not only exist in an unselected unittest method.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        bypass = self.focused_payload()
+        bypass["decision_subject"] = "UI decision"
+        bypass["selected_visual_type"] = "horizontal overflow"
+        bypass["hard_exclusions"] = ["horizontal overflow"]
+        local = SimpleNamespace(evaluate=lambda _payload, _gate: {
+            "status": "PASS", "blocking_codes": []
+        })
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            blocked = self.gates.semantic_utility(
+                profile_slug="ui_architect", payload=bypass,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(blocked["status"], "FAIL", blocked)
+        self.assertIn("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED", blocked["blocking_codes"])
+
     def test_focused_utility_rejects_selected_treatment_also_excluded(self) -> None:
         payload = self.focused_payload()
         payload["selected_visual_type"] = "horizontal overflow"
@@ -289,6 +309,66 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         self.assertEqual(utility["status"], "FAIL", utility)
         self.assertIn("UI_FOCUSED_STATUS_NOT_DECISION_READY", utility["blocking_codes"])
+
+    def test_audit_ui01_mode_errors_survive_local_pass(self) -> None:
+        # Reproducer: the bound local utility PASS must not bypass focused checks.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        payload = self.focused_payload()
+        payload["decision_subject"] = "UI decision"
+        payload["selected_visual_type"] = "horizontal overflow"
+        payload["hard_exclusions"] = ["horizontal overflow"]
+        local = SimpleNamespace(evaluate=lambda _payload, _contract: {"status": "PASS", "blocking_codes": []})
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            result = self.gates.semantic_utility(
+                profile_slug="ui_architect",
+                payload=payload,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertIn("UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE", result["blocking_codes"])
+        self.assertIn("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED", result["blocking_codes"])
+        self.assertFalse(result["downstream_authorized"])
+
+    def test_audit_ui01_mode_errors_combine_with_local_fail(self) -> None:
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        payload = self.focused_payload()
+        payload["density_limits"] = "100"
+        local = SimpleNamespace(evaluate=lambda _payload, _contract: {
+            "status": "FAIL", "blocking_codes": ["LOCAL_SEMANTIC_CANARY"]
+        })
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            result = self.gates.semantic_utility(
+                profile_slug="ui_architect",
+                payload=payload,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertIn("LOCAL_SEMANTIC_CANARY", result["blocking_codes"])
+        self.assertIn("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY", result["blocking_codes"])
+
+    def test_audit_ui01_missing_input_mode_never_skipped(self) -> None:
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        payload = {
+            "self_verdict": "NEEDS_INPUT",
+            "missing_inputs": [],
+            "blocked": True,
+            "pipeline_action": "CONTINUE",
+        }
+        local = SimpleNamespace(evaluate=lambda _payload, _contract: {"status": "PASS", "blocking_codes": []})
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            result = self.gates.semantic_utility(
+                profile_slug="ui_architect", payload=payload,
+                contract_gate={"status": "PASS", "schema_mode": "UI_MISSING_INPUT"},
+            )
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertIn("UI_MISSING_INPUT_LIST_EMPTY", result["blocking_codes"])
+        self.assertIn("UI_MISSING_INPUT_PIPELINE_ACTION_INVALID", result["blocking_codes"])
 
     def test_focused_utility_accepts_concrete_spanish_fields(self) -> None:
         payload = self.focused_payload()

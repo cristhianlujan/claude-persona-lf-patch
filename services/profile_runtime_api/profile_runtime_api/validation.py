@@ -161,6 +161,111 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     return sorted(set(errors))
 
 
+
+
+def _ui_mode_semantic_errors(payload: dict[str, Any], mode: str) -> list[str]:
+    """Evaluate focused/missing UI modes independently of any profile-local utility."""
+    errors: list[str] = []
+    if mode == "UI_FOCUSED_DECISION":
+        required_text = (
+            "decision_subject",
+            "selected_visual_type",
+            "base_color_or_surface",
+            "size_or_coverage",
+            "density_limits",
+            "depth_style",
+            "visual_weight",
+            "relationship_to_main_element",
+            "implementation_format",
+        )
+        values: dict[str, str] = {}
+        for key in required_text:
+            value = payload.get(key)
+            if not isinstance(value, str) or len(value.strip()) < 3:
+                errors.append(f"UI_FOCUSED_{key.upper()}_WEAK")
+            else:
+                values[key] = " ".join(value.lower().strip().split())
+
+        exclusions = payload.get("hard_exclusions")
+        if not isinstance(exclusions, list) or not exclusions:
+            errors.append("UI_FOCUSED_HARD_EXCLUSIONS_EMPTY")
+        else:
+            selected = values.get("selected_visual_type", "")
+            governance_exclusion_markers = (
+                "non_canonical_artifact", "non-canonical artifact", "non canonical artifact",
+                "artifact_01", "artifact_02", "artifact set", "input governance",
+                "advisory_read_only", "advisory read only", "canonicalize",
+                "canonicalization", "register_screen", "resolve_screen",
+            )
+            for exclusion in exclusions:
+                if not isinstance(exclusion, str):
+                    continue
+                normalized = " ".join(exclusion.lower().strip().split())
+                if any(marker in normalized for marker in governance_exclusion_markers):
+                    errors.append("UI_FOCUSED_HARD_EXCLUSION_GOVERNANCE_ECHO")
+                if selected and normalized and (selected == normalized or selected in normalized):
+                    errors.append("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED")
+            # Preserve all findings; do not stop after the first invalid exclusion.
+
+        generic_only = {
+            "small", "medium", "large", "thin", "thick", "light", "dark",
+            "high", "low", "above", "below", "left", "right", "center",
+            "standard", "default", "normal", "css", "svg", "component", "visual", "ui",
+        }
+        specificity_fields = (
+            "size_or_coverage",
+            "density_limits",
+            "depth_style",
+            "visual_weight",
+            "relationship_to_main_element",
+            "implementation_format",
+        )
+        for key in specificity_fields:
+            normalized = values.get(key, "")
+            if normalized in generic_only:
+                errors.append(f"UI_FOCUSED_{key.upper()}_NON_CONCRETE")
+
+        phrase_fields = (
+            "decision_subject", "selected_visual_type", "size_or_coverage",
+            "density_limits", "depth_style", "visual_weight",
+            "relationship_to_main_element", "implementation_format",
+        )
+        for key in phrase_fields:
+            normalized = values.get(key, "")
+            if normalized and re.fullmatch(r"[a-z0-9]+(?:_[a-z0-9]+)+", normalized):
+                errors.append(f"UI_FOCUSED_{key.upper()}_IDENTIFIER_ECHO")
+
+        density = values.get("density_limits", "")
+        density_markers = (
+            "one", "single", "two", "three", "per ", "max", "maximum",
+            "only", "no more", "at most", "level", "layer", "line", "element",
+            "cue", "viewport", "%", "px", "uno", "una", "dos", "tres", "por ",
+            "máximo", "maximo", "solo", "sola", "no más", "no mas", "como máximo",
+            "como maximo", "límite", "limite", "cantidad", "capa", "línea", "linea",
+            "elemento", "señal", "indicador",
+        )
+        if density and not any(char.isdigit() for char in density) and not any(
+            marker in density for marker in density_markers
+        ):
+            errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE")
+
+        errors.extend(_ui_focused_semantic_v3_errors(values))
+        if payload.get("status") in {"RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"}:
+            errors.append("UI_FOCUSED_STATUS_NOT_DECISION_READY")
+    elif mode == "UI_MISSING_INPUT":
+        verdict = payload.get("self_verdict")
+        missing = payload.get("missing_inputs")
+        if verdict in {"NEEDS_INPUT", "BLOCKED"} and (
+            not isinstance(missing, list) or not missing
+        ):
+            errors.append("UI_MISSING_INPUT_LIST_EMPTY")
+        if payload.get("blocked") is True and payload.get("pipeline_action") not in {
+            "RETURN_TO_ORCHESTRATOR",
+            "BLOCK_PIPELINE",
+        }:
+            errors.append("UI_MISSING_INPUT_PIPELINE_ACTION_INVALID")
+    return errors
+
 class OutputGates:
     def __init__(self, repository: RepositoryBindings) -> None:
         self.repository = repository
@@ -232,57 +337,54 @@ class OutputGates:
                 "independent_semantic_judge": "NOT_EXECUTED",
             }
         errors: list[str] = []
+        # Mode checks must run even when the profile declares a local evaluator.
+        if profile_slug == "ui_architect":
+            mode = str(contract_gate.get("schema_mode") or "AUTO")
+            if mode in UI_SCHEMA_ONLY_MODES:
+                errors.extend(_ui_mode_semantic_errors(payload, mode))
+
         local_utility = self.repository.load_semantic_utility(profile_slug)
         if local_utility is not None:
             module, callable_name = local_utility
             evaluator = getattr(module, callable_name, None)
+            local_codes: list[str] = []
+            local_status = "FAIL"
+            message: str | None = None
             if not callable(evaluator):
-                return {
-                    "status": "FAIL",
-                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
-                    "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_CALLABLE_MISSING"],
-                    "independent_semantic_judge": "NOT_EXECUTED",
-                    "downstream_authorized": False,
-                }
-            try:
-                result = evaluator(payload, contract_gate)
-            except Exception as exc:
-                return {
-                    "status": "FAIL",
-                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
-                    "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_EXCEPTION"],
-                    "message": type(exc).__name__,
-                    "independent_semantic_judge": "NOT_EXECUTED",
-                    "downstream_authorized": False,
-                }
-            if isinstance(result, dict):
-                codes = result.get("blocking_codes", [])
-                if not isinstance(codes, list):
-                    codes = ["PROFILE_SEMANTIC_UTILITY_RESULT_INVALID"]
-                status = "PASS" if result.get("status") == "PASS" and not codes else "FAIL"
-                return {
-                    "status": status,
-                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
-                    "blocking_codes": sorted({str(code) for code in codes}),
-                    "independent_semantic_judge": "NOT_EXECUTED",
-                    "downstream_authorized": False,
-                }
-            if isinstance(result, list):
-                codes = sorted({str(code) for code in result})
-                return {
-                    "status": "PASS" if not codes else "FAIL",
-                    "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
-                    "blocking_codes": codes,
-                    "independent_semantic_judge": "NOT_EXECUTED",
-                    "downstream_authorized": False,
-                }
-            return {
-                "status": "FAIL",
+                local_codes.append("PROFILE_SEMANTIC_UTILITY_CALLABLE_MISSING")
+            else:
+                try:
+                    result = evaluator(payload, contract_gate)
+                except Exception as exc:
+                    local_codes.append("PROFILE_SEMANTIC_UTILITY_EXCEPTION")
+                    message = type(exc).__name__
+                else:
+                    if isinstance(result, dict):
+                        raw_codes = result.get("blocking_codes", [])
+                        if not isinstance(raw_codes, list):
+                            local_codes.append("PROFILE_SEMANTIC_UTILITY_RESULT_INVALID")
+                        else:
+                            local_codes.extend(str(code) for code in raw_codes)
+                        local_status = "PASS" if result.get("status") == "PASS" and not local_codes else "FAIL"
+                        if local_status != "PASS" and not local_codes:
+                            local_codes.append("PROFILE_SEMANTIC_UTILITY_RESULT_INVALID")
+                    elif isinstance(result, list):
+                        local_codes.extend(str(code) for code in result)
+                        local_status = "PASS" if not local_codes else "FAIL"
+                    else:
+                        local_codes.append("PROFILE_SEMANTIC_UTILITY_RESULT_INVALID")
+            blocking = sorted(set(errors + local_codes))
+            response: dict[str, Any] = {
+                "status": "PASS" if local_status == "PASS" and not blocking else "FAIL",
                 "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
-                "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_RESULT_INVALID"],
+                "blocking_codes": blocking,
                 "independent_semantic_judge": "NOT_EXECUTED",
                 "downstream_authorized": False,
             }
+            if message is not None:
+                response["message"] = message
+            return response
+
         if profile_slug == "product_director_lf":
             deliverable = payload.get("deliverable_created")
             if not isinstance(deliverable, dict):
@@ -296,105 +398,7 @@ class OutputGates:
                     errors.append("PRODUCT_DECISION_LINEAGE_MISSING")
         elif profile_slug == "ui_architect":
             mode = str(contract_gate.get("schema_mode") or "AUTO")
-            if mode == "UI_FOCUSED_DECISION":
-                required_text = (
-                    "decision_subject",
-                    "selected_visual_type",
-                    "base_color_or_surface",
-                    "size_or_coverage",
-                    "density_limits",
-                    "depth_style",
-                    "visual_weight",
-                    "relationship_to_main_element",
-                    "implementation_format",
-                )
-                values: dict[str, str] = {}
-                for key in required_text:
-                    value = payload.get(key)
-                    if not isinstance(value, str) or len(value.strip()) < 3:
-                        errors.append(f"UI_FOCUSED_{key.upper()}_WEAK")
-                    else:
-                        values[key] = " ".join(value.lower().strip().split())
-
-                exclusions = payload.get("hard_exclusions")
-                if not isinstance(exclusions, list) or not exclusions:
-                    errors.append("UI_FOCUSED_HARD_EXCLUSIONS_EMPTY")
-                else:
-                    selected = values.get("selected_visual_type", "")
-                    governance_exclusion_markers = (
-                        "non_canonical_artifact", "non-canonical artifact", "non canonical artifact",
-                        "artifact_01", "artifact_02", "artifact set", "input governance",
-                        "advisory_read_only", "advisory read only", "canonicalize",
-                        "canonicalization", "register_screen", "resolve_screen",
-                    )
-                    for exclusion in exclusions:
-                        if not isinstance(exclusion, str):
-                            continue
-                        normalized = " ".join(exclusion.lower().strip().split())
-                        if any(marker in normalized for marker in governance_exclusion_markers):
-                            errors.append("UI_FOCUSED_HARD_EXCLUSION_GOVERNANCE_ECHO")
-                        if selected and normalized and (selected == normalized or selected in normalized):
-                            errors.append("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED")
-                    # Preserve all findings; do not stop after the first invalid exclusion.
-
-                generic_only = {
-                    "small", "medium", "large", "thin", "thick", "light", "dark",
-                    "high", "low", "above", "below", "left", "right", "center",
-                    "standard", "default", "normal", "css", "svg", "component", "visual", "ui",
-                }
-                specificity_fields = (
-                    "size_or_coverage",
-                    "density_limits",
-                    "depth_style",
-                    "visual_weight",
-                    "relationship_to_main_element",
-                    "implementation_format",
-                )
-                for key in specificity_fields:
-                    normalized = values.get(key, "")
-                    if normalized in generic_only:
-                        errors.append(f"UI_FOCUSED_{key.upper()}_NON_CONCRETE")
-
-                phrase_fields = (
-                    "decision_subject", "selected_visual_type", "size_or_coverage",
-                    "density_limits", "depth_style", "visual_weight",
-                    "relationship_to_main_element", "implementation_format",
-                )
-                for key in phrase_fields:
-                    normalized = values.get(key, "")
-                    if normalized and re.fullmatch(r"[a-z0-9]+(?:_[a-z0-9]+)+", normalized):
-                        errors.append(f"UI_FOCUSED_{key.upper()}_IDENTIFIER_ECHO")
-
-                density = values.get("density_limits", "")
-                density_markers = (
-                    "one", "single", "two", "three", "per ", "max", "maximum",
-                    "only", "no more", "at most", "level", "layer", "line", "element",
-                    "cue", "viewport", "%", "px", "uno", "una", "dos", "tres", "por ",
-                    "máximo", "maximo", "solo", "sola", "no más", "no mas", "como máximo",
-                    "como maximo", "límite", "limite", "cantidad", "capa", "línea", "linea",
-                    "elemento", "señal", "indicador",
-                )
-                if density and not any(char.isdigit() for char in density) and not any(
-                    marker in density for marker in density_markers
-                ):
-                    errors.append("UI_FOCUSED_DENSITY_LIMITS_NON_CONCRETE")
-
-                errors.extend(_ui_focused_semantic_v3_errors(values))
-                if payload.get("status") in {"RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE"}:
-                    errors.append("UI_FOCUSED_STATUS_NOT_DECISION_READY")
-            elif mode == "UI_MISSING_INPUT":
-                verdict = payload.get("self_verdict")
-                missing = payload.get("missing_inputs")
-                if verdict in {"NEEDS_INPUT", "BLOCKED"} and (
-                    not isinstance(missing, list) or not missing
-                ):
-                    errors.append("UI_MISSING_INPUT_LIST_EMPTY")
-                if payload.get("blocked") is True and payload.get("pipeline_action") not in {
-                    "RETURN_TO_ORCHESTRATOR",
-                    "BLOCK_PIPELINE",
-                }:
-                    errors.append("UI_MISSING_INPUT_PIPELINE_ACTION_INVALID")
-            else:
+            if mode not in UI_SCHEMA_ONLY_MODES:
                 deliverable = payload.get("deliverable_created")
                 if not isinstance(deliverable, dict):
                     errors.append("UI_DELIVERABLE_MISSING")
