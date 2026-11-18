@@ -155,6 +155,12 @@ on:
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
+    inputs:
+      ig4064_rollback_only:
+        description: "IG4064 exact-head live Supabase BEGIN/ROLLBACK proof only"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -816,6 +822,201 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py self-test
+
+  ig4064-rollback-static:
+    name: IG4064 advisory route and SQL safety positive-negative
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate source without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout pinned #4064 SQL as inert test data (no credentials)
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: 6d9f33fe300432270fdf078a35d1ae56cc1c8fab
+          path: candidate-readonly
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Execute positive-negative route and SQL source guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/test_ig4064_advisory_dispatch_v1.py
+          echo IG4064_ADVISORY_STATIC_NEGATIVE_POSITIVE_PASS
+
+      - name: Prove one-shot event gate positive and negative (no credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source=Path(".github/workflows/lf-router-level2-advisory-tests.yml").read_text()
+          job=source.split("  ig4064-once-train-dispatch:\n",1)[1].split("\n  ig4064-governed-live-rollback:\n",1)[0]
+          match=re.search(r"    if: >-\n((?:      [^\n]*\n)+)",job)
+          assert match, "IG4064_ONE_SHOT_JOB_GATE_NOT_FOUND"
+          actual=" ".join(x.strip() for x in match.group(1).splitlines())
+          expected=("github.event_name == 'push' && "
+                    "github.ref == 'refs/heads/main' && "
+                    "github.repository == 'cristhianlujan/claude-persona-lf-patch' && "
+                    "github.actor == 'lf-migration-train[bot]' && "
+                    "startsWith(github.event.head_commit.message, 'merge(train): PR #4071')")
+          assert actual == expected, "IG4064_ONE_SHOT_GATE_SOURCE_DRIFT"
+          assert "permissions:\n      contents: read\n      actions: write\n      pull-requests: read" in job
+          assert ".merged_by.login == \"lf-migration-train[bot]\"" in job
+          assert ".merge_commit_sha == $sha" in job
+          assert 'length == 1 and .[0].filename == $target' in job
+          assert "-f 'inputs[ig4064_rollback_only]=true'" in job
+          def eligible(e):
+              return (e["event"]=="push" and e["ref"]=="refs/heads/main"
+                      and e["repository"]=="cristhianlujan/claude-persona-lf-patch"
+                      and e["actor"]=="lf-migration-train[bot]"
+                      and e["message"].startswith("merge(train): PR #4071"))
+          valid={"event":"push","ref":"refs/heads/main",
+                 "repository":"cristhianlujan/claude-persona-lf-patch",
+                 "actor":"lf-migration-train[bot]",
+                 "message":"merge(train): PR #4071\n\nAutomate IG4064 rollback"}
+          assert eligible(valid), "IG4064_ONE_SHOT_POSITIVE_FAILED"
+          cases=[("fork",{"repository":"external/fork"}),
+                 ("feature_branch",{"ref":"refs/heads/feature"}),
+                 ("pull_request",{"event":"pull_request"}),
+                 ("dispatch",{"event":"workflow_dispatch"}),
+                 ("unauthorized_actor",{"actor":"other-user"}),
+                 ("other_pr",{"message":"merge(train): PR #4064"}),
+                 ("prefix_trick",{"message":"prefix merge(train): PR #4071"})]
+          for name,changes in cases:
+              assert not eligible(valid | changes), "IG4064_ONE_SHOT_NEGATIVE_FAILED:"+name
+          print("PASS_IG4064_ONESHOT_TRIGGER 1/1 positive 7/7 negative")
+          PY
+
+  # One-shot: only the Train bot's merge commit for THIS PR may dispatch.
+  # Not a PR/fork trigger; the live runner keeps its original dispatch guard.
+  ig4064-once-train-dispatch:
+    name: IG4064 one-shot Train merge dispatch
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
+      github.actor == 'lf-migration-train[bot]' &&
+      startsWith(github.event.head_commit.message, 'merge(train): PR #4071')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+      pull-requests: read
+    steps:
+      - name: Verify real merged PR and sole authorized workflow path
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result="$(gh api "repos/$GITHUB_REPOSITORY/pulls/4071")"
+          jq -e --arg sha "$GITHUB_SHA" --arg repo "$GITHUB_REPOSITORY" '
+            .merged_at != null and
+            .merge_commit_sha == $sha and
+            .merged_by.login == "lf-migration-train[bot]" and
+            .head.repo.full_name == $repo and
+            .base.ref == "main"
+          ' <<< "$result" >/dev/null
+          files="$(gh api "repos/$GITHUB_REPOSITORY/pulls/4071/files?per_page=100")"
+          jq -e --arg target '.github/workflows/lf-router-level2-advisory-tests.yml' '
+            length == 1 and .[0].filename == $target
+          ' <<< "$files" >/dev/null
+          echo 'IG4064_ONE_SHOT_MERGE_PROVEN'
+      - name: Request existing guarded rollback workflow_dispatch once
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/lf-router-level2-advisory-tests.yml/dispatches" \
+            -f ref=main \
+            -f 'inputs[ig4064_rollback_only]=true'
+          echo 'IG4064_ONE_SHOT_DISPATCH_REQUESTED'
+
+  ig4064-governed-live-rollback:
+    name: IG4064 live Supabase rollback (manual only)
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'cristhianlujan/claude-persona-lf-patch' &&
+      inputs.ig4064_rollback_only == true
+    runs-on: ubuntu-latest
+    environment: lf-merge-train
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      pull-requests: read
+    concurrency:
+      group: ig4064-live-rollback-only
+      cancel-in-progress: false
+    steps:
+      - name: Checkout trusted main only (workflow code)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Checkout pinned PR 4064 as inert SQL data
+        uses: actions/checkout@v4
+        with:
+          repository: cristhianlujan/claude-persona-lf-patch
+          ref: 6d9f33fe300432270fdf078a35d1ae56cc1c8fab
+          path: candidate-readonly
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight exact PR HEAD, pinning and static guards
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG4064_DISPATCH_SCOPE: ROLLBACK_ONLY
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_ci/ig4064_advisory
+          python3 -m py_compile sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py
+          python3 -I sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/test_ig4064_advisory_dispatch_v1.py
+          python3 sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py preflight
+      - name: Install psql for guarded PostgreSQL single session
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+      - name: Prove 135/135, 6/6 refs, 39-screen regression and independent readback
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG4064_DISPATCH_SCOPE: ROLLBACK_ONLY
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGSSLMODE: require
+        run: |
+          set -euo pipefail
+          test -n "$PGPASSWORD" || { echo 'BLOCK_PROTECTED_DB_SECRET_UNAVAILABLE'; exit 2; }
+          python3 sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py execute
+      - name: Publish SQL log, rollback readback, 1974 results and SHA256 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig4064-governed-advisory-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/ig4064_advisory/preflight.json
+            .lf_ci/ig4064_advisory/report.json
+            .lf_ci/ig4064_advisory/postgresql.log
+            .lf_ci/ig4064_advisory/independent_readback.log
+          if-no-files-found: warn
+          retention-days: 30
 
   profile-runtime-binding-fleet-conformance:
     name: profile-runtime-binding-fleet-conformance

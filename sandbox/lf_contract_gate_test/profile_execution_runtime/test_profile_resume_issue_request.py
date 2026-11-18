@@ -382,8 +382,13 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             if "semantic_judge_result" in body:
                 return 200, {"phase": "PROFILE_EXECUTION_COMPLETED", "profile_code": profile_code}
             return 200, {"phase": "NATIVE_MODEL_INPUT_READY", "profile_code": profile_code}
+        import sys
         env = {**self.env, "GITHUB_SHA": "a" * 40, "GITHUB_RUN_ID": "12345"}
-        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+        # runpy does not add SCRIPT.parent to sys.path as executing the script does.
+        # Reproduce the real CLI import boundary, without mocking the Step70 validator.
+        with (patch.dict(os.environ, env, clear=True),
+              patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)),
+              patch.object(sys, "path", [str(SCRIPT.parent), *sys.path])):
             module = runpy.run_path(str(SCRIPT), run_name="same_run_test")
             main = module["main"]
             with patch.dict(main.__globals__, {
