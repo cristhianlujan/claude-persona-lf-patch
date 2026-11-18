@@ -103,5 +103,5 @@ BEGIN
 END;
 $readback$;
 
--- No CASCADE: any undiscovered dependent SQL object blocks the migration.
+-- Plain DROP: any undiscovered dependent SQL object blocks the migration.
 DROP TABLE public.payment_provider_config;
