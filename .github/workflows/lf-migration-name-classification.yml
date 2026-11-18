@@ -658,3 +658,67 @@ jobs:
             .lf_ci/pr_j2/postgresql.log
           if-no-files-found: warn
           retention-days: 90
+
+  pr-j3-native-v2-guard-pg17:
+    name: PR-J3A owner V2 source-bound PG17 rollback and independent readback
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j3-owner-v2-no-promotion-guard-20261118'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: j3_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: j3_ephemeral_pg17_only
+      J3_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact J3 HEAD without credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run real PG17 minimal source-bound owner V2 guard regression
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path(".lf_ci/j3_owner_no_promotion/report.json").read_text())
+          assert r["status"]=="PASS_FIXTURE_GUARD"
+          assert r["readback"]=="PR_J3_READBACK_RESTORED"
+          assert len(r["checks"])==4 and all(r["checks"].values())
+          assert r["prod_auth020_written"] is False
+          assert r["real_owner_decision"] is False
+          print("PR_J3_OWNER_V2_PG17_TRUE_NEGATIVE_FALSE_POSITIVE_PASS")
+          PY
+      - name: Archive exact-head PG17 J3 report and raw logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-j3-owner-v2-guard-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/j3_owner_no_promotion/report.json
+            .lf_ci/j3_owner_no_promotion/postgresql.log
+          if-no-files-found: warn
+          retention-days: 90
