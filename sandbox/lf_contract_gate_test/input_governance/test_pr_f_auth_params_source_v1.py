@@ -3,10 +3,19 @@
 import json
 from pathlib import Path
 import re
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20261118083000_lf_global_auth_params_pr_f_v1.sql"
+MIGRATION_SUFFIX = "_lf_global_auth_params_pr_f_v1.sql"
+
+def resolve_unique_migration(root):
+    matches = sorted((root / "supabase/migrations").glob("*" + MIGRATION_SUFFIX))
+    if len(matches) != 1:
+        raise RuntimeError(f"PR_F_MIGRATION_SUFFIX_NOT_UNIQUE:count={len(matches)}")
+    return matches[0]
+
+MIGRATION = resolve_unique_migration(ROOT)
 HARNESS = ROOT / "sandbox/lf_contract_gate_test/input_governance/pr_f_auth_params_rollback.sql"
 PROPOSALS = ROOT / "docs/input-governance/PR_F_AUTH_CANDIDATE_PROPOSALS_ONLY_20261118.json"
 VALUES = {
@@ -23,6 +32,21 @@ VALUES = {
 
 
 class PRFStatic(unittest.TestCase):
+    def test_resolve_migration_by_unique_suffix(self):
+        self.assertEqual(MIGRATION.name, "20261118073819_lf_global_auth_params_pr_f_v1.sql")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = root / "supabase/migrations"
+            folder.mkdir(parents=True)
+            with self.assertRaisesRegex(RuntimeError, "count=0"):
+                resolve_unique_migration(root)
+            candidate = folder / "20261118073819_lf_global_auth_params_pr_f_v1.sql"
+            candidate.write_text("fixture only")
+            self.assertEqual(resolve_unique_migration(root), candidate)
+            (folder / "20261118090000_lf_global_auth_params_pr_f_v1.sql").write_text("fixture only")
+            with self.assertRaisesRegex(RuntimeError, "count=2"):
+                resolve_unique_migration(root)
+
     def test_only_global_config_insert_no_rule_policy_modification(self):
         src = MIGRATION.read_text()
         self.assertEqual(src.count("INSERT INTO public.lf_global_config"), 1)
@@ -75,5 +99,5 @@ if __name__ == "__main__":
     result = unittest.TextTestRunner(verbosity=2).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(PRFStatic))
     if result.wasSuccessful():
-        print("PR_F_GLOBAL_AUTH_STATIC_PASS 4/4")
+        print("PR_F_GLOBAL_AUTH_STATIC_PASS 5/5")
     raise SystemExit(0 if result.wasSuccessful() else 1)
