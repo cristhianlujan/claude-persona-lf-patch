@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ig-chat9-ses003-governed-v2-20261118",
+  "paths": {
+    "sandbox/lf_contract_gate_test/changesets/ig-chat9-ses003-governed-v2-20261118.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261119011500_lf_ig_chat9_ses003_owner_v2_exact_writer_v1.sql": "MIGRATION"
+  }
+}
