@@ -132,7 +132,8 @@ BEGIN
       'SELFTEST_NEVER_PERSIST'
     FROM saly.identity_elements e
     WHERE e.code='color.brand.primary';
-  EXCEPTION WHEN exclusion_violation THEN
+  EXCEPTION WHEN unique_violation OR exclusion_violation THEN
+    -- Either the open-approved UNIQUE index or GiST exclusion may reject the overlap.
     v_duplicate_rejected := true;
   END;
   IF NOT v_duplicate_rejected THEN
