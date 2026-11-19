@@ -1271,3 +1271,71 @@ jobs:
           path: .lf_ci/chat9_client_v2_functional_proof/report.json
           if-no-files-found: warn
           retention-days: 30
+
+  # Exact-HEAD real PG17 regression: 265/275 canonical tuples must be SHA+lazy,
+  # no token limit changes, no official rule writes or fabricated V2 evidence.
+  niubiz-product-context-pg17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-product-context-compact-niubiz-20261118'
+    name: Niubiz Product context PG17 rollback 10 checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_context_fixture_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_context_fixture_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Confirm actual ephemeral PG17 client and source
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_niubiz_product_context_budget_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: PG17 transaction, negatives and independent readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_niubiz_product_context_budget_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('.lf_ci/niubiz_product_context_budget_pg17/report.json')
+          x=json.loads(p.read_text())
+          assert x['status']=='PASS' and len(x['tests'])==10
+          assert all(x['tests'].values()) and x['pg17_real']
+          assert x['preimage']==x['independent_readback']
+          assert not x['remote_supabase_written'] and x['owner_v2_decisions']==0
+          assert x['niubiz_sandbox_hyphen']=='NOT_TESTED'
+          print('NIUBIZ_CONTEXT_PG17_10_OF_10_WITH_INDEPENDENT_READBACK_PASS')
+          PY
+      - name: Archive bounded PostgreSQL proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niubiz-context-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/niubiz_product_context_budget_pg17/report.json
+          if-no-files-found: warn
+          retention-days: 30
