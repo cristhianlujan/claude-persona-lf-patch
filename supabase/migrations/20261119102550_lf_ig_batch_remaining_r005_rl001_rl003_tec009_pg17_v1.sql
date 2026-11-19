@@ -7,6 +7,8 @@ INSERT INTO ig_remaining_probe SELECT codigo,to_jsonb(r) FROM lf_ops.reglas r WH
 INSERT INTO ig_remaining_cfg SELECT scope,config_key,config_value,value_type,value_status FROM public.lf_global_config WHERE scope='AUTH' AND config_key IN ('OTP_ORDINARY_RESEND_TIMER_SECONDS','OTP_EXHAUSTION_COOLDOWN_SECONDS','OTP_MAX_ATTEMPTS','PHONE_UPDATE_MAX_PER_SESSION','IDEMPOTENCY_KEY_VALIDITY_MINUTES');
 INSERT INTO ig_remaining_probe SELECT codigo,to_jsonb(r) FROM lf_ops.reglas r WHERE codigo='REG_SEG_002';
 INSERT INTO ig_remaining_cfg SELECT scope,config_key,config_value,value_type,value_status FROM public.lf_global_config WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS';
+INSERT INTO ig_remaining_probe SELECT codigo,to_jsonb(r) FROM lf_ops.reglas r WHERE codigo='REG_RL_002';
+INSERT INTO ig_remaining_cfg SELECT scope,config_key,config_value,value_type,value_status FROM public.lf_global_config WHERE scope='AUTH' AND config_key='OTP_RESEND_LIMIT_COOLDOWN_MINUTES';
 DO $pre_r005$
 DECLARE patch jsonb;
 BEGIN
@@ -286,4 +288,73 @@ DO $final_seg002$ BEGIN
  THEN RAISE EXCEPTION 'SEG002_INDEPENDENT_SELECT_FAIL'; END IF;
  RAISE NOTICE 'SEG002_REAL_PG17_PROOF_COMPLETE; POSITIVE_ROLLBACK_PASS; NEGATIVE_ROLLBACK_PASS; INDEPENDENT_SELECT_PASS; BACKEND_E2E_NOT_TESTED';
 END $final_seg002$;
+DO $pre_rl002$
+DECLARE patch jsonb;
+BEGIN
+ SELECT evidence_payload#>'{profile_output,deliverable_created,governed_rule_patch}' INTO patch
+ FROM public.lf_operation_execution_steps WHERE execution_id='EXEC-PROFILE-GATE2-9A0B8F4245D22E90E0C12383' AND step_id='execute_profile' AND status='STEP_PASS_WITH_EVIDENCE';
+ IF current_setting('server_version_num')::int/10000<>17
+ OR (SELECT count(*) FROM ig_remaining_probe WHERE code='REG_RL_002')<>1
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution e WHERE e.execution_id='EXEC-PROFILE-GATE2-9A0B8F4245D22E90E0C12383' AND e.status='IN_PROGRESS'
+  AND e.operation_code='EJECUCION_PERFIL_LF' AND e.target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+  AND e.manifest#>>'{screen_selection_result,selected_screen_code}'='ONB_002' AND e.manifest->>'no_write'='true')
+ OR NOT EXISTS(SELECT 1 FROM lf_ops.reglas r JOIN lf_ops.reglas_pantallas rp ON rp.regla_id=r.id JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id WHERE r.codigo='REG_RL_002' AND r.estado='VIGENTE' AND p.codigo='ONB_002')
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps s WHERE s.execution_id='EXEC-PROFILE-GATE2-9A0B8F4245D22E90E0C12383'
+  AND s.step_id='output_validate' AND s.status='STEP_PASS_WITH_EVIDENCE' AND s.evidence_payload->>'output_contract_result'='PASS')
+ OR public.lf_asset_snapshot_sha_v1('REGLA','REG_RL_002')<>'d6966fb26db3ef0249bfe479e1920834e279d8b31432738746ee9d965b2e5a80'
+ OR (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_RL_002')<>'d6966fb26db3ef0249bfe479e1920834e279d8b31432738746ee9d965b2e5a80'
+ OR (SELECT payload#>>'{valor_config,scope}' FROM ig_remaining_probe WHERE code='REG_RL_002')<>'session_id'
+ OR (SELECT payload#>>'{valor_config,bloqueo_minutos}' FROM ig_remaining_probe WHERE code='REG_RL_002')<>'2'
+ OR position('los 3 reenvíos' in (SELECT payload->>'descripcion' FROM ig_remaining_probe WHERE code='REG_RL_002'))=0
+ OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS' AND config_value='3' AND value_type='INTEGER' AND value_status='REAL')<>1
+ OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_RESEND_LIMIT_COOLDOWN_MINUTES' AND config_value='2' AND value_type='INTEGER' AND value_status='REAL')<>1
+ OR public.lf_auth_config_integer_v1('OTP_MAX_RESENDS')<>3
+ OR public.lf_auth_config_integer_v1('OTP_RESEND_LIMIT_COOLDOWN_MINUTES')<>2
+ OR patch->>'rule_code'<>'REG_RL_002' OR patch->>'change_kind'<>'FUNCTIONAL'
+ OR encode(extensions.digest(convert_to(patch::text,'UTF8'),'sha256'),'hex')<>'95e0c9c9c1f6834d5cfca09913e2ba3ee805cd605629656f92bd9cc9c7cf067b'
+ OR patch#>>'{changes,valor_config,scope}'<>'session_id'
+ OR patch#>>'{changes,valor_config,max_reenvios_config,scope}'<>'AUTH'
+ OR patch#>>'{changes,valor_config,max_reenvios_config,config_key}'<>'OTP_MAX_RESENDS'
+ OR patch#>>'{changes,valor_config,bloqueo_minutos_config,scope}'<>'AUTH'
+ OR patch#>>'{changes,valor_config,bloqueo_minutos_config,config_key}'<>'OTP_RESEND_LIMIT_COOLDOWN_MINUTES'
+ OR (patch#>'{changes,valor_config}')?'bloqueo_minutos'
+ OR position('bloquea temporalmente' in patch#>>'{changes,descripcion}')=0
+ THEN RAISE EXCEPTION 'RL002_PG17_SOURCE_PROFILE_CONFIG_DRIFT'; END IF;
+ RAISE NOTICE 'RL002_PG17_SOURCE_PROFILE_CONFIG_PASS';
+END $pre_rl002$;
+SAVEPOINT ig_rl002_positive;
+UPDATE ig_remaining_probe t SET payload=t.payload||jsonb_build_object(
+ 'descripcion',(SELECT s.evidence_payload#>>'{profile_output,deliverable_created,governed_rule_patch,changes,descripcion}' FROM public.lf_operation_execution_steps s WHERE s.execution_id='EXEC-PROFILE-GATE2-9A0B8F4245D22E90E0C12383' AND s.step_id='execute_profile'),
+ 'valor_config',(SELECT s.evidence_payload#>'{profile_output,deliverable_created,governed_rule_patch,changes,valor_config}' FROM public.lf_operation_execution_steps s WHERE s.execution_id='EXEC-PROFILE-GATE2-9A0B8F4245D22E90E0C12383' AND s.step_id='execute_profile'))
+ WHERE code='REG_RL_002';
+DO $positive_rl002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_RL_002')<>'d0e61eebd5f645cff6e61a605bf3060459a0036506c3691baa629cc904eb73c4'
+ THEN RAISE EXCEPTION 'RL002_CANDIDATE_SHA_FAIL'; END IF;
+ RAISE NOTICE 'RL002_CANDIDATE_SHA_PASS';
+END $positive_rl002$;
+ROLLBACK TO SAVEPOINT ig_rl002_positive;
+RELEASE SAVEPOINT ig_rl002_positive;
+DO $back_rl002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_RL_002')<>'d6966fb26db3ef0249bfe479e1920834e279d8b31432738746ee9d965b2e5a80'
+ THEN RAISE EXCEPTION 'RL002_POSITIVE_ROLLBACK_FAIL'; END IF;
+END $back_rl002$;
+SAVEPOINT ig_rl002_negative;
+UPDATE ig_remaining_probe SET payload=jsonb_set(payload,'{descripcion}','"DRIFT_SOURCE"'::jsonb) WHERE code='REG_RL_002';
+DELETE FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_RESEND_LIMIT_COOLDOWN_MINUTES';
+DO $negative_rl002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_RL_002')='d6966fb26db3ef0249bfe479e1920834e279d8b31432738746ee9d965b2e5a80'
+ OR EXISTS(SELECT 1 FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_RESEND_LIMIT_COOLDOWN_MINUTES')
+ THEN RAISE EXCEPTION 'RL002_NEGATIVE_DRIFT_NOT_DETECTED'; END IF;
+ RAISE NOTICE 'RL002_NEGATIVE_DRIFT_DETECTED';
+END $negative_rl002$;
+ROLLBACK TO SAVEPOINT ig_rl002_negative;
+RELEASE SAVEPOINT ig_rl002_negative;
+DO $final_rl002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_RL_002')<>'d6966fb26db3ef0249bfe479e1920834e279d8b31432738746ee9d965b2e5a80'
+ OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_RESEND_LIMIT_COOLDOWN_MINUTES' AND config_value='2')<>1
+ OR public.lf_asset_snapshot_sha_v1('REGLA','REG_RL_002')<>'d6966fb26db3ef0249bfe479e1920834e279d8b31432738746ee9d965b2e5a80'
+ OR EXISTS(SELECT 1 FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id='EXEC-PROFILE-GATE2-9A0B8F4245D22E90E0C12383' AND rule_code='REG_RL_002')
+ THEN RAISE EXCEPTION 'RL002_INDEPENDENT_SELECT_FAIL'; END IF;
+ RAISE NOTICE 'RL002_REAL_PG17_PROOF_COMPLETE; POSITIVE_ROLLBACK_PASS; NEGATIVE_ROLLBACK_PASS; INDEPENDENT_SELECT_PASS; BACKEND_E2E_NOT_TESTED';
+END $final_rl002$;
 COMMIT;
