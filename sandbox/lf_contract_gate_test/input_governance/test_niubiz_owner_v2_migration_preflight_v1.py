@@ -49,7 +49,7 @@ ck("CONFIG_REF_ONLY_AND_REAL",all(x in data for x in [
 ck("V2_CANDIDATE_NO_PROMOTION",all(x in data for x in [
  "APPROVED_AND_CANDIDATO_VERIFIED","CANDIDATO",
  "promotion_authorized","production_authorized",
- "public.lf_rule_promotion_v1","pending_decision"]))
+ "public.lf_rule_promotion_v1","pendiente_decision"]))
 ck("REAL_ROLLBACK_AND_READBACK",all(x in data for x in [
  "v_dry_ok:=false","NIUBIZ_OWNER_REAL_ROLLBACK_SENTINEL",
  "NIUBIZ_OWNER_SUBTX_ROLLBACK_READBACK_DIRTY_OR_BLOCKED",
