@@ -81,7 +81,9 @@ BEGIN
       AND name='lf_ig_niubiz_three_rule_contract_proof_only_v1')<>1
   THEN RAISE EXCEPTION 'NIUBIZ_OWNER_TRAIN_RECEIPT_OR_LEDGER_UNVERIFIED'; END IF;
 
-  -- Each fresh Router-owned Product Director run has origin-bound proposed_by;\n  -- previous immutable RAW without proposer stays historical and is not modified.\n  -- Each run remains independent; evidence and decisions are source-bound per patch.
+  -- Each fresh Router-owned Product Director run has origin-bound proposed_by;
+  -- previous immutable RAW without proposer stays historical and is not modified.
+  -- Each run remains independent; evidence and decisions are source-bound per patch.
   FOR v IN SELECT * FROM (VALUES
     ('REG_CLIENT_NIUBIZ_UNIQUE_EMAIL_001',
      'EXEC-PROFILE-GATE2-DCE01AEE24CF00F0362D3E01',
@@ -108,7 +110,8 @@ BEGIN
       AND e.manifest#>>'{screen_selection_result,selected_screen_code}'=v.screen
       AND e.manifest->>'read_only'='true'
       AND e.manifest->>'no_write'='true'
-      AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'='true'\n      AND s.evidence_payload#>>'{profile_output,deliverable_created,product_decision,proposed_by}'='PERFIL-PRODUCT-DIRECTOR-LF';
+      AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'='true'
+      AND s.evidence_payload#>>'{profile_output,deliverable_created,product_decision,proposed_by}'='PERFIL-PRODUCT-DIRECTOR-LF';
     IF v_patch IS NULL OR v_patch->>'rule_code' IS DISTINCT FROM v.rule_code
        OR v_patch->>'change_kind' IS DISTINCT FROM 'CREATE'
        OR jsonb_typeof(v_patch->'changes')<>'object'
