@@ -67,8 +67,8 @@ BEGIN
  AND encode(extensions.digest(convert_to((evt.payload->'receipt')::text,'UTF8'),'sha256'),'hex')=receipt
  AND ml.name='lf_ig_family_b_tec006_full_title_pg17_v1'
  AND encode(extensions.digest(convert_to(ml.statements[1],'UTF8'),'sha256'),'hex')=test_sql
- AND ml.statements[1] LIKE '%ROLLBACK TO SAVEPOINT ig_b_tec006_positive%'
- AND ml.statements[1] LIKE '%ROLLBACK TO SAVEPOINT ig_b_tec006_negative%'
+ AND ml.statements[1] LIKE '%ROLLBACK TO SAVEPOINT ig_tec006_positive%'
+ AND ml.statements[1] LIKE '%ROLLBACK TO SAVEPOINT ig_tec006_negative%'
  AND ml.statements[1] LIKE '%IG_B_TEC006_TITLE_REAL_PG17_PROOF_COMPLETE%'
  ) THEN RAISE EXCEPTION 'IG_B_TEC006_REAL_TRAIN_PG17_PROOF_INVALID'; END IF;
  SELECT count(*) INTO v_total FROM lf_ops.reglas;
