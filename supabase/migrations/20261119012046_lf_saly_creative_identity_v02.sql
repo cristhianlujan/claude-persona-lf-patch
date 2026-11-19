@@ -193,8 +193,8 @@ BEGIN
         AND v.audience_code IN ('ALL',p_audience_code)
     ), ranked AS (
       SELECT c.*, row_number() OVER
-          (PARTITION BY element_id ORDER BY precedence DESC, version_id DESC) AS rn,
-        count(*) OVER (PARTITION BY element_id, precedence) AS same_priority_count
+          (PARTITION BY c.element_id ORDER BY c.precedence DESC, c.version_id DESC) AS rn,
+        count(*) OVER (PARTITION BY c.element_id, c.precedence) AS same_priority_count
       FROM candidates c
     )
     SELECT * FROM ranked ORDER BY ranked.element_code,ranked.rn
