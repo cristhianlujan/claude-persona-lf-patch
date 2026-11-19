@@ -44,7 +44,8 @@ def main():
     require(patch["change_kind"] == "FUNCTIONAL", "PATCH_NOT_FUNCTIONAL")
     require(changes["valor_config"] == {"scope": g["scope"], "config_key": g["config_key"]}, "EXACT_REF_REQUIRED")
     require(g["config_value"] == str(f["source_row"]["valor_config"]["max_escaladas_antes_bloqueo"]), "VALUE_DRIFT")
-    require(not re.search(r"\d", changes["descripcion"]), "DESCRIPTION_NUMERIC_LITERAL")
+    version_free_description = re.sub(r"lf_auth_config_integer_v[0-9]+", "lf_auth_config_integer_VERSION", changes["descripcion"])
+    require(not re.search(r"\d", version_free_description), "DESCRIPTION_NUMERIC_LIMIT_LITERAL")
     checks = {}
     pg = q("SHOW server_version;")
     checks["real_postgresql17"] = require(pg.split(".")[0] == "17", "POSTGRES_NOT_17")
@@ -58,6 +59,7 @@ def main():
     sha = """encode(digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')"""
     prior = q("SELECT " + sha + " FROM public.ig_chat12_atq002_probe;")
     checks["source_snapshot_sha256"] = require(prior == old, "SOURCE_SHA_MISMATCH")
+    checks["single_rule_row_before_after"] = require(q("SELECT count(*) FROM public.ig_chat12_atq002_probe;") == "1", "RULE_ROW_COUNT_CHANGED")
     checks["global_integer_real_value"] = require(
         q("SELECT config_value FROM public.ig_chat12_atq002_cfg "
           "WHERE scope='AUTH' AND config_key='CAPTCHA_MAX_ESCALATIONS_BEFORE_BLOCK'"
