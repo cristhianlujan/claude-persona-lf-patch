@@ -12,15 +12,15 @@ CREATE TEMP TABLE ig_family_b_config_source (
 ) ON COMMIT DROP;
 INSERT INTO pg_temp.ig_family_b_config_source
 (scope,config_key,config_value,value_type,rule_code,source_path,expected_source_value) VALUES
-  ('ALERTAS','OTP_VERIFICATION_MIN_RATE','0.6','DECIMAL','REG_ALR_001',ARRAY['valor_config','umbral_minimo']::text[],'0.6'),
+  ('ALERTAS','OTP_VERIFICATION_MIN_RATE','0.6','DECIMAL','REG_ALR_001',ARRAY['valor_config','umbral_minimo']::text[],'0.60'),
   ('ALERTAS','OTP_VERIFICATION_WINDOW_MINUTES','30','INTEGER','REG_ALR_001',ARRAY['valor_config','ventana_minutos']::text[],'30'),
-  ('ALERTAS','PASO1_ABANDON_RATE_MAX','0.8','DECIMAL','REG_ALR_002',ARRAY['valor_config','umbral_maximo']::text[],'0.8'),
+  ('ALERTAS','PASO1_ABANDON_RATE_MAX','0.8','DECIMAL','REG_ALR_002',ARRAY['valor_config','umbral_maximo']::text[],'0.80'),
   ('ALERTAS','PASO1_ABANDON_WINDOW_HOURS','1','INTEGER','REG_ALR_002',ARRAY['valor_config','ventana_horas']::text[],'1'),
   ('ALERTAS','OTP_WEBHOOK_CONSECUTIVE_FAILURE_LIMIT','3','INTEGER','REG_ALR_003',ARRAY['valor_config','condicion']::text[],'3_fallos_consecutivos'),
   ('ALERTAS','PASO1_SUBMIT_ERROR_RATE_MAX','0.05','DECIMAL','REG_ALR_004',ARRAY['valor_config','umbral_maximo']::text[],'0.05'),
   ('ALERTAS','PASO1_SUBMIT_ERROR_WINDOW_MINUTES','15','INTEGER','REG_ALR_004',ARRAY['valor_config','ventana_minutos']::text[],'15'),
   ('ALERTAS','LCP_ALERT_THRESHOLD_MS','4000','INTEGER','REG_ALR_005',ARRAY['valor_config','umbral_ms']::text[],'4000'),
-  ('ALERTAS','LCP_ALERT_SESSIONS_RATIO','0.2','DECIMAL','REG_ALR_005',ARRAY['valor_config','porcentaje_sesiones']::text[],'0.2'),
+  ('ALERTAS','LCP_ALERT_SESSIONS_RATIO','0.2','DECIMAL','REG_ALR_005',ARRAY['valor_config','porcentaje_sesiones']::text[],'0.20'),
   ('ALERTAS','LCP_ALERT_WINDOW_HOURS','1','INTEGER','REG_ALR_005',ARRAY['valor_config','ventana_horas']::text[],'1'),
   ('OBSERVABILIDAD','CORE_WEB_VITALS_ALERT_SESSIONS_PERCENT','10','INTEGER','REG_OBS_004',ARRAY['valor_config','alerta_porcentaje_sesiones']::text[],'10'),
   ('OBSERVABILIDAD','OTP_DELIVERY_P95_SECONDS_MAX','30','INTEGER','REG_OBS_005',ARRAY['valor_config','p95_segundos']::text[],'30'),
