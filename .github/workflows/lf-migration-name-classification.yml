@@ -1411,3 +1411,58 @@ jobs:
           path: .lf_ci/ig_niubiz_three_rule_contract_pg17/report.json
           if-no-files-found: warn
           retention-days: 30
+
+  niubiz-owner-v2-three-candidate-pg17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-niubiz-three-owner-v2-candidate-20261118'
+    name: Niubiz 3 owner V2 exact-head PG17 rollback, no direct DML
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_owner_v2_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_owner_v2_pg17_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight exact official owner sequence, no direct DML
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/test_niubiz_owner_v2_migration_preflight_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/test_niubiz_owner_v2_migration_preflight_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Real PG17 current CREATE gate and wrong-owner negative; live V2 rollback in Train
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          # Historical J3A SHA-fixed source test is inapplicable to current V2.
+          # Live canonical writer is tested with real rollback in Train migration.
+          echo NIUBIZ_OWNER_V2_ISOLATED_PG17_GATES_PASS_NO_REMOTE_WRITE
+      - name: Do not equate isolated tests with owner V2 production
+        run: |
+          set -euo pipefail
+          test -f supabase/migrations/20261119004500_lf_ig_niubiz_three_owner_v2_candidate_v1.sql
+          echo "OWNER_V2_LIVE_3_RULE_BEGIN_ROLLBACK_AND_FINAL_SELECT_REQUIRED_IN_TRAIN"
