@@ -90,9 +90,9 @@ WHERE approval_status='APPROVED';
 
 ALTER TABLE saly.identity_versions ADD CONSTRAINT identity_versions_no_overlap
 EXCLUDE USING gist (
-  element_id WITH =,
-  channel_code WITH =,
-  audience_code WITH =,
+  element_id extensions.gist_int8_ops WITH =,
+  channel_code extensions.gist_text_ops WITH =,
+  audience_code extensions.gist_text_ops WITH =,
   tstzrange(valid_from,valid_to,'[)') WITH &&
 ) WHERE (approval_status='APPROVED');
 
@@ -137,8 +137,8 @@ WHERE approval_status='APPROVED';
 
 ALTER TABLE saly.brand_assets ADD CONSTRAINT brand_assets_no_overlap
 EXCLUDE USING gist (
-  project_id WITH =,
-  code WITH =,
+  project_id extensions.gist_int8_ops WITH =,
+  code extensions.gist_text_ops WITH =,
   tstzrange(valid_from,valid_to,'[)') WITH &&
 ) WHERE (approval_status='APPROVED');
 
@@ -197,7 +197,7 @@ BEGIN
         count(*) OVER (PARTITION BY element_id, precedence) AS same_priority_count
       FROM candidates c
     )
-    SELECT * FROM ranked ORDER BY element_code,rn
+    SELECT * FROM ranked ORDER BY ranked.element_code,ranked.rn
   LOOP
     IF rec.rn=1 THEN
       IF rec.same_priority_count<>1 THEN
@@ -229,6 +229,88 @@ BEGIN
   END IF;
 END
 $fn$;
+
+
+-- Real PostgreSQL self-test, isolated by a PL/pgSQL exception subtransaction.
+-- Always roll back temporary test rows. Any unexpected failure aborts the entire migration.
+DO $selftest$
+DECLARE
+  v_project bigint;
+  v_element bigint;
+  v_value text;
+  v_blocked boolean;
+BEGIN
+  BEGIN
+    SELECT id INTO STRICT v_project FROM saly.proyecto WHERE codigo='SALY-001';
+    INSERT INTO saly.identity_elements(project_id,code,family,value_type,name,is_required,status)
+    VALUES (v_project,'test.identity.selfcheck','COLOR','COLOR','Self-test only',true,'ACTIVE')
+    RETURNING id INTO v_element;
+
+    INSERT INTO saly.identity_versions
+      (element_id,version_number,channel_code,audience_code,value_json,approval_status,valid_from,approval_reference)
+    VALUES
+      (v_element,1,'GLOBAL','ALL','{"value":"GLOBAL_TEST"}'::jsonb,'APPROVED','2027-01-01T00:00:00Z','SELFTEST_NOT_APPROVAL'),
+      (v_element,1,'SOCIAL','ALL','{"value":"SOCIAL_TEST"}'::jsonb,'APPROVED','2027-01-01T00:00:00Z','SELFTEST_NOT_APPROVAL');
+
+    SELECT r.value_json->>'value' INTO v_value
+    FROM saly.resolve_identity('SALY-001','WEB','B2C','2027-06-01T00:00:00Z') r
+    WHERE r.element_code='test.identity.selfcheck';
+    IF v_value IS DISTINCT FROM 'GLOBAL_TEST' THEN
+      RAISE EXCEPTION 'SALY_IDENTITY_GLOBAL_FALLBACK_FAILED';
+    END IF;
+
+    SELECT r.value_json->>'value' INTO v_value
+    FROM saly.resolve_identity('SALY-001','SOCIAL','B2C','2027-06-01T00:00:00Z') r
+    WHERE r.element_code='test.identity.selfcheck';
+    IF v_value IS DISTINCT FROM 'SOCIAL_TEST' THEN
+      RAISE EXCEPTION 'SALY_IDENTITY_SOCIAL_OVERRIDE_FAILED';
+    END IF;
+
+    v_blocked:=false;
+    BEGIN
+      INSERT INTO saly.identity_versions
+        (element_id,version_number,channel_code,audience_code,value_json,approval_status,
+         valid_from,valid_to,approval_reference)
+      VALUES
+        (v_element,2,'GLOBAL','ALL','{"value":"INVALID_OVERLAP"}'::jsonb,'APPROVED',
+         '2027-02-01T00:00:00Z','2027-03-01T00:00:00Z','SELFTEST_NOT_APPROVAL');
+    EXCEPTION WHEN exclusion_violation THEN
+      v_blocked:=true;
+    END;
+    IF NOT v_blocked THEN RAISE EXCEPTION 'SALY_IDENTITY_VERSION_OVERLAP_NOT_BLOCKED'; END IF;
+
+    INSERT INTO saly.brand_assets
+      (project_id,code,version_number,name,asset_kind,file_provider,external_file_id,
+       approval_status,valid_from,approval_reference)
+    VALUES
+      (v_project,'test.identity.asset',1,'Self-test asset','LOGO','GOOGLE_DRIVE',
+       'SELFTEST_ONLY','APPROVED','2027-01-01T00:00:00Z','SELFTEST_NOT_APPROVAL');
+
+    v_blocked:=false;
+    BEGIN
+      INSERT INTO saly.brand_assets
+        (project_id,code,version_number,name,asset_kind,file_provider,external_file_id,
+         approval_status,valid_from,valid_to,approval_reference)
+      VALUES
+        (v_project,'test.identity.asset',2,'Invalid overlap','LOGO','GOOGLE_DRIVE',
+         'SELFTEST_ONLY','APPROVED','2027-02-01T00:00:00Z','2027-03-01T00:00:00Z',
+         'SELFTEST_NOT_APPROVAL');
+    EXCEPTION WHEN exclusion_violation THEN
+      v_blocked:=true;
+    END;
+    IF NOT v_blocked THEN RAISE EXCEPTION 'SALY_IDENTITY_ASSET_OVERLAP_NOT_BLOCKED'; END IF;
+
+    RAISE EXCEPTION 'SALY_IDENTITY_SELFTEST_ROLLBACK_PASS';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'SALY_IDENTITY_SELFTEST_ROLLBACK_PASS' THEN RAISE; END IF;
+  END;
+
+  IF EXISTS (SELECT 1 FROM saly.identity_elements WHERE code='test.identity.selfcheck')
+    OR EXISTS (SELECT 1 FROM saly.brand_assets WHERE code='test.identity.asset') THEN
+    RAISE EXCEPTION 'SALY_IDENTITY_SELFTEST_ROWS_PERSISTED';
+  END IF;
+END
+$selftest$;
 
 DO $postflight$
 BEGIN
