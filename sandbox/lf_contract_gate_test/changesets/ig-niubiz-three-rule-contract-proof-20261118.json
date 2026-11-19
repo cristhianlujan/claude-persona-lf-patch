@@ -1,0 +1,10 @@
+{
+  "solution_ref": "ig-niubiz-three-rule-contract-proof-20261118",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "supabase/migrations/20261119003000_lf_ig_niubiz_three_rule_contract_proof_only_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/input_governance/run_niubiz_three_rule_contract_pg17_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/ig-niubiz-three-rule-contract-proof-20261118.json": "CHANGESET_MANIFEST",
+    "docs/input-governance/IG_NIUBIZ_THREE_RULE_CONTRACT_PROOF_20261118.md": "DOCUMENTARY_ONLY"
+  }
+}
