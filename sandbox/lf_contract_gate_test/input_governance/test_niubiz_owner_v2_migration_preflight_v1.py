@@ -41,8 +41,11 @@ ck("PER_RULE_EXACT_PATCH_PREIMAGES",all(x in data for x in [
  "b0d1b49a366397a69e7edff29bf604c3717c81e9a20e23b9a32f2314a46fa52c"]))
 ck("CONFIG_REF_ONLY_AND_REAL",all(x in data for x in [
  "NIUBIZ_EMAIL_TEMPLATE","NIUBIZ_EMAIL_DOMAIN",
- "'PAGOS'","'TEXT'","'REAL'"])
- and "gmail.com" not in data and "lf-{codigo}" not in data)
+ "'PAGOS'","'TEXT'","'REAL'",
+ "v_patch#>'{changes,valor_config,niubiz_email_config_refs}' IS DISTINCT FROM v_config_refs",
+ "v_patch#>>'{changes,descripcion}' LIKE '%gmail.com%'",
+ "v_patch#>>'{changes,descripcion}' LIKE '%lf-{codigo}%"
+]))
 ck("V2_CANDIDATE_NO_PROMOTION",all(x in data for x in [
  "APPROVED_AND_CANDIDATO_VERIFIED","CANDIDATO",
  "promotion_authorized","production_authorized",
