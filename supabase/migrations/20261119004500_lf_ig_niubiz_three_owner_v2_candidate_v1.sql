@@ -81,18 +81,18 @@ BEGIN
       AND name='lf_ig_niubiz_three_rule_contract_proof_only_v1')<>1
   THEN RAISE EXCEPTION 'NIUBIZ_OWNER_TRAIN_RECEIPT_OR_LEDGER_UNVERIFIED'; END IF;
 
-  -- Each run remains independent; evidence and decisions are source-bound per patch.
+  -- Each fresh Router-owned Product Director run has origin-bound proposed_by;\n  -- previous immutable RAW without proposer stays historical and is not modified.\n  -- Each run remains independent; evidence and decisions are source-bound per patch.
   FOR v IN SELECT * FROM (VALUES
     ('REG_CLIENT_NIUBIZ_UNIQUE_EMAIL_001',
-     'EXEC-PROFILE-GATE2-8A32C42D5DE64233CB4ABE3E',
+     'EXEC-PROFILE-GATE2-DCE01AEE24CF00F0362D3E01',
      'CHECKOUT_ESTADO_TARJETA',
      'b054d2d03bfa02d7730198c4cd19eb27ecc77a5fad7aa2fa36fbb07070e31eaa'),
     ('REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001',
-     'EXEC-PROFILE-GATE2-C1988A78EEC630B2C7D3348A',
+     'EXEC-PROFILE-GATE2-FEC6C217064FA241227B715D',
      'CHECKOUT_PAGO_EXITOSO',
      '4ec80cae76a148a798fb6ceb69c2e53cc8f4f00346181e41582f3039e03bc3d4'),
     ('REG_CLIENT_NIUBIZ_GENERIC_BOUNCE_001',
-     'EXEC-PROFILE-GATE2-447657D25F743AE8121267AC',
+     'EXEC-PROFILE-GATE2-9D48CA261787E2E9F3A7CB31',
      'CHECKOUT_ESTADO_CONFIRMANDO',
      'b0d1b49a366397a69e7edff29bf604c3717c81e9a20e23b9a32f2314a46fa52c')
   ) AS proposals(rule_code,parent,screen,expected_patch_sha) LOOP
@@ -108,7 +108,7 @@ BEGIN
       AND e.manifest#>>'{screen_selection_result,selected_screen_code}'=v.screen
       AND e.manifest->>'read_only'='true'
       AND e.manifest->>'no_write'='true'
-      AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'='true';
+      AND e.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'='true'\n      AND s.evidence_payload#>>'{profile_output,deliverable_created,product_decision,proposed_by}'='PERFIL-PRODUCT-DIRECTOR-LF';
     IF v_patch IS NULL OR v_patch->>'rule_code' IS DISTINCT FROM v.rule_code
        OR v_patch->>'change_kind' IS DISTINCT FROM 'CREATE'
        OR jsonb_typeof(v_patch->'changes')<>'object'
