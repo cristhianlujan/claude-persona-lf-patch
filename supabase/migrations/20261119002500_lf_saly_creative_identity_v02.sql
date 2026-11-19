@@ -250,4 +250,12 @@ BEGIN
   END IF;
 END
 $postflight$;
+
+-- Fail-closed: these new objects do not become client-facing APIs by default.
+-- RLS + SECURITY INVOKER are defense in depth; project policies/grants are a later governed change.
+REVOKE ALL ON TABLE saly.identity_elements, saly.identity_versions, saly.brand_assets, saly.v_identity_current
+  FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION saly.resolve_identity(text,text,text,timestamptz)
+  FROM PUBLIC, anon, authenticated;
+
 COMMIT;
