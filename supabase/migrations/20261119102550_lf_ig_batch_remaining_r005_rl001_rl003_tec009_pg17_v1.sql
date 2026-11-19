@@ -5,6 +5,8 @@ CREATE TEMP TABLE ig_remaining_probe(code text PRIMARY KEY,payload jsonb NOT NUL
 CREATE TEMP TABLE ig_remaining_cfg(scope text,config_key text,config_value text,value_type text,value_status text) ON COMMIT DROP;
 INSERT INTO ig_remaining_probe SELECT codigo,to_jsonb(r) FROM lf_ops.reglas r WHERE codigo IN ('REG_RATE_005','REG_RL_001','REG_RL_003','REG_TEC_009');
 INSERT INTO ig_remaining_cfg SELECT scope,config_key,config_value,value_type,value_status FROM public.lf_global_config WHERE scope='AUTH' AND config_key IN ('OTP_ORDINARY_RESEND_TIMER_SECONDS','OTP_EXHAUSTION_COOLDOWN_SECONDS','OTP_MAX_ATTEMPTS','PHONE_UPDATE_MAX_PER_SESSION','IDEMPOTENCY_KEY_VALIDITY_MINUTES');
+INSERT INTO ig_remaining_probe SELECT codigo,to_jsonb(r) FROM lf_ops.reglas r WHERE codigo='REG_SEG_002';
+INSERT INTO ig_remaining_cfg SELECT scope,config_key,config_value,value_type,value_status FROM public.lf_global_config WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS';
 DO $pre_r005$
 DECLARE patch jsonb;
 BEGIN
@@ -205,4 +207,83 @@ DO $final_tec009$ BEGIN
  IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_TEC_009')<>'ab9e546d3324dcca8286810f28fc18a60ce29373435033cd934eb4436be67709' OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='IDEMPOTENCY_KEY_VALIDITY_MINUTES' AND config_value='5')<>1 OR public.lf_asset_snapshot_sha_v1('REGLA','REG_TEC_009')<>'ab9e546d3324dcca8286810f28fc18a60ce29373435033cd934eb4436be67709' OR EXISTS(SELECT 1 FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id='EXEC-PROFILE-GATE2-6161468F545B3653396DE9CB' AND rule_code='REG_TEC_009') THEN RAISE EXCEPTION 'TEC009_INDEPENDENT_READBACK_FAIL'; END IF;
  RAISE NOTICE 'TEC009_REAL_PG17_PROOF_COMPLETE; POSITIVE_ROLLBACK_PASS; NEGATIVE_ROLLBACK_PASS; INDEPENDENT_SELECT_PASS; BACKEND_E2E_NOT_TESTED';
 END $final_tec009$;
+DO $pre_seg002$
+DECLARE patch jsonb;
+BEGIN
+ SELECT evidence_payload#>'{profile_output,deliverable_created,governed_rule_patch}' INTO patch
+ FROM public.lf_operation_execution_steps WHERE execution_id='EXEC-PROFILE-GATE2-3317DC878265B05840704DA9' AND step_id='execute_profile' AND status='STEP_PASS_WITH_EVIDENCE';
+ IF current_setting('server_version_num')::int/10000<>17
+ OR (SELECT count(*) FROM ig_remaining_probe WHERE code='REG_SEG_002')<>1
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution e WHERE e.execution_id='EXEC-PROFILE-GATE2-3317DC878265B05840704DA9' AND e.status='IN_PROGRESS'
+  AND e.operation_code='EJECUCION_PERFIL_LF' AND e.target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+  AND e.manifest#>>'{screen_selection_result,selected_screen_code}'='ONB_002'
+  AND e.manifest->>'no_write'='true')
+ OR NOT EXISTS(SELECT 1 FROM lf_ops.reglas r JOIN lf_ops.reglas_pantallas rp ON rp.regla_id=r.id
+  JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id WHERE r.codigo='REG_SEG_002' AND r.estado='VIGENTE' AND p.codigo='ONB_002')
+ OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps s WHERE s.execution_id='EXEC-PROFILE-GATE2-3317DC878265B05840704DA9'
+  AND s.step_id='output_validate' AND s.status='STEP_PASS_WITH_EVIDENCE'
+  AND s.evidence_payload->>'output_contract_result'='PASS')
+ OR public.lf_asset_snapshot_sha_v1('REGLA','REG_SEG_002')<>'d328b7165cda5974850193365ebc84865c73fec28e9a1bfdb4cf8b6d6d9d31f4'
+ OR (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
+  FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'d328b7165cda5974850193365ebc84865c73fec28e9a1bfdb4cf8b6d6d9d31f4'
+ OR (SELECT payload#>>'{valor_config,otp_resend_max}' FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'3'
+ OR (SELECT payload#>>'{valor_config,otp_max_attempts_por_codigo}' FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'5'
+ OR (SELECT payload#>>'{valor_config,accion_usuario}' FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'RESTART_ONBOARDING_FROM_ONB_001'
+ OR (SELECT payload#>>'{valor_config,estado_resultado}' FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'BLOCKED'
+ OR (SELECT payload#>>'{valor_config,requiere_soporte}' FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'false'
+ OR (SELECT payload#>>'{valor_config,source_decision_number}' FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'87'
+ OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS' AND config_value='3' AND value_type='INTEGER' AND value_status='REAL')<>1
+ OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_MAX_ATTEMPTS' AND config_value='5' AND value_type='INTEGER' AND value_status='REAL')<>1
+ OR public.lf_auth_config_integer_v1('OTP_MAX_RESENDS')<>3
+ OR public.lf_auth_config_integer_v1('OTP_MAX_ATTEMPTS')<>5
+ OR patch->>'rule_code'<>'REG_SEG_002' OR patch->>'change_kind'<>'FUNCTIONAL'
+ OR encode(extensions.digest(convert_to(patch::text,'UTF8'),'sha256'),'hex')<>'b81d58ccb62138de3703f479613ccac6774477b80e70690bc99fac0438e8924b'
+ OR patch#>>'{changes,valor_config,otp_resend_max_config,scope}'<>'AUTH'
+ OR patch#>>'{changes,valor_config,otp_resend_max_config,config_key}'<>'OTP_MAX_RESENDS'
+ OR patch#>>'{changes,valor_config,otp_max_attempts_por_codigo_config,scope}'<>'AUTH'
+ OR patch#>>'{changes,valor_config,otp_max_attempts_por_codigo_config,config_key}'<>'OTP_MAX_ATTEMPTS'
+ OR patch#>>'{changes,valor_config,accion_usuario}'<>'RESTART_ONBOARDING_FROM_ONB_001'
+ OR patch#>>'{changes,valor_config,estado_resultado}'<>'BLOCKED'
+ OR patch#>>'{changes,valor_config,requiere_soporte}'<>'false'
+ OR patch#>>'{changes,valor_config,source_decision_number}'<>'87'
+ OR (patch#>'{changes,valor_config}')?'otp_resend_max'
+ OR (patch#>'{changes,valor_config}')?'otp_max_attempts_por_codigo'
+ THEN RAISE EXCEPTION 'SEG002_PG17_SOURCE_PROFILE_CONFIG_DRIFT'; END IF;
+ RAISE NOTICE 'SEG002_PG17_SOURCE_PROFILE_CONFIG_PASS';
+END $pre_seg002$;
+SAVEPOINT ig_seg002_positive;
+UPDATE ig_remaining_probe t SET payload=t.payload||jsonb_build_object(
+ 'descripcion',(SELECT s.evidence_payload#>>'{profile_output,deliverable_created,governed_rule_patch,changes,descripcion}' FROM public.lf_operation_execution_steps s WHERE s.execution_id='EXEC-PROFILE-GATE2-3317DC878265B05840704DA9' AND s.step_id='execute_profile'),
+ 'valor_config',(SELECT s.evidence_payload#>'{profile_output,deliverable_created,governed_rule_patch,changes,valor_config}' FROM public.lf_operation_execution_steps s WHERE s.execution_id='EXEC-PROFILE-GATE2-3317DC878265B05840704DA9' AND s.step_id='execute_profile'))
+ WHERE code='REG_SEG_002';
+DO $pos_seg002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'f567aef479fdeacb8f03d19498246a315139b1cd42a6410cd85a13fcab073715'
+ THEN RAISE EXCEPTION 'SEG002_CANDIDATE_SHA_FAIL'; END IF;
+ RAISE NOTICE 'SEG002_CANDIDATE_SHA_PASS';
+END $pos_seg002$;
+ROLLBACK TO SAVEPOINT ig_seg002_positive;
+RELEASE SAVEPOINT ig_seg002_positive;
+DO $back_seg002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'d328b7165cda5974850193365ebc84865c73fec28e9a1bfdb4cf8b6d6d9d31f4'
+ THEN RAISE EXCEPTION 'SEG002_POSITIVE_ROLLBACK_FAIL'; END IF;
+END $back_seg002$;
+SAVEPOINT ig_seg002_negative;
+UPDATE ig_remaining_probe SET payload=jsonb_set(payload,'{descripcion}','"DRIFT_SOURCE"'::jsonb) WHERE code='REG_SEG_002';
+DELETE FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS';
+DO $neg_seg002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_SEG_002')='d328b7165cda5974850193365ebc84865c73fec28e9a1bfdb4cf8b6d6d9d31f4'
+ OR EXISTS(SELECT 1 FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS')
+ THEN RAISE EXCEPTION 'SEG002_NEGATIVE_DRIFT_NOT_DETECTED'; END IF;
+ RAISE NOTICE 'SEG002_NEGATIVE_DRIFT_DETECTED';
+END $neg_seg002$;
+ROLLBACK TO SAVEPOINT ig_seg002_negative;
+RELEASE SAVEPOINT ig_seg002_negative;
+DO $final_seg002$ BEGIN
+ IF (SELECT encode(extensions.digest(convert_to((payload-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex') FROM ig_remaining_probe WHERE code='REG_SEG_002')<>'d328b7165cda5974850193365ebc84865c73fec28e9a1bfdb4cf8b6d6d9d31f4'
+ OR (SELECT count(*) FROM ig_remaining_cfg WHERE scope='AUTH' AND config_key='OTP_MAX_RESENDS' AND config_value='3')<>1
+ OR public.lf_asset_snapshot_sha_v1('REGLA','REG_SEG_002')<>'d328b7165cda5974850193365ebc84865c73fec28e9a1bfdb4cf8b6d6d9d31f4'
+ OR EXISTS(SELECT 1 FROM public.lf_ig_owner_decision_v2 WHERE parent_execution_id='EXEC-PROFILE-GATE2-3317DC878265B05840704DA9' AND rule_code='REG_SEG_002')
+ THEN RAISE EXCEPTION 'SEG002_INDEPENDENT_SELECT_FAIL'; END IF;
+ RAISE NOTICE 'SEG002_REAL_PG17_PROOF_COMPLETE; POSITIVE_ROLLBACK_PASS; NEGATIVE_ROLLBACK_PASS; INDEPENDENT_SELECT_PASS; BACKEND_E2E_NOT_TESTED';
+END $final_seg002$;
 COMMIT;
