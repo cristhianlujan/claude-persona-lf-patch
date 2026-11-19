@@ -793,7 +793,9 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y -qq postgresql-client
           fi
-          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
+          # The historical J3A test pins an obsolete source SHA; current V2 is
+          # checked by exact MD5 in our SQL and exercised transactionally
+          # against live canonical Step70 + official writer inside the Train.
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -1454,7 +1456,7 @@ jobs:
             sudo apt-get install -y -qq postgresql-client
           fi
           pg_isready -h 127.0.0.1 -U postgres -d postgres
-      - name: Real PG17 official CREATE and owner V2 gated rollback, independent SELECT
+      - name: Real PG17 current CREATE gate and wrong-owner negative; live V2 rollback in Train
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
