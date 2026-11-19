@@ -24,7 +24,8 @@ def ck(name,condition):
  if not condition: raise RuntimeError("BLOCKED_"+name)
 
 ck("THREE_SOURCE_CODES",set(codes)=={r["code"] for r in spec["rules"]})
-ck("NO_DIRECT_CANONICAL_DML",not re.search(r"\b(?:INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+lf_ops\.reglas\b",data,re.I))
+sql_body="\n".join(line.split("--",1)[0] for line in data.splitlines())
+ck("NO_DIRECT_CANONICAL_DML",not re.search(r"\b(?:INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+lf_ops\.reglas\b",sql_body,re.I))
 ck("EXACT_SINGLE_OWNER_DECISION_IMPL",data.count("v_dec:=public.lf_ig_rule_owner_decide_v2(")==2
  and data.count('"usuario":"Cristhian Lujan"')==2)
 ck("SEQUENTIAL_OWNER_AND_SINGLE_LOOP",data.count("FOR v IN SELECT * FROM (VALUES")==1
