@@ -52,17 +52,6 @@ CREATE TRIGGER trg_lf_reglas_versiones_numero_v1
 BEFORE INSERT ON lf_ops.reglas_versiones
 FOR EACH ROW EXECUTE FUNCTION lf_ops.fn_reglas_versiones_numero_v1();
 
--- Foto del estado actual antes de activar los triggers.
-INSERT INTO lf_ops.reglas_versiones (
-  codigo, version, categoria, titulo, descripcion, razon, valor_config,
-  es_transversal, estado, origen, motivo, cambiado_por, vigente_desde, vigente_hasta
-)
-SELECT r.codigo, 1, r.categoria, r.titulo, r.descripcion, r.razon, r.valor_config,
-       r.es_transversal, r.estado, r.origen, 'FOTO_INICIAL',
-       COALESCE(NULLIF(r.created_by, ''), 'MIGRACION_INICIAL'),
-       r.created_at, NULL
-  FROM lf_ops.reglas r;
-
 -- La version inicial queda abierta mientras su snapshot sea la fila actual.
 -- Al primer cambio se cierra esa version sin duplicar su contenido;
 -- a partir del segundo se inserta cada preimagen con version sucesiva.
@@ -94,7 +83,7 @@ BEGIN
                        CASE WHEN TG_OP = 'DELETE' THEN 'DELETE_REGLA'
                             ELSE 'UPDATE_DE_FONDO' END);
   v_actor := COALESCE(NULLIF(pg_catalog.current_setting('lf.reglas_cambiado_por', true), ''),
-                      CURRENT_USER);
+                      SESSION_USER);
 
   SELECT * INTO v_ultima
     FROM lf_ops.reglas_versiones
@@ -128,14 +117,28 @@ BEGIN
 END;
 $$;
 
--- Independiente del trg_lf_rule_promotion_guard_v1; no lo reemplaza ni modifica.
-CREATE TRIGGER trg_lf_reglas_historial_update_v1
-BEFORE UPDATE ON lf_ops.reglas
-FOR EACH ROW EXECUTE FUNCTION lf_ops.fn_reglas_historial_preimagen_v1();
-
-CREATE TRIGGER trg_lf_reglas_historial_delete_v1
-BEFORE DELETE ON lf_ops.reglas
-FOR EACH ROW EXECUTE FUNCTION lf_ops.fn_reglas_historial_preimagen_v1();
+-- Backfill + activacion del guard histórico en UNA transacción y lock real.
+-- Cubre writes concurrentes de otros chats: ninguna fila cambia entre foto y triggers.
+DO $install$
+BEGIN
+  LOCK TABLE lf_ops.reglas IN SHARE ROW EXCLUSIVE MODE;
+  INSERT INTO lf_ops.reglas_versiones (
+    codigo, version, categoria, titulo, descripcion, razon, valor_config,
+    es_transversal, estado, origen, motivo, cambiado_por, vigente_desde, vigente_hasta
+  )
+  SELECT r.codigo, 1, r.categoria, r.titulo, r.descripcion, r.razon, r.valor_config,
+         r.es_transversal, r.estado, r.origen, 'FOTO_INICIAL',
+         COALESCE(NULLIF(r.created_by, ''), 'MIGRACION_INICIAL'),
+         r.created_at, NULL
+    FROM lf_ops.reglas r;
+  EXECUTE 'CREATE TRIGGER trg_lf_reglas_historial_update_v1
+    BEFORE UPDATE ON lf_ops.reglas
+    FOR EACH ROW EXECUTE FUNCTION lf_ops.fn_reglas_historial_preimagen_v1()';
+  EXECUTE 'CREATE TRIGGER trg_lf_reglas_historial_delete_v1
+    BEFORE DELETE ON lf_ops.reglas
+    FOR EACH ROW EXECUTE FUNCTION lf_ops.fn_reglas_historial_preimagen_v1()';
+END;
+$install$;
 
 CREATE VIEW lf_ops.v_reglas_historial AS
 SELECT h.codigo, h.version, h.categoria, h.titulo, h.descripcion,
