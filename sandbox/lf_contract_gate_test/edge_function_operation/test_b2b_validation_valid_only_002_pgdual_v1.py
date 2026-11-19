@@ -47,10 +47,27 @@ class B2BValidOnly002PGDual(unittest.TestCase):
                     self.assertEqual(ready.returncode, 0, "POSTGRES_NOT_READY")
 
                     def run_sql(s):
-                        p = subprocess.run(
-                            ["docker", "exec", "-i", name, "psql", "-X", "-A", "-t",
-                             "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", "postgres"],
-                            input=s, capture_output=True, text=True, timeout=180)
+                        # A container can report readiness before the socket is
+                        # consistently accepting connections under shared CI load.
+                        # Retry transport only; SQL assertion/constraint errors
+                        # remain hard failures without retry or false PASS.
+                        p = None
+                        for transport_attempt in range(12):
+                            p = subprocess.run(
+                                ["docker", "exec", "-i", name, "psql", "-X", "-A", "-t",
+                                 "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", "postgres"],
+                                input=s, capture_output=True, text=True, timeout=180)
+                            if p.returncode == 0:
+                                return p.stdout, p.stderr
+                            transient = (
+                                p.returncode == 2 and
+                                ("No such file or directory" in p.stderr or
+                                 "Connection refused" in p.stderr or
+                                 "the database system is starting up" in p.stderr)
+                            )
+                            if not transient:
+                                break
+                            time.sleep(1)
                         self.assertEqual(p.returncode, 0, p.stderr[-5000:] + p.stdout[-2200:])
                         return p.stdout, p.stderr
 
