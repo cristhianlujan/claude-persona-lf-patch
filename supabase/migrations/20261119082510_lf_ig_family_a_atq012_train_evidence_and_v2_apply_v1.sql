@@ -118,9 +118,16 @@ BEGIN
   'subsequent_independent_select','PASS','backend_e2e','NOT_TESTED');
  v_readback:=jsonb_build_object(
   'rule_code',r,'source_snapshot_sha256',public.lf_asset_snapshot_sha_v1('REGLA',r),
-  'existing_literal_seconds',(SELECT valor_config->>'tiempo_minimo_respuesta_ms' FROM lf_ops.reglas WHERE codigo=r),
-  'global_config_value',(SELECT config_value FROM public.lf_global_config
-      WHERE scope='AUTH' AND config_key='OTP_MAX_ATTEMPTS'),
+  'source_limits',(SELECT jsonb_build_object(
+     'max_attempts_per_otp',valor_config->'max_attempts_per_otp',
+     'max_resends',valor_config->'max_resends',
+     'cooldown_after_exhaustion_seconds',valor_config->'cooldown_after_exhaustion_seconds',
+     'source_decision_number',valor_config->'source_decision_number')
+      FROM lf_ops.reglas WHERE codigo=r),
+  'global_config_values',(SELECT jsonb_object_agg(config_key,config_value ORDER BY config_key)
+      FROM public.lf_global_config WHERE scope='AUTH'
+      AND config_key IN ('OTP_MAX_ATTEMPTS','OTP_MAX_RESENDS','OTP_EXHAUSTION_COOLDOWN_SECONDS')
+      AND value_type='INTEGER' AND value_status='REAL'),
   'history_current',(SELECT version FROM lf_ops.v_reglas_historial WHERE codigo=r AND es_actual),
   'rule_total',v_count);
  v_report:=jsonb_build_object(
