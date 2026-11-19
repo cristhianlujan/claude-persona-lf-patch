@@ -112,8 +112,7 @@ BEGIN
   'rule_code',r,'source_snapshot_sha256',public.lf_asset_snapshot_sha_v1('REGLA',r),
  'source_limits',(SELECT jsonb_build_object(
  'max_intentos',valor_config->'max_intentos',
- 'ventana_minutos',valor_config->'ventana_minutos',
- 'accion',valor_config->'accion')
+ 'ventana_minutos',valor_config->'ventana_minutos')
  FROM lf_ops.reglas WHERE codigo=r),
  'global_config_values',(SELECT jsonb_object_agg(config_key,config_value ORDER BY config_key)
  FROM public.lf_global_config WHERE scope='AUTH'
