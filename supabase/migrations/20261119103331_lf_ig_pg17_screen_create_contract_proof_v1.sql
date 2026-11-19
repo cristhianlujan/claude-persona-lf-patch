@@ -60,7 +60,7 @@ BEGIN
 
  -- These are deliberately NOT claims of runtime writer acceptance/rejection:
  -- objective-only contract checks of malformed versus corrected JSON inputs.
- v_missing_scope:=v_patch#>'{changes,valor_config}'-'lf_rule_scope';
+ v_missing_scope:=(v_patch#>'{changes,valor_config}') - 'lf_rule_scope';
  v_missing_screen:=jsonb_set(v_patch#>'{changes,valor_config}','{lf_screen_ids}','[]'::jsonb);
  IF v_missing_scope ? 'lf_rule_scope'
  OR v_missing_screen->'lf_screen_ids' IS DISTINCT FROM '[]'::jsonb
