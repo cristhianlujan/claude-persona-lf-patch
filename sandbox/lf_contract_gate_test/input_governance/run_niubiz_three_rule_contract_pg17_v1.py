@@ -138,18 +138,16 @@ BEGIN
     WHERE scope='PAGOS' AND config_key IN
       ('NIUBIZ_EMAIL_TEMPLATE','NIUBIZ_EMAIL_DOMAIN'))<>1
  THEN RAISE EXCEPTION 'CONFIG_NEGATIVE_SETUP_FAILED'; END IF;
- IF NOT EXISTS(SELECT 1 FROM public.niubiz_test_proposals
-   WHERE NOT EXISTS(SELECT 1 FROM jsonb_array_elements(
-      patch#>'{changes,valor_config,niubiz_email_config_refs}') e
-      WHERE e->>'config_key'='NIUBIZ_EMAIL_DOMAIN'))
- THEN
-   -- Negative condition: every patch still requires the missing DOMAIN.
-   IF EXISTS(SELECT 1 FROM public.niubiz_test_proposals p
-      WHERE NOT EXISTS(SELECT 1 FROM jsonb_array_elements(
-        p.patch#>'{changes,valor_config,niubiz_email_config_refs}') e
-        WHERE e->>'config_key'='NIUBIZ_EMAIL_DOMAIN'))
-   THEN RAISE EXCEPTION 'CONFIG_NEGATIVE_REF_DROPPED'; END IF;
- END IF;
+ IF (SELECT count(*) FROM public.niubiz_test_config
+    WHERE scope='PAGOS' AND config_key='NIUBIZ_EMAIL_DOMAIN')<>0
+ THEN RAISE EXCEPTION 'NEGATIVE_DOMAIN_STILL_PRESENT'; END IF;
+ IF (SELECT count(*) FROM public.niubiz_test_proposals p
+    WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(
+      p.patch#>'{changes,valor_config,niubiz_email_config_refs}') e
+      LEFT JOIN public.niubiz_test_config c
+        ON c.scope=e->>'scope' AND c.config_key=e->>'config_key'
+      WHERE c.scope IS NULL))<>3
+ THEN RAISE EXCEPTION 'CONFIG_MISSING_DOMAIN_NOT_DETECTED_FOR_ALL'; END IF;
  RAISE NOTICE 'NIUBIZ_CONTRACT_MISSING_DOMAIN_IS_DETECTABLE_PASS';
  IF (SELECT count(*) FROM public.niubiz_test_proposals)<>3
  THEN RAISE EXCEPTION 'SYNTHETIC_PATCH_ROWS_CHANGED'; END IF;
