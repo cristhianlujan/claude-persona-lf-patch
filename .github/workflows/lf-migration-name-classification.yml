@@ -1339,3 +1339,75 @@ jobs:
           path: .lf_ci/niubiz_product_context_budget_pg17/report.json
           if-no-files-found: warn
           retention-days: 30
+
+  # Dedicated RULE_CONTRACT_LEVEL proof; exact live Step50 SHA on 3 proposals.
+  # PostgreSQL data synthetic, no provider/production PASS.
+  niubiz-three-rule-contract-pg17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-niubiz-three-rule-contract-proof-20261118'
+    name: Niubiz RULE_CONTRACT_LEVEL PG17 8 checks + CREATE gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_three_contract_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_three_contract_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight PostgreSQL and code compilation
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_niubiz_three_rule_contract_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Validate Niubiz 3 exact Step50 patches in real PG17 + independent rollback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_niubiz_three_rule_contract_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('.lf_ci/ig_niubiz_three_rule_contract_pg17/report.json').read_text())
+          assert j['status']=='PASS' and j['real_pg17']
+          assert len(j['checks'])==8 and all(j['checks'].values())
+          assert j['independent_readback']=='CLEAN'
+          assert j['niubiz_hosted_form']=='NOT_TESTED'
+          assert not j['remote_supabase_written']
+          assert set(j['patch_shas_from_live_step50'])=={
+            'REG_CLIENT_NIUBIZ_UNIQUE_EMAIL_001',
+            'REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001',
+            'REG_CLIENT_NIUBIZ_GENERIC_BOUNCE_001'}
+          print('NIUBIZ_3_RULE_CONTRACT_PG17_8_8_AND_CREATE_6_6_PASS')
+          PY
+      - name: Upload bounded contract proof report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niubiz-three-rule-contract-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/ig_niubiz_three_rule_contract_pg17/report.json
+          if-no-files-found: warn
+          retention-days: 30
