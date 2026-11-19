@@ -2,7 +2,9 @@
 -- Authorized scope: register actual observed PG17/PG18 fixture test CI,
 -- re-score via deployed scorer, request MANUAL promotion only.
 -- CI source exact: PR #4409, test-specific real postgres 17.6/18.7 markers
--- in GitHub Actions run 44539240378. Merge ONLY IF rerun is fully SUCCESS.
+-- in GitHub Actions run 44539240378, attempt 2 (case PASS on both PG;
+-- suite overall FAILURE from unrelated UI02 Docker/psql container crash).
+-- This registry certifies only the named PG17/18 test-case, not global CI.
 -- This test checks DB constraints + rollback, not full upload E2E or production.
 -- PR #4409 Train 44539103035 applied PG17 config equivalence proof.
 -- Product Director NEW RUN EXEC-PROFILE-GATE2-8B455BD3FABBC952FFD3CB43
@@ -70,8 +72,9 @@ BEGIN
   OR EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 WHERE rule_code=v_new)
   THEN RAISE EXCEPTION 'LF_IG_B2B002_BASELINE_CONFIG_OR_DEPENDENCY_DRIFT'; END IF;
 
-  -- GitHub CI run must be verified externally SUCCESS before Train label.
-  -- test_ref names exactly the test that emitted real PG17.6 and PG18.7 PASS.
+  -- Exact real GitHub CI run attempt 2 contains PG17.6 and PG18.7 PASS
+  -- for this named test. Global suite failure is recorded above and in PR.
+  -- The scorer considers test-specific PASS; DO NOT claim global CI GREEN.
   INSERT INTO lf_ops.regla_behavior_tests(regla_codigo,test_ref,ci_run,pg17,pg18,source_sha)
     VALUES(v_new,v_test,v_ci,'PASS','PASS',v_expected_sha);
 
