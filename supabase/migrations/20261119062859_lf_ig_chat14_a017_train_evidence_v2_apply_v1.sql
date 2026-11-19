@@ -90,7 +90,7 @@ BEGIN
      AND evt.payload#>>'{receipt,ledger_readback,matches_target}'='true'
      AND evt.payload->>'receipt_sha256'=receipt
      AND encode(extensions.digest(convert_to((evt.payload->'receipt')::text,'UTF8'),'sha256'),'hex')=receipt
-     AND ml.name='lf_ig_family_a_a017_pg17_rule_contract_probe_v1'
+     AND ml.name='lf_ig_chat14_a017_pg17_rule_contract_v1'
      AND encode(extensions.digest(convert_to(ml.statements[1],'UTF8'),'sha256'),'hex')=test_sql
      AND ml.statements[1] LIKE '%SAVEPOINT ig_a017_positive%'
      AND ml.statements[1] LIKE '%ROLLBACK TO SAVEPOINT ig_a017_positive%'
