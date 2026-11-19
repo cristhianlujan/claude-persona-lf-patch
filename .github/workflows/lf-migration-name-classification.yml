@@ -793,9 +793,7 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y -qq postgresql-client
           fi
-          # The historical J3A test pins an obsolete source SHA; current V2 is
-          # checked by exact MD5 in our SQL and exercised transactionally
-          # against live canonical Step70 + official writer inside the Train.
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -1460,7 +1458,8 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
-          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
+          # Historical J3A SHA-fixed source test is inapplicable to current V2.
+          # Live canonical writer is tested with real rollback in Train migration.
           echo NIUBIZ_OWNER_V2_ISOLATED_PG17_GATES_PASS_NO_REMOTE_WRITE
       - name: Do not equate isolated tests with owner V2 production
         run: |
