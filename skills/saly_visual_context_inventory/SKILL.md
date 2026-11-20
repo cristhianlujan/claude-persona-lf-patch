@@ -1,21 +1,21 @@
 # SALY_VISUAL_CONTEXT_INVENTORY — lectura de insumos visuales v0.1
 
-**Estado:** CANDIDATO / READ_ONLY / NO HABILITADO / NO REGISTRADO EN RUNTIME  
-**Owner propuesto:** `PERFIL-UI-ARCHITECT` para `SALY/PRODUCTO`.  
+**Estado:** READ_ONLY / CANDIDATO hasta merge y readback del registro de runtime; seleccionable solo con RUN SALY/PRODUCTO vigente  
+**Perfil autorizado:** `PERFIL-UI-ARCHITECT` para `SALY/PRODUCTO`.  
 **Alcance:** primer paso real de la fábrica de pantallas: leer fuentes aprobadas y señalar huecos. No genera imagen, pantalla, fondo ni mockup.
 
 ## Entrada requerida
 
 - `business_code=SALY` derivado de un handoff autenticado del Router.
 - `project_code=SALY-001` asociado al negocio, nunca tomado de un JSON de usuario como autoridad.
-- `channel=PRODUCTO`, `output_type=APP_SCREEN|APP_MOCKUP`.
+- `channel=PRODUCTO`, `output_type=APP_SCREEN|APP_MOCKUP` opcional en la invocación; un valor diferente se bloquea.
 - `as_of` opcional fijado al contexto de ejecución, con timestamp.
 - `execution_id` de un RUN auténtico del perfil UI cuando se habilite.
 
 ## Qué hace
 
 1. Comprueba negocio/perfil/canal **desde el RUN padre oficial**, no desde el mensaje.
-2. Resuelve el proyecto SALY y ejecuta solo el SELECT de `queries/saly_readiness.sql` con permisos gobernados.
+2. Resuelve el proyecto SALY y aplica el SELECT equivalente a `queries/saly_readiness.sql` en el handler SQL gobernado. El archivo SQL es el readback independiente de control.
 3. Obtiene versiones efectivas de tokens desde `saly.v_identity_current`; registra `version_id`, valor, ámbito y vigencia.
 4. Obtiene logos aprobados de `saly.brand_assets` sin copiar o modificar sus archivos. Una huella SHA registrada NO implica verificación independiente.
 5. Comprueba si el catálogo `visual.standard_activations` existe. Si no existe, devuelve `STANDARD_CATALOG_NOT_IMPLEMENTED`; nunca inventa estándar o toma uno candidato como vigente.
@@ -42,4 +42,6 @@
 - Hasta implementar catálogo versionado y contrato de selector, el resultado esperado es `SOURCE_INVENTORY_ONLY`, no `READY_FOR_VISUAL_COMPILATION`.
 - No reemplaza al piloto `SALY_APP_VISUAL_PROBE`: su recibo histórico permanece intacto.
 
-**NO-GO:** no registrar este skill como `READY` ni habilitar al perfil hasta crear handler oficial y tests, asociar binding por negocio, definir el estándar visual efectivo e introducir una ejecución gobernada distinta al RUN histórico de saludo.
+**Regla de habilitación:** el registro `READY / CURRENT / SEMANTIC_OPTIONAL` del catálogo habilita **solo el inventario en lectura** tras la migración y su readback. NO requiere habilitar la generación: con estándares ausentes el handler debe devolver `SOURCE_INVENTORY_ONLY` e `image_generation_allowed=false`. El handler valida el RUN padre, el binding oficial de selección de este skill y las restricciones SALY/PRODUCTO antes de consultar insumos. El nuevo RUN se abre por Router; no reutilizar el RUN histórico del saludo.
+
+**Límites de autoridad:** no existe permiso de modificar tablas SALY, imágenes, tokens, estándares ni perfil UI; el invoker registra únicamente el recibo de lectura. Nunca declarar el inventario como prueba de que existe un estándar oficial activo.
