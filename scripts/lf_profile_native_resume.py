@@ -1616,6 +1616,20 @@ def main():
         return 1
 
     phase = result.get("phase")
+    if phase == "SKILL_SELECTION_REQUIRED":
+        plan = result.get("result", {}).get("operation_plan")
+        if (result.get("execution_id") != execution_id or not isinstance(plan, dict)
+            or plan.get("profile_code") != source.get("profile_code")
+            or plan.get("skill_selection_status") != "SKILL_SELECTION_PENDING_FINDING"):
+            raise ValueError("SKILL_SELECTION_CHECKPOINT_INVALID")
+        # Replace the earlier source-bind plan with the post-scope candidates.
+        (Path.cwd() / "profile-native-operation-plan.json").write_text(
+            json.dumps(plan, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8",
+        )
+        return record_incomplete_continuation(
+            execution_id, source.get("profile_code"), phase,
+            "skill_selection", "SKILL_SELECTION_DECISION_OR_EXPLICIT_NONE",
+        )
     if phase == "RESEARCH_BASELINE_REQUIRED":
         return record_incomplete_continuation(
             execution_id,source.get("profile_code"),phase,

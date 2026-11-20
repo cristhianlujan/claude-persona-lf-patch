@@ -1304,3 +1304,56 @@ Deno.test("P4: Step47 recorder outcome cannot mask blocked deterministic status"
   eq(baselineStored,true);
   eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_RECORD_NOT_CLEAN");
 });
+
+Deno.test("skill-only continue binds explicit none before preparing Step40", async () => {
+  const n = network();
+  const calls: string[] = [];
+  const fetchFn: typeof n.fetchFn = async (input, init) => {
+    const name = String(input).split("/").pop()!.split("?")[0];
+    calls.push(name);
+    if (name === "lf_profile_skill_selection_run_bind_v1") {
+      return Response.json({status: "BOUND"});
+    }
+    return n.fetchFn(input, init);
+  };
+  const response = await handleProfileContinuation(PROFILE_CONTINUE_ACTION, {
+    execution_id: id, source_revision: sha, source_digest: digest,
+    skill_selection_decision: {selected_skill_codes: [], reason: "Optional review deferred"},
+  }, config, fetchFn, sha);
+  eq(response.status, 200);
+  eq(calls, ["lf_operation_execution", "lf_profile_skill_selection_run_bind_v1",
+    "lf_profile_native_bridge_prepare_v1"]);
+});
+
+Deno.test("pending skill review returns a continuation with the refreshed plan", async () => {
+  const n = network();
+  const plan = {status: "READY", profile_code: "PROFILE-A", operation_code: "EJECUCION_PERFIL_LF",
+    skill_selection_status: "SKILL_SELECTION_PENDING_FINDING"};
+  const fetchFn: typeof n.fetchFn = async (input, init) =>
+    String(input).endsWith("/lf_profile_native_bridge_prepare_v1")
+      ? Response.json({status: "SKILL_SELECTION_REQUIRED", execution_id: id, operation_plan: plan})
+      : n.fetchFn(input, init);
+  const response = await handleProfileContinuation(PROFILE_CONTINUE_ACTION, {
+    execution_id: id, source_revision: sha, source_digest: digest,
+  }, config, fetchFn, sha);
+  const body = await response.json();
+  eq(response.status, 200);
+  eq(body.phase, "SKILL_SELECTION_REQUIRED");
+  eq(body.execution_id, id);
+  eq(body.result.operation_plan, plan);
+});
+
+Deno.test("pending skill checkpoint for a different RUN is rejected", async () => {
+  const n = network();
+  const fetchFn: typeof n.fetchFn = async (input, init) =>
+    String(input).endsWith("/lf_profile_native_bridge_prepare_v1")
+      ? Response.json({status: "SKILL_SELECTION_REQUIRED", execution_id: id + "-other",
+        operation_plan: {status: "READY", profile_code: "PROFILE-A",
+          operation_code: "EJECUCION_PERFIL_LF", skill_selection_status: "SKILL_SELECTION_PENDING_FINDING"}})
+      : n.fetchFn(input, init);
+  const response = await handleProfileContinuation(PROFILE_CONTINUE_ACTION, {
+    execution_id: id, source_revision: sha, source_digest: digest,
+  }, config, fetchFn, sha);
+  eq(response.status, 409);
+  eq((await response.json()).code, "SKILL_SELECTION_CHECKPOINT_INVALID");
+});
