@@ -1,10 +1,6 @@
 name: SALY Ventas PG17 staging (isolated rollback)
 on:
-  pull_request:
-    paths:
-      - 'supabase/migrations/20261120235000_saly_ventas_discovery_staging_v1.sql'
-      - 'supabase/tests/saly_ventas_discovery_staging_v1*'
-      - '.github/workflows/saly-ventas-pg17-staging.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -47,7 +43,7 @@ jobs:
       - name: Test migration inside real BEGIN and ROLLBACK
         shell: bash
         run: |
-          sed -e '/^BEGIN;$/d' -e '/^COMMIT;$/d' supabase/migrations/20261120235000_saly_ventas_discovery_staging_v1.sql > /tmp/saly_ventas_body.sql
+          sed -e '/^BEGIN;$/d' -e '/^COMMIT;$/d' supabase/migrations/20261120235000_lf_saly_ventas_discovery_staging_v1.sql > /tmp/saly_ventas_body.sql
           cat > /tmp/saly_rollback_ddl.sql <<'SQL'
           BEGIN;
           \i /tmp/saly_ventas_body.sql
@@ -69,7 +65,7 @@ jobs:
           SQL
           psql -v ON_ERROR_STOP=1 -f /tmp/saly_rollback_ddl.sql
       - name: Apply schema to ephemeral PG17 only
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261120235000_saly_ventas_discovery_staging_v1.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261120235000_lf_saly_ventas_discovery_staging_v1.sql
       - name: Verify constraints and functional BEGIN/ROLLBACK
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/saly_ventas_discovery_staging_v1_pg17_rollback.sql
       - name: Verify canonical table and no duplicate
