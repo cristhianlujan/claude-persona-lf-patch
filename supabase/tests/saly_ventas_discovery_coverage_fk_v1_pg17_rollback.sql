@@ -66,8 +66,20 @@ BEGIN
  END;
  IF NOT rejected THEN RAISE EXCEPTION 'CATALOG_RIGHTS_BYPASS'; END IF;
 
+ rejected:=false;
+ BEGIN
+  UPDATE saly.ventas_discovery_catalogo SET
+   rights_status='PERSISTENCIA_PERMITIDA',persist_business_data=true,habilitada=true
+  WHERE catalog_version='CAT-L28-FIXTURE' AND source_id='PE-PTE';
+ EXCEPTION WHEN check_violation THEN rejected:=true;
+ END;
+ IF NOT rejected THEN RAISE EXCEPTION 'SOURCE_RIGHTS_WITHOUT_EVIDENCE_ACCEPTED'; END IF;
+
  UPDATE saly.ventas_discovery_catalogo SET
-  rights_status='PERSISTENCIA_PERMITIDA',persist_business_data=true,habilitada=true
+  rights_status='PERSISTENCIA_PERMITIDA',
+  rights_evidence_ref='fixture://synthetic-authorization',
+  rights_checked_at=now(),
+  persist_business_data=true,habilitada=true
  WHERE catalog_version='CAT-L28-FIXTURE' AND source_id='PE-PTE';
 
  INSERT INTO saly.ventas_discovery_ingestas
