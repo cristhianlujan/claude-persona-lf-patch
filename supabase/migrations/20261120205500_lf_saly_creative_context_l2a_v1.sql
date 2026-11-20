@@ -101,10 +101,7 @@ BEGIN
   THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_IDENTITY_IMMUTABLE'; END IF;
  END IF;
  IF NEW.state='SEALED' THEN
-  -- Avoid dereferencing an unassigned OLD record on INSERT.
-  IF TG_OP='UPDATE' AND OLD.state='SEALED' THEN
-    RAISE EXCEPTION 'CREATIVE_CONTEXT_SET_IMMUTABLE';
-  END IF;
+  -- OLD is read only in the UPDATE-only guard above.
   -- Universal seal rule: two effective SALY official colors, no duplicate codes,
   -- verified immutable values; no 41-token hardcode for future EXPLORE sets.
   SELECT count(*)::int,
