@@ -331,6 +331,85 @@ REVOKE ALL ON FUNCTION saly.creative_context_token_guard_l2a(),
  saly.creative_order_context_guard_l2a(),saly.creative_item_context_l2a(bigint)
  FROM PUBLIC,anon,authenticated;
 
+-- Functional PG selftest: a real order + screen + source selection, then a forced
+-- PL/pgSQL subtransaction rollback. This proves no sample records persist.
+DO $selftest$
+DECLARE
+ v_project bigint; v_set bigint; v_order bigint; v_item bigint; v_source bigint;
+ v_context jsonb; v_raised boolean;
+BEGIN
+ SELECT id INTO STRICT v_project FROM saly.proyecto WHERE codigo='SALY-001';
+ SELECT id INTO STRICT v_set FROM saly.creative_context_sets
+  WHERE code='SALY_HOME_FIRST' AND version_label='0.3' AND state='SEALED';
+ SELECT id INTO STRICT v_source FROM visual.source_assets
+  WHERE brand_code='SALY' AND asset_code='SALY_REWARDS_HOME_SORTEOS'
+   AND approval_status='CANDIDATE' AND independent_sha_verified;
+ BEGIN
+  INSERT INTO saly.creative_orders
+   (project_id,code,request_key,title,requested_by,status,context_set_id)
+  VALUES (v_project,'SALY_TEST_L2A','SALY_TEST_L2A','Rollback only',
+   'SELFTEST','PLANIFICADO',v_set) RETURNING id INTO v_order;
+
+  IF (SELECT jsonb_array_length(identity_snapshot->'selected_versions')
+      FROM saly.creative_orders WHERE id=v_order)<>41
+  THEN RAISE EXCEPTION 'SALY_L2A_SNAPSHOT_NOT_FROZEN'; END IF;
+
+  INSERT INTO saly.creative_order_items
+   (order_id,code,ordinal,kind,title,status,context_json)
+  VALUES (v_order,'SCREEN_TEST',1,'SCREEN','Fixture only','PENDIENTE',
+   jsonb_build_object('token_codes',jsonb_build_array(
+    'candidate.saly_home_v3.semantic.color.navigation.active')))
+  RETURNING id INTO v_item;
+
+  INSERT INTO saly.creative_item_sources
+    (order_id,item_id,source_asset_id,purpose,source_sha256)
+  VALUES (v_order,v_item,v_source,'VISUAL_REFERENCE',repeat('0',64));
+
+  v_context:=saly.creative_item_context_l2a(v_item);
+  IF v_context->>'image_generation_allowed'<>'false'
+     OR jsonb_array_length(v_context->'tokens')<>3
+     OR jsonb_array_length(v_context->'source_refs')<>1
+  THEN RAISE EXCEPTION 'SALY_L2A_SCOPED_CONTEXT_FAILED'; END IF;
+
+  v_raised:=false;
+  BEGIN
+   UPDATE saly.creative_order_items
+    SET context_json='{"token_codes":["candidate.token.not.in.pack"]}'::jsonb
+   WHERE id=v_item;
+   PERFORM saly.creative_item_context_l2a(v_item);
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM='CREATIVE_ITEM_TOKEN_NOT_IN_LOCKED_CONTEXT'
+   THEN v_raised:=true; ELSE RAISE; END IF;
+  END;
+  IF NOT v_raised THEN RAISE EXCEPTION 'SALY_L2A_UNKNOWN_TOKEN_NOT_BLOCKED'; END IF;
+
+  v_raised:=false;
+  BEGIN
+   UPDATE saly.creative_orders SET identity_snapshot='{}'::jsonb WHERE id=v_order;
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM='CREATIVE_ORDER_CONTEXT_FROZEN'
+   THEN v_raised:=true; ELSE RAISE; END IF;
+  END;
+  IF NOT v_raised THEN RAISE EXCEPTION 'SALY_L2A_SNAPSHOT_MUTABLE'; END IF;
+
+  v_raised:=false;
+  BEGIN
+   UPDATE saly.creative_context_sets SET state='DRAFT' WHERE id=v_set;
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM='CREATIVE_CONTEXT_SET_IMMUTABLE'
+   THEN v_raised:=true; ELSE RAISE; END IF;
+  END;
+  IF NOT v_raised THEN RAISE EXCEPTION 'SALY_L2A_SEALED_CONTEXT_MUTABLE'; END IF;
+
+  RAISE EXCEPTION 'SALY_CREATIVE_L2A_SELFTEST_ROLLBACK_PASS';
+ EXCEPTION WHEN raise_exception THEN
+  IF SQLERRM<>'SALY_CREATIVE_L2A_SELFTEST_ROLLBACK_PASS' THEN RAISE; END IF;
+ END;
+ IF EXISTS (SELECT 1 FROM saly.creative_orders WHERE code='SALY_TEST_L2A')
+    OR EXISTS (SELECT 1 FROM saly.creative_order_items WHERE code='SCREEN_TEST')
+ THEN RAISE EXCEPTION 'SALY_CREATIVE_L2A_FIXTURE_LEAK'; END IF;
+END $selftest$;
+
 -- Readback checks: 2+32+7, no activation, no new order and unchanged identity counts.
 DO $postflight$
 DECLARE v_count int;
