@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-ig-screen44-owner-dispatch-20261114-v1",
+  "paths": {
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_screen44_owner_recuration_dispatch_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-screen44-owner-dispatch-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}
