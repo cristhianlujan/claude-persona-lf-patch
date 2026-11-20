@@ -88,7 +88,7 @@ CREATE TRIGGER trg_creative_context_token_guard_l2a
 CREATE FUNCTION saly.creative_context_set_guard_l2a()
 RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,saly,extensions
 AS $fn$
-DECLARE v_all int; v_official int; v_existing int; v_home int; v_drift int;
+DECLARE v_all int; v_official int; v_drift int; v_distinct_codes int;
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_SET_DELETE_FORBIDDEN'; END IF;
  IF TG_OP='UPDATE' THEN
@@ -101,17 +101,26 @@ BEGIN
   THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_IDENTITY_IMMUTABLE'; END IF;
  END IF;
  IF NEW.state='SEALED' AND (TG_OP='INSERT' OR OLD.state<>'SEALED') THEN
+  -- Universal seal rule: two effective SALY official colors, no duplicate codes,
+  -- verified immutable values; no 41-token hardcode for future EXPLORE sets.
   SELECT count(*)::int,
-    count(*) FILTER(WHERE role='OFFICIAL')::int,
-    count(*) FILTER(WHERE role='EXISTING')::int,
-    count(*) FILTER(WHERE role='HOME')::int,
+    count(*) FILTER(WHERE t.role='OFFICIAL')::int,
+    count(DISTINCT e.code)::int,
     count(*) FILTER(WHERE t.value_sha256<>encode(extensions.digest(v.value_json::text,'sha256'),'hex'))::int
-  INTO v_all,v_official,v_existing,v_home,v_drift
+  INTO v_all,v_official,v_distinct_codes,v_drift
   FROM saly.creative_context_tokens t
   JOIN saly.identity_versions v ON v.id=t.identity_version_id
+  JOIN saly.identity_elements e ON e.id=v.element_id
   WHERE t.context_set_id=NEW.id;
-  IF (v_all,v_official,v_existing,v_home,v_drift) IS DISTINCT FROM (41,2,32,7,0)
-  THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_PACK_CARDINALITY_OR_DRIFT'; END IF;
+  IF v_all<2 OR v_official<>2 OR v_all<>v_distinct_codes OR v_drift<>0
+  THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_SEAL_INCOMPLETE_DUPLICATE_OR_DRIFT'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM saly.creative_context_tokens t
+    WHERE t.context_set_id=NEW.id AND t.role='OFFICIAL'
+    AND NOT EXISTS (SELECT 1 FROM saly.v_identity_current effective
+       WHERE effective.project_code='SALY-001'
+       AND effective.version_id=t.identity_version_id))
+  THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_OFFICIAL_NOT_EFFECTIVE'; END IF;
   IF EXISTS (
    SELECT 1 FROM saly.creative_context_tokens alias_link
    JOIN saly.identity_versions alias_v ON alias_v.id=alias_link.identity_version_id
@@ -336,7 +345,7 @@ REVOKE ALL ON FUNCTION saly.creative_context_token_guard_l2a(),
 DO $selftest$
 DECLARE
  v_project bigint; v_set bigint; v_order bigint; v_item bigint; v_source bigint;
- v_context jsonb; v_raised boolean;
+ v_minimal bigint; v_context jsonb; v_raised boolean;
 BEGIN
  SELECT id INTO STRICT v_project FROM saly.proyecto WHERE codigo='SALY-001';
  SELECT id INTO STRICT v_set FROM saly.creative_context_sets
@@ -345,6 +354,23 @@ BEGIN
   WHERE brand_code='SALY' AND asset_code='SALY_REWARDS_HOME_SORTEOS'
    AND approval_status='CANDIDATE' AND independent_sha_verified;
  BEGIN
+  -- A second, minimal 2-token pack must seal: cardinality 41 belongs only
+  -- to the SALY_HOME_FIRST/0.3 fixture, not to every future context set.
+  INSERT INTO saly.creative_context_sets
+    (project_id,code,version_label,provenance)
+  VALUES (v_project,'SALY_TEST_MINIMAL','test','SELFTEST_ROLLBACK_ONLY')
+  RETURNING id INTO v_minimal;
+  INSERT INTO saly.creative_context_tokens
+    (context_set_id,identity_version_id,role,value_sha256)
+  SELECT v_minimal,version_id,'OFFICIAL',repeat('0',64)
+  FROM saly.v_identity_current
+  WHERE project_code='SALY-001';
+  UPDATE saly.creative_context_sets SET state='SEALED'
+  WHERE id=v_minimal;
+  IF (SELECT count(*) FROM saly.creative_context_tokens
+       WHERE context_set_id=v_minimal)<>2
+  THEN RAISE EXCEPTION 'SALY_L2A_MINIMAL_SEAL_FAILED'; END IF;
+
   INSERT INTO saly.creative_orders
    (project_id,code,request_key,title,requested_by,status,context_set_id)
   VALUES (v_project,'SALY_TEST_L2A','SALY_TEST_L2A','Rollback only',
@@ -407,6 +433,7 @@ BEGIN
  END;
  IF EXISTS (SELECT 1 FROM saly.creative_orders WHERE code='SALY_TEST_L2A')
     OR EXISTS (SELECT 1 FROM saly.creative_order_items WHERE code='SCREEN_TEST')
+    OR EXISTS (SELECT 1 FROM saly.creative_context_sets WHERE code='SALY_TEST_MINIMAL')
  THEN RAISE EXCEPTION 'SALY_CREATIVE_L2A_FIXTURE_LEAK'; END IF;
 END $selftest$;
 
@@ -416,8 +443,18 @@ DECLARE v_count int;
 BEGIN
  SELECT count(*)::int INTO v_count FROM saly.creative_context_tokens t
  JOIN saly.creative_context_sets s ON s.id=t.context_set_id
- WHERE s.code='SALY_HOME_FIRST' AND s.state='SEALED';
- IF v_count<>41 THEN RAISE EXCEPTION 'SALY_CREATIVE_PACK_NOT_41'; END IF;
+ WHERE s.code='SALY_HOME_FIRST' AND s.version_label='0.3' AND s.state='SEALED';
+ IF v_count<>41 OR EXISTS (
+   SELECT 1 FROM (
+     SELECT t.role,count(*) AS n FROM saly.creative_context_tokens t
+     JOIN saly.creative_context_sets s ON s.id=t.context_set_id
+     WHERE s.code='SALY_HOME_FIRST' AND s.version_label='0.3'
+     GROUP BY t.role
+   ) roles
+   WHERE (roles.role='OFFICIAL' AND roles.n<>2)
+      OR (roles.role='EXISTING' AND roles.n<>32)
+      OR (roles.role='HOME' AND roles.n<>7)
+ ) THEN RAISE EXCEPTION 'SALY_CREATIVE_PACK_NOT_2_32_7'; END IF;
  IF (SELECT count(*) FROM saly.creative_orders)<>0
  OR (SELECT count(*) FROM saly.identity_elements)<>55
  OR (SELECT count(*) FROM saly.identity_versions)<>55
