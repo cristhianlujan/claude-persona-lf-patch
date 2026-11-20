@@ -244,8 +244,15 @@ BEGIN
  JOIN saly.identity_elements e ON e.id=v.element_id
  WHERE t.context_set_id=v_item.context_set_id AND
    (t.role='OFFICIAL' OR e.code IN (SELECT code FROM requested));
+ IF EXISTS (SELECT 1 FROM saly.creative_item_sources s
+   JOIN visual.source_assets a ON a.id=s.source_asset_id
+   WHERE s.item_id=v_item.id AND s.order_id=v_item.order_id
+     AND (s.source_sha256 IS DISTINCT FROM a.source_sha256
+       OR NOT a.independent_sha_verified OR a.brand_code<>'SALY'))
+ THEN RAISE EXCEPTION 'CREATIVE_ITEM_SOURCE_REFERENCE_DRIFT'; END IF;
  SELECT COALESCE(jsonb_agg(jsonb_build_object('asset_id',a.id,
   'asset_code',a.asset_code,'source_kind',a.source_kind,
+  'provider',a.provider,'file_ref',a.file_ref,
   'source_sha256',s.source_sha256,'approval_status',a.approval_status,
   'purpose',s.purpose) ORDER BY a.asset_code),'[]'::jsonb)
  INTO v_refs
