@@ -236,12 +236,18 @@ class TestIgTicketParentPlanPgDual(unittest.TestCase):
     text=True,capture_output=True,timeout=180)
   self.assertEqual(started.returncode,0,started.stderr[-2200:])
   try:
-   for _ in range(100):
+   # pg_isready may succeed against Docker's temporary initialization
+   # postmaster before initdb shuts it down. Wait for final server readiness.
+   for _ in range(120):
+    logs=subprocess.run(["docker","logs",name],text=True,
+      capture_output=True,timeout=8)
+    initialized="PostgreSQL init process complete; ready for start up." in (
+      logs.stdout+logs.stderr)
     p=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
       text=True,capture_output=True,timeout=8)
-    if p.returncode==0: break
+    if initialized and p.returncode==0: break
     time.sleep(.75)
-   else: self.fail("POSTGRES_NOT_READY")
+   else: self.fail("POSTGRES_FINAL_SERVER_NOT_READY")
    def sql(src):
     p=subprocess.run(["docker","exec","-i",name,"psql","-X","-Atq",
       "-v","ON_ERROR_STOP=1","-U","postgres","-d","postgres"],
