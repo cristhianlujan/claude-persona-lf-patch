@@ -21,7 +21,9 @@ WHERE table_schema='saly'
 
 -- Tras importar un lote PTE aprobado: 2.336 registros de referencia (no pre-sertificados).
 -- El filtro es por ingesta, no por total global; otras fuentes pueden coexistir.
-SELECT i.id,i.source_code,i.source_version,i.estado,i.derechos_verificados,
+SELECT i.id,i.run_ref,i.catalog_version,i.source_id,i.connector_id,i.substep_code,
+ i.scope_key,i.batch_key,i.query_hash,i.consulta_evidencia_ref,
+ i.source_version,i.estado,i.derechos_verificados,
  i.archivo_sha256,i.filas_reportadas,COUNT(r.id) AS filas_insertadas,
  COUNT(r.id) FILTER (WHERE nullif(btrim(coalesce(r.ruc_literal,'')),'') IS NULL) AS sin_ruc,
  COUNT(DISTINCT r.ruc_candidato) AS ruc_distintos,
@@ -29,7 +31,7 @@ SELECT i.id,i.source_code,i.source_version,i.estado,i.derechos_verificados,
  COUNT(r.id) FILTER (WHERE r.ubigeo_candidato LIKE '11%') AS ica
 FROM saly.ventas_discovery_ingestas i
 LEFT JOIN saly.ventas_hallazgos r ON r.ingesta_id=i.id
-WHERE i.source_code='PE-PTE-ENTIDADES'
+WHERE i.source_id='PE-PTE' AND i.substep_code='13.03'
 GROUP BY i.id ORDER BY i.creada_en DESC;
 
 SELECT r.ingesta_id,r.ruc_candidato,COUNT(*) AS repeticiones
@@ -42,3 +44,22 @@ SELECT COUNT(*) AS unidades_sin_registro
 FROM saly.ventas_unidades_operativas u
 LEFT JOIN saly.ventas_hallazgos r ON r.id=u.registro_id
 WHERE r.id IS NULL;
+
+-- Integridad de linaje y derechos: no se pueden dar como operativos los RUN sin
+-- tablas ejecutoras del L20 ni confirmar cubierta una fuente por un recibo aislado.
+SELECT i.id,i.run_ref,i.source_id,i.connector_id,i.substep_code,i.batch_key,
+ i.query_hash,i.consulta_evidencia_ref,
+ (i.derechos_verificados AND i.archivo_sha256 IS NOT NULL
+  AND i.filas_reportadas IS NOT NULL) AS derechos_con_evidencia,
+ COUNT(h.id) AS hallazgos,
+ COUNT(h.id) FILTER (WHERE h.ruc_candidato IS NULL) AS sin_ruc_normalizado
+FROM saly.ventas_discovery_ingestas i
+LEFT JOIN saly.ventas_hallazgos h ON h.ingesta_id=i.id
+GROUP BY i.id ORDER BY i.creada_en DESC;
+
+-- readback de FK actuales: ingesta -> hallazgos -> unidades.
+SELECT conrelid::regclass::text AS tabla, conname AS fk, confrelid::regclass::text AS referencia
+FROM pg_constraint WHERE contype='f' AND connamespace='saly'::regnamespace
+ AND conrelid IN ('saly.ventas_hallazgos'::regclass,
+                  'saly.ventas_unidades_operativas'::regclass)
+ORDER BY tabla,fk;
