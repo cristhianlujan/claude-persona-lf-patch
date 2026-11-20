@@ -51,17 +51,21 @@ jobs:
           cat > /tmp/saly_rollback_ddl.sql <<'SQL'
           BEGIN;
           \i /tmp/saly_ventas_body.sql
-          SELECT CASE WHEN
-            to_regclass('saly.ventas_discovery_ingestas') IS NOT NULL
-            AND to_regclass('saly.ventas_hallazgos') IS NOT NULL
-            AND to_regclass('saly.ventas_unidades_operativas') IS NOT NULL
-          THEN 1 ELSE 1/0 END AS ddl_inside_transaction;
+          DO $verify$
+          BEGIN
+           IF to_regclass('saly.ventas_discovery_ingestas') IS NULL
+              OR to_regclass('saly.ventas_hallazgos') IS NULL
+              OR to_regclass('saly.ventas_unidades_operativas') IS NULL
+           THEN RAISE EXCEPTION 'DDL_MISSING_IN_TRANSACTION'; END IF;
+          END $verify$;
           ROLLBACK;
-          SELECT CASE WHEN
-            to_regclass('saly.ventas_discovery_ingestas') IS NULL
-            AND to_regclass('saly.ventas_hallazgos') IS NULL
-            AND to_regclass('saly.ventas_unidades_operativas') IS NULL
-          THEN 1 ELSE 1/0 END AS ddl_rollback_verified;
+          DO $verify$
+          BEGIN
+           IF to_regclass('saly.ventas_discovery_ingestas') IS NOT NULL
+              OR to_regclass('saly.ventas_hallazgos') IS NOT NULL
+              OR to_regclass('saly.ventas_unidades_operativas') IS NOT NULL
+           THEN RAISE EXCEPTION 'DDL_NOT_ROLLED_BACK'; END IF;
+          END $verify$;
           SQL
           psql -v ON_ERROR_STOP=1 -f /tmp/saly_rollback_ddl.sql
       - name: Apply schema to ephemeral PG17 only
@@ -71,8 +75,10 @@ jobs:
       - name: Verify canonical table and no duplicate
         run: |
           psql -v ON_ERROR_STOP=1 <<'SQL'
-          SELECT CASE WHEN
-            to_regclass('saly.ventas_hallazgos') IS NOT NULL
-            AND to_regclass('saly.ventas_discovery_registros') IS NULL
-          THEN 1 ELSE 1/0 END AS one_canonical_hallazgos;
+          DO $verify$
+          BEGIN
+           IF to_regclass('saly.ventas_hallazgos') IS NULL
+              OR to_regclass('saly.ventas_discovery_registros') IS NOT NULL
+           THEN RAISE EXCEPTION 'CANONICAL_HALLAZGOS_MISSING_OR_DUPLICATED'; END IF;
+          END $verify$;
           SQL
