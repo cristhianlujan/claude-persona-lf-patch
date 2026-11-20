@@ -922,10 +922,10 @@ export async function handleProfileContinuation(
   const hasSkillDecision = Object.prototype.hasOwnProperty.call(body, "skill_selection_decision") ||
     Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision");
   const coordinatedPre40 = hasScreenDraft && hasSkillDecision;
+  const chosen = selectedSkillDecision(e, body);
+  if (chosen.error) return chosen.error;
+  if (hasSkillDecision && !chosen.value) return blocked("SKILL_SELECTION_DECISION_INVALID", 400);
   if (coordinatedPre40) {
-    const chosen = selectedSkillDecision(e, body);
-    if (chosen.error) return chosen.error;
-    if (!chosen.value) return blocked("SKILL_SELECTION_DECISION_INVALID", 400);
     const draft = body.screen_selection_draft;
     if (!draft || typeof draft !== "object" || Array.isArray(draft)) {
       return blocked("PROFILE_CONTINUATION_SCREEN_SELECTION_DRAFT_INVALID", 400);
@@ -938,6 +938,8 @@ export async function handleProfileContinuation(
       return respond({ outcome: "BLOCKED", code: "PROFILE_CONTINUATION_SCREEN_SELECTION_REJECTED",
         result: submitted.result }, 409);
     }
+  }
+  if (hasSkillDecision) {
     const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_run_bind_v1", {
       p_execution_id: e.execution_id, p_decision: chosen.value,
       p_actor_execution_id: e.execution_id,
@@ -987,6 +989,17 @@ export async function handleProfileContinuation(
     });
     if (prepared.error) return prepared.error;
     result = prepared.result!;
+  }
+  if (result.status === "SKILL_SELECTION_REQUIRED") {
+    const plan = result.operation_plan as Payload | undefined;
+    if (result.execution_id !== e.execution_id || plan?.profile_code !== e.target_code ||
+      plan?.operation_code !== "EJECUCION_PERFIL_LF" || plan?.status !== "READY" ||
+      plan?.skill_selection_status !== "SKILL_SELECTION_PENDING_FINDING") {
+      return blocked("SKILL_SELECTION_CHECKPOINT_INVALID", 409);
+    }
+    return respond({outcome: "CONTINUATION_REQUIRED", phase: result.status,
+      execution_id: e.execution_id, profile_code: e.target_code,
+      next_action: result.next_action, result}, 200);
   }
   // P4: typed Step47 continuation. Only the already-admitted OIDC parent RUN
   // can supply a baseline envelope; canonical SQL validates all digests/sources.
