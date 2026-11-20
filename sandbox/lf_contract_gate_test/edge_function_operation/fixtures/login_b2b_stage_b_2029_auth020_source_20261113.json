@@ -1,0 +1,299 @@
+{
+  "schema": "LF_LOGIN_B2B_STAGE_B_2029_AUTH020_READBACK_V1",
+  "source": "Supabase SELECT only, source for isolated PostgreSQL lab",
+  "owner_decision_time": "2026-11-13T20:29:00-05:00",
+  "identity_verified": false,
+  "rule": {
+    "snapshot": {
+      "id": 439,
+      "razon": "Evitar que la recuperación se convierta en la ruta más débil de autenticación y separar claramente la recuperación individual de la continuidad operativa de emergencia.",
+      "codigo": "B2B-RULE-AUTH-020",
+      "estado": "CANDIDATO",
+      "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_3C",
+      "titulo": "Recuperación del segundo control sin bypass",
+      "categoria": "SECURITY",
+      "created_at": "2026-08-12T05:56:19.239592+00:00",
+      "created_by": "ChatGPT",
+      "updated_at": "2026-10-15T03:05:25.56612+00:00",
+      "descripcion": "Si un usuario sujeto al segundo control por correo pierde acceso a su correo, el Login no puede degradar a contraseña sola ni habilitar un bypass. Para perfiles no administradores, la recuperación de acceso al correo queda PENDING_FUNCTIONAL_DEFINITION y debe resolverse en flujo separado con validación de identidad y auditoría antes de producción. Para administradores la recuperación continúa en Google Workspace. Si se perdio el control del correo o existe sospecha de compromiso, reenviar un OTP al mismo buzon no aporta verificacion independiente. Para los perfiles no administradores debe aplicarse un procedimiento de identidad separado, auditable y aun PENDING_FUNCTIONAL_DEFINITION, bajo la politica central de recuperacion ID 20, sin autorizar acceso operativo ni bypass.",
+      "valor_config": {
+        "recovery_flow": "SEPARATE",
+        "audit_required": true,
+        "backend_runtime": "SPRING_BOOT_CORE",
+        "decision_status": "CLOSED_IMPLEMENTATION_PENDING",
+        "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+        "provider_binding": "OIDC_PROVIDER_PENDING_M1_SPIKE",
+        "identity_protocol": "OIDC_JWT",
+        "admin_recovery_mode": "GOOGLE_WORKSPACE_IDP_MANAGED",
+        "aws_identity_target": "AMAZON_COGNITO",
+        "production_authorized": false,
+        "reenrollment_required": true,
+        "authorization_registry": "lf_ops.perfiles_permisos",
+        "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+        "password_only_fallback": "DENY",
+        "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+        "non_admin_recovery_mode": "PENDING_FUNCTIONAL_DEFINITION_EMAIL_ACCESS_RECOVERY",
+        "future_profile_assignment": "ADD_PROFILE_PERMISSION_RELATION",
+        "admin_recovery_profile_ids": [
+          1,
+          2
+        ],
+        "numeric_thresholds_in_rule": "DENY",
+        "unapproved_factor_fallback": "DENY",
+        "mfa_applicability_policy_id": 3,
+        "email_access_recovery_status": "PENDING_FUNCTIONAL_DEFINITION",
+        "assisted_recovery_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "identity_verification_required": true,
+        "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "mfa_recovery_security_policy_id": 20,
+        "emergency_access_user_selectable": "DENY",
+        "authorized_recovery_actor_binding": "PERMISSION_BASED_DEFINED",
+        "authorized_recovery_permission_id": 38,
+        "emergency_access_security_policy_id": 21,
+        "operational_session_before_completion": "DENY",
+        "required_assurance_after_reenrollment": "AAL2",
+        "authenticated_session_on_recovery_start": "DENY",
+        "current_authorized_recovery_profile_ids": [
+          1
+        ],
+        "factor_revocation_or_replacement_required": true
+      },
+      "es_transversal": false,
+      "pendiente_detalle": "PENDING_FUNCTIONAL_DEFINITION + IMPLEMENTATION_QA: para perfiles no administradores falta definir la recuperación segura cuando el usuario pierde acceso al correo usado por OTP. No se habilita bypass por contraseña ni se reutiliza el flujo TOTP legado. La autorización privilegiada existente permanece separada.",
+      "pendiente_decision": false
+    },
+    "sha256": "f17060b3b5c28a4c6b1736a5b78673c3951aebac6623b3dd1b7f16245f6cc18c"
+  },
+  "policy": {
+    "snapshot": {
+      "status": "CANDIDATO",
+      "category": "AUTHENTICATION",
+      "created_at": "2026-08-12T05:56:19.239592+00:00",
+      "updated_at": "2026-10-15T03:05:25.56612+00:00",
+      "description": "La recuperación del segundo control no puede convertirse en bypass. Para perfiles no administradores que usan OTP por correo, la contingencia por pérdida de acceso al correo queda PENDING_FUNCTIONAL_DEFINITION y bloquea producción de esa rama hasta definir validación de identidad y recuperación segura. Para administradores, la recuperación continúa delegada a Google Workspace. Cuando el mismo buzon recibe codigos para recuperar la contrasena y para el segundo control, controlar ese buzon no demuestra una segunda verificacion independiente de identidad. Ante sospecha o reporte de compromiso del correo, ningun codigo enviado a ese mismo canal puede justificar por si solo la recuperacion del factor o una sesion operativa. El procedimiento independiente y auditable para los perfiles no administradores permanece PENDING_FUNCTIONAL_DEFINITION. No se permite bypass ni degradacion a contrasena sola.",
+      "policy_code": "SEC-B2B-MFA-RECOVERY",
+      "policy_config": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "audit_actions": [
+          "MFA_RECOVERY_REQUESTED",
+          "MFA_RECOVERY_IDENTITY_VERIFIED",
+          "MFA_FACTOR_RESET",
+          "MFA_REENROLLED"
+        ],
+        "recovery_flow": "SEPARATE_GOVERNED_FLOW",
+        "admin_recovery_mode": "GOOGLE_WORKSPACE_IDP_MANAGED",
+        "password_only_bypass": "DENY",
+        "authorization_registry": "lf_ops.perfiles_permisos",
+        "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+        "lost_totp_recovery_mode": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+        "new_factor_reenrollment": "REQUIRED",
+        "non_admin_recovery_mode": "PENDING_FUNCTIONAL_DEFINITION_EMAIL_ACCESS_RECOVERY",
+        "weaker_factor_downgrade": "DENY",
+        "future_profile_assignment": "ADD_PROFILE_PERMISSION_RELATION",
+        "admin_recovery_profile_ids": [
+          1,
+          2
+        ],
+        "authorization_relation_key": "permission_id",
+        "numeric_thresholds_in_rule": "DENY",
+        "email_access_recovery_status": "PENDING_FUNCTIONAL_DEFINITION",
+        "assisted_recovery_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "authorization_relation_key_type": "NUMERIC_ID",
+        "authorized_recovery_actor_binding": "PERMISSION_BASED_DEFINED",
+        "authorized_recovery_permission_id": 38,
+        "emergency_access_is_user_recovery": "DENY",
+        "session_before_recovery_completion": "DENY",
+        "subscriber_notification_on_recovery": "REQUIRED",
+        "password_only_access_during_recovery": "DENY",
+        "lost_factor_revocation_or_replacement": "REQUIRED",
+        "required_assurance_after_reenrollment": "AAL2",
+        "authenticator_rebinding_after_recovery": "REQUIRED_WHEN_FACTOR_LOST",
+        "current_authorized_recovery_profile_ids": [
+          1
+        ],
+        "provider_architecture_security_policy_id": 23,
+        "identity_verification_before_factor_reset": "REQUIRED",
+        "authenticated_operational_session_before_completion": "DENY"
+      },
+      "enforcement_level": "REQUIRED",
+      "security_policy_id": 20,
+      "source_decision_id": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+      "parameter_provenance": {
+        "provider_binding": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        },
+        "provider_architecture_security_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "value_status": "LF_PROVISIONAL",
+          "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+          "origin_version": "2026-09-28",
+          "origin_reference": "public.lf_decisiones_gov:136",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+        }
+      },
+      "source_decision_number": 136
+    },
+    "sha256": "700c785c955107725c262681fd05031f6c69693989813dae861f88f421135f16"
+  },
+  "columns": [
+    {
+      "tab": "politicas_seguridad",
+      "col": "policy_code",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "category",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "description",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "enforcement_level",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "policy_config",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "security_policy_id",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "parameter_provenance",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "reglas",
+      "col": "id",
+      "typ": "integer"
+    },
+    {
+      "tab": "reglas",
+      "col": "codigo",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "categoria",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "titulo",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "descripcion",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "razon",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "valor_config",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "reglas",
+      "col": "es_transversal",
+      "typ": "boolean"
+    },
+    {
+      "tab": "reglas",
+      "col": "estado",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "origen",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "reglas",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "reglas",
+      "col": "pendiente_decision",
+      "typ": "boolean"
+    },
+    {
+      "tab": "reglas",
+      "col": "pendiente_detalle",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "created_by",
+      "typ": "text"
+    }
+  ]
+}

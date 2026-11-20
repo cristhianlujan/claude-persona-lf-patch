@@ -1,0 +1,226 @@
+{
+  "schema": "LF_LOGIN_B2B_STAGE_B_AUTH020_CONFIGURABLE_APPROVERS_2029_V1",
+  "status": "PROPOSAL_ONLY_NO_LIVE_WRITES",
+  "owner_decision_at": "2026-11-13T20:29:00-05:00",
+  "identity_verified": false,
+  "source_ref": "OWNER_AUTH020_APPROVERS_REQUIRED_20261113T2029_LIMA_DOCUMENTARY",
+  "scope": "ONLY B2B-RULE-AUTH-020 AND SECURITY_POLICY_ID_20",
+  "rule": {
+    "kind": "rule",
+    "code": "B2B-RULE-AUTH-020",
+    "title": "Recuperación asistida con aprobación configurable 1 o 2",
+    "description": "El parámetro central de BD approvers_required (valores permitidos 1 o 2; inicial 1) controla la aprobación, modificable mediante pantalla de mantenimiento por un actor autorizado con auditoría. Con valor 1, una misma persona puede CREAR y APROBAR si su perfil conectado tiene ambos permisos o acceso autorizado a la pantalla. Con valor 2, creador y aprobador DEBEN ser actores distintos, con permisos respectivos. Para ambos valores siempre es obligatorio el aviso al celular/correo anterior, la auditoría y la espera de 48 horas. El soporte verifica DNI escaneado o foto; la selfie no está aprobada y el proveedor IDV no está seleccionado. Tras aprobación y espera se envía clave temporal de un solo uso al correo designado, y al entrar se fuerza cambio de clave y correo antes de sesión operativa; no existe bypass MFA.",
+    "pending_detail": "NO_OWNER_DATA_MISSING_AUTH020; IMPLEMENTATION_QA_AND_NEW_PERMISSIONS_TABLE_PENDING",
+    "config_set": {
+      "recovery_flow": "ASSISTED_SUPPORT_DNI_CONFIGURABLE_APPROVERS_48H_ONE_TIME_KEY",
+      "scope_profile_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "identity_evidence": [
+        "SCAN_DNI",
+        "PHOTO_DNI"
+      ],
+      "selfie_route_status": "NOT_DECIDED",
+      "idv_provider_status": "NOT_SELECTED",
+      "authorization_mode": "CONNECTED_USER_PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+      "permission_table_proposed": "lf_ops.b2b_recovery_profile_permissions",
+      "create_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+      "approve_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+      "creator_and_approver_distinct": "WHEN_APPROVERS_REQUIRED_EQ_2",
+      "notice_previous_contact": [
+        "PHONE",
+        "EMAIL"
+      ],
+      "audit_events": "REQUIRED_FOR_BOTH_VALUES",
+      "recovery_wait_hours": 48,
+      "temporary_credential": "ONE_TIME_ONLY",
+      "temporary_credential_delivery": "DESIGNATED_EMAIL",
+      "temporary_credential_plaintext_logging": "DENY",
+      "force_password_change_on_first_use": true,
+      "update_email_in_same_first_use_step": true,
+      "operational_session_before_completion": "DENY",
+      "password_only_fallback": "DENY",
+      "admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+      "non_admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+      "current_authorized_recovery_profile_ids": null,
+      "required_assurance_after_reenrollment": "LF_SECOND_FACTOR_VERIFIED_NOT_NATIVE_AAL2",
+      "production_authorized": false,
+      "admin_recovery_profile_ids": [
+        1,
+        2
+      ],
+      "assisted_recovery_profile_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "authorized_recovery_actor_binding": "PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+      "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+      "email_access_recovery_status": "ASSISTED_SUPPORT_DNI_DECIDED_IMPLEMENTATION_PENDING",
+      "approvers_required_source": "lf_ops.politicas_seguridad.SEC-B2B-MFA-RECOVERY.policy_config.approvers_required",
+      "approvers_required_allowed_values": [
+        1,
+        2
+      ],
+      "approvers_required_initial_value_location": "CENTRAL_POLICY_ONLY",
+      "approvers_required_change_mode": "PERMISSIONED_MAINTENANCE_SCREEN_AUDITED",
+      "approvers_required_provenance_ref": "OWNER_AUTH020_APPROVERS_REQUIRED_20261113T2029_LIMA_DOCUMENTARY",
+      "same_actor_create_and_approve": "ALLOWED_WHEN_APPROVERS_REQUIRED_EQ_1_AND_BOTH_PERMISSIONS"
+    }
+  },
+  "policy": {
+    "kind": "policy",
+    "id": 20,
+    "code": "SEC-B2B-MFA-RECOVERY",
+    "description": "El parámetro central de BD approvers_required (valores permitidos 1 o 2; inicial 1) controla la aprobación, modificable mediante pantalla de mantenimiento por un actor autorizado con auditoría. Con valor 1, una misma persona puede CREAR y APROBAR si su perfil conectado tiene ambos permisos o acceso autorizado a la pantalla. Con valor 2, creador y aprobador DEBEN ser actores distintos, con permisos respectivos. Para ambos valores siempre es obligatorio el aviso al celular/correo anterior, la auditoría y la espera de 48 horas. El soporte verifica DNI escaneado o foto; la selfie no está aprobada y el proveedor IDV no está seleccionado. Tras aprobación y espera se envía clave temporal de un solo uso al correo designado, y al entrar se fuerza cambio de clave y correo antes de sesión operativa; no existe bypass MFA.",
+    "config_set": {
+      "recovery_flow": "ASSISTED_SUPPORT_DNI_CONFIGURABLE_APPROVERS_48H_ONE_TIME_KEY",
+      "scope_profile_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "identity_evidence": [
+        "SCAN_DNI",
+        "PHOTO_DNI"
+      ],
+      "selfie_route_status": "NOT_DECIDED",
+      "idv_provider_status": "NOT_SELECTED",
+      "authorization_mode": "CONNECTED_USER_PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+      "permission_table_proposed": "lf_ops.b2b_recovery_profile_permissions",
+      "create_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+      "approve_permission": "SCREEN_ACCESS_OR_PROFILE_PERMISSION",
+      "creator_and_approver_distinct": "WHEN_APPROVERS_REQUIRED_EQ_2",
+      "notice_previous_contact": [
+        "PHONE",
+        "EMAIL"
+      ],
+      "audit_events": "REQUIRED_FOR_BOTH_VALUES",
+      "recovery_wait_hours": 48,
+      "temporary_credential": "ONE_TIME_ONLY",
+      "temporary_credential_delivery": "DESIGNATED_EMAIL",
+      "temporary_credential_plaintext_logging": "DENY",
+      "force_password_change_on_first_use": true,
+      "update_email_in_same_first_use_step": true,
+      "operational_session_before_completion": "DENY",
+      "password_only_fallback": "DENY",
+      "admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+      "non_admin_recovery_mode": "ASSISTED_SUPPORT_DNI",
+      "current_authorized_recovery_profile_ids": null,
+      "required_assurance_after_reenrollment": "LF_SECOND_FACTOR_VERIFIED_NOT_NATIVE_AAL2",
+      "production_authorized": false,
+      "profile_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "admin_recovery_profile_ids": [
+        1,
+        2
+      ],
+      "assisted_recovery_profile_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "authorized_recovery_actor_binding": "PROFILE_PERMISSION_OR_SCREEN_ACCESS",
+      "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+      "email_access_recovery_status": "ASSISTED_SUPPORT_DNI_DECIDED_IMPLEMENTATION_PENDING",
+      "subscriber_notification_on_recovery": "REQUIRED",
+      "approvers_required": 1,
+      "approvers_required_allowed_values": [
+        1,
+        2
+      ],
+      "approvers_required_control": "CENTRAL_POLICY_DB_PARAMETER",
+      "approvers_required_maintenance_screen": "PERMISSIONED_AUDITED_MAINTENANCE",
+      "approvers_required_source_decision_ref": "OWNER_AUTH020_APPROVERS_REQUIRED_20261113T2029_LIMA_DOCUMENTARY",
+      "same_actor_create_and_approve": "ALLOWED_WHEN_APPROVERS_REQUIRED_EQ_1_AND_BOTH_PERMISSIONS"
+    },
+    "parameter_provenance_patch": {
+      "approvers_required": {
+        "parameter": "approvers_required",
+        "decision_ref": "OWNER_AUTH020_APPROVERS_REQUIRED_20261113T2029_LIMA_DOCUMENTARY",
+        "identity_verified": false,
+        "initial_value": 1,
+        "allowed_values": [
+          1,
+          2
+        ],
+        "source_type": "OWNER_DOCUMENTARY_DECISION",
+        "effective_at": "2026-11-13T20:29:00-05:00"
+      }
+    }
+  },
+  "permission_table_proposal": {
+    "name": "lf_ops.b2b_recovery_profile_permissions",
+    "state": "OBJECT_NEW_DESIGN_ONLY",
+    "columns": [
+      "permission_id bigint PRIMARY KEY",
+      "profile_id bigint NOT NULL",
+      "screen_id integer",
+      "can_create boolean NOT NULL DEFAULT false",
+      "can_approve boolean NOT NULL DEFAULT false",
+      "can_enable_sms_contingency boolean NOT NULL DEFAULT false",
+      "can_unlock_password_24h boolean NOT NULL DEFAULT false",
+      "enabled boolean NOT NULL DEFAULT true",
+      "source_decision_ref text",
+      "created_at timestamptz NOT NULL",
+      "updated_at timestamptz NOT NULL"
+    ],
+    "rules": [
+      "AUTHORIZATION_BY_CONNECTED_ACTOR_PROFILE_AND_SCREEN_PERMISSION",
+      "APPROVERS_REQUIRED_EQ_1_SAME_ACTOR_ALLOWED_WITH_CREATE_AND_APPROVE_PERMISSIONS",
+      "APPROVERS_REQUIRED_EQ_2_CREATOR_NOT_EQUAL_APPROVER",
+      "NOTICE_PRIOR_CONTACT_AND_AUDIT_AND_48H_WAIT_ALWAYS"
+    ],
+    "control_parameter": {
+      "name": "approvers_required",
+      "storage": "lf_ops.politicas_seguridad.SEC-B2B-MFA-RECOVERY.policy_config",
+      "allowed_values": [
+        1,
+        2
+      ],
+      "initial": 1,
+      "maintainable": true,
+      "audit": true,
+      "decision_ref": "OWNER_AUTH020_APPROVERS_REQUIRED_20261113T2029_LIMA_DOCUMENTARY",
+      "identity_verified": false
+    }
+  },
+  "test_scenarios": [
+    1,
+    2
+  ],
+  "not_changed": [
+    "AUTH-019",
+    "AUTH-018",
+    "AUTH-047",
+    "policies 19/23",
+    "AUTH-021",
+    "AUTH-026",
+    "THEME-002",
+    "AUTH_LOGIN_FAILED_PASSWORD"
+  ],
+  "closed_missing_data": [
+    "AUTH020_TWO_PERSON_CONTROL_CONFIGURABLE_OWNER_DECISION"
+  ],
+  "pending_owner_questions": []
+}

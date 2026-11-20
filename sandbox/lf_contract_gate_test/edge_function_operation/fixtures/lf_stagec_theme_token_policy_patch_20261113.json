@@ -1,0 +1,139 @@
+{
+  "schema": "LF_STAGEC_DESIGN_TOKEN_POLICY_AND_THEME_GATE_PROPOSAL_V1",
+  "status": "PROPOSAL_AND_DISPOSABLE_DOCKER_LAB_ONLY",
+  "identity_verified": false,
+  "owner_decision_ref": "OWNER_LF_DESIGN_TOKENS_BY_NAME_2026-11-13_DOCUMENTARY",
+  "policy_table_selected": "private.lf_reusable_policy_registry_v1",
+  "policy_table_selection_evidence": "Existing VIGENTE LF-DESIGN-TOKEN-REFERENCE-POLICY-V1; lf_ops.politicas_seguridad contains security/authentication, public.lf_policy_versions has FK to canonical assets",
+  "policy": {
+    "kind": "UPDATE_EXISTING_POLICY_CANDIDATE_LAB_ONLY",
+    "table": "private.lf_reusable_policy_registry_v1",
+    "policy_code": "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1",
+    "source_ref": "github://cristhianlujan/claude-persona-lf-patch/main/docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md",
+    "status_live": "VIGENTE",
+    "status_in_lab": "CANDIDATO",
+    "identity_verified": false,
+    "semantic_descriptor": "LF visual rules, UI components, screens, profiles, skills and generated implementation store only canonical token names/codes. For COLOR tokens the resolved value belongs exclusively to lf_design.color_tokens; the consumer may resolve it at render time but must never persist resolved HEX/RGB/HSL or duplicate its value. A token identity can be reviewed by a role without resolving a value, but cannot be VIGENTE for dark visual use until WCAG AA contrast is evidenced.",
+    "new_execution_constraints": [
+      "LF_VISUAL_RULES_AND_COMPONENTS_STORE_CANONICAL_TOKEN_NAMES_ONLY",
+      "COLOR_TOKEN_LITERAL_VALUE_SOURCE_ONLY_LF_DESIGN_COLOR_TOKENS",
+      "NO_COLOR_LITERAL_OR_VALUE_ALIAS_IN_RULE_OR_COMPONENT_OR_THEME_BINDING",
+      "DARK_TOKEN_IDENTITY_ROLE_APPROVAL_SEPARATE_FROM_AA_VISUAL_ACTIVATION",
+      "DARK_THEME_VIGENTE_REQUIRES_ROLE_AUTHORITY_AND_WCAG_AA_READBACK_AND_GOVERNED_TOKENS"
+    ],
+    "canonical_existing_constraints_preserved": true
+  },
+  "theme_rule": {
+    "kind": "UPDATE_RULE_CANDIDATE_LAB_ONLY",
+    "code": "B2B-RULE-THEME-002",
+    "title": "Gate del modo noche: aprobación por rol de tokens canónicos y contraste AA",
+    "description": "LF utiliza exclusivamente referencias por nombre a tokens de diseño. Las reglas y componentes solo almacenan nombres/códigos de tokens; los valores de color viven exclusivamente en lf_design.color_tokens y no se copian a reglas, componentes ni theme_bindings. Para habilitar DARK, un rol de aprobación de diseño verificado debe aprobar documentalmente la identidad y uso de dark_mode_surface, dark_mode_card y dark_mode_text ya existentes en LF_DS_V1; no se crean tokens ni se fijan colores por esta aprobación. Cada token sigue PENDIENTE_DECISION_FINAL mientras no exista evidencia de contraste WCAG AA usando valores efectivos en la fuente canónica. AA es criterio de aceptación obligatorio para promoción y se verifican foco, badges, tablas y modales. Aprobación de nombre no equivale a validación visual ni a VIGENTE. No autorizar DARK productivo sin QA y recibo de rol.",
+    "pending_detail": "WAIT_ROLE_AUTHORITY_BINDING_AND_AA_CONTRAST_QA; THREE_DARK_COLOR_TOKENS_NULL_AND_PENDING; NO_PRODUCTION_PROMOTION",
+    "config_set": {
+      "design_system_code": "LF_DS_V1",
+      "policy_code": "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1",
+      "token_reference_only": true,
+      "token_value_single_source": "lf_design.color_tokens",
+      "no_literal_visual_values": true,
+      "required_tokens": [
+        "dark_mode_surface",
+        "dark_mode_card",
+        "dark_mode_text"
+      ],
+      "role_approval_required": true,
+      "role_approval_permission_code_proposed": "LF_DESIGN_TOKEN_APPROVE",
+      "role_approval_proposal_state": "DESIGN_ONLY_ROLE_NOT_REGISTERED",
+      "token_name_approval_before_color_value": "ALLOW_DOCUMENTARY_ONLY",
+      "token_name_approval_status": "PENDING_ROLE_AUTHORITY",
+      "token_value_approval_without_aa": "DENY",
+      "token_effective_promotion_without_aa": "DENY",
+      "contrast_standard": "WCAG_AA",
+      "contrast_qa": "REQUIRED_FOR_EFFECTIVE_DARK",
+      "contrast_qa_evidence_status": "MISSING_COLOR_VALUES",
+      "dark_binding_code": "LF_B2B_THEME_DARK",
+      "dark_binding_status": "CANDIDATO",
+      "required_qa": [
+        "WCAG_AA_CONTRAST",
+        "focus",
+        "status_badges",
+        "tables",
+        "modals"
+      ],
+      "blocked_until_tokens_vigente": true,
+      "token_values_in_rule": "DENY",
+      "token_status_at_select": "PENDIENTE_DECISION_FINAL",
+      "production_authorized": false
+    }
+  },
+  "role_approval": {
+    "mode": "SEPARATE_ROLE_APPROVAL_RECEIPT",
+    "schema_proposal": "lf_design.token_identity_role_approvals",
+    "state": "OBJECT_NEW_DESIGN_ONLY",
+    "no_live_table": true,
+    "role_permission_code_proposed": "LF_DESIGN_TOKEN_APPROVE",
+    "role_registered": false,
+    "workflow": "PENDIENTE_DECISION_FINAL -> ROLE_APPROVED_IDENTITY_PENDING_AA (approval receipt only, token status remains PENDIENTE_DECISION_FINAL) -> once canonical resolved value and QA AA verified, official governed promotion to VIGENTE of token and binding",
+    "receipt_status_to_test": "CANDIDATE_PENDING_ROLE_VERIFICATION_AND_AA",
+    "post_verified_role_status": "ROLE_APPROVED_IDENTITY_PENDING_AA",
+    "role_verified_in_this_document": false,
+    "rows": [
+      {
+        "token_name": "dark_mode_surface",
+        "design_system_code": "LF_DS_V1",
+        "status": "CANDIDATE_PENDING_ROLE_VERIFICATION_AND_AA",
+        "role_permission_code": "LF_DESIGN_TOKEN_APPROVE",
+        "approval_actor_verified": false,
+        "aa_contrast_verified": false,
+        "token_value_source": "lf_design.color_tokens",
+        "owner_decision_ref": "OWNER_LF_DESIGN_TOKENS_BY_NAME_2026-11-13_DOCUMENTARY"
+      },
+      {
+        "token_name": "dark_mode_card",
+        "design_system_code": "LF_DS_V1",
+        "status": "CANDIDATE_PENDING_ROLE_VERIFICATION_AND_AA",
+        "role_permission_code": "LF_DESIGN_TOKEN_APPROVE",
+        "approval_actor_verified": false,
+        "aa_contrast_verified": false,
+        "token_value_source": "lf_design.color_tokens",
+        "owner_decision_ref": "OWNER_LF_DESIGN_TOKENS_BY_NAME_2026-11-13_DOCUMENTARY"
+      },
+      {
+        "token_name": "dark_mode_text",
+        "design_system_code": "LF_DS_V1",
+        "status": "CANDIDATE_PENDING_ROLE_VERIFICATION_AND_AA",
+        "role_permission_code": "LF_DESIGN_TOKEN_APPROVE",
+        "approval_actor_verified": false,
+        "aa_contrast_verified": false,
+        "token_value_source": "lf_design.color_tokens",
+        "owner_decision_ref": "OWNER_LF_DESIGN_TOKENS_BY_NAME_2026-11-13_DOCUMENTARY"
+      }
+    ],
+    "passive_sources": [
+      "lf_design.color_tokens",
+      "lf_design.theme_bindings"
+    ],
+    "never_promote_if_no_aa": true,
+    "input_rules": [
+      "approval must be granted by actual connected actor with registered role permission",
+      "approval record must include actor, time, audit and source decision",
+      "AA QA against actual token value must be independent",
+      "do not replace NULL by invented color",
+      "do not silently change color token canonical status or create duplicate token"
+    ]
+  },
+  "explicitly_not_authorized": [
+    "WRITE_LIVE_DB",
+    "UPDATE_OFFICIAL_POLICY_SOURCE_MAIN",
+    "PROMOTE_RULE",
+    "APPROVE_TOKENS_AS_VIGENTE",
+    "CREATE_ACTUAL_ROLE",
+    "MERGE_TRAIN"
+  ],
+  "unchanged_assets": [
+    "LF_B2B_THEME_DARK",
+    "dark_mode_surface",
+    "dark_mode_card",
+    "dark_mode_text"
+  ],
+  "scope": "Only design policy candidate update, THEME-002 rule update, three lab-only candidate receipt inserts; verify existing token/binding hashes unchanged."
+}

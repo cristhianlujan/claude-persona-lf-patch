@@ -1,0 +1,63 @@
+{
+  "schema": "LF_UI_RUNTIME_TRANSITION_2255_SOURCE_READBACK_V1",
+  "source": "Supabase SELECT only",
+  "profile": {
+    "codigo_activo": "PERFIL-UI-ARCHITECT",
+    "estado_original": "CANDIDATO_CONTROLADO_READ_ONLY",
+    "estado_documental": "CANDIDATO",
+    "estado_operativo": "READ_ONLY",
+    "nivel_control": "CONTROLADO",
+    "runtime_estado": "CANDIDATE_READ_ONLY",
+    "impacto_automatico": "BLOQUEADO",
+    "metadata_runtime_enabled": "false",
+    "next_gate": "PROFILE_RUNTIME_REFRESH_REQUIRED",
+    "state_sha": "1a532f953166f2db6b808f2906c98c8cc3246ed816a23d53d1dbc1d9beb98af5"
+  },
+  "selector": {
+    "registered": true,
+    "channels": [
+      "PRODUCTO",
+      "PROGRAMACION"
+    ],
+    "entry_policy": "DIRECT"
+  },
+  "operation": "TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF",
+  "skill": "PROFILE_RUNTIME_TRANSITION",
+  "skill_ready": true,
+  "contract": "CONTRACT-TRANSICION-RUNTIME-PERFIL-READ-ONLY-LF-v1.2",
+  "function": "public.lf_profile_runtime_transition_v1(jsonb)",
+  "owner_decision": "OWNER_UI_2255_PREPARE_NO_LIVE_TRANSITION",
+  "identity_verified": false,
+  "source_precheck_outcome": "TRANSITION_SOURCE_STATE_DRIFT",
+  "because": "real runtime_estado=CANDIDATE_READ_ONLY, nivel_control=CONTROLADO, estado_original=CANDIDATO_CONTROLADO_READ_ONLY; function requires runtime_estado=NO_HABILITADO",
+  "native_execution": {
+    "execution_id": "EXEC-PROFILE-GATE2-5044268025DE35E9E529729F",
+    "status": "IN_PROGRESS",
+    "passed_steps": [
+      0,
+      10,
+      20,
+      30,
+      40,
+      45,
+      47
+    ],
+    "step50": "NOT_RECORDED",
+    "admission": "PROFILE_EXECUTION_NATIVE_MODE_ADMITTED"
+  },
+  "real_precheck_rpc": "PERMISSION_DENIED_FOR_INSPECTION_ROLE; direct read-only state and contract provide deterministic outcome",
+  "next_real_action": "READ_ONLY_INVESTIGATION_OF_PENDING_STEP50_AND_PROFILE_RUNTIME_REFRESH_REQUIRED_METADATA; NO_RETRANSITION",
+  "request_template": {
+    "profile_code": "PERFIL-UI-ARCHITECT",
+    "requested_by": "gpt",
+    "request_ref": "<GITHUB_ISSUE_REAL_URL_PENDING>",
+    "owner_authorization": {
+      "mode": "OWNER_CHAT_CONFORMITY_ONE_SHOT",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "statement": "PENDING_FINAL_OWNER_CONFIRMATION_DO_NOT_ATTEST",
+      "authorized_at": null
+    }
+  },
+  "request_validity": "NOT_SUBMITTABLE_UNTIL_REAL_ISSUE_AND_FINAL_OWNER_CONFIRMATION; EVEN_IF_FILLED_SOURCE_STATE_DRIFT",
+  "no_live_write": true
+}
