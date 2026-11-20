@@ -227,15 +227,30 @@ CREATE FUNCTION saly.creative_item_context_l2a(p_item_id bigint)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
 SET search_path=pg_catalog,saly,visual,extensions
 AS $fn$
-DECLARE v_item record; v_tokens jsonb; v_refs jsonb; v_needed int; v_found int; v_drift int;
+DECLARE v_item record; v_tokens jsonb; v_refs jsonb; v_expected_snapshot jsonb; v_needed int; v_found int; v_drift int;
 BEGIN
- SELECT i.id,i.code,i.context_json,o.id AS order_id,o.context_set_id,o.design_mode,p.codigo AS project_code
+ SELECT i.id,i.code,i.context_json,o.id AS order_id,o.context_set_id,o.design_mode,
+   o.status AS order_status,o.identity_snapshot AS order_snapshot,
+   ctx.state AS context_state,p.codigo AS project_code
  INTO v_item FROM saly.creative_order_items i
  JOIN saly.creative_orders o ON o.id=i.order_id
  JOIN saly.proyecto p ON p.id=o.project_id
+ LEFT JOIN saly.creative_context_sets ctx ON ctx.id=o.context_set_id
  WHERE i.id=p_item_id;
  IF NOT FOUND OR v_item.project_code<>'SALY-001' OR v_item.context_set_id IS NULL
  THEN RAISE EXCEPTION 'CREATIVE_ITEM_CONTEXT_UNAVAILABLE'; END IF;
+ IF v_item.order_status NOT IN ('PLANIFICADO','EN_PROCESO','EN_QA')
+   OR v_item.context_state IS DISTINCT FROM 'SEALED'
+   OR v_item.design_mode<>'EXPLORE'
+ THEN RAISE EXCEPTION 'CREATIVE_ITEM_CONTEXT_NOT_ADMITTED'; END IF;
+ SELECT jsonb_agg(jsonb_build_object('version_id',identity_version_id,
+    'sha256',value_sha256,'role',role) ORDER BY identity_version_id)
+ INTO v_expected_snapshot
+ FROM saly.creative_context_tokens WHERE context_set_id=v_item.context_set_id;
+ IF v_expected_snapshot IS NULL OR
+    v_item.order_snapshot IS DISTINCT FROM jsonb_build_object(
+      'context_set_id',v_item.context_set_id,'selected_versions',v_expected_snapshot)
+ THEN RAISE EXCEPTION 'CREATIVE_ITEM_CONTEXT_SNAPSHOT_MISMATCH'; END IF;
  IF v_item.context_json ? 'token_codes'
     AND jsonb_typeof(v_item.context_json->'token_codes')<>'array'
  THEN RAISE EXCEPTION 'CREATIVE_ITEM_TOKEN_SELECTION_INVALID'; END IF;
@@ -356,7 +371,7 @@ REVOKE ALL ON FUNCTION saly.creative_context_token_guard_l2a(),
 DO $selftest$
 DECLARE
  v_project bigint; v_set bigint; v_order bigint; v_item bigint; v_source bigint;
- v_minimal bigint; v_context jsonb; v_raised boolean;
+ v_minimal bigint; v_draft_order bigint; v_draft_item bigint; v_context jsonb; v_raised boolean;
 BEGIN
  SELECT id INTO STRICT v_project FROM saly.proyecto WHERE codigo='SALY-001';
  SELECT id INTO STRICT v_set FROM saly.creative_context_sets
@@ -402,6 +417,24 @@ BEGIN
     (order_id,item_id,source_asset_id,purpose,source_sha256)
   VALUES (v_order,v_item,v_source,'VISUAL_REFERENCE',repeat('0',64));
 
+  -- A draft order with a context-set ID is not enough to compile its tokens.
+  INSERT INTO saly.creative_orders
+   (project_id,code,request_key,title,requested_by,status,context_set_id)
+  VALUES (v_project,'SALY_TEST_DRAFT','SALY_TEST_DRAFT','Unadmitted draft',
+   'SELFTEST','BORRADOR',v_set) RETURNING id INTO v_draft_order;
+  INSERT INTO saly.creative_order_items
+   (order_id,code,ordinal,kind,title,status,context_json)
+  VALUES (v_draft_order,'DRAFT_SCREEN',1,'SCREEN','Draft fixture','PENDIENTE',
+   '{}'::jsonb) RETURNING id INTO v_draft_item;
+  v_raised:=false;
+  BEGIN
+   PERFORM saly.creative_item_context_l2a(v_draft_item);
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM='CREATIVE_ITEM_CONTEXT_NOT_ADMITTED'
+   THEN v_raised:=true; ELSE RAISE; END IF;
+  END;
+  IF NOT v_raised THEN RAISE EXCEPTION 'SALY_L2A_DRAFT_CONTEXT_ALLOWED'; END IF;
+
   v_context:=saly.creative_item_context_l2a(v_item);
   IF v_context->>'image_generation_allowed'<>'false'
      OR jsonb_array_length(v_context->'tokens')<>3
@@ -442,8 +475,8 @@ BEGIN
  EXCEPTION WHEN raise_exception THEN
   IF SQLERRM<>'SALY_CREATIVE_L2A_SELFTEST_ROLLBACK_PASS' THEN RAISE; END IF;
  END;
- IF EXISTS (SELECT 1 FROM saly.creative_orders WHERE code='SALY_TEST_L2A')
-    OR EXISTS (SELECT 1 FROM saly.creative_order_items WHERE code='SCREEN_TEST')
+ IF EXISTS (SELECT 1 FROM saly.creative_orders WHERE code IN ('SALY_TEST_L2A','SALY_TEST_DRAFT'))
+    OR EXISTS (SELECT 1 FROM saly.creative_order_items WHERE code IN ('SCREEN_TEST','DRAFT_SCREEN'))
     OR EXISTS (SELECT 1 FROM saly.creative_context_sets WHERE code='SALY_TEST_MINIMAL')
  THEN RAISE EXCEPTION 'SALY_CREATIVE_L2A_FIXTURE_LEAK'; END IF;
 END $selftest$;
