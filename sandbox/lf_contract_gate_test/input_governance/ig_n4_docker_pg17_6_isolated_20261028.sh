@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# LF IG G3 — isolated PostgreSQL 17.6 certification candidate via Docker.
+# NO Supabase credentials, NO Router, NO network, NO source DB connection.
+# Developer-run only on a machine with Docker and the postgres:17.6 image.
+# The Docker daemon pulls the image before executing the --network none job.
+set -euo pipefail
+umask 077
+command -v docker >/dev/null || { echo "NO_VERIFICADO: docker not present"; exit 2; }
+here="$(cd "$(dirname "$0")" && pwd)"
+
+docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+  --read-only --tmpfs /tmp:rw,nosuid,nodev,size=256m \
+  --user postgres --mount "type=bind,src=$here,dst=/ig,readonly" \
+  --entrypoint /bin/bash postgres:17.6 -ceu '
+set -euo pipefail
+umask 077
+[[ "$(id -u)" -ne 0 ]] || { echo "BLOCK: root forbidden"; exit 2; }
+[[ "$(postgres --version)" == *"17.6"* ]] || { echo "BLOCK: PG17.6 required"; exit 2; }
+
+data="$(mktemp -d /tmp/lf_ig_n4_data_XXXXXXXX)"
+sock="$(mktemp -d /tmp/lf_ig_n4_socket_XXXXXXXX)"
+log="$data/server.log"
+out="$data/results.txt"
+started=0
+cleanup() {
+  if [[ "$started" == 1 ]]; then
+    pg_ctl -D "$data" -m immediate -w stop >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
+initdb -A trust -U ig_n4_local --no-sync -D "$data" >/dev/null
+pg_ctl -D "$data" -l "$log" \
+  -o "-c listen_addresses= -c unix_socket_directories=$sock -c unix_socket_permissions=0700" \
+  -w start >/dev/null
+started=1
+export PGHOST="$sock" PGUSER=ig_n4_local PGDATABASE=lf_ig_n4_isolated_ci
+unset PGSERVICE PGSERVICEFILE DATABASE_URL PGHOSTADDR PGOPTIONS PGPASSWORD || true
+createdb "$PGDATABASE"
+psql -X -w -v ON_ERROR_STOP=1 -q \
+  -f /ig/ig_n4_pg17_6_sanitized_fixture_20261028.sql >/dev/null
+
+# Candidate DDL must have exactly one outer BEGIN and one final ROLLBACK.
+[[ "$(grep -cx "BEGIN;" /ig/ig_n4_clause_matcher_hardened_candidate_20261028.sql)" == 1 ]]
+[[ "$(grep -cx "ROLLBACK;" /ig/ig_n4_clause_matcher_hardened_candidate_20261028.sql)" == 1 ]]
+{
+cat <<'"'"'SQL'"'"'
+BEGIN;
+CREATE TEMP TABLE ig_n4_preimage ON COMMIT DROP AS
+SELECT r.rule_id,p.screen_id,
+  programacion.fn_input_rule_selector_matches_v1(r.selector,p.context) old_match
+FROM public.ig_n4_rule_fixtures r CROSS JOIN public.ig_n4_screen_fixtures p;
+SQL
+awk '"'"'
+  $0=="BEGIN;" { in_body=1; start++; next }
+  $0=="ROLLBACK;" { in_body=0; finish++; next }
+  in_body { print }
+  END { if(start!=1 || finish!=1) exit 5 }
+'"'"' /ig/ig_n4_clause_matcher_hardened_candidate_20261028.sql
+cat /ig/ig_n4_preclass_synthetic_matcher_v2_20261028.sql
+cat /ig/ig_n4_pg17_6_acl_postddl_tests_20261028.sql
+cat <<'"'"'SQL'"'"'
+SELECT '"'"'PARITY'"'"',
+ count(*),
+ count(*) FILTER(WHERE old_match),
+ count(*) FILTER(WHERE new_match),
+ count(*) FILTER(WHERE old_match IS DISTINCT FROM new_match),
+ count(DISTINCT rule_id),
+ count(DISTINCT screen_id)
+FROM (
+ SELECT a.*,programacion.fn_input_rule_selector_matches_v1(r.selector,p.context) new_match
+ FROM ig_n4_preimage a
+ JOIN public.ig_n4_rule_fixtures r ON r.rule_id=a.rule_id
+ JOIN public.ig_n4_screen_fixtures p ON p.screen_id=a.screen_id
+) results;
+ROLLBACK;
+SQL
+} | psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 > "$out" 2>&1 ||
+ { cat "$out"; echo "FAIL: isolated SQL execution or pipeline"; exit 1; }
+
+# Match exact T01..T28 (not merely 28 arbitrary or repeated PASS lines).
+expected_ids="$(seq -w 1 28 | sed "s/^/T/")"
+actual_ids="$(grep -Eo "^T[0-9]{2}\\|" "$out" | tr -d "|" | LC_ALL=C sort)"
+[[ "$actual_ids" == "$expected_ids" ]] ||
+  { echo "FAIL: matcher IDs missing, duplicated or unexpected"; cat "$out"; exit 1; }
+if grep -E "^T[0-9]{2}\\|" "$out" |
+   grep -Evq "^T[0-9]{2}\\|[^|]*\\|[tf]\\|[tf]\\|PASS$"; then
+  echo "FAIL: matcher vector shape, result or verdict"; cat "$out"; exit 1
+fi
+# These are actual RAISE NOTICE observations emitted inside role invocations.
+for fn in selector_matches clause_matches clause_schema_valid; do
+  [[ "$(grep -Fc "ACL_NEGATIVE|$fn|42501" "$out")" -eq 1 ]] ||
+    { echo "FAIL: negative ACL observation missing/duplicated: $fn"; cat "$out"; exit 1; }
+  [[ "$(grep -Fc "ACL_POSITIVE|$fn|false" "$out")" -eq 1 ]] ||
+    { echo "FAIL: positive ACL observation missing/duplicated: $fn"; cat "$out"; exit 1; }
+done
+for marker in "ACL_BASELINE|helper|PUBLIC_EXECUTE_TRUE" "ACL_RESTRICTED_SIM|schema_only|helper|42501" "ACL_POSITIVE|selector_allowed|true" "ACL_POSITIVE|cross_consumer|false"; do
+  [[ "$(grep -Fc "$marker" "$out")" -eq 1 ]] ||
+    { echo "FAIL: ACL evidence missing/duplicated: $marker"; cat "$out"; exit 1; }
+done
+# Require exactly one aggregate observation. Duplicate or absent markers are
+# invalid even when every repeated marker says PASS.
+[[ "$(grep -Fxc "ACL_G3_POST_DDL_REAL_INVOCATION|PASS" "$out")" -eq 1 ]] ||
+  { echo "FAIL: isolated ACL probe missing or duplicated"; cat "$out"; exit 1; }
+[[ "$(grep -Fxc "PARITY|812|52|52|0|14|58" "$out")" -eq 1 ]] ||
+  { echo "FAIL: active-selector parity missing or duplicated"; cat "$out"; exit 1; }
+readback="$(psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 -c "
+SELECT md5(pg_get_functiondef(
+  '"'"'programacion.fn_input_rule_selector_matches_v1(jsonb,jsonb)'"'"'::regprocedure)),
+ md5(pg_get_functiondef(
+  '"'"'programacion.fn_input_rule_selector_clause_matches_v1(jsonb,jsonb)'"'"'::regprocedure)),
+ to_regprocedure(
+  '"'"'programacion.fn_input_rule_selector_clause_schema_valid_v1(jsonb)'"'"') IS NULL,
+ to_regrole('"'"'ig_n4_untrusted_acl_probe'"'"') IS NULL,
+ to_regrole('"'"'ig_n4_governed_acl_probe'"'"') IS NULL,
+ to_regrole('"'"'ig_n4_schema_only_acl_probe'"'"') IS NULL;
+")"
+[[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t|t|t|t" ]] ||
+  { echo "FAIL: post-ROLLBACK source or ephemeral roles changed"; exit 1; }
+
+# Surface the primary evidence; a final PASS marker alone is insufficient.
+grep -E "^T[0-9]{2}\\|" "$out"
+grep -E "ACL_(NEGATIVE|POSITIVE|BASELINE|RESTRICTED_SIM)\\|" "$out"
+echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK_ACL_REAL_ROLE"
+echo "PARITY|812|52|52|0|14|58"
+'
