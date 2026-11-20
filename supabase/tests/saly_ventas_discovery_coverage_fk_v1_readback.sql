@@ -61,3 +61,16 @@ FROM saly.ventas_discovery_ingestas i
 JOIN saly.ventas_discovery_consultas q ON q.id=i.consulta_id
 LEFT JOIN saly.ventas_hallazgos h ON h.ingesta_id=i.id
 GROUP BY i.id ORDER BY i.run_ref,i.source_id,i.batch_key;
+
+-- Source activation is not an assertion until a dated authorization receipt exists.
+SELECT catalog_version,source_id,connector_id,substep_code,
+ rights_status,rights_evidence_ref,rights_checked_at,
+ persist_business_data,habilitada,runtime_status
+FROM saly.ventas_discovery_catalogo
+ORDER BY catalog_version,substep_code,source_id;
+
+SELECT count(*) AS fuentes_habilitadas_sin_evidencia
+FROM saly.ventas_discovery_catalogo
+WHERE (persist_business_data OR habilitada)
+ AND (nullif(btrim(coalesce(rights_evidence_ref,'')),'') IS NULL
+      OR rights_checked_at IS NULL);
