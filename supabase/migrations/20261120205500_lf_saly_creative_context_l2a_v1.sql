@@ -112,6 +112,18 @@ BEGIN
   WHERE t.context_set_id=NEW.id;
   IF (v_all,v_official,v_existing,v_home,v_drift) IS DISTINCT FROM (41,2,32,7,0)
   THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_PACK_CARDINALITY_OR_DRIFT'; END IF;
+  IF EXISTS (
+   SELECT 1 FROM saly.creative_context_tokens alias_link
+   JOIN saly.identity_versions alias_v ON alias_v.id=alias_link.identity_version_id
+   WHERE alias_link.context_set_id=NEW.id
+    AND alias_v.metadata->>'kind'='ALIAS'
+    AND NOT EXISTS (
+       SELECT 1 FROM saly.creative_context_tokens target_link
+       JOIN saly.identity_versions target_v ON target_v.id=target_link.identity_version_id
+       JOIN saly.identity_elements target_e ON target_e.id=target_v.element_id
+       WHERE target_link.context_set_id=NEW.id
+        AND target_e.code=alias_v.metadata->>'alias_target_code'))
+  THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_ALIAS_TARGET_MISSING'; END IF;
   NEW.sealed_at:=now();
  END IF;
  RETURN NEW;
@@ -243,7 +255,16 @@ BEGIN
  JOIN saly.identity_versions v ON v.id=t.identity_version_id
  JOIN saly.identity_elements e ON e.id=v.element_id
  WHERE t.context_set_id=v_item.context_set_id AND
-   (t.role='OFFICIAL' OR e.code IN (SELECT code FROM requested));
+   (t.role='OFFICIAL' OR e.code IN (SELECT code FROM requested)
+   OR e.code IN (
+       SELECT DISTINCT alias_v.metadata->>'alias_target_code'
+       FROM saly.creative_context_tokens alias_link
+       JOIN saly.identity_versions alias_v ON alias_v.id=alias_link.identity_version_id
+       JOIN saly.identity_elements alias_e ON alias_e.id=alias_v.element_id
+       WHERE alias_link.context_set_id=v_item.context_set_id
+        AND alias_e.code IN (SELECT code FROM requested)
+        AND alias_v.metadata->>'kind'='ALIAS')
+   );
  IF EXISTS (SELECT 1 FROM saly.creative_item_sources s
    JOIN visual.source_assets a ON a.id=s.source_asset_id
    WHERE s.item_id=v_item.id AND s.order_id=v_item.order_id
