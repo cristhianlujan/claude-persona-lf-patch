@@ -57,5 +57,22 @@
     "router_binding": "MISSING",
     "pre_inference_gate": "NOT_WIRED_FAIL_CLOSED",
     "activation_allowed": false
+  },
+  "business": "LF",
+  "business_source_namespace": "lf_ops",
+  "business_scope_binding_status": "CANDIDATE_NOT_RELEASED",
+  "business_isolation_policy": {
+    "require_explicit_business_from_router": true,
+    "required_business_congruence": [
+      "router_handoff.business",
+      "execution.business",
+      "binding.business",
+      "stage_readback[].business",
+      "model_readback.business"
+    ],
+    "cross_business_authority_fallback": "FORBIDDEN",
+    "unknown_business": "BLOCK",
+    "non_lf_current_binding": "NOT_AVAILABLE",
+    "no_inferred_business_default": true
   }
 }
