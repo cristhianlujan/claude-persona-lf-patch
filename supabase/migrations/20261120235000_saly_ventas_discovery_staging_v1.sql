@@ -32,6 +32,11 @@ CREATE TABLE saly.ventas_discovery_ingestas (
    estado <> 'VALIDADA' OR
    (derechos_verificados AND archivo_sha256 IS NOT NULL AND filas_reportadas IS NOT NULL)
  ),
+ CONSTRAINT ventas_ingesta_derechos_con_evidencia CHECK (
+   NOT derechos_verificados OR
+   (archivo_sha256 IS NOT NULL AND filas_reportadas IS NOT NULL
+    AND estado IN ('PARCIAL','VALIDADA'))
+ ),
  UNIQUE(id,derechos_verificados),
  UNIQUE(source_code,source_version,archivo_sha256)
 );
