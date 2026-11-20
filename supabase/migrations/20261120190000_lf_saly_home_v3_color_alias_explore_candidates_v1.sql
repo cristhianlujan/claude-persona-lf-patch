@@ -47,7 +47,7 @@ BEGIN
       OR x->>'kind' NOT IN ('ALIAS','ESTIMATED_COLOR')
    THEN RAISE EXCEPTION 'SALY_HOME_TOKENS_SEED_INVALID'; END IF;
    IF (x->>'kind'='ALIAS') THEN
-      IF (x->>'value') !~ '^\{[a-z0-9.]+\}
+      IF (x->>'value') !~ '^\{[a-z0-9.]+\}$'
         OR nullif(x->>'target_code','') IS NULL
       THEN RAISE EXCEPTION 'SALY_HOME_TOKENS_ALIAS_SHAPE_INVALID'; END IF;
       alias_valid := EXISTS(SELECT 1 FROM saly.identity_elements e
