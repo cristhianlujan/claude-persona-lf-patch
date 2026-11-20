@@ -1,26 +1,26 @@
 # SALY — catálogo visual versionado, lote M1
 
-**Estado:** CANDIDATO / MIGRACIÓN POR PR; no crear pantalla ni activar estándar por su sola existencia.
+**Estado actual:** M1 MERGED / aplicado en Supabase; ninguna pantalla ni estándar activo por su sola existencia.
 **Fuente de alcance:** contrato candidato \`SALY_VISUAL_STORAGE_SELECTOR_V0_1.md\`, PR #4237.
 
-## Evidencia Drive — 2026-11-20 (conector del usuario)
+## Evidencia Drive — 2026-11-20 (primera lectura, reemplazada por corrección)
+
+> **CORRECCIÓN VERIFICADA (2026-11-20):** la búsqueda inicial por palabras/filtro devolvió falsamente 0 archivos. `Google_Drive.list_folder` sobre las carpetas existentes confirmó **39 PNG en Pantallas_Aprobadas**, **7 PNG en Pantallas_Candidatas**, y **8 logos PNG + comparativa + acta** en Logos_Aprobados_v1.0. Los PNG se pueden descargar directamente. Se verificaron los bytes, dimensiones y SHA-256 independiente de seis originales; el detalle está en `SALY_SCREEN_SOURCE_FIRST_SIX_20261120.json`. Los 39 PNG incluyen láminas de presentación, por lo que no se clasifican automáticamente todos como `SCREEN`. Esta corrección reemplaza las conclusiones de inaccesibilidad de la lectura inicial, que se conservan abajo solo como evidencia histórica del error. El catálogo M1 ya está desplegado (PR #4438 MERGED), aunque sin estándar activo.
+
+
 
 El árbol verificado es:
 
 \`\`\`text
 Saly - Planeamiento  [1YdTGWmdChtAyx31aQyEZ8Jd2E4so5mGD]
   ├─ 01_Diseño_UI  [1ZflQU9Vwdd6Yq5AbIDnSyufYirPBxl0q]
-  │    ├─ Pantallas_Aprobadas  [1qhQwIhuJJ-EvKFRDxEVf-R265_gGh-65] → 0 archivos accesibles
-  │    └─ Pantallas_Candidatas [1-jw_2gf8TyXdLYM-4G6-GqgUv3yiyj-R] → 0 archivos accesibles
+  │    ├─ Pantallas_Aprobadas  [1qhQwIhuJJ-EvKFRDxEVf-R265_gGh-65] → 39 PNG (lectura directa corregida)
+  │    └─ Pantallas_Candidatas [1-jw_2gf8TyXdLYM-4G6-GqgUv3yiyj-R] → 7 PNG (lectura directa corregida)
   └─ 02_Identidad_Marca
-       └─ Logos_Aprobados_v1.0 → solo acta de aprobación accesible
+       └─ Logos_Aprobados_v1.0 → 8 PNG + comparativa + acta
 \`\`\`
 
-No se localizaron en la cuenta Drive conectada los PNG originales con nombres
-\`SALY_SOPORTE_AI_v1.1_INICIO_PROACTIVO_APROBADA.png\` ni
-\`SALY_SEGUIMIENTO_MINIMAL_v1.5\`. También se buscaron \`SALY_REWARDS\`,
-\`SALY_PANTALLA\`, y archivos \`name contains 'APROBADA'\`: sin los PNG.
-**Esto no prueba que los PNG no existan en otro Drive o carpeta**, solo que no son accesibles/verificables en este origen hoy.
+La primera búsqueda `search` no devolvió los PNG con nombre exacto. Esto **fue un falso negativo**: la lectura directa de la carpeta reveló, entre otros, `SALY_SOPORTE_AI_v1.1_INICIO_PROACTIVO_APROBADA.png` y `SALY_SEGUIMIENTO_MINIMAL_v1.5.png`. Los originales son accesibles y descargables; seis fueron comprobados byte a byte.
 
 Hay presentaciones SALY con láminas aprobadas. Una lámina **no sustituye** la pantalla PNG fuente para \`PRESERVE\` sin extraer, comparar y obtener aprobación explícita del screenshot. No registrar estos slides como \`SCREEN APPROVED\`.
 
@@ -70,6 +70,6 @@ Una prueba estática o una captura de tabla no acredita generación visual.
 ## Semáforo
 
 - Inventario tokens/logos: VERIFICADO en lote anterior.
-- Pantallas originales aprobadas en Drive accesible: **BLOQUEADO POR FUENTE**.
-- Catálogo SQL: **CANDIDATO hasta merge/readback**.
+- Pantallas originales en Drive: **39 PNG localizados; 6 SCREEN con SHA independiente verificado**. Aprobación individual para insertar como APPROVED: todavía requiere evidencia por versión.
+- Catálogo SQL: **MERGED, aplicado, 5 tablas y RLS verificados**.
 - Estándar activo/render oficial: **NO HABILITADO**.

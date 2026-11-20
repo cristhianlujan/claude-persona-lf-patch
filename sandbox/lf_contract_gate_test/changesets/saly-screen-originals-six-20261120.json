@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-screen-originals-six-20261120",
+  "paths": {
+    "supabase/migrations/20261120144500_lf_saly_visual_source_assets_six_candidates_v1.sql": "MIGRATION",
+    "docs/saly/design-system/candidate/SALY_SCREEN_SOURCE_FIRST_SIX_20261120.json": "ENGINEERING_CHECKPOINTS",
+    "docs/saly/design-system/candidate/SALY_VISUAL_CATALOG_IMPLEMENTATION_READBACK_V0_1.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/saly-screen-originals-six-20261120.json": "CHANGESET_MANIFEST"
+  }
+}
