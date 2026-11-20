@@ -1583,6 +1583,13 @@ CREATE TABLE public.lf_profile_skill_selection_receipt_v1(
 
 
 
+class NativeSelectionCheckpointPg17(unittest.TestCase):
+    def test_native_checkpoint_and_concurrent_bind(self):
+        import runpy
+        check = Path(__file__).with_name("pre40") / "check.py"
+        runpy.run_path(str(check))["verify"](self)
+
+
 class IgBoundedStep40TicketFindingPgDual(unittest.TestCase):
     """PG17/18: two consumed tickets yield a real BLOCKED skill finding; no third issue."""
     def test_ig_two_ticket_cap_and_handler_pg17_pg18(self):
