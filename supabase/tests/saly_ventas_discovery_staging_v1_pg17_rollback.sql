@@ -6,6 +6,7 @@ DECLARE
  v_batch uuid;
  v_hallazgo uuid;
  v_duplicate uuid;
+ v_repeated_run uuid;
  v_forbidden boolean;
 BEGIN
  IF (SELECT count(*) FROM pg_tables WHERE schemaname='saly' AND tablename IN
@@ -83,6 +84,37 @@ BEGIN
      filas_reportadas=3, estado='PARCIAL'
  WHERE id=v_batch;
 
+ -- Exact same source/batch/file/run must be rejected, independently of URL.
+ v_forbidden:=false;
+ BEGIN
+  INSERT INTO saly.ventas_discovery_ingestas
+  (catalog_version,source_id,connector_id,substep_code,scope_key,
+   batch_key,query_hash,consulta_evidencia_ref,source_version,recurso_url,
+   licencia_codigo,atribucion,comprobacion_licencia_url,run_ref,
+   derechos_verificados,archivo_sha256,filas_reportadas,estado)
+  SELECT catalog_version,source_id,connector_id,substep_code,scope_key,
+   batch_key,query_hash,consulta_evidencia_ref,source_version,recurso_url,
+   licencia_codigo,atribucion,comprobacion_licencia_url,run_ref,
+   derechos_verificados,archivo_sha256,filas_reportadas,estado
+  FROM saly.ventas_discovery_ingestas WHERE id=v_batch;
+ EXCEPTION WHEN unique_violation THEN v_forbidden:=true;
+ END;
+ IF NOT v_forbidden THEN RAISE EXCEPTION 'SAME_RUN_BATCH_DUPLICATE_ACCEPTED'; END IF;
+
+ -- The same immutable public file can be independently audited in another RUN.
+ INSERT INTO saly.ventas_discovery_ingestas
+ (catalog_version,source_id,connector_id,substep_code,scope_key,
+  batch_key,query_hash,consulta_evidencia_ref,source_version,recurso_url,
+  licencia_codigo,atribucion,comprobacion_licencia_url,run_ref,
+  derechos_verificados,archivo_sha256,filas_reportadas,estado)
+ SELECT catalog_version,source_id,connector_id,substep_code,scope_key,
+  batch_key,query_hash,consulta_evidencia_ref,source_version,recurso_url,
+  licencia_codigo,atribucion,comprobacion_licencia_url,run_ref||'-SECOND',
+  derechos_verificados,archivo_sha256,filas_reportadas,estado
+ FROM saly.ventas_discovery_ingestas WHERE id=v_batch
+ RETURNING id INTO v_repeated_run;
+ IF v_repeated_run IS NULL THEN RAISE EXCEPTION 'REPEATED_RUN_REJECTED'; END IF;
+
  INSERT INTO saly.ventas_hallazgos
  (ingesta_id,fila_origen,external_ref,tipo,nombre_provisional,ruc_literal,
  ruc_candidato,ubigeo_candidato,evidencia_ref)
@@ -122,7 +154,7 @@ BEGIN
   WHERE id=v_duplicate AND estado_vinculacion='PENDIENTE')
  THEN RAISE EXCEPTION 'PREMATURE_VALIDATION_OF_UNIT'; END IF;
 
- RAISE NOTICE 'PG17 FUNCTIONAL 12 CONTROLS PASS (transaction will rollback)';
+ RAISE NOTICE 'PG17 FUNCTIONAL 14 CONTROLS PASS (transaction will rollback)';
 END $check$;
 ROLLBACK;
 DO $check$
