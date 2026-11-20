@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Claude Code consumer Stop guard. Never invokes a Router, provider, Issue or RPC.
+"""Claude Code Stop hook: shared PRE-Gate2 + existing Gate2 proof guard.
 
-This is NOT a server-side attestation or universal ChatGPT control.
-It blocks only one premature close for a recent LF Router Gate2 handoff.
+Never invokes Router, provider, Issue or RPC. This is NOT server-side
+attestation or a universal ChatGPT hook; GPT uses the shared pre-Gate2
+classifier explicitly and existing server-side terminal receipts.
 """
 import json
 import re
@@ -23,6 +24,16 @@ KNOWN_PROVIDER_FAILURE = re.compile(r'\b(?:TOOL_ACCESS_DENIED|CONNECTOR_DENIED|'
                                     r'PROVIDER_BLOCKED_PENDING_REVIEW|'
                                     r'PROVIDER_BLOCKED|PERMISSION_DENIED|'
                                     r'ERROR_HTTP_[45]\d\d)\b', re.I)
+# Shared pre-Gate2 classifier is also callable by ChatGPT (GPT_NATIVE).
+# Claude Code's existing Stop hook is its local automatic entry point.
+from lf_pre_gate2_consumer_gate_v1 import evaluate as evaluate_shared_continuity
+
+PRE_GATE2_REASON = (
+    "LF PRE_GATE2_ROUTE_CONTINUITY_BLOCK: no sustituir ACT-0001 por "
+    "PROPOSE_ONLY_OPEN. Retoma la resolución semántica gobernada; "
+    "si es imposible, informa NOT_EXECUTED / NO_CANONICAL_EFFECT "
+    "con bloqueo real y evidencia, sin declarar PASS ni 100%."
+)
 CLOSED_CLAIM = re.compile(r'\bCOMPLETED\b', re.I)
 READY_CLAIM = re.compile(r'\bREADY\b', re.I)
 BLOCK_REASON = (
@@ -124,6 +135,27 @@ def evaluate(event):
     if event.get('stop_hook_active') is True:
         return None
     prompt, receipts = read_current_turn(event.get('transcript_path'))
+    if prompt and (ACTION.search(prompt) or APPROVAL.fullmatch(prompt.strip())):
+        shared = evaluate_shared_continuity({
+            "consumer_mode": "CLAUDE_NATIVE",
+            "request_text": prompt,
+            "tool_receipts": receipts,
+            "final_text": final,
+        })
+        if (shared["decision"] == "BLOCK"
+                and shared["reason_code"] != "GATE2_CONTEXT_UNAUTHENTICATED"):
+            return {"decision": "block", "reason": PRE_GATE2_REASON}
+        # Honest NOT_EXECUTED reports may end the turn. Only a structured,
+        # Router-observed blocker is certified (ALLOW_TRUTHFUL_BLOCK); the
+        # UNVERIFIED variant is allowed to stop but never counts as success.
+        if shared["decision"] in ("ALLOW_TRUTHFUL_BLOCK",
+                                  "REPORT_NOT_EXECUTED_UNVERIFIED"):
+            return None
+        # GATE2_CONTEXT_UNAUTHENTICATED falls through: the existing terminal
+        # readback guard below is stricter than the shared classifier.
+        # DEFER_TO_GATE2_RECEIPT_GUARD is NOT a PASS. The existing
+        # same-run terminal-readback check continues below.
+
     if prompt:
         # Explanations, quote reviews and 'how does this work?' are not
         # a profile execution command. Avoid an unrelated user turn stall.
@@ -136,6 +168,11 @@ def evaluate(event):
     # Once Gate 2 is observed, final phrasing cannot silently bypass handoff.
     found = (GATE2 in receipts and HANDOFF in receipts)
     if not found and (GATE2 not in final or HANDOFF not in final):
+        # Do not bypass the proof gate for a forged/free-text Gate2 literal.
+        # The shared classifier explicitly rejected its unverified context.
+        if (prompt and shared["decision"] == "BLOCK"
+                and shared["reason_code"] == "GATE2_CONTEXT_UNAUTHENTICATED"):
+            return {"decision": "block", "reason": RECEIPT_REASON}
         return None
 
     # A denied connector can finish honestly only if the denial is observable
