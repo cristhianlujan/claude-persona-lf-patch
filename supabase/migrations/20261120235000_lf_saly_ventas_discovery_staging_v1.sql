@@ -45,7 +45,9 @@ CREATE TABLE saly.ventas_discovery_ingestas (
     AND estado IN ('PARCIAL','VALIDADA'))
  ),
  UNIQUE(id,derechos_verificados),
- UNIQUE(source_id,source_version,archivo_sha256)
+ -- Same file may be examined in different RUNs or different query batches.
+ -- Only an exact repeated source batch in the same RUN is a duplicate.
+ UNIQUE(run_ref,source_id,source_version,scope_key,batch_key,query_hash,archivo_sha256)
 );
 COMMENT ON TABLE saly.ventas_discovery_ingestas IS
 'Ingesta auditada de una version concreta de recurso. La licencia verificable no equivale a permiso de contacto.';
