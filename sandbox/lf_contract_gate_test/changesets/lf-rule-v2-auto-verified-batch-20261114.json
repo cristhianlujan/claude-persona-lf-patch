@@ -1,0 +1,13 @@
+{
+  "solution_ref": "lf-rule-v2-auto-verified-batch-20261114",
+  "paths": {
+    "supabase/migrations/20261114223500_lf_rule_promotion_v2_attested_auto_batch_audit_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_rule_promotion_canonical_writers_live_20261114.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_rule_promotion_v2_auto_verified_batch_pgdual_v1.py": "RUNTIME_TESTING",
+    "docs/rule-promotion/07_rule_promotion_preview_64_and_190_findings_20261114.json": "INPUT_GOVERNANCE",
+    "docs/rule-promotion/07_manual_findings_190_rules_v2_20261114.csv": "INPUT_GOVERNANCE",
+    "docs/rule-promotion/08_auto_v2_verified_batch_contract_20261114.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/lf-rule-v2-auto-verified-batch-20261114.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b09_native_sha_receiver_governed_pg176_pg187.py": "RUNTIME_TESTING"
+  }
+}
