@@ -1,0 +1,22 @@
+{
+  "solution_ref": "LF-L34-B12-B02-B03-EVIDENCE-V1",
+  "paths": {
+    "audits/rule-quality-lote34/01_b02_b03_235_run_effects_readback_raw.json": "RUNTIME_TESTING",
+    "audits/rule-quality-lote34/02_sql_b02_b03_235_readonly_classification.sql": "RUNTIME_TESTING",
+    "audits/rule-quality-lote34/03_plan_235_recibos_por_tipo_operaciones_dba.md": "RUNTIME_TESTING",
+    "audits/rule-quality-lote34/04_b02_b03_235_receipts_unissued.json": "RUNTIME_TESTING",
+    "audits/rule-quality-lote34/05_pr3807_delta_ledger_effect_receipt_pending.md": "RUNTIME_TESTING",
+    "audits/rule-quality-lote28/b12/03_recibo_g08_para_dueno_v1.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b12_six_v1_b05_b08_pg17_pg18_l34.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-L34-B12-B02-B03-EVIDENCE-V1.json": "CHANGESET_MANIFEST",
+    "audits/rule-quality-lote35/01_fichas_D_9_y_8_leases.md": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/02_fichas_D_9_raw.json": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/03_select_readback_D_9.sql": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/05_class_C_extra_readonly_43.sql": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/06_class_C_extra_readback_43.json": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/07_padron_470_recibos_para_firma.csv": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/08_instruccion_ops_dba_lista_para_enviar.md": "RUNTIME_TESTING",
+    "audits/rule-quality-lote35/09_condiciones_acreditacion_no_effect_C.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b12_v1_full_positive_l35.py": "RUNTIME_TESTING"
+  }
+}

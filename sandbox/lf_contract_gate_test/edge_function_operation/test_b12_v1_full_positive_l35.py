@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""B12 L35: REAL SQL positive for both remaining V1 functions, isolated PG17.6 / PG18.7.
+Uses live-slice fixture; no external Supabase writes or real human identity.
+"""
+import subprocess, unittest, uuid, time
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[3]
+SOURCE=ROOT/"sandbox/lf_contract_gate_test/input_governance_lifecycle/pg18_live_object_slice_baseline.sql"
+SQL_POSITIVE="\nBEGIN;\nDO $b12$\nDECLARE v_input jsonb; v_patch jsonb; v_output jsonb; v jsonb; v_replay jsonb;\n        v_trust jsonb; v_payload jsonb; v_before text; v_after text;\nBEGIN\n  INSERT INTO lf_ops.pantallas(id,codigo,nombre) VALUES(991234,'B12-POS-SCREEN','B12 positive screen');\n  INSERT INTO lf_ops.reglas(codigo,categoria,titulo,descripcion,razon,estado,pendiente_decision,created_by)\n  VALUES('B12-POS-RULE','SECURITY','Original B12 candidate rule','B12 candidate original description','B12 original reason','CANDIDATO',true,'B12-LAB');\n  INSERT INTO lf_ops.reglas_pantallas(regla_id,pantalla_id)\n    SELECT id,991234 FROM lf_ops.reglas WHERE codigo='B12-POS-RULE';\n  v_before:=public.lf_asset_snapshot_sha_v1('REGLA','B12-POS-RULE');\n  v_patch:=jsonb_build_object('rule_code','B12-POS-RULE','change_kind','DOCUMENTARY_ONLY',\n      'changes',jsonb_build_object('descripcion','B12 candidate updated by the complete legacy writer.'));\n  v_input:=jsonb_build_object('regla_codigo','B12-POS-RULE',\n      'analysis_snapshot_sha256',v_before,'decision_id','DEC-B12-LAB','candidate_patch',v_patch);\n  v_output:=jsonb_build_object('worker','product_director_lf',\n      'output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',\n      'deliverable_created',jsonb_build_object('authority_status','SUPPORTED',\n          'governed_rule_patch',v_patch,'product_decision',jsonb_build_object(\n             'decision_id','DEC-B12-LAB','source_refs',jsonb_build_array(\n             jsonb_build_object('authority','AUTHORITATIVE','current',true,\n                                'source_ref','fixture://b12-only')))));\n  INSERT INTO public.lf_operation_execution(execution_id,operation_code,target_type,target_code,\n     manifest,request_sha256,idempotency_key,created_by_execution_id)\n  VALUES ('B12-POS-PARENT','EJECUCION_PERFIL_LF','PERFIL','PERFIL-PRODUCT-DIRECTOR-LF',\n    jsonb_build_object('read_only',true,'no_write',true,'no_promotion',true,\n      'screen_selection_result',jsonb_build_object('selected_screen_code','B12-POS-SCREEN'),\n      'router_profile_handoff',jsonb_build_object(\n        'router_authorization_receipt',jsonb_build_object('profile_execution_allowed',true))),\n    repeat('a',64),'b12-positive-parent','B12-LAB');\n  INSERT INTO public.lf_operation_execution_steps\n    (execution_id,step_order,step_id,status,evidence_payload,created_by_execution_id)\n  VALUES('B12-POS-PARENT',40,'input_validate','STEP_PASS_WITH_EVIDENCE',\n       '{\"status\":\"READY\"}'::jsonb,'B12-LAB'),\n        ('B12-POS-PARENT',60,'execute_profile','STEP_PASS_WITH_EVIDENCE',\n         jsonb_build_object('profile_output',v_output),'B12-LAB'),\n        ('B12-POS-PARENT',65,'output_validate','STEP_PASS_WITH_EVIDENCE',\n         '{\"output_contract_result\":\"PASS\"}'::jsonb,'B12-LAB'),\n        ('B12-POS-PARENT',70,'semantic_judge','STEP_PASS_WITH_EVIDENCE',\n         '{\"semantic_judge_result\":{\"verdict\":\"PASS_INDEPENDENT_SEMANTIC\"},\"blocking_codes\":[]}'::jsonb,'B12-LAB');\n  INSERT INTO public.lf_skill_invocation_v1(skill_run_id,skill_code,parent_execution_id,\n    profile_code,status,input_sha256,output,evidence_ref,child_execution_id)\n  VALUES('B12-POS-SKILL-RUN','RULE_UPDATE_APPLY','B12-POS-PARENT',\n    'PERFIL-PRODUCT-DIRECTOR-LF','COMPLETED',\n    encode(extensions.digest(convert_to(v_input::text,'UTF8'),'sha256'),'hex'),\n    '{}'::jsonb,'B12-LAB','B12-POS-CHILD');\n\n  v:=public.lf_skill_o_rule_update_v1('B12-POS-CHILD',v_input,\n      'B12-POS-PARENT','B12-POS-SKILL-RUN',repeat('a',64));\n  IF v->>'status' IS DISTINCT FROM 'APPLIED_VERIFIED'\n     OR v->>'promotion_authorized' IS DISTINCT FROM 'false'\n  THEN RAISE EXCEPTION 'B12_SKILL_CHILD_POSITIVE_RESPONSE:%',v; END IF;\n  IF (SELECT status FROM public.lf_operation_execution WHERE execution_id='B12-POS-CHILD') IS DISTINCT FROM 'COMPLETED'\n     OR (SELECT count(*) FROM public.lf_operation_execution_steps\n         WHERE execution_id='B12-POS-CHILD' AND status='PASS_CLEAN')<>7\n     OR (SELECT count(*) FROM public.lf_operation_execution_steps\n         WHERE execution_id='B12-POS-CHILD')<>7\n  THEN RAISE EXCEPTION 'B12_SKILL_CHILD_7_STEPS_READBACK_FAILED'; END IF;\n  SELECT estado||'|'||descripcion INTO v_after FROM lf_ops.reglas WHERE codigo='B12-POS-RULE';\n  IF v_after IS DISTINCT FROM 'CANDIDATO|B12 candidate updated by the complete legacy writer.'\n    OR public.lf_asset_snapshot_sha_v1('REGLA','B12-POS-RULE') IS NOT DISTINCT FROM v_before\n    OR EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 WHERE rule_code='B12-POS-RULE')\n  THEN RAISE EXCEPTION 'B12_SKILL_CHILD_PROMOTED_OR_STALE'; END IF;\n  RAISE NOTICE 'PASS_B12_LEGACY_SKILL_CHILD_FULL_POSITIVE';\n\n  INSERT INTO public.lf_operation_execution(execution_id,operation_code,target_type,target_code,\n    manifest,request_sha256,idempotency_key,created_by_execution_id)\n  VALUES('B12-POS-CORE','ACTUALIZACION_REGLA_LF','REGLA','B12-POS-RULE',\n    '{}'::jsonb,repeat('c',64),'b12-positive-core','B12-LAB');\n  v_trust:=jsonb_build_object('valid',true,'code','LF_RULE_CHILD_SERVER_VALIDATED_V1',\n    'server_assertions',jsonb_build_array('required_evidence_present'),\n    'server_hard_fails','[]'::jsonb);\n  v_payload:=jsonb_build_object('ekb_refs',jsonb_build_array('INPUT_GOVERNANCE_LF_V1_4'),\n    'execution_binding','B12-POS-CORE','parent_execution_id','B12-POS-PARENT',\n    'profile_decision_sha256',\n      encode(extensions.digest(convert_to(v_output::text,'UTF8'),'sha256'),'hex'));\n  v:=public.lf_record_operation_step_core_v1('B12-POS-CORE','ekb_preflight',\n    'SKILLRUN:B12-POS-CORE/10',v_payload,'B12-POS-CORE',\n    'ACTUALIZACION_REGLA_LF','REGLA',\n    'ACTIVE_ENFORCEMENT','ACTIVE_ENFORCEMENT','ACTIVE_ENFORCEMENT',\n    v_trust,false,'b12-positive-direct-core');\n  IF v->>'outcome' IS DISTINCT FROM 'STEP_RECORDED'\n    OR v->>'status' IS DISTINCT FROM 'PASS_CLEAN'\n  THEN RAISE EXCEPTION 'B12_CORE_POSITIVE_FAILED:%',v; END IF;\n  v_replay:=public.lf_record_operation_step_core_v1('B12-POS-CORE','ekb_preflight',\n    'SKILLRUN:B12-POS-CORE/10',v_payload,'B12-POS-CORE',\n    'ACTUALIZACION_REGLA_LF','REGLA',\n    'ACTIVE_ENFORCEMENT','ACTIVE_ENFORCEMENT','ACTIVE_ENFORCEMENT',\n    v_trust,false,'b12-positive-direct-core');\n  IF v_replay->>'outcome' IS DISTINCT FROM 'STEP_RECORDED'\n    OR v_replay->>'replay' IS DISTINCT FROM 'true'\n    OR (SELECT count(*) FROM public.lf_operation_execution_steps WHERE execution_id='B12-POS-CORE')<>1\n  THEN RAISE EXCEPTION 'B12_CORE_REPLAY_NOT_IDEMPOTENT:%',v_replay; END IF;\n  RAISE NOTICE 'PASS_B12_LEGACY_RECORDER_CORE_DIRECT_POSITIVE_REPLAY';\nEND $b12$;\nROLLBACK;\nSELECT 'B12_POSITIVE_ROLLBACK|'||\n CASE WHEN NOT EXISTS(SELECT 1 FROM public.lf_operation_execution WHERE execution_id LIKE 'B12-POS-%')\n  AND NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps WHERE execution_id LIKE 'B12-POS-%')\n  AND NOT EXISTS(SELECT 1 FROM lf_ops.reglas WHERE codigo='B12-POS-RULE')\n  AND NOT EXISTS(SELECT 1 FROM public.lf_skill_invocation_v1 WHERE skill_run_id='B12-POS-SKILL-RUN')\n THEN 'true' ELSE 'false' END;\n"
+
+class B12V1Positive(unittest.TestCase):
+    def sql(self,name,sql):
+        p=subprocess.run(["docker","exec","-i",name,"psql","-X","-q","-A","-t",
+          "-v","ON_ERROR_STOP=1","-U","postgres","-d","postgres"],
+          input=sql,text=True,capture_output=True,timeout=330)
+        self.assertEqual(p.returncode,0,"B12_L35_SQL_FAILED:"+p.stderr[-2100:])
+        return p.stdout,p.stderr
+    def check(self,tag):
+        name="lf-b12-l35-"+uuid.uuid4().hex[:10]
+        p=subprocess.run(["docker","run","--rm","-d","--name",name,
+             "-e","POSTGRES_PASSWORD=postgres","-e","POSTGRES_DB=postgres","postgres:"+tag],
+             capture_output=True,text=True,timeout=240)
+        self.assertEqual(p.returncode,0,"B12_L35_DOCKER_FAILED:"+p.stderr)
+        try:
+            version=None
+            for i in range(75):
+                check=subprocess.run(["docker","exec",name,"pg_isready","-U","postgres"],
+                    capture_output=True,text=True,timeout=9)
+                if check.returncode==0:
+                    try:
+                        res,_=self.sql(name,"SHOW server_version;")
+                        if res.strip().startswith(tag):version=res.strip();break
+                    except AssertionError as e:
+                        if "connection to server on socket" not in str(e):raise
+                time.sleep(1)
+            self.assertIsNotNone(version,"B12_L35_START_NOT_READY")
+            fixture=SOURCE.read_text(encoding="utf-8")
+            self.assertGreater(len(fixture),200000,"B12_L35_LIVE_SLICE_MISSING")
+            self.sql(name,fixture)
+            res,stderr=self.sql(name,"REVOKE EXECUTE ON FUNCTION public.lf_rule_promotion_guard_v1() FROM PUBLIC,anon,authenticated;\n"+SQL_POSITIVE)
+            self.assertIn("B12_POSITIVE_ROLLBACK|true",res)
+            self.assertIn("PASS_B12_LEGACY_SKILL_CHILD_FULL_POSITIVE",stderr)
+            self.assertIn("PASS_B12_LEGACY_RECORDER_CORE_DIRECT_POSITIVE_REPLAY",stderr)
+            print("PASS_B12_L35_SKILL_O_POSITIVE_"+tag,flush=True)
+            print("PASS_B12_L35_CORE_POSITIVE_REPLAY_"+tag,flush=True)
+            print("PASS_B12_L35_ROLLBACK_"+tag,flush=True)
+        finally:subprocess.run(["docker","rm","-f",name],capture_output=True,text=True,timeout=30)
+    def test_pg17_6(self):self.check("17.6")
+    def test_pg18_7(self):self.check("18.7")
