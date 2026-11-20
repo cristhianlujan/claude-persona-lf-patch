@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-visual-catalog-m1-20261120",
+  "paths": {
+    "supabase/migrations/20261120041500_lf_saly_visual_catalog_empty_v1.sql": "MIGRATION",
+    "supabase/tests/saly_visual_catalog_m1_rollback.sql": "ENGINEERING_CHECKPOINTS",
+    "docs/saly/design-system/candidate/SALY_VISUAL_CATALOG_IMPLEMENTATION_READBACK_V0_1.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/saly-visual-catalog-m1-20261120.json": "CHANGESET_MANIFEST"
+  }
+}

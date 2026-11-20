@@ -1,0 +1,12 @@
+BEGIN;
+ALTER TABLE lf_ops.cargas_lotes ADD CONSTRAINT cargas_lotes_valid_only_processed_chk CHECK (processed_count <= valid_count) NOT VALID;
+ALTER TABLE lf_ops.cargas_lotes ADD CONSTRAINT cargas_lotes_counts_sum_chk CHECK (valid_count+observed_count+rejected_count+duplicate_count <= total_records) NOT VALID;
+ALTER TABLE lf_ops.cargas_lotes VALIDATE CONSTRAINT cargas_lotes_valid_only_processed_chk;
+ALTER TABLE lf_ops.cargas_lotes VALIDATE CONSTRAINT cargas_lotes_counts_sum_chk;
+ALTER TABLE lf_ops.cargas_archivos ADD CONSTRAINT cargas_archivos_ext_mime_chk CHECK ((lower(file_name) ~ '\.xlsx$' AND mime_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') OR (lower(file_name) ~ '\.xls$' AND mime_type='application/vnd.ms-excel') OR (lower(file_name) ~ '\.csv$' AND mime_type IN ('text/csv','application/csv')) OR file_role<>'ORIGINAL') NOT VALID;
+ALTER TABLE lf_ops.cargas_archivos ADD CONSTRAINT cargas_archivos_checksum_chk CHECK (checksum_sha256 ~ '^[0-9a-f]{64}$') NOT VALID;
+ALTER TABLE lf_ops.cargas_archivos VALIDATE CONSTRAINT cargas_archivos_ext_mime_chk;
+ALTER TABLE lf_ops.cargas_archivos VALIDATE CONSTRAINT cargas_archivos_checksum_chk;
+CREATE OR REPLACE FUNCTION lf_ops.cargas_lotes_block_unsafe_processing_v1() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'pg_catalog','lf_ops' AS $t$ BEGIN IF NEW.processed_count>0 AND NOT EXISTS (SELECT 1 FROM lf_ops.cargas_archivos a WHERE a.file_id=NEW.source_file_id AND a.malware_scan_status='CLEAN') THEN RAISE EXCEPTION 'LF_B2B_UNSAFE_FILE_PROCESSING_BLOCKED load=%',NEW.load_code USING ERRCODE='check_violation'; END IF; RETURN NEW; END $t$;
+CREATE TRIGGER trg_cargas_lotes_block_unsafe_processing_v1 BEFORE INSERT OR UPDATE OF processed_count,source_file_id ON lf_ops.cargas_lotes FOR EACH ROW EXECUTE FUNCTION lf_ops.cargas_lotes_block_unsafe_processing_v1();
+COMMIT;

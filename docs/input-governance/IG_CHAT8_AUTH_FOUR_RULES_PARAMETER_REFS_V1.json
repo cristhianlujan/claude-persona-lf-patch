@@ -1,0 +1,161 @@
+{
+  "schema_version": "LF_IG_CHAT8_AUTH_CREATE_RULE_PROPOSALS_PARAM_REFERENCES_V1",
+  "authority": "OWNER_2026-11-18T16:40_AMERICA_LIMA",
+  "source": "docs/input-governance/PR_K_LOGIN_LOCKOUT_RESET_AND_FOUR_RULES_DOCUMENT_ONLY_20261118.json",
+  "status": "PROPOSALS_ONLY_UNTIL_GOVERNED_RUN_EVIDENCE_OWNER_DECISION_PER_RULE",
+  "target_screen_code": "B2B-AUTH-001",
+  "data_source": "public.lf_global_config",
+  "single_integer_resolver": "public.lf_auth_config_integer_v1(p_config_key)",
+  "no_numeric_constants_in_rule_texts": true,
+  "production_authorized": false,
+  "proposals": [
+    {
+      "code": "PROP-B2B-AUTH-MFA-CONDITIONAL-001",
+      "categoria": "AUTENTICACION",
+      "titulo": "MFA condicional por actividad del dispositivo y antigüedad de contraseña",
+      "descripcion": "En los perfiles humanos B2B, el backend solicita OTP al correo registrado cuando la inactividad del dispositivo alcanza AUTH/MFA_DEVICE_IDLE_DAYS (public.lf_global_config) o la antigüedad de la contraseña alcanza AUTH/MFA_PASSWORD_AGE_MONTHS (public.lf_global_config). El primer factor sigue siendo obligatorio y no se genera sesión operativa hasta completar el OTP exigido.",
+      "razon": "Regla propuesta para programación y QA; reconciliar políticas vigentes y candidatas MFA por ruta gobernada, sin habilitar producción.",
+      "valor_config": {
+        "family": "AUTHENTICATION",
+        "inheritance": "B2B_HUMAN_PROFILES",
+        "parameter_refs": [
+          {
+            "scope": "AUTH",
+            "config_key": "MFA_DEVICE_IDLE_DAYS",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "MFA_PASSWORD_AGE_MONTHS",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          }
+        ],
+        "mfa_factor": "EMAIL_OTP",
+        "decision_authority": "SERVER_ONLY",
+        "session_before_required_mfa": "DENY",
+        "production_authorized": false
+      }
+    },
+    {
+      "code": "PROP-B2B-AUTH-TRUSTED-DEVICE-C-001",
+      "categoria": "AUTENTICACION",
+      "titulo": "Dispositivo confiable opción C con inactividad parametrizada",
+      "descripcion": "El backend registra último uso autenticado por usuario y dispositivo. Un dispositivo nuevo, desconocido o inactivo según AUTH/MFA_DEVICE_IDLE_DAYS (public.lf_global_config) requiere OTP por correo antes de otorgar sesión operativa. La actividad de otro dispositivo no renueva su confianza. Revocar confianza ante señales de seguridad.",
+      "razon": "Separar inactividad específica de dispositivo de caducidad absoluta; reconciliar política de dispositivo confiable y AUTH-033 sin habilitar producción.",
+      "valor_config": {
+        "family": "AUTHENTICATION",
+        "inheritance": "B2B_HUMAN_PROFILES",
+        "parameter_refs": [
+          {
+            "scope": "AUTH",
+            "config_key": "MFA_DEVICE_IDLE_DAYS",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          }
+        ],
+        "device_activity_unit": "PER_USER_DEVICE_SERVER_VERIFIED",
+        "trust_scope": "DEVICE",
+        "other_device_activity_resets_idle": false,
+        "device_recognition_authority": "SERVER_ONLY",
+        "new_device_outcome": "EMAIL_OTP_REQUIRED",
+        "production_authorized": false
+      }
+    },
+    {
+      "code": "PROP-B2B-AUTH-INTICO-SMS-CONTINGENCY-001",
+      "categoria": "AUTENTICACION",
+      "titulo": "SMS Intico solo por contingencia autorizada de soporte",
+      "descripcion": "Si falla la entrega del OTP por correo, soporte valida identidad y autoriza una contingencia SMS Intico asociada a esa solicitud; el backend audita la activación y verifica el OTP antes del acceso. Se prohíbe el fallback SMS automático y la activación directa por el usuario.",
+      "razon": "Proveedor Intico sujeto a contrato, credenciales y QA por verificar; canal por excepción operativa, no como MFA predeterminado.",
+      "valor_config": {
+        "family": "AUTHENTICATION",
+        "inheritance": "B2B_HUMAN_PROFILES",
+        "parameter_refs": [],
+        "provider": "INTICO",
+        "default_channel": "EMAIL_OTP",
+        "activation_authority": "SUPPORT_PERMISSION_VERIFIED",
+        "activation_condition": "EMAIL_DELIVERY_FAILURE_CONFIRMED_AND_IDENTITY_VERIFIED",
+        "automatic_fallback": "DENY",
+        "client_activates_fallback": false,
+        "server_verified_otp": true,
+        "activation_audit_required": true,
+        "provider_connection_status": "NOT_VERIFIED",
+        "production_authorized": false
+      }
+    },
+    {
+      "code": "PROP-B2B-AUTH-PASSWORD-LOCKOUT-TIERS-001",
+      "categoria": "AUTENTICACION",
+      "titulo": "Bloqueo escalonado parametrizado por fallos de contraseña",
+      "descripcion": "El backend acumula fallos de contraseña por cuenta de usuario en ventana móvil AUTH/LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES (public.lf_global_config). Primer bloqueo al alcanzar AUTH/LOGIN_LOCKOUT_ATTEMPTS_1, con duración AUTH/LOGIN_LOCKOUT_MINUTES_1. Los tramos siguientes usan AUTH/LOGIN_LOCKOUT_ATTEMPTS_2 y AUTH/LOGIN_LOCKOUT_ATTEMPTS_3, con duraciones AUTH/LOGIN_LOCKOUT_MINUTES_2 y AUTH/LOGIN_LOCKOUT_MINUTES_3. Reinicio del escalonado según AUTH/LOGIN_LOCKOUT_RESET_MINUTES desde el último bloqueo registrado por el servidor; cada nuevo bloqueo desplaza el ancla. Excluir errores de OTP, MFA, rate limit y servicio.",
+      "razon": "Los umbrales y duraciones los resuelve la fuente única de AUTH. Se mantiene enforcement deshabilitado hasta programación, conciliación de AUTH-047/049 y QA.",
+      "valor_config": {
+        "family": "AUTHENTICATION",
+        "inheritance": "B2B_HUMAN_PROFILES",
+        "parameter_refs": [
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_ATTEMPTS_1",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_MINUTES_1",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_ATTEMPTS_2",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_MINUTES_2",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_ATTEMPTS_3",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_MINUTES_3",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          },
+          {
+            "scope": "AUTH",
+            "config_key": "LOGIN_LOCKOUT_RESET_MINUTES",
+            "source": "public.lf_global_config",
+            "resolver": "public.lf_auth_config_integer_v1"
+          }
+        ],
+        "counter_subject": "USER_ACCOUNT",
+        "countable_event": "PASSWORD_INVALID_CREDENTIALS",
+        "excluded_events": [
+          "OTP_INVALID",
+          "MFA_REQUIRED",
+          "HTTP_RATE_LIMITED",
+          "SERVICE_UNAVAILABLE"
+        ],
+        "counter_reset_anchor": "LAST_LOCKOUT_AT_SERVER_TIME",
+        "enforcement_enabled": false,
+        "production_authorized": false
+      }
+    }
+  ]
+}

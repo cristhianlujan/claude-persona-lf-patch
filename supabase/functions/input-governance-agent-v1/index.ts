@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {validateLfIgTransport, IG_RPC_REQUIRED, IG_RUNTIME_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -28,6 +29,8 @@ async function requireServiceRole(req: Request): Promise<boolean> {
 }
 
 async function rpc(name: string, args: Record<string, unknown>) {
+  const fieldFault=validateLfIgTransport("IG_RPC:"+name,args,IG_RPC_REQUIRED[name] ?? []);
+  if(fieldFault) throw new Error(fieldFault.code+":"+fieldFault.field);
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
@@ -45,6 +48,8 @@ async function rpc(name: string, args: Record<string, unknown>) {
 }
 
 async function callRuntime(slug: string, body: Record<string, unknown>) {
+  const fieldFault=validateLfIgTransport("IG_EDGE:"+slug,body,IG_RUNTIME_REQUIRED[slug] ?? []);
+  if(fieldFault) throw new Error(fieldFault.code+":"+fieldFault.field);
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, {
     method: "POST",
     headers: {
@@ -73,6 +78,9 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json();
+    const preflight=validateLfIgTransport("IG_EDGE_REQUEST",body,["pantalla_id","consumer","ticket"]);
+    if(preflight) return Response.json({error:preflight.code,field:preflight.field,
+      downstream_call_attempted:false}, {status:400});
     const pantallaId = Number(body?.pantalla_id);
     const consumer = typeof body?.consumer === "string" ? body.consumer : "STORY_CREATOR";
     if (!Number.isInteger(pantallaId) || pantallaId < 1) return Response.json({ error: "PANTALLA_ID_INVALID" }, { status: 400 });
@@ -81,11 +89,22 @@ Deno.serve(async (req: Request) => {
 
     const trace: unknown[] = [];
     let lastState: any = null;
+    let expectedSuccessorRunId: number | null = null;
 
     for (let cycle = 1; cycle <= MAX_REMEDIATION_CYCLES; cycle++) {
       let state = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer, p_ticket: ticket });
       lastState = state;
       trace.push({ step: "DISPATCH", cycle, status: state?.status, run_id: resolvedRunId(state) });
+      // Never let a stale parent READY or a sibling be substituted for the
+      // exact successor that the governed Curator just materialized.
+      if (expectedSuccessorRunId !== null &&
+          (resolvedRunId(state) !== expectedSuccessorRunId ||
+           state?.status !== "VALIDATOR_RUNTIME_REQUIRED")) {
+        return Response.json({error:"IG_RECURATION_SUCCESSOR_DISPATCH_DRIFT",
+          expected_successor_run_id:expectedSuccessorRunId,
+          actual_run_id:resolvedRunId(state),promotion_authorized:false,
+          production_authorized:false}, {status:409});
+      }
 
       if (["READY", "HUMAN_DECISION_REQUIRED", "BLOCKED"].includes(state?.status)) {
         const runId = resolvedRunId(state);
@@ -136,6 +155,39 @@ Deno.serve(async (req: Request) => {
             },
             result: validator.result,
           }, { status: 202 });
+        }
+        if (validator?.result?.status === "CURATOR_REEVALUATION_REQUIRED") {
+          const negative = validator.result;
+          const parentId = Number(negative?.parent_run_id);
+          if (Number(negative?.run_id) !== runId ||
+              !Number.isInteger(parentId) || parentId < 1 ||
+              Number(negative?.pantalla_id) !== pantallaId ||
+              negative?.production_authorized !== false ||
+              negative?.promotion_authorized !== false) {
+            return Response.json({error:"IG_RECURATION_VALIDATOR_NEGATIVE_INVALID",
+              run_id:runId,production_authorized:false}, {status:409});
+          }
+          // Existing Curator Edge and official DB writer only; no parallel
+          // route, SQL in the caller, or self-asserted recuration PASS.
+          const successor = await callRuntime("input-governance-curator-v1",
+            {pantalla_id:pantallaId,consumer,ticket});
+          const successorId = Number(successor?.result?.run_id);
+          trace.push({step:"CURATOR_RECURATION_SUCCESSOR",cycle,
+            parent_run_id:parentId,failed_run_id:runId,
+            successor_run_id:successorId,status:successor?.result?.status});
+          if (successor?.result?.status !== "VALIDATOR_RUNTIME_REQUIRED" ||
+              !Number.isInteger(successorId) || successorId < 1 ||
+              successorId === runId || successorId === parentId ||
+              Number(successor?.result?.parent_run_id) !== parentId ||
+              Number(successor?.result?.pantalla_id) !== pantallaId ||
+              successor?.result?.promotion_authorized !== false ||
+              successor?.result?.production_authorized !== false) {
+            return Response.json({error:"IG_RECURATION_SUCCESSOR_NOT_ATTESTED",
+              old_run_id:runId,production_authorized:false}, {status:409});
+          }
+          expectedSuccessorRunId = successorId;
+          // Next cycle MUST re-read dispatch from DB for the exact new RUN.
+          continue;
         }
         if (!["COMPLETED", "NOOP_COMPLETED"].includes(validator?.result?.status)) {
           return Response.json({ runtime: "input-governance-agent-v1", remediation_contract: "INPUT_GOV_SAFE_AUTOFIX_V1", trace, result: validator?.result ?? { status: "VALIDATOR_UNRESOLVED" } }, { status: 409 });

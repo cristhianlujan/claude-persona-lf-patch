@@ -5,6 +5,8 @@ One invocation follows the existing execution until the next governed semantic,
 Input Governance, or native model boundary. It cannot modify product records.
 """
 import hashlib
+import datetime as dt
+import time
 import json
 import os
 import re
@@ -31,13 +33,100 @@ def parse_issue_body(raw):
     return data
 
 
-def call_json(url, payload, headers=None):
+# Only official Issue/OIDC/Edge request bodies are checked here.
+# This check is pure: no Supabase call, no secret, no RAW-value diagnostic.
+_LF_RAW_KEYS = {"raw", "RAW", "raw_payload", "raw_output", "raw_input", "profile_output"}
+_LF_RAW_FORBIDDEN = {"semantic_receipt_sha256", "catalog_sha256", "request_sha256"}
+_LF_REQUIRED_BY_ACTION = {
+    "profile_native_begin_from_phrase_v1": ("request_text", "stage1_decision", "profile_semantic_decision", "executor_mode"),
+    "profile_native_begin_from_context_v1": ("context", "executor_mode"),
+    "profile_native_source_bind_v1": ("execution_id",),
+    "profile_native_skill_invoke_v1": ("execution_id", "skill_code", "input"),
+    "profile_native_skill_step_batch_v1": ("execution_id", "child_execution_id", "steps"),
+    "profile_native_continue_v1": ("execution_id", "source_revision", "source_digest"),
+    "profile_skill_runtime_v1": ("execution_id", "skill_code"),
+    "input_readiness_context_pack_runtime_v1": ("execution_id", "pantalla_id", "consumer"),
+}
+
+
+def transport_preflight_fault(payload):
+    """Return exact invalid field path or None. Never return a RAW value."""
+    def empty(value):
+        return (value is None or
+                isinstance(value, str) and value.strip() in ("", "{}") or
+                isinstance(value, (dict, list)) and not value)
+
+    if not isinstance(payload, dict) or not payload:
+        return "$"
+    if empty(payload.get("action")):
+        return "action"
+    for field in _LF_REQUIRED_BY_ACTION.get(payload["action"], ()):
+        if empty(payload.get(field)):
+            return field
+
+    def raw_scan(node, path):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                full = f"{path}.{key}"
+                if key in _LF_RAW_FORBIDDEN:
+                    return full
+                bad = raw_scan(value, full)
+                if bad:
+                    return bad
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                bad = raw_scan(value, f"{path}[{index}]")
+                if bad:
+                    return bad
+        return None
+
+    def walk(node, path="", depth=0):
+        if depth > 18:
+            return path or "$"
+        if isinstance(node, dict):
+            for key, value in node.items():
+                p = f"{path}.{key}" if path else key
+                if key in _LF_RAW_KEYS:
+                    if empty(value):
+                        return p
+                    raw = value
+                    if isinstance(value, str) and value.strip().startswith(("{", "[")):
+                        try:
+                            raw = json.loads(value)
+                        except ValueError:
+                            pass
+                    if empty(raw):
+                        return p
+                    bad = raw_scan(raw, p)
+                    if bad:
+                        return bad
+                elif isinstance(value, (dict, list)):
+                    bad = walk(value, p, depth + 1)
+                    if bad:
+                        return bad
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                bad = walk(value, f"{path}[{index}]", depth + 1)
+                if bad:
+                    return bad
+        return None
+    return walk(payload)
+
+
+def call_json(url, payload, headers=None, timeout_seconds=90):
+    invalid_field = transport_preflight_fault(payload)
+    if invalid_field:
+        raise ValueError("PROFILE_TRANSPORT_PRECALL_INVALID:" + invalid_field)
+    # Keep the established 3-argument transport contract for existing
+    # callers/tests. A selected skill receives the bounded timeout implicitly.
+    if isinstance(payload, dict) and payload.get("action") == "profile_skill_runtime_v1":
+        timeout_seconds=18 if timeout_seconds == 90 else min(timeout_seconds,18)
     headers = {"content-type": "application/json", **(headers or {})}
     req = urllib.request.Request(
         url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
     )
     try:
-        with urllib.request.urlopen(req, timeout=90) as response:
+        with urllib.request.urlopen(req, timeout=timeout_seconds) as response:
             return response.status, json.load(response)
     except urllib.error.HTTPError as exc:
         try:
@@ -45,6 +134,16 @@ def call_json(url, payload, headers=None):
         except ValueError:
             result = {"code": "NON_JSON_HTTP_FAILURE"}
         return exc.code, result
+    except (TimeoutError, urllib.error.URLError) as exc:
+        # Skill runtime is non-blocking: preserve bounded timeout as a finding
+        # through the existing DB ticket exhaustion bridge. Never claim READY.
+        if timeout_seconds != 90:
+            return 0, {
+                "outcome": "BLOCKED", "code": "SKILL_RUNTIME_NETWORK_OR_DEADLINE",
+                "error_type": type(exc).__name__,
+                "production_authorized": False, "promotion_authorized": False
+            }
+        raise
 
 
 def oidc():
@@ -58,9 +157,49 @@ def oidc():
 
 
 
+def governed_direct_gate2_dispatch():
+    """The already-governed GitHub workflow_dispatch replaces manual Issue entry.
+
+    GitHub Actions obtains its own OIDC. Nothing here mints authority, changes
+    Router Gate2, or bypasses the Edge's current DB admission.
+    """
+    if os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch":
+        raise ValueError("PROFILE_DIRECT_GATE2_EVENT_INVALID")
+    if os.environ.get("GITHUB_REF") != "refs/heads/main":
+        raise ValueError("PROFILE_DIRECT_GATE2_MAIN_ONLY")
+    event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+    event = json.loads(event_path.read_text(encoding="utf-8"))
+    inputs = event.get("inputs")
+    if (not isinstance(inputs, dict)
+        or inputs.get("action") != "begin-native-profile"
+        or os.environ.get("PROFILE_EXECUTION_ID", "").strip()
+        or inputs.get("execution_id", "").strip()):
+        raise ValueError("PROFILE_DIRECT_GATE2_ACTION_OR_RUN_INVALID")
+    raw = os.environ.get("PROFILE_ROUTER_GATE2_JSON", "").strip()
+    if (not raw or len(raw.encode("utf-8")) > 55000
+        or raw != inputs.get("router_context_json")):
+        raise ValueError("PROFILE_DIRECT_GATE2_SOURCE_BINDING_INVALID")
+    try:
+        ctx = json.loads(raw)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise ValueError("PROFILE_DIRECT_GATE2_JSON_INVALID") from exc
+    if (not isinstance(ctx, dict)
+        or ctx.get("schema_version") != "LF_ROUTER_EXECUTION_PIPELINE_V1"
+        or ctx.get("status") != "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"
+        or ctx.get("transport_mode") != "CONTEXT_TRANSPORT"
+        or ctx.get("next_step") != "HANDOFF_CONTEXT_TO_SELECTED_PROFILE"
+        or ctx.get("effect_authority") not in (False, None)
+        or ctx.get("downstream_execution_allowed") not in (False, None)):
+        raise ValueError("PROFILE_DIRECT_GATE2_CONTRACT_INVALID")
+    return {"kind": "BEGIN", "router_context": ctx, "executor_mode": "GPT_NATIVE"}
+
+
 def governed_request():
     """Accept only explicit, bounded issue data or authorized dispatch inputs."""
-    if os.getenv("LF_PROFILE_RESUME_REQUEST_MODE") != "ISSUE":
+    mode = os.getenv("LF_PROFILE_RESUME_REQUEST_MODE")
+    if mode == "DISPATCH_BEGIN":
+        return governed_direct_gate2_dispatch()
+    if mode == "DISPATCH":
         raw_output = os.getenv("PROFILE_OUTPUT_JSON", "").strip()
         parsed_output = json.loads(raw_output) if raw_output else None
         if parsed_output is not None and not isinstance(parsed_output, dict):
@@ -75,6 +214,8 @@ def governed_request():
             parsed_output,
             parsed_semantic,
         )
+    if mode != "ISSUE":
+        raise ValueError("PROFILE_GOVERNED_REQUEST_MODE_INVALID")
 
     event_path = os.environ["GITHUB_EVENT_PATH"]
     event = json.loads(Path(event_path).read_text(encoding="utf-8"))
@@ -111,17 +252,79 @@ def governed_request():
             or len(json.dumps(context)) > 55000):
             raise ValueError("PROFILE_NATIVE_BEGIN_CONTEXT_INVALID")
         return {"kind": "BEGIN", "router_context": context, "executor_mode": mode}
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_RUN_FROM_PHRASE_V1":
+        # The only Issue entry is the literal owner phrase plus semantic
+        # judgments authored by the native Router context, NOT a Gate2 blob.
+        required = {"schema_version", "request_text", "stage1_decision",
+                    "profile_semantic_decision", "executor_mode"}
+        allowed = required | {"screen_semantic_decision"}
+        if not required.issubset(data) or not set(data).issubset(allowed):
+            raise ValueError("PROFILE_PHRASE_SCHEMA_INVALID")
+        text = data["request_text"]
+        stage1 = data["stage1_decision"]
+        semantic = data["profile_semantic_decision"]
+        mode = data["executor_mode"]
+        if (not isinstance(text,str) or not 1 <= len(text.strip()) <= 8000
+            or not isinstance(stage1,dict) or len(json.dumps(stage1)) > 12000
+            or stage1.get("schema_version") != "LF_ROUTER_STAGE1_V2"
+            or stage1.get("texto_original") != text
+            or stage1.get("negocio_codigo") != "LF"
+            or stage1.get("downstream_execution_allowed") is not False
+            or not isinstance(semantic,dict) or len(json.dumps(semantic)) > 12000
+            or semantic.get("decision") != "SELECTED"
+            or not isinstance(semantic.get("selected_profile_code"),str)
+            or mode not in {"GPT_NATIVE","CLAUDE_NATIVE"}):
+            raise ValueError("PROFILE_PHRASE_SEMANTIC_INVALID")
+        # The screen judgment is authored in the same native Issue as the
+        # Router semantic judgment. The canonical DB selector still validates
+        # source/currentness; this is NOT a deterministic selection by hint.
+        screen = data.get("screen_semantic_decision")
+        if screen is not None:
+            if not isinstance(screen,dict) or set(screen)-{
+                    "decision","selected_screen_code","ambiguous_screen_codes",
+                    "material_ambiguities","reason","evidence_refs"}:
+                raise ValueError("PROFILE_PHRASE_SCREEN_DECISION_SHAPE_INVALID")
+            decision = screen.get("decision")
+            if (decision not in ("SELECTED","NO_MATCH")
+                or not isinstance(screen.get("reason"),str)
+                or not screen["reason"].strip()
+                or not isinstance(screen.get("evidence_refs"),list)
+                or not isinstance(screen.get("ambiguous_screen_codes",[]),list)
+                or not isinstance(screen.get("material_ambiguities",[]),list)):
+                raise ValueError("PROFILE_PHRASE_SCREEN_DECISION_INVALID")
+            if decision=="SELECTED":
+                code = screen.get("selected_screen_code")
+                hint = stage1.get("alcance",{}).get("target_hint") if isinstance(stage1.get("alcance"),dict) else None
+                if (not isinstance(code,str) or not re.fullmatch(r"[A-Z0-9]+(?:-[A-Z0-9]+)+",code)
+                    or code not in text or code != hint
+                    or not screen["evidence_refs"]
+                    or any(not isinstance(x,dict) or x.get("screen_code") != code
+                           or x.get("evidence_field") not in ("screen_code","screen_name","module_code","app_shell_code","match")
+                           for x in screen["evidence_refs"])
+                    or screen.get("ambiguous_screen_codes",[])!=[]
+                    or screen.get("material_ambiguities",[])!=[]):
+                    raise ValueError("PROFILE_PHRASE_SCREEN_SELECTION_UNSUPPORTED")
+            elif (screen.get("selected_screen_code") not in (None,"")
+                  or screen.get("ambiguous_screen_codes",[])!=[]):
+                raise ValueError("PROFILE_PHRASE_SCREEN_NO_MATCH_INVALID")
+        return {"kind":"PHRASE_BEGIN", "request_text":text,
+            "stage1_decision":stage1, "profile_semantic_decision":semantic,
+            "screen_semantic_decision":screen, "executor_mode":mode}
     # A read-only profile invokes a governed skill through its own route. The server uses the
     # authenticated execution as the parent and the skill invoker checks authority and inputs.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
-        if set(data) != {"schema_version", "execution_id", "skill_code", "input"}:
+        if set(data) - {"schema_version", "execution_id", "skill_code", "input", "skill_semantic_decision"} or not {"schema_version", "execution_id", "skill_code", "input"}.issubset(data):
             raise ValueError("PROFILE_SKILL_INVOKE_SCHEMA_INVALID")
         execution_id, skill, skill_input = data["execution_id"], data["skill_code"], data["input"]
         if (not isinstance(execution_id, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
                 or not isinstance(skill, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]{2,63}", skill)
                 or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
             raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
-        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
+        semantic = data.get("skill_semantic_decision")
+        if semantic is not None and (not isinstance(semantic, dict) or len(json.dumps(semantic)) > 12000):
+            raise ValueError("PROFILE_SKILL_INVOKE_SEMANTIC_INVALID")
+        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill,
+                "input": skill_input, "skill_semantic_decision": semantic}
     # Reuse the SAME profile Issue/OIDC/Edge lane for one bounded,
     # sequential batch of the ALREADY OPENED governed skill-update child.
     # This never opens another RUN and cannot provide signer/role credentials.
@@ -156,6 +359,37 @@ def governed_request():
             raise ValueError("SKILL_STEP_BATCH_OUT_OF_ORDER")
         return {"kind": "SKILL_STEP_BATCH", "execution_id": parent,
                 "child_execution_id": child, "steps": steps}
+    # Governed Step70 chain only; the reviewer RAW is produced elsewhere.
+    # A single authenticated Issue executes ONE REQUEST, EXECUTOR or JUDGE append.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_NATIVE_CHAT_RECEIPT_APPEND_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "kind", "event"}:
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_SCHEMA_DRIFT")
+        execution_id, kind, event = data["execution_id"], data["kind"], data["event"]
+        if (not isinstance(execution_id, str)
+            or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+            or kind not in ("REQUEST", "EXECUTOR", "JUDGE")
+            or not isinstance(event, dict)
+            or len(json.dumps(event, ensure_ascii=False)) > 44000):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_INPUT_DRIFT")
+        reserved = {"stage", "execution_id", "nonce", "candidate_sha256",
+                    "scope_packet_sha256", "frozen_bundle_sha256", "seq",
+                    "raw_text", "raw_sha256", "prev_sha256", "chain_sha256",
+                    "writer_receipt_sha256", "writer_receipt_ref", "recorded_at"}
+        if reserved.intersection(event):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_PROVENANCE_FORBIDDEN")
+        required = {
+            "REQUEST": set(),
+            "EXECUTOR": {"executor_context_ref", "producer_schema_id",
+                         "producer_eval_id", "producer_profile_id"},
+            "JUDGE": {"review_mode", "reviewer_context_ref",
+                      "reviewer_schema_id", "reviewer_eval_id", "reviewer_profile_id",
+                      "reviewer_context_cleared", "eval_status", "review_payload"},
+        }[kind]
+        if set(event) != required or (kind == "REQUEST" and event):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_ISSUE_EVENT_FIELDS_DRIFT")
+        return {"kind": "NATIVE_CHAT_RECEIPT_APPEND", "execution_id": execution_id,
+                "receipt_kind": kind, "event": event}
+
     # Same profile-owned Issue/OIDC/Edge lane; this bounded first slice is
     # effect-free. Never infer write authority from a skill name or payload.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1":
@@ -181,12 +415,48 @@ def governed_request():
             seen.add(key)
         return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review",
+        "skill_semantic_decision", "skill_selection_decision", "baseline_envelope"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
     if not isinstance(execution_id, str):
         raise ValueError("PROFILE_GOVERNED_ISSUE_EXECUTION_ID_INVALID")
+    # Semantic skill selection is a continuation of the SAME profile RUN.
+    # It comes from the native chat, not from the Router and not from an API producer.
+    if "skill_semantic_decision" in data and "skill_selection_decision" in data:
+        raise ValueError("SKILL_SELECTION_AMBIGUOUS_FIELD_CONTRACT")
+    skill_decision = data.get("skill_selection_decision", data.get("skill_semantic_decision"))
+    if skill_decision is not None:
+        screen_draft = data.get("screen_selection_draft")
+        if (not isinstance(skill_decision, dict) or
+            len(json.dumps(skill_decision, ensure_ascii=False)) > 12000 or
+            not set(data).issubset({"schema_version", "execution_id", "skill_semantic_decision",
+                                    "skill_selection_decision", "screen_selection_draft"}) or
+            ("screen_selection_draft" in data and (
+                not isinstance(screen_draft, dict) or
+                len(json.dumps(screen_draft, ensure_ascii=False)) > 12000 or
+                any(k in screen_draft for k in ("schema_version","request_sha256","catalog_sha256",
+                    "candidate_screen_count","semantic_receipt_sha256","operation_code",
+                    "route_authority","effect_authority","downstream_execution_allowed"))))):
+            raise ValueError("PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID")
+        # Both independent semantic decisions belong to the SAME Router-admitted
+        # execution. The Edge validates each against current DB descriptors/catalog.
+        legacy_selection_field = "skill_selection_decision" not in data
+        return {"kind": "SKILL_SEMANTIC_CONTINUATION" if legacy_selection_field
+                else "SKILL_SELECTION_CONTINUATION", "execution_id": execution_id,
+                **({"skill_semantic_decision": skill_decision} if legacy_selection_field
+                   else {"skill_selection_decision": skill_decision}),
+                **({"screen_selection_draft": screen_draft}
+                   if "screen_selection_draft" in data else {})}
+    if "baseline_envelope" in data:
+        envelope=data["baseline_envelope"]
+        if (set(data)!={"schema_version","execution_id","baseline_envelope"}
+            or not isinstance(envelope,dict)
+            or len(json.dumps(envelope,ensure_ascii=False))>200000):
+            raise ValueError("PROFILE_BASELINE_GOVERNED_REQUEST_INVALID")
+        return {"kind":"BASELINE_CONTINUATION","execution_id":execution_id,
+                "baseline_envelope":envelope}
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
@@ -206,7 +476,8 @@ def record_incomplete_continuation(execution_id, profile_code, phase, next_step,
     owns the review must supply real V3 evidence via the existing OIDC bridge.
     """
     if next_step not in {
-        "screen_selection", "input_governance", "execute_profile", "semantic_judge",
+        "screen_selection", "skill_selection", "input_governance", "execute_profile", "semantic_judge",
+        "research_baseline_freeze",
     }:
         raise ValueError("PROFILE_NATIVE_CONTINUATION_UNRECOGNIZED_STEP")
     checkpoint = {
@@ -329,19 +600,45 @@ def record_blocked_ig_receipt(http_status, response, execution_id, profile_code)
     return True
 
 
-def is_direct_validator_continuation(status, response):
-    """Only the exact governed 202 response may request a fresh one-time ticket."""
-    return (
-        status == 202
-        and isinstance(response, dict)
-        and response.get("outcome") == "CONTINUATION_REQUIRED"
-        and response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED"
-        and response.get("transport") == "DIRECT_EDGE_INVOCATION"
-        and response.get("queue_required") is False
-        and response.get("polling_required") is False
-        and isinstance(response.get("result"), dict)
-        and response["result"].get("status") == "VALIDATOR_RESUME_REQUIRED"
-    )
+def is_direct_validator_continuation(status, response, execution_id=None,
+                                     pantalla_id=None, skill_code=None):
+    """One SQL-ticket-bound Validator continuation, not a failed-runtime retry.
+
+    Accept the actual Edge envelopes (skill and context-pack). Verify identity
+    and screen against the *consumed ticket's* request_body, not the model.
+    """
+    if (status != 202 or not isinstance(response, dict)
+        or response.get("outcome") != "CONTINUATION_REQUIRED"
+        or response.get("code") not in (
+            "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
+            "SKILL_RUNTIME_VALIDATOR_RESUME_REQUIRED")
+        or response.get("transport") != "DIRECT_EDGE_INVOCATION"
+        or response.get("queue_required") is not False
+        or response.get("polling_required") is not False
+        or not isinstance(response.get("result"), dict)):
+        return False
+    result = response["result"]
+    nested = result.get("result")
+    if (result.get("status") != "VALIDATOR_RESUME_REQUIRED"
+        and not (isinstance(nested, dict)
+                 and nested.get("status") == "VALIDATOR_RESUME_REQUIRED")):
+        return False
+    if execution_id is not None and response.get("execution_id") != execution_id:
+        return False
+    if response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED":
+        if response.get("consumer") not in (None, "CONTEXT_PACK"):
+            return False
+        if execution_id is not None and (
+            type(pantalla_id) is not int or pantalla_id <= 0):
+            return False
+        if pantalla_id is not None and response.get("pantalla_id") != pantalla_id:
+            return False
+    else:
+        if skill_code is not None and response.get("skill_code") != skill_code:
+            return False
+        if type(pantalla_id) is int and response.get("pantalla_id") != pantalla_id:
+            return False
+    return True
 
 
 def sha256_file(path):
@@ -442,6 +739,86 @@ def attach_bound_evidence_manifest(repo_root, packet, evidence_manifest):
     packet["evidence_manifest_sha256"] = hashlib.sha256(encoded).hexdigest()
 
 
+def require_step50_verified_effect_shape(target_path, profile_output, prepare_result):
+    """Local preflight, not attestation: the DB writer verifies actual Train and snapshots.
+
+    Only server-derived prepare_result may enable this gate. Never use a flag
+    authored in the Issue/model RAW as promotion or write authority.
+    """
+    if target_path != "profiles/systemic_root_cause_repair_lf/SKILL.md":
+        return
+    if not isinstance(prepare_result, dict):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    authority = prepare_result.get("repair_execution_authority")
+    mode = prepare_result.get("execution_write_mode")
+    if mode not in ("READ_ONLY", "GOVERNED_REPAIR_WRITE"):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    repair = profile_output.get("repair_execution") if isinstance(profile_output, dict) else None
+    requested_mode = repair.get("mode") if isinstance(repair, dict) else None
+    if mode == "READ_ONLY":
+        # Step 50 has no repair effect authority in read-only runs. In particular,
+        # SQL legitimately returns null here; never demand GOVERNED_REPAIR_WRITE.
+        if authority is not None and (not isinstance(authority, dict)
+                                      or authority.get("promotion_allowed") not in (None, False)):
+            raise ValueError("STEP50_PROMOTION_REPAIR_AUTHORITY_MISMATCH")
+        if (requested_mode == "EXECUTED_WITH_READBACK"
+                or (isinstance(repair, dict) and
+                    (repair.get("rule_receipts") or repair.get("changes")))):
+            raise ValueError("STEP50_READ_ONLY_EFFECT_FORBIDDEN")
+        return
+    # The governed write path is unchanged: its exact SQL-issued authority is
+    # mandatory, and promotion still requires real Train receipts + snapshots.
+    if not isinstance(authority, dict):
+        raise ValueError("STEP50_SERVER_AUTHORITY_NOT_BOUND")
+    promotion_allowed = authority.get("promotion_allowed") is True
+    if requested_mode == "AUTHORIZED_NOT_EXECUTED" and promotion_allowed:
+        raise ValueError("STEP50_AUTHORIZED_NOT_EXECUTED_FORBIDDEN")
+    if not promotion_allowed:
+        return
+    if mode != "GOVERNED_REPAIR_WRITE" or authority.get("mode") != "GOVERNED_REPAIR_WRITE":
+        raise ValueError("STEP50_PROMOTION_REPAIR_AUTHORITY_MISMATCH")
+    if requested_mode != "EXECUTED_WITH_READBACK":
+        raise ValueError("STEP50_VERIFIED_EFFECT_MODE_REQUIRED")
+    receipts = repair.get("rule_receipts")
+    changes = repair.get("changes")
+    if not isinstance(receipts, list) or not receipts:
+        raise ValueError("STEP50_RULE_RECEIPTS_REQUIRED")
+    if not isinstance(changes, list) or len(changes) != len(receipts):
+        raise ValueError("STEP50_EFFECT_CHANGES_NOT_BOUND")
+    codes = set()
+    sha = re.compile(r"^[a-f0-9]{64}$")
+    for receipt in receipts:
+        if not isinstance(receipt, dict):
+            raise ValueError("STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH")
+        rule = receipt.get("rule_code")
+        if (not isinstance(rule, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", rule)
+                or receipt.get("source_ref") != "supabase://lf_ops.reglas/" + rule):
+            raise ValueError("STEP50_RULE_RECEIPT_SOURCE_REF_MISMATCH")
+        if rule in codes:
+            raise ValueError("STEP50_RULE_RECEIPT_DUPLICATE")
+        codes.add(rule)
+        before = receipt.get("before_sha256")
+        after = receipt.get("after_sha256")
+        if (not isinstance(before, str) or not sha.fullmatch(before)
+                or not isinstance(after, str) or not sha.fullmatch(after)
+                or before == after):
+            raise ValueError("STEP50_EFFECT_HASH_PAIR_REQUIRED")
+        if not any(isinstance(c, dict)
+                   and c.get("target_ref") == receipt["source_ref"]
+                   and isinstance(c.get("before_ref"), str)
+                   and isinstance(c.get("after_ref"), str)
+                   for c in changes):
+            raise ValueError("STEP50_EFFECT_CHANGES_NOT_BOUND")
+        for key in ("train_execution_id", "train_run_id", "migration_version",
+                    "migration_name", "merge_sha"):
+            if not isinstance(receipt.get(key), str) or not receipt[key]:
+                raise ValueError("STEP50_TRAIN_RECEIPT_FIELDS_REQUIRED")
+        if type(receipt.get("train_pr")) is not int or receipt["train_pr"] < 1:
+            raise ValueError("STEP50_TRAIN_RECEIPT_FIELDS_REQUIRED")
+    # Structural only: the canonical writer checks DB snapshots, ledger and
+    # the completed Step20/Step30 Train before it records execute_profile.
+
+
 def run_bound_validator(target_path, profile_code, profile_output, evidence_manifest=None):
     """Run only the validator declared by the exact profile runtime binding."""
     source_path = PurePosixPath(target_path)
@@ -468,7 +845,28 @@ def run_bound_validator(target_path, profile_code, profile_output, evidence_mani
         or validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}):
         raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
 
-    schema_ref = f"profiles/{slug}/{runtime_schema['default']}"
+    # Import the same pure selector used by RepositoryBindings.runtime_schema.
+    # Loading from this checked-out source avoids copying a divergent mode map.
+    import importlib.util
+    selector_path = Path(__file__).resolve().parents[1] / (
+        "services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py"
+    )
+    if not selector_path.is_file():
+        raise ValueError("PROFILE_RUNTIME_SCHEMA_SELECTOR_REQUIRED")
+    selector_spec = importlib.util.spec_from_file_location("lf_native_schema_selector", selector_path)
+    if selector_spec is None or selector_spec.loader is None:
+        raise ValueError("PROFILE_RUNTIME_SCHEMA_SELECTOR_INVALID")
+    selector_module = importlib.util.module_from_spec(selector_spec)
+    selector_spec.loader.exec_module(selector_module)
+    try:
+        schema_rel = selector_module.select_schema_relative(
+            runtime_schema, payload=profile_output
+        )
+    except selector_module.RuntimeSchemaSelectionError as exc:
+        raise ValueError("PROFILE_OUTPUT_MODE_UNDECLARED") from exc
+    if not isinstance(schema_rel, str) or not schema_rel.strip():
+        raise ValueError("PROFILE_RUNTIME_BINDING_SCHEMA_MODE_INVALID")
+    schema_ref = f"profiles/{slug}/{schema_rel}"
     validator_ref = f"profiles/{slug}/{validator['path']}"
     for ref in (schema_ref, validator_ref):
         ref_path = PurePosixPath(ref)
@@ -550,7 +948,7 @@ SEMANTIC_CHECKS = (
 
 def validate_independent_semantic_review(review):
     mode = review.get("review_mode", "INDEPENDENT_SEMANTIC")
-    if mode not in ("INDEPENDENT_SEMANTIC", "CURRENT_CONTEXT_REVIEW"):
+    if mode not in ("INDEPENDENT_SEMANTIC", "CURRENT_CONTEXT_REVIEW", "INDEPENDENT_EVAL_CONTEXT"):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_MODE_INVALID")
     expected_verdict = (
         "PASS_REVIEWED_CURRENT_CONTEXT" if mode == "CURRENT_CONTEXT_REVIEW"
@@ -585,12 +983,31 @@ def validate_independent_semantic_review(review):
                 raise ValueError("PROFILE_SEMANTIC_ROUTER_DIRECT_COMPARISON_UNPROVEN")
         elif check.get("result") not in (True, "true"):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
+    if mode == "INDEPENDENT_SEMANTIC":
+        try:
+            from lf_step70_separate_call_receipt_v1 import assess_separate_call_receipt
+        except ModuleNotFoundError:
+            from scripts.lf_step70_separate_call_receipt_v1 import assess_separate_call_receipt
+        assessment=assess_separate_call_receipt(review)
+        if not assessment.get("producer_independence_proven",False):
+            raise ValueError("JUDGE_INDEPENDENCE_NOT_PROVEN")
     if mode == "CURRENT_CONTEXT_REVIEW":
         # Owner-authorized current-context review is NOT an independent judge call.
         if (review.get("producer_independence_proven") is not False
                 or review.get("reviewer_is_producer") is not True
                 or review.get("model_call_count") != 0):
             raise ValueError("PROFILE_CURRENT_CONTEXT_REVIEW_PROVENANCE_INVALID")
+    elif mode == "INDEPENDENT_EVAL_CONTEXT":
+        # SQL independently resolves the frozen three-stage immutable context chain.
+        # This local check cannot grant independence or fabricate model-call metadata.
+        if (review.get("reviewer_is_producer") is not False
+                or review.get("producer_context_available") is not False
+                or review.get("producer_independence_proven") is not True
+                or review.get("model_call_count") is not None):
+            raise ValueError("LF_STEP70_CLEAN_CONTEXT_METADATA_INVALID")
+        if (not isinstance(review.get("reviewer_context_ref"), str)
+                or not review["reviewer_context_ref"].strip()):
+            raise ValueError("LF_STEP70_CLEAN_CONTEXT_REF_MISSING")
     else:
         if review.get("producer_independence_proven") is not True:
             raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
@@ -631,14 +1048,17 @@ def build_semantic_receipt(review):
     current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
     verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
                else "PASS_INDEPENDENT_SEMANTIC")
+    isolated_context = review.get("review_mode") == "INDEPENDENT_EVAL_CONTEXT"
+    if not current_context and not isolated_context:
+        raise ValueError("JUDGE_INDEPENDENCE_NOT_PROVEN")
     return {
         "status": "PASS",
         "verdict": verdict,
         "validator_status": "PASS",
-        "review_mode": "CURRENT_CONTEXT_REVIEW" if current_context else "INDEPENDENT_SEMANTIC",
-        "reviewer_is_producer": bool(current_context),
-        "producer_independence_proven": not current_context,
-        "model_call_count": 0 if current_context else 1,
+        "review_mode": "INDEPENDENT_EVAL_CONTEXT" if isolated_context else "CURRENT_CONTEXT_REVIEW",
+        "reviewer_is_producer": False if isolated_context else True,
+        "producer_independence_proven": True if isolated_context else False,
+        "model_call_count": None if isolated_context else 0,
         "candidate_sha256": review["candidate_sha256"],
         "scope_packet_sha256": review["scope_packet_sha256"],
         "result": {
@@ -649,13 +1069,156 @@ def build_semantic_receipt(review):
             "blocking_codes": [],
         },
         "judge_v3_evidence": review,
+        "content_findings":[] if isolated_context else [{"finding_code":"JUDGE_INDEPENDENCE_NOT_PROVEN",
+            "continuation_allowed":True,"reviewer_is_producer":True,
+            "producer_independence_proven":False,"model_call_count":0}],
     }
+
+
+def complete_native_profile_semantic_and_report(execution_id, source, semantic_review, source_revision, digest, headers):
+    """Same EJECUCION_PERFIL_LF run; validated Step50/60 must precede recorded V3/80."""
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED"
+    if semantic_review is None:
+        return record_incomplete_continuation(
+            execution_id, source.get("profile_code"), phase,
+            "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+        )
+    if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
+        from lf_semantic_fail_feedback import persist_feedback
+        try:
+            feedback = persist_feedback(
+                semantic_review, execution_id, source.get("profile_code"),
+                Path.cwd() / "profile-semantic-judge.json",
+            )
+        except (ValueError, TypeError) as exc:
+            print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
+            return 1
+        print(json.dumps({
+            "phase": feedback["phase"], "outcome": feedback["outcome"],
+            "verdict": feedback["verdict"],
+            "execution_id": feedback["execution_id"],
+            "next_action": feedback["next_action"],
+        }, ensure_ascii=False))
+        return 1
+    # Distinct GPT call and reviewer receipt must be verified, not inferred
+    # from a model-authored flag or a second GitHub Actions invocation.
+    # Until the provider/native host supplies independent call attestation,
+    # preserve all content checks and downgrade only the independence claim.
+    if semantic_review.get("review_mode") not in ("CURRENT_CONTEXT_REVIEW", "INDEPENDENT_EVAL_CONTEXT"):
+        try:
+            from lf_step70_separate_call_receipt_v1 import normalize_when_unverified
+        except ModuleNotFoundError:
+            from scripts.lf_step70_separate_call_receipt_v1 import normalize_when_unverified
+        try:
+            semantic_review, assessment = normalize_when_unverified(semantic_review, execution_id=execution_id)
+        except ValueError as exc:
+            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+            return 1
+        Path("profile-step70-independence-assessment.json").write_text(
+            json.dumps(assessment,ensure_ascii=False,sort_keys=True),encoding="utf8")
+        print(json.dumps({"phase":"SEMANTIC_REVIEW",
+            "finding_code":"JUDGE_INDEPENDENCE_NOT_PROVEN",
+            "content_continuation_allowed":True},ensure_ascii=False))
+    try:
+        validate_independent_semantic_review(semantic_review)
+    except ValueError as exc:
+        print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+        return 1
+    semantic_path = Path.cwd() / "profile-semantic-judge.json"
+    semantic_path.write_text(
+        json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+    repository = os.environ["GITHUB_REPOSITORY"]
+    artifact = f"profile-native-output-{run_id}"
+    semantic_ref = (
+        f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
+    )
+    submit = {
+        "action": "profile_native_continue_v1",
+        "execution_id": execution_id,
+        "source_revision": source_revision,
+        "source_digest": digest,
+        "semantic_judge_result": build_semantic_receipt(semantic_review),
+        "semantic_evidence_ref": semantic_ref,
+    }
+    code, closed = call_json(EDGE_URL, submit, headers)
+    if code != 200:
+        print(json.dumps({
+            "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
+            "code":closed.get("code"),
+        }))
+        return 1
+    print(json.dumps({
+        "execution_id": execution_id,
+        "profile_code": closed.get("profile_code"),
+        "phase": closed.get("phase"),
+        "next_gate": closed.get("next_gate"),
+    }, ensure_ascii=False))
+    return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
+
 
 
 def main():
     request = governed_request()
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "NATIVE_CHAT_RECEIPT_APPEND":
+        # Preserve the caller event intact. Edge derives writer_receipt_ref
+        # from the VERIFIED OIDC run; SQL owns the nonce and all SHA linkage.
+        # Satisfy the SAME canonical transport preflight as every other
+        # native-profile continuation. Never send a made-up digest or role.
+        source_revision = os.environ["GITHUB_SHA"]
+        exact_source = Path.cwd() / "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        if (not re.fullmatch(r"[a-f0-9]{40}", source_revision)
+            or not exact_source.is_file()
+            or not exact_source.resolve().is_relative_to(Path.cwd().resolve())):
+            raise ValueError("LF_NATIVE_CHAT_APPEND_SOURCE_FILE_UNRESOLVED")
+        source_digest = "sha256:" + hashlib.sha256(exact_source.read_bytes()).hexdigest()
+        code, reply = call_json(EDGE_URL, {
+            "action": "profile_native_continue_v1",
+            "execution_id": request["execution_id"],
+            "source_revision": source_revision,
+            "source_digest": source_digest,
+            "native_chat_receipt": {
+                "kind": request["receipt_kind"],
+                "event": request["event"],
+            },
+        }, headers)
+        result = reply.get("result") if isinstance(reply, dict) else {}
+        valid = (code == 200 and isinstance(reply, dict)
+                 and reply.get("outcome") == "NATIVE_CHAT_RECEIPT_RECORDED"
+                 and reply.get("execution_id") == request["execution_id"]
+                 and reply.get("kind") == request["receipt_kind"]
+                 and isinstance(result, dict)
+                 and result.get("status") in ("RECEIPT_APPENDED", "ALREADY_RECORDED")
+                 and result.get("execution_id") == request["execution_id"]
+                 and result.get("kind") == request["receipt_kind"]
+                 and isinstance(result.get("nonce"), str)
+                 and re.fullmatch(r"[a-f0-9]{48}", result["nonce"])
+                 and isinstance(result.get("frozen_bundle_sha256"), str)
+                 and re.fullmatch(r"[a-f0-9]{64}", result["frozen_bundle_sha256"]))
+        receipt = {
+            "schema_version": "LF_NATIVE_CHAT_GOVERNED_APPEND_READBACK_V1",
+            "execution_id": request["execution_id"],
+            "kind": request["receipt_kind"],
+            "phase": "STEP70_CONTEXT_PROVENANCE",
+            "status": "RECORDED_NOT_SEMANTIC_PASS" if valid else "BLOCKED",
+            "outcome": reply.get("outcome") if isinstance(reply, dict) else None,
+            "blocking_code": None if valid else (
+                reply.get("code") if isinstance(reply, dict) else "TRANSPORT_INVALID"
+            ),
+            "writer_result": result if valid else None,
+            "step70_completed": False,
+            "profile_completed": False,
+        }
+        (Path.cwd() / "profile-native-continuation.json").write_text(
+            json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
+        return 0 if valid else 1
     if isinstance(request, dict) and request.get("kind") == "SKILL_PLAN":
         # This is an invocation batch, NOT the semantic agent or a new
         # orchestration boundary. The signed Edge checks each parent and skill.
@@ -747,6 +1310,7 @@ def main():
             "execution_id": request["execution_id"],
             "skill_code": request["skill_code"],
             "input": request["input"],
+            "skill_selection_decision": request.get("skill_selection_decision",request.get("skill_semantic_decision")),
         }, headers)
         result = invoked.get("result") if isinstance(invoked.get("result"), dict) else {}
         ok = code == 200 and invoked.get("outcome") == "SKILL_INVOKED"
@@ -760,15 +1324,20 @@ def main():
     # profile-owned skill invocations: OIDC + server-side parent authority
     # already bind the call to an existing execution.
     source_revision = os.environ["GITHUB_SHA"]
-    if isinstance(request, dict) and request.get("kind") == "BEGIN":
+    if isinstance(request, dict) and request.get("kind") in ("BEGIN","PHRASE_BEGIN"):
         # Profile invokes its own existing governed operation. Server-side
         # Edge authenticates OIDC and applies service_role at the canonical
         # writer. No credential is serialized to Router/profile context.
-        code, started = call_json(EDGE_URL, {
-            "action": "profile_native_begin_from_context_v1",
-            "context": request["router_context"],
-            "executor_mode": request["executor_mode"],
-        }, headers)
+        begin_payload = ({"action":"profile_native_begin_from_phrase_v1",
+                          "request_text":request["request_text"],
+                          "stage1_decision":request["stage1_decision"],
+                          "profile_semantic_decision":request["profile_semantic_decision"],
+                          "executor_mode":request["executor_mode"]}
+                         if request["kind"]=="PHRASE_BEGIN" else
+                         {"action":"profile_native_begin_from_context_v1",
+                          "context":request["router_context"],
+                          "executor_mode":request["executor_mode"]})
+        code, started = call_json(EDGE_URL, begin_payload, headers)
         result = started.get("result") if isinstance(started.get("result"), dict) else {}
         execution_id = result.get("execution_id")
         if (code != 200 or started.get("outcome") != "NATIVE_EXECUTION_READY"
@@ -779,23 +1348,63 @@ def main():
                 "http_status":code,"code":started.get("code"),
                 "outcome":started.get("outcome")}))
             return 1
-        raw_draft = ""
+        raw_draft = (json.dumps(request["screen_semantic_decision"],ensure_ascii=False)
+                     if request["kind"]=="PHRASE_BEGIN"
+                     and request.get("screen_semantic_decision") is not None else "")
         profile_output = None
         semantic_review = None
         print(json.dumps({"phase":"PROFILE_NATIVE_BEGIN",
             "execution_id":execution_id,
             "profile_code":result.get("profile_code"),
             "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
+    elif isinstance(request, dict) and request.get("kind") == "BASELINE_CONTINUATION":
+        execution_id = request["execution_id"]
+        raw_draft,profile_output,semantic_review = "",None,None
+    elif isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
+        execution_id = request["execution_id"]
+        # Source-bind handles skill-only continuations. When both screen and
+        # skill are supplied, native-continue binds screen then skill before Step40.
+        raw_draft = (json.dumps(request["screen_selection_draft"], ensure_ascii=False)
+                     if "screen_selection_draft" in request else "")
+        profile_output, semantic_review = None, None
     else:
         execution_id, raw_draft, profile_output, semantic_review = request
 
-    code, source = call_json(EDGE_URL, {
-        "action": "profile_native_source_bind_v1",
-        "execution_id": execution_id,
-    }, headers)
+    source_request = {"action":"profile_native_source_bind_v1", "execution_id":execution_id}
+    if (isinstance(request, dict)
+        and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION")
+        and "screen_selection_draft" not in request):
+        # With a screen draft, the screen is not yet bound: defer skill binding
+        # to native_continue, AFTER the semantic screen submit and BEFORE Step40.
+        source_request["skill_semantic_decision" if request["kind"]=="SKILL_SEMANTIC_CONTINUATION"
+                       else "skill_selection_decision"] = request.get("skill_selection_decision",request.get("skill_semantic_decision"))
+    code, source = call_json(EDGE_URL, source_request, headers)
+    # Optional skill omission is a finding on the SAME execution, never
+    # a reason to stop the Router-admitted profile at step 30.
+    # The authoritative plan is returned with the current RUN context and
+    # selected_skill_codes (0..2); a judge may submit later by governed Issue.
     if code != 200 or source.get("outcome") != "SOURCE_BINDING_REQUIRED":
         print(json.dumps({"phase": "SOURCE_BIND", "status": code, "code": source.get("code")}))
         return 1
+    # The owning profile must consume its operation definition from DB, not
+    # a user-written step list or a Router-selected skill name.
+    plan = source.get("operation_plan")
+    if (not isinstance(plan, dict) or plan.get("status") != "READY"
+        or plan.get("operation_code") != "EJECUCION_PERFIL_LF"
+        or plan.get("profile_code") != source.get("profile_code")
+        or not isinstance(plan.get("steps"), list) or len(plan["steps"]) != 11
+        or not isinstance(plan.get("skills"), list)):
+        print("PROFILE_OPERATION_DB_PLAN_NOT_READY")
+        return 1
+    (Path.cwd() / "profile-native-operation-plan.json").write_text(
+        json.dumps(plan, ensure_ascii=False, sort_keys=True, indent=2) + "\\n",
+        encoding="utf-8",
+    )
+    print(json.dumps({"phase":"OPERATION_DB_PLAN_BOUND",
+        "execution_id":execution_id,
+        "step_count":len(plan["steps"]),
+        "skill_count":len(plan["skills"]),
+        "skill_invocation_complete":False},ensure_ascii=False))
     target_path = source.get("target_path")
     if (source.get("execution_id") != execution_id
         or source.get("source_revision_required") != source_revision
@@ -823,12 +1432,20 @@ def main():
         "source_revision": source_revision,
         "source_digest": digest,
     }
+    if isinstance(request, dict) and request.get("kind") == "BASELINE_CONTINUATION":
+        payload["baseline_envelope"] = request["baseline_envelope"]
     if raw_draft:
         draft = json.loads(raw_draft)
         if not isinstance(draft, dict):
             print("SCREEN_SELECTION_DRAFT_NOT_JSON_OBJECT")
             return 1
         payload["screen_selection_draft"] = draft
+        if (isinstance(request, dict)
+            and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION")):
+            # One continuation carries both decisions; SQL binds them in order.
+            decision_field = ("skill_semantic_decision" if request["kind"] == "SKILL_SEMANTIC_CONTINUATION"
+                              else "skill_selection_decision")
+            payload[decision_field] = request.get("skill_selection_decision",request.get("skill_semantic_decision"))
 
     code, result = call_json(EDGE_URL, payload, headers)
     if code != 200:
@@ -844,52 +1461,166 @@ def main():
                           else result.get("code") if isinstance(result, dict) else "UNKNOWN"}))
         return 1
 
-    # Input Governance is a runtime concern, not a profile/Router bypass.
-    # Reinvoke only on an explicit DIRECT_EDGE_INVOCATION ticket and READY.
-    # Each 202 consumes its ticket. Refresh the bridge before continuing.
-    # Four directly chained invocations, never a queue or polling worker.
-    for _ in range(4):
-        if result.get("phase") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
+    # Selected skills own Step40. Runtime dispatch stays in the current
+    # Issue/OIDC/Edge lane; a failed worker only affects READ_ONLY findings.
+    # No runtime ticket, timeout or authority is accepted from the Issue body.
+    runtime_deadline = None
+    terminal_blocked_replayed = False
+    # Two independent, one-use DB tickets MAX per parent+skill. The DB
+    # handler records an IG finding after exhaustion, instead of keeping
+    # the native workflow running until the short-lived OIDC token expires.
+    attempt = 0
+    validator_resumes = 0
+    while attempt < 2:
+        if result.get("phase") not in ("SKILL_RUNTIME_REQUIRED",
+                                        "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
             break
         runtime = result.get("result", {}).get("input_governance_runtime_request", {})
         ticket = runtime.get("request_headers", {}).get("X-LF-Profile-Runtime-Ticket")
         body = runtime.get("request_body")
+        expiry = runtime.get("ticket_expires_at")
         if (runtime.get("transport") != "DIRECT_EDGE_INVOCATION"
             or runtime.get("queue_required") is not False
             or runtime.get("polling_required") is not False
             or not isinstance(ticket, str) or not isinstance(body, dict)
-            or body.get("action") != "input_readiness_context_pack_runtime_v1"
-            or body.get("execution_id") != execution_id):
-            print("PROFILE_INPUT_GOVERNANCE_TICKET_INVALID")
+            or body.get("action") != "profile_skill_runtime_v1"
+            or body.get("execution_id") != execution_id
+            or body.get("skill_code") != result.get("result",{}).get("skill_code")
+            or not isinstance(expiry, str)):
+            print("PROFILE_SELECTED_SKILL_RUNTIME_TICKET_INVALID")
             return 1
-        ig_code, ig = call_json(EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
-        if is_direct_validator_continuation(ig_code, ig):
-            payload.pop("screen_selection_draft", None)
-            code, result = call_json(EDGE_URL, payload, headers)
-            if code != 200 or result.get("outcome") != "CONTINUATION_REQUIRED":
-                print(json.dumps({
-                    "phase": "REPREPARE_AFTER_IG_202", "status": code,
-                    "outcome": result.get("outcome"), "code": result.get("code"),
-                }))
+        try:
+            expires_at = dt.datetime.fromisoformat(expiry.replace("Z","+00:00"))
+            if expires_at.tzinfo is None:
+                raise ValueError("ticket timezone absent")
+        except ValueError:
+            print("PROFILE_SELECTED_SKILL_DB_TIMEOUT_INVALID")
+            return 1
+        # The FIRST ticket expiry is authoritative: repeated issue never extends
+        # the same RUN's bounded automatic retry horizon.
+        if runtime_deadline is None:
+            runtime_deadline = expires_at
+        else:
+            runtime_deadline = min(runtime_deadline, expires_at)
+        now = dt.datetime.now(dt.timezone.utc)
+        if now < runtime_deadline:
+            ig_code, ig = call_json(
+                EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
+        else:
+            ig_code, ig = 0, {"outcome":"RUNTIME_TICKET_DEADLINE"}
+        # The worker may legitimately be CURATING/VALIDATING, or fail during
+        # validation. NEVER fabricate a terminal IG READY or production grant.
+        governed = ig.get("result", {}).get("result") if isinstance(ig.get("result"), dict) else None
+        predecision = governed.get("predecision_crosscheck") if isinstance(governed, dict) else None
+        blocked_terminal = (
+            not terminal_blocked_replayed
+            and ig_code == 409 and ig.get("outcome") == "BLOCKED"
+            and ig.get("code") in ("IG_CONTEXT_PACK_BLOCKED",
+                                   "SKILL_RUNTIME_BLOCKED_AS_FINDING")
+            and (ig.get("skill_code") == body.get("skill_code")
+                 if ig.get("code") == "SKILL_RUNTIME_BLOCKED_AS_FINDING"
+                 else True)
+            and ig.get("terminal_status") == "BLOCKED"
+            and ig.get("execution_id") == execution_id
+            and type(body.get("pantalla_id")) is int
+            and body["pantalla_id"] > 0
+            and ig.get("pantalla_id") == body["pantalla_id"]
+            and (ig.get("consumer") == "CONTEXT_PACK"
+                 if ig.get("code") == "IG_CONTEXT_PACK_BLOCKED"
+                 else True)
+            and isinstance(governed, dict)
+            and governed.get("status") == "BLOCKED"
+            and governed.get("consumer") == "CONTEXT_PACK"
+            and governed.get("pantalla_id") == body.get("pantalla_id")
+            and governed.get("remediation_state") == "INTERNAL_REMEDIATION_REQUIRED"
+            and governed.get("owner_interruption_required") is False
+            and governed.get("promotion_authorized") is False
+            and governed.get("production_authorized") is False
+            and governed.get("execution_mode") == "REUSE_COMPLETED_CURRENT_RUN"
+            and isinstance(governed.get("output_sha256"), str)
+            and bool(re.fullmatch(r"[0-9a-f]{64}", governed["output_sha256"]))
+            and isinstance(predecision, dict)
+            and predecision.get("status") == "CANONICAL_READBACK_ONLY"
+            and predecision.get("run_id") == governed.get("run_id")
+            and isinstance(predecision.get("deterministic_finding_count"), int)
+            and predecision["deterministic_finding_count"] > 0
+        )
+        normal_ready = (
+            ig_code == 200 and ig.get("outcome") == "TERMINAL"
+            and ig.get("terminal_status") == "READY"
+            and (ig.get("pantalla_id") == body.get("pantalla_id")
+                 if type(body.get("pantalla_id")) is int else True)
+        )
+        validator_resume = is_direct_validator_continuation(
+            ig_code, ig, execution_id=execution_id,
+            pantalla_id=body.get("pantalla_id"),
+            skill_code=body.get("skill_code"))
+        if validator_resume:
+            validator_resumes += 1
+            if validator_resumes > 3:
+                print("PROFILE_SELECTED_SKILL_VALIDATOR_RESUME_LIMIT")
                 return 1
-            continue
-        if ig_code != 200 or ig.get("outcome") != "TERMINAL" or ig.get("terminal_status") != "READY":
-            print(json.dumps({
-                "phase": "INPUT_GOVERNANCE", "status": ig_code,
-                "outcome": ig.get("outcome"), "code": ig.get("code"),
-            }))
-            return 1
-        payload.pop("screen_selection_draft", None)
-        code, result = call_json(EDGE_URL, payload, headers)
+        else:
+            # Only real terminal/error outcomes consume the two-attempt budget.
+            attempt += 1
+        if not (normal_ready or blocked_terminal or validator_resume):
+            # The full worker error may contain sensitive source; do not log it.
+            print(json.dumps({"phase":"SKILL_RUNTIME_RETRY",
+                "execution_id":execution_id,"attempt":attempt,
+                "http_status":ig_code,
+                "outcome":ig.get("outcome"),
+                "code":str(ig.get("code") or "")[:120],
+                "production_authorized":False}))
+        if not (normal_ready or blocked_terminal or validator_resume):
+            remaining = (runtime_deadline-dt.datetime.now(dt.timezone.utc)).total_seconds()
+            if remaining>0 and ig_code != 0:
+                time.sleep(min(2.0,remaining))
+        payload.pop("screen_selection_draft",None)
+        code, result = call_json(EDGE_URL,payload,headers)
+        if code == 401:
+            # Refresh only through the existing GitHub OIDC identity. No
+            # API key/service-role fallback; one re-auth attempt, fail closed.
+            try:
+                headers = {"authorization": f"Bearer {oidc()}"}
+                code, result = call_json(EDGE_URL,payload,headers)
+            except (KeyError, OSError, urllib.error.URLError) as exc:
+                print(json.dumps({"phase":"SELECTED_SKILL_OIDC_REFRESH_BLOCKED",
+                    "error_type":type(exc).__name__}))
+                return 1
         if code != 200:
-            print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code, "code": result.get("code")}))
+            print(json.dumps({"phase":"SELECTED_SKILL_PREPARE_RETRY",
+                "http_status":code,"code":result.get("code")}))
             return 1
-
-    if result.get("phase") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
-        print("PROFILE_INPUT_GOVERNANCE_BOUNDED_RESUME_EXHAUSTED")
+        if blocked_terminal:
+            terminal_blocked_replayed = True
+            bridge_result = result.get("result") if isinstance(result.get("result"), dict) else {}
+            result_ig = bridge_result.get("input_governance") if isinstance(bridge_result.get("input_governance"), dict) else {}
+            if (result.get("phase") != "NATIVE_MODEL_INPUT_READY"
+                or result.get("execution_id") != execution_id
+                or bridge_result.get("execution_write_mode") != "READ_ONLY"
+                or result_ig.get("status") != "BLOCKED"
+                or not isinstance(bridge_result.get("skill_findings"), list)
+                or not any(
+                    isinstance(f,dict) and f.get("skill_code") == body.get("skill_code")
+                    for f in bridge_result["skill_findings"])
+                or result_ig.get("analysis_scope") != "READ_ONLY_WITH_IG_FINDINGS"
+                or not isinstance(result_ig.get("governance_result"), dict)
+                or result_ig["governance_result"].get("run_id") != governed.get("run_id")
+                or result_ig["governance_result"].get("output_sha256") != governed.get("output_sha256")):
+                print("PROFILE_SELECTED_SKILL_BLOCKED_TERMINAL_NOT_ATTESTED")
+                return 1
+            print(json.dumps({"phase":"SKILL_BLOCKED_AS_FINDING",
+                "execution_id":execution_id,"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK"}))
+    if result.get("phase") in ("SKILL_RUNTIME_REQUIRED","INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
+        print("PROFILE_SELECTED_SKILL_DB_BOUNDED_RETRY_EXHAUSTED")
         return 1
 
     phase = result.get("phase")
+    if phase == "RESEARCH_BASELINE_REQUIRED":
+        return record_incomplete_continuation(
+            execution_id,source.get("profile_code"),phase,
+            "research_baseline_freeze","SOURCE_BOUND_BASELINE_ENVELOPE",
+        )
     # Deliberately do not print context packs or runtime tickets in CI logs.
     print(json.dumps({
         "execution_id": execution_id,
@@ -898,66 +1629,9 @@ def main():
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
     if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
-        if semantic_review is None:
-            return record_incomplete_continuation(
-                execution_id, source.get("profile_code"), phase,
-                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
-            )
-        if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
-            from lf_semantic_fail_feedback import persist_feedback
-            try:
-                feedback = persist_feedback(
-                    semantic_review, execution_id, source.get("profile_code"),
-                    Path.cwd() / "profile-semantic-judge.json",
-                )
-            except (ValueError, TypeError) as exc:
-                print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
-                return 1
-            print(json.dumps({
-                "phase": feedback["phase"], "outcome": feedback["outcome"],
-                "verdict": feedback["verdict"],
-                "execution_id": feedback["execution_id"],
-                "next_action": feedback["next_action"],
-            }, ensure_ascii=False))
-            return 1
-        try:
-            validate_independent_semantic_review(semantic_review)
-        except ValueError as exc:
-            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
-            return 1
-        semantic_path = Path.cwd() / "profile-semantic-judge.json"
-        semantic_path.write_text(
-            json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
-            encoding="utf-8",
+        return complete_native_profile_semantic_and_report(
+            execution_id, source, semantic_review, source_revision, digest, headers,
         )
-        run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
-        repository = os.environ["GITHUB_REPOSITORY"]
-        artifact = f"profile-native-output-{run_id}"
-        semantic_ref = (
-            f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
-        )
-        submit = {
-            "action": "profile_native_continue_v1",
-            "execution_id": execution_id,
-            "source_revision": source_revision,
-            "source_digest": digest,
-            "semantic_judge_result": build_semantic_receipt(semantic_review),
-            "semantic_evidence_ref": semantic_ref,
-        }
-        code, closed = call_json(EDGE_URL, submit, headers)
-        if code != 200:
-            print(json.dumps({
-                "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
-                "code":closed.get("code"),
-            }))
-            return 1
-        print(json.dumps({
-            "execution_id": execution_id,
-            "profile_code": closed.get("profile_code"),
-            "phase": closed.get("phase"),
-            "next_gate": closed.get("next_gate"),
-        }, ensure_ascii=False))
-        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
 
     if phase == "REPORT_OUTPUT_REQUIRED":
         submit = {
@@ -990,11 +1664,15 @@ def main():
         try:
             profile_output, evidence_manifest = unwrap_profile_native_evidence(target_path, profile_output)
             profile_output = prepare_product_director_raw(target_path, profile_output)
+            require_step50_verified_effect_shape(
+                target_path, profile_output,
+                result.get("result") if isinstance(result.get("result"), dict) else None,
+            )
             validation, raw_ref, validator_ref = run_bound_validator(
                 target_path, source.get("profile_code"), profile_output, evidence_manifest
             )
         except ValueError as exc:
-            print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
+            print(json.dumps({"phase":"STEP50_EFFECT_PRECHECK_OR_BOUND_VALIDATOR","code":str(exc)}))
             return 1
         submit = {
             "action": "profile_native_continue_v1",
@@ -1020,9 +1698,11 @@ def main():
             "next_action": recorded.get("next_action"),
         }, ensure_ascii=False))
         if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
-            return record_incomplete_continuation(
-                execution_id, source.get("profile_code"), recorded["phase"],
-                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+            # A single already-governed resume payload can carry BOTH authentic
+            # native RAW and source-supported V3. Edge records 50/60 first;
+            # only then this call records 70/80 on the SAME execution_id.
+            return complete_native_profile_semantic_and_report(
+                execution_id, source, semantic_review, source_revision, digest, headers,
             )
         return 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):

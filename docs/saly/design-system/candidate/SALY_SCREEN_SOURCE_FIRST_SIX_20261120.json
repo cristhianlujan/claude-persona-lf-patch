@@ -1,0 +1,76 @@
+{
+  "schema_version": "SALY_SCREEN_SOURCE_FIRST_SIX_V0_1",
+  "source_folder_id": "1qhQwIhuJJ-EvKFRDxEVf-R265_gGh-65",
+  "source_folder_file_count": 39,
+  "companion_candidate_folder_file_count": 7,
+  "image_bytes_checked": 6,
+  "approved_status_authorized": false,
+  "assets": [
+    {
+      "code": "SALY_HOME_IPHONE16PRO",
+      "name": "SALY_HOME_IPHONE16PRO_v1.1.png",
+      "id": "1YXWAS8McVi0Y91FEtMbCW6M57-6D9em9",
+      "width": 1086,
+      "height": 1448,
+      "size": 1343036,
+      "hash": "3d80592dc94938ea6e4d34727a99a0aec242b43838e2815820b72e87d649d33e",
+      "approval_status": "CANDIDATE",
+      "independent_sha_verified": true
+    },
+    {
+      "code": "SALY_SOLICITAR_ADELANTO",
+      "name": "SALY_SOLICITAR_ADELANTO_INTELIGENTE_v1.0.png",
+      "id": "1n9nNgKow7jcMJuX1tI6JXXAeye5rXJhJ",
+      "width": 1024,
+      "height": 1536,
+      "size": 1639029,
+      "hash": "65d537d740b9dd19fbf953cbc0574ad55206c00a67f0a10c2035d5e1d21842fc",
+      "approval_status": "CANDIDATE",
+      "independent_sha_verified": true
+    },
+    {
+      "code": "SALY_MI_DISPONIBLE_DIARIO",
+      "name": "SALY_MI_DISPONIBLE_ASIGNACION_DIARIA_v1.0.png",
+      "id": "1HkgD-u2jfqBfyewEkDPepB_f6pKnaXni",
+      "width": 1024,
+      "height": 1536,
+      "size": 1308404,
+      "hash": "5bf71b4e9ec9a752c27c3ac7d3aeb97e0a443a484a75e550cef47c3a5b8b6c58",
+      "approval_status": "CANDIDATE",
+      "independent_sha_verified": true
+    },
+    {
+      "code": "SALY_SOPORTE_AI_PROACTIVO",
+      "name": "SALY_SOPORTE_AI_v1.1_INICIO_PROACTIVO_APROBADA.png",
+      "id": "1UqFaIv0MsBC7f9IVeM9MHr4ckG6i3CM5",
+      "width": 560,
+      "height": 1086,
+      "size": 553278,
+      "hash": "b67ab3b4fd04aec3d3bee6ae1dd99a0fe40239c0d0ee1728d815e2bb2abd7567",
+      "approval_status": "CANDIDATE",
+      "independent_sha_verified": true
+    },
+    {
+      "code": "SALY_SEGUIMIENTO_MINIMAL",
+      "name": "SALY_SEGUIMIENTO_MINIMAL_v1.5.png",
+      "id": "177828miKHoOkhQQwYP7XfMbaWo0Asvbf",
+      "width": 596,
+      "height": 1312,
+      "size": 595055,
+      "hash": "91fd15fea8830e7dd9323b55feed114caa824ce57cb007ffe967f8b5946cd7c7",
+      "approval_status": "CANDIDATE",
+      "independent_sha_verified": true
+    },
+    {
+      "code": "SALY_REWARDS_HOME_SORTEOS",
+      "name": "SALY_HOME_IPHONE16PRO_REWARDS_SORTEOS_V3_APROBADA.png",
+      "id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+      "width": 1086,
+      "height": 1448,
+      "size": 1623170,
+      "hash": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+      "approval_status": "CANDIDATE",
+      "independent_sha_verified": true
+    }
+  ]
+}

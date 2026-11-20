@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-r17-pgdual-startup-readiness-posttrain-956-20261114",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_transport_flow_pgdual_rollback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_policy19_l36_full_config_guard_pgdual.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-r17-pgdual-startup-readiness-posttrain-956-20261114.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_rule_lifecycle_rollback_pg18_pg176.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_judge_independence_pgdual_rollback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_q11_facephi_token_names_pg17_pg18.py": "RUNTIME_TESTING"
+  }
+}

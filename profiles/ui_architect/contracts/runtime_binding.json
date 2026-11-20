@@ -7,6 +7,14 @@
     "output_modes": {
       "FOCUSED_DECISION": "schemas/ui_focused_decision.schema.json",
       "MISSING_INPUT": "schemas/ui_missing_input.schema.json"
+    },
+    "default_mode": "PRODUCTION_SPEC",
+    "output_type_modes": {
+      "PRODUCTION_UI_SPEC": "PRODUCTION_SPEC"
+    },
+    "shape_modes": {
+      "decision_subject": "FOCUSED_DECISION",
+      "pipeline_action": "MISSING_INPUT"
     }
   },
   "canonical_validator": {
@@ -36,11 +44,17 @@
         "RUNTIME CRITICAL GATE — EXECUTE FIRST",
         "V6 Composer structural boundary — REQUIRED FOR NEW PRODUCTION RUNS"
       ],
-      "max_chars": 8000
+      "max_chars": 12000
     },
     "required_source_refs": [
       "profiles/ui_architect/SKILL.md"
-    ]
+    ],
+    "allow_additional_sources": true,
+    "projection_rationale": {
+      "measured_selected_sections_chars": 9653,
+      "measurement_source": "profiles/ui_architect/SKILL.md",
+      "full_canonical_sources_retained": true
+    }
   },
   "execution_partition": {
     "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",

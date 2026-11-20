@@ -1,0 +1,610 @@
+-- DRAFT/NO-GO: candidate-only; apply exclusively via LF Migration Merge Train.
+-- Router selects PROFILE + Gate2; operation resolves skills deterministically/semantically.
+-- This supersedes the incorrect lf_activo_relaciones/USA_SKILL selector.
+-- Mirror existing lf_profile_selection_registry_v1 + lf_profile_selector_policy_v1.
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS public.lf_skill_selection_registry_v1 (
+  skill_code text PRIMARY KEY REFERENCES public.lf_skill_catalog_v1(skill_code),
+  descriptor jsonb NOT NULL,
+  source_kind text NOT NULL,
+  source_ref text NOT NULL,
+  source_revision text NOT NULL,
+  descriptor_status text NOT NULL CHECK (descriptor_status IN ('CURRENT','STALE_SOURCE_CHANGED')),
+  stale_reason text,
+  synced_at timestamptz NOT NULL DEFAULT now(),
+  CHECK (descriptor->>'schema_version'='LF_SKILL_SELECTION_DESCRIPTOR_V1'),
+  CHECK (jsonb_typeof(descriptor->'selection_evidence')='array'),
+  CHECK (jsonb_array_length(descriptor->'selection_evidence')>0)
+);
+
+CREATE TABLE IF NOT EXISTS public.lf_skill_selector_policy_v1 (
+  profile_code text NOT NULL,
+  skill_code text NOT NULL REFERENCES public.lf_skill_catalog_v1(skill_code),
+  channels text[] NOT NULL,
+  required_operation text NOT NULL,
+  allowed_effects text[] NOT NULL,
+  selection_mode text NOT NULL CHECK (selection_mode IN ('DETERMINISTIC_REQUIRED','SEMANTIC_OPTIONAL')),
+  enabled boolean NOT NULL DEFAULT true,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(profile_code,skill_code,required_operation),
+  CHECK(cardinality(channels)>0 AND channels <@ ARRAY['PRODUCTO','PROGRAMACION','OPERACIONES']),
+  CHECK(cardinality(allowed_effects)>0 AND allowed_effects <@ ARRAY['READ_ONLY','PROPOSE_ONLY','WRITE_GOVERNED'])
+);
+
+-- IG is a CANDIDATE, NOT a READY skill: its real handler/authority remains NO-GO.
+INSERT INTO public.lf_skill_catalog_v1
+(skill_code,description,required_operation,handler_fn,effect,input_required,status,opener_fn,child_caller)
+VALUES ('INPUT_GOVERNANCE_CONTEXT_PACK',
+        'Input Governance context readiness via profile-owned governed dependency (candidate; handler unverified)',
+        'EJECUCION_PERFIL_LF','lf_skill_h_input_governance_context_pack_v1',
+        'READ_ONLY',ARRAY['request_text','profile_code','scope','consumer'],'DRAFT',NULL,NULL)
+ON CONFLICT (skill_code) DO NOTHING;
+
+INSERT INTO public.lf_skill_selection_registry_v1
+(skill_code,descriptor,source_kind,source_ref,source_revision,descriptor_status,stale_reason)
+VALUES ('INPUT_GOVERNANCE_CONTEXT_PACK',
+ jsonb_build_object(
+   'schema_version','LF_SKILL_SELECTION_DESCRIPTOR_V1',
+   'description','Resuelve preparación y evidencia de Input Governance solo cuando la política de perfil lo permite',
+   'selection_evidence',jsonb_build_array(
+      jsonb_build_object('kind','PURPOSE','value','context readiness y autoridad de entrada del perfil','source_section','INPUT_GOVERNANCE_EXECUTION_CONTRACT'),
+      jsonb_build_object('kind','BOUNDARY','value','no crear segundo RUN de perfil, no escribir ni declarar CURRENT sin readback','source_section','EKB/7'))),
+ 'SUPABASE_CONTRACT','supabase://public.lf_activos/INPUT_GOVERNANCE_EXECUTION_CONTRACT',
+ 'CANDIDATE_SOURCE_NOT_ATTESTED','STALE_SOURCE_CHANGED','SOURCE_AND_HANDLER_NOT_ATTESTED')
+ON CONFLICT (skill_code) DO NOTHING;
+
+-- Candidate policy is provisioned for EVERY CURRENT profile in the SAME canonical
+-- registry used by ACT-0001; no profile-specific branch in Step40/Step50.
+-- All rows remain disabled: they are proposals, not implicit owner approvals.
+-- "required" means required ONLY WHEN the existing input applicability check
+-- already returned applicable=true; historical NOT_REQUIRED must remain skipped.
+ALTER TABLE public.lf_skill_selector_policy_v1
+  ADD COLUMN IF NOT EXISTS applicability_contract jsonb NOT NULL DEFAULT
+    '{"evaluation":"INPUT_REQUIRED_CONTRACT","only_if_applicable":false}'::jsonb,
+  ADD COLUMN IF NOT EXISTS policy_evidence_ref text,
+  ADD COLUMN IF NOT EXISTS owner_decision_required boolean NOT NULL DEFAULT true;
+
+-- No extra authority for write or silent activation.
+INSERT INTO public.lf_skill_selector_policy_v1
+ (profile_code,skill_code,channels,required_operation,allowed_effects,
+  selection_mode,enabled,applicability_contract,policy_evidence_ref,owner_decision_required)
+SELECT r.profile_code,'INPUT_GOVERNANCE_CONTEXT_PACK',p.channels,
+       'EJECUCION_PERFIL_LF',ARRAY['READ_ONLY'],
+       'DETERMINISTIC_REQUIRED',false,
+       '{"evaluation":"EVIDENCE_PAYLOAD","only_if_applicable":true,"evidence_step_id":"input_validate","evidence_json_path":["input_governance","applicable"],"positive_literal":"true","not_required_skips":true}'::jsonb,
+       'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
+FROM public.lf_profile_selection_registry_v1 r
+JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+WHERE r.descriptor_status='CURRENT'
+ON CONFLICT (profile_code,skill_code,required_operation) DO NOTHING;
+
+-- Existing SCREEN_RULES_SNAPSHOT is a candidate for screen-facing work only.
+-- All optional bindings are disabled pending source/owner validation.
+INSERT INTO public.lf_skill_selector_policy_v1
+ (profile_code,skill_code,channels,required_operation,allowed_effects,
+  selection_mode,enabled,policy_evidence_ref,owner_decision_required)
+SELECT r.profile_code,'SCREEN_RULES_SNAPSHOT',p.channels,'EJECUCION_PERFIL_LF',
+       ARRAY['READ_ONLY'],'SEMANTIC_OPTIONAL',false,
+       'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
+FROM public.lf_profile_selection_registry_v1 r
+JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+WHERE r.descriptor_status='CURRENT' AND r.canonical_profile_key IN
+ ('product_director_lf','ui_architect','ux_product_experience_architect_lf',
+  'customer_financial_ux_decisioning','cx_trust_experience_architect_lf',
+  'gamification_system_architect','quality_pack')
+ON CONFLICT (profile_code,skill_code,required_operation) DO NOTHING;
+
+-- The systemic repair descriptor explicitly permits a governed profile update
+-- when separately authorized; the operation/effect is enforced by the invoker.
+INSERT INTO public.lf_skill_selector_policy_v1
+ (profile_code,skill_code,channels,required_operation,allowed_effects,
+  selection_mode,enabled,policy_evidence_ref,owner_decision_required)
+SELECT r.profile_code,'PROFILE_UPDATE_APPLY',p.channels,'ACTUALIZACION_PERFIL_LF',
+       ARRAY['WRITE_GOVERNED'],'SEMANTIC_OPTIONAL',false,
+       'supabase://public.lf_profile_selection_registry_v1/'||r.profile_code,true
+FROM public.lf_profile_selection_registry_v1 r
+JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+WHERE r.descriptor_status='CURRENT'
+ AND r.canonical_profile_key='systemic_root_cause_repair_lf'
+ON CONFLICT (profile_code,skill_code,required_operation) DO NOTHING;
+
+DO $candidate_profile_policy_coverage$
+DECLARE n int; missing int;
+BEGIN
+ SELECT count(*) INTO n FROM public.lf_profile_selection_registry_v1
+ WHERE descriptor_status='CURRENT';
+ SELECT count(*) INTO missing FROM public.lf_profile_selection_registry_v1 r
+ WHERE r.descriptor_status='CURRENT' AND NOT EXISTS
+ (SELECT 1 FROM public.lf_skill_selector_policy_v1 p
+  WHERE p.profile_code=r.profile_code AND p.skill_code='INPUT_GOVERNANCE_CONTEXT_PACK'
+    AND p.required_operation='EJECUCION_PERFIL_LF');
+ IF n<10 OR missing<>0 THEN
+   RAISE EXCEPTION 'CANDIDATE_POLICY_PROFILE_COVERAGE_NOT_ATTESTED:n=%,missing=%',n,missing;
+ END IF;
+END $candidate_profile_policy_coverage$;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_skill_selection_prepare_v1(
+ p_profile_code text, p_channel text, p_semantic_decision jsonb DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','public'
+AS $profile_skill_selector$
+DECLARE
+ v_n int;
+ v_missing int;
+ v_stale int;
+ v_required jsonb:='[]'::jsonb;
+ v_optional jsonb:='[]'::jsonb;
+ v_selected jsonb:='[]'::jsonb;
+ v_choice text;
+ v_reason text;
+ v_refs jsonb;
+ v_revision text;
+ v_row record;
+ v_sem_n int;
+BEGIN
+ IF nullif(btrim(coalesce(p_profile_code,'')),'') IS NULL OR
+    coalesce(p_channel,'') NOT IN ('PRODUCTO','PROGRAMACION','OPERACIONES')
+ THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SELECTION_PROFILE_CHANNEL_INVALID'); END IF;
+ -- Follow the existing profile selector registry/policy: no unauthorized profile+channel.
+ IF NOT EXISTS (
+    SELECT 1 FROM public.lf_profile_selection_registry_v1 d
+    JOIN public.lf_profile_selector_policy_v1 p USING(profile_code)
+    WHERE d.profile_code=p_profile_code AND d.descriptor_status='CURRENT'
+      AND p_channel=ANY(p.channels))
+ THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SELECTION_PROFILE_SOURCE_OR_CHANNEL_NOT_CURRENT'); END IF;
+
+ -- 'enabled' alone is not owner authorization in a candidate row.
+ IF EXISTS (SELECT 1 FROM public.lf_skill_selector_policy_v1 p
+   WHERE p.profile_code=p_profile_code AND p.enabled
+     AND p_channel=ANY(p.channels) AND p.owner_decision_required) THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_OWNER_DECISION_REQUIRED');
+ END IF;
+ SELECT count(*) INTO v_n FROM public.lf_skill_selector_policy_v1 p
+ WHERE p.profile_code=p_profile_code AND p.enabled AND p_channel=ANY(p.channels);
+ IF v_n=0 THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_POLICY_NOT_CONFIGURED');
+ END IF;
+ SELECT count(*) INTO v_missing
+ FROM public.lf_skill_selector_policy_v1 p
+ LEFT JOIN public.lf_skill_catalog_v1 c ON c.skill_code=p.skill_code
+ WHERE p.profile_code=p_profile_code AND p.enabled AND p_channel=ANY(p.channels)
+   AND (c.skill_code IS NULL OR c.status<>'READY' OR c.required_operation<>p.required_operation
+        OR NOT(c.effect=ANY(p.allowed_effects))
+        OR (c.effect='WRITE_GOVERNED' AND NOT EXISTS (
+            SELECT 1 FROM public.lf_profile_write_authority_v1 a
+            WHERE a.profile_code=p_profile_code AND a.operation_code=c.required_operation
+              AND a.status='ACTIVE')));
+ IF v_missing>0 THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_DETERMINISTIC_POLICY_OR_CATALOG_INVALID',
+       'invalid_bindings',v_missing);
+ END IF;
+ SELECT count(*) INTO v_stale
+ FROM public.lf_skill_selector_policy_v1 p
+ LEFT JOIN public.lf_skill_selection_registry_v1 d ON d.skill_code=p.skill_code
+ WHERE p.profile_code=p_profile_code AND p.enabled AND p_channel=ANY(p.channels)
+   AND (d.skill_code IS NULL OR d.descriptor_status<>'CURRENT'
+        OR d.descriptor->>'schema_version'<>'LF_SKILL_SELECTION_DESCRIPTOR_V1'
+        OR coalesce(d.source_revision,'')='');
+ IF v_stale>0 THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_DESCRIPTOR_STALE_OR_MISSING',
+       'stale_count',v_stale);
+ END IF;
+ FOR v_row IN
+   SELECT p.skill_code,p.selection_mode,c.handler_fn,c.required_operation,c.effect,
+          c.input_required,d.descriptor,d.source_ref,d.source_revision
+     FROM public.lf_skill_selector_policy_v1 p
+     JOIN public.lf_skill_catalog_v1 c USING(skill_code)
+     JOIN public.lf_skill_selection_registry_v1 d USING(skill_code)
+    WHERE p.profile_code=p_profile_code AND p.enabled AND p_channel=ANY(p.channels)
+    ORDER BY p.skill_code
+ LOOP
+   IF v_row.selection_mode='DETERMINISTIC_REQUIRED' THEN
+     v_required:=v_required||jsonb_build_array(jsonb_build_object(
+       'skill_code',v_row.skill_code,'handler_fn',v_row.handler_fn,
+       'required_operation',v_row.required_operation,'effect',v_row.effect,
+       'input_required',to_jsonb(v_row.input_required),'selection_mode','DETERMINISTIC_POLICY',
+       'selection_evidence',jsonb_build_object('reason','MANDATORY_POLICY_FOR_PROFILE_AND_CHANNEL',
+         'descriptor_revision',v_row.source_revision,'source_ref',v_row.source_ref),
+       'invoker','public.lf_skill_invoke_v1'));
+   ELSE
+     v_optional:=v_optional||jsonb_build_array(jsonb_build_object(
+       'skill_code',v_row.skill_code,'handler_fn',v_row.handler_fn,
+       'required_operation',v_row.required_operation,'effect',v_row.effect,
+       'input_required',to_jsonb(v_row.input_required),'descriptor',v_row.descriptor,
+       'source_ref',v_row.source_ref,'source_revision',v_row.source_revision));
+   END IF;
+ END LOOP;
+ IF jsonb_array_length(v_optional)=0 THEN
+   IF p_semantic_decision IS NOT NULL THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_UNEXPECTED_SEMANTIC_DECISION');
+   END IF;
+   v_selected:=v_required;
+ ELSE
+   IF p_semantic_decision IS NULL THEN
+     RETURN jsonb_build_object('status','SEMANTIC_SELECTION_REQUIRED',
+       'blocking_code',null,'required_skills',v_required,
+       'semantic_candidates',v_optional,'profile_code',p_profile_code,'channel',p_channel,
+       'selection_mode','DETERMINISTIC_FILTER_THEN_NATIVE_SEMANTIC',
+       'next_action','NATIVE_PROFILE_JUDGE_SKILL_AND_SUBMIT_SAME_EXECUTION');
+   END IF;
+   IF jsonb_typeof(p_semantic_decision)<>'object' OR
+      p_semantic_decision ? 'selected_skill_codes' OR
+      jsonb_typeof(p_semantic_decision->'selected_skill_code')<>'string'
+   THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SEMANTIC_SELECTION_AMBIGUOUS'); END IF;
+   v_choice:=nullif(btrim(p_semantic_decision->>'selected_skill_code'),'');
+   v_reason:=nullif(btrim(p_semantic_decision->>'reason'),'');
+   v_refs:=p_semantic_decision->'evidence_refs';
+   v_revision:=p_semantic_decision->>'descriptor_revision';
+   SELECT count(*) INTO v_sem_n FROM jsonb_array_elements(v_optional) x
+   WHERE x->>'skill_code'=v_choice AND x->>'source_revision'=v_revision;
+   IF v_sem_n<>1 THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SEMANTIC_CHOICE_NOT_ALLOWED_OR_STALE'); END IF;
+   IF v_reason IS NULL OR jsonb_typeof(v_refs)<>'array' OR jsonb_array_length(v_refs)=0
+      OR coalesce(p_semantic_decision->>'review_mode','')<>'CURRENT_CONTEXT_REVIEW' THEN
+      RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SEMANTIC_EVIDENCE_MISSING');
+   END IF;
+   SELECT coalesce(jsonb_agg(jsonb_build_object(
+      'skill_code',x->>'skill_code','handler_fn',x->>'handler_fn',
+      'required_operation',x->>'required_operation','effect',x->>'effect',
+      'input_required',x->'input_required','selection_mode','SEMANTIC_DESCRIPTOR',
+      'selection_evidence',jsonb_build_object('reason',v_reason,'evidence_refs',v_refs,
+        'descriptor_revision',v_revision,'source_ref',x->>'source_ref',
+        'review_mode','CURRENT_CONTEXT_REVIEW'),
+      'invoker','public.lf_skill_invoke_v1')),'[]'::jsonb)
+   INTO v_selected FROM jsonb_array_elements(v_optional) x
+   WHERE x->>'skill_code'=v_choice;
+   v_selected:=v_required||v_selected;
+ END IF;
+ RETURN jsonb_build_object('status','READY','skills',v_selected,
+   'profile_code',p_profile_code,'channel',p_channel,
+   'selection_mode','DETERMINISTIC_THEN_SEMANTIC',
+   'source','lf_skill_selector_policy_v1+lf_skill_selection_registry_v1+lf_skill_catalog_v1',
+   'independence_attested',false);
+END;
+$profile_skill_selector$;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_execution_plan_v1(
+  p_profile_code text, p_channel text DEFAULT NULL, p_semantic_decision jsonb DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','public'
+AS $profile_plan_dynamic$
+DECLARE v_steps jsonb; v_count int; v_invalid int; v_selected jsonb; v_out jsonb;
+BEGIN
+ SELECT count(*),count(*) FILTER(WHERE c.step_id IS NULL),
+     coalesce(jsonb_agg(jsonb_build_object('step_order',s.step_order,'step_id',s.step_id,
+       'resolver_ref',c.resolver_ref,'next_if_pass',c.next_if_pass,
+       'next_if_blocked',c.next_if_blocked,'required_evidence_keys',c.required_evidence_keys)
+       ORDER BY s.step_order),'[]'::jsonb)
+ INTO v_count,v_invalid,v_steps
+ FROM public.lf_operation_steps s
+ LEFT JOIN public.lf_operation_step_contracts c
+ ON c.operation_code=s.operation_code AND c.step_id=s.step_id AND c.status='ACTIVE_ENFORCEMENT'
+ WHERE s.operation_code='EJECUCION_PERFIL_LF' AND s.active AND s.required;
+ IF v_count<>11 OR v_invalid>0 THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROFILE_OPERATION_STEP_CONTRACTS_INCOMPLETE');
+ END IF;
+ v_selected:=public.lf_profile_skill_selection_prepare_v1(p_profile_code,p_channel,p_semantic_decision);
+ v_out:=jsonb_build_object('operation_code','EJECUCION_PERFIL_LF','profile_code',p_profile_code,
+      'channel',p_channel,'status',v_selected->>'status',
+      'steps',v_steps,'skills',coalesce(v_selected->'skills','[]'::jsonb),
+      'selection_receipt',v_selected,'runtime_mode','GPT_NATIVE',
+      'model_external_api',false,'step_source','lf_operation_steps+lf_operation_step_contracts');
+ IF v_selected->>'status'='BLOCKED' THEN
+    RETURN v_out||jsonb_build_object('blocking_code',v_selected->>'blocking_code');
+ END IF;
+ RETURN v_out;
+END;
+$profile_plan_dynamic$;
+
+-- Selection receipt is bound to existing official skill_invocation ledger via skill_run_id.
+-- This is a receipt, not a parallel skill invoker; existing lf_skill_invoke_v1 remains official.
+CREATE TABLE IF NOT EXISTS public.lf_profile_skill_selection_receipt_v1 (
+  skill_run_id text PRIMARY KEY REFERENCES public.lf_skill_invocation_v1(skill_run_id),
+  parent_execution_id text NOT NULL,
+  skill_code text NOT NULL,
+  profile_code text NOT NULL,
+  channel text NOT NULL,
+  selection_mode text NOT NULL,
+  selection_evidence jsonb NOT NULL,
+  selection_sha256 text NOT NULL,
+  recorded_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE OR REPLACE FUNCTION public.lf_profile_skill_invoke_selected_v1(
+ p_execution_id text, p_channel text, p_skill_code text, p_input jsonb,
+ p_semantic_decision jsonb DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','extensions'
+AS $selected_invoker$
+DECLARE e record; v_plan jsonb; v_skill jsonb; v_out jsonb; v_receipt jsonb;
+ v_app_contract jsonb; v_app_evidence jsonb; v_app_path text[];
+ v_app_value text;
+BEGIN
+ SELECT target_code,status,operation_code,manifest INTO e FROM public.lf_operation_execution
+ WHERE execution_id=p_execution_id;
+ IF NOT FOUND OR e.status<>'IN_PROGRESS' OR e.operation_code<>'EJECUCION_PERFIL_LF' THEN
+  RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_PARENT_RUN_NOT_ACTIVE'); END IF;
+ IF e.manifest#>>'{router_profile_handoff,channel}' IS DISTINCT FROM p_channel THEN
+  RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_CHANNEL_NOT_BOUND_TO_PARENT_RUN'); END IF;
+ v_plan:=public.lf_profile_execution_plan_v1(e.target_code,p_channel,p_semantic_decision);
+ IF v_plan->>'status'<>'READY' THEN
+  RETURN jsonb_build_object('status','BLOCKED',
+    'blocking_code',coalesce(v_plan->>'blocking_code', 'SKILL_SEMANTIC_DECISION_PENDING')); END IF;
+ SELECT x INTO v_skill FROM jsonb_array_elements(v_plan->'skills') x
+ WHERE x->>'skill_code'=p_skill_code;
+ IF v_skill IS NULL THEN
+  RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_NOT_SELECTED_BY_DB_POLICY'); END IF;
+ -- Generic, policy-bound applicability; no skill/IG/profile name is encoded
+ -- in the invoker or in the Step40/50 operation contract. A legacy NOT_REQUIRED
+ -- receipt MUST NOT trigger a skill invocation.
+ SELECT applicability_contract INTO v_app_contract
+ FROM public.lf_skill_selector_policy_v1
+ WHERE profile_code=e.target_code AND skill_code=p_skill_code
+   AND required_operation=v_skill->>'required_operation'
+   AND enabled AND p_channel=ANY(channels);
+ IF v_app_contract IS NULL THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_POLICY_NOT_FOUND');
+ END IF;
+ IF coalesce((v_app_contract->>'only_if_applicable')::boolean,false) THEN
+   IF v_app_contract->>'evaluation'<>'EVIDENCE_PAYLOAD' OR
+      coalesce(v_app_contract->>'evidence_step_id','')='' OR
+      jsonb_typeof(v_app_contract->'evidence_json_path')<>'array' THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_POLICY_INVALID');
+   END IF;
+   SELECT array_agg(path_element ORDER BY ord) INTO v_app_path
+   FROM jsonb_array_elements_text(v_app_contract->'evidence_json_path')
+       WITH ORDINALITY AS path(path_element,ord);
+   IF v_app_path IS NULL OR cardinality(v_app_path)<1 THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_PATH_INVALID');
+   END IF;
+   SELECT evidence_payload INTO v_app_evidence
+   FROM public.lf_operation_execution_steps
+   WHERE execution_id=p_execution_id
+     AND step_id=v_app_contract->>'evidence_step_id'
+     AND status='STEP_PASS_WITH_EVIDENCE';
+   IF v_app_evidence IS NULL THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_APPLICABILITY_EVIDENCE_NOT_READY');
+   END IF;
+   v_app_value:=jsonb_extract_path_text(v_app_evidence,VARIADIC v_app_path);
+   IF v_app_value IS DISTINCT FROM v_app_contract->>'positive_literal' THEN
+     RETURN jsonb_build_object('status','BLOCKED',
+       'blocking_code',case when v_app_value='false'
+             then 'SKILL_NOT_REQUIRED_BY_INPUT_VALIDATE'
+             else 'SKILL_APPLICABILITY_NOT_ATTESTED' end);
+   END IF;
+ END IF;
+ v_receipt:=jsonb_build_object('execution_id',p_execution_id,'skill_code',p_skill_code,
+     'selection_mode',v_skill->>'selection_mode',
+     'selection_evidence',v_skill->'selection_evidence','channel',p_channel);
+ -- Source authority, input validation, dedupe, handler and child opener belong to official invoker.
+ v_out:=public.lf_skill_invoke_v1(p_skill_code,p_execution_id,p_input);
+ IF v_out->>'status'='COMPLETED' AND nullif(v_out->>'skill_run_id','') IS NOT NULL THEN
+   INSERT INTO public.lf_profile_skill_selection_receipt_v1(
+     skill_run_id,parent_execution_id,skill_code,profile_code,channel,
+     selection_mode,selection_evidence,selection_sha256)
+   VALUES (v_out->>'skill_run_id',p_execution_id,p_skill_code,e.target_code,p_channel,
+       v_skill->>'selection_mode',v_receipt,
+       encode(extensions.digest(convert_to(v_receipt::text,'UTF8'),'sha256'),'hex'))
+   ON CONFLICT(skill_run_id) DO NOTHING;
+   IF NOT EXISTS(SELECT 1 FROM public.lf_profile_skill_selection_receipt_v1 s
+                 WHERE s.skill_run_id=v_out->>'skill_run_id'
+                   AND s.parent_execution_id=p_execution_id AND s.skill_code=p_skill_code
+                   AND s.selection_evidence=v_receipt) THEN
+     RETURN jsonb_build_object('status','BLOCKED','blocking_code','SKILL_SELECTION_REPLAY_RECEIPT_MISMATCH');
+   END IF;
+ END IF;
+ RETURN v_out||jsonb_build_object('parent_execution_id',p_execution_id,
+     'selection_mode',v_skill->>'selection_mode','selection_receipt',v_receipt);
+END;
+$selected_invoker$;
+REVOKE ALL ON FUNCTION public.lf_profile_skill_invoke_selected_v1(text,text,text,jsonb,jsonb)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_skill_invoke_selected_v1(text,text,text,jsonb,jsonb) TO service_role;
+
+
+-- INTEGRATED_OFFICIAL_STEP80_REPORT_V1_SINGLE_TRANSACTION
+-- Retain exact canonical report function preimage guard; single PR, single migration, one transaction.
+DO $source_guard$
+BEGIN
+ IF (SELECT md5(pg_get_functiondef(p.oid))
+       FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+       WHERE n.nspname='public' AND p.proname='lf_profile_native_bridge_record_report_v1')
+    IS DISTINCT FROM 'cafaaff15eb0751a9af0cfb67db3c30b' THEN
+   RAISE EXCEPTION 'LF_REPORT_BRIDGE_SOURCE_DRIFT_BLOCKED';
+ END IF;
+END $source_guard$;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_record_report_v1(p_execution_id text, p_evidence_ref text, p_actor_execution_id text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'extensions'
+AS $function$
+DECLARE
+  e public.lf_operation_execution%rowtype;
+  v_semantic public.lf_operation_execution_steps%rowtype;
+  v_input jsonb;
+  v_profile_output jsonb;
+  v_report_findings jsonb;
+  v_existing text;
+  v_actor text;
+  v_candidate text;
+  v_scope text;
+  v_semantic_receipt text;
+  v_step jsonb;
+  v_clean integer;
+  v_terminal jsonb;
+BEGIN
+  IF nullif(btrim(coalesce(p_execution_id,'')),'') IS NULL
+     OR nullif(btrim(coalesce(p_evidence_ref,'')),'') IS NULL THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_PROFILE_NATIVE_REPORT_INPUT_INVALID');
+  END IF;
+
+  SELECT * INTO e
+  FROM public.lf_operation_execution
+  WHERE execution_id=p_execution_id;
+
+  IF NOT FOUND
+     OR e.operation_code<>'EJECUCION_PERFIL_LF'
+     OR e.target_type<>'PERFIL'
+     OR e.status NOT IN ('IN_PROGRESS','COMPLETED')
+     OR NOT COALESCE(
+       (e.manifest->>'executor_mode'='GPT_NATIVE'
+        AND e.manifest->>'executor_provider'='OPENAI_CHATGPT_NATIVE')
+       OR
+       (e.manifest->>'executor_mode'='CLAUDE_NATIVE'
+        AND e.manifest->>'executor_provider'='ANTHROPIC_CLAUDE_NATIVE'),
+       false
+     )
+     OR e.manifest ? 'queue_request_id'
+     OR nullif(e.manifest->>'runtime_target','') IS NOT NULL THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_PROFILE_NATIVE_REPORT_EXECUTION_INVALID');
+  END IF;
+
+  SELECT * INTO v_semantic
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id=p_execution_id
+    AND step_id='semantic_judge'
+    AND status='STEP_PASS_WITH_EVIDENCE';
+
+  IF v_semantic.step_id IS NULL THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_PROFILE_NATIVE_REPORT_SEMANTIC_NOT_CLEAN');
+  END IF;
+
+  -- Read canonical evidence only. A security BLOCKED is never relabeled READY.
+  SELECT evidence_payload INTO v_input
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id=p_execution_id AND step_id='input_validate'
+    AND status='STEP_PASS_WITH_EVIDENCE';
+  IF v_input#>>'{input_governance,status}'='BLOCKED'
+     AND v_input->>'analysis_scope' IS DISTINCT FROM 'READ_ONLY_WITH_IG_FINDINGS' THEN
+    RETURN jsonb_build_object('status','BLOCKED',
+      'blocking_code','BLOCK_REPORT_IG_FINDINGS_WRITE_SCOPE');
+  END IF;
+  IF v_input->>'analysis_scope'='READ_ONLY_WITH_IG_FINDINGS' THEN
+    IF e.manifest->>'read_only'<>'true'
+       OR e.manifest->>'no_write'<>'true'
+       OR e.manifest->>'no_promotion'<>'true'
+       OR e.manifest->>'automatic_impact'<>'false'
+       OR e.manifest->>'governed_repair_write'<>'false'
+       OR v_input#>>'{input_governance,status}'<>'BLOCKED'
+       OR v_input->>'ig_security_clearance'<>'false'
+       OR jsonb_typeof(v_input#>'{input_governance,governance_result}')<>'object'
+    THEN
+      RETURN jsonb_build_object('status','BLOCKED',
+        'blocking_code','BLOCK_REPORT_IG_FINDINGS_SCOPE_OR_SOURCE_INVALID');
+    END IF;
+    SELECT evidence_payload->'profile_output' INTO v_profile_output
+    FROM public.lf_operation_execution_steps
+    WHERE execution_id=p_execution_id AND step_id='execute_profile'
+      AND status='STEP_PASS_WITH_EVIDENCE';
+    IF jsonb_typeof(v_profile_output)<>'object' THEN
+      RETURN jsonb_build_object('status','BLOCKED',
+        'blocking_code','BLOCK_REPORT_PROFILE_DECISION_SOURCE_MISSING');
+    END IF;
+    v_report_findings:=jsonb_build_object(
+      'analysis_scope','READ_ONLY_WITH_IG_FINDINGS',
+      'security_state','BLOCKED',
+      'security_clearance',false,
+      'input_step_ref','supabase://public.lf_operation_execution_steps/'||p_execution_id||'/input_validate',
+      'input_governance',v_input->'input_governance',
+      'profile_decision_observed',v_profile_output#>'{traceability,ig_open_work_resolution}',
+      'report_status','FINDINGS_REPORTED_NOT_RESOLVED',
+      'mutation_authorized',false,
+      'promotion_authorized',false);
+  END IF;
+
+  v_candidate:=v_semantic.evidence_payload#>>'{semantic_judge_result,candidate_sha256}';
+  v_scope:=v_semantic.evidence_payload#>>'{semantic_judge_result,scope_packet_sha256}';
+  v_semantic_receipt:=coalesce(v_semantic.evidence_payload->>'semantic_review_receipt_ref',v_semantic.evidence_payload->>'independent_semantic_receipt_ref');
+
+  IF coalesce(v_candidate,'') !~ '^[0-9a-f]{64}$'
+     OR coalesce(v_scope,'') !~ '^[0-9a-f]{64}$' THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_PROFILE_NATIVE_REPORT_SEMANTIC_BINDING_INVALID');
+  END IF;
+
+  SELECT status INTO v_existing
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id=p_execution_id AND step_id='report_output';
+
+  IF v_existing IS NULL THEN
+    IF e.status<>'IN_PROGRESS' THEN
+      RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_PROFILE_NATIVE_REPORT_EXECUTION_ALREADY_CLOSED_WITHOUT_REPORT');
+    END IF;
+    v_actor:=coalesce(nullif(btrim(p_actor_execution_id),''),p_execution_id);
+    v_step:=public.lf_record_profile_execution_step_v1(
+      p_execution_id,
+      'report_output',
+      p_evidence_ref,
+      jsonb_build_object(
+        'result',v_semantic.evidence_payload#>>'{semantic_judge_result,verdict}',
+        'execution_id',p_execution_id,
+        'profile_code',e.target_code,
+        'no_write_performed',true,
+        'candidate_sha256',v_candidate,
+        'scope_packet_sha256',v_scope,
+        'semantic_review_receipt_ref',v_semantic_receipt,
+        'independent_semantic_receipt_ref',case
+          when v_semantic.evidence_payload#>>'{semantic_judge_result,review_mode}'='CURRENT_CONTEXT_REVIEW' then null
+          else v_semantic_receipt end,
+        'next_gate','RETURN_TO_ROUTER'
+      ) || CASE WHEN v_report_findings IS NOT NULL
+           THEN jsonb_build_object('ig_findings',v_report_findings,
+                                   'ig_findings_reported',true)
+           ELSE '{}'::jsonb END,
+      v_actor
+    );
+    IF coalesce(v_step->>'status',v_step->>'step_status') IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE' THEN
+      RETURN jsonb_build_object(
+        'status','BLOCKED',
+        'blocking_code','BLOCK_PROFILE_NATIVE_REPORT_RECORD_REJECTED',
+        'recorder_result',v_step
+      );
+    END IF;
+  ELSIF v_existing<>'STEP_PASS_WITH_EVIDENCE' THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_NATIVE_REPORT_EXISTING_NOT_CLEAN',
+      'step_status',v_existing
+    );
+  END IF;
+
+  SELECT count(*) INTO v_clean
+  FROM public.lf_operation_execution_steps
+  WHERE execution_id=p_execution_id AND status='STEP_PASS_WITH_EVIDENCE';
+
+  SELECT * INTO e
+  FROM public.lf_operation_execution
+  WHERE execution_id=p_execution_id;
+
+  IF v_clean<>11 OR e.status<>'COMPLETED' THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_NATIVE_REPORT_COMPLETION_NOT_CLEAN',
+      'clean_step_count',v_clean,
+      'execution_status',e.status
+    );
+  END IF;
+
+  v_terminal:=public.lf_profile_execution_terminal_authority_receipt_v1(p_execution_id);
+  IF v_terminal->>'status' IS DISTINCT FROM 'READY' THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_NATIVE_REPORT_TERMINAL_RECEIPT_NOT_READY',
+      'terminal_result',v_terminal
+    );
+  END IF;
+
+  RETURN jsonb_build_object(
+    'status','PROFILE_EXECUTION_COMPLETED',
+    'execution_id',p_execution_id,
+    'profile_code',e.target_code,
+    'clean_step_count',v_clean,
+    'last_completed_step','report_output',
+    'execution_status',e.status,
+    'terminal_authority_receipt_sha256',v_terminal->>'terminal_authority_receipt_sha256',
+    'next_gate','RETURN_TO_ROUTER'
+  );
+END
+$function$;
+
+COMMIT;

@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-ig-step40-e2e5-ekb-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114135600_lf_ig_step40_native_phrase_lessons_ekb_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-step40-e2e5-ekb-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}

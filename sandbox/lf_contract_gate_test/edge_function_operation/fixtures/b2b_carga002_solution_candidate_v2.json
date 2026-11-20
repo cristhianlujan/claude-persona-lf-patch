@@ -1,0 +1,191 @@
+{
+  "schema_version": "LF_B2B_CARGA002_EXECUTOR_PACKAGE_V2",
+  "package_status": "CANDIDATE_CONTRACT_V2_SOURCE_REFRESH_ONLY_NOT_BACKEND_IMPLEMENTATION",
+  "source_execution_id": "EXEC-PROFILE-GATE2-359CEAD8D9180F34451F8C47",
+  "executor_execution_id": "EXEC-PROFILE-GATE2-6B69E075BD3796B1741E0E1A",
+  "scope": {
+    "screen_code": "B2B-CARGA-002",
+    "screen_id": 44,
+    "module_code": "B2B_CARGAS",
+    "scope_type": "CANDIDATE_CONTRACT_AND_REGRESSION_TESTS_ONLY",
+    "forbid_production": true,
+    "forbid_rule_mutation": true,
+    "forbid_screen_mutation": true
+  },
+  "source_snapshot": {
+    "screen": {
+      "ref": "supabase://lf_ops.pantallas/44",
+      "code": "B2B-CARGA-002",
+      "version": "v0.3",
+      "state": "CANDIDATO_VISUAL",
+      "row_sha256": "5aa03357bf38dcc3f8e8dbdf9593d6031924bd0554fa487a7d1955bc2e22fa2e"
+    },
+    "linked_rule_count": 43,
+    "vigente_rule_count": 34,
+    "candidato_rule_count": 9,
+    "critical_rules": [
+      {
+        "code": "B2B-RULE-AUDIT-001",
+        "status": "VIGENTE",
+        "row_sha256": "44894e46ebcd1e6dc0aafadb7f5290d0f03979fe5c8bc3b26c06eac9bb2d4386",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-AUDIT-001"
+      },
+      {
+        "code": "B2B-RULE-AUTH-002",
+        "status": "VIGENTE",
+        "row_sha256": "2f58410ed5a158a52b22313a0b9deeabd2b9632c83dc4eb7e14b8078dbef1584",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-002"
+      },
+      {
+        "code": "B2B-RULE-IDEMP-001",
+        "status": "VIGENTE",
+        "row_sha256": "c51f27dcd8903ca1703109cb50218acfee588ac9a9e06eec3c02384b6cbfd6ef",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-IDEMP-001"
+      },
+      {
+        "code": "B2B-RULE-LOAD-WIZARD-001",
+        "status": "VIGENTE",
+        "row_sha256": "5683d2c599169bddcd85794e27bf770035014eca38815aa1849bcc1016a80c9d",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-LOAD-WIZARD-001"
+      },
+      {
+        "code": "B2B-RULE-PROD-001",
+        "status": "VIGENTE",
+        "row_sha256": "bd2a276fb3e395911dbfbe8f7ed0b3344311778357c9edf5d8941328e20a3002",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-PROD-001"
+      },
+      {
+        "code": "B2B-RULE-STATE-001",
+        "status": "VIGENTE",
+        "row_sha256": "5dc84de39a3a780bb2340f584b23995ee8b43713b9d760c1c9ffdb0c270d2764",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-STATE-001"
+      },
+      {
+        "code": "B2B-RULE-STORAGE-002",
+        "status": "VIGENTE",
+        "row_sha256": "bfdc76e8d145dc9d3b1d42a5106753d48ef1752e68526229ce0437be41f35618",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-STORAGE-002"
+      },
+      {
+        "code": "B2B-RULE-VALIDATION-VALID-ONLY-001",
+        "status": "VIGENTE",
+        "row_sha256": "a2bc9e9eec2d46b37d301c02aecdb0a093dcc2d59fbbd6f07ac93ae75a7f1346",
+        "ref": "supabase://lf_ops.reglas/B2B-RULE-VALIDATION-VALID-ONLY-001"
+      }
+    ],
+    "snapshot_method": "Live SELECT 2026-11-16, exact row SHA256(to_jsonb(row)::text UTF8) and screen44; frozen source is NOT a durable business authority.",
+    "currentness_requirement": "Before any new effect, requery current rules and approvals; this V2 fixture is frozen non-runtime evidence.",
+    "previous_wizard_rule_sha256": "91b8e73ff1719fc70d7bd76f5e8d756cea8b8ede4de87a05271d7a55b88c6dc5",
+    "prior_snapshot_wizard_sha256": "7849ca131d9c9aa54f1b54fbd777bf9d9eac721b60e9cd7e16c4d5193adc943d"
+  },
+  "observed_product_contract": {
+    "current_ui_step_count": 3,
+    "ui_step_descriptions": [
+      "Seleccionar modalidad y obtener formato/tips",
+      "Subir y preparar datos",
+      "Validar"
+    ],
+    "backend_state_outside_wizard": "B2B_LOAD_VALIDADO",
+    "candidate_wizard_rule": "B2B-RULE-LOAD-WIZARD-001",
+    "decision": "Preserve three UI steps aligned in currently VIGENTE rule; offline fixture does not prove backend implementation or new promotion authority",
+    "not_executed": true,
+    "ui_state_codes": [
+      "OFFER_TYPE_AND_TEMPLATE",
+      "UPLOAD_AND_PREPARE_DATA",
+      "VALIDATE"
+    ],
+    "backend_integration_tests_status": "NOT_TESTED",
+    "physical_mapping_status": "NOT_VERIFIED",
+    "current_wizard_rule_status": "VIGENTE",
+    "current_wizard_state_count": 3
+  },
+  "repair_scope": "SOURCE_RECONCILIATION_CANDIDATE_V2_AND_OFFLINE_NEGATIVE_GUARDS",
+  "implementation_actions": [
+    {
+      "id": "A1",
+      "target_ref": "supabase://lf_ops.pantallas/44",
+      "source_refs": [
+        "supabase://lf_ops.pantallas/44",
+        "supabase://lf_ops.reglas/B2B-RULE-LOAD-WIZARD-001"
+      ],
+      "selected_solution": "Regla LOAD-WIZARD-001 y pantalla 44 declaran 3 pasos. Reconciliar el fixture V2 al estado VIGENTE actual sin alterar las reglas ni el archivo histórico V1.",
+      "execution_boundary": "NO_SCREEN_WRITE",
+      "observable_check": "3 pasos y SHA actual 5683d2c599169bddcd85794e27bf770035014eca38815aa1849bcc1016a80c9d; negativo de cuatro pasos falla"
+    },
+    {
+      "id": "A2",
+      "target_ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-002",
+      "source_refs": [
+        "supabase://lf_ops.reglas/B2B-RULE-AUTH-002",
+        "supabase://lf_ops.reglas/B2B-RULE-STATE-001",
+        "supabase://lf_ops.reglas/B2B-RULE-VALIDATION-VALID-ONLY-001"
+      ],
+      "selected_solution": "Definir mapping físico policy_snapshot/VALID_ONLY y pruebas de integración negativas para empresa ajena, registro inválido, rechazo, duplicados, conciliación. No marcar PASS backend sin ejecuciones.",
+      "execution_boundary": "NO_DATA_WRITE",
+      "observable_check": "Solo válidos continúan con tenant scope probado; business_backend=NOT_TESTED en este fixture y su guard prohíbe claim positivo sin test."
+    },
+    {
+      "id": "A3",
+      "target_ref": "supabase://lf_ops.reglas/B2B-RULE-STORAGE-002",
+      "source_refs": [
+        "supabase://lf_ops.reglas/B2B-RULE-STORAGE-002",
+        "supabase://lf_ops.reglas/B2B-RULE-IDEMP-001",
+        "supabase://lf_ops.reglas/B2B-RULE-AUDIT-001"
+      ],
+      "selected_solution": "Separar contrato de archivo, malware, MIME, checksum, idempotencia, fechas y cuotas; los estados VIGENTE existentes NO acreditan ejecución backend, la cual requiere pruebas propias.",
+      "execution_boundary": "NO_DATA_WRITE",
+      "observable_check": "Detectar RULE_SOURCE_STATUS_DRIFT y snapshots obsoletos; no inferir que SQL/Edge backend ejecutó nada"
+    },
+    {
+      "id": "A4",
+      "target_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-6B69E075BD3796B1741E0E1A",
+      "source_refs": [
+        "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-359CEAD8D9180F34451F8C47",
+        "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-6B69E075BD3796B1741E0E1A"
+      ],
+      "selected_solution": "Entregar artefacto V2 nuevo desde RUN autorizado al Router; Calidad evalúa sobre V2 con test de snapshot y firma real; promoción posterior exclusiva del owner con Step70 independiente y GOV-037.",
+      "execution_boundary": "NO_AUTOMATIC_PROMOTION",
+      "observable_check": "Debe existir ref de artefacto y pruebas antes de Quality; promoción sin Step70 independiente se rechaza"
+    }
+  ],
+  "negative_test_codes": [
+    "FOUR_STEPS_WITHOUT_AUTHORITY",
+    "RULE_SOURCE_STATUS_DRIFT",
+    "MISSING_SERVER_SIDE_AUTH",
+    "MISSING_CHANGE_READBACK",
+    "QUALITY_BEFORE_EXECUTOR",
+    "PROMOTION_WITHOUT_INDEPENDENT_STEP70",
+    "PROMOTION_WITHOUT_HUMAN_DECISION",
+    "PRODUCTION_WRITE_FORBIDDEN",
+    "STALE_WIZARD_RULE_HASH",
+    "BACKEND_EXECUTION_NOT_PROVEN"
+  ],
+  "quality_gate": {
+    "artifact_required": true,
+    "executor_receipt_required": true,
+    "regression_test_required": true,
+    "quality_before_executor_allowed": false,
+    "promotion_allowed": false,
+    "quality_scope": "Review candidate executable contract and its test results, NOT deployed business behavior"
+  },
+  "promotion_gate": {
+    "eligible_candidates": [],
+    "review_queue": [],
+    "must_use_existing_route": "lf_rule_promotion_request_v1",
+    "independent_step70_required": true,
+    "owner_human_decision_required": true,
+    "requests_created": 0,
+    "existing_rule_status_readback": "8/8 critical rules VIGENTE in SELECT 2026-11-16; this PR does not claim/promote/create owner decisions"
+  },
+  "rollback": {
+    "strategy": "Revert this V2 candidate PR only; V1 audit artifact and lf_ops rules remain unchanged",
+    "protected_assets": [
+      "lf_ops.pantallas/44",
+      "lf_ops.reglas/*",
+      "ACT-0001",
+      "PASE"
+    ],
+    "before_ref": "github://cristhianlujan/claude-persona-lf-patch@28f38e5cec25fa24cca8024cd496f2eeefc52292 (V2 paths absent, V1 preserved)"
+  },
+  "claim_ceiling": "Aprobación posible sólo del contrato offline V2 y sus negativos. NO prueba de backend de carga masiva, mapeos físicos, despliegue, cambio de regla, QA independiente, Step70 independiente ni promoción."
+}

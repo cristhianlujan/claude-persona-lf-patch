@@ -260,3 +260,65 @@ jobs:
       base_ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || 'main' }}
       event_name: ${{ github.event_name }}
     secrets: inherit
+
+  ig-chat12-atq002-pg17:
+    name: IG Chat12 ATQ002 real PG17 rollback functional
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'ig/chat12-atq002-rule-contract-proof-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+    steps:
+      - name: Checkout source for isolated PG17 test
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Install PostgreSQL client and check Python
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat12_atq002_rule_contract_pg17.py
+      - name: Real PG17 positive and negative BEGIN ROLLBACK and independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat12_atq002_rule_contract_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/chat12_atq002_pg17/report.json').read_text())
+          assert r['status']=='PASS' and r['scope']=='RULE_CONTRACT_LEVEL'
+          assert r['pg17_real'] and r['rollback_real'] and r['independent_readback']
+          assert len(r['checks'])==10 and all(r['checks'].values()), r['checks']
+          assert r['backend_e2e']=='NOT_TESTED'
+          assert r['remote_supabase_written'] is False
+          print('IG_CHAT12_ATQ002_REAL_PG17_10_OF_10_PASS')
+          PY
+      - name: Archive source-bound PG17 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-chat12-atq002-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat12_atq002_pg17/report.json
+          if-no-files-found: warn
+          retention-days: 30

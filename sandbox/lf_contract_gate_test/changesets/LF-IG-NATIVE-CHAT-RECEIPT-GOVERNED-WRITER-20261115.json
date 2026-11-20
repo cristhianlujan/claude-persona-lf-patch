@@ -1,0 +1,12 @@
+{
+  "solution_ref": "LF-IG-NATIVE-CHAT-RECEIPT-GOVERNED-WRITER-20261115",
+  "paths": {
+    "supabase/migrations/20261115053500_lf_ig_native_chat_receipt_append_governed_v1.sql": "MIGRATION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "scripts/lf_profile_native_resume.py": "RUNTIME_SCRIPT",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_native_chat_receipt_writer_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_native_chat_receipt_issue_parser_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-NATIVE-CHAT-RECEIPT-GOVERNED-WRITER-20261115.json": "CHANGESET_MANIFEST"
+  }
+}

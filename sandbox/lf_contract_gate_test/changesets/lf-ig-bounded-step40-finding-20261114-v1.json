@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-ig-bounded-step40-finding-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114130500_lf_ig_step40_bounded_retry_finding_v1.sql": "MIGRATION",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-bounded-step40-finding-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}

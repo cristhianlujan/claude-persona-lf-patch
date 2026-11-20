@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-aud-ui06-receipt-status-20261118",
+  "paths": {
+    "services/profile_runtime_api/profile_runtime_api/models.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_models.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-aud-ui06-receipt-status-20261118.json": "CHANGESET_MANIFEST",
+    "services/profile_runtime_api/tests/test_generic_profile_runtime_binding.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_runtime_output_mode.py": "SERVICE_RUNTIME"
+  }
+}

@@ -1,6 +1,33 @@
+import {validateLfIgTransport,IG_RPC_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 // Governed, profile-agnostic continuation for an *existing* Router-admitted execution.
 // It deliberately does not select a profile/screen, impersonate a model, or grant
 // write authority. All substantive transitions use existing canonical RPCs.
+// Explicit, additive error classification only. This function cannot
+// attest a provider call, write a receipt, or relax the existing SQL gate.
+export function effectsBearingNativeSemanticReviewBlockCode(
+  manifest: Record<string, unknown> | null | undefined,
+  reviewMode: unknown,
+): string | null {
+  if (manifest?.governed_repair_write === true &&
+      manifest?.read_only === false && manifest?.no_write === false &&
+      reviewMode === "CURRENT_CONTEXT_REVIEW") {
+    // SRCR same-context V3 is subject to source-bound SQL checks; manifest.no_promotion is neutral.
+    // The canonical SQL scope guard checks Step40/50/60 and source-bound artifacts.
+    // This helper does not assert reviewer independence or grant a promotion; the score route owns requests.
+    const handoff = manifest.router_profile_handoff as Record<string, unknown> | undefined;
+    const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
+    const repair = manifest.repair_execution_authority as Record<string, unknown> | undefined;
+    const candidateOnly =
+      manifest.automatic_impact === false &&
+      typeof handoff?.profile_code === "string" &&
+      repair?.profile_code === handoff.profile_code &&
+      repair?.mode === "GOVERNED_REPAIR_WRITE" &&
+      receipt?.effect_authority === false;
+    if (!candidateOnly) return "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED";
+  }
+  return null;
+}
+
 export const PROFILE_SOURCE_BIND_ACTION = "profile_native_source_bind_v1";
 export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 // A read-only profile calls a governed skill through its own route. The skill invoker
@@ -35,6 +62,7 @@ type Execution = {
   target_code: string;
   target_repo: string;
   target_path: string;
+  created_at: string;
   manifest: Record<string, unknown>;
 };
 type Payload = Record<string, unknown>;
@@ -50,6 +78,24 @@ function blocked(code: string, status = 409): Response {
   return respond({ outcome: "BLOCKED", code }, status);
 }
 
+function selectedSkillDecision(e: Execution, body: Payload): { value: Payload | null; error?: Response } {
+  const modern = Object.prototype.hasOwnProperty.call(body, "skill_selection_decision");
+  const legacy = Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision");
+  if (modern && legacy) return {value:null,error:blocked("SKILL_SELECTION_DUAL_FIELD_FORBIDDEN",400)};
+  // The old name is accepted solely on RUNs created before the governed
+  // 20261114195500 skill selector migration. A missing timestamp is NOT evidence.
+  if (legacy && (typeof e.created_at !== "string" ||
+      !Number.isFinite(Date.parse(e.created_at)) ||
+      Date.parse(e.created_at) >= Date.parse("2026-11-14T19:55:00Z"))) {
+    return {value:null,error:blocked("SKILL_SELECTION_LEGACY_ONLY_EXISTING_RUN",409)};
+  }
+  const value = modern ? body.skill_selection_decision : legacy ? body.skill_semantic_decision : null;
+  if (value !== null && (typeof value !== "object" || Array.isArray(value))) {
+    return {value:null,error:blocked("SKILL_SELECTION_DECISION_INVALID",400)};
+  }
+  return {value:value as Payload | null};
+}
+
 async function parseResponse(response: Response): Promise<unknown> {
   try { return await response.json(); } catch { return null; }
 }
@@ -58,11 +104,12 @@ async function authorizedExecution(
   config: Config,
   fetchFn: Fetcher,
   executionId: string,
+  allowGovernedRepair = false,
 ): Promise<{ execution?: Execution; error?: Response }> {
   if (!/^[A-Za-z0-9][A-Za-z0-9_-]{10,127}$/.test(executionId)) {
     return { error: blocked("PROFILE_CONTINUATION_EXECUTION_ID_INVALID", 400) };
   }
-  const endpoint = `${config.supabaseUrl}/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,status,operation_code,target_type,target_code,target_repo,target_path,manifest`;
+  const endpoint = `${config.supabaseUrl}/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(executionId)}&select=execution_id,status,operation_code,target_type,target_code,target_repo,target_path,created_at,manifest`;
   let response: Response;
   try {
     response = await fetchFn(endpoint, {
@@ -80,20 +127,81 @@ async function authorizedExecution(
   const m = e.manifest;
   const handoff = m?.router_profile_handoff as Record<string, unknown> | undefined;
   const receipt = handoff?.router_authorization_receipt as Record<string, unknown> | undefined;
-  if (
-    e.operation_code !== "EJECUCION_PERFIL_LF" || e.target_type !== "PERFIL" ||
-    e.status !== "IN_PROGRESS" || e.target_repo !== config.repository ||
-    !/^profiles\/[a-z0-9_-]+\/SKILL\.md$/.test(e.target_path) ||
-    !NATIVE_EXECUTOR_PROVIDER_BY_MODE.has(`${m?.executor_mode}|${m?.executor_provider}`) ||
-    m?.read_only !== true || m?.no_write !== true ||
-    m?.no_promotion !== true || m?.governed_repair_write !== false ||
-    handoff?.profile_code !== e.target_code || receipt?.profile_code !== e.target_code ||
-    receipt?.profile_execution_allowed !== true || receipt?.effect_authority !== false
-  ) return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+  const repair = m?.repair_execution_authority as Record<string, unknown> | undefined;
+  const handoffRepair = handoff?.repair_execution_authority as Record<string, unknown> | undefined;
+  const commonAuthority = (
+    e.operation_code === "EJECUCION_PERFIL_LF" && e.target_type === "PERFIL" &&
+    e.status === "IN_PROGRESS" && e.target_repo === config.repository &&
+    /^profiles\/[a-z0-9_-]+\/SKILL\.md$/.test(e.target_path) &&
+    NATIVE_EXECUTOR_PROVIDER_BY_MODE.has(`${m?.executor_mode}|${m?.executor_provider}`) &&
+    handoff?.profile_code === e.target_code &&
+    receipt?.profile_code === e.target_code &&
+    receipt?.profile_execution_allowed === true && receipt?.effect_authority === false
+  );
+  const readOnly = m?.read_only === true && m?.no_write === true &&
+    m?.governed_repair_write === false;
+  // The resolved profile and its slug come from the immutable Router handoff.
+  // SQL, not the Edge function or a literal profile name, determines whether
+  // that handoff grants governed repair and the promotion_allowed bit.
+  const governedRepair = allowGovernedRepair &&
+    typeof handoff?.profile_slug === "string" &&
+    /^[a-z0-9_-]+$/.test(handoff.profile_slug) &&
+    e.target_path === `profiles/${handoff.profile_slug}/SKILL.md` &&
+    m?.read_only === false && m?.no_write === false &&
+    m?.governed_repair_write === true &&
+    receipt?.authority_ref === "ROUTER_PROFILE_EXECUTION_AUTHORIZATION" &&
+    receipt?.operation_code === "EJECUCION_PERFIL_LF" &&
+    receipt?.action_code === "PROFILE_EXECUTION" &&
+    typeof receipt?.fingerprint_sha256 === "string" &&
+    /^[0-9a-f]{64}$/.test(receipt.fingerprint_sha256) &&
+    repair?.schema_version === "LF_SRCR_REPAIR_EXECUTION_AUTHORITY_V1" &&
+    repair?.mode === "GOVERNED_REPAIR_WRITE" &&
+    repair?.profile_code === e.target_code &&
+    repair?.operation_code === "EJECUCION_PERFIL_LF" &&
+    repair?.profile_task_intent === "REPAIR_MISSING_PRODUCT_STRUCTURE" &&
+    repair?.request_sha256 === receipt?.request_sha256 &&
+    repair?.router_authorization_fingerprint_sha256 === receipt?.fingerprint_sha256 &&
+    repair?.router_action_binding_sha256 === receipt?.router_action_binding_sha256 &&
+    repair?.readback_required === true && repair?.rollback_required === true &&
+    (repair?.promotion_allowed === true || repair?.promotion_allowed === false) &&
+    repair?.promotion_allowed === m?.promotion_allowed &&
+    repair?.automatic_impact === false && m?.automatic_impact === false &&
+    repair?.direct_profile_invocation_allowed === false &&
+    repair?.return_to_router_after_result === true &&
+    handoff?.return_to_router_after_profile_result === true &&
+    JSON.stringify(repair?.scope) === JSON.stringify(receipt?.scope) &&
+    JSON.stringify(handoffRepair) === JSON.stringify(repair) &&
+    typeof repair?.fingerprint_sha256 === "string" &&
+    /^[0-9a-f]{64}$/.test(repair.fingerprint_sha256);
+  if (!commonAuthority || !(readOnly || governedRepair)) {
+    return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+  }
+  if (governedRepair) {
+    // Always validate the PERSISTED handoff (not user-provided fields). The
+    // SECURITY DEFINER function checks ACT-0001 binding, source currentness,
+    // router/repair fingerprints, explicit owner intent and configured profile.
+    const verified = await rpc(config, fetchFn, "lf_router_profile_execution_handoff_validate_v1", {
+      p_handoff: handoff,
+      p_literal_request: handoff?.literal_request,
+      p_profile_code: e.target_code,
+    });
+    if (verified.error || verified.result?.valid !== true ||
+        verified.result?.governed_repair_write_allowed !== true ||
+        verified.result?.promotion_allowed !== repair?.promotion_allowed ||
+        verified.result?.profile_code !== e.target_code ||
+        verified.result?.profile_slug !== handoff?.profile_slug ||
+        verified.result?.repair_execution_authority_fingerprint_sha256 !== repair?.fingerprint_sha256 ||
+        verified.result?.fingerprint_sha256 !== handoff?.fingerprint_sha256) {
+      return { error: blocked("PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED", 403) };
+    }
+  }
   return { execution: e };
 }
 
 async function rpc(config: Config, fetchFn: Fetcher, name: string, parameters: Payload): Promise<{ result?: Payload; error?: Response }> {
+  const preflight=validateLfIgTransport("PROFILE_GATE_RPC:"+name,parameters,IG_RPC_REQUIRED[name] ?? []);
+  if(preflight) return {error:respond({outcome:"BLOCKED",code:preflight.code,
+    field:preflight.field,downstream_call_attempted:false},400)};
   let response: Response;
   try {
     response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${name}`, {
@@ -304,13 +412,22 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
     if (resolved.error) return resolved.error;
     skillInput = { ...cleanInput, _trusted: resolved.context };
   }
+  // The authenticated RUN owns channel+profile. Resolve and attest the skill
+  // against DB policy+CURRENT descriptor before calling the EXISTING SQL invoker.
+  const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
+  const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
+  const chosen = selectedSkillDecision(e,body);
+  if (chosen.error) return chosen.error;
+  const semantic = chosen.value;
+  if (!["PRODUCTO", "PROGRAMACION", "OPERACIONES"].includes(channel))
+    return blocked("PROFILE_SKILL_ROUTER_CHANNEL_UNRESOLVED", 409);
   let response: Response;
   try {
-    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_skill_invoke_v1`, {
+    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_invoke_selected_v1`, {
       method: "POST",
       headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`, "content-type": "application/json" },
-      // The parent is always the authenticated, read-only profile execution, never a caller-supplied id.
-      body: JSON.stringify({ p_skill: skill, p_execution_id: e.execution_id, p_input: skillInput }),
+      body: JSON.stringify({ p_execution_id: e.execution_id, p_channel: channel,
+        p_skill_code: skill, p_input: skillInput, p_semantic_decision: semantic }),
       signal: AbortSignal.timeout(30_000),
     });
   } catch { return blocked("PROFILE_SKILL_INVOKE_TRANSPORT_FAILED", 502); }
@@ -319,6 +436,13 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
     // The invoker raises explicit, human-readable block reasons (what is missing and where): pass them on.
     const detail = typeof data?.message === "string" ? data.message.slice(0, 400) : null;
     return respond({ outcome: "BLOCKED", code: "PROFILE_SKILL_INVOKE_REJECTED", skill_code: skill, execution_id: e.execution_id, detail }, 409);
+  }
+  // Official SQL invoker can fail closed with HTTP 200 + status BLOCKED/FAILED.
+  // Never convert that response into a successful profile skill invocation.
+  if (!data || data.status === "BLOCKED" || data.status === "FAILED") {
+    return respond({outcome:"BLOCKED",
+      code:typeof data?.blocking_code==="string" ? data.blocking_code : "PROFILE_SKILL_INVOKER_NOT_COMPLETED",
+      skill_code:skill,execution_id:e.execution_id},409);
   }
   return respond({ outcome: "SKILL_INVOKED", skill_code: skill, execution_id: e.execution_id, profile_code: e.target_code, result: data });
 }
@@ -660,9 +784,46 @@ export async function handleProfileContinuation(
   callerIdentity?: CallerIdentity,
 ): Promise<Response> {
   const executionId = typeof body.execution_id === "string" ? body.execution_id : "";
-  const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId);
+  const allowGovernedRepair = action === PROFILE_SOURCE_BIND_ACTION || action === PROFILE_CONTINUE_ACTION;
+  const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId, allowGovernedRepair);
   if (error || !e) return error ?? blocked("PROFILE_CONTINUATION_EXECUTION_NOT_FOUND");
   if (action === PROFILE_SOURCE_BIND_ACTION) {
+    // Operation-owned DB plan. Router supplies selected profile ONLY: never trust
+    // skill lists or step order from a request, chat prompt or Router payload.
+    const handoff = e.manifest?.router_profile_handoff as Payload | undefined;
+    const channel = typeof handoff?.channel === "string" ? handoff.channel : "";
+    const chosen = selectedSkillDecision(e,body);
+    if (chosen.error) return chosen.error;
+    const semantic = chosen.value;
+    const planned = await rpc(config, fetchFn, "lf_profile_execution_plan_for_run_v1", {
+      p_execution_id: e.execution_id, p_decision: semantic,
+    });
+    if (planned.error) return planned.error;
+    const plan = planned.result;
+    // Optional skills never block SOURCE_BIND. Candidates contain the current
+    // immutable RUN context; no extra Router pass, privilege or ticket is needed.
+    // Explicit choices (0..2) are validated and immutably bound by SQL.
+    if (semantic !== null) {
+      const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_run_bind_v1", {
+        p_execution_id:e.execution_id, p_decision:semantic,
+        p_actor_execution_id:e.execution_id,
+      });
+      if (bound.error) return bound.error;
+      if (!["BOUND","ALREADY_BOUND"].includes(String(bound.result?.status??""))) {
+        return respond({outcome:"BLOCKED",phase:"SKILL_SELECTION_CONTRACT",
+          code:String(bound.result?.blocking_code??"SKILL_SELECTION_BIND_INVALID"),
+          execution_id:e.execution_id},409);
+      }
+    }
+    if (plan?.status !== "READY" || plan?.operation_code !== "EJECUCION_PERFIL_LF" ||
+        plan?.profile_code !== e.target_code || !Array.isArray(plan?.steps) ||
+        plan.steps.length !== 11 || !Array.isArray(plan?.skills)) {
+      return respond({
+        outcome: "BLOCKED", phase: "OPERATION_PLAN",
+        code: String(plan?.blocking_code ?? "PROFILE_OPERATION_DB_PLAN_NOT_READY"),
+        execution_id: e.execution_id, profile_code: e.target_code,
+      }, 409);
+    }
     return respond({
       outcome: "SOURCE_BINDING_REQUIRED",
       execution_id: e.execution_id,
@@ -670,12 +831,81 @@ export async function handleProfileContinuation(
       target_repo: e.target_repo,
       target_path: e.target_path,
       source_revision_required: callerRevision,
+      operation_plan: plan,
+      skill_selection_request:{
+        status:plan?.skill_selection_status??"SKILL_SELECTION_REQUESTED",
+        finding_code:(plan?.selection_receipt as Payload|undefined)?.content_findings,
+        selected_skill_codes:plan?.selected_skill_codes??[],
+        skill_candidates:plan?.skill_candidates??[],
+        continuation_allowed:true,
+        next_action:"SUBMIT_SKILL_SELECTION",
+        input_required_filter:"RUN_BOUND_CURRENT_STEP",
+      },
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
     });
   }
   if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn, callerIdentity);
   if (action === PROFILE_SKILL_STEP_BATCH_ACTION) return await recordSkillChildSteps(e, body, config, fetchFn, callerIdentity);
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
+
+  // B09 Step70 receipt issuance, via the SAME authorized Issue/OIDC/Edge
+  // continuation. The DB writer owns nonce, SHA, sequencing and scope.
+  // A self-asserted context is never a semantic PASS or owner promotion.
+  if (Object.prototype.hasOwnProperty.call(body, "native_chat_receipt")) {
+    if (Object.keys(body).some(k => ![
+      "action", "execution_id", "native_chat_receipt", "source_revision", "source_digest",
+    ].includes(k))) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_REQUEST_SHAPE_DRIFT", 400);
+    }
+    // The generic profile transport already requires source binding.
+    // Validate it against the authenticated workflow revision; the writer
+    // still independently derives the candidate/scope/bundle from SQL.
+    if (body.source_revision !== callerRevision ||
+      typeof body.source_digest !== "string" ||
+      !/^sha256:[0-9a-f]{64}$/.test(body.source_digest)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_SOURCE_BINDING_DRIFT", 409);
+    }
+    const nativeRepair = e.manifest?.repair_execution_authority as Payload | undefined;
+    if (e.manifest?.governed_repair_write !== true ||
+      nativeRepair?.mode !== "GOVERNED_REPAIR_WRITE" ||
+      nativeRepair?.profile_code !== e.target_code ||
+      !callerIdentity ||
+      callerIdentity.method !== "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1" ||
+      callerIdentity.repository !== config.repository ||
+      !/^[1-9][0-9]{3,19}$/.test(callerIdentity.run_id)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_OIDC_AUTHORITY_DRIFT", 403);
+    }
+    const request = body.native_chat_receipt;
+    if (!request || typeof request !== "object" || Array.isArray(request)) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_EVENT_SHAPE_DRIFT", 400);
+    }
+    const typed = request as Payload;
+    const kind = typed.kind;
+    const event = typed.event;
+    if (Object.keys(typed).sort().join("|") !== "event|kind" ||
+      !["REQUEST", "EXECUTOR", "JUDGE"].includes(String(kind)) ||
+      !event || typeof event !== "object" || Array.isArray(event) ||
+      JSON.stringify(event).length > 45000) {
+      return blocked("LF_NATIVE_CHAT_RECEIPT_EVENT_SHAPE_DRIFT", 400);
+    }
+    const writerReceiptRef = `actions://${config.repository}/runs/${callerIdentity.run_id}`;
+    const issued = await rpc(config, fetchFn, "lf_ig_native_chat_receipt_append_v1", {
+      p_execution_id: e.execution_id, p_kind: kind,
+      p_event: event, p_writer_receipt_ref: writerReceiptRef,
+    });
+    if (issued.error) return issued.error;
+    if (!["RECEIPT_APPENDED", "ALREADY_RECORDED"].includes(String(issued.result?.status ?? ""))) {
+      return respond({outcome:"BLOCKED",phase:"STEP70_CONTEXT_PROVENANCE",
+        code: issued.result?.blocking_code ?? "LF_NATIVE_CHAT_RECEIPT_APPEND_NOT_PASS",
+        execution_id:e.execution_id,kind,step_recorded:false,
+        result:issued.result},409);
+    }
+    return respond({outcome:"NATIVE_CHAT_RECEIPT_RECORDED",
+      phase:"STEP70_CONTEXT_PROVENANCE",execution_id:e.execution_id,
+      kind,step_recorded:false,step70_completed:false,
+      result:issued.result});
+  }
+
   const revision = body.source_revision;
   const digest = body.source_digest;
   if (
@@ -683,6 +913,42 @@ export async function handleProfileContinuation(
     revision !== callerRevision ||
     typeof digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(digest)
   ) return blocked("PROFILE_CONTINUATION_SOURCE_BINDING_INVALID", 400);
+
+  // When a single governed continuation carries both semantic decisions, bind
+  // screen FIRST and skill SECOND, before the bridge can persist Step40.
+  // Both SQL binders validate against the same Router-admitted RUN. Other
+  // continuations retain the existing optional-skill fail-open behavior.
+  const hasScreenDraft = Object.prototype.hasOwnProperty.call(body, "screen_selection_draft");
+  const hasSkillDecision = Object.prototype.hasOwnProperty.call(body, "skill_selection_decision") ||
+    Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision");
+  const coordinatedPre40 = hasScreenDraft && hasSkillDecision;
+  if (coordinatedPre40) {
+    const chosen = selectedSkillDecision(e, body);
+    if (chosen.error) return chosen.error;
+    if (!chosen.value) return blocked("SKILL_SELECTION_DECISION_INVALID", 400);
+    const draft = body.screen_selection_draft;
+    if (!draft || typeof draft !== "object" || Array.isArray(draft)) {
+      return blocked("PROFILE_CONTINUATION_SCREEN_SELECTION_DRAFT_INVALID", 400);
+    }
+    const submitted = await rpc(config, fetchFn, "lf_profile_screen_selector_semantic_submit_v1", {
+      p_execution_id: e.execution_id, p_draft: draft, p_actor_execution_id: e.execution_id,
+    });
+    if (submitted.error) return submitted.error;
+    if (!["BOUND", "ALREADY_BOUND"].includes(String(submitted.result?.status ?? ""))) {
+      return respond({ outcome: "BLOCKED", code: "PROFILE_CONTINUATION_SCREEN_SELECTION_REJECTED",
+        result: submitted.result }, 409);
+    }
+    const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_run_bind_v1", {
+      p_execution_id: e.execution_id, p_decision: chosen.value,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (bound.error) return bound.error;
+    if (!["BOUND", "ALREADY_BOUND"].includes(String(bound.result?.status ?? ""))) {
+      return respond({ outcome: "BLOCKED", phase: "SKILL_SELECTION_CONTRACT",
+        code: String(bound.result?.blocking_code ?? "SKILL_SELECTION_BIND_INVALID"),
+        execution_id: e.execution_id }, 409);
+    }
+  }
 
   // The native prepare function enforces ordered checkpoints and validates
   // Router handoff, profile source, screen selection, IG and compact context.
@@ -696,7 +962,7 @@ export async function handleProfileContinuation(
   let result = prepared.result!;
   // Only an explicit semantic decision may bind a screen; one candidate is NOT
   // auto-selected. SQL rehydrates the current shortlist and judges the draft.
-  if (Object.prototype.hasOwnProperty.call(body, "screen_selection_draft")) {
+  if (hasScreenDraft && !coordinatedPre40) {
     if (result.status !== "SCREEN_SELECTION_REQUIRED") {
       return blocked("PROFILE_CONTINUATION_SCREEN_SELECTION_NOT_REQUESTED", 409);
     }
@@ -722,6 +988,55 @@ export async function handleProfileContinuation(
     if (prepared.error) return prepared.error;
     result = prepared.result!;
   }
+  // P4: typed Step47 continuation. Only the already-admitted OIDC parent RUN
+  // can supply a baseline envelope; canonical SQL validates all digests/sources.
+  const baseline = result.baseline_result as Payload | undefined;
+  const baselineRequired = result.status === "BLOCKED" &&
+    result.blocking_code === "BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY" &&
+    baseline?.outcome === "BASELINE_REQUIRED" && baseline?.recorded === false &&
+    baseline?.execution_id === e.execution_id &&
+    baseline?.next_action === "INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY";
+  if (Object.prototype.hasOwnProperty.call(body,"baseline_envelope")) {
+    if (!baselineRequired) return blocked("PROFILE_BASELINE_NOT_REQUESTED",409);
+    const envelope = body.baseline_envelope;
+    if (!envelope || typeof envelope !== "object" || Array.isArray(envelope))
+      return blocked("PROFILE_BASELINE_ENVELOPE_INVALID",400);
+    const payload = envelope as Payload;
+    if (!payload.snapshot || typeof payload.snapshot !== "object" || Array.isArray(payload.snapshot) ||
+        typeof payload.baseline_digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(payload.baseline_digest) ||
+        typeof payload.input_digest !== "string" || typeof payload.profile_source_digest !== "string" ||
+        typeof payload.capture_stage !== "string" || !Array.isArray(payload.evidence_refs) ||
+        payload.evidence_refs.length === 0)
+      return blocked("PROFILE_BASELINE_ENVELOPE_INVALID",400);
+    const recordedBaseline = await rpc(config,fetchFn,"lf_profile_execution_research_baseline_v1",{
+      p_execution_id:e.execution_id,p_baseline_envelope:payload,p_actor_execution_id:e.execution_id,
+    });
+    if (recordedBaseline.error) return recordedBaseline.error;
+    // The canonical recorder returns outcome=STEP_RECORDED and
+    // status=STEP_PASS_WITH_EVIDENCE. Reject a merely asserted outcome
+    // whose deterministic step status is BLOCKED or RETURN_TO_ROUTER.
+    if (recordedBaseline.result?.outcome !== "STEP_RECORDED" ||
+        recordedBaseline.result?.status !== "STEP_PASS_WITH_EVIDENCE")
+      return respond({outcome:"BLOCKED",code:"PROFILE_BASELINE_RECORD_NOT_CLEAN",
+        execution_id:e.execution_id,result:recordedBaseline.result},409);
+    prepared=await rpc(config,fetchFn,"lf_profile_native_bridge_prepare_v1",{
+      p_execution_id:e.execution_id,p_source_revision:revision,
+      p_source_digest:digest,p_actor_execution_id:e.execution_id,
+    });
+    if(prepared.error)return prepared.error;
+    result=prepared.result!;
+    if (result.status==="BLOCKED" && result.blocking_code==="BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY")
+      return blocked("PROFILE_BASELINE_REPLAY_NOT_CLEAN",409);
+  } else if (baselineRequired) {
+    return respond({outcome:"CONTINUATION_REQUIRED",phase:"RESEARCH_BASELINE_REQUIRED",
+      execution_id:e.execution_id,profile_code:e.target_code,
+      next_action:"SUBMIT_BASELINE_ENVELOPE_SAME_RUN",
+      governed_continuation:{schema_version:"LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+        payload_field:"baseline_envelope",transport:"EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+        reuse_execution_id:true,issue_label:"lf-profile-resume-governed",
+        source_contract:baseline.research_baseline_contract,
+        baseline_receipt_ref:baseline.baseline_receipt_ref},result},200);
+  }
   const semanticKeys = [
     "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
     "authority_resolution_valid", "constraints_preserved", "claims_authorized",
@@ -742,10 +1057,25 @@ export async function handleProfileContinuation(
     const review = receipt.judge_v3_evidence;
     const resultObj = receipt.result;
     const currentContext = receipt.review_mode === "CURRENT_CONTEXT_REVIEW";
+    // An ACT-0001-authorized effects-bearing SRCR RUN must not misrepresent
+    // producer self-review as an independently attested provider call.
+    // SQL remains the independent authority for actual provider verification.
+    const attestationBlock = effectsBearingNativeSemanticReviewBlockCode(
+      e.manifest as Payload, receipt.review_mode,
+    );
+    if (attestationBlock) {
+      return respond({outcome:"BLOCKED",phase:"SEMANTIC_JUDGE",
+        code:attestationBlock,execution_id:e.execution_id,step_id:"semantic_judge",
+        provider_independence_verified:false,step_recorded:false},409);
+    }
+    const isolatedContext = receipt.review_mode === "INDEPENDENT_EVAL_CONTEXT";
     const expectedVerdict = currentContext ? "PASS_REVIEWED_CURRENT_CONTEXT" : "PASS_INDEPENDENT_SEMANTIC";
     const reviewerFactsValid = currentContext
       ? receipt.producer_independence_proven === false &&
         receipt.reviewer_is_producer === true && receipt.model_call_count === 0
+      : isolatedContext
+      ? receipt.producer_independence_proven === true &&
+        receipt.reviewer_is_producer === false && receipt.model_call_count === null
       : (receipt.review_mode === undefined || receipt.review_mode === "INDEPENDENT_SEMANTIC") &&
         receipt.producer_independence_proven === true && receipt.model_call_count === 1;
     if (
@@ -776,7 +1106,15 @@ export async function handleProfileContinuation(
         ? v3.review_mode !== "CURRENT_CONTEXT_REVIEW" ||
           v3.reviewer_is_producer !== true ||
           v3.producer_independence_proven !== false || v3.model_call_count !== 0
-        : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
+        : isolatedContext
+          ? v3.review_mode !== "INDEPENDENT_EVAL_CONTEXT" ||
+            v3.reviewer_is_producer !== false ||
+            v3.producer_context_available !== false ||
+            v3.producer_independence_proven !== true ||
+            v3.model_call_count !== null ||
+            typeof v3.reviewer_context_ref !== "string" ||
+            !v3.reviewer_context_ref.trim()
+          : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
       v3.candidate_sha256 !== receipt.candidate_sha256 ||
       v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
       !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||
@@ -904,6 +1242,13 @@ export async function handleProfileContinuation(
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
   if (postModel) return postModel;
 
+  // GPT_NATIVE/CLAUDE_NATIVE Step 50 belongs to the model in the SAME owning
+  // conversation. Edge MUST NOT call a paid/external model or mint fake RAW.
+  // The owning chat submits real RAW + optional grounded V3 through the
+  // existing governed Issue/OIDC/Edge continuation for this execution_id.
+  // The source-bound canonical validator and bridge record Steps 50 and 60.
+  // The SAME governed runner can immediately record 70 and 80 when V3 is present.
+
   // Post-model submission is accepted only from this already-authorized OIDC
   // continuation transport. The model supplies only its RAW profile output;
   // deterministic validity must come from the source-bound canonical runner.
@@ -990,6 +1335,7 @@ export async function handleProfileContinuation(
   const status = String(result.status ?? "BLOCKED");
   const expected = [
     "SCREEN_SELECTION_REQUIRED",
+    "SKILL_RUNTIME_REQUIRED",
     "INPUT_GOVERNANCE_RUNTIME_REQUIRED",
     "NATIVE_MODEL_INPUT_READY",
     "HUMAN_DECISION_REQUIRED",

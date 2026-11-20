@@ -1,0 +1,11 @@
+{
+  "solution_ref": "pr-c-niubiz-payment-provider-config-v1",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/pr-c-niubiz-payment-provider-config-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/input_governance/pr_c_payment_provider_config_rollback.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/input_governance/test_pr_c_payment_provider_config_source_v1.py": "INPUT_GOVERNANCE",
+    "supabase/migrations/20261118061500_lf_payment_provider_config_niubiz_generic_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/input_governance/run_pr_c_payment_provider_pg17_v1.py": "INPUT_GOVERNANCE"
+  }
+}

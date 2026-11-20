@@ -1,0 +1,33 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "profile_pack_id": "PERFIL-PRODUCT-DIRECTOR-SALY",
+  "profile_slug": "saly_product_director",
+  "operation": "CREACION_PERFIL_LF",
+  "document_status": "CANDIDATO",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "project_code": "SALY",
+  "owner_name": "Cristhian Luján",
+  "identity_mode": "UNVERIFIED_CHAT_DECLARATION",
+  "identity_verified": false,
+  "production_authorized": false,
+  "owner_decision_literal": "Si me designo",
+  "owner_decision_local": "2026-11-13T12:53:00-05:00",
+  "source_authority": [
+    "INPUT GOVERNANCE LF — INSTRUCCIONES OPERATIVAS V1.4",
+    "ACT-0001",
+    "CREACION_PERFIL_LF",
+    "owner SALY documentary declaration 2026-11-13T12:53-05:00"
+  ],
+  "required_files": [
+    "SKILL.md",
+    "README.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "judges/mini_judge.md",
+    "evals/eval_matrix.json",
+    "manifest.json"
+  ],
+  "native_profile_receipt_required": true
+}

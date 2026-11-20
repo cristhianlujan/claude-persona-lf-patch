@@ -41,3 +41,24 @@ def validate(payload):
         return {"status":"PASS" if not errors else "BLOCKED","errors":errors}
     except Exception as exc:
         return {"status":"BLOCKED","errors":[{"code":"VALIDATOR_FAIL_CLOSED","detail":type(exc).__name__}]}
+
+def main():
+    """Declared JSON_FILE_ARGUMENT transport: stdout JSON + exit status."""
+    import sys
+    try:
+        if len(sys.argv) != 2:
+            raise ValueError("JSON_FILE_ARGUMENT_REQUIRED")
+        result = validate(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")))
+        errors = result.get("errors") if isinstance(result, dict) else None
+        if not isinstance(errors, list):
+            errors = [{"code": "VALIDATOR_OUTPUT_INVALID"}]
+        valid = isinstance(result, dict) and result.get("status") == "PASS" and not errors
+    except (OSError, ValueError, UnicodeError) as exc:
+        valid = False
+        errors = [{"code": "VALIDATOR_CLI_INPUT_INVALID", "detail": type(exc).__name__}]
+    print(json.dumps({"valid": bool(valid), "errors": errors}, ensure_ascii=False))
+    return 0 if valid else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

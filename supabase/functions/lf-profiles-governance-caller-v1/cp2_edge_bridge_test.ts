@@ -2,6 +2,19 @@
 import "./profile_continuation_test.ts";
 // The CP2 CI carrier exercises isolated Stage 06/07 no-write and writer tests.
 import "./router_stage6_stage7_test.ts";
+// Transport preflight contract tests run within the existing authorized CP2 lane.
+import "../_shared/lf_ig_transport_guard_v1_test.ts";
+import {validateLfIgTransport} from "../_shared/lf_ig_transport_guard_v1.ts";
+Deno.test("CP2: reject semantic sha inside native profile_output RAW before transport", () => {
+  for (const key of ["semantic_receipt_sha256","catalog_sha256","request_sha256"]) {
+    const fault=validateLfIgTransport("PROFILE_NATIVE_OUTPUT",{
+      action:"profile_native_continue_v1",execution_id:"EXEC-PROFILE-GATE2-ABC",
+      profile_output:{source_text:"canonico",[key]:"untrusted"}
+    },["execution_id","profile_output"]);
+    if(!fault || fault.field!=="profile_output."+key ||
+      fault.downstream_call_attempted!==false)throw new Error("PROFILE_RAW_SEMANTIC_FIELD_NOT_BLOCKED:"+key);
+  }
+});
 import {cp2Context,executeCp2,Cp2Fault,CP2_EXECUTE_ACTION,CP2_PREFLIGHT_ACTION} from "./cp2_edge_bridge.ts";
 
 const IDS=[1,2,3,5,43,51,52,53,54,55,56,57,58];
@@ -121,7 +134,7 @@ const PROFILE_RUNTIME_FOR_TEST = {
   execution_id: PROFILE_EXECUTION_FOR_TEST,
   pantalla_id: 51,
 };
-function ticketBridgeHarness(options: { valid?: boolean; agentState?: string } = {}) {
+function ticketBridgeHarness(options: { valid?: boolean; agentState?: string; directStatus?: string; readyOverrides?: Record<string, unknown>; agentHttp?: number; findings?: unknown[] } = {}) {
   const repo = "cristhianlujan/claude-persona-lf-patch";
   const ref = "refs/heads/main";
   const env: Record<string, string> = {
@@ -158,7 +171,14 @@ function ticketBridgeHarness(options: { valid?: boolean; agentState?: string } =
           status = 403;
           result = { error: "IG_PROFILE_TICKET_REQUIRED" };
         } else {
-          result = { result: { status: options.agentState ?? "READY", run_id: 10051 } };
+          result = { ...(options.directStatus ? {status:options.directStatus} : {}),
+            result: { status: options.agentState ?? "READY", run_id: 10051,
+              pantalla_id:51,consumer:"CONTEXT_PACK",
+              execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
+              generated_at:new Date().toISOString(),
+              ...(options.readyOverrides ?? {}),
+              findings:options.findings ?? [] } };
+          status=options.agentHttp ?? 200;
         }
       } else {
         throw new Error("TEST_UNEXPECTED_ROUTE " + url);
@@ -213,4 +233,73 @@ Deno.test("ticket bridge: Validator continuation stays bound to ticket without q
   eq(payload.queue_required, false);
   eq(payload.polling_required, false);
   assert(h.calls.some(c => c.url.endsWith("/functions/v1/input-governance-agent-v1") && c.body.ticket === PROFILE_TICKET_FOR_TEST));
+});
+
+Deno.test("LF-AUD-UI-04 executable negative: outer BLOCKED with inner READY stays 409",async()=>{
+  const h=ticketBridgeHarness({directStatus:"BLOCKED",agentState:"READY"});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_BLOCKED");
+  eq(o.payload.terminal_status,"BLOCKED");
+});
+
+Deno.test("LF-AUD-UI-04 executable negative: HUMAN with inner READY stays 409",async()=>{
+  const h=ticketBridgeHarness({directStatus:"HUMAN_DECISION_REQUIRED",agentState:"READY"});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED");
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: READY missing run ID is 409",async()=>{
+  const h=ticketBridgeHarness({readyOverrides:{run_id:null}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: READY consumer mismatch is 409",async()=>{
+  const h=ticketBridgeHarness({readyOverrides:{consumer:"STORY_CREATOR"}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: historical READY generated_at is stale",async()=>{
+  const h=ticketBridgeHarness({readyOverrides:{generated_at:"2020-01-01T00:00:00Z"}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_READY_CURRENTNESS_UNVERIFIED");
+});
+
+Deno.test("LF-AUD-UI-03 executable positive: bound fresh READY continues",async()=>{
+  const h=ticketBridgeHarness();
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,200);
+  eq(o.payload.run_id,10051);
+});
+
+Deno.test("LF-AUD-UI-03 executable negative: foreign screen blocked without foreign RAW",async()=>{
+  const h=ticketBridgeHarness({agentState:"BLOCKED",readyOverrides:{pantalla_id:52}});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.code,"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH");
+  assert(o.payload.result===undefined,"Foreign governance RAW must not be disclosed");
+});
+
+Deno.test("LF-AUD-UI-05 executable negative: HTTP 409 BLOCKED retains full findings",async()=>{
+  const findings=[{code:"FAMILY_GAP",family_code:"SECURITY"},
+                  {code:"SOURCE_STALE",family_code:"AUDIT"}];
+  const h=ticketBridgeHarness({agentState:"BLOCKED",agentHttp:409,findings});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  eq(o.response.status,409);
+  eq(o.payload.outcome,"BLOCKED");
+  eq(o.payload.code,"IG_CONTEXT_PACK_BLOCKED");
+  eq(o.payload.result.result.findings,findings);
+});
+
+Deno.test("LF-AUD-UI-05 executable negative: invalid 409 READY must not authorize",async()=>{
+  const h=ticketBridgeHarness({agentState:"READY",agentHttp:409});
+  const o=await h.invoke(PROFILE_TICKET_FOR_TEST);
+  assert(o.response.status!==200);
+  assert(o.payload.outcome!=="TERMINAL");
 });

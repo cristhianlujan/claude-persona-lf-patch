@@ -1,0 +1,390 @@
+{
+  "schema": "LF_L36_SECURITY_POLICY19_DOCUMENTARY_PATCH_V2_NO_NATIVE_WRITER_V1",
+  "owner_decision_doc": "00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+  "source_kind": "SECURITY_POLICY",
+  "source_table": "lf_ops.politicas_seguridad",
+  "source_id": 19,
+  "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+  "current_status": "CANDIDATO",
+  "preimage": {
+    "old_description": "La politica central de factores define metodos por perfil. Los administradores requieren SSO Google Workspace SAML con control resistente a phishing. Los demas perfiles usan un segundo control LF de OTP por correo entregado con Brevo; debe verificarse del lado servidor antes del acceso operativo. No puede atribuirse a este OTP la garantia de AAL2 nativo del proveedor sin evidencia. Los bindings del proveedor de identidad permanecen pendientes de M1/ADR-003.",
+    "old_policy_config": {
+      "profile_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "coverage_status": "ALL_HUMAN_PROFILES",
+      "admin_idp_status": "PLANNED_NOT_PROVISIONED",
+      "non_admin_method": "LF_EMAIL_OTP",
+      "totp_flow_status": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+      "admin_profile_ids": [
+        1,
+        2
+      ],
+      "admin_sso_protocol": "SAML_2_0",
+      "admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+      "email_otp_screen_id": 54,
+      "admin_primary_method": "GOOGLE_WORKSPACE_SAML_SSO",
+      "legacy_otp_policy_id": 1,
+      "standard_profile_ids": [
+        5,
+        6
+      ],
+      "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+      "non_admin_profile_ids": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "phone_otp_default_use": "DENY",
+      "admin_minimum_strength": "PHISHING_RESISTANT",
+      "legacy_otp_default_use": "DENY",
+      "admin_identity_provider": "GOOGLE_WORKSPACE",
+      "factor_selection_status": "CLOSED_POLICY_DEFINED",
+      "high_impact_profile_ids": [
+        3,
+        4
+      ],
+      "non_admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+      "totp_challenge_route_id": 13,
+      "factor_registry_strategy": "CENTRAL_POLICY",
+      "totp_challenge_screen_id": 54,
+      "totp_enrollment_route_id": 14,
+      "non_admin_assurance_model": "LF_SECOND_FACTOR_VERIFIED",
+      "standard_minimum_strength": "APPROVED_MFA",
+      "totp_enrollment_screen_id": 55,
+      "non_admin_delivery_channel": "EMAIL",
+      "non_admin_smtp_default_use": "DENY",
+      "numeric_thresholds_in_rule": "DENY",
+      "non_admin_delivery_provider": "BREVO",
+      "high_impact_minimum_strength": "APPROVED_MFA",
+      "non_admin_delivery_execution": "SERVER_SIDE_ONLY",
+      "non_admin_delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+      "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+      "legacy_otp_default_eligibility": "NOT_APPROVED_AS_DEFAULT_BACKOFFICE_FACTOR",
+      "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+      "phishing_resistant_option_required": true,
+      "admin_provider_configuration_status": "PENDING_GOOGLE_WORKSPACE_TENANT_AND_SAML_METADATA",
+      "admin_phishing_resistant_requirement": "GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY",
+      "totp_enrollment_screen_in_normal_flow": "DENY",
+      "provider_architecture_security_policy_id": 23,
+      "supabase_native_aal2_claim_for_email_otp": "DENY"
+    },
+    "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07"
+  },
+  "proposed_description": "La política central 19 determina el segundo factor por perfil cuando la política de aplicabilidad MFA lo exige; no altera los disparadores ni umbrales de MFA de la política central 3. Para Admin LF (profile_id 1) y Admin Empresa (profile_id 2), el inicio de sesión comienza con usuario y contraseña validados por el servidor. Si MFA corresponde a ese acceso, LF_AUTH_BOUNDARY genera un código de un solo uso (OTP), lo entrega al correo registrado mediante Brevo y verifica el código del lado servidor antes de completar AUTHENTICATED, crear una sesión operativa o conceder permisos. Para ambos administradores el segundo factor es OTP por correo/Brevo, sin exigir FIDO2/WebAuthn, passkeys o llaves de seguridad. Los perfiles 3, 4, 5 y 6 mantienen el segundo factor OTP por correo gestionado por LF y entregado mediante Brevo, verificado por el servidor cuando MFA aplique. Se prohíben el acceso mediante contraseña sola si MFA es requerido, el bypass por dispositivo reconocido, la aceptación de OTP inválido, vencido o no verificado y la elección de factor o estado AUTHENTICATED desde el cliente. SMS continúa como contingencia sin proveedor confirmado y sin fallback automático. El OTP por correo no es resistente a phishing y no se declara Supabase native AAL2 sin evidencia. La integración de Brevo, el binding del proveedor de identidad conforme ADR-003 M1, la recuperación de cuenta y las pruebas reales siguen pendientes. Riesgo residual aceptado por el dueño en conversación, pendiente de firma: el OTP por correo puede ser retransmitido mediante phishing.",
+  "proposed_policy_config": {
+    "profile_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "coverage_status": "ALL_HUMAN_PROFILES",
+    "admin_idp_status": "PLANNED_NOT_PROVISIONED",
+    "non_admin_method": "LF_EMAIL_OTP",
+    "totp_flow_status": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+    "admin_profile_ids": [
+      1,
+      2
+    ],
+    "admin_sso_protocol": "PENDING_ADR_003_M1_SPIKE",
+    "admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+    "email_otp_screen_id": 54,
+    "admin_primary_method": "USERNAME_PASSWORD_SERVER_VALIDATED",
+    "legacy_otp_policy_id": 1,
+    "standard_profile_ids": [
+      5,
+      6
+    ],
+    "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+    "non_admin_profile_ids": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "phone_otp_default_use": "DENY",
+    "admin_minimum_strength": "APPROVED_MFA",
+    "legacy_otp_default_use": "DENY",
+    "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+    "factor_selection_status": "OWNER_DECIDED_IN_CONVERSATION_PENDING_SIGNATURE_IMPLEMENTATION",
+    "high_impact_profile_ids": [
+      3,
+      4
+    ],
+    "non_admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+    "totp_challenge_route_id": 13,
+    "factor_registry_strategy": "CENTRAL_POLICY",
+    "totp_challenge_screen_id": 54,
+    "totp_enrollment_route_id": 14,
+    "non_admin_assurance_model": "LF_SECOND_FACTOR_VERIFIED",
+    "standard_minimum_strength": "APPROVED_MFA",
+    "totp_enrollment_screen_id": 55,
+    "admin_otp_delivery_channel": "EMAIL",
+    "admin_second_factor_method": "LF_EMAIL_OTP",
+    "non_admin_delivery_channel": "EMAIL",
+    "non_admin_smtp_default_use": "DENY",
+    "numeric_thresholds_in_rule": "DENY",
+    "admin_otp_delivery_provider": "BREVO",
+    "admin_otp_native_aal2_claim": "DENY",
+    "non_admin_delivery_provider": "BREVO",
+    "high_impact_minimum_strength": "APPROVED_MFA",
+    "non_admin_delivery_execution": "SERVER_SIDE_ONLY",
+    "non_admin_delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+    "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+    "legacy_otp_default_eligibility": "NOT_APPROVED_AS_DEFAULT_BACKOFFICE_FACTOR",
+    "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+    "phishing_resistant_option_required": false,
+    "admin_provider_configuration_status": "PENDING_REAL_IDP_AND_BREVO_INTEGRATION_QA",
+    "admin_phishing_resistant_requirement": "NOT_REQUIRED_FOR_PROFILES_1_2_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+    "admin_primary_credentials_validation": "SERVER_ONLY",
+    "totp_enrollment_screen_in_normal_flow": "DENY",
+    "provider_architecture_security_policy_id": 23,
+    "supabase_native_aal2_claim_for_email_otp": "DENY"
+  },
+  "proposed_patch_v2_documental_NO_WRITER": {
+    "changes": {
+      "description": "La política central 19 determina el segundo factor por perfil cuando la política de aplicabilidad MFA lo exige; no altera los disparadores ni umbrales de MFA de la política central 3. Para Admin LF (profile_id 1) y Admin Empresa (profile_id 2), el inicio de sesión comienza con usuario y contraseña validados por el servidor. Si MFA corresponde a ese acceso, LF_AUTH_BOUNDARY genera un código de un solo uso (OTP), lo entrega al correo registrado mediante Brevo y verifica el código del lado servidor antes de completar AUTHENTICATED, crear una sesión operativa o conceder permisos. Para ambos administradores el segundo factor es OTP por correo/Brevo, sin exigir FIDO2/WebAuthn, passkeys o llaves de seguridad. Los perfiles 3, 4, 5 y 6 mantienen el segundo factor OTP por correo gestionado por LF y entregado mediante Brevo, verificado por el servidor cuando MFA aplique. Se prohíben el acceso mediante contraseña sola si MFA es requerido, el bypass por dispositivo reconocido, la aceptación de OTP inválido, vencido o no verificado y la elección de factor o estado AUTHENTICATED desde el cliente. SMS continúa como contingencia sin proveedor confirmado y sin fallback automático. El OTP por correo no es resistente a phishing y no se declara Supabase native AAL2 sin evidencia. La integración de Brevo, el binding del proveedor de identidad conforme ADR-003 M1, la recuperación de cuenta y las pruebas reales siguen pendientes. Riesgo residual aceptado por el dueño en conversación, pendiente de firma: el OTP por correo puede ser retransmitido mediante phishing.",
+      "policy_config": {
+        "profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "coverage_status": "ALL_HUMAN_PROFILES",
+        "admin_idp_status": "PLANNED_NOT_PROVISIONED",
+        "non_admin_method": "LF_EMAIL_OTP",
+        "totp_flow_status": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+        "admin_profile_ids": [
+          1,
+          2
+        ],
+        "admin_sso_protocol": "PENDING_ADR_003_M1_SPIKE",
+        "admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+        "email_otp_screen_id": 54,
+        "admin_primary_method": "USERNAME_PASSWORD_SERVER_VALIDATED",
+        "legacy_otp_policy_id": 1,
+        "standard_profile_ids": [
+          5,
+          6
+        ],
+        "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+        "non_admin_profile_ids": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "phone_otp_default_use": "DENY",
+        "admin_minimum_strength": "APPROVED_MFA",
+        "legacy_otp_default_use": "DENY",
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "factor_selection_status": "OWNER_DECIDED_IN_CONVERSATION_PENDING_SIGNATURE_IMPLEMENTATION",
+        "high_impact_profile_ids": [
+          3,
+          4
+        ],
+        "non_admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+        "totp_challenge_route_id": 13,
+        "factor_registry_strategy": "CENTRAL_POLICY",
+        "totp_challenge_screen_id": 54,
+        "totp_enrollment_route_id": 14,
+        "non_admin_assurance_model": "LF_SECOND_FACTOR_VERIFIED",
+        "standard_minimum_strength": "APPROVED_MFA",
+        "totp_enrollment_screen_id": 55,
+        "admin_otp_delivery_channel": "EMAIL",
+        "admin_second_factor_method": "LF_EMAIL_OTP",
+        "non_admin_delivery_channel": "EMAIL",
+        "non_admin_smtp_default_use": "DENY",
+        "numeric_thresholds_in_rule": "DENY",
+        "admin_otp_delivery_provider": "BREVO",
+        "admin_otp_native_aal2_claim": "DENY",
+        "non_admin_delivery_provider": "BREVO",
+        "high_impact_minimum_strength": "APPROVED_MFA",
+        "non_admin_delivery_execution": "SERVER_SIDE_ONLY",
+        "non_admin_delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+        "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+        "legacy_otp_default_eligibility": "NOT_APPROVED_AS_DEFAULT_BACKOFFICE_FACTOR",
+        "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+        "phishing_resistant_option_required": false,
+        "admin_provider_configuration_status": "PENDING_REAL_IDP_AND_BREVO_INTEGRATION_QA",
+        "admin_phishing_resistant_requirement": "NOT_REQUIRED_FOR_PROFILES_1_2_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+        "admin_primary_credentials_validation": "SERVER_ONLY",
+        "totp_enrollment_screen_in_normal_flow": "DENY",
+        "provider_architecture_security_policy_id": 23,
+        "supabase_native_aal2_claim_for_email_otp": "DENY"
+      }
+    },
+    "change_kind": "UPDATE_CANDIDATE_POLICY_DOCUMENTAL_V2",
+    "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY"
+  },
+  "patch_sha256": "4e2156de362f377ace9a0aef758a136501c9530ca02f7ee20691f38494b021f7",
+  "proposed_description_utf8_sha256": "0beb7404a61197b3d2528de19a210350a02ae83a5d7fbc58d57726645173975b",
+  "sha256_computed_method": "Postgres sha256(convert_to(patch::jsonb::text,'UTF8'))",
+  "owner_six_fields_TEMPLATE_NOT_SIGNED": {
+    "codigo_regla": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+    "propuesta_sha256": "4e2156de362f377ace9a0aef758a136501c9530ca02f7ee20691f38494b021f7",
+    "veredicto": "<APROBAR_O_RECHAZAR_PENDIENTE>",
+    "decisor": "Cristhian Luján",
+    "fecha": "<FECHA_ISO8601_AL_MOMENTO_DE_FIRMA>",
+    "frase_literal": "<FRASE_LITERAL_EMITIDA_POR_EL_DUENO_SOBRE_EL_SHA_EXACTO>"
+  },
+  "card": {
+    "title": "Política central 19: ambos administradores con contraseña + OTP correo/Brevo",
+    "today": "Los administradores 1 y 2 están agrupados bajo Google Workspace/SAML y PHISHING_RESISTANT; los perfiles 3–6 usan OTP correo/Brevo.",
+    "proposed": "Perfiles 1 y 2 validan usuario y contraseña en servidor y OTP por Brevo como segundo factor cuando MFA aplica. Perfiles 3–6 mantienen OTP/Brevo; no FIDO2/passkeys.",
+    "reason": "Nueva decisión del dueño resuelve método del perfil 1 y mantiene opción A del perfil 2, con riesgo phishing aceptado solo en conversación.",
+    "recommendation": "FAVORABLE A PREPARACIÓN DOCUMENTAL; BLOQUEAR APLICACIÓN/FIRMA V2 NATIVA: no existe escritor de políticas equivalente a lf_ig_rule_owner_decide_v2, y símbolos nuevos requieren validación de contrato, Seguridad y backend.",
+    "if_approved": "Solo después de existir operación de política y firma/procedencia se actualizarían description y policy_config y se verificaría con readback; no hay automatismo V2 de políticas acreditado.",
+    "if_rejected": "Permanece política 19 candidata con contradicción respecto a la decisión conversacional; nunca se presume FIDO2 aprobado."
+  },
+  "risk_accepted_conversation_pending_signature": "El OTP por correo puede ser retransmitido mediante phishing.",
+  "nine_fields": [
+    {
+      "path": "admin_minimum_strength",
+      "proposed": "APPROVED_MFA",
+      "resolution": "Sustituye mínimo global PHISHING_RESISTANT por el mínimo central existente usado en perfiles OTP; el valor es propuesta semántica, no certificación de AAL2.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": true,
+      "old_value": "PHISHING_RESISTANT",
+      "proposed_value": "APPROVED_MFA",
+      "requires_contract_enum_check": false
+    },
+    {
+      "path": "admin_phishing_resistant_requirement",
+      "proposed": "NOT_REQUIRED_FOR_PROFILES_1_2_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+      "resolution": "No exigir Google passkey/llave a administradores 1 y 2; conserva aceptación documental de riesgo sin fingir firma.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": false,
+      "old_value": "GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY",
+      "proposed_value": "NOT_REQUIRED_FOR_PROFILES_1_2_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+      "requires_contract_enum_check": true
+    },
+    {
+      "path": "phishing_resistant_option_required",
+      "proposed": false,
+      "resolution": "Eliminación de obligación global de passkey para 1 y 2, riesgo phishing explícito.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": true,
+      "old_value": true,
+      "proposed_value": false,
+      "requires_contract_enum_check": false
+    },
+    {
+      "path": "admin_primary_method",
+      "proposed": "USERNAME_PASSWORD_SERVER_VALIDATED",
+      "resolution": "Login usuario y contraseña validados server-side antes de OTP. No selecciona IdP.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": false,
+      "old_value": "GOOGLE_WORKSPACE_SAML_SSO",
+      "proposed_value": "USERNAME_PASSWORD_SERVER_VALIDATED",
+      "requires_contract_enum_check": true
+    },
+    {
+      "path": "admin_identity_provider",
+      "proposed": "PENDING_ADR_003_M1_SPIKE",
+      "resolution": "Método de OTP decidido, proveedor de identidad aún sin binding; no afirmar Google Workspace.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": false,
+      "old_value": "GOOGLE_WORKSPACE",
+      "proposed_value": "PENDING_ADR_003_M1_SPIKE",
+      "requires_contract_enum_check": true
+    },
+    {
+      "path": "admin_sso_protocol",
+      "proposed": "PENDING_ADR_003_M1_SPIKE",
+      "resolution": "No forzar SAML a ambos perfiles sin arquitectura/IdP verificados.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": false,
+      "old_value": "SAML_2_0",
+      "proposed_value": "PENDING_ADR_003_M1_SPIKE",
+      "requires_contract_enum_check": true
+    },
+    {
+      "path": "admin_profile_ids",
+      "proposed": [
+        1,
+        2
+      ],
+      "resolution": "No contradice la decisión: 1 y 2 siguen cubiertos. Se conserva exactamente [1,2]; separar cobertura de método.",
+      "kind": "NO_CONFLICT_PRESERVE",
+      "verified_enum_reuse": true,
+      "old_value": [
+        1,
+        2
+      ],
+      "proposed_value": [
+        1,
+        2
+      ],
+      "requires_contract_enum_check": false
+    },
+    {
+      "path": "admin_provider_configuration_status",
+      "proposed": "PENDING_REAL_IDP_AND_BREVO_INTEGRATION_QA",
+      "resolution": "No atribuir Google SAML configurado; exigir evidencia del proveedor real y Brevo.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": false,
+      "old_value": "PENDING_GOOGLE_WORKSPACE_TENANT_AND_SAML_METADATA",
+      "proposed_value": "PENDING_REAL_IDP_AND_BREVO_INTEGRATION_QA",
+      "requires_contract_enum_check": true
+    },
+    {
+      "path": "factor_selection_status",
+      "proposed": "OWNER_DECIDED_IN_CONVERSATION_PENDING_SIGNATURE_IMPLEMENTATION",
+      "resolution": "La selección del dueño existe en conversación, todavía sin firma ni binding implementado.",
+      "kind": "CONFLICT",
+      "verified_enum_reuse": false,
+      "old_value": "CLOSED_POLICY_DEFINED",
+      "proposed_value": "OWNER_DECIDED_IN_CONVERSATION_PENDING_SIGNATURE_IMPLEMENTATION",
+      "requires_contract_enum_check": true
+    }
+  ],
+  "additional_new_fields_proposed": {
+    "admin_second_factor_method": "LF_EMAIL_OTP",
+    "admin_otp_delivery_channel": "EMAIL",
+    "admin_otp_delivery_provider": "BREVO",
+    "admin_primary_credentials_validation": "SERVER_ONLY",
+    "admin_otp_native_aal2_claim": "DENY"
+  },
+  "counts": {
+    "nine_reviewed": 9,
+    "contradictions": 8,
+    "preserved_not_a_conflict": 1,
+    "new_field_proposals": 5
+  },
+  "writer_compatibility": {
+    "lf_ig_rule_owner_decide_v2_CANNOT_TARGET_SECURITY_POLICY": true,
+    "reason": "La función consulta lf_ops.reglas y valida governed_rule_patch rule_code; lf_ops.politicas_seguridad está fuera del contrato.",
+    "six_fields_are_documentary_template_ONLY": true,
+    "policy_writer_real_native_found": false,
+    "signable_via_rule_writer": false,
+    "source_snapshot_lf_asset_snapshot_sha_v1_rule_not_policy": true,
+    "formal_signature_exists": false
+  },
+  "sql_checks": {
+    "same_pg_source": true,
+    "root_keys": 3,
+    "change_keys": 2,
+    "candidate": true,
+    "description_changed": true,
+    "admin_profile_ids_retained": true,
+    "profiles_3_to_6_retained": true,
+    "standard_factor_preserved": true,
+    "brevo_standard_preserved": true,
+    "sms_gate_preserved": true,
+    "no_aal2_claim_preserved": true
+  },
+  "no_supabase_writes": true
+}

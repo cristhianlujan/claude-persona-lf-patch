@@ -1,0 +1,12 @@
+{
+  "solution_ref": "lf-promotion-dual-gate-scope-v2-20261114",
+  "paths": {
+    "supabase/migrations/20261114193000_lf_rule_promotion_dual_gate_scope_evidence_v2.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_rule_promotion_v1_live_defs_20261114.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_rule_promotion_dual_gate_scope_v2_pgdual.py": "RUNTIME_TESTING",
+    "docs/rule-promotion/05_simulation_578_dual_gate_scope_v2_20261114.json": "INPUT_GOVERNANCE",
+    "docs/rule-promotion/06_dual_gate_scope_evidence_v2_design_and_findings.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/lf-promotion-dual-gate-scope-v2-20261114.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_dual_skill_policy_pgdual_rollback_v1.py": "RUNTIME_TESTING"
+  }
+}

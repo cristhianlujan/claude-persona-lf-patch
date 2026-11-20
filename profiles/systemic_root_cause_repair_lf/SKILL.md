@@ -367,3 +367,9 @@ CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; 
 
 ## Closure-proof contract
 The V2 closure-proof rules (materiality -> obligations -> external evidence bindings -> derived readiness) live in `contracts/closure_proof_v2.md` and are unchanged. Fill `closure_proof` from that contract after the investigation below is done.
+
+## Derived Product Director solution-repair stage
+When ACT-0001 selects this profile as the **configured** fallback for a Product Director `PRODUCT_EXECUTOR_HANDOFF`, read the source execution's exact Step50 output and original request binding. If Product Director supplied inventory/findings but no executable implementation package, produce the missing bounded solution first: target sources/currentness, selected corrective change, impacted assets, constraints, acceptance/negative tests, readback and rollback plan, and any eligible rule-promotion candidates. Do not pretend an inventory is an implemented repair.
+
+No repair write is authorized by derivation or fallback selection alone. Only a Router-issued `repair_execution_authority` bound to this run, scope, and allowed task intent permits governed mutation; otherwise return a ready-to-execute repair specification with the required evidence and the typed continuation. After authorized execution plus real readback, return to ACT-0001. Promotion follows `lf_rule_promotion_request_v1` + `lf_rule_promotion_score_v1`, not `manifest.no_promotion`; preserve explicit owner approvals for irreversible changes. Do not auto-generate `No production`, `No promotion`, `solo sandbox` or `producción NO-GO` in `preserved_constraints[]` unless a current owner-authorized source requires it.
+

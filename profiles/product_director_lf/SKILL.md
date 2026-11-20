@@ -124,6 +124,22 @@ A behavioral claim requires actual RAW model output plus a canonical execution r
 
 Only when an independently authorized and evidenced diagnostic comparison exists, compare equivalent Router/direct requests using selected decision, scope, preserved qualifiers, acceptance intent, blockers and handoff effect. Never open a direct production route or block a Router-only run solely because its direct counterpart does not exist. See the mandatory applicability rule in judges/product_director_semantic_judge.md.
 
+## Product-review to implementation handoff (governed, no premature Quality)
+When the task identifies findings, incomplete business rules, missing implementation or requested correction (including B2B bulk upload), an inventory is **not** a solution. Product Director must propose the minimum sufficient, source-bound solution before returning the result. Do not label a content finding as a pipeline transport failure.
+
+For `PRODUCT_DIRECTION_SPEC` with actionable work, emit `deliverable_created.implementation_package` with:
+- `scope_ref` and `source_refs[]`: real current sources, with rule state preserved (VIGENTE/CANDIDATO), never invented schema/columns.
+- `actions[]`: bounded changes, target asset/type, exact defect, selected solution, dependencies, and implementing operation/capability **as advice only**.
+- `acceptance_refs[]`, `preserved_constraints[]`, `expected_artifacts[]`, `negative_tests[]`, `readback_requirements[]` and `rollback_requirements[]`.
+- `promotion_candidates[]`: only eligible candidate rule codes, the exact source evidence and reason; `approval_status=NOT_REQUESTED`. This is **not** promotion, owner approval or an applied change.
+- `solution_status=PROPOSED_NOT_IMPLEMENTED` (never treat Product Director's analysis as executed code, rule updates or Quality PASS).
+
+Set `deliverable_created.handoff_to_next.target=Orchestrator` and `next_step.action=ROUTER_SELECT_EXECUTOR`. A named implementation profile or the configured Systemic Repair fallback is advisory only; ACT-0001 must select it through the normal semantic selection/Gate2, and admission/write authority remains a separate gate. The fallback is read from `FALLBACK_PROFILE`, never a hardcoded profile choice in the producer.
+
+Do not hand work straight from a Product Director analysis to Quality Pack. Quality must receive **the executor's actual produced artifact** together with exact before/after readbacks, verification, constraints, negative tests and provenance. After Quality, submit only justified rule promotion requests through existing `PROMOCION_REGLA_LF` authority and independent Step70 evidence, then request the owner's decision. No approval, status change, deployment or production GO is implied by this handoff.
+
+If the canonical solution cannot yet be made because material facts are unknown, give a bounded `PROPOSED_NOT_CANONICAL` option and the evidence-acquisition/repair action, with findings carried forward; do not fabricate the missing fact or silently close.
+
 ## Compact handoff rule
 Downstream receives only what changes execution: selected decision, exact current authority, preserved constraints/qualifiers, observable acceptance, explicitly labeled proposal details and unresolved material blockers. Do not dump internal governance/EKB metadata into the user-facing product brief.
 
@@ -132,3 +148,18 @@ Valid targets: Orchestrator, UX/UI, Copy, Legal/Data, Tech, QA, Quality Pack or 
 
 ## Runtime and impact
 Runtime remains disabled. Automatic promotion remains disabled. Asset identity and profile slug are unchanged.
+
+
+## Owner-approved promotion scoring and generated constraints (2026-11-15)
+
+Do not auto-insert `no_promotion`, `producción NO-GO`, `solo sandbox`, or
+`autoriza análisis, no cambios funcionales, promoción ni escritura operativa`
+into `product_decision.preserved_constraints[]` or implementation packages.
+Only preserve actual, CURRENT, source-bound limits and explicit owner decisions.
+A candidate rule may request promotion via `lf_rule_promotion_request_v1` and
+`lf_rule_promotion_score_v1` with Step40/50/60/70 exact hashes. Place factual
+`behavior_tests[]` under `deliverable_created` (schema allows extensions),
+using a real PG17/PG18 test path and verified CI run; never fabricate PASS.
+Keep owner approval for irreversible actions and independent product/security
+checks that remain applicable. A `CURRENT_CONTEXT_REVIEW` judge is
+`NOT_PROVEN_OWNER_ACCEPTED`, not an independent model call.

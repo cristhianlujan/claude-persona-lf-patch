@@ -1,0 +1,63 @@
+{
+  "schema": "LF_L37_AUTH019_ADMIN1_2_OTP_BREVO_DOCUMENTARY_PATCH_V1",
+  "id": "LF-LOGIN-AUTH019-P1-P2-OTP",
+  "rule": "B2B-RULE-AUTH-019",
+  "source_state": "CANDIDATO",
+  "source_fullrow_sha256": "7802a694fd4d29dab489974760babc984950ef6c06d90981c81e88530bf4882e",
+  "before_description": "El Login no selecciona dinámicamente un canal de segundo factor fuera de la política central. Para profile_id 1 y 2 se mantiene Google Workspace mediante SAML 2.0 con requisito resistente a phishing. Para profile_id 3, 4, 5 y 6, el control aprobado es OTP por correo gestionado por LF y entregado mediante Brevo. La pantalla no conoce credenciales del proveedor y no debe declarar este correo OTP como Supabase native AAL2.",
+  "before_config": {
+    "admin_method": "GOOGLE_WORKSPACE_SAML_SSO_WITH_PHISHING_RESISTANT_POLICY",
+    "non_admin_method": "LF_EMAIL_OTP",
+    "admin_profile_ids": [
+      1,
+      2
+    ],
+    "admin_sso_protocol": "SAML_2_0",
+    "email_otp_screen_id": 54,
+    "legacy_otp_policy_id": 1,
+    "admin_provider_status": "PLANNED_NOT_PROVISIONED",
+    "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+    "non_admin_profile_ids": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "phone_otp_default_use": "DENY",
+    "legacy_otp_default_use": "DENY",
+    "password_only_fallback": "DENY",
+    "admin_identity_provider": "GOOGLE_WORKSPACE",
+    "factor_selection_source": "lf_ops.politicas_seguridad",
+    "factor_security_policy_id": 19,
+    "non_admin_delivery_channel": "EMAIL",
+    "numeric_thresholds_in_rule": "DENY",
+    "mfa_applicability_policy_id": 3,
+    "non_admin_delivery_provider": "BREVO",
+    "totp_enrollment_normal_flow": "DENY",
+    "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+    "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+    "admin_phishing_resistant_requirement": "PASSKEY_OR_SECURITY_KEY",
+    "supabase_native_aal2_claim_for_email_otp": "DENY"
+  },
+  "governed_rule_patch": {
+    "changes": {
+      "descripcion": "\"El Login B2B obtiene de las políticas centrales la aplicabilidad MFA y el segundo factor sin permitir al cliente elegir métodos o proveedores. Para Admin LF (profile_id 1) y Admin Empresa (profile_id 2), el usuario ingresa usuario y contraseña, que LF_AUTH_BOUNDARY valida del lado servidor. Cuando MFA sea exigido por la política central, el servidor genera un desafío OTP y envía el código al correo registrado mediante Brevo; la verificación server-side del código válido y vigente debe completarse antes de emitir AUTHENTICATED, crear una sesión operativa o conceder permisos. En ambos perfiles 1 y 2 el segundo factor aprobado en conversación es OTP por correo/Brevo: no se exigen FIDO2/WebAuthn, passkeys ni llaves de seguridad. El OTP correo puede ser retransmitido por phishing, riesgo aceptado por el dueño en conversación pendiente de firma; no es resistente a phishing ni acredita por sí solo Supabase native AAL2. Para perfiles 3, 4, 5 y 6 se conserva OTP por correo gestionado por LF y entregado mediante Brevo. SMS permanece solo como contingencia, sin proveedor confirmado y sin habilitación automática. Si MFA aplica, se deniega acceso por contraseña sola, por OTP inválido, vencido o no verificado y por confianza de dispositivo que omita el factor exigido. El cliente no declara la sesión autenticada ni conoce secretos del proveedor. El proveedor real de identidad, la integración de Brevo, el contrato de recuperación, política central 19 y el valor_config histórico aún requieren reconciliación, verificación y operación gobernada separada antes de promover.\""
+    },
+    "rule_code": "B2B-RULE-AUTH-019",
+    "change_kind": "DOCUMENTARY_ONLY"
+  },
+  "governed_rule_patch_sha256": "f70ded45a786f6fc6664081ecec5a3963514d0e3cf9ad06089914fcd425dd288",
+  "sha_method": "PostgreSQL sha256(convert_to(patch::jsonb::text,'UTF8'))",
+  "scope": "AUTH-019: Admin LF profile1 and Admin Empresa profile2 OTP email Brevo following username-password validation",
+  "owner_decisions": [
+    "L35-OWNER-AUTH019-OPTION-A-001",
+    "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001"
+  ],
+  "owner_signature": false,
+  "identity_verified": false,
+  "semantic_judge": false,
+  "applicable_writer": "public.lf_ig_rule_owner_decide_v2 ONLY AFTER REAL PARENT RUN AND JUDGE; DO NOT EXECUTE",
+  "policy19_reconciled": false,
+  "value_config_reconciled": false,
+  "not_to_promote": true
+}

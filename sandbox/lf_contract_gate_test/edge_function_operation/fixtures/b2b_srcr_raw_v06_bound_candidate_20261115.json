@@ -1,0 +1,1666 @@
+{
+  "candidate": {
+    "status": "SYSTEMIC_REPAIR_SPEC",
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "symptom": {
+      "statement": "Product Director produced a B2B-CARGA-002 review that required a separately executed artifact before Quality; the UI baseline has three steps while a rule candidate proposes four. The initial router-return gap is now patched and the candidate artifact is generated.",
+      "status": "OBSERVED",
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-PARENT",
+        "EV-ART"
+      ],
+      "missing_evidence": []
+    },
+    "immediate_cause": {
+      "statement": "The product review and the B2B wizard rule are separate levels of authority. Without a bounded executable contract and test readback, the Router cannot safely present a verified executor artifact to Quality.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-PARENT"
+      ],
+      "missing_evidence": []
+    },
+    "systemic_root_cause": {
+      "statement": "A candidate four-state UI proposal is not reconciled against the current three-step screen contract, while the execution pipeline historically lacked an executable product-to-repair handoff. The pipeline contract is repaired, but business-rule promotion remains separate.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-PARENT"
+      ],
+      "missing_evidence": []
+    },
+    "causal_chain": [
+      {
+        "statement": "Product Director parent execution completed 11/11, emitted PRODUCT_EXECUTOR_HANDOFF and persisted REENTER_ROUTER_STAGE1.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-PARENT",
+          "EV-RUN"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "ACT-0001 selected the canonical SRCR repair profile with governed_repair_write, scope B2B-CARGA-002 and no_promotion=true.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-RUN"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "The SRCR-produced sandbox candidate JSON and eight executable unit regressions merged through PR #3972; neither screen nor rules were mutated.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-ART",
+          "EV-TEST",
+          "EV-SCREEN"
+        ],
+        "missing_evidence": []
+      }
+    ],
+    "first_bad_control": {
+      "statement": "The first missing evidence boundary was a source-state reconciliation and executable negative-test package for B2B-CARGA-002; the candidate alone cannot acquire currentness or authorise implementation.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-ART"
+      ],
+      "missing_evidence": []
+    },
+    "escape_control": {
+      "statement": "Quality must not accept a Product Director inventory or an unexecuted proposal; the receiver requires a GitHub artifact and actual test/readback evidence before entry.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-PARENT",
+        "EV-ART",
+        "EV-TEST"
+      ],
+      "missing_evidence": []
+    },
+    "recurrence_evidence": [],
+    "live_authority_packet": {
+      "status": "PARTIAL",
+      "observed_at": "2026-11-15",
+      "applicable_surfaces": [
+        "B2B_SCREEN",
+        "B2B_RULES",
+        "ROUTER_EXECUTIONS",
+        "GITHUB_ARTIFACT",
+        "CI_R17",
+        "B2B_BACKEND"
+      ],
+      "inspected_surfaces": [
+        "B2B_SCREEN",
+        "B2B_RULES",
+        "ROUTER_EXECUTIONS",
+        "GITHUB_ARTIFACT",
+        "CI_R17"
+      ],
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RUN",
+        "EV-RULES",
+        "EV-PARENT",
+        "EV-AUTH",
+        "EV-ART",
+        "EV-TEST"
+      ],
+      "material_effects_observed": true,
+      "unavailable_sources": [
+        "B2B_BACKEND_IMPLEMENTATION"
+      ],
+      "unavailable_source_assessments": [
+        {
+          "source": "B2B_BACKEND_IMPLEMENTATION",
+          "impact": "IMPLEMENTATION_PRECONDITION",
+          "rationale": "The bounded candidate-contract PR and R17 unit tests do not prove runtime mass-load backend behavior; back-end effect tests remain a later governed implementation.",
+          "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+        }
+      ]
+    },
+    "execution_effect_reconciliation": [
+      {
+        "effect": "Candidate contract and offline negative tests committed as PR #3972",
+        "observed_ref": "EV-ART",
+        "declared_producer": "ACT-0001-selected Reparador, in-chat authored governed artifact",
+        "declared_producer_ref": "EV-RUN",
+        "observed_producer_refs": [
+          "EV-ART",
+          "EV-TEST"
+        ],
+        "reconciliation_status": "MATCH",
+        "blocking": false,
+        "impact": "NONE",
+        "containment_ref": null
+      }
+    ],
+    "authority_contradictions": [],
+    "repair_level": "LOCAL",
+    "should_exist_assessment": {
+      "verdict": "SHOULD_EXIST",
+      "subject": "Bounded candidate implementation contract and negative-test suite for B2B-CARGA-002",
+      "real_consumers": [
+        {
+          "consumer": "GitHub LF Edge Operation R17 Tests",
+          "evidence_ref": "EV-TEST"
+        }
+      ],
+      "elimination_impact": "Without the artifact a future Quality review has only Product Director inventory and no executable acceptance checks.",
+      "native_or_existing_alternative": "Reuse LF existing profiles, PASE, R17 and Router; no new architecture.",
+      "evidence_refs": [
+        "EV-ART",
+        "EV-TEST",
+        "EV-RUN"
+      ],
+      "missing_evidence": []
+    },
+    "alternatives": [
+      {
+        "id": "A",
+        "description": "Send Product Director inventory directly to Quality.",
+        "prevention": "None; no executor artifact.",
+        "complexity": "Low.",
+        "blast_radius": "Quality false positive.",
+        "reuse": "Uses existing handoff incorrectly.",
+        "fail_closed": "Poor.",
+        "idempotency": "No effect.",
+        "recoverability": "Manual reroute.",
+        "operational_cost": "Low but invalid.",
+        "basis_refs": [
+          "EV-PARENT"
+        ]
+      },
+      {
+        "id": "B",
+        "description": "Keep ACT-0001-selected Reparador and produce source-bound candidate contract and executable negative tests.",
+        "prevention": "Separates proposal from verified executor evidence.",
+        "complexity": "Bounded.",
+        "blast_radius": "Sandbox GitHub test paths only.",
+        "reuse": "PASE, R17 and current profile contracts.",
+        "fail_closed": "Rejects candidate promotion and premature Quality.",
+        "idempotency": "No business mutations.",
+        "recoverability": "Git revert of candidate PR.",
+        "operational_cost": "Low.",
+        "basis_refs": [
+          "EV-RUN",
+          "EV-ART",
+          "EV-TEST"
+        ]
+      },
+      {
+        "id": "C",
+        "description": "Promote all wizard and validation candidate rules now.",
+        "prevention": "None; bypasses authority.",
+        "complexity": "High business risk.",
+        "blast_radius": "B2B business rules.",
+        "reuse": "Bypasses governed promotion.",
+        "fail_closed": "Not acceptable.",
+        "idempotency": "Unproven.",
+        "recoverability": "Requires business rollback.",
+        "operational_cost": "High.",
+        "basis_refs": [
+          "EV-RULES",
+          "EV-SCREEN"
+        ]
+      }
+    ],
+    "preferred_alternative": "B",
+    "selected_alternative": "B",
+    "rejected_alternatives": [
+      {
+        "id": "A",
+        "reason": "Quality is only permitted after the executor artifact; an inventory is not an executed deliverable.",
+        "evidence_refs": [
+          "EV-PARENT",
+          "EV-ART"
+        ]
+      },
+      {
+        "id": "C",
+        "reason": "Rule is CANDIDATO and no independent Step70 plus owner promotion decision exists.",
+        "evidence_refs": [
+          "EV-RULES",
+          "EV-RUN"
+        ]
+      }
+    ],
+    "falsification_results": [
+      {
+        "case": "bypass",
+        "result": "PLANNED",
+        "evidence_ref": "design://bypass",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify four-step proposal without owner current decision.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated four-step proposal without owner current decision fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for four-step proposal without owner current decision; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_BYPASS_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "retry",
+        "result": "PLANNED",
+        "evidence_ref": "design://retry",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify retry without idempotency authority.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated retry without idempotency authority fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for retry without idempotency authority; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_RETRY_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "concurrency",
+        "result": "PLANNED",
+        "evidence_ref": "design://concurrency",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify concurrent candidate rule changes.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated concurrent candidate rule changes fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for concurrent candidate rule changes; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_CONCURRENCY_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "partial_failure",
+        "result": "PLANNED",
+        "evidence_ref": "design://partial_failure",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify missing artifact readback.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated missing artifact readback fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for missing artifact readback; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_PARTIAL_FAILURE_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "stale_state",
+        "result": "PLANNED",
+        "evidence_ref": "design://stale_state",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify stale three-step screen snapshot.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated stale three-step screen snapshot fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for stale three-step screen snapshot; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_STALE_STATE_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "interrupted_execution",
+        "result": "PLANNED",
+        "evidence_ref": "design://interrupted_execution",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify interrupted Quality handoff.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated interrupted Quality handoff fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for interrupted Quality handoff; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_INTERRUPTED_EXECUTION_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "replay_or_duplicate",
+        "result": "PLANNED",
+        "evidence_ref": "design://replay_or_duplicate",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify duplicate business effect.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated duplicate business effect fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for duplicate business effect; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_REPLAY_OR_DUPLICATE_NEGATIVE_FAILED"
+        }
+      },
+      {
+        "case": "undeclared_or_unversioned_caller",
+        "result": "PLANNED",
+        "evidence_ref": "design://undeclared_or_unversioned_caller",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Run the exact candidate contract negative test and, only in a separate authorized sandbox implementation, verify unregistered direct profile caller.",
+        "expected_result": "The candidate contract refuses unauthorized business effect or unsupported claim; no CANDIDATO becomes VIGENTE and no Quality handoff occurs without executor readback.",
+        "test_protocol": {
+          "setup": [
+            "Use the source-bound B2B-CARGA-002 contract and an isolated unregistered direct profile caller fixture."
+          ],
+          "action": [
+            "Execute the candidate guard for unregistered direct profile caller; never mutate live B2B rows."
+          ],
+          "assertions": [
+            "Fail closed with a clear negative result, preserving screen/rule row hashes."
+          ],
+          "failure_signal": "B2B_UNDECLARED_OR_UNVERSIONED_CALLER_NEGATIVE_FAILED"
+        }
+      }
+    ],
+    "origin_asset": {
+      "status": "RESOLVED",
+      "code": "B2B-CARGA-002",
+      "evidence_ref": "EV-SCREEN",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-SCREEN",
+      "subject": "B2B-CARGA-002 v0.3 3-step screen row",
+      "observed_revision": "v0.3"
+    },
+    "origin_operation": {
+      "status": "RESOLVED",
+      "code": "EJECUCION_PERFIL_LF",
+      "evidence_ref": "EV-RUN",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-RUN",
+      "subject": "ACT-0001 selected SRCR run, steps 0-47",
+      "observed_revision": "2026-11-15"
+    },
+    "owner": {
+      "status": "RESOLVED",
+      "code": "Cristhian",
+      "evidence_ref": "EV-SCREEN",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-SCREEN",
+      "subject": "B2B-CARGA-002 v0.3 3-step screen row",
+      "observed_revision": "v0.3"
+    },
+    "invariant": {
+      "statement": "No B2B screen or rule acquires VIGENTE, backend effects, Quality PASS or promotion from Product Director inventory; only an authorized executor artifact with source SHA, tests and readback reaches subsequent Quality.",
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-RUN",
+        "EV-ART",
+        "EV-TEST"
+      ],
+      "missing_evidence": [],
+      "validation_state": "SPECIFIED"
+    },
+    "hard_guard": {
+      "control": "Candidate contract regression and ACT-0001 receiver gate for exact executor artifact; rule state remains explicit.",
+      "enforcement_point_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/test_b2b_carga002_solution_candidate_v1.py",
+      "fail_closed_condition": "Block when candidate rule is recast as VIGENTE, the three-step screen becomes four without a current decision, or Quality/promotion is requested before evidence.",
+      "blocking_code": "B2B_CARGA002_EXECUTOR_EVIDENCE_REQUIRED",
+      "observable_result": "Eight unit negatives in R17 and no rule/screen mutation; future backend changes need separate authorization.",
+      "evidence_refs": [
+        "EV-ART",
+        "EV-TEST",
+        "EV-RULES"
+      ],
+      "missing_evidence": [],
+      "validation_state": "SPECIFIED"
+    },
+    "acceptance_criteria": [
+      {
+        "criterion": "B2B-CARGA-002 remains three UI steps, backend B2B_LOAD_VALIDADO outside wizard.",
+        "verification_method": "SELECT screen 44 current row and SHA and run negative 4-state drift test.",
+        "expected_result": "Screen v0.3 hash remains 5aa03357... and CANDIDATO wizard cannot supersede it."
+      },
+      {
+        "criterion": "Current server-side permissions, transitions and audit rules remain VIGENTE.",
+        "verification_method": "SELECT code/status/hash for STATE-001 AUTH-002 and AUDIT-001.",
+        "expected_result": "All three retain VIGENTE and original row digests."
+      },
+      {
+        "criterion": "Executor artifact is real before Quality.",
+        "verification_method": "Fetch exact candidate JSON blob from main and verify R17 negative suite and merge Train run.",
+        "expected_result": "PR #3972 merged; eight negatives R17 success and artifact content accessible."
+      },
+      {
+        "criterion": "Promotion is reserved to owner after independent semantic evidence.",
+        "verification_method": "SELECT candidate states and promotion requests linked to parent and executor.",
+        "expected_result": "Candidate states unchanged; zero authorized promotion until independent Step70 and human decision."
+      }
+    ],
+    "historical_regressions": [
+      {
+        "case_id": "HIST-PD-PREMATURE-QUALITY",
+        "occurrence_ref": "EV-PARENT",
+        "observed_failure": "Product Director review previously returned an inventory/Quality handoff; PR #3962 introduced the executor-first Router contract.",
+        "evidence_refs": [
+          "EV-PARENT",
+          "EV-RUN"
+        ]
+      }
+    ],
+    "planned_regressions": [
+      {
+        "case_id": "REG-B2B-STATE",
+        "scenario": "A candidate wizard rule is treated as current screen state.",
+        "verification_method": "Run offline candidate guard with incorrect candidate rule status.",
+        "expected_result": "CANDIDATE_AS_VIGENTE negative fails.",
+        "test_protocol": {
+          "setup": [
+            "Load fixture from PR #3972."
+          ],
+          "action": [
+            "Change only in-memory status to VIGENTE."
+          ],
+          "assertions": [
+            "Reject mutated fixture without SQL writes."
+          ],
+          "failure_signal": "CANDIDATE_AS_VIGENTE"
+        }
+      },
+      {
+        "case_id": "REG-B2B-QA",
+        "scenario": "Quality receives inventory without artifact.",
+        "verification_method": "Run missing-artifact negative case.",
+        "expected_result": "MISSING_CHANGE_READBACK rejection.",
+        "test_protocol": {
+          "setup": [
+            "Construct empty artifact_ref in memory."
+          ],
+          "action": [
+            "Call candidate guard."
+          ],
+          "assertions": [
+            "Reject missing readback."
+          ],
+          "failure_signal": "MISSING_CHANGE_READBACK"
+        }
+      },
+      {
+        "case_id": "REG-B2B-PROMO",
+        "scenario": "Request a promotion without independent Step70.",
+        "verification_method": "Run candidate requests_created=1 negative case.",
+        "expected_result": "PROMOTION_WITHOUT_INDEPENDENT_STEP70 rejection.",
+        "test_protocol": {
+          "setup": [
+            "Keep source CANDIDATO."
+          ],
+          "action": [
+            "Set request count positive in memory."
+          ],
+          "assertions": [
+            "Reject candidate self-promotion."
+          ],
+          "failure_signal": "PROMOTION_WITHOUT_INDEPENDENT_STEP70"
+        }
+      }
+    ],
+    "current_uncertainties": [
+      {
+        "uncertainty": "Real B2B bulk-load backend behavior has not been exercised by this test-only artifact.",
+        "impact": "IMPLEMENTATION_PRECONDITION",
+        "evidence_needed": [
+          "executed backend validation and company-authorization tests under separately bounded repair"
+        ],
+        "design_consequence": "Does not change the source-bound candidate contract; blocks claims of deployed B2B behavior.",
+        "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+      },
+      {
+        "uncertainty": "Quality Pack has not yet consumed the exact test artifact from the Reparador.",
+        "impact": "IMPLEMENTATION_PRECONDITION",
+        "evidence_needed": [
+          "Quality execution with artifact SHA, R17 and canonical profile output receipt"
+        ],
+        "design_consequence": "The Router must admit Quality only after the actual executor return.",
+        "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+      },
+      {
+        "uncertainty": "Eligible promotion requests require an independent Step70 and owner decision, not current-context review.",
+        "impact": "IMPLEMENTATION_PRECONDITION",
+        "evidence_needed": [
+          "separate judge receipt linked to candidate rule and approved owner decision"
+        ],
+        "design_consequence": "No rule status changes, no promotion request without guard eligibility.",
+        "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[2]"
+      }
+    ],
+    "residual_risks": [
+      {
+        "risk": "The candidate artifact tests contract consistency, not actual backend data processing.",
+        "evidence_refs": [
+          "EV-ART",
+          "EV-TEST"
+        ]
+      },
+      {
+        "risk": "A future source revision may invalidate rule/currentness hashes; reread before implementation.",
+        "evidence_refs": [
+          "EV-SCREEN",
+          "EV-RULES"
+        ]
+      }
+    ],
+    "evidence_map": [
+      {
+        "claim_path": "$.symptom",
+        "evidence_refs": [
+          "EV-PARENT",
+          "EV-RUN",
+          "EV-SCREEN"
+        ]
+      },
+      {
+        "claim_path": "$.immediate_cause",
+        "evidence_refs": [
+          "EV-SCREEN",
+          "EV-RULES"
+        ]
+      },
+      {
+        "claim_path": "$.systemic_root_cause",
+        "evidence_refs": [
+          "EV-SCREEN",
+          "EV-RULES",
+          "EV-PARENT"
+        ]
+      },
+      {
+        "claim_path": "$.first_bad_control",
+        "evidence_refs": [
+          "EV-ART",
+          "EV-TEST"
+        ]
+      },
+      {
+        "claim_path": "$.escape_control",
+        "evidence_refs": [
+          "EV-PARENT",
+          "EV-ART"
+        ]
+      },
+      {
+        "claim_path": "$.origin_asset",
+        "evidence_refs": [
+          "EV-SCREEN"
+        ]
+      },
+      {
+        "claim_path": "$.origin_operation",
+        "evidence_refs": [
+          "EV-RUN"
+        ]
+      },
+      {
+        "claim_path": "$.owner",
+        "evidence_refs": [
+          "EV-SCREEN"
+        ]
+      }
+    ],
+    "blocking_codes": [],
+    "next_gate": {
+      "gate": "RETURN_TO_ROUTER_ACT_0001",
+      "entry_condition": "Exact executor output validated against V0.6 and GitHub PR #3972 artifact readback exists.",
+      "exit_condition": "ACT-0001 consumes executor output, admits Quality only on real artifact, keeps promotion gated."
+    },
+    "implementation_delta": [
+      {
+        "target": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/fixtures/b2b_carga002_solution_candidate_v1.json",
+        "action": "Create exact source-bound B2B-CARGA-002 candidate contract; freeze original screen/rule state and proposal.",
+        "rationale": "This is the bounded minimum repair artifact; does not implement backend or mutate business rules.",
+        "evidence_refs": [
+          "EV-SCREEN",
+          "EV-RULES",
+          "EV-ART"
+        ]
+      },
+      {
+        "target": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/test_b2b_carga002_solution_candidate_v1.py",
+        "action": "Create 8 executable negative regressions and run R17 and PASE on exact head.",
+        "rationale": "Guards against premature Quality, candidate elevation and incorrect wizard scope.",
+        "evidence_refs": [
+          "EV-TEST",
+          "EV-ART"
+        ]
+      }
+    ],
+    "transition_plan": {
+      "strategy": "Contract and tests already merged as candidate in sandbox; use ACT-0001 Router to select Quality after validated SRCR output; separate backend effects remain future governed work.",
+      "compatibility_rule": "Preserve existing profile identities, ACT-0001 route, old 3-arg selector, screen and rules, PASE and promotion approval gates.",
+      "stages": [
+        {
+          "stage_id": "CANDIDATE",
+          "entry_condition": "Source screen 44 and rule currentness read before change.",
+          "changes": [
+            "Create candidate JSON and eight offline tests in PR #3972 without B2B data write."
+          ],
+          "exit_condition": "R17, PASE and Train success plus main blob readback.",
+          "rollback_scope": "Revert PR #3972 only."
+        },
+        {
+          "stage_id": "QUALITY",
+          "entry_condition": "SRCR execution STEP 80 returned to Router with executor artifact SHA and receipt.",
+          "changes": [
+            "Run Quality Pack on the executed candidate contract and test results only."
+          ],
+          "exit_condition": "Quality evaluates exact artifact; promotion candidate classification is separate.",
+          "rollback_scope": "No production or business effect to revert."
+        }
+      ]
+    },
+    "rollback_plan": {
+      "trigger_conditions": [
+        "Source screen/rule hash drifts or the candidate test suite fails."
+      ],
+      "inverse_actions": [
+        "Revert the isolated PR #3972 artifact and test paths by governed PR; no database inverse needed."
+      ],
+      "protected_history": [
+        "Do not delete or rewrite screen 44, its 43 rule links, historical RUNs or PR provenance."
+      ],
+      "verification": [
+        "Check candidate fixture and test paths on main; SELECT old rule/screen hashes and statuses remain stable."
+      ]
+    },
+    "solution_depth": {
+      "mode": "BOUNDED",
+      "rationale": "Existing Router, Reparador, PASE and Quality contracts are reused; scope only a candidate artifact and offline tests.",
+      "complexity_signals": [
+        "POLICY_CONTRACT_CHANGE"
+      ]
+    },
+    "research_assurance": {
+      "research_complete": true,
+      "research_questions": [
+        "Which current source governs B2B-CARGA-002 3-step wizard versus a candidate four-state rule?",
+        "Which exact tests and readback prove an executor artifact before Quality?"
+      ],
+      "internal_evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-ART",
+        "EV-TEST",
+        "EV-RUN"
+      ],
+      "current_practice_research_required": false,
+      "external_research_rationale": "Current LF screens, rules, Router profile contracts and PASE/R17 provide the applicable exact authority; external practice cannot elevate a CANDIDATO rule.",
+      "external_evidence_refs": [],
+      "patterns_compared": [
+        {
+          "pattern": "Inventory to Quality directly",
+          "fit": "Unfit without executed artifact.",
+          "tradeoff": "Minimal effort but unverified.",
+          "source_refs": [
+            "EV-PARENT"
+          ]
+        },
+        {
+          "pattern": "Router to governed Reparador candidate and tests",
+          "fit": "Matches current ACT-0001 authority and preserves stage ordering.",
+          "tradeoff": "Separate backend implementation still needed.",
+          "source_refs": [
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ]
+        }
+      ],
+      "first_solution_disposition": "REVISED",
+      "context_strategy": "LOCAL_ONLY"
+    },
+    "challenger_review": [
+      {
+        "challenge_id": "CH-1",
+        "challenge": "Could a candidate rule override the three-step screen without owner decision?",
+        "outcome": "DESIGN_CHANGED",
+        "resolution": "No. Keep screen three steps and require explicit source reconciliation.",
+        "evidence_refs": [
+          "EV-SCREEN",
+          "EV-RULES"
+        ]
+      },
+      {
+        "challenge_id": "CH-2",
+        "challenge": "Do eight unit tests prove live backend implementation?",
+        "outcome": "SURVIVED",
+        "resolution": "No. Limit executed-effect claim to GitHub contract and tests; backend remains an implementation precondition.",
+        "evidence_refs": [
+          "EV-ART",
+          "EV-TEST"
+        ]
+      },
+      {
+        "challenge_id": "CH-3",
+        "challenge": "Can a completed Product Director or repair spec promote candidate rules?",
+        "outcome": "SURVIVED",
+        "resolution": "No. Independent Step70 and human promotion decision remain required.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-RULES"
+        ]
+      }
+    ],
+    "omission_discovery": [
+      {
+        "dimension": "ARCHITECTURE",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Retain ACT-0001, Router profiles and Quality selection.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "CONTROLS",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Require source currentness, no early Quality and no candidate promotion.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "POLICIES_CONTRACTS",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Keep candidate rule distinct from current 3-step screen.",
+        "evidence_refs": [
+          "EV-SCREEN",
+          "EV-RULES"
+        ]
+      },
+      {
+        "dimension": "CONTEXT_TRANSPORT",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Do not transmit source credential or broad context to successor.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "WIRING",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Use existing Step80 return and the separate profile-bound authority.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "COMPATIBILITY_TRANSITION",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Preserve old selector overload, screen 44 and linked rules.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "RECOVERY_TERMINALITY",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Git-revert candidate PR, retain historical executions.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "OBSERVABILITY",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Use CI R17 run and GitHub blob readback as observability.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "SECURITY_AUTHORITY",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Server-side business authorization stays VIGENTE.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "COST_PERFORMANCE",
+        "disposition": "REUSE_AS_IS",
+        "finding": "No persistent worker or new service cost in candidate scope.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "TESTING_ASSURANCE",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Eight negative tests are already merged through PR #3972 and passed R17 43668658751; no new testing mechanism is proposed.",
+        "evidence_refs": [
+          "EV-TEST",
+          "EV-ART"
+        ]
+      },
+      {
+        "dimension": "OPERABILITY_MAINTENANCE",
+        "disposition": "REUSE_AS_IS",
+        "finding": "No new queue/worker cleanup obligations for static candidate artifact.",
+        "evidence_refs": [
+          "EV-RUN",
+          "EV-ART"
+        ]
+      }
+    ],
+    "implementation_package": {
+      "architecture_decisions": [
+        {
+          "decision_id": "D1",
+          "question": "What can be executed without promoting a candidate B2B wizard rule?",
+          "decision": "Publish only the candidate contract and negative tests, then return through ACT-0001 to Quality.",
+          "authority_ref": "EV-RUN",
+          "rationale": "Preserves three-step current screen, server-side authority and separate promotion gate.",
+          "alternatives_considered": [
+            "ALT-A",
+            "ALT-C"
+          ],
+          "evidence_refs": [
+            "EV-RUN",
+            "EV-SCREEN",
+            "EV-ART"
+          ]
+        }
+      ],
+      "control_matrix": [
+        {
+          "control_id": "CTRL-B2B-EXECUTOR-CONTRACT",
+          "purpose": "Prevent candidate promotion, unauthorized UI steps and Quality without artifact.",
+          "authority_ref": "EV-SCREEN",
+          "applies_when": "Every B2B-CARGA-002 executor candidate review.",
+          "enforcement_point_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/test_b2b_carga002_solution_candidate_v1.py",
+          "input_contract": "LF_B2B_CARGA002_EXECUTOR_PACKAGE_V1 plus current rule/screen SHA.",
+          "blocking_code": "B2B_CARGA002_EXECUTOR_EVIDENCE_REQUIRED",
+          "observable_result": "Eight offline unit negatives; runtime quality still separate.",
+          "verification_method": "R17 43668658751 and GitHub main readback."
+        }
+      ],
+      "policy_contract_changes": [
+        {
+          "authority_ref": "EV-RULES",
+          "change": "Do not promote or treat four-state CANDIDATO wizard as current three-step screen.",
+          "owner_ref": "EV-SCREEN",
+          "compatibility_rule": "Screen and rules stay unchanged; only candidate GitHub artifact is added.",
+          "evidence_refs": [
+            "EV-SCREEN",
+            "EV-RULES"
+          ]
+        }
+      ],
+      "context_transport": {
+        "status": "NOT_APPLICABLE",
+        "rationale": "This bounded candidate adds no context compiler or model-prompt transport. It reuses existing ACT-0001 return and GitHub artifact refs.",
+        "compiler_ref": null,
+        "delivery_strategy": null,
+        "deterministic_inputs": [],
+        "jit_refs": [],
+        "excluded_payloads": [],
+        "token_budget": null,
+        "degradation_rule": null
+      },
+      "wiring": [
+        {
+          "from_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-7D8A0D0F933807A4C8826727",
+          "to_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706",
+          "contract_ref": "EV-RUN",
+          "data_carried": [
+            "source_execution_id",
+            "PRODUCT_EXECUTOR_HANDOFF",
+            "scope"
+          ],
+          "precondition": "Parent Product Director COMPLETED 11/11.",
+          "fail_closed_behavior": "Do not issue direct Quality handoff."
+        },
+        {
+          "from_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706",
+          "to_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/fixtures/b2b_carga002_solution_candidate_v1.json",
+          "contract_ref": "EV-ART",
+          "data_carried": [
+            "candidate JSON",
+            "source row SHA",
+            "negative tests"
+          ],
+          "precondition": "Router grants bounded repair_execution_authority.",
+          "fail_closed_behavior": "Do not claim business mutation or promotion."
+        }
+      ],
+      "deliverables": [
+        {
+          "artifact_ref": "DEL-B2B-CONTRACT",
+          "change_type": "CREATE",
+          "exact_delta": "Create B2B candidate JSON with four actionable deltas and 8 sourced rules; PR #3972 merged.",
+          "dependencies": [
+            "screen 44 current SHA",
+            "ACT-0001 selected SRCR"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-01",
+            "AC-B2B-03"
+          ]
+        },
+        {
+          "artifact_ref": "DEL-B2B-TEST",
+          "change_type": "CREATE",
+          "exact_delta": "Eight offline negative regressions in test_b2b_carga002_solution_candidate_v1.py; R17 success.",
+          "dependencies": [
+            "DEL-B2B-CONTRACT"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-03",
+            "REG-B2B-QA"
+          ]
+        },
+        {
+          "artifact_ref": "DEL-B2B-QUALITY",
+          "change_type": "BIND",
+          "exact_delta": "Quality Pack future candidate review only after actual SRCR terminal Router return; no assertion of QA completion.",
+          "dependencies": [
+            "Executor Step80 receipt"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-03"
+          ]
+        },
+        {
+          "artifact_ref": "DEL-B2B-OWNER",
+          "change_type": "BIND",
+          "exact_delta": "Owner only decides eligible rule promotion after independent judge receipt.",
+          "dependencies": [
+            "Step70 independent receipt",
+            "explicit owner decision"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-04"
+          ]
+        }
+      ],
+      "observability_plan": [
+        {
+          "signal": "candidate_contract_diff",
+          "source_ref": "EV-SCREEN",
+          "expected_change": "No screen or rule mutation.",
+          "alert_or_gate": "Reject unexpected SHA drift."
+        },
+        {
+          "signal": "executed_candidate_test_count",
+          "source_ref": "EV-TEST",
+          "expected_change": "8/8 offline negatives passed.",
+          "alert_or_gate": "Block Quality if CI green evidence missing."
+        }
+      ],
+      "decision_closure": {
+        "handoff_ready": true,
+        "open_design_decisions": [],
+        "implementation_preconditions": [
+          {
+            "name": "Backend business tests",
+            "resolver_ref": "ACT-0001-governed B2B backend implementation",
+            "expected_shape": "Executed server-side batch validation/auth/idempotency readback.",
+            "decision_rule": "Do not claim backend implementation from offline contract tests.",
+            "stage": "FUTURE_BACKEND",
+            "design_effect": "NONE"
+          },
+          {
+            "name": "Quality on exact executor output",
+            "resolver_ref": "Quality Pack gated by SRCR Step80 receipt",
+            "expected_shape": "Quality run with SHA of merged artifact and executor output.",
+            "decision_rule": "Only admit after actual terminal return.",
+            "stage": "QUALITY",
+            "design_effect": "NONE"
+          },
+          {
+            "name": "Promotion authority",
+            "resolver_ref": "lf_rule_promotion_request_v1 plus independent Step70",
+            "expected_shape": "Separate judge and human approval for eligible candidate.",
+            "decision_rule": "No promotion or request if evidence missing.",
+            "stage": "PROMOTION",
+            "design_effect": "NONE"
+          }
+        ],
+        "closure_statement": "Bounded candidate artifact and test suite already exist. No unresolved decision changes its source authority; backend and Quality are separate execution gates."
+      }
+    },
+    "closure_proof": {
+      "contract_version": "SRCR_CLOSURE_PROOF_V2",
+      "materiality": [
+        {
+          "signal": "POLICY_CONTRACT_CHANGE",
+          "material": true,
+          "rationale": "Observed screen/rule source and executable artifact enforce a bounded product-to-executor contract; Quality and promotion remain independent.",
+          "obligation_ids": [
+            "PO-POLICY"
+          ]
+        },
+        {
+          "signal": "POLICIES_CONTRACTS",
+          "material": true,
+          "rationale": "Observed screen/rule source and executable artifact enforce a bounded product-to-executor contract; Quality and promotion remain independent.",
+          "obligation_ids": [
+            "PO-POLICY"
+          ]
+        },
+        {
+          "signal": "CONTROLS",
+          "material": true,
+          "rationale": "Observed screen/rule source and executable artifact enforce a bounded product-to-executor contract; Quality and promotion remain independent.",
+          "obligation_ids": [
+            "PO-DECISION"
+          ]
+        },
+        {
+          "signal": "DECISION_CLOSURE",
+          "material": true,
+          "rationale": "Observed screen/rule source and executable artifact enforce a bounded product-to-executor contract; Quality and promotion remain independent.",
+          "obligation_ids": [
+            "PO-DECISION"
+          ]
+        },
+        {
+          "signal": "EVIDENCE_PROVENANCE",
+          "material": true,
+          "rationale": "Observed screen/rule source and executable artifact enforce a bounded product-to-executor contract; Quality and promotion remain independent.",
+          "obligation_ids": [
+            "PO-EVIDENCE"
+          ]
+        },
+        {
+          "signal": "AUTHORITY_CHANGE",
+          "material": false,
+          "rationale": "Observed screen/rule source and executable artifact enforce a bounded product-to-executor contract; Quality and promotion remain independent.",
+          "obligation_ids": []
+        }
+      ],
+      "proof_obligations": [
+        {
+          "obligation_id": "PO-AUTH",
+          "obligation_type": "AUTHORITY_EXISTENCE",
+          "proof_phase": "CURRENT_STATE",
+          "derived_from": [
+            "BASELINE_EXISTING_AUTHORITY"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-SCREEN",
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "decision_refs": [
+            "$.origin_asset",
+            "$.origin_operation",
+            "$.owner"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Source screen/rule currentness, Router-selected run, merged artifact and R17 readback verified for candidate contract only; no backend effect claimed."
+        },
+        {
+          "obligation_id": "PO-POLICY",
+          "obligation_type": "POLICY_CONTRACT",
+          "proof_phase": "REPAIR_DESIGN",
+          "derived_from": [
+            "POLICY_CONTRACT_CHANGE",
+            "POLICIES_CONTRACTS"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-SCREEN",
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "decision_refs": [
+            "$.implementation_package.policy_contract_changes"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Source screen/rule currentness, Router-selected run, merged artifact and R17 readback verified for candidate contract only; no backend effect claimed."
+        },
+        {
+          "obligation_id": "PO-DECISION",
+          "obligation_type": "DECISION_CLOSURE",
+          "proof_phase": "REPAIR_DESIGN",
+          "derived_from": [
+            "DECISION_CLOSURE",
+            "CONTROLS"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-SCREEN",
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "decision_refs": [
+            "$.implementation_package.decision_closure"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Source screen/rule currentness, Router-selected run, merged artifact and R17 readback verified for candidate contract only; no backend effect claimed."
+        },
+        {
+          "obligation_id": "PO-EVIDENCE",
+          "obligation_type": "EVIDENCE_PROVENANCE",
+          "proof_phase": "CURRENT_STATE",
+          "derived_from": [
+            "EVIDENCE_PROVENANCE"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-SCREEN",
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "decision_refs": [
+            "$.evidence_map"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Source screen/rule currentness, Router-selected run, merged artifact and R17 readback verified for candidate contract only; no backend effect claimed."
+        },
+        {
+          "obligation_id": "PO-VERIFY",
+          "obligation_type": "TEST_ASSURANCE",
+          "proof_phase": "POST_IMPLEMENTATION",
+          "derived_from": [
+            "POST_IMPLEMENTATION_VERIFICATION"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-SCREEN",
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "decision_refs": [
+            "$.implementation_package.deliverables[1]"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Source screen/rule currentness, Router-selected run, merged artifact and R17 readback verified for candidate contract only; no backend effect claimed."
+        }
+      ],
+      "authority_bindings": [
+        {
+          "subject": "B2B-CARGA-002 SCREEN",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-SCREEN"
+          ]
+        },
+        {
+          "subject": "ACT-0001 ROUTER REPAIR EXECUTION",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-RUN"
+          ]
+        },
+        {
+          "subject": "CANDIDATE-ONLY GITHUB ARTIFACT",
+          "authority_kind": "PROPOSED_DELIVERABLE",
+          "used_as_existing_authority": false,
+          "evidence_ids": [
+            "EV-ART",
+            "EV-TEST"
+          ]
+        }
+      ],
+      "wiring_proofs": [],
+      "context_transport_proofs": [],
+      "behavioral_proofs": [],
+      "derived_decision_closure": {
+        "required_obligation_ids": [
+          "PO-AUTH",
+          "PO-POLICY",
+          "PO-DECISION",
+          "PO-EVIDENCE"
+        ],
+        "closed_obligation_ids": [
+          "PO-AUTH",
+          "PO-POLICY",
+          "PO-DECISION",
+          "PO-EVIDENCE"
+        ],
+        "open_obligation_ids": [],
+        "post_implementation_obligation_ids": [
+          "PO-VERIFY"
+        ],
+        "handoff_ready": true,
+        "quality_state": "QUALITY_PENDING"
+      }
+    },
+    "repair_disposition": {
+      "decision": "REPAIR_REQUIRED",
+      "rationale": "A candidate four-state wizard and a three-step current screen cannot safely collapse into one business truth. The bounded repair created an executable, versioned artifact with negative guards under Router-selected SRCR scope; business backend implementation remains separate.",
+      "evidence_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-RUN",
+        "EV-ART"
+      ],
+      "currentness_refs": [
+        "EV-SCREEN",
+        "EV-RULES",
+        "EV-ART"
+      ],
+      "active_failure_present": true,
+      "material_repair_justified": true,
+      "verification": {
+        "executable": true,
+        "method": "GitHub main blob readback plus CI R17 negative cases; SELECT current screen and candidate rule row hashes.",
+        "expected_result": "Artifact exists, R17 passed, screen and candidate rule SHA unchanged; Quality has not yet run.",
+        "evidence_refs": [
+          "EV-ART",
+          "EV-TEST",
+          "EV-SCREEN",
+          "EV-RULES"
+        ]
+      }
+    },
+    "quantitative_decisions": [],
+    "material_process_graph": {
+      "applies": true,
+      "rationale": "Observed producer-to-consumer lineage: PD step 80 -> ACT-0001 Router -> SRCR candidate artifact -> pending Quality receiver.",
+      "nodes": [
+        {
+          "node_id": "N-PD",
+          "phase": "PRODUCT_DIRECTION",
+          "authority_refs": [
+            "EV-PARENT"
+          ],
+          "inputs": [
+            "B2B-CARGA-002 request"
+          ],
+          "outputs": [
+            "implementation_package and Router return"
+          ],
+          "state_transition": "PD COMPLETED 11/11",
+          "producer_refs": [
+            "EV-PARENT"
+          ],
+          "consumer_refs": [
+            "EV-RUN"
+          ],
+          "wiring_refs": [
+            "EV-RUN"
+          ],
+          "control_refs": [
+            "EV-PARENT"
+          ],
+          "failure_recovery": "No Product Director direct Quality invoke.",
+          "disposition": "REUSE_AS_IS",
+          "evidence_refs": [
+            "EV-PARENT",
+            "EV-RUN"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-01"
+          ]
+        },
+        {
+          "node_id": "N-EXEC",
+          "phase": "GOVERNED_REPAIR_ARTIFACT",
+          "authority_refs": [
+            "EV-RUN"
+          ],
+          "inputs": [
+            "Product Director repair specification and source screen 44"
+          ],
+          "outputs": [
+            "Candidate JSON + eight tests"
+          ],
+          "state_transition": "Merged PR #3972; SRCR run pending output validation",
+          "producer_refs": [
+            "EV-RUN"
+          ],
+          "consumer_refs": [
+            "EV-TEST"
+          ],
+          "wiring_refs": [
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "control_refs": [
+            "EV-TEST"
+          ],
+          "failure_recovery": "Revert artifact PR, preserve screen and rules.",
+          "disposition": "REUSE_AS_IS",
+          "evidence_refs": [
+            "EV-RUN",
+            "EV-ART",
+            "EV-TEST"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-03"
+          ]
+        },
+        {
+          "node_id": "N-QA",
+          "phase": "QUALITY_ADMISSION",
+          "authority_refs": [
+            "EV-RUN"
+          ],
+          "inputs": [
+            "Actual executor output, artifact SHA, CI readback"
+          ],
+          "outputs": [
+            "Quality judgment pending"
+          ],
+          "state_transition": "Not yet consumed or approved",
+          "producer_refs": [
+            "EV-ART"
+          ],
+          "consumer_refs": [],
+          "wiring_refs": [],
+          "control_refs": [
+            "EV-RUN"
+          ],
+          "failure_recovery": "Do not admit Quality without terminal receipt.",
+          "disposition": "IMPLEMENTABLE",
+          "evidence_refs": [
+            "EV-ART",
+            "EV-RUN"
+          ],
+          "acceptance_refs": [
+            "AC-B2B-03"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "EDGE-PD-REPARADOR",
+          "from_node": "N-PD",
+          "to_node": "N-EXEC",
+          "edge_kind": "CONTROL_FLOW",
+          "observation_status": "OBSERVED_CLOSED",
+          "disposition": "REUSE_AS_IS",
+          "producer_evidence_refs": [
+            "EV-PARENT"
+          ],
+          "transport_evidence_refs": [
+            "EV-RUN"
+          ],
+          "consumer_evidence_refs": [
+            "EV-RUN"
+          ],
+          "enforcement_evidence_refs": [
+            "EV-RUN"
+          ],
+          "effect_readback_evidence_refs": [
+            "EV-ART"
+          ],
+          "gap_evidence_refs": [],
+          "next_gate": "N-EXEC",
+          "next_gate_consumer_evidence_refs": [
+            "EV-RUN"
+          ],
+          "canonical_route_consistency": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_PASS",
+            "evidence_refs": [
+              "EV-RUN"
+            ]
+          },
+          "post_transition_currentness": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_PASS",
+            "evidence_refs": [
+              "EV-RUN"
+            ]
+          },
+          "terminality": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_PASS",
+            "evidence_refs": [
+              "EV-PARENT"
+            ]
+          },
+          "identity_consistency": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_PASS",
+            "evidence_refs": [
+              "EV-RUN"
+            ]
+          },
+          "rollback_executability": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_PASS",
+            "evidence_refs": [
+              "EV-ART"
+            ]
+          },
+          "proposed_change_ref": null,
+          "blocking_uncertainty_id": null
+        },
+        {
+          "edge_id": "EDGE-EXEC-QUALITY",
+          "from_node": "N-EXEC",
+          "to_node": "N-QA",
+          "edge_kind": "CONTROL_FLOW",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "producer_evidence_refs": [
+            "EV-ART"
+          ],
+          "transport_evidence_refs": [
+            "EV-RUN"
+          ],
+          "consumer_evidence_refs": [],
+          "enforcement_evidence_refs": [
+            "EV-RUN"
+          ],
+          "effect_readback_evidence_refs": [
+            "EV-TEST"
+          ],
+          "gap_evidence_refs": [
+            "EV-RUN"
+          ],
+          "next_gate": "QUALITY_PACK",
+          "next_gate_consumer_evidence_refs": [],
+          "canonical_route_consistency": {
+            "applicability": "REQUIRED",
+            "status": "PROPOSED_ONLY",
+            "evidence_refs": []
+          },
+          "post_transition_currentness": {
+            "applicability": "REQUIRED",
+            "status": "PROPOSED_ONLY",
+            "evidence_refs": []
+          },
+          "terminality": {
+            "applicability": "REQUIRED",
+            "status": "PROPOSED_ONLY",
+            "evidence_refs": []
+          },
+          "identity_consistency": {
+            "applicability": "REQUIRED",
+            "status": "PROPOSED_ONLY",
+            "evidence_refs": []
+          },
+          "rollback_executability": {
+            "applicability": "REQUIRED",
+            "status": "PROPOSED_ONLY",
+            "evidence_refs": []
+          },
+          "proposed_change_ref": "$.implementation_delta[1]",
+          "blocking_uncertainty_id": null
+        }
+      ]
+    },
+    "case_mode": "ARCHITECTURE_AUDIT",
+    "policy_resolution": [
+      {
+        "question": "May B2B-RULE-LOAD-WIZARD-001 CANDIDATO replace the current three-step B2B-CARGA-002 screen without a new decision?",
+        "decision": "NO_APPLICABLE_RULE_FOUND",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "lf_ops.pantallas",
+            "query": "SELECT id,codigo,descripcion,estado,version FROM lf_ops.pantallas WHERE id=44",
+            "result": "Current v0.3 screen 44 describes 3 UI steps, backend separate.",
+            "evidence_id": "EV-SCREEN"
+          },
+          {
+            "level": "N2",
+            "source": "lf_ops.reglas",
+            "query": "SELECT codigo,estado,descripcion FROM lf_ops.reglas WHERE codigo='B2B-RULE-LOAD-WIZARD-001'",
+            "result": "Proposed 4 UI states remain CANDIDATO; not applicable as a VIGENTE override.",
+            "evidence_id": "EV-RULES"
+          }
+        ]
+      }
+    ],
+    "repair_execution": {
+      "mode": "EXECUTED_WITH_READBACK",
+      "authority_ref": "router-authorization://079eb110a7b692f366fda415db0aff8920426392f2f3ca38025254aa7df77ed6",
+      "changes": [
+        {
+          "target_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/fixtures/b2b_carga002_solution_candidate_v1.json",
+          "change_type": "CREATE",
+          "before_ref": null,
+          "after_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/fixtures/b2b_carga002_solution_candidate_v1.json"
+        },
+        {
+          "target_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/test_b2b_carga002_solution_candidate_v1.py",
+          "change_type": "CREATE",
+          "before_ref": null,
+          "after_ref": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/test_b2b_carga002_solution_candidate_v1.py"
+        }
+      ],
+      "preserved_constraints": [
+        "No screen/rule mutation",
+        "No production",
+        "No promotion",
+        "Quality only after real artifact"
+      ],
+      "readback_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/fixtures/b2b_carga002_solution_candidate_v1.json",
+        "actions://cristhianlujan/claude-persona-lf-patch/runs/43668658751"
+      ],
+      "rollback_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/3972",
+      "returned_to_router": true,
+      "promotion_performed": false
+    }
+  },
+  "evidence_manifest": {
+    "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+    "bundle_id": "LF-B2B-CARGA002-SRCR-20261115",
+    "observed_at": "2026-11-15",
+    "producer": {
+      "kind": "GPT_NATIVE_CURRENT_CHAT_SOURCE_AUTHORED",
+      "resolver_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706"
+    },
+    "evidence": [
+      {
+        "evidence_id": "EV-SCREEN",
+        "subject": "B2B-CARGA-002 v0.3 3-step screen row",
+        "evidence_class": "OBSERVED_READBACK",
+        "source_locator": "supabase://lf_ops.pantallas/44",
+        "revision_or_observed_at": "v0.3",
+        "digest": "sha256:5aa03357bf38dcc3f8e8dbdf9593d6031924bd0554fa487a7d1955bc2e22fa2e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-RULES",
+        "subject": "Candidate four-state wizard rule",
+        "evidence_class": "OBSERVED_READBACK",
+        "source_locator": "supabase://lf_ops.reglas/B2B-RULE-LOAD-WIZARD-001",
+        "revision_or_observed_at": "2026-11-15",
+        "digest": "sha256:91b8e73ff1719fc70d7bd76f5e8d756cea8b8ede4de87a05271d7a55b88c6dc5",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-PARENT",
+        "subject": "Completed Product Director parent RUN 11/11 and Router return",
+        "evidence_class": "GOVERNED_RECEIPT",
+        "source_locator": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-7D8A0D0F933807A4C8826727",
+        "revision_or_observed_at": "2026-11-15",
+        "digest": "sha256:1e29824347c5329f59056a91befb2b17828b83ba314c237a5356343f5928c665",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-ART",
+        "subject": "Merged candidate contract Git blob and main readback",
+        "evidence_class": "OBSERVED_READBACK",
+        "source_locator": "github://cristhianlujan/claude-persona-lf-patch@b9409cf9c703ff66942f268e00c9d61e483d34c2/sandbox/lf_contract_gate_test/edge_function_operation/fixtures/b2b_carga002_solution_candidate_v1.json",
+        "revision_or_observed_at": "b9409cf9c703ff66942f268e00c9d61e483d34c2",
+        "digest": "git-sha1:bcfd55c8c2edb4e7232129b539f7e6f84e57bdd0",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-RUN",
+        "subject": "ACT-0001 selected SRCR run, steps 0-47",
+        "evidence_class": "GOVERNED_RECEIPT",
+        "source_locator": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-100EAF5F03DA504596AC0706",
+        "revision_or_observed_at": "2026-11-15T02:21:05Z",
+        "digest": "sha256:98e6f8cfd879f3a2e1d985c2ea27e8869f74ef736edbaca08c79db0c202adc38",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-TEST",
+        "subject": "Eight candidate contract unit tests green in R17",
+        "evidence_class": "OBSERVED_TEST",
+        "source_locator": "actions://cristhianlujan/claude-persona-lf-patch/runs/43668658751",
+        "revision_or_observed_at": "2026-11-15",
+        "digest": "git-commit:7b1837b2c6de2b1c60671f42e28eb01b1aeda756",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-AUTH",
+        "subject": "Vigente server-side B2B authorization",
+        "evidence_class": "OBSERVED_READBACK",
+        "source_locator": "supabase://lf_ops.reglas/B2B-RULE-AUTH-002",
+        "revision_or_observed_at": "2026-11-15",
+        "digest": "sha256:2f58410ed5a158a52b22313a0b9deeabd2b9632c83dc4eb7e14b8078dbef1584",
+        "state": "CURRENT"
+      }
+    ],
+    "bundle_digest": "sha256:c4adafdb1ca8c8d28b44f6a30641d557a64c08342717d2ff872ec8a2c51d9c6e"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "solution_ref": "lf-ig-p2-step60-output-schema-dispatch-v1",
+  "paths": {
+    "profiles/product_director_lf/contracts/runtime_binding.json": "TRANSVERSAL_ASSETS",
+    "profiles/product_director_lf/schemas/product_blocked_risk.schema.json": "TRANSVERSAL_ASSETS",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py": "TRANSVERSAL_ASSETS",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_p2_product_direction_output_modes_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-p2-step60-output-schema-dispatch-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_p2_step60_schema_modes_r17_v1.py": "RUNTIME_TESTING"
+  }
+}

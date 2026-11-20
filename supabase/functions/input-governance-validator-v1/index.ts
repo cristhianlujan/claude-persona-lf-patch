@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {validateLfIgTransport, IG_RPC_REQUIRED, IG_RUNTIME_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -32,6 +33,8 @@ async function requireServiceRole(req: Request): Promise<boolean> {
 }
 
 async function rpc(name: string, args: Record<string, unknown>) {
+  const fieldFault=validateLfIgTransport("IG_RPC:"+name,args,IG_RPC_REQUIRED[name] ?? []);
+  if(fieldFault) throw new Error(fieldFault.code+":"+fieldFault.field);
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
@@ -56,6 +59,9 @@ Deno.serve(async (req: Request) => {
   const requestStartedAt = performance.now();
   try {
     const body = await req.json();
+    const preflight=validateLfIgTransport("IG_EDGE_REQUEST",body,["run_id","ticket"]);
+    if(preflight) return Response.json({error:preflight.code,field:preflight.field,
+      downstream_call_attempted:false}, {status:400});
     const runId = Number(body?.run_id);
     if (!Number.isInteger(runId) || runId < 1) return Response.json({ error: "RUN_ID_INVALID" }, { status: 400 });
     const ticket = typeof body?.ticket === "string" ? body.ticket.trim() : "";
@@ -155,6 +161,28 @@ Deno.serve(async (req: Request) => {
       });
       if (["COMPLETED", "NOOP_COMPLETED"].includes(result?.status)) {
         return Response.json({ runtime: "input-governance-validator-v1", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, chunked_validation: true, trace, result });
+      }
+      if (result?.status === "CURATOR_REEVALUATION_REQUIRED") {
+        // Negative result is NOT Validator completion. Return a structured
+        // governed handoff so the existing Agent may dispatch Curator.
+        // No new runtime, no direct writer, no promotion/production grant.
+        if (Number(result?.run_id) !== runId ||
+            !Number.isInteger(Number(result?.parent_run_id)) ||
+            Number(result?.parent_run_id) < 1 ||
+            result?.promotion_authorized !== false ||
+            result?.production_authorized !== false) {
+          return Response.json({error:"VALIDATOR_RECURATION_RECEIPT_INVALID",
+            run_id:runId}, {status:409});
+        }
+        return Response.json({
+          runtime:"input-governance-validator-v1",
+          validator_entrypoint:VALIDATOR_ENTRYPOINT,
+          identity,resumed,scope_strategy:scopeStrategy,
+          handoff_receipt:handoffReceipt,trace,
+          result,
+          curatorial_handoff:"CURATOR_REEVALUATION_REQUIRED",
+          production_authorized:false,promotion_authorized:false,
+        });
       }
       if (result?.status !== "VALIDATOR_CONTINUE_REQUIRED") {
         return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, trace, result }, { status: 409 });

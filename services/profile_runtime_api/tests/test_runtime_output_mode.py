@@ -75,10 +75,9 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertEqual(binding.payload.get("title"), "UI Architect Focused Decision Spec")
         self.assertNotIn("anyOf", binding.payload)
 
-    def test_ui_auto_ambiguity_fails_closed_without_aggregate_schema(self) -> None:
-        with self.assertRaises(RepositoryError) as ctx:
-            self.repository.runtime_schema("ui_architect", "AUTO")
-        self.assertEqual(ctx.exception.code, "PROFILE_RUNTIME_SCHEMA_AMBIGUOUS")
+    def test_ui_auto_uses_declared_production_default_schema(self) -> None:
+        binding = self.repository.runtime_schema("ui_architect", "AUTO")
+        self.assertEqual(binding.source_refs, ("profiles/ui_architect/schemas/ui_production_spec.schema.json",))
 
     def test_unsupported_repository_mode_fails_closed(self) -> None:
         with self.assertRaises(RepositoryError) as ctx:
@@ -97,6 +96,26 @@ class RuntimeOutputModeTest(unittest.TestCase):
             profile_slug="ui_architect", payload=payload, contract_gate=gate
         )
         self.assertEqual(utility["status"], "PASS", utility)
+
+        # Always selected by the existing fleet CI job: negative reproducer
+        # must execute, not only exist in an unselected unittest method.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        bypass = self.focused_payload()
+        bypass["decision_subject"] = "UI decision"
+        bypass["selected_visual_type"] = "horizontal overflow"
+        bypass["hard_exclusions"] = ["horizontal overflow"]
+        local = SimpleNamespace(evaluate=lambda _payload, _gate: {
+            "status": "PASS", "blocking_codes": []
+        })
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            blocked = self.gates.semantic_utility(
+                profile_slug="ui_architect", payload=bypass,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(blocked["status"], "FAIL", blocked)
+        self.assertIn("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED", blocked["blocking_codes"])
 
     def test_focused_utility_rejects_selected_treatment_also_excluded(self) -> None:
         payload = self.focused_payload()
@@ -291,6 +310,66 @@ class RuntimeOutputModeTest(unittest.TestCase):
         self.assertEqual(utility["status"], "FAIL", utility)
         self.assertIn("UI_FOCUSED_STATUS_NOT_DECISION_READY", utility["blocking_codes"])
 
+    def test_audit_ui01_mode_errors_survive_local_pass(self) -> None:
+        # Reproducer: the bound local utility PASS must not bypass focused checks.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        payload = self.focused_payload()
+        payload["decision_subject"] = "UI decision"
+        payload["selected_visual_type"] = "horizontal overflow"
+        payload["hard_exclusions"] = ["horizontal overflow"]
+        local = SimpleNamespace(evaluate=lambda _payload, _contract: {"status": "PASS", "blocking_codes": []})
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            result = self.gates.semantic_utility(
+                profile_slug="ui_architect",
+                payload=payload,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertIn("UI_FOCUSED_DECISION_SUBJECT_NON_CONCRETE", result["blocking_codes"])
+        self.assertIn("UI_FOCUSED_SELECTED_TREATMENT_EXCLUDED", result["blocking_codes"])
+        self.assertFalse(result["downstream_authorized"])
+
+    def test_audit_ui01_mode_errors_combine_with_local_fail(self) -> None:
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        payload = self.focused_payload()
+        payload["density_limits"] = "100"
+        local = SimpleNamespace(evaluate=lambda _payload, _contract: {
+            "status": "FAIL", "blocking_codes": ["LOCAL_SEMANTIC_CANARY"]
+        })
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            result = self.gates.semantic_utility(
+                profile_slug="ui_architect",
+                payload=payload,
+                contract_gate={"status": "PASS", "schema_mode": "UI_FOCUSED_DECISION"},
+            )
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertIn("LOCAL_SEMANTIC_CANARY", result["blocking_codes"])
+        self.assertIn("UI_FOCUSED_DENSITY_LIMITS_NUMERIC_ONLY", result["blocking_codes"])
+
+    def test_audit_ui01_missing_input_mode_never_skipped(self) -> None:
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        payload = {
+            "self_verdict": "NEEDS_INPUT",
+            "missing_inputs": [],
+            "blocked": True,
+            "pipeline_action": "CONTINUE",
+        }
+        local = SimpleNamespace(evaluate=lambda _payload, _contract: {"status": "PASS", "blocking_codes": []})
+        with patch.object(self.repository, "load_semantic_utility", return_value=(local, "evaluate")):
+            result = self.gates.semantic_utility(
+                profile_slug="ui_architect", payload=payload,
+                contract_gate={"status": "PASS", "schema_mode": "UI_MISSING_INPUT"},
+            )
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertIn("UI_MISSING_INPUT_LIST_EMPTY", result["blocking_codes"])
+        self.assertIn("UI_MISSING_INPUT_PIPELINE_ACTION_INVALID", result["blocking_codes"])
+
     def test_focused_utility_accepts_concrete_spanish_fields(self) -> None:
         payload = self.focused_payload()
         payload.update(
@@ -386,6 +465,23 @@ class RuntimeOutputModeTest(unittest.TestCase):
         )
         self.assertEqual(gate["status"], "FAIL")
         self.assertIn("JSON_SCHEMA_VALIDATION_FAILED", gate["blocking_codes"])
+
+    def test_audit_ui06_reject_canonical_receipt_with_status_blocked(self) -> None:
+        # Positive and negative runtime receiver assertions.
+        from pydantic import ValidationError
+        from profile_runtime_api.hashing import canonical_json_sha256
+        from profile_runtime_api.models import InputGovernanceReceipt
+
+        context = {"screen_code": "B2B-AUTH-001"}
+        body = {
+            "receipt_ref": "fixture://ig/01",
+            "current": True, "ready": True,
+            "context_sha256": canonical_json_sha256(context),
+            "context": context, "status": "READY",
+        }
+        self.assertEqual(InputGovernanceReceipt.model_validate(body).status, "READY")
+        with self.assertRaisesRegex(ValidationError, "INPUT_GOVERNANCE_STATUS_CONTRADICTS_READY"):
+            InputGovernanceReceipt.model_validate(body | {"status": "BLOCKED"})
 
 
 if __name__ == "__main__":

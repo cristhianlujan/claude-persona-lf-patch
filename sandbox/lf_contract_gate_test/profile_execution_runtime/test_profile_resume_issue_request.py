@@ -46,6 +46,97 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         with patch.dict(os.environ, self.env, clear=True):
             return self.get_request()
 
+    def _mock_operation_plan(self, profile_code):
+        # Transport-only fixture; DB resolution is independently tested in PG.
+        return {
+            "status": "READY", "operation_code": "EJECUCION_PERFIL_LF",
+            "profile_code": profile_code,
+            "steps": [{"step_order": i * 10, "step_id": "fixture_step_" + str(i)}
+                      for i in range(11)],
+            "skills": [],
+        }
+
+    def test_native_phrase_issue_parser_preserves_text_no_gate2(self):
+        literal = ("Probar la carga masiva B2B (pantalla B2B-CARGA-002, "
+                   "wizard de nueva carga; relacionadas B2B-CARGA-001 y "
+                   "B2B-CARGA-007) entrando por el Router ACT-0001")
+        stage1 = {
+          "schema_version":"LF_ROUTER_STAGE1_V2",
+          "texto_original":literal,"es_operacion":True,"ambiguo":False,
+          "respuesta_directa":False,"sujeto":"carga masiva B2B",
+          "accion":"ejecutar perfil sobre B2B-CARGA-002",
+          "formas_busqueda":["carga masiva B2B","wizard de nueva carga","B2B-CARGA-002"],
+          "alternativas":[],"correcciones":[],
+          "downstream_execution_allowed":False,
+          "canal_candidato":"PRODUCTO","negocio_codigo":"LF",
+          "razon_seleccion":"alcance y aceptación de nueva carga",
+          "alcance":{"target_type":"PANTALLA","target_hint":"B2B-CARGA-002",
+                     "resolution_status":"UNRESOLVED"},
+        }
+        semantic = {"decision":"SELECTED",
+          "selected_profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+          "ambiguous_profile_codes":[],"material_ambiguities":[],
+          "reason":"La tarea es de producto y requiere criterios de aceptación",
+          "evidence_refs":[{"kind":"ACTIVATION",
+            "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+            "source_section":"Activation triggers"},
+            {"kind":"PURPOSE","profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+             "source_section":"Purpose"}]}
+        request={"schema_version":"LF_PROFILE_RUN_FROM_PHRASE_V1",
+          "request_text":literal,"stage1_decision":stage1,
+          "profile_semantic_decision":semantic,"executor_mode":"GPT_NATIVE"}
+        self.event["issue"]["body"] = json.dumps(request,ensure_ascii=False)
+        read=self.check()
+        self.assertEqual(read["kind"],"PHRASE_BEGIN")
+        self.assertEqual(read["request_text"],literal)
+        self.assertEqual(read["stage1_decision"],stage1)
+        self.assertNotIn("router_context",read)
+        # No invented Gate2 allowed at input boundary.
+        request["router_context"]={"status":"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"}
+        self.event["issue"]["body"]=json.dumps(request)
+        with self.assertRaisesRegex(ValueError,"PROFILE_PHRASE_SCHEMA_INVALID"):
+            self.check()
+        request.pop("router_context")
+        request["stage1_decision"]["texto_original"]="Different owner sentence"
+        self.event["issue"]["body"]=json.dumps(request)
+        with self.assertRaisesRegex(ValueError,"PROFILE_PHRASE_SEMANTIC_INVALID"):
+            self.check()
+
+    def test_native_phrase_begin_routes_oidc_then_fails_closed_before_source(self):
+        literal = "Probar la carga masiva B2B B2B-CARGA-002"
+        request={"schema_version":"LF_PROFILE_RUN_FROM_PHRASE_V1",
+          "request_text":literal,"executor_mode":"GPT_NATIVE",
+          "stage1_decision":{
+            "schema_version":"LF_ROUTER_STAGE1_V2","texto_original":literal,
+            "negocio_codigo":"LF","downstream_execution_allowed":False},
+          "profile_semantic_decision":{
+            "decision":"SELECTED","selected_profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}}
+        self.event["issue"]["body"]=json.dumps(request)
+        self.event_path.write_text(json.dumps(self.event))
+        calls=[]
+        execution_id="EXEC-PROFILE-GATE2-"+"F"*24
+        def fake(_url,body,_headers):
+            calls.append(body.copy())
+            if body["action"]=="profile_native_begin_from_phrase_v1":
+                self.assertEqual(body["request_text"],literal)
+                self.assertNotIn("router_context",body)
+                return 200,{"outcome":"NATIVE_EXECUTION_READY","result":{
+                  "status":"NATIVE_EXECUTION_READY",
+                  "execution_id":execution_id,
+                  "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}}
+            if body["action"]=="profile_native_source_bind_v1":
+                return 409,{"outcome":"BLOCKED","code":"SOURCE_BIND_EXPECTED_FIXTURE"}
+            raise AssertionError("no further step without source")
+        env={**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"123"}
+        with patch.dict(os.environ,env,clear=True):
+            runner=runpy.run_path(str(SCRIPT),run_name="phrase_issue_test")["main"]
+            with patch.dict(runner.__globals__,{"oidc":lambda:"test-oidc",
+                  "call_json":fake}):
+                self.assertEqual(runner(),1)
+        self.assertEqual([x["action"] for x in calls],[
+          "profile_native_begin_from_phrase_v1","profile_native_source_bind_v1"
+        ])
+
     def _blocked_ig_edge_reply(self):
         execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
         profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
@@ -85,6 +176,237 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                 },
             },
         }
+
+    def test_semantic_skill_resume_payload_requires_one_bounded_decision(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        decision = {"selected_skill_code": "FICTICIA_SEMANTICA",
+                    "reason": "source-bound", "evidence_refs": ["fixture://source/a"],
+                    "descriptor_revision": "fixture-sem-1",
+                    "review_mode": "CURRENT_CONTEXT_REVIEW"}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+        })
+        self.assertEqual(self.check(), {
+            "kind": "SKILL_SEMANTIC_CONTINUATION",
+            "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+        })
+        screen = {"decision":"SELECTED","selected_screen_code":"B2B-CARGA-002",
+                  "ambiguous_screen_codes":[],"material_ambiguities":[],
+                  "reason":"Literal matches screen and wizard name against three current candidates",
+                  "evidence_refs":[{"screen_code":"B2B-CARGA-002","evidence_field":"match"}]}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+            "screen_selection_draft": screen,
+        })
+        self.assertEqual(self.check(), {
+            "kind": "SKILL_SEMANTIC_CONTINUATION",
+            "execution_id": execution_id,
+            "skill_semantic_decision": decision,
+            "screen_selection_draft": screen,
+        })
+        for forbidden in ("schema_version","request_sha256","catalog_sha256",
+                          "semantic_receipt_sha256","effect_authority","operation_code"):
+            self.event["issue"]["body"] = json.dumps({
+                "schema_version": SCHEMA, "execution_id": execution_id,
+                "skill_semantic_decision": decision,
+                "screen_selection_draft": {**screen,forbidden:"FORGED"},
+            })
+            with self.assertRaisesRegex(ValueError,"PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID"):
+                self.check()
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "skill_semantic_decision": decision, "profile_output": {"forged": True},
+        })
+        with self.assertRaisesRegex(ValueError, "PROFILE_GOVERNED_SKILL_SEMANTIC_SELECTION_INVALID"):
+            self.check()
+
+    def test_native_optional_skill_absence_continues_same_run_to_model(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+        })
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        skill = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("# current governed test profile\n", encoding="utf-8")
+        calls = []
+        def fake_call(_url, body, _headers):
+            calls.append(body.copy())
+            if body["action"] == "profile_native_source_bind_v1":
+                return 200, {
+                    "outcome": "SOURCE_BINDING_REQUIRED",
+                    "execution_id": execution_id,
+                    "profile_code": "PERFIL-TEST",
+                    "source_revision_required": "a" * 40,
+                    "target_repo": self.env["GITHUB_REPOSITORY"],
+                    "target_path": "profiles/test_profile/SKILL.md",
+                    "operation_plan": {
+                        "status":"READY","operation_code":"EJECUCION_PERFIL_LF",
+                        "profile_code":"PERFIL-TEST",
+                        "steps":[{"step_order":i,"step_id":"test_step_"+str(i)} for i in range(11)],
+                        "skills":[],"content_findings":[{
+                            "finding_code":"SKILL_SEMANTIC_SELECTION_NOT_SUBMITTED",
+                            "continuation_allowed":True}],
+                    },
+                }
+            if body["action"] == "profile_native_continue_v1":
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY","execution_id":execution_id}
+            raise AssertionError("Unexpected request action: "+body["action"])
+        env = {**self.env, "GITHUB_SHA": "a" * 40}
+        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            main = runpy.run_path(str(SCRIPT), run_name="native_optional_omission_test")["main"]
+            with patch.dict(main.__globals__, {"oidc": lambda: "opaque-oidc", "call_json": fake_call}):
+                self.assertEqual(main(), 1)
+        self.assertEqual([x["action"] for x in calls],
+                         ["profile_native_source_bind_v1", "profile_native_continue_v1"])
+        checkpoint = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["next_step"], "execute_profile")
+        self.assertEqual(checkpoint["execution_id"], execution_id)
+        self.assertFalse(checkpoint["last_run_completed"])
+
+    def test_readonly_ig_blocked_ticket_continues_only_after_step40_readback(self):
+        """Generic policy-selected runtime ticket; never let a worker 409 alone bypass Step40."""
+        from datetime import datetime, timezone, timedelta
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
+        skill_code = "INPUT_GOVERNANCE_CONTEXT_PACK"
+        expiry = (datetime.now(timezone.utc)+timedelta(minutes=3)).isoformat()
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id})
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        p = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        p.parent.mkdir(parents=True)
+        p.write_text("# profile test source\n", encoding="utf-8")
+        calls = []
+        def fake_call(_url, data, headers):
+            calls.append((data.copy(), headers.copy()))
+            if data["action"] == "profile_native_source_bind_v1":
+                return 200, {"outcome": "SOURCE_BINDING_REQUIRED",
+                    "execution_id": execution_id, "profile_code": profile_code,
+                    "source_revision_required": "a" * 40,
+                    "target_repo": "test-owner/test-repo",
+                    "target_path": "profiles/test_profile/SKILL.md",
+                    "operation_plan": self._mock_operation_plan(profile_code)}
+            if data["action"] == "profile_skill_runtime_v1":
+                self.assertEqual(data["skill_code"],skill_code)
+                return 409, {"outcome":"BLOCKED",
+                    "code":"SKILL_RUNTIME_BLOCKED_AS_FINDING",
+                    "terminal_status":"BLOCKED",
+                    "execution_id":execution_id,
+                    "skill_code":skill_code,"pantalla_id":51,
+                    "result":{"result":{"status":"BLOCKED","consumer":"CONTEXT_PACK",
+                        "pantalla_id":51,"run_id":951,
+                        "remediation_state":"INTERNAL_REMEDIATION_REQUIRED",
+                        "owner_interruption_required":False,
+                        "promotion_authorized":False,
+                        "production_authorized":False,
+                        "execution_mode":"REUSE_COMPLETED_CURRENT_RUN",
+                        "output_sha256":"5"*64,
+                        "predecision_crosscheck":{
+                            "status":"CANONICAL_READBACK_ONLY","run_id":951,
+                            "deterministic_finding_count":3}}}}
+            if data["action"] == "profile_native_continue_v1":
+                if sum(k[0]["action"] == "profile_native_continue_v1" for k in calls) == 1:
+                    return 200, {"outcome":"CONTINUATION_REQUIRED",
+                        "phase":"SKILL_RUNTIME_REQUIRED",
+                        "result":{
+                            "skill_code":skill_code,
+                            "input_governance_runtime_request":{
+                                "transport":"DIRECT_EDGE_INVOCATION",
+                                "queue_required":False,"polling_required":False,
+                                "ticket_expires_at":expiry,
+                                "request_headers":{"X-LF-Profile-Runtime-Ticket":"fixture-ticket"},
+                                "request_body":{"action":"profile_skill_runtime_v1",
+                                                "execution_id":execution_id,
+                                                "skill_code":skill_code,"pantalla_id":51}}}}
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY",
+                    "execution_id":execution_id,"profile_code":profile_code,
+                    "result":{"execution_write_mode":"READ_ONLY",
+                        "skill_findings":[{"skill_code":skill_code,
+                            "status":"SKILL_FAILED_AS_FINDING"}],
+                        "input_governance":{"status":"BLOCKED",
+                            "analysis_scope":"READ_ONLY_WITH_IG_FINDINGS",
+                            "governance_result":{"run_id":951,
+                                "output_sha256":"5"*64,
+                                "predecision_crosscheck":{
+                                    "deterministic_finding_count":3}}}}}
+            raise AssertionError("unrecognized mocked Edge action")
+        env = {**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"42"}
+        with patch.dict(os.environ,env,clear=True), patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)):
+            main = runpy.run_path(str(SCRIPT),run_name="read_only_ticket_test")["main"]
+            with patch.dict(main.__globals__, {"oidc":lambda:"opaque-oidc",
+                                                  "call_json":fake_call}):
+                self.assertEqual(main(),1)
+        steps=[x[0]["action"] for x in calls]
+        self.assertEqual(steps,["profile_native_source_bind_v1",
+                                "profile_native_continue_v1",
+                                "profile_skill_runtime_v1",
+                                "profile_native_continue_v1"])
+        checkpoint=json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["execution_id"],execution_id)
+        self.assertEqual(checkpoint["next_step"],"execute_profile")
+        self.assertFalse(checkpoint["last_run_completed"])
+
+    def test_native_profile_single_resume_automatically_chains_50_60_70_80(self):
+        """One Issue carries native RAW+V3; mock only transport, never claim live SQL."""
+        import hashlib
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-TEST"
+        native_raw = {"result": "fixture-native-output"}
+        review = {"verdict": "PASS_REVIEWED_CURRENT_CONTEXT"}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": execution_id,
+            "profile_output": native_raw, "semantic_judge_review": review,
+        })
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        self.assertEqual(self.check()[2:], (native_raw, review))
+        path = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Test native source\\n", encoding="utf-8")
+        steps = []
+        def fake_call(_url, body, _headers):
+            steps.append((body["action"], body.copy()))
+            if body["action"] == "profile_native_source_bind_v1":
+                return 200, {
+                    "outcome": "SOURCE_BINDING_REQUIRED", "execution_id": execution_id,
+                    "source_revision_required": "a" * 40, "target_repo": "test-owner/test-repo",
+                    "target_path": "profiles/test_profile/SKILL.md", "profile_code": profile_code, "operation_plan": self._mock_operation_plan(profile_code),
+                }
+            if "profile_output" in body:
+                return 200, {"phase": "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "profile_code": profile_code}
+            if "semantic_judge_result" in body:
+                return 200, {"phase": "PROFILE_EXECUTION_COMPLETED", "profile_code": profile_code}
+            return 200, {"phase": "NATIVE_MODEL_INPUT_READY", "profile_code": profile_code}
+        import sys
+        env = {**self.env, "GITHUB_SHA": "a" * 40, "GITHUB_RUN_ID": "12345"}
+        # runpy does not add SCRIPT.parent to sys.path as executing the script does.
+        # Reproduce the real CLI import boundary, without mocking the Step70 validator.
+        with (patch.dict(os.environ, env, clear=True),
+              patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)),
+              patch.object(sys, "path", [str(SCRIPT.parent), *sys.path])):
+            module = runpy.run_path(str(SCRIPT), run_name="same_run_test")
+            main = module["main"]
+            with patch.dict(main.__globals__, {
+                "oidc": lambda: "fake-oidc-not-sent", "call_json": fake_call,
+                "run_bound_validator": lambda *_: (
+                    {"schema": "PROFILE_OUTPUT_VALIDATION_RESULT_V1"}, "actions://raw", "actions://validator"),
+                "validate_independent_semantic_review": lambda _: None,
+                "build_semantic_receipt": lambda _: {"status": "PASS", "verdict": review["verdict"]},
+            }):
+                self.assertEqual(main(), 0)
+        self.assertEqual([a for a, _ in steps], [
+            "profile_native_source_bind_v1", "profile_native_continue_v1",
+            "profile_native_continue_v1", "profile_native_continue_v1",
+        ])
+        self.assertEqual(steps[2][1]["profile_output"], native_raw)
+        self.assertEqual(steps[3][1]["semantic_judge_result"]["verdict"], review["verdict"])
+        self.assertEqual({body["execution_id"] for _, body in steps}, {execution_id})
+        self.assertTrue((Path(self.tmp.name) / "profile-semantic-judge.json").is_file())
 
     def test_blocked_ig_records_only_bound_hash_receipt_and_remains_nonpass(self):
         execution_id, profile_code, response = self._blocked_ig_edge_reply()
@@ -132,7 +454,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                         "source_revision_required": "a" * 40,
                         "target_repo": "test-owner/test-repo",
                         "target_path": "profiles/product_director_lf/SKILL.md",
-                        "profile_code": profile_code,
+                        "profile_code": profile_code, "operation_plan": self._mock_operation_plan(profile_code),
                     }
                 return 409, blocked
             # Issue request references the same execution, not a new BEGIN.
@@ -510,7 +832,8 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
 
     def test_cli_no_longer_returns_zero_on_missing_v3_or_raw(self):
         source = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn('if semantic_review is None:\n            return record_incomplete_continuation(', source)
+        self.assertIn('def complete_native_profile_semantic_and_report(', source)
+        self.assertIn('if semantic_review is None:\n        return record_incomplete_continuation(', source)
         self.assertIn('if profile_output is None:\n            return record_incomplete_continuation(', source)
         self.assertNotIn('print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")\n            return 0', source)
         self.assertNotIn('print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")\n            return 0', source)
@@ -736,6 +1059,180 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             }):
                 self.assertEqual(m["main"](), 0)
         self.assertEqual(len(requests), 1)
+
+
+    def test_phrase_inline_semantic_screen_is_source_bound_and_needs_no_owner_selection(self):
+        """One phrase Issue carries native semantic screen; DB validates against live catalog."""
+        import hashlib
+        literal = ("Probar la carga masiva B2B (pantalla B2B-CARGA-002, "
+                   "wizard de nueva carga; relacionadas B2B-CARGA-001 y "
+                   "B2B-CARGA-007) entrando por el Router ACT-0001")
+        screen = {
+            "decision": "SELECTED", "selected_screen_code": "B2B-CARGA-002",
+            "ambiguous_screen_codes": [], "material_ambiguities": [],
+            "reason": "Wizard de nueva carga es pantalla principal; otras son relacionadas",
+            "evidence_refs": [{"screen_code": "B2B-CARGA-002",
+                               "evidence_field": "screen_name"},
+                              {"screen_code": "B2B-CARGA-002",
+                               "evidence_field": "screen_code"}],
+        }
+        payload = {
+            "schema_version": "LF_PROFILE_RUN_FROM_PHRASE_V1",
+            "request_text": literal, "executor_mode": "GPT_NATIVE",
+            "stage1_decision": {"schema_version": "LF_ROUTER_STAGE1_V2",
+                "texto_original": literal,"negocio_codigo":"LF",
+                "es_operacion": True, "downstream_execution_allowed": False,
+                "alcance": {"target_type": "PANTALLA",
+                            "target_hint": "B2B-CARGA-002",
+                            "resolution_status": "UNRESOLVED"}},
+            "profile_semantic_decision": {"decision": "SELECTED",
+                "selected_profile_code": "PERFIL-PRODUCT-DIRECTOR-LF"},
+            "screen_semantic_decision": screen,
+        }
+        self.event["issue"]["body"] = json.dumps(payload)
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        self.assertEqual(self.check()["screen_semantic_decision"], screen)
+        path = Path(self.tmp.name) / "profiles" / "test_profile" / "SKILL.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Governed test source\n", encoding="utf-8")
+        execution_id = "EXEC-PROFILE-GATE2-" + "A"*24
+        actions = []
+        def fake(_url, body, _headers):
+            actions.append(body.copy())
+            if body["action"] == "profile_native_begin_from_phrase_v1":
+                self.assertNotIn("router_context", body)
+                return 200, {"outcome":"NATIVE_EXECUTION_READY",
+                    "result":{"status":"NATIVE_EXECUTION_READY",
+                              "execution_id": execution_id,
+                              "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}}
+            if body["action"] == "profile_native_source_bind_v1":
+                return 200, {"outcome":"SOURCE_BINDING_REQUIRED",
+                    "execution_id":execution_id,
+                    "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+                    "source_revision_required":"a"*40,
+                    "target_repo":"test-owner/test-repo",
+                    "target_path":"profiles/test_profile/SKILL.md",
+                    "operation_plan":self._mock_operation_plan("PERFIL-PRODUCT-DIRECTOR-LF")}
+            if body["action"] == "profile_native_continue_v1":
+                self.assertEqual(body["screen_selection_draft"],screen)
+                return 200, {"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY",
+                    "execution_id":execution_id,
+                    "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"}
+            raise AssertionError("unexpected bridge action")
+        env = {**self.env, "GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"995"}
+        with patch.dict(os.environ, env, clear=True), patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)):
+            runner=runpy.run_path(str(SCRIPT),run_name="native_phrase_screen_test")["main"]
+            with patch.dict(runner.__globals__,{"oidc":lambda:"opaque-oidc",
+                                                "call_json":fake}):
+                self.assertEqual(runner(),1)  # Step50 remains unproduced, not PASS
+        self.assertEqual([x["action"] for x in actions],[
+            "profile_native_begin_from_phrase_v1",
+            "profile_native_source_bind_v1","profile_native_continue_v1"])
+        cp = json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(cp["next_step"],"execute_profile")
+        self.assertFalse(cp["last_run_completed"])
+
+        # Negative: primary code must be explicitly supported by phrase AND scope.
+        invalid = json.loads(json.dumps(payload))
+        invalid["screen_semantic_decision"]["selected_screen_code"]="B2B-CARGA-007"
+        self.event["issue"]["body"]=json.dumps(invalid)
+        self.event_path.write_text(json.dumps(self.event))
+        with self.assertRaisesRegex(ValueError,"SCREEN_SELECTION_UNSUPPORTED"):
+            self.check()
+
+    def test_phrase_semantic_no_match_remains_a_finding_without_screen_fabrication(self):
+        phrase = "Probar una pantalla B2B no catalogada"
+        request = {
+            "schema_version":"LF_PROFILE_RUN_FROM_PHRASE_V1",
+            "request_text":phrase,"executor_mode":"GPT_NATIVE",
+            "stage1_decision":{"schema_version":"LF_ROUTER_STAGE1_V2",
+                "texto_original":phrase,"negocio_codigo":"LF",
+                "downstream_execution_allowed":False},
+            "profile_semantic_decision":{"decision":"SELECTED",
+                "selected_profile_code":"PERFIL-PRODUCT-DIRECTOR-LF"},
+            "screen_semantic_decision":{
+                "decision":"NO_MATCH","selected_screen_code":None,
+                "ambiguous_screen_codes":[],"material_ambiguities":[],
+                "reason":"Sin correspondencia semántica confirmada en catálogo",
+                "evidence_refs":[]},
+        }
+        self.event["issue"]["body"]=json.dumps(request)
+        self.assertEqual(self.check()["screen_semantic_decision"]["decision"],"NO_MATCH")
+
+
+    def test_bounded_ig_409_then_step40_finding_and_no_third_ticket(self):
+        """Mock native transport only; SQL authority is verified in PG fixture."""
+        import datetime as dt
+        literal = "Probar la carga masiva B2B"
+        run = "EXEC-PROFILE-GATE2-" + "A"*24
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version":SCHEMA,"execution_id":run})
+        self.event_path.write_text(json.dumps(self.event))
+        target = Path(self.tmp.name)/"profiles"/"product_director_lf"/"SKILL.md"
+        target.parent.mkdir(parents=True,exist_ok=True)
+        target.write_text("# Real source-bound fixture\n",encoding="utf-8")
+        expires = (dt.datetime.now(dt.timezone.utc)+dt.timedelta(minutes=5)).isoformat()
+        calls = []
+        prepare = 0
+        def fake(_url, body, _headers):
+            nonlocal prepare
+            calls.append(body["action"])
+            if body["action"]=="profile_native_source_bind_v1":
+                return 200,{"outcome":"SOURCE_BINDING_REQUIRED",
+                    "execution_id":run,"profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+                    "source_revision_required":"a"*40,"target_repo":"test-owner/test-repo",
+                    "target_path":"profiles/product_director_lf/SKILL.md",
+                    "operation_plan":self._mock_operation_plan("PERFIL-PRODUCT-DIRECTOR-LF")}
+            if body["action"]=="profile_native_continue_v1":
+                prepare+=1
+                if prepare<=2:
+                    return 200,{"outcome":"CONTINUATION_REQUIRED",
+                        "phase":"SKILL_RUNTIME_REQUIRED","execution_id":run,
+                        "result":{"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK",
+                            "input_governance_runtime_request":{
+                                "transport":"DIRECT_EDGE_INVOCATION",
+                                "queue_required":False,"polling_required":False,
+                                "ticket_expires_at":expires,
+                                "request_headers":{"X-LF-Profile-Runtime-Ticket":
+                                    "11111111-1111-4111-8111-111111111111"},
+                                "request_body":{"action":"profile_skill_runtime_v1",
+                                    "execution_id":run,"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK"}}}}
+                return 200,{"outcome":"CONTINUATION_REQUIRED",
+                    "phase":"NATIVE_MODEL_INPUT_READY","execution_id":run,
+                    "profile_code":"PERFIL-PRODUCT-DIRECTOR-LF",
+                    "result":{"execution_write_mode":"READ_ONLY",
+                              "skill_findings":[{"skill_code":"INPUT_GOVERNANCE_CONTEXT_PACK",
+                                                  "status":"SKILL_FAILED_AS_FINDING"}]}}
+            if body["action"]=="profile_skill_runtime_v1":
+                return 409,{"outcome":"BLOCKED",
+                            "code":"IG_CONTEXT_PACK_WORKER_409"}
+            raise AssertionError("Unexpected action "+body["action"])
+        env={**self.env,"GITHUB_SHA":"a"*40,"GITHUB_RUN_ID":"9001"}
+        with patch.dict(os.environ,env,clear=True):
+            module=runpy.run_path(str(SCRIPT),run_name="bounded_ig_e2e_test")
+            with patch.dict(module["main"].__globals__,{
+                "oidc":lambda:"signed-oidc-test-only",
+                "call_json":fake,
+            }):
+                with patch("pathlib.Path.cwd",return_value=Path(self.tmp.name)), \
+                     patch("time.sleep",return_value=None):
+                    rc=module["main"]()
+        self.assertEqual(rc,1)  # No fake Step50, only native continuation
+        self.assertEqual(calls.count("profile_skill_runtime_v1"),2)
+        self.assertEqual(calls.count("profile_native_continue_v1"),3)
+        self.assertEqual(prepare,3)
+        checkpoint=json.loads((Path(self.tmp.name)/"profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["next_step"],"execute_profile")
+        self.assertFalse(checkpoint["last_run_completed"])
+
+    def test_ig_bounded_retry_and_single_refresh_guard(self):
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("while attempt < 2:",text)
+        self.assertIn("validator_resumes > 3:",text)
+        self.assertNotIn("for attempt in range(64):",text)
+        self.assertIn('if code == 401:',text)
+        self.assertIn('headers = {"authorization": f"Bearer {oidc()}"}',text)
 
 
 if __name__ == "__main__":

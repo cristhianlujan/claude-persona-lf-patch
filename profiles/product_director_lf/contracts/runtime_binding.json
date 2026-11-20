@@ -2,7 +2,11 @@
   "profile_slug": "product_director_lf",
   "runtime_schema": {
     "default": "schemas/product_direction_spec.schema.json",
-    "output_modes": {}
+    "output_modes": {
+      "PRODUCT_MISSING_INPUT_STATE": "schemas/product_missing_input.schema.json",
+      "BLOCKED_PRODUCT_RISK": "schemas/product_blocked_risk.schema.json"
+    },
+    "default_mode": "PRODUCT_DIRECTION_SPEC"
   },
   "canonical_validator": {
     "path": "validators/validate_product_director_output.py",
@@ -15,6 +19,37 @@
     "source_first_required": true,
     "schema_invention_allowed": false,
     "fail_closed": true,
-    "exact_head_evidence_required": true
+    "exact_head_evidence_required": true,
+    "post_update_baseline_required": true
+  },
+  "semantic_utility": {
+    "path": "validators/runtime_semantic_utility.py",
+    "callable": "evaluate"
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "required_source_refs": [
+      "profiles/product_director_lf/SKILL.md"
+    ],
+    "allow_additional_sources": true,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+        "Purpose",
+        "Required inputs",
+        "Required output modes",
+        "Context-resolution and materiality ladder",
+        "Automatic block / needs-input",
+        "Validation layers",
+        "Product-review to implementation handoff (governed, no premature Quality)"
+      ],
+      "max_chars": 12000
+    },
+    "projection_rationale": {
+      "measured_selected_sections_chars": 9868,
+      "measurement_source": "profiles/product_director_lf/SKILL.md",
+      "full_canonical_sources_retained": true
+    }
   }
 }

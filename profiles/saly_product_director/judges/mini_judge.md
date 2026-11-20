@@ -1,0 +1,3 @@
+# Juez SALY determinista de admisión
+Bloquear si: `project_code` != SALY; perfil LF usado como fuente de autoridad SALY; no existe RUN nativo; firma/identidad falsamente marcada verdadera; `production_authorized=true`; decisión SALY nativa inexistente; evidencia con hash y referencia no coincidentes; operación en modo write antes de aprobación técnica; no hay siete pasos del hijo; cambio al padre sin historia hija en la misma transacción.
+Permitir solo propuesta/documentación con formato completo y readback. Juez no emite firma de identidad ni promoción. Ningún resultado textual sustituye el recibo terminal de `EJECUCION_PERFIL_LF`.

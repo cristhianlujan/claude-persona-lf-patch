@@ -1,0 +1,48 @@
+{
+  "schema_version": "LF_IG_CHAT12_ATQ002_RULE_CONTRACT_FIXTURE_V1",
+  "test_scope": "RULE_CONTRACT_LEVEL_ONLY",
+  "backend_e2e": "NOT_TESTED",
+  "rule_code": "REG_ATQ_002",
+  "parent_execution_id": "EXEC-PROFILE-GATE2-5F8B40E1F29B23126EB8B797",
+  "source_snapshot_sha256": "cc10104d94ad195f133998934d8af2efeb3f03a59a837777a6bef7f007182765",
+  "proposal_sha256": "293ae9e3847b7ba9b3253f09289c27f2d62dadeae2f8f02ff80e430553e80488",
+  "candidate_snapshot_sha256": "813f429c1aa339c651715975d551c338cfa0edd3dd568142567fd835954847e4",
+  "global_config": {
+    "scope": "AUTH",
+    "config_key": "CAPTCHA_MAX_ESCALATIONS_BEFORE_BLOCK",
+    "config_value": "2",
+    "value_type": "INTEGER",
+    "value_status": "REAL"
+  },
+  "source_row": {
+    "id": 122,
+    "razon": "Para el segmento NSE B-/C en mobile, un CAPTCHA visible en cada intento genera abandono medible. Solo escalar cuando haya señal real de bot.",
+    "codigo": "REG_ATQ_002",
+    "estado": "VIGENTE",
+    "origen": "ux",
+    "titulo": "CAPTCHA visible solo como escalada",
+    "categoria": "ataques",
+    "created_at": "2026-06-23T19:14:00.084703+00:00",
+    "created_by": null,
+    "updated_at": "2026-06-23T19:14:00.084703+00:00",
+    "descripcion": "El CAPTCHA visible (desafío de imágenes o checkbox) solo se activa si Turnstile invisible falla o si el score supera el umbral de sospecha. No se muestra por defecto.",
+    "valor_config": {
+      "condicion_activacion": "score_sospechoso_o_turnstile_fallo",
+      "max_escaladas_antes_bloqueo": 2
+    },
+    "es_transversal": false,
+    "pendiente_detalle": null,
+    "pendiente_decision": false
+  },
+  "governed_rule_patch": {
+    "changes": {
+      "descripcion": "El CAPTCHA visible (desafío de imágenes o checkbox) solo se activa si Turnstile invisible falla o si el score supera el umbral de sospecha. No se muestra por defecto. El máximo de escaladas antes del bloqueo se obtiene exclusivamente desde public.lf_global_config, scope AUTH, config_key CAPTCHA_MAX_ESCALATIONS_BEFORE_BLOCK, por la función canónica public.lf_auth_config_integer_v1, sin constantes embebidas en la regla.",
+      "valor_config": {
+        "scope": "AUTH",
+        "config_key": "CAPTCHA_MAX_ESCALATIONS_BEFORE_BLOCK"
+      }
+    },
+    "rule_code": "REG_ATQ_002",
+    "change_kind": "FUNCTIONAL"
+  }
+}

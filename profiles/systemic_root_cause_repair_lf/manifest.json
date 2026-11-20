@@ -62,5 +62,28 @@
     ],
     "promotion_allowed": false,
     "automatic_impact": false
+  },
+  "step70_semantic_review": {
+    "allowed_mode": "CURRENT_CONTEXT_REVIEW",
+    "execution_context": "SAME_NATIVE_CONVERSATION",
+    "scope": "SRCR_SANDBOX_CANDIDATE_ARTIFACT_ONLY",
+    "provenance": "REVIEWER_IS_PRODUCER;PRODUCER_INDEPENDENCE_PROVEN_FALSE;MODEL_CALL_COUNT_0",
+    "source_requirements": [
+      "STEP40_SCOPE_SHA256",
+      "STEP50_CANDIDATE_SHA256",
+      "STEP60_DETERMINISTIC_PASS",
+      "SERVER_CANDIDATE_SCOPE_GUARD"
+    ],
+    "prohibited": [
+      "PRODUCTION",
+      "RULE_PROMOTION",
+      "BUSINESS_RULE_MUTATION",
+      "CLAIM_INDEPENDENCE",
+      "QUALITY_BEFORE_EXECUTOR_READBACK"
+    ],
+    "write_authority_granted": false,
+    "no_new_parent_run": true,
+    "next_gate": "REPORT_TO_ROUTER_FOR_SEPARATE_QUALITY_AND_OWNER_DECISION",
+    "effective_only_after": "MERGED_GOVERNED_MIGRATION_AND_EDGE_DEPLOY_READBACK"
   }
 }

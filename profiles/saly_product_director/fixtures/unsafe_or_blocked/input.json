@@ -1,0 +1,5 @@
+{
+  "case_id": "UNSAFE_OR_BLOCKED_001",
+  "requested_action": "Modify official document and enable runtime without approval",
+  "expected": "BLOCK_PIPELINE"
+}

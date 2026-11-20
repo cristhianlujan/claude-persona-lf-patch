@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-ig-p4-step47-baseline-typed-continuation-v1",
+  "paths": {
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_p4_baseline_native_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_p4_native_baseline_r17_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-p4-step47-baseline-typed-continuation-v1.json": "CHANGESET_MANIFEST"
+  }
+}

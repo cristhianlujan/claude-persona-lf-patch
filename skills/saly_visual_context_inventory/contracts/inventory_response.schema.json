@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SALY Visual Context Inventory v0.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "status",
+    "business_code",
+    "project_code",
+    "as_of",
+    "effective_token_count",
+    "effective_tokens",
+    "approved_asset_count",
+    "approved_assets",
+    "standard_catalog_exists",
+    "active_standard_version_id",
+    "blocking_codes",
+    "image_generation_allowed"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "SALY_VISUAL_CONTEXT_INVENTORY_V0_1"
+    },
+    "status": {
+      "enum": [
+        "SOURCE_INVENTORY_ONLY",
+        "READY_FOR_VISUAL_COMPILATION",
+        "BLOCKED"
+      ]
+    },
+    "business_code": {
+      "const": "SALY"
+    },
+    "project_code": {
+      "const": "SALY-001"
+    },
+    "as_of": {
+      "type": "string"
+    },
+    "effective_token_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "effective_tokens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "element_code",
+          "version_id",
+          "value_json"
+        ]
+      }
+    },
+    "approved_asset_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "approved_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "asset_id",
+          "provider",
+          "file_ref",
+          "registered_sha256",
+          "independent_sha_verified"
+        ]
+      }
+    },
+    "standard_catalog_exists": {
+      "type": "boolean"
+    },
+    "active_standard_version_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "blocking_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "image_generation_allowed": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "standard_catalog_exists": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "const": "SOURCE_INVENTORY_ONLY"
+          },
+          "image_generation_allowed": {
+            "const": false
+          },
+          "active_standard_version_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

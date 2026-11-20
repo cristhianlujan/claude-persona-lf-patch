@@ -1,5 +1,6 @@
 import {CP2_PREFLIGHT_ACTION, CP2_EXECUTE_ACTION, Cp2Fault, executeCp2} from "./cp2_edge_bridge.ts";
 import { PROFILE_CONTINUATION_ACTIONS, handleProfileContinuation } from "./profile_continuation.ts";
+import {validateLfIgTransport,IG_RPC_REQUIRED,IG_RUNTIME_REQUIRED} from "../_shared/lf_ig_transport_guard_v1.ts";
 export const OIDC_ISSUER = "https://token.actions.githubusercontent.com";
 export const OIDC_AUDIENCE = "lf-profiles-governance-caller-v1";
 
@@ -21,6 +22,7 @@ const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
 const PROFILE_EXECUTION_BEGIN_ACTION = "profile_execution_begin_from_router_context_v1";
 const PROFILE_NATIVE_BEGIN_ACTION = "profile_native_begin_from_context_v1";
+const PROFILE_PHRASE_BEGIN_ACTION = "profile_native_begin_from_phrase_v1";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -367,6 +369,9 @@ async function consumeProfileRuntimeTicket(
   executionId: string,
   pantallaId: number,
 ): Promise<Record<string, unknown>> {
+  const pTransport={p_ticket:ticket,p_execution_id:executionId,p_pantalla_id:pantallaId,p_consumer:CONTEXT_PACK_CONSUMER};
+  const pFault=validateLfIgTransport("CALLER_PROFILE_TICKET",pTransport,IG_RPC_REQUIRED[RUNTIME_TICKET_RPC] ?? []);
+  if(pFault) throw new CallerFault(pFault.code,400,{field:pFault.field,downstream_call_attempted:false});
   const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${RUNTIME_TICKET_RPC}`, {
     method: "POST",
     headers: {
@@ -394,7 +399,10 @@ async function callRuntime(
   slug: string,
   body: Record<string, unknown>,
   timeoutMs = config.defaultTimeoutMs,
+  preserveBlocked409 = false,
 ): Promise<Record<string, unknown>> {
+  const preflight=validateLfIgTransport("CALLER_EDGE:"+slug,body,IG_RUNTIME_REQUIRED[slug] ?? []);
+  if(preflight) throw new CallerFault(preflight.code,400,{field:preflight.field,downstream_call_attempted:false});
   const response = await deps.fetchFn(`${config.supabaseUrl}/functions/v1/${slug}`, {
     method: "POST",
     headers: {
@@ -413,6 +421,13 @@ async function callRuntime(
     payload = { raw: text.slice(0, 1000) };
   }
   if (!response.ok) {
+    // LF-AUD-UI-05: preserve complete findings on governed HTTP409 BLOCKED.
+    const nested = payload.result && typeof payload.result === "object" &&
+      !Array.isArray(payload.result) ? payload.result as Record<string, unknown> : {};
+    if (preserveBlocked409 && response.status === 409 &&
+        (payload.status === "BLOCKED" || nested.status === "BLOCKED")) {
+      return payload;
+    }
     throw new Error(`${slug.toUpperCase()}_${response.status}:${JSON.stringify(payload).slice(0, 1500)}`);
   }
   return payload;
@@ -424,6 +439,8 @@ async function inputGovQueueRpc(
   rpcName: "fn_input_governance_queue_submit_oidc_v1" | "fn_input_governance_queue_poll_oidc_v1",
   body: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
+  const preflight=validateLfIgTransport("CALLER_IG_QUEUE:"+rpcName,body,IG_RPC_REQUIRED[rpcName] ?? []);
+  if(preflight) throw new CallerFault(preflight.code,400,{field:preflight.field,downstream_call_attempted:false});
   const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${rpcName}`, {
     method: "POST",
     headers: {
@@ -528,6 +545,105 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         }
 
         const action = typeof runtimeBody.action === "string" ? runtimeBody.action : "";
+        if (action === "profile_skill_runtime_v1") {
+          // Existing OIDC Edge transport. The one-use DB ticket fixes the
+          // selected skill, approved Edge slug and input; body cannot choose them.
+          const executionId = typeof runtimeBody.execution_id === "string"
+            ? runtimeBody.execution_id.trim() : "";
+          const skillCode = typeof runtimeBody.skill_code === "string"
+            ? runtimeBody.skill_code.trim() : "";
+          if (!/^[A-Za-z0-9][A-Za-z0-9_-]{10,127}$/.test(executionId)
+            || !/^[A-Z][A-Z0-9_]{2,63}$/.test(skillCode)
+            || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(runtimeTicket)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_INPUT_INVALID"},400);
+          }
+          const skillTicketBody={p_ticket:runtimeTicket,p_execution_id:executionId,p_skill_code:skillCode};
+          const skillFault=validateLfIgTransport("CALLER_SKILL_TICKET",skillTicketBody,
+            IG_RPC_REQUIRED.lf_profile_skill_runtime_ticket_consume_v1);
+          if(skillFault) return json({outcome:"BLOCKED",code:skillFault.code,
+            field:skillFault.field,downstream_call_attempted:false},400);
+          const consumedResponse = await deps.fetchFn(
+            `${config.supabaseUrl}/rest/v1/rpc/lf_profile_skill_runtime_ticket_consume_v1`,{
+              method:"POST",
+              headers:{apikey:config.serviceRoleKey,
+                authorization:`Bearer ${config.serviceRoleKey}`,
+                "content-type":"application/json"},
+              body:JSON.stringify({p_ticket:runtimeTicket,
+                p_execution_id:executionId,p_skill_code:skillCode}),
+              signal:AbortSignal.timeout(15_000)
+            });
+          if (!consumedResponse.ok) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_RPC_FAILURE"},502);
+          }
+          const ticket = await parseJsonObject(consumedResponse,
+            "PROFILE_SKILL_TICKET_RESULT_INVALID");
+          const slug = typeof ticket.runtime_slug==="string"?ticket.runtime_slug:"";
+          const body = ticket.request_body;
+          if (ticket.authorized!==true || ticket.execution_id!==executionId
+              || ticket.skill_code!==skillCode
+              || !validSlug(slug)
+              || !body || typeof body!=="object" || Array.isArray(body)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_NOT_AUTHORIZED"},403);
+          }
+          const authorizedScreen = (body as Record<string,unknown>).pantalla_id;
+          if (authorizedScreen !== undefined &&
+              (typeof authorizedScreen !== "number" ||
+               !Number.isSafeInteger(authorizedScreen) || authorizedScreen <= 0)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_TICKET_SCREEN_INVALID"},403);
+          }
+          const pantallaId = typeof authorizedScreen === "number" ? authorizedScreen : null;
+          const invocationBody = {...body as Record<string,unknown>,ticket:runtimeTicket};
+          // A selected skill is independent of the parent profile lifecycle.
+          // Cap the one-use ticket invocation; never wait for a full synchronous
+          // Curator/Validator recuration. Failed or timed-out skills are findings.
+          let result: Record<string, unknown>;
+          try {
+            result = await callRuntime(config,deps,slug,invocationBody,
+              Math.min(config.recurationTimeoutMs, 12_000));
+          } catch (error) {
+            return json({
+              outcome:"BLOCKED",code:"SKILL_RUNTIME_BOUNDED_FAILURE_AS_FINDING",
+              execution_id:executionId,skill_code:skillCode,terminal_status:"BLOCKED",
+              remediation_action:"INSPECT_SKILL_RUNTIME_AND_RECURATE_CANONICAL_SOURCES",
+              error_type:error instanceof Error?error.name:"UNKNOWN",
+              production_authorized:false,promotion_authorized:false,
+              continuation_allowed:true
+            },409);
+          }
+          const directStatus = typeof result.status==="string"?result.status:"";
+          const governed = result.result && typeof result.result==="object"
+            && !Array.isArray(result.result)
+            ? result.result as Record<string,unknown> : {};
+          const terminalStatus = typeof governed.status==="string"
+            ? governed.status:directStatus;
+          // The scope comes only from the SQL-consumed one-use ticket.
+          // A downstream worker cannot replace that authorized screen.
+          if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
+            return json({outcome:"BLOCKED",code:"PROFILE_SKILL_RUNTIME_SCREEN_SCOPE_MISMATCH",
+              execution_id:executionId,skill_code:skillCode,pantalla_id:pantallaId},409);
+          }
+          const common = {execution_id:executionId,skill_code:skillCode,
+            pantalla_id:pantallaId,
+            runtime_slug:slug,transport:"DIRECT_EDGE_INVOCATION",
+            queue_required:false,polling_required:false,
+            production_authorized:false,promotion_authorized:false,result};
+          if (terminalStatus==="VALIDATOR_RESUME_REQUIRED" ||
+              directStatus==="VALIDATOR_RESUME_REQUIRED") {
+            return json({outcome:"CONTINUATION_REQUIRED",
+              code:"SKILL_RUNTIME_VALIDATOR_RESUME_REQUIRED",...common},202);
+          }
+          if (terminalStatus==="READY") {
+            return json({outcome:"TERMINAL",terminal_status:"READY",...common},200);
+          }
+          if (terminalStatus==="BLOCKED" ||
+              terminalStatus==="HUMAN_DECISION_REQUIRED") {
+            return json({outcome:"BLOCKED",
+              code:"SKILL_RUNTIME_BLOCKED_AS_FINDING",
+              terminal_status:terminalStatus,...common},409);
+          }
+          return json({outcome:"BLOCKED",code:"SKILL_RUNTIME_NON_TERMINAL_AS_FINDING",
+            terminal_status:terminalStatus||null,...common},409);
+        }
         if (action !== CONTEXT_PACK_RUNTIME_ACTION) {
           return json({ outcome: "BLOCKED", code: "PROFILE_RUNTIME_TICKET_ACTION_MISMATCH" }, 403);
         }
@@ -561,13 +677,46 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           config.inputGovernanceSlug,
           { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER, ticket: runtimeTicket },
           config.recurationTimeoutMs,
+          true, // only this ticket-bound IG route preserves HTTP409 BLOCKED
         );
 
         const directStatus = typeof result.status === "string" ? result.status : "";
         const governed = result.result && typeof result.result === "object" && !Array.isArray(result.result)
           ? result.result as Record<string, unknown>
           : {};
+        // Identity scope precedes any material BLOCKED/READY response,
+        // including a contradictory top-level 409 carrying third-party findings.
+        if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
+          return json({
+            outcome:"BLOCKED", code:"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH",
+            execution_id:executionId, pantalla_id:pantallaId,
+            consumer:CONTEXT_PACK_CONSUMER,
+          },409);
+        }
         const terminalStatus = typeof governed.status === "string" ? governed.status : directStatus;
+        // LF-AUD-UI-04: a contradictory BLOCKED/HUMAN result is never READY.
+        // Retain the source RAW for the same profile/IG continuation decision.
+        if (["BLOCKED", "HUMAN_DECISION_REQUIRED"].includes(directStatus) ||
+            ["BLOCKED", "HUMAN_DECISION_REQUIRED"].includes(terminalStatus)) {
+          const blockedStatus = [directStatus, terminalStatus].includes("HUMAN_DECISION_REQUIRED")
+            ? "HUMAN_DECISION_REQUIRED" : "BLOCKED";
+          return json({
+            outcome: "BLOCKED",
+            code: blockedStatus === "HUMAN_DECISION_REQUIRED"
+              ? "IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED"
+              : "IG_CONTEXT_PACK_BLOCKED",
+            execution_id: executionId,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            terminal_status: blockedStatus,
+            transport: "DIRECT_EDGE_INVOCATION",
+            result,
+          }, 409);
+        }
+        if (governed.pantalla_id !== undefined && governed.pantalla_id !== pantallaId) {
+          return json({outcome:"BLOCKED",code:"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH",
+            execution_id:executionId,pantalla_id:pantallaId,consumer:CONTEXT_PACK_CONSUMER},409);
+        }
 
         if (directStatus === "VALIDATOR_RESUME_REQUIRED" || terminalStatus === "VALIDATOR_RESUME_REQUIRED") {
           return json({
@@ -598,6 +747,37 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             transport: "DIRECT_EDGE_INVOCATION",
             result,
           }, 409);
+        }
+
+        // LF-AUD-UI-03: a READY IG receipt must identify the exact screen,
+        // consumer and current run; no sibling/stale result may be reused.
+        if (terminalStatus === "READY") {
+          const observedRun = governed.run_id;
+          const observedTime = governed.generated_at;
+          const generatedMs = typeof observedTime === "string"
+            ? Date.parse(observedTime) : Number.NaN;
+          const ageMs = Date.now() - generatedMs;
+          if (governed.pantalla_id !== pantallaId ||
+              governed.consumer !== CONTEXT_PACK_CONSUMER ||
+              typeof observedRun !== "number" ||
+              !Number.isSafeInteger(observedRun) || observedRun < 1) {
+            return json({
+              outcome:"BLOCKED",code:"IG_CONTEXT_PACK_READY_IDENTITY_INVALID",
+              execution_id:executionId,pantalla_id:pantallaId,
+              consumer:CONTEXT_PACK_CONSUMER,terminal_status:terminalStatus,
+              result,
+            },409);
+          }
+          if (governed.execution_mode !== "REUSE_COMPLETED_CURRENT_RUN" ||
+              !Number.isFinite(generatedMs) ||
+              ageMs < -300_000 || ageMs > 300_000) {
+            return json({
+              outcome:"BLOCKED",code:"IG_CONTEXT_PACK_READY_CURRENTNESS_UNVERIFIED",
+              execution_id:executionId,pantalla_id:pantallaId,
+              consumer:CONTEXT_PACK_CONSUMER,terminal_status:terminalStatus,
+              result,
+            },409);
+          }
         }
 
         if (terminalStatus !== "READY") {
@@ -653,7 +833,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
       const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
       const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
-      const isProfileNativeBeginAction = action === PROFILE_NATIVE_BEGIN_ACTION;
+      const isProfileNativeBeginAction = action === PROFILE_NATIVE_BEGIN_ACTION || action === PROFILE_PHRASE_BEGIN_ACTION;
       if (isNativeContinuationIdentity && !isNativeContinuationAction && !isProfileNativeBeginAction) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
       }
@@ -937,14 +1117,72 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         }, readyCount === PILOT_SCREENS.length ? 200 : 409);
       }
 
-      if (action === PROFILE_NATIVE_BEGIN_ACTION) {
+      if (action === PROFILE_NATIVE_BEGIN_ACTION || action === PROFILE_PHRASE_BEGIN_ACTION) {
         // Profile-owned operation only. Router transports context and never calls
         // this action. The OIDC bearer authorizes the trusted existing workflow.
         // The service-role key stays in this Edge and is never put into the context.
         if (!isNativeContinuationIdentity) {
           return json({outcome:"BLOCKED",code:"PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED"},403);
         }
-        const context = body.context;
+        let context: unknown = body.context;
+        if (action === PROFILE_PHRASE_BEGIN_ACTION) {
+          // One Issue contains a literal phrase and *model-authored* bounded
+          // semantic decisions. Only the canonical Router V2 functions derive
+          // Gate2 here. No Gate2 is accepted or transported in the Issue.
+          const requestText = body.request_text;
+          const stage1 = body.stage1_decision;
+          const semantic = body.profile_semantic_decision;
+          if (typeof requestText !== "string" || !requestText.trim() ||
+              requestText.length > 8000 ||
+              !stage1 || typeof stage1 !== "object" || Array.isArray(stage1) ||
+              !semantic || typeof semantic !== "object" || Array.isArray(semantic)) {
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_INPUT_INVALID"},400);
+          }
+          const stage = stage1 as Record<string,unknown>;
+          const judge = semantic as Record<string,unknown>;
+          if (stage.schema_version !== "LF_ROUTER_STAGE1_V2" ||
+              stage.texto_original !== requestText ||
+              stage.downstream_execution_allowed !== false ||
+              stage.negocio_codigo !== "LF" ||
+              stage.es_operacion !== true ||
+              judge.decision !== "SELECTED" ||
+              typeof judge.selected_profile_code !== "string" ||
+              !judge.selected_profile_code) {
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_SEMANTIC_INPUT_INVALID"},400);
+          }
+          const rpcRoute = async (fn:string, input:Record<string,unknown>) => {
+            const response = await deps.fetchFn(
+              `${config.supabaseUrl}/rest/v1/rpc/${fn}`,{
+                method:"POST",
+                headers:{apikey:config.serviceRoleKey,
+                  authorization:`Bearer ${config.serviceRoleKey}`,
+                  "content-type":"application/json"},
+                body:JSON.stringify(input),signal:AbortSignal.timeout(15_000)
+              });
+            if (!response.ok) return null;
+            return await parseJsonObject(response,"PROFILE_PHRASE_ROUTER_RPC_RESPONSE_INVALID");
+          };
+          const r0 = await rpcRoute("lf_router_pipeline_context_begin_v2",
+            {p_request_text:requestText});
+          if (!r0 || r0.status !== "STAGE1_REQUIRED" ||
+              typeof r0.context_token !== "string")
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_ROUTER_BEGIN_NOT_READY"},409);
+          const r1 = await rpcRoute("lf_router_pipeline_context_stage1_submit_v2",
+            {p_context_token:r0.context_token,p_stage1:stage});
+          if (!r1 || r1.status !== "NEXT_TRANSITION_READY" ||
+              typeof r1.context_token !== "string" ||
+              (r1.stage1_validation as Record<string,unknown>|undefined)?.valid !== true)
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_STAGE1_NOT_VALID"},409);
+          const r2 = await rpcRoute("lf_router_pipeline_context_profile_semantic_submit_v2",
+            {p_context_token:r1.context_token,p_raw:JSON.stringify(judge)});
+          if (!r2 || r2.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION" ||
+              r2.transport_mode !== "CONTEXT_TRANSPORT" ||
+              (r2.semantic_validation as Record<string,unknown>|undefined)?.status !== "VALID" ||
+              (r2.semantic_validation as Record<string,unknown>|undefined)?.selected_profile_code !== judge.selected_profile_code) {
+            return json({outcome:"BLOCKED",code:"PROFILE_PHRASE_GATE2_NOT_VALID"},409);
+          }
+          context = r2;
+        }
         if (!context || typeof context !== "object" || Array.isArray(context)) {
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CONTEXT_REQUIRED" }, 400);
         }

@@ -116,6 +116,11 @@ A valid receipt allows the exact claim `SEMANTIC_REVIEW=EXECUTED_INDEPENDENT_CON
 
 The receipt validator's target eval is `evals/independent_chat_semantic_review_matrix.json`.
 
+## Executor-first admission for Product Director reviews
+For a Product Director rule-review chain (including B2B mass upload), the upstream Product Director inventory, findings, acceptance list or `implementation_package` alone is **not** a Quality input. Intake requires a distinct Router-authorized executor execution/artifact, an exact source/output digest, actual execution or candidate mutation readback (or an explicit no-write evidence result), acceptance tests and provenance. Reject a direct Product Director -> Quality shortcut as `UPSTREAM_EXECUTOR_ARTIFACT_MISSING`; route through Orchestrator/ACT-0001, not direct profile invocation. The absence of implementation is an outstanding content/action finding, never a fabricated Quality PASS.
+
+Quality records a verdict on the executor's artifact. Promotion eligibility after Quality is a separate candidate assessment: no automatic promotion, owner identity assertion or production authority is provided by Quality.
+
 ## Required output modes
 Quality Pack semantic review must return one of:
 - `PASS_TO_COMPOSER`

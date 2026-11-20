@@ -459,6 +459,20 @@ Deno.serve(async (req: Request) => {
     const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
     const slug = typeof body.profile_slug === "string" ? body.profile_slug.trim().toLowerCase() : "";
     const targetRepo = typeof body.target_repo === "string" ? body.target_repo.trim() : "";
+    // Exact SALY carve-out: unchanged customer allowlist and no production inheritance.
+    const salyTarget = targetCode === "PERFIL-PRODUCT-DIRECTOR-SALY";
+    const salyReceipt = "107332ebbae4295dc76179bd5619856cb61807b91a856c080b12e1942018fb0f";
+    if (salyTarget && (slug !== "saly_product_director"
+      || caller.method !== UPDATE_CALLER_METHOD || caller.workflow_ref !== UPDATE_WORKFLOW
+      || body.project_code !== "SALY" || body.owner_decision_sha256 !== salyReceipt
+      || body.identity_verified !== false || body.production_authorized !== false)) {
+      return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION,
+        code: "SALY_CREATION_DOCUMENTARY_AUTHORITY_INVALID" }, 403);
+    }
+    if (!salyTarget && caller.method !== CUSTOMER_CALLER_METHOD) {
+      return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION,
+        code: "PROFILE_CREATION_CALLER_SCOPE_DENIED" }, 403);
+    }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(requestId) || !/^PERFIL-[A-Z0-9][A-Z0-9-]{2,120}$/.test(targetCode) || !/^[a-z0-9][a-z0-9_]{2,80}$/.test(slug) || targetRepo !== REPOSITORY) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_CREATE_INPUT_INVALID" }, 400);
     const id = `EXEC-CREACION-PERFIL-LF-OIDC-${requestId}`;
     const existing = await execution(id);
@@ -470,7 +484,7 @@ Deno.serve(async (req: Request) => {
     }
     const router = await rpc("lf_router_resolve_v1", { p_request_text: `Crear perfil ${targetCode}`, p_target_hint: targetCode, p_action_hint: "PROFILE_CREATE", p_asset_type_hint: "PERFIL", p_distribution_mode: "ROUTER" });
     if (router?.status !== "READY_TO_EXECUTE" || router?.operation_code !== "CREACION_PERFIL_LF" || router?.action_code !== "PROFILE_CREATE" || router?.next_step?.step_id !== "init_execution") return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ROUTER_CREATION_NOT_AUTHORIZED", router }, 409);
-    const manifest = { schema_version: 1, router: "ACT-0001", creator_asset: "ACT-0045", governed_caller_method: caller.method, caller_repository: caller.repository, caller_workflow_ref: caller.workflow_ref, caller_run_id: caller.run_id, caller_workflow_sha: caller.workflow_sha, customer_profile_scope: true, runtime_write_executed: false, github_write_executed: false, production_authorized: true };
+    const manifest = { schema_version: 1, router: "ACT-0001", creator_asset: "ACT-0045", governed_caller_method: caller.method, caller_repository: caller.repository, caller_workflow_ref: caller.workflow_ref, caller_run_id: caller.run_id, caller_workflow_sha: caller.workflow_sha, customer_profile_scope: !salyTarget, runtime_write_executed: false, github_write_executed: false, production_authorized: !salyTarget, ...(salyTarget ? { project_code: "SALY", identity_mode: "UNVERIFIED_CHAT_DECLARATION", identity_verified: false, owner_decision_sha256: salyReceipt, owner_decision_local: "2026-11-13T12:53:00-05:00" } : {}) };
     const insert = await request("/rest/v1/lf_operation_execution", { method: "POST", headers: { prefer: "return=representation" }, body: JSON.stringify({ execution_id: id, operation_code: "CREACION_PERFIL_LF", target_type: "PERFIL", target_code: targetCode, target_repo: REPOSITORY, target_path: `profiles/${slug}`, status: "IN_PROGRESS", manifest, created_by_execution_id: id }) });
     if (insert.status !== 201) throw new Error(`EXECUTION_INSERT_${insert.status}:${JSON.stringify(insert.payload).slice(0, 1000)}`);
     const initPayload = { execution_id_created: true, target_code: targetCode, target_path: `profiles/${slug}`, profile_slug: slug, target_repo: REPOSITORY, governed_caller_method: caller.method, governed_caller_repository: caller.repository, governed_caller_workflow_ref: caller.workflow_ref, governed_caller_run_id: caller.run_id, governed_caller_workflow_sha: caller.workflow_sha, project_id: "AGENTE_PROFILE_CREATOR", owner_lane: "CUSTOMER_PROFILES", execution_origin: "AUTOMATION_PROFILE_CREATOR_DUAL_EXECUTOR", workstream_id: "PROFILE_CREATOR_INFRA", runtime_write_executed: false, github_write_executed: false, blocking_codes: [] };

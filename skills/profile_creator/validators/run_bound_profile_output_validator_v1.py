@@ -64,12 +64,43 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
             return block("RUNTIME_BINDING_UNREADABLE")
         if not isinstance(declared_binding, dict) or declared_binding.get("profile_slug") != slug:
             return block("RUNTIME_BINDING_IDENTITY_INVALID")
-        schema_rel = declared_binding.get("runtime_schema", {}).get("default")
+        runtime_schema = declared_binding.get("runtime_schema", {})
+        raw_ref = packet.get("raw_output_ref")
+        if not isinstance(raw_ref, str) or Path(raw_ref).is_absolute() or ".." in Path(raw_ref).parts:
+            return block("SOURCE_PATH_UNSAFE:raw_output")
+        raw_path = (root / raw_ref).resolve()
+        if not raw_path.is_relative_to(root) or not raw_path.is_file():
+            return block("SOURCE_PATH_UNRESOLVED:raw_output")
+        raw_bytes = raw_path.read_bytes()
+        if packet.get("raw_output_sha256") != sha(raw_bytes):
+            return block("SOURCE_SHA_MISMATCH:raw_output")
+        try:
+            candidate_form = json.loads(raw_bytes)
+        except (ValueError, UnicodeError, AttributeError):
+            return block("OUTPUT_MODE_UNRESOLVED")
+        # The final validator consumer must agree with the two upstream
+        # selectors, including default and field-shape forms. Never rely on
+        # output_modes being nonempty as a proxy for a required output_type.
+        import importlib.util
+        selector_file = root / "services/profile_runtime_api/profile_runtime_api/runtime_schema_selection.py"
+        if not selector_file.is_file():
+            return block("RUNTIME_SCHEMA_SELECTOR_UNAVAILABLE")
+        spec = importlib.util.spec_from_file_location("lf_bound_schema_selector", selector_file)
+        if spec is None or spec.loader is None:
+            return block("RUNTIME_SCHEMA_SELECTOR_UNAVAILABLE")
+        selector = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(selector)
+            schema_rel = selector.select_schema_relative(runtime_schema, payload=candidate_form)
+        except (ValueError, TypeError, OSError):
+            return block("OUTPUT_MODE_UNDECLARED")
         validator_decl = declared_binding.get("canonical_validator")
         if (not isinstance(schema_rel, str) or not isinstance(validator_decl, dict)
                 or not isinstance(validator_decl.get("path"), str)
                 or validator_decl.get("callable") != "validate"):
             return block("RUNTIME_BINDING_CANONICAL_TARGET_INVALID")
+        if validator_decl.get("transport") != transport:
+            return block("RUNTIME_BINDING_TRANSPORT_NOT_CANONICAL")
         if (packet.get("schema_ref") != f"profiles/{slug}/{schema_rel}"
                 or packet.get("validator_ref") != f"profiles/{slug}/{validator_decl['path']}"):
             return block("RUNTIME_BINDING_SOURCE_NOT_CANONICAL")

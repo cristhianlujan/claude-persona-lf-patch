@@ -1,0 +1,17 @@
+{
+  "solution_ref": "lf-owner-chat-signed-approval-source-draft-20261116-v1",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "docs/operations/LF_OWNER_CHAT_SIGNED_APPROVAL_V1_DRAFT.md": "DOCUMENTATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-owner-chat-signed-approval-source-draft-20261116-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/owner_chat_approval/owner_chat_fixture_v1.py": "HUMAN_DECISION_ROUTING",
+    "sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_event_v1.py": "HUMAN_DECISION_ROUTING",
+    "sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_literal_single_source_v1.py": "HUMAN_DECISION_ROUTING",
+    "sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_one_use_rollback_v1.py": "HUMAN_DECISION_ROUTING",
+    "sandbox/lf_contract_gate_test/owner_chat_approval/test_lf_owner_chat_pgdual_rollback_v1.py": "HUMAN_DECISION_ROUTING",
+    "sandbox/lf_contract_gate_test/owner_chat_retirement/test_lf_owner_chat_retirement_pgdual_rollback_v1.py": "HUMAN_DECISION_ROUTING",
+    "scripts/lf_owner_chat_event_v1.py": "SERVICE_RUNTIME",
+    "scripts/lf_owner_chat_gate_ci_v1.py": "SERVICE_RUNTIME",
+    "supabase/migrations/20261118034000_lf_owner_chat_full_retirement_v1.sql": "MIGRATION"
+  }
+}

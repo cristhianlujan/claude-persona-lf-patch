@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ig4064-advisory-dispatch-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_runner_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/ig4064_rollback_template_v1.sql": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/ig4064_advisory_dispatch/test_ig4064_advisory_dispatch_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/ig4064-advisory-dispatch-v1.json": "CHANGESET_MANIFEST"
+  }
+}

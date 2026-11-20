@@ -1,0 +1,8 @@
+{
+  "solution_ref": "ig-recovery-family-positive-na-v1",
+  "paths": {
+    "sandbox/ig_recovery_family_positive_na_v1/rollback_test.sql": "INPUT_GOVERNANCE",
+    "tests/test_lf_ig_recovery_family_positive_na_v1.py": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/ig-recovery-family-positive-na-v1.json": "CHANGESET_MANIFEST"
+  }
+}

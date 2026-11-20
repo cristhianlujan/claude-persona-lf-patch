@@ -1,0 +1,11 @@
+{
+  "solution_ref": "LF-B07-SALY-CREATOR-CALLER-DEPLOY-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/changesets/LF-B07-SALY-CREATOR-CALLER-DEPLOY-V1.json": "CHANGESET_MANIFEST",
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "scripts/lf_profile_update_issue_dispatch.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/edge_profile_creator_caller_readback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_b07_saly_creator_deploy_governed_v1.py": "RUNTIME_TESTING",
+    "docs/input-governance/b07_parent_child_candidate/15_saly_caller_governed_deploy_v1.md": "INPUT_GOVERNANCE"
+  }
+}

@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,effectsBearingNativeSemanticReviewBlockCode,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -26,10 +26,24 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
       target_type:"PERFIL",target_code:"PROFILE-A",target_repo:repo,
       target_path:"profiles/profile_a/SKILL.md",
       manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
-        router_profile_handoff:{profile_code:"PROFILE-A",router_authorization_receipt:{
+        router_profile_handoff:{profile_code:"PROFILE-A",channel:"PRODUCTO",router_authorization_receipt:{
           profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}},
       ...overrides,
     }];
+    else if(url.endsWith("/lf_router_profile_execution_handoff_validate_v1")){
+      const handoff=(body?.p_handoff ?? {}) as Record<string,unknown>;
+      const repair=(handoff.repair_execution_authority ?? {}) as Record<string,unknown>;
+      out={valid:true,governed_repair_write_allowed:true,
+        promotion_allowed:repair.promotion_allowed,
+        profile_code:handoff.profile_code,profile_slug:handoff.profile_slug,
+        repair_execution_authority_fingerprint_sha256:repair.fingerprint_sha256,
+        fingerprint_sha256:handoff.fingerprint_sha256};
+    }
+    else if(url.endsWith("/lf_profile_execution_plan_for_run_v1")){
+      out={status:"READY",operation_code:"EJECUCION_PERFIL_LF",profile_code:"PROFILE-A",
+        steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+        skills:[{skill_code:"SKILL_FROM_DB",handler_fn:"fixture_readonly",effect:"READ_ONLY"}]};
+    }
     else if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))out={status:state,next_action:"RETRY_BRIDGE"};
     else if(url.endsWith("/lf_profile_screen_selector_semantic_submit_v1")){
       out={status:selectStatus};if(selectStatus==="BOUND")state="NATIVE_MODEL_INPUT_READY";
@@ -59,8 +73,56 @@ Deno.test("continuation: profile path bound dynamically, never selected in code"
   for(const target_path of ["profiles/profile_a/SKILL.md","profiles/profile_b/SKILL.md"]){
     const n=network({target_path});
     const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
-    const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,1);
+    const b=await out.json();eq(out.status,200);eq(b.target_path,target_path);eq(n.calls.length,2);
+    eq(b.operation_plan?.steps?.length,11);
+    eq(b.operation_plan?.skills?.[0]?.skill_code,"SKILL_FROM_DB");
+    eq(n.calls[1].body?.p_execution_id,id);
   }
+});
+Deno.test("continuation: missing optional skill decision never blocks SOURCE_BIND",async()=>{
+  const n=network();
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id},config,n.fetchFn,sha);
+  const b=await out.json();
+  eq(out.status,200);
+  eq(b.outcome,"SOURCE_BINDING_REQUIRED");
+  eq(n.calls.some(x=>x.url.endsWith("/lf_profile_skill_selection_run_bind_v1")),false);
+});
+Deno.test("continuation: explicit empty skill selection binds same RUN before source read",async()=>{
+  const base=network();
+  const requests:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    requests.push(url);
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BOUND",execution_id:id}),{status:200});
+    return base.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id,skill_selection_decision:{selected_skill_codes:[],
+      reason:"Ninguna skill tiene contexto suficiente"}},config,fetchFn,sha);
+  eq(out.status,200);
+  eq(requests.some(x=>x.endsWith("/lf_profile_skill_selection_run_bind_v1")),true);
+  eq((await out.json()).outcome,"SOURCE_BINDING_REQUIRED");
+});
+Deno.test("continuation: legacy skill field accepted ONLY on verified old RUN",async()=>{
+  const old=network({created_at:"2026-11-14T18:30:00Z"});
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BOUND",execution_id:id}),{status:200});
+    return old.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id,skill_semantic_decision:{selected_skill_codes:[],
+      reason:"Old RUN with explicit no optional skill"}},config,fetchFn,sha);
+  eq(out.status,200);
+  const newRun=network({created_at:"2026-11-14T20:00:00Z"});
+  const blocked=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{
+    execution_id:id,skill_semantic_decision:{selected_skill_codes:[],
+      reason:"Must not accept old name on new RUN"}},config,newRun.fetchFn,sha);
+  eq(blocked.status,409);
+  eq((await blocked.json()).code,"SKILL_SELECTION_LEGACY_ONLY_EXISTING_RUN");
 });
 Deno.test("continuation: screen semantic handoff preserves ordering and source",async()=>{
   const n=network();const draft={decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"};
@@ -72,6 +134,62 @@ Deno.test("continuation: screen semantic handoff preserves ordering and source",
     "lf_profile_screen_selector_semantic_submit_v1","lf_profile_native_bridge_prepare_v1"]);
   eq(n.calls[2].body?.p_draft,draft);
 });
+Deno.test("CP2: continuation: combined screen and skill bind before the bridge can write Step40",async()=>{
+  const n=network();
+  const calls:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    calls.push(url.split("/").pop()?.split("?")[0]??"");
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BOUND",execution_id:id}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const screen={decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"};
+  const skill={selected_skill_codes:["INPUT_GOVERNANCE_CONTEXT_PACK"],
+    reason:"Current screen and input require IG",review_mode:"CURRENT_CONTEXT_REVIEW"};
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:screen,skill_selection_decision:skill,
+  },config,fetchFn,sha);
+  eq(out.status,200);
+  eq((await out.json()).phase,"NATIVE_MODEL_INPUT_READY");
+  eq(calls,["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1",
+    "lf_profile_skill_selection_run_bind_v1","lf_profile_native_bridge_prepare_v1"]);
+  eq(n.calls.find(x=>x.url.endsWith("/lf_profile_screen_selector_semantic_submit_v1"))?.body?.p_draft,screen);
+});
+Deno.test("CP2: continuation: combined decision rejects failed skill binding without executing Step40",async()=>{
+  const n=network();
+  const calls:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    calls.push(url.split("/").pop()?.split("?")[0]??"");
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BLOCKED",blocking_code:"SKILL_SELECTION_NOT_IN_ELIGIBLE_INPUT_CANDIDATES"}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:{decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"},
+    skill_selection_decision:{selected_skill_codes:["INPUT_GOVERNANCE_CONTEXT_PACK"],reason:"IG"},
+  },config,fetchFn,sha);
+  eq(out.status,409);
+  eq((await out.json()).code,"SKILL_SELECTION_NOT_IN_ELIGIBLE_INPUT_CANDIDATES");
+  eq(calls,["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1",
+    "lf_profile_skill_selection_run_bind_v1"]);
+});
+Deno.test("CP2: continuation: combined screen rejection never binds skill or executes Step40",async()=>{
+  const n=network({},"BLOCKED");
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:{decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"},
+    skill_selection_decision:{selected_skill_codes:["INPUT_GOVERNANCE_CONTEXT_PACK"],reason:"IG"},
+  },config,n.fetchFn,sha);
+  eq(out.status,409);
+  eq((await out.json()).code,"PROFILE_CONTINUATION_SCREEN_SELECTION_REJECTED");
+  eq(n.calls.map(c=>c.url.split("/").pop()?.split("?")[0]),
+    ["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1"]);
+});
+
 Deno.test("continuation: source-bound validator receipt records native output and advances to semantic judge",async()=>{
   const n=network();
   const receipt={
@@ -316,7 +434,7 @@ Deno.test("continuation: fail-closed role, source, and semantic decision",async(
 
 function manifestFor(mode:string|undefined,provider:string|undefined){
   const m:Record<string,unknown>={read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
-    router_profile_handoff:{profile_code:"PROFILE-A",router_authorization_receipt:{
+    router_profile_handoff:{profile_code:"PROFILE-A",channel:"PRODUCTO",router_authorization_receipt:{
       profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}};
   if(mode!==undefined)m.executor_mode=mode;
   if(provider!==undefined)m.executor_provider=provider;
@@ -451,7 +569,7 @@ function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;
       }
       if(url.includes("/contents/"))return new Response(JSON.stringify(gh.dir?[{name:"a"}]:{sha:blobSha,type:"file"}),{status:200});
     }
-    if(url.endsWith("/lf_skill_invoke_v1")){
+    if(url.endsWith("/lf_profile_skill_invoke_selected_v1")){
       n.calls.push({url,body:typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null});
       return new Response(JSON.stringify(invoke.body),{status:invoke.status});
     }
@@ -469,15 +587,15 @@ Deno.test("skill invoke: parent is the authenticated execution, never caller-sup
     execution_id:id,parent_execution_id:"EXEC-ATTACKER-0000000000",p_execution_id:"EXEC-ATTACKER-0000000000",
     skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
   const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");eq(b.result.child_execution_id,"EXEC-SKILL-0123456789ABCDEF");
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
-  eq(call?.body,{p_skill:"PROFILE_UPDATE_APPLY",p_execution_id:id,p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}}});
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
+  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"PROFILE_UPDATE_APPLY",p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}},p_semantic_decision:null});
 });
 Deno.test("skill invoke: invalid skill code or input never reaches the invoker",async()=>{
   for(const bad of [{skill_code:"profile_update_apply",input:skillInput},{skill_code:"X; DROP",input:skillInput},
     {skill_code:"PROFILE_UPDATE_APPLY",input:"text"},{skill_code:"PROFILE_UPDATE_APPLY",input:[1]},{skill_code:"PROFILE_UPDATE_APPLY"},{input:skillInput}]){
     const n=skillNetwork();
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,...bad},config,n.fetchFn,sha,callerId);
-    eq(out.status,400);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(out.status,400);eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
 Deno.test("skill invoke: execution that is not a governed read-only profile run is refused before the invoker",async()=>{
@@ -485,9 +603,19 @@ Deno.test("skill invoke: execution that is not a governed read-only profile run 
     {manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:false,no_write:false,no_promotion:true,governed_repair_write:true}}]){
     const n=skillNetwork(o);
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
-    eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
+Deno.test("skill invoke: SQL BLOCKED 200 never becomes SKILL_INVOKED",async()=>{
+  const n=skillNetwork({},{status:200,body:{status:"BLOCKED",
+    blocking_code:"SKILL_SEMANTIC_SELECTION_AMBIGUOUS"}});
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  const body=await out.json();
+  eq(out.status,409);eq(body.outcome,"BLOCKED");
+  eq(body.code,"SKILL_SEMANTIC_SELECTION_AMBIGUOUS");
+});
+
 Deno.test("skill invoke: invoker block reason is passed on, truncated, and is not a success",async()=>{
   const reason="SKILL_AUTHORITY_MISSING: el perfil no tiene autoridad para ACTUALIZACION_PERFIL_LF. "+"x".repeat(900);
   const n=skillNetwork({},{status:400,body:{code:"P0001",message:reason}});
@@ -500,7 +628,7 @@ Deno.test("skill invoke: caller-supplied _trusted is discarded and replaced by r
   const n=skillNetwork();
   const forged={main_sha:"e".repeat(40),target_blob_sha:"f".repeat(40),caller:{method:"FORGED"}};
   await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:{...skillInput,_trusted:forged}},config,n.fetchFn,sha,callerId);
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
   eq((call?.body?.p_input as Record<string,unknown>)._trusted,{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId});
 });
 Deno.test("skill invoke: unresolved main, directory target, bad path or missing identity never reach the invoker",async()=>{
@@ -514,7 +642,7 @@ Deno.test("skill invoke: unresolved main, directory target, bad path or missing 
     const n=skillNetwork();
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input},config,n.fetchFn,sha,withId?callerId:undefined);
     if(out.status<400)throw Error("NOT_BLOCKED "+name);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
   gh.fail=false;gh.dir=false;
 });
@@ -525,9 +653,9 @@ Deno.test("skill invoke: SKILL_UPDATE_APPLY resolves exact skills file with trus
   const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input},config,n.fetchFn,sha,callerId);
   const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
-  eq(call?.body,{p_skill:"SKILL_UPDATE_APPLY",p_execution_id:id,
-    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}}});
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
+  eq(call?.body,{p_execution_id:id,p_channel:"PRODUCTO",p_skill_code:"SKILL_UPDATE_APPLY",
+    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}},p_semantic_decision:null});
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py?ref=")),true);
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/README.md?ref=")),true);
 });
@@ -539,7 +667,7 @@ Deno.test("skill invoke: only SKILL_UPDATE_APPLY can resolve skills paths",async
     const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
       execution_id:id,skill_code:code,input},config,n.fetchFn,sha,callerId);
     eq(out.status,400);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
 
@@ -554,7 +682,7 @@ Deno.test("skill invoke: skill update fails closed on directories and traversal"
       execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{target_code:"ACT-0045",target_path}
     },config,n.fetchFn,sha,callerId);
     eq(out.status,400);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
 });
 
@@ -565,14 +693,14 @@ Deno.test("skill invoke: skill update still discards caller forgery and rejects 
   await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{...input,_trusted:forged}
   },config,n.fetchFn,sha,callerId);
-  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1"));
   eq((call?.body?.p_input as Record<string,unknown>)._trusted,
     {main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof});
   const missing=skillNetwork();
   const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
     execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input
   },config,missing.fetchFn,sha,undefined);
-  eq(out.status,500);eq(missing.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  eq(out.status,500);eq(missing.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
 });
 
 Deno.test("skill invoke: current README owner mismatch or absence stops before SQL",async()=>{
@@ -588,7 +716,7 @@ Deno.test("skill invoke: current README owner mismatch or absence stops before S
     },config,n.fetchFn,sha,callerId);
     const body=await out.json();
     eq(out.status,409);eq(body.code,expected);
-    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
   }
   gh.ownerValid=true; gh.ownerMissing=false;
 });
@@ -668,7 +796,7 @@ Deno.test("skill step: 6-step ordered batch records via exactly one canonical RP
  eq(records[0].body?.p_server_context,{
    main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof,
  });
- eq(n.calls.filter(c=>c.url.endsWith("/lf_skill_invoke_v1")).length,0);
+ eq(n.calls.filter(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")).length,0);
  eq(n.calls.filter(c=>c.url.includes("/lf_operation_execution_steps?")).length,1);
 });
 
@@ -834,4 +962,345 @@ Deno.test("skill step: missing canonical readback is not a completed batch",asyn
  },config,n.fetchFn,sha,callerId);
  const b=await r.json();
  eq(r.status,409);eq(b.code,"SKILL_CHILD_STEP_READBACK_NOT_CLEAN");
+});
+
+
+function boundedRepairFixture(){
+  const sha="b".repeat(64), fingerprint="a".repeat(64);
+  const scope={target_type:"PANTALLA",target_hint:"B2B-CARGA-002"};
+  const receipt={profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    profile_execution_allowed:true,effect_authority:false,
+    authority_ref:"ROUTER_PROFILE_EXECUTION_AUTHORIZATION",
+    operation_code:"EJECUCION_PERFIL_LF",action_code:"PROFILE_EXECUTION",
+    request_sha256:sha,router_action_binding_sha256:"sha256:"+sha,
+    fingerprint_sha256:fingerprint,scope};
+  const repair={schema_version:"LF_SRCR_REPAIR_EXECUTION_AUTHORITY_V1",
+    mode:"GOVERNED_REPAIR_WRITE",profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    operation_code:"EJECUCION_PERFIL_LF",profile_task_intent:"REPAIR_MISSING_PRODUCT_STRUCTURE",
+    request_sha256:sha,router_authorization_fingerprint_sha256:fingerprint,
+    router_action_binding_sha256:"sha256:"+sha,
+    readback_required:true,rollback_required:true,promotion_allowed:false,
+    automatic_impact:false,direct_profile_invocation_allowed:false,
+    return_to_router_after_result:true,scope,fingerprint_sha256:"c".repeat(64)};
+  return {target_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    target_path:"profiles/systemic_root_cause_repair_lf/SKILL.md",
+    manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",
+      read_only:false,no_write:false,no_promotion:true,governed_repair_write:true,
+      promotion_allowed:false,automatic_impact:false,
+      repair_execution_authority:repair,
+      router_profile_handoff:{profile_code:repair.profile_code,profile_slug:"systemic_root_cause_repair_lf",
+        literal_request:"Reparar reglas de login B2B sin promocionar",
+        fingerprint_sha256:"e".repeat(64),channel:"PRODUCTO",
+        return_to_router_after_profile_result:true,repair_execution_authority:repair,
+        router_authorization_receipt:receipt}}};
+}
+Deno.test("SRCR native source bind accepts only Router-bound governed repair for exact existing profile",async()=>{
+  const n=network(boundedRepairFixture());
+  const repairPlanFetch:typeof n.fetchFn=async(input,init)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_execution_plan_for_run_v1")){
+      n.calls.push({url,body:typeof init?.body==="string"?JSON.parse(init.body):null});
+      return new Response(JSON.stringify({status:"READY",operation_code:"EJECUCION_PERFIL_LF",
+        profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+        skills:[]}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,repairPlanFetch,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.outcome,"SOURCE_BINDING_REQUIRED");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),true);
+});
+Deno.test("SRCR governed repair remains forbidden for profile skill side action",async()=>{
+  const n=skillNetwork(boundedRepairFixture());
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  eq(out.status,403);
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_skill_invoke_selected_v1")),false);
+});
+Deno.test("SRCR native repair denies any missing/forged Router evidence before SQL",async()=>{
+  const base=boundedRepairFixture();
+  const malformed=[
+    {manifest:{...base.manifest,governed_repair_write:false}},
+    {manifest:{...base.manifest,repair_execution_authority:{
+      ...base.manifest.repair_execution_authority as object,profile_task_intent:"UNAUTHORIZED"}}},
+    {manifest:{...base.manifest,repair_execution_authority:{
+      ...base.manifest.repair_execution_authority as object,fingerprint_sha256:"forged"}}},
+    {manifest:{...base.manifest,router_profile_handoff:{
+      ...base.manifest.router_profile_handoff as object,repair_execution_authority:{mode:"FORGED"}}}},
+    {target_path:"profiles/other/SKILL.md"},
+    {target_code:"PERFIL-PRODUCT-DIRECTOR-LF"},
+  ];
+  for(const invalid of malformed){
+    const n=network({...base,...invalid});
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+    eq(out.status,403);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
+  }
+  // The fixture returns 409 for missing downstream plan, not authority denial.
+  for(const value of [true,false,undefined]){
+    const manifest={...base.manifest,no_promotion:value};
+    const n=network({...base,manifest});
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+    eq(out.status!==403,true);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),true);
+  }
+
+});
+
+
+Deno.test("SRCR Step70 current-context disregards manifest.no_promotion but retains actual router authority",()=>{
+  const effects={read_only:false,no_write:false,no_promotion:true,governed_repair_write:true};
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,"CURRENT_CONTEXT_REVIEW"),
+    "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
+  const candidate={...effects,automatic_impact:false,
+    repair_execution_authority:{mode:"GOVERNED_REPAIR_WRITE",
+      profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"},
+    router_profile_handoff:{
+      profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      router_authorization_receipt:{effect_authority:false},
+    }};
+  eq(effectsBearingNativeSemanticReviewBlockCode(candidate,"CURRENT_CONTEXT_REVIEW"),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode({...candidate,no_promotion:false},"CURRENT_CONTEXT_REVIEW"),null);
+  for(const invalid of [
+    {...candidate,automatic_impact:true},
+    {...candidate,router_profile_handoff:{profile_code:"PERFIL-PRODUCT-DIRECTOR-LF",
+      router_authorization_receipt:{effect_authority:false}}},
+    {...candidate,router_profile_handoff:{profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      router_authorization_receipt:{effect_authority:true}}},
+  ])eq(effectsBearingNativeSemanticReviewBlockCode(invalid,"CURRENT_CONTEXT_REVIEW"),
+      "PROFILE_STEP70_INDEPENDENT_PROVIDER_ATTESTATION_REQUIRED");
+  // Read-only historical profiles retain their existing current-context behavior.
+  eq(effectsBearingNativeSemanticReviewBlockCode(
+    {read_only:true,no_write:true,no_promotion:true,governed_repair_write:false},
+    "CURRENT_CONTEXT_REVIEW"),null);
+  // Not a provider receipt minting mechanism. Independent submissions still
+  // require canonical SQL verification; this helper never returns PASS.
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,"INDEPENDENT_SEMANTIC"),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode(effects,undefined),null);
+  eq(effectsBearingNativeSemanticReviewBlockCode(
+    {read_only:false,no_write:false,no_promotion:true,governed_repair_write:false},
+    "CURRENT_CONTEXT_REVIEW"),null);
+});
+
+Deno.test("IG native context writer uses actual OIDC run and existing SRCR route, no nonce from Issue",async()=>{
+  const n=network(boundedRepairFixture());
+  const rpcParams:Array<Record<string,unknown>>=[];
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_ig_native_chat_receipt_append_v1")){
+      rpcParams.push(JSON.parse(String(init?.body)) as Record<string,unknown>);
+      return new Response(JSON.stringify({status:"RECEIPT_APPENDED",execution_id:id,kind:"REQUEST",seq:1,
+        nonce:"e".repeat(48),frozen_bundle_sha256:"c".repeat(64)}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const resp=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"REQUEST",event:{}}},config,fetchFn,sha,{...callerId,run_id:"1000"});
+  const body=await resp.json();
+  eq(resp.status,200);eq(body.outcome,"NATIVE_CHAT_RECEIPT_RECORDED");
+  eq(body.step_recorded,false);eq(body.step70_completed,false);
+  eq(rpcParams[0]?.p_execution_id,id);eq(rpcParams[0]?.p_kind,"REQUEST");
+  eq(rpcParams[0]?.p_event,{});
+  eq(rpcParams[0]?.p_writer_receipt_ref,"actions://"+repo+"/runs/1000");
+  // This is ONLY append provenance; never record Step70/Step80.
+  eq(n.calls.some(x=>x.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+Deno.test("IG native context writer rejects missing OIDC, forged ref, extra source fields",async()=>{
+  const n=network(boundedRepairFixture());
+  const base={execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"EXECUTOR",
+    event:{executor_context_ref:"actions://fixture/source",producer_schema_id:"V0_6",
+      producer_eval_id:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",producer_profile_id:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}}};
+  for(const args of [
+    {body:base,caller:undefined,status:403},
+    {body:{...base,p_writer_receipt_ref:"actions://evil"},caller:{...callerId,run_id:"1000"},status:400},
+    {body:base,caller:{...callerId,run_id:"forged"},status:403},
+    {body:base,caller:{...callerId,method:"FORGED"},status:403},
+  ]){
+    const before=n.calls.length;
+    const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,args.body,config,n.fetchFn,sha,args.caller);
+    eq(r.status,args.status);
+    eq(n.calls.slice(before).some(x=>x.url.includes("lf_ig_native_chat_receipt_append_v1")),false);
+  }
+});
+Deno.test("IG native context append respects server BLOCK and cannot claim PASS",async()=>{
+  const n=network(boundedRepairFixture());
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_ig_native_chat_receipt_append_v1")){
+      return new Response(JSON.stringify({status:"BLOCKED",blocking_code:"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT"}),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,native_chat_receipt:{kind:"JUDGE",event:{review_mode:"INDEPENDENT_EVAL_CONTEXT"}}},
+    config,fetchFn,sha,{...callerId,run_id:"1000"});
+  const b=await r.json();eq(r.status,409);eq(b.code,"LF_NATIVE_CHAT_WRITER_SEQUENCE_DRIFT");
+  eq(b.step_recorded,false);
+});
+
+Deno.test("CP2: E21 promotion=true accepts ONLY source-bound SQL validator decision; false remains valid",async()=>{
+  const base=boundedRepairFixture();
+  const upgrade=(allow:boolean)=>{
+    const manifest=base.manifest as Record<string,unknown>;
+    const repair={...manifest.repair_execution_authority as Record<string,unknown>,
+      promotion_allowed:allow};
+    const h=manifest.router_profile_handoff as Record<string,unknown>;
+    return {...base,manifest:{...manifest,promotion_allowed:allow,
+      repair_execution_authority:repair,
+      router_profile_handoff:{...h,
+        literal_request:allow?"Reparar y promocionar las reglas de login B2B":
+          "Reparar las reglas de login B2B sin promocionar",
+        repair_execution_authority:repair}}};
+  };
+  for(const allowed of [true,false]){
+    const n=network(upgrade(allowed));
+    const fetchFn:typeof n.fetchFn=async(input,init)=>{
+      const url=String(input);
+      if(url.endsWith("/lf_profile_execution_plan_for_run_v1"))
+        return new Response(JSON.stringify({status:"READY",operation_code:"EJECUCION_PERFIL_LF",
+          profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          steps:Array.from({length:11},(_,step_order)=>({step_order,step_id:"fixture_"+step_order})),
+          skills:[]}),{status:200});
+      return n.fetchFn(input,init);
+    };
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+      {execution_id:id},config,fetchFn,sha);
+    eq(out.status,200);
+    eq((await out.json()).outcome,"SOURCE_BINDING_REQUIRED");
+    const sql=n.calls.find(x=>x.url.endsWith("/lf_router_profile_execution_handoff_validate_v1"));
+    eq(Boolean(sql),true);
+    eq((sql?.body?.p_handoff as Record<string,unknown>)?.profile_code,
+      "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF");
+  }
+  const allowed=upgrade(true);
+  const n=network(allowed);
+  const deniedFetch:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_router_profile_execution_handoff_validate_v1"))
+      return new Response(JSON.stringify({valid:false,promotion_allowed:false}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const forbidden=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,deniedFetch,sha);
+  eq(forbidden.status,403);
+  eq((await forbidden.json()).code,"PROFILE_CONTINUATION_GOVERNED_READ_ONLY_AUTHORITY_REQUIRED");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_execution_plan_for_run_v1")),false);
+
+  const n2=network(allowed);
+  const driftFetch:typeof n2.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_router_profile_execution_handoff_validate_v1"))
+      return new Response(JSON.stringify({valid:true,governed_repair_write_allowed:true,
+        promotion_allowed:false,profile_code:"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"}),{status:200});
+    return n2.fetchFn(input,init);
+  };
+  const drift=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,driftFetch,sha);
+  eq(drift.status,403);
+  const mismatch=network({...allowed,manifest:{...allowed.manifest,promotion_allowed:false}});
+  const bad=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,mismatch.fetchFn,sha);
+  eq(bad.status,403);
+  eq(mismatch.calls.some(c=>c.url.includes("handoff_validate")),false);
+});
+Deno.test("CP2: E21 Edge resolves governed repair profile by SQL-validated handoff, not a literal code",async()=>{
+  const base=boundedRepairFixture();
+  const profile="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF-V06-CANDIDATE";
+  const slug="systemic_root_cause_repair_lf_v06_candidate";
+  const repair={...base.manifest.repair_execution_authority as Record<string,unknown>,
+    profile_code:profile};
+  const handoff={...base.manifest.router_profile_handoff as Record<string,unknown>,
+    profile_code:profile,profile_slug:slug,repair_execution_authority:repair,
+    router_authorization_receipt:{...(
+      base.manifest.router_profile_handoff as Record<string,unknown>).router_authorization_receipt as Record<string,unknown>,
+      profile_code:profile}};
+  const n=network({...base,target_code:profile,target_path:`profiles/${slug}/SKILL.md`,
+    manifest:{...base.manifest,repair_execution_authority:repair,router_profile_handoff:handoff}});
+  const fetchFn:typeof n.fetchFn=async(input,init)=>{
+    if(String(input).endsWith("/lf_profile_execution_plan_for_run_v1"))
+      return new Response(JSON.stringify({status:"READY",operation_code:"EJECUCION_PERFIL_LF",
+        profile_code:profile,steps:Array.from({length:11},(_,i)=>({step_order:i,step_id:"fixture_"+i})),
+        skills:[]}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,
+    {execution_id:id},config,fetchFn,sha);
+  eq(out.status,200);
+  eq((await out.json()).profile_code,profile);
+});
+
+
+Deno.test("P4: baseline missing returns typed same-run continuation; unauthorized envelope denied",async()=>{
+  const base=network();
+  const rpcCalls:string[]=[];
+  let recorded=false;
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    rpcCalls.push(url);
+    if(url.endsWith("/lf_profile_native_bridge_prepare_v1")){
+      const pending={status:"BLOCKED",blocking_code:"BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY",
+        baseline_result:{outcome:"BASELINE_REQUIRED",recorded:false,execution_id:id,
+          research_baseline_contract:{contract_version:"PROFILE_RESEARCH_BASELINE_BINDING_V1"},
+          baseline_receipt_ref:"supabase://steps/47",
+          next_action:"INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY"}};
+      return new Response(JSON.stringify(recorded?{status:"NATIVE_MODEL_INPUT_READY"}:pending),{status:200});
+    }
+    if(url.endsWith("/lf_profile_execution_research_baseline_v1")){
+      recorded=true;
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",status:"STEP_PASS_WITH_EVIDENCE",execution_id:id}),{status:200});
+    }
+    return base.fetchFn(input,init);
+  };
+  const initial=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    {execution_id:id,source_revision:sha,source_digest:digest},config,fetchFn,sha);
+  const checkpoint=await initial.json();
+  eq(initial.status,200);eq(checkpoint.phase,"RESEARCH_BASELINE_REQUIRED");
+  eq(checkpoint.governed_continuation.reuse_execution_id,true);
+  eq(rpcCalls.some(x=>x.endsWith("/lf_profile_execution_research_baseline_v1")),false);
+  const wrong=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    {execution_id:id,source_revision:sha,source_digest:digest,
+      baseline_envelope:{snapshot:{},baseline_digest:"wrong"}},config,fetchFn,sha);
+  eq(wrong.status,400);eq((await wrong.json()).code,"PROFILE_BASELINE_ENVELOPE_INVALID");
+  const good={snapshot:{source:"existing"},baseline_digest:"sha256:"+"a".repeat(64),
+    capture_stage:"PRE_RESEARCH",input_digest:digest,profile_source_digest:digest,
+    evidence_refs:["supabase://source/real"]};
+  const resumed=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    {execution_id:id,source_revision:sha,source_digest:digest,baseline_envelope:good},
+    config,fetchFn,sha);
+  eq(resumed.status,200);eq((await resumed.json()).phase,"NATIVE_MODEL_INPUT_READY");
+  eq(rpcCalls.filter(x=>x.endsWith("/lf_profile_execution_research_baseline_v1")).length,1);
+});
+Deno.test("P4: baseline envelope cannot be injected when not required",async()=>{
+  const n=network();
+  const body={execution_id:id,source_revision:sha,source_digest:digest,
+    baseline_envelope:{snapshot:{},baseline_digest:"sha256:"+"a".repeat(64),
+      input_digest:digest,profile_source_digest:digest,capture_stage:"C1",
+      evidence_refs:["supabase://source/current"]}};
+  const response=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,body,config,n.fetchFn,sha);
+  eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_NOT_REQUESTED");
+});
+
+Deno.test("P4: Step47 recorder outcome cannot mask blocked deterministic status",async()=>{
+  const base=network();let baselineStored=false;
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))
+      return new Response(JSON.stringify({status:"BLOCKED",
+        blocking_code:"BLOCK_PROFILE_NATIVE_BRIDGE_BASELINE_NOT_READY",
+        baseline_result:{outcome:"BASELINE_REQUIRED",recorded:false,execution_id:id,
+          next_action:"INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY"}}),{status:200});
+    if(url.endsWith("/lf_profile_execution_research_baseline_v1")){
+      baselineStored=true;
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+        status:"BLOCKED_STEP_NOT_CLEAN",execution_id:id}),{status:200});
+    }
+    return base.fetchFn(input,init);
+  };
+  const envelope={snapshot:{source:"fixture"},baseline_digest:"sha256:"+"c".repeat(64),
+    capture_stage:"PRE_RESEARCH",input_digest:digest,profile_source_digest:digest,
+    evidence_refs:["supabase://source/fixture"]};
+  const response=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,baseline_envelope:envelope
+  },config,fetchFn,sha);
+  eq(baselineStored,true);
+  eq(response.status,409);eq((await response.json()).code,"PROFILE_BASELINE_RECORD_NOT_CLEAN");
 });

@@ -10,6 +10,11 @@ on:
       - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py"
+      - "sandbox/lf_contract_gate_test/input_governance/test_pr_f_auth_params_source_v1.py"
+      - "sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py"
+      - "sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_auth_window_pg17.py"
+      - "sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py"
+      - "docs/input-governance/PR_K_LOGIN_LOCKOUT_RESET_AND_FOUR_RULES_DOCUMENT_ONLY_20261118.json"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_reconciliation_source.py"
       - ".github/workflows/lf-migration-route-guard.yml"
       - "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_legacy_reintroduction_guard_v1.py"
@@ -19,6 +24,94 @@ permissions:
   contents: read
 
 jobs:
+  # Exact-HEAD source fixture; no remote Supabase credentials.
+  ig-chat8-auth-window30-pg17:
+    name: IG Chat8 PG17 BEGIN/ROLLBACK auth window 30m
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'lf/ig-chat8-auth-login-window30-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ig_chat8_ephemeral_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: ig_chat8_ephemeral_only
+    steps:
+      - name: Exact branch HEAD checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: PostgreSQL 17 readiness
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres
+      - name: One positive and four negative transaction readbacks
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_auth_window_pg17.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_auth_window_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/ig_chat8_auth_window/report.json').read_text())
+          assert r['status']=='PASS'
+          assert r['independent_readback']=='RESTORED_12_10_0_579'
+          assert len(r['negative_checks'])==4
+          assert r['candidate_rules_created']==0
+          assert r['remote_supabase_tested'] is False
+          print('IG_CHAT8_PG17_EXACT_ROLLBACK_1_POSITIVE_4_NEGATIVE_PASS')
+          PY
+      - name: Execute exact CREATE Step70/owner PG17 synthetic rollback test
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/ig_chat8_create_candidate/report.json').read_text())
+          assert r['status']=='PASS' and r['remote_supabase_tested'] is False
+          assert r['independent_readback']=='ROLLBACK_RESTORED'
+          assert len(r['checks'])==6 and all(r['checks'].values())
+          print('IG_CHAT8_CREATE_PG17_6_CHECKS_AND_INDEPENDENT_READBACK_PASS')
+          PY
+      - name: Archive exact source hash and rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-chat8-auth-window30-pg17-report
+          path: |
+            .lf_ci/ig_chat8_auth_window/report.json
+            .lf_ci/ig_chat8_create_candidate/report.json
+            .lf_ci/ig_chat8_create_candidate/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
   classify-migration-names:
     runs-on: ubuntu-latest
     steps:
@@ -51,3 +144,1325 @@ jobs:
             --failure-code FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY \
             --allow-reconciliation-source \
             "${migration_paths[@]}"
+
+  # No protected credentials: the real PostgreSQL 17 service is ephemeral CI.
+  # This is bound to this one PR and never writes to Supabase.
+  pr-c-niubiz-pg17-real-rollback:
+    name: PR-C 4078 real PostgreSQL 17 BEGIN/ROLLBACK and one fake row
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4078 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_c_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_c_ephemeral_pg17_only
+      PR_C_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout the exact PR-C HEAD without stored credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run PR-C static scope and RLS source guards (4/4)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_c_payment_provider_config_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_c_payment_provider_pg17_v1.py
+      - name: Install isolated PostgreSQL client if missing
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Execute real PG17 BEGIN/ROLLBACK and independent readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_c_payment_provider_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_c_payment_provider_config/report.json').read_text())
+          assert r['status']=='PASS' and r['sql_exit_code']==0
+          assert r['independent_readback']=='ABSENT'
+          assert all(r['assertions'].values()) and r['remote_supabase_tested'] is False
+          print('PR_C_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive SHA256 reports and real PostgreSQL evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-c-4078-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_c_payment_provider_config/report.json
+            .lf_ci/pr_c_payment_provider_config/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Only PR-D; no production secrets. PG17 Docker service is disposable.
+  pr-d-global-config-pg17-real-rollback:
+    name: PR-D 4079 real PostgreSQL 17 BEGIN/ROLLBACK global config
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4079 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_d_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_d_ephemeral_pg17_only
+      PR_D_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-D exact HEAD, no persistent credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Validate PR-D migration source and rollback harness
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_d_global_config_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_d_global_config_pg17_v1.py
+      - name: Install PostgreSQL client, check local container
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Execute real PR-D BEGIN/ROLLBACK and independent source readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_d_global_config_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_d_global_config/report.json').read_text())
+          assert r['status']=='PASS' and r['sql_exit_code']==0
+          assert r['independent_readback']=='RESTORED'
+          assert r['source_snapshot_rows']==1 and all(r['assertions'].values())
+          assert r['remote_supabase_tested'] is False
+          print('PR_D_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive real PG17 evidence and hashes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-d-4079-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_d_global_config/report.json
+            .lf_ci/pr_d_global_config/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR-F only: exact-head real PostgreSQL 17 isolated service, no cloud DB secrets.
+  pr-f-auth-global-params-pg17-rollback:
+    name: PR-F 4081 real PostgreSQL 17 BEGIN/ROLLBACK AUTH settings
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4081 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_f_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_f_ephemeral_pg17_only
+      PR_F_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-F exact HEAD with no credentials persisted
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run PR-F static exact-value and no-rule-change checks
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_f_auth_params_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_f_auth_params_pg17_v1.py
+      - name: Verify local PostgreSQL client and ephemeral DB
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Real PR-F BEGIN/ROLLBACK with independent readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_f_auth_params_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_f_global_auth/report.json').read_text())
+          assert r['status']=='PASS' and r['sql_exit_code']==0
+          assert r['independent_readback']=='RESTORED_1_0_3_RLS'
+          assert r['policy_or_rule_writes_performed'] is False
+          assert all(r['assertions'].values())
+          print('PR_F_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive PG17 evidence and hashes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-f-4081-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_f_global_auth/report.json
+            .lf_ci/pr_f_global_auth/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR-G only: exact-head PostgreSQL 17 local BEGIN/ROLLBACK, reject foreign username.
+  pr-g-owner-username-pg17-rollback:
+    name: PR-G 4082 real PostgreSQL 17 owner username V2 rollback
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4082 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_g_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_g_ephemeral_pg17_only
+      PR_G_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-G exact HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Check PR-G static scope and deterministic preimage postimage
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_g_owner_username_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_g_owner_username_pg17_v1.py
+      - name: Ensure local PostgreSQL client ready
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Run PR-G authentic V2 code in disposable PostgreSQL17 BEGIN/ROLLBACK
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_g_owner_username_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_g_username_decision/report.json').read_text())
+          assert r['status']=='PASS' and r['sql_exit_code']==0
+          assert r['readback']=='PRG_RESTORED_0_3_ORIGINAL_MD5'
+          assert r['remote_supabase_written'] is False
+          assert r['live_user_decision_recorded'] is False
+          assert all(r['assertions'].values())
+          print('PR_G_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive PR-G PostgreSQL17 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-g-4082-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_g_username_decision/report.json
+            .lf_ci/pr_g_username_decision/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR-H only: local ephemeral PostgreSQL17, exact SHA, full BEGIN/ROLLBACK.
+  pr-h-functional-train-gate-pg17-rollback:
+    name: PR-H 4083 real PostgreSQL 17 FUNCTIONAL Train gate rollback
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4083 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_h_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_h_ephemeral_pg17_only
+      PR_H_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact HEAD with no credential persistence
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Static gate and scope
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_h_functional_train_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_h_functional_train_pg17_v1.py
+      - name: Local PostgreSQL17 client
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Real PR-H positive FUNCTIONAL and negative source-bound tests under rollback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_h_functional_train_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.lf_ci/pr_h_functional_impact/report.json').read_text())
+          assert d['status']=='PASS' and d['sql_exit_code']==0
+          assert d['readback']=='PRH_RESTORED_0_0_3_ORIGINAL_MD5'
+          assert d['remote_supabase_written'] is False
+          assert d['test_fixture_not_real_owner_or_train_receipt'] is True
+          assert all(d['assertions'].values())
+          print('PR_H_REAL_PG17_BEGIN_ROLLBACK_PASS')
+          PY
+      - name: Archive hashes, logs and PG readback
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-h-4083-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_h_functional_impact/report.json
+            .lf_ci/pr_h_functional_impact/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR-I only: evidence is a SQL config projection, never actual login runtime.
+  pr-i-auth020-projection-pg17-rollback:
+    name: PR-I 4084 real PostgreSQL 17 AUTH020 source projection rollback
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4084 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_i_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_i_ephemeral_pg17_only
+      PR_I_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout PR-I exact HEAD with no stored credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Validate exact patch and NOT_TESTED functional evidence labels
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_i_auth020_projection_pg17_v1.py
+      - name: PostgreSQL17 client
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          psql --version
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres
+      - name: Real PR-I SQL projection BEGIN/ROLLBACK with separate connection readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_i_auth020_projection_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_i_auth020/report.json').read_text())
+          assert r['status']=='PASS_CONFIG_ONLY' and r['sql_exit_code']==0
+          assert r['readback']=='PR_I_RESTORED_SOURCE_AUTH020_UNCHANGED'
+          assert r['actual_login_runtime_functional_checks']=='NOT_TESTED'
+          assert r['actual_login_runtime_negative_checks']=='NOT_TESTED'
+          assert r['is_pr_h_functional_evidence']=='NO'
+          assert r['remote_db_writes'] is False
+          assert r['owner_v2_decision_recorded'] is False
+          assert all(r['assertions'].values())
+          print('PR_I_PG17_CONFIG_ONLY_ROLLBACK_PASS_NOT_FUNCTIONAL_RECEIPT')
+          PY
+      - name: Archive PR-I SQL configuration projection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-i-4084-pg17-config-only-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_i_auth020/report.json
+            .lf_ci/pr_i_auth020/postgresql.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR-J inherits the ordinary workflow entrypoint; no new PR workflow.
+  rule-contract-postgres17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j-auth020-rule-contract-evidence-20261118'
+    name: PR-J AUTH020 RULE_CONTRACT_LEVEL real PG17 16 checks and rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_i_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_i_ephemeral_pg17_only
+      PR_J_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact PR-J HEAD with no persisted token
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Check source package and compile contract runner
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_j_auth020_rule_contract_pg17_v1.py
+      - name: Check isolated PG17 service
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute positive and negative RULE_CONTRACT_LEVEL model, BEGIN ROLLBACK and separate readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j_auth020_rule_contract_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path(".lf_ci/pr_j_auth020/report.json").read_text())
+          assert r["status"]=="PASS_RULE_CONTRACT_LEVEL"
+          assert len(r["checks"])==16 and all(r["checks"].values())
+          assert r["readback"]=="PR_J_INDEPENDENT_READBACK_RESTORED"
+          assert r["sql_exit_code"]==0 and r["readback_exit_code"]==0
+          assert r["login_backend_e2e"]=="NOT_TESTED"
+          assert r["remote_supabase_written"] is False
+          assert r["owner_v2_decision_recorded"] is False
+          print("PR_J_RULE_CONTRACT_LEVEL_REAL_PG17_16_16_PASS")
+          PY
+      - name: Archive reproducible evidence hashes and PostgreSQL logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-j-auth020-rule-contract-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_j_auth020/report.json
+            .lf_ci/pr_j_auth020/postgresql.log
+          if-no-files-found: warn
+          retention-days: 90
+
+# PR-J2 consumes an ACTUAL previously completed Train, tested in local PG17 fixture.
+  pr-j2-auth020-receipt-pg17:
+    name: PR-J2 protected receipt PG17 BEGIN ROLLBACK and independent readback
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j2-auth020-train-evidence-20261118'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_i_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_i_ephemeral_pg17_only
+      PR_J2_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact J2 HEAD without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Check J2 migration provenance and compile runner
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_j2_auth020_train_evidence_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_i_auth020_source_v1.py
+      - name: Ensure PostgreSQL17 client
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: J2 source-bound SQL insertion and tamper-negative, rollback and readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j2_auth020_train_evidence_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path(".lf_ci/pr_j2/report.json").read_text())
+          assert r["status"]=="PASS_RULE_CONTRACT_LEVEL_PROTECTED_RECEIPT"
+          assert r["sql_exit_code"]==0 and r["readback_exit_code"]==0
+          assert r["readback"]=="PR_J2_INDEPENDENT_POST_ROLLBACK_PASS"
+          assert len(r["checks"])==4 and all(r["checks"].values())
+          assert r["remote_supabase_written"] is False
+          assert r["actual_train_fixture"]=="SYNTHETIC_FOR_SQL_GATE_TEST"
+          print("PR_J2_REAL_PG17_ROLLBACK_AND_SEPARATE_READBACK_PASS")
+          PY
+      - name: Archive source-bound J2 ephemeral evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-j2-auth020-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/pr_j2/report.json
+            .lf_ci/pr_j2/postgresql.log
+          if-no-files-found: warn
+          retention-days: 90
+
+  pr-j3-native-v2-guard-pg17:
+    name: PR-J3A owner V2 source-bound PG17 rollback and independent readback
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-j3-owner-v2-no-promotion-guard-20261118'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: j3_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: j3_ephemeral_pg17_only
+      J3_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact J3 HEAD without credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run real PG17 minimal source-bound owner V2 guard regression
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_j3_owner_v2_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path(".lf_ci/j3_owner_no_promotion/report.json").read_text())
+          assert r["status"]=="PASS_FIXTURE_GUARD"
+          assert r["readback"]=="PR_J3_READBACK_RESTORED"
+          assert len(r["checks"])==4 and all(r["checks"].values())
+          assert r["prod_auth020_written"] is False
+          assert r["real_owner_decision"] is False
+          print("PR_J3_OWNER_V2_PG17_TRUE_NEGATIVE_FALSE_POSITIVE_PASS")
+          PY
+      - name: Archive exact-head PG17 J3 report and raw logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-j3-owner-v2-guard-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/j3_owner_no_promotion/report.json
+            .lf_ci/j3_owner_no_promotion/postgresql.log
+          if-no-files-found: warn
+          retention-days: 90
+
+  pr-f-static-unique-suffix-v1:
+    name: PR-F migration unique-suffix static guard 5/5
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/pr-f-static-unique-suffix-fix-20261118'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact-head and migration unique suffix 5/5
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          python3 sandbox/lf_contract_gate_test/input_governance/test_pr_f_auth_params_source_v1.py
+
+  # PR-K only. Ephemeral PG17; no cloud credentials, no writes to Supabase.
+  pr-k-auth-reset-pg17:
+    name: PR-K 4095 real PG17 BEGIN/ROLLBACK lockout reset and 4 negative tests
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 4095 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pr_k_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pr_k_ephemeral_pg17_only
+    steps:
+      - name: Checkout exact PR-K HEAD without stored credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify ephemeral PG17, install psql if missing
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres
+      - name: Exact-source static rules and real PG17 rollback with independent readback
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_pr_k_lockout_reset_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/pr_k_lockout_reset/report.json').read_text())
+          assert r['status']=='PASS' and r['remote_supabase_tested'] is False
+          assert r['independent_readback']=='RESTORED_10_9_0_579'
+          assert len(r['negative_checks'])==4
+          assert r['four_rules']=='DOCUMENT_ONLY_NO_RUN'
+          print('PR_K_PG17_REAL_ROLLBACK_ALL_CHECKS_PASS')
+          PY
+      - name: Preserve real PG17 readback + exact source SHA256
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-k-4095-pg17-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/pr_k_lockout_reset/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # PR #4098 only; ephemeral PostgreSQL matrix via existing admitted workflow.
+  niubiz-client-email-pgdual:
+    if: github.event_name == 'pull_request' && github.event.pull_request.number == 4098 && github.head_ref == 'lf/ig-niubiz-unique-email-20261118'
+    name: NIUBIZ unique client email PG${{ matrix.pg }} exact-head BEGIN/ROLLBACK
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ['17', '18']
+    services:
+      postgres:
+        image: postgres:${{ matrix.pg }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_email_ephemeral_ci_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_email_ephemeral_ci_only
+      NIUBIZ_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact PR HEAD without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: PostgreSQL client and source compile
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_niubiz_unique_email_pg_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute real PostgreSQL BEGIN/ROLLBACK and independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_niubiz_unique_email_pg_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('.lf_ci/niubiz_unique_email/report.json').read_text())
+          assert report["status"]=="PASS"
+          assert len(report["checks"])==6 and all(report["checks"].values())
+          assert report["independent_readback"]==report["preimage"]
+          assert report["preimage"]["config"]==11 and report["projected"]["config"]==12
+          assert report["preimage"]["rules"]==report["projected"]["rules"]==579
+          assert report["niubiz_hyphen_sandbox"]=="NOT_TESTED"
+          assert report["source_bound_gov_v2"]=="NOT_INVOKED_RULES_ABSENT"
+          assert report["remote_supabase_written"] is False
+          print("NIUBIZ_PER_CLIENT_EMAIL_CONFIG_REAL_PG_BEGIN_ROLLBACK_PASS")
+          PY
+      - name: Archive exact-head hashes and readback
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niubiz-email-4098-pg${{ matrix.pg }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/niubiz_unique_email/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # IG Chat9: policy-only migration test, ephemeral PG17, no Supabase credentials.
+  chat9-d1-rate-limits-pg17-rollback:
+    name: Chat9 D1-D1b-D1c real PG17 rollback and independent readback
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-d1-rate-limits-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_ephemeral_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_ephemeral_pg17_only
+      CHAT9_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact candidate HEAD without storing credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Compile D1 PG test and verify isolated PostgreSQL client
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_d1_rate_limits_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute genuine PG17 D1 positive and negatives with transaction ROLLBACK
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_d1_rate_limits_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path(".lf_ci/chat9_d1_rate_limits/report.json").read_text())
+          assert report["status"]=="PASS"
+          assert report["positive_sql_exit_code"]==0
+          assert all(report["checks"].values()) and len(report["checks"])==8
+          assert report["preimage"]==report["separate_readback"]
+          assert report["remote_supabase_written"] is False
+          assert report["owner_v2_rule_run"]=="NOT_APPLICABLE_POLICIES_ONLY"
+          print("CHAT9_D1_REAL_POSTGRESQL17_BEGIN_ROLLBACK_PASS_8_OF_8")
+          PY
+      - name: Archive exact HEAD ephemeral PostgreSQL proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat9-d1-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat9_d1_rate_limits/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Chat9 owner correction 16:35: global config replaces numeric rate limits.
+  chat9-global-config-pg17:
+    name: IG Chat9 global rate refs PG17 actual rollback and dynamic values
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-global-ratelimit-refs-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_config_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_config_pg17_only
+      CHAT9_REF_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact HEAD and no persistent token
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Python syntax and PG17 preflight
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_global_rate_refs_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Run actual DDL/DML in BEGIN ROLLBACK, negatives and independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_global_rate_refs_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/chat9_global_rate_refs/report.json').read_text())
+          assert r['status']=='PASS' and len(r['checks'])==8
+          assert all(r['checks'].values())
+          assert r['positive_sql_exit_code']==0
+          assert r['independent_readback']==r['preimage']
+          assert r['remote_supabase_written'] is False
+          assert r['backend_enforcement_e2e']=='NOT_TESTED'
+          print('IG_CHAT9_CONFIG_REAL_PG17_BEGIN_ROLLBACK_DYNAMIC_8_OF_8_PASS')
+          PY
+      - name: Archive live PostgreSQL PG17 rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat9-config-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat9_global_rate_refs/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Documentary-only tests for three NIUBIZ candidate proposals; no DB or CREATE route.
+  niubiz-three-candidate-contract-static:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-niubiz-three-candidate-spec-20261118'
+    name: NIUBIZ candidate contract 20/20 scope-key checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run source-bound negative/documentary contract tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/test_niubiz_three_candidate_spec_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/test_niubiz_three_candidate_spec_v1.py
+          echo "NIUBIZ_3_CANDIDATE_SPEC_ONLY_PASS_NO_V2_NO_DB_WRITE"
+  # IG Chat9 L2 prerequisite: six Client global variables only.
+  chat9-client-config-pg17:
+    name: IG Chat9 Client config real PG17 rollback 7/7
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-client-controls-config-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_client_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_client_pg17_only
+      CLIENT_EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Python syntax and PostgreSQL readiness
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_client_controls_config_pg17.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Verify real positive/negative rollback and independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_client_controls_config_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('.lf_ci/chat9_client_config/report.json').read_text())
+          assert r['status']=='PASS' and len(r['checks'])==7 and all(r['checks'].values())
+          assert r['readback']==r['preimage']
+          assert not r['remote_writes'] and r['rules_updated']==0
+          print('IG_CHAT9_CLIENT_CONFIG_REAL_PG17_7_OF_7_PASS')
+          PY
+      - name: Preserve test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-chat9-client-config-${{ github.run_id }}
+          path: .lf_ci/chat9_client_config/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  chat9-client-v2-proof-pg17:
+    name: IG Chat9 two source-bound rules PG17 rollback functional
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'lf/ig-chat9-client-v2-proof-readback-20261118' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: chat9_v2proof_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: chat9_v2proof_only
+      CHAT9_V2_PROOF_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight real PostgreSQL client
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_chat9_client_v2_functional_proof_pg17.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Execute real PG17 positive and negative with BEGIN ROLLBACK, independent SELECT
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_chat9_client_v2_functional_proof_pg17.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('.lf_ci/chat9_client_v2_functional_proof/report.json').read_text())
+          assert j["status"]=="PASS"
+          assert len(j["checks"])==9 and all(j["checks"].values())
+          assert j["preimage"]==j["independent_readback"]
+          assert j["executed_pg17_real"] and j["simulated_functional_test"]
+          assert not j["remote_supabase_written"]
+          assert j["owner_decide_v2"]=="NOT_CALLED"
+          print("CHAT9_L2_PG17_FUNCTIONAL_CONTRACT_9_OF_9_PASS")
+          PY
+      - name: Archive source-bound PG17 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat9-v2-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/chat9_client_v2_functional_proof/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Exact-HEAD real PG17 regression: 265/275 canonical tuples must be SHA+lazy,
+  # no token limit changes, no official rule writes or fabricated V2 evidence.
+  niubiz-product-context-pg17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-product-context-compact-niubiz-20261118'
+    name: Niubiz Product context PG17 rollback 10 checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_context_fixture_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_context_fixture_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Confirm actual ephemeral PG17 client and source
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_niubiz_product_context_budget_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: PG17 transaction, negatives and independent readback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_niubiz_product_context_budget_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('.lf_ci/niubiz_product_context_budget_pg17/report.json')
+          x=json.loads(p.read_text())
+          assert x['status']=='PASS' and len(x['tests'])==10
+          assert all(x['tests'].values()) and x['pg17_real']
+          assert x['preimage']==x['independent_readback']
+          assert not x['remote_supabase_written'] and x['owner_v2_decisions']==0
+          assert x['niubiz_sandbox_hyphen']=='NOT_TESTED'
+          print('NIUBIZ_CONTEXT_PG17_10_OF_10_WITH_INDEPENDENT_READBACK_PASS')
+          PY
+      - name: Archive bounded PostgreSQL proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niubiz-context-pg17-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/niubiz_product_context_budget_pg17/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Dedicated RULE_CONTRACT_LEVEL proof; exact live Step50 SHA on 3 proposals.
+  # PostgreSQL data synthetic, no provider/production PASS.
+  niubiz-three-rule-contract-pg17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-niubiz-three-rule-contract-proof-20261118'
+    name: Niubiz RULE_CONTRACT_LEVEL PG17 8 checks + CREATE gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_three_contract_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_three_contract_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight PostgreSQL and code compilation
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/run_niubiz_three_rule_contract_pg17_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Validate Niubiz 3 exact Step50 patches in real PG17 + independent rollback
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_niubiz_three_rule_contract_pg17_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('.lf_ci/ig_niubiz_three_rule_contract_pg17/report.json').read_text())
+          assert j['status']=='PASS' and j['real_pg17']
+          assert len(j['checks'])==8 and all(j['checks'].values())
+          assert j['independent_readback']=='CLEAN'
+          assert j['niubiz_hosted_form']=='NOT_TESTED'
+          assert not j['remote_supabase_written']
+          assert set(j['patch_shas_from_live_step50'])=={
+            'REG_CLIENT_NIUBIZ_UNIQUE_EMAIL_001',
+            'REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001',
+            'REG_CLIENT_NIUBIZ_GENERIC_BOUNCE_001'}
+          print('NIUBIZ_3_RULE_CONTRACT_PG17_8_8_AND_CREATE_6_6_PASS')
+          PY
+      - name: Upload bounded contract proof report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niubiz-three-rule-contract-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/ig_niubiz_three_rule_contract_pg17/report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  niubiz-owner-v2-three-candidate-pg17:
+    if: github.event_name == 'pull_request' && github.head_ref == 'lf/ig-niubiz-three-owner-v2-candidate-20261118'
+    name: Niubiz 3 owner V2 exact-head PG17 rollback, no direct DML
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: niubiz_owner_v2_pg17_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: niubiz_owner_v2_pg17_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Preflight exact official owner sequence, no direct DML
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance/test_niubiz_owner_v2_migration_preflight_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance/test_niubiz_owner_v2_migration_preflight_v1.py
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+          pg_isready -h 127.0.0.1 -U postgres -d postgres
+      - name: Real PG17 current CREATE gate and wrong-owner negative; live V2 rollback in Train
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance/run_ig_chat8_create_candidate_pg17_v1.py
+          # Historical J3A SHA-fixed source test is inapplicable to current V2.
+          # Live canonical writer is tested with real rollback in Train migration.
+          echo NIUBIZ_OWNER_V2_ISOLATED_PG17_GATES_PASS_NO_REMOTE_WRITE
+      - name: Do not equate isolated tests with owner V2 production
+        run: |
+          set -euo pipefail
+          test -f supabase/migrations/20261119004500_lf_ig_niubiz_three_owner_v2_candidate_v1.sql
+          echo "OWNER_V2_LIVE_3_RULE_BEGIN_ROLLBACK_AND_FINAL_SELECT_REQUIRED_IN_TRAIN"

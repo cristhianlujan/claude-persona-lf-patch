@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-ig-transport-flow-pgdual-negatives-20261114-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixture_ig_transport_flow_matrix_rollback_v1.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_transport_flow_pgdual_rollback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-transport-flow-pgdual-negatives-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}

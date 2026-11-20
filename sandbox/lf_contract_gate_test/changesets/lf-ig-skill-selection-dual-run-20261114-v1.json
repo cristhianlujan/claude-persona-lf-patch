@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-ig-skill-selection-dual-run-20261114-v1",
+  "paths": {
+    "supabase/migrations/20261114181000_lf_profile_ig_semantic_optional_dual_run_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_ig_dual_skill_policy_pgdual_rollback_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-skill-selection-dual-run-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}

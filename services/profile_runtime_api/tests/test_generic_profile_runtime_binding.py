@@ -35,6 +35,25 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         (root/'profiles/p/contracts/runtime_binding.json').write_text(json.dumps(binding))
         return tmp,root,RepositoryBindings(root,max_prompt_chars=10000)
 
+    def test_audit_ui06_contradictory_receipt_state_never_ready(self):
+        # This test is executed by the existing fleet CI runner (unfiltered).
+        from pydantic import ValidationError
+        from profile_runtime_api.hashing import canonical_json_sha256
+        from profile_runtime_api.models import InputGovernanceReceipt
+
+        context = {"scope": "screen-governance"}
+        base = {
+            "receipt_ref": "fixture://ig/ready",
+            "current": True,
+            "ready": True,
+            "context_sha256": canonical_json_sha256(context),
+            "context": context,
+            "status": "READY",
+        }
+        self.assertEqual(InputGovernanceReceipt.model_validate(base).status, "READY")
+        with self.assertRaisesRegex(ValidationError, "INPUT_GOVERNANCE_STATUS_CONTRADICTS_READY"):
+            InputGovernanceReceipt.model_validate(base | {"status": "BLOCKED"})
+
     def test_generic_binding_schema_identity_and_plugins(self):
         tmp,root,repo=self._repo()
         try:
@@ -69,6 +88,8 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             data=json.loads(path.read_text())
             data['model_context']={
                 'full_source_to_model':False,
+                'required_source_refs':['profiles/p/SKILL.md'],
+                'allow_additional_sources':True,
                 'source_projection':{'mode':'MARKDOWN_SECTIONS','include_sections':['Purpose'],'max_chars':1000},
             }
             data['execution_partition']={

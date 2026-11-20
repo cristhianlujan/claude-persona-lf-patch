@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-ig-native-screen-skill-same-run-20261114-v1",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-ig-native-screen-skill-same-run-20261114-v1.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -1,3 +1,4 @@
+import "./profile_continuation_test.ts";
 import { createHandler, OIDC_AUDIENCE, OIDC_ISSUER, type JwtPayload } from "./caller.ts";
 
 function assert(condition: unknown, message = "assertion failed"): asserts condition {
@@ -109,6 +110,11 @@ type HarnessOptions = {
   allowlistStatus?: number;
   allowlistPayload?: unknown;
   inputStatus?: string;
+  runtimeDirectStatus?: string;
+  runtimeResultOverrides?: Record<string, unknown>;
+  runtimeHttpStatus?: number;
+  runtimeFindings?: Array<Record<string, unknown>>;
+  runtimeResultPantallaId?: number;
   runtimeTicketAuthorized?: boolean;
   agentRequiresTicket?: boolean;
   executionOverrides?: Record<string, unknown>;
@@ -157,7 +163,12 @@ function harness(options: HarnessOptions = {}) {
           return new Response(JSON.stringify({ error: "IG_PROFILE_TICKET_REQUIRED" }), { status: 403 });
         }
         const id = Number(body?.pantalla_id ?? 0);
-        return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
+        return new Response(JSON.stringify({ ...(options.runtimeDirectStatus ? {status:options.runtimeDirectStatus} : {}), result: { status: inputStatus, run_id: 10000 + id,
+          pantalla_id:options.runtimeResultPantallaId ?? id,
+          consumer:"CONTEXT_PACK",execution_mode:"REUSE_COMPLETED_CURRENT_RUN",
+          generated_at:new Date().toISOString(),
+          ...(options.runtimeResultOverrides ?? {}),
+          findings:options.runtimeFindings ?? [] } }), { status: options.runtimeHttpStatus ?? 200 });
       }
       if (url.includes("/rest/v1/lf_operation_execution?")) {
         const executionId = decodeURIComponent(url.split("execution_id=eq.")[1]?.split("&")[0] ?? "");
@@ -174,7 +185,6 @@ function harness(options: HarnessOptions = {}) {
             executor_provider: "OPENAI_CHATGPT_NATIVE",
             read_only: true,
             no_write: true,
-            no_promotion: true,
             governed_repair_write: false,
             router_profile_handoff: {
               profile_code: "PERFIL-UX-DESIGN-LF",
@@ -815,3 +825,114 @@ Deno.test("CP2: native profile resume: fail closed before prepare for invalid au
   assertEquals(h.calls.length, 1);
 });
 
+
+Deno.test("CP2: E21 runtime pantalla_id from SQL ticket rejects foreign worker screen",async()=>{
+  const h=harness({inputStatus:"READY",runtimeResultPantallaId:52});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_SCREEN_SCOPE_MISMATCH");
+  assertEquals(payload.pantalla_id,51);
+  const h2=harness({inputStatus:"READY",runtimeResultPantallaId:51});
+  const r2=await invokeRuntime(h2,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(r2.response.status,200);
+  assertEquals(r2.payload.pantalla_id,51);
+});
+
+Deno.test("CP2: LF-AUD-UI-04: direct BLOCKED cannot be promoted by nested READY", async () => {
+  const h = harness({inputStatus:"READY",runtimeDirectStatus:"BLOCKED"});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.outcome,"BLOCKED");
+  assertEquals(payload.terminal_status,"BLOCKED");
+  assertEquals((payload.result as Record<string,unknown>).status,"BLOCKED");
+});
+
+Deno.test("CP2: LF-AUD-UI-04: direct HUMAN_DECISION cannot be promoted by nested READY", async () => {
+  const h = harness({inputStatus:"READY",runtimeDirectStatus:"HUMAN_DECISION_REQUIRED"});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: READY with no run identity must fail", async () => {
+  const h = harness({runtimeResultOverrides:{run_id:null}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: READY from wrong consumer must fail", async () => {
+  const h = harness({runtimeResultOverrides:{consumer:"STORY_CREATOR"}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_READY_IDENTITY_INVALID");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: stale READY cannot authorize continuation", async () => {
+  const h = harness({runtimeResultOverrides:{generated_at:"2020-01-01T00:00:00.000Z"}});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.code,"IG_CONTEXT_PACK_READY_CURRENTNESS_UNVERIFIED");
+});
+
+Deno.test("CP2: LF-AUD-UI-03: current READY source-bound run is accepted", async () => {
+  const h=harness();
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",pantalla_id:51,
+  });
+  assertEquals(response.status,200);
+  assertEquals(payload.run_id,10051);
+});
+
+Deno.test("CP2: LF-AUD-UI-05: HTTP 409 BLOCKED preserves all IG findings",async()=>{
+  const sourceFindings=[
+    {code:"RULE_FAMILY_MISSING",family_code:"SECURITY",severity:"HIGH"},
+    {code:"SOURCE_NOT_CURRENT",family_code:"AUDIT",severity:"MEDIUM"},
+  ];
+  const h=harness({inputStatus:"BLOCKED",runtimeHttpStatus:409,runtimeFindings:sourceFindings});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assertEquals(response.status,409);
+  assertEquals(payload.outcome,"BLOCKED");
+  assertEquals((payload.result as {result:{findings:unknown}}).result.findings,sourceFindings);
+});
+
+Deno.test("CP2: LF-AUD-UI-05: a malformed HTTP 409 is still a transport fault",async()=>{
+  const h=harness({inputStatus:"READY",runtimeHttpStatus:409});
+  const {response,payload}=await invokeRuntime(h,{
+    action:"input_readiness_context_pack_runtime_v1",
+    execution_id:"EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id:51,
+  });
+  assert(response.status!==200,"Non-blocked 409 must not be READY");
+  assert(payload.outcome!=="TERMINAL");
+});

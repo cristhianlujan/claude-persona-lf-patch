@@ -16,11 +16,18 @@ import sys
 from pathlib import Path
 
 ISSUE_LABEL = "lf-profile-update-governed"
+SALY_CREATE_LABEL = "lf-profile-create-saly-governed"
+SALY_CREATE_SCHEMA = "LF_SALY_PROFILE_CREATE_REQUEST_V1"
+SALY_RECEIPT_SHA256 = "107332ebbae4295dc76179bd5619856cb61807b91a856c080b12e1942018fb0f"
+SALY_CREATE_KEYS = {"schema_version", "action", "project_code", "target_code",
+                    "profile_slug", "owner_decision_sha256",
+                    "identity_verified", "production_authorized"}
 SCHEMA = "LF_PROFILE_UPDATE_REQUEST_V1"
 WORKFLOW_FILE = "lf-customer-profile-creator-governance-caller.yml"
 PROOF_WORKFLOW_FILE = "lf-profile-evolution-proof.yml"
 DEPLOY_WORKFLOW_FILE = "lf-edge-deploy-credential-readback.yml"
 DEPLOY_ACTION = "deploy-profile-runtime"  # fixed target: run-creacion-perfil-lf, exact main, readback + rollback
+DEPLOY_CREATOR_ACTION = "deploy-profile-creator-caller"  # exact main, creator caller only, pre/post readback + rollback
 DISPATCH_REF = "main"
 MAX_BODY_CHARS = 64000
 MAX_INPUT_CHARS = 60000
@@ -56,7 +63,7 @@ def _check_trigger(event, env):
     expected_url = "https://api.github.com/repos/" + env["GITHUB_REPOSITORY"]
     if (env.get("GITHUB_EVENT_NAME") != "issues"
             or event.get("action") != "labeled"
-            or event.get("label", {}).get("name") != ISSUE_LABEL
+            or event.get("label", {}).get("name") not in (ISSUE_LABEL, SALY_CREATE_LABEL)
             or issue.get("state") != "open"
             or issue.get("pull_request") is not None
             or issue.get("repository_url") != expected_url):
@@ -87,7 +94,20 @@ def governed_request(event, env):
     """Return the workflow_dispatch inputs for the governed caller. The caller and the
     database re-validate everything; this only keeps the transport bounded and exact."""
     data = parse_issue_body(_check_trigger(event, env))
-    if not isinstance(data, dict) or data.get("schema_version") != SCHEMA:
+    if isinstance(data, dict) and event.get("label", {}).get("name") == SALY_CREATE_LABEL:
+        if (set(data) != SALY_CREATE_KEYS
+            or data.get("schema_version") != SALY_CREATE_SCHEMA
+            or data.get("action") != "saly_profile_create_init"
+            or data.get("project_code") != "SALY"
+            or data.get("target_code") != "PERFIL-PRODUCT-DIRECTOR-SALY"
+            or data.get("profile_slug") != "saly_product_director"
+            or data.get("owner_decision_sha256") != SALY_RECEIPT_SHA256
+            or data.get("identity_verified") is not False
+            or data.get("production_authorized") is not False):
+            raise ValueError("SALY_PROFILE_CREATE_ISSUE_SCOPE_INVALID")
+        return {k: data[k] for k in (
+            "action", "project_code", "target_code", "profile_slug", "owner_decision_sha256")}
+    if event.get("label", {}).get("name") != ISSUE_LABEL or not isinstance(data, dict) or data.get("schema_version") != SCHEMA:
         raise ValueError("UPDATE_ISSUE_SCHEMA_INVALID")
     action = data.get("action")
     if action == "profile_update_init":
@@ -136,7 +156,7 @@ def governed_request(event, env):
         if mode == "measure" and cand != ZERO_SHA:
             raise ValueError("UPDATE_ISSUE_PROOF_INVALID")
         return {"action": action, "mode": mode, "profile_slug": slug, "base_sha": base, "candidate_sha": cand}
-    if action == "profile_runtime_deploy":
+    if action in ("profile_runtime_deploy", "profile_creator_caller_deploy"):
         if set(data) != DEPLOY_KEYS:
             raise ValueError("UPDATE_ISSUE_SCHEMA_INVALID")
         return {"action": action}
@@ -144,6 +164,9 @@ def governed_request(event, env):
 
 
 def dispatch_command(inputs):
+    if inputs["action"] == "profile_creator_caller_deploy":
+        return ["gh", "workflow", "run", DEPLOY_WORKFLOW_FILE, "--ref", DISPATCH_REF,
+                "-f", f"action={DEPLOY_CREATOR_ACTION}"]
     if inputs["action"] == "profile_runtime_deploy":
         # Fixed governed deploy of the profile runtime; the deploy job itself guards main, readback and rollback.
         return ["gh", "workflow", "run", DEPLOY_WORKFLOW_FILE, "--ref", DISPATCH_REF, "-f", f"action={DEPLOY_ACTION}"]

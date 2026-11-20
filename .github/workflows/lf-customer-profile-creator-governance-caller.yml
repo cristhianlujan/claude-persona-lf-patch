@@ -17,9 +17,21 @@ on:
         description: "Governed Profile operation action"
         required: true
         type: choice
-        options: [source_canary_only, profile_update_init, profile_update_record_batch]
+        options: [source_canary_only, profile_update_init, profile_update_record_batch, saly_profile_create_init]
       target_code:
         description: "Exact existing profile code for profile_update_init"
+        required: false
+        type: string
+      profile_slug:
+        description: "SALY-only exact native profile slug"
+        required: false
+        type: string
+      project_code:
+        description: "SALY-only project code"
+        required: false
+        type: string
+      owner_decision_sha256:
+        description: "SALY-only documentary authorization evidence SHA256"
         required: false
         type: string
       target_path:
@@ -51,7 +63,7 @@ permissions:
 
 jobs:
   governed-update-issue-request:
-    if: ${{ github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'lf-profile-update-governed' && github.event.issue.state == 'open' && github.event.issue.pull_request == null }}
+    if: ${{ github.event_name == 'issues' && github.event.action == 'labeled' && (github.event.label.name == 'lf-profile-update-governed' || github.event.label.name == 'lf-profile-create-saly-governed') && github.event.issue.state == 'open' && github.event.issue.pull_request == null }}
     name: Governed profile update request from labeled issue (GPT-native or Claude-native)
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -158,7 +170,7 @@ jobs:
           print(f'GOVERNED_BATCH_REQUEST_PREFLIGHT=PASS:{len(steps)}')
           PY
       - name: Obtain exact GitHub OIDC identity
-        if: (github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.single == 'true' || steps.record.outputs.batch == 'true')) || (github.event_name == 'workflow_dispatch' && (inputs.action == 'profile_update_init' || inputs.action == 'profile_update_record_batch'))
+        if: (github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.single == 'true' || steps.record.outputs.batch == 'true')) || (github.event_name == 'workflow_dispatch' && (inputs.action == 'profile_update_init' || inputs.action == 'profile_update_record_batch' || inputs.action == 'saly_profile_create_init'))
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -173,6 +185,47 @@ jobs:
           echo 'NON_CANARY_PROFILE_CREATION_EXECUTED=false'
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
           echo 'PRODUCTION_AUTHORIZED=false'
+      - name: Initialize SALY-only documentary profile by exact main OIDC
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'saly_profile_create_init'
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          TARGET_CODE: ${{ inputs.target_code }}
+          PROFILE_SLUG: ${{ inputs.profile_slug }}
+          PROJECT_CODE: ${{ inputs.project_code }}
+          OWNER_RECEIPT: ${{ inputs.owner_decision_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,uuid
+          from pathlib import Path
+          assert os.environ["TARGET_CODE"]=="PERFIL-PRODUCT-DIRECTOR-SALY", "SALY_TARGET_DENIED"
+          assert os.environ["PROFILE_SLUG"]=="saly_product_director", "SALY_SLUG_DENIED"
+          assert os.environ["PROJECT_CODE"]=="SALY", "SALY_PROJECT_DENIED"
+          assert os.environ["OWNER_RECEIPT"]=="107332ebbae4295dc76179bd5619856cb61807b91a856c080b12e1942018fb0f", "SALY_RECEIPT_DENIED"
+          data={"action":"saly_profile_creator_init_v1","caller_request_id":str(uuid.uuid4()),
+                "target_code":os.environ["TARGET_CODE"],"profile_slug":os.environ["PROFILE_SLUG"],
+                "project_code":"SALY","owner_decision_sha256":os.environ["OWNER_RECEIPT"],
+                "identity_verified":False,"production_authorized":False}
+          Path("governed-saly-init-request.json").write_text(json.dumps(data,separators=(",",":")),encoding="utf-8")
+          PY
+          code=$(curl --silent --show-error -o governed-saly-init-result.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @governed-saly-init-request.json \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          test "$code" = "201"
+          python3 - <<'PY'
+          import json
+          r=json.load(open("governed-saly-init-result.json",encoding="utf-8"))
+          ex=((r.get("result") or {}).get("execution") or {})
+          m=ex.get("manifest") or {}
+          assert r.get("outcome")=="INITIALIZED" and ex.get("operation_code")=="CREACION_PERFIL_LF", r
+          assert ex.get("target_code")=="PERFIL-PRODUCT-DIRECTOR-SALY" and ex.get("status")=="IN_PROGRESS", r
+          assert m.get("project_code")=="SALY" and m.get("production_authorized") is False and m.get("identity_verified") is False, r
+          assert m.get("customer_profile_scope") is False, r
+          print("SALY_NATIVE_CREATION_START_PASS",ex.get("execution_id"))
+          PY
+
       - name: Initialize canonical existing Profile update through governed caller
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'profile_update_init'
         env:
