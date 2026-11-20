@@ -69,6 +69,8 @@ una segunda tabla `ventas_hallazgos`, y añade a `ventas_discovery_ingestas`:
 - `consulta_id uuid NOT NULL`, FK compuesta con el recibo de consulta exacto;
 - `fuente_habilitada=true` y FK a `ventas_discovery_catalogo` con
   `persist_business_data=true` y `habilitada=true`;
+- fuentes comerciales solo con `rights_evidence_ref` y `rights_checked_at`; declarar
+  autorización sin evidencia fechada falla `CHECK` en PostgreSQL;
 - FKs de consulta → ejecución → fuente planificada → versión de catálogo;
 - guard de `CERRADO` deshabilitado hasta contar con evaluación de cobertura 21/21;
 - RLS para las seis tablas, sin `GRANT` a clientes y sin carga de datos.
