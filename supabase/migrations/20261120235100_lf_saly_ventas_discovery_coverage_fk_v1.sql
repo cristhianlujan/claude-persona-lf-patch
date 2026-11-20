@@ -26,6 +26,8 @@ CREATE TABLE saly.ventas_discovery_catalogo (
  nombre text NOT NULL,
  landing_page text,
  rights_status text NOT NULL DEFAULT 'PENDIENTE_VERIFICAR',
+ rights_evidence_ref text,
+ rights_checked_at timestamptz,
  persist_business_data boolean NOT NULL DEFAULT false,
  habilitada boolean NOT NULL DEFAULT false,
  runtime_status text NOT NULL DEFAULT 'SPEC_ONLY_NOT_CONNECTED',
@@ -38,7 +40,10 @@ CREATE TABLE saly.ventas_discovery_catalogo (
  CHECK (split_part(substep_code,'.',1)=step::text),
  CHECK (NOT (persist_business_data OR habilitada) OR
         rights_status IN ('LECTURA_AUTORIZADA','LECTURA_LIMITADA','PERSISTENCIA_PERMITIDA')),
- CHECK (NOT persist_business_data OR rights_status='PERSISTENCIA_PERMITIDA')
+ CHECK (NOT persist_business_data OR rights_status='PERSISTENCIA_PERMITIDA'),
+ CONSTRAINT saly_l28_rights_evidence_required CHECK(
+  NOT (persist_business_data OR habilitada) OR
+  (length(btrim(coalesce(rights_evidence_ref,'')))>0 AND rights_checked_at IS NOT NULL))
 );
 CREATE TABLE saly.ventas_discovery_runs (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
