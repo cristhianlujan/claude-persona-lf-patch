@@ -1,0 +1,26 @@
+{
+  "reference": "OWNER_LF_2026-11-13_23_38_LIMA_PR3847",
+  "source": "CONVERSATION_OWNER_DOCUMENTARY",
+  "identity_verified": false,
+  "signed": false,
+  "applies_to": "CLIENT_SUPPORT_RECOVERY_REC_001",
+  "supersedes_client_wait_48h_for_entry": true,
+  "allowed_as_limited": [
+    "DEBT_READ",
+    "INSTALLMENTS_READ",
+    "PAY_EXISTING_INSTALLMENT",
+    "PAY_EXISTING_DEBT_SINGLE"
+  ],
+  "blocked_until_policy_window": [
+    "EMAIL_CHANGE",
+    "PHONE_CHANGE",
+    "PASSWORD_CHANGE",
+    "ACCEPT_NEW_OFFER",
+    "ACCEPT_NEW_INSTALLMENT_PLAN",
+    "NO_DEBT_LETTER_REQUEST",
+    "NO_DEBT_LETTER_DELIVERY",
+    "SAVED_PAYMENT_METHOD_CHANGE"
+  ],
+  "actual_config_source": "SEC-CLIENT-RECOVERY-LIMITED-ACCESS",
+  "production_authorized": false
+}

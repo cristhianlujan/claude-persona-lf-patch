@@ -1,0 +1,26 @@
+{
+  "reference": "OWNER_LF_2026-11-13_22_03_LIMA_PR3847",
+  "source": "CONVERSATION_OWNER_DOCUMENTARY",
+  "identity_verified": false,
+  "signed": false,
+  "decisions": [
+    {
+      "id": "H01",
+      "outcome": "CLOSED_SELFIE_NOT_ACTIVE",
+      "operational_rule_created": false
+    },
+    {
+      "id": "H02",
+      "outcome": "IDV_PROVIDER_PENDING_SELECTION"
+    },
+    {
+      "id": "H03",
+      "outcome": "CLOSED_WAIT_AFTER_APPROVALS_AND_CONFIRMED_PREVIOUS_DELIVERY"
+    },
+    {
+      "id": "H04",
+      "outcome": "FAILED_DELIVERY_BLOCK_OR_PAUSE_ALTERNATIVE_GOVERNED_WITH_CONTACT_EQUIVALENCE_PENDING"
+    }
+  ],
+  "not_implemented": true
+}

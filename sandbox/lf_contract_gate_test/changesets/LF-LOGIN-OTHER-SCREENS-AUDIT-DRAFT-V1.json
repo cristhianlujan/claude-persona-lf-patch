@@ -1,0 +1,18 @@
+{
+  "solution_ref": "LF-LOGIN-OTHER-SCREENS-AUDIT-DRAFT-V1",
+  "paths": {
+    "audits/login-other-screens-20261113/01_inventario_regla_estado_choca_texto.csv": "INPUT_GOVERNANCE",
+    "audits/login-other-screens-20261113/02_decisiones_humanas.json": "INPUT_GOVERNANCE",
+    "audits/login-other-screens-20261113/03_alcance_readback.json": "INPUT_GOVERNANCE",
+    "audits/login-other-screens-20261113/04_propuesta_update_insert_rollback.sql": "INPUT_GOVERNANCE",
+    "audits/login-other-screens-20261113/05_matriz_por_pantalla.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_other_auth_screens_20261113_source_patch.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_other_auth_screens_20261113_pgdual.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-LOGIN-OTHER-SCREENS-AUDIT-DRAFT-V1.json": "CHANGESET_MANIFEST",
+    "audits/login-other-screens-20261113/06_owner_documentary_decision_2203.json": "INPUT_GOVERNANCE",
+    "audits/login-other-screens-20261113/07_alternate_contact_governed_delivery.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_client_recovery_limited_2338_pgdual.py": "RUNTIME_TESTING",
+    "audits/login-other-screens-20261113/08_cliente_acceso_limitado_decision_2338.md": "INPUT_GOVERNANCE",
+    "audits/login-other-screens-20261113/09_owner_documentary_decision_2338.json": "INPUT_GOVERNANCE"
+  }
+}

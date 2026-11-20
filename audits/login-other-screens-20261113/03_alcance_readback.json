@@ -1,0 +1,95 @@
+{
+  "base_sha": "f9d20b3add2418ddae3f3372ccc0b0a49e3a9f6f",
+  "scope": [
+    {
+      "pantalla": "B2B-AUTH-002",
+      "id": 52,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 32,
+      "vigente": 25,
+      "candidato": 7
+    },
+    {
+      "pantalla": "B2B-AUTH-003",
+      "id": 53,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 32,
+      "vigente": 26,
+      "candidato": 6
+    },
+    {
+      "pantalla": "B2B-AUTH-004",
+      "id": 54,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 39,
+      "vigente": 29,
+      "candidato": 10
+    },
+    {
+      "pantalla": "B2B-AUTH-005",
+      "id": 55,
+      "estado": "REEMPLAZADO",
+      "activa": false,
+      "vinculos": 24,
+      "vigente": 21,
+      "candidato": 3
+    },
+    {
+      "pantalla": "B2B-AUTH-006",
+      "id": 56,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 34,
+      "vigente": 25,
+      "candidato": 9
+    },
+    {
+      "pantalla": "ONB_001",
+      "id": 1,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 74,
+      "vigente": 70,
+      "candidato": 4
+    },
+    {
+      "pantalla": "ONB_002",
+      "id": 2,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 104,
+      "vigente": 99,
+      "candidato": 5
+    },
+    {
+      "pantalla": "REC_001",
+      "id": 58,
+      "estado": "CANDIDATO",
+      "activa": true,
+      "vinculos": 5,
+      "vigente": 5,
+      "candidato": 0
+    }
+  ],
+  "updates": 10,
+  "inserts": 3,
+  "link_inserts": 5,
+  "protected_codes": [
+    "B2B-RULE-AUTH-018",
+    "B2B-RULE-AUTH-019",
+    "B2B-RULE-AUTH-020",
+    "B2B-RULE-AUTH-021",
+    "B2B-RULE-AUTH-026",
+    "B2B-RULE-AUTH-047",
+    "B2B-RULE-AUTH-013",
+    "B2B-RULE-AUTH-030",
+    "B2B-RULE-AUTH-033",
+    "B2B-RULE-AUTH-034",
+    "B2B-RULE-AUTH-043",
+    "B2B-RULE-AUTH-040",
+    "B2B-RULE-AUTH-039"
+  ]
+}
