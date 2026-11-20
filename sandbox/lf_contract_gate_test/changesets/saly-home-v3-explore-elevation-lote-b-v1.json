@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-home-v3-explore-elevation-lote-b-v1",
+  "paths": {
+    "supabase/migrations/20261120194500_lf_saly_home_v3_elevation_explore_candidate_v1.sql": "MIGRATION",
+    "docs/saly/design-system/candidate/SALY_HOME_V3_EXPLORE_READINESS_V0_3.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/saly-home-v3-explore-elevation-lote-b-v1.json": "CHANGESET_MANIFEST"
+  }
+}
