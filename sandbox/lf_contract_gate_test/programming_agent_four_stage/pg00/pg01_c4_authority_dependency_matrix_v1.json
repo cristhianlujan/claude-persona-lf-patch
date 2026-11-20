@@ -1,0 +1,63 @@
+{
+  "schema_version": "LF_PG01_C4_AUTHORITY_DEPENDENCY_MATRIX_V1",
+  "state": "BLOCKED_NOT_AUTHORIZED",
+  "producer": "PG00_C3_C11_AND_PROJECT_AUTHORITIES",
+  "consumer": "PG01_C4_V3_BEFORE_RECEIPT",
+  "dependencies": [
+    {
+      "key": "standards_catalog_version",
+      "checkpoint": "PG-00_C3",
+      "source": "transversal governed STD release + exact repository SHA",
+      "status": "BLOCKED",
+      "reason": "No published complete STD catalog/readback",
+      "next": "Full machine and LLM catalog, owner review, PASE/Train, exact readback"
+    },
+    {
+      "key": "l3_manifest",
+      "checkpoint": "PG-01_C4",
+      "source": "Target repository technical manifest L3-B and project schema",
+      "status": "BLOCKED",
+      "reason": "No manifest schema/project mapping/authenticated readback",
+      "next": "Define manifest schema, path, project mapping, authenticated git source verification"
+    },
+    {
+      "key": "control_qualification",
+      "checkpoint": "PG-01_C4",
+      "source": "lf_control_system_qualification_readback_v1",
+      "status": "AVAILABLE_CONDITIONAL",
+      "reason": "Needs matching target repo and HEAD and unrevoked qualification",
+      "next": "Read exact target from A9 snapshot, verify qualification"
+    },
+    {
+      "key": "d15_architecture",
+      "checkpoint": "PG-00_C9_D15",
+      "source": "Governed project architecture profile bound to repo and exact commit",
+      "status": "BLOCKED",
+      "reason": "No authoritative project-to-architecture registry",
+      "next": "Specify registry record and authenticated Git readback"
+    },
+    {
+      "key": "d17_optimization_policy",
+      "checkpoint": "PG-00_C11",
+      "source": "Approved D17 policy release",
+      "status": "BLOCKED",
+      "reason": "No current policy release",
+      "next": "Owner approves optimization modes, sources, version and digest"
+    },
+    {
+      "key": "d17_approved_request_budget",
+      "checkpoint": "PG-00_C11",
+      "source": "Approved request budget with D17 cost policy",
+      "status": "BLOCKED",
+      "reason": "Token consumption events are not approved budget",
+      "next": "Approve per-request budget source and pricing authority"
+    }
+  ],
+  "release_policy": {
+    "all_six_current_and_verified": true,
+    "never_accept_caller_verified_string": true,
+    "pg01_receipt_before_pg02": true,
+    "activation": false,
+    "proof_required": "PostgreSQL temporary RED/GREEN with authentic authoritative readback and zero DB effects in blocked cases"
+  }
+}
