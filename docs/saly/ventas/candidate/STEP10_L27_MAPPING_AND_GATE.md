@@ -61,3 +61,32 @@ sintéticos y no acreditan derechos sobre el dataset real.
   **no usarlo como PASS de L27**.
 - L26 PASE run 44832735639 PASS; L27 requiere HEAD/CI independiente.
 - Último Supabase SELECT: ninguna tabla `ventas_*` del pipeline desplegada.
+
+## L28 · 2026-11-20 — segunda migración candidata (mismo PR #4457)
+La candidata `20261120235100_lf_saly_ventas_discovery_coverage_fk_v1.sql`
+se ejecuta **después** de la L27. Implementa seis tablas de cobertura, no crea
+una segunda tabla `ventas_hallazgos`, y añade a `ventas_discovery_ingestas`:
+- `consulta_id uuid NOT NULL`, FK compuesta con el recibo de consulta exacto;
+- `fuente_habilitada=true` y FK a `ventas_discovery_catalogo` con
+  `persist_business_data=true` y `habilitada=true`;
+- FKs de consulta → ejecución → fuente planificada → versión de catálogo;
+- guard de `CERRADO` deshabilitado hasta contar con evaluación de cobertura 21/21;
+- RLS para las seis tablas, sin `GRANT` a clientes y sin carga de datos.
+
+**Riesgos por resolver antes del Merge Train:**
+1. PG17 real y BEGIN/ROLLBACK del conjunto **L27+L28**: aún no verificados.
+2. Las referencias de RUN quedan dentro del ledger de descubrimiento; falta su
+   vínculo autenticado al RUN padre del Router y operación nativa.
+3. La autoría de `rights_status=PERSISTENCIA_PERMITIDA` y la activación del
+   catálogo requieren decisión gobernada, evidencia contractual y revisión legal;
+   el fixture sintético PG17 NO es esa autorización.
+4. La protección permanente de cierre del RUN exige un gate evaluador que
+   verifique snapshot de catálogo, aplicabilidad de fuentes y recibos por lote.
+5. El catálogo L20 v0.2 sigue sin despliegue: 21 especificaciones, 0 conectores
+   productivos. Las fuentes ya investigadas no equivalen a ejecución completa.
+6. Dado que `consulta_id` se incorpora con NOT NULL y sin default, la migración
+   fallará deliberadamente si la tabla L27 recibió filas antes de unir el ledger.
+
+**Siguiente checkpoint:** HEAD exacto → clasificación/PASE PASS → PG17 aislado
+positivo y negativo → operación gobernada → Merge Train → readback SELECT.
+Ningún merge ni carga automática deben adelantarse a esos controles.
