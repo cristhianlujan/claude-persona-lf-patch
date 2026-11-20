@@ -18,12 +18,55 @@ BEGIN
  THEN RAISE EXCEPTION 'UNEXPECTED_RUNTIME_GRANT'; END IF;
 
  INSERT INTO saly.ventas_discovery_ingestas
- (source_code,source_version,recurso_url,licencia_codigo,atribucion,
+ (catalog_version,source_id,connector_id,substep_code,scope_key,
+  batch_key,query_hash,consulta_evidencia_ref,
+  source_version,recurso_url,licencia_codigo,atribucion,
   comprobacion_licencia_url,run_ref)
- VALUES('PE-PTE-ENTIDADES','2026-08','https://www.datosabiertos.gob.pe/example.csv',
+ VALUES('PE-SALY-DISCOVERY-2026-11-V0.2','PE-PTE','SALY-U07-S13-C03','13.03','LIMA_ICA',
+ 'PTE-2026-08-B0001',repeat('b',64),'fixture://PG17-source-receipt',
+ '2026-08','https://www.datosabiertos.gob.pe/example.csv',
  'ODC-BY','PTE / PNDA','https://www.datosabiertos.gob.pe/example-dataset',
  'test-PG17-ROLLBACK')
  RETURNING id INTO v_batch;
+
+ IF NOT EXISTS(
+   SELECT 1 FROM saly.ventas_discovery_ingestas
+   WHERE id=v_batch
+   AND catalog_version='PE-SALY-DISCOVERY-2026-11-V0.2'
+   AND source_id='PE-PTE' AND connector_id='SALY-U07-S13-C03'
+   AND substep_code='13.03' AND scope_key='LIMA_ICA'
+   AND batch_key='PTE-2026-08-B0001' AND query_hash=repeat('b',64)
+   AND run_ref='test-PG17-ROLLBACK'
+ )
+ THEN RAISE EXCEPTION 'STEP10_SOURCE_RUN_QUERY_LINEAGE_MISMATCH'; END IF;
+
+ v_forbidden:=false;
+ BEGIN
+   INSERT INTO saly.ventas_discovery_ingestas
+   (catalog_version,source_id,connector_id,substep_code,batch_key,
+    query_hash,consulta_evidencia_ref,source_version,recurso_url,
+    licencia_codigo,atribucion,comprobacion_licencia_url,run_ref)
+   VALUES ('PE-SALY-DISCOVERY-2026-11-V0.2','PE-PTE','SALY-U07-S13-C03',
+    '13.3','BAD-SUBSTEP',repeat('c',64),'fixture://invalid',
+    'bad-version','https://example.org/bad','ODC-BY','sample',
+    'https://example.org/lic','test-PG17-ROLLBACK');
+ EXCEPTION WHEN check_violation THEN v_forbidden:=true;
+ END;
+ IF NOT v_forbidden THEN RAISE EXCEPTION 'INVALID_SUBSTEP_ACCEPTED'; END IF;
+
+ v_forbidden:=false;
+ BEGIN
+   INSERT INTO saly.ventas_discovery_ingestas
+   (catalog_version,source_id,connector_id,substep_code,batch_key,
+    query_hash,consulta_evidencia_ref,source_version,recurso_url,
+    licencia_codigo,atribucion,comprobacion_licencia_url,run_ref)
+   VALUES ('PE-SALY-DISCOVERY-2026-11-V0.2','PE-PTE','SALY-U07-S13-C03',
+    '13.03','BAD-HASH','not-hex','fixture://invalid',
+    'bad-version2','https://example.org/bad','ODC-BY','sample',
+    'https://example.org/lic','test-PG17-ROLLBACK');
+ EXCEPTION WHEN check_violation THEN v_forbidden:=true;
+ END;
+ IF NOT v_forbidden THEN RAISE EXCEPTION 'INVALID_QUERY_HASH_ACCEPTED'; END IF;
 
  v_forbidden := false;
  BEGIN
@@ -79,7 +122,7 @@ BEGIN
   WHERE id=v_duplicate AND estado_vinculacion='PENDIENTE')
  THEN RAISE EXCEPTION 'PREMATURE_VALIDATION_OF_UNIT'; END IF;
 
- RAISE NOTICE 'PG17 FUNCTIONAL 9 CONTROLS PASS (transaction will rollback)';
+ RAISE NOTICE 'PG17 FUNCTIONAL 12 CONTROLS PASS (transaction will rollback)';
 END $check$;
 ROLLBACK;
 DO $check$
