@@ -122,8 +122,8 @@ BEGIN
      OR v_json->>'context_set_id' IS DISTINCT FROM v_context_set::text
      OR jsonb_array_length(v_json->'source_refs')<>1
      OR jsonb_array_length(v_json->'tokens')<3
-     OR (SELECT count(*) FROM jsonb_array_elements(v_json->'tokens') t
-          WHERE t->>'role'='OFFICIAL')<>2
+     OR (SELECT count(*) FROM jsonb_array_elements(v_json->'tokens') AS jt(token)
+          WHERE jt.token->>'role'='OFFICIAL')<>2
    THEN RAISE EXCEPTION 'SALY_PILOT_CONTEXT_COMPILATION_FAILED_%',v_item.code; END IF;
  END LOOP;
 
