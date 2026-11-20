@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-b2b-auth001-priority-gap-candidates-20261115",
+  "paths": {
+    "supabase/migrations/20261115004500_lf_b2b_auth001_priority_gap_candidate_rules_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_auth001_priority_gap_candidates_pgdual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-b2b-auth001-priority-gap-candidates-20261115.json": "CHANGESET_MANIFEST"
+  }
+}
