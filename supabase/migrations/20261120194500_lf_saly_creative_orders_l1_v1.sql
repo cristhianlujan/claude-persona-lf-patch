@@ -114,7 +114,7 @@ CREATE TABLE saly.creative_runs (
    (state IN ('EXITOSO','FALLIDO','BLOQUEADO','CANCELADO'))=(finished_at IS NOT NULL)
  ),
  CONSTRAINT creative_run_success_chk CHECK (
-   state<>'EXITOSO' OR
+   state<>'EXITOSO' OR COALESCE(
    (started_at IS NOT NULL AND nullif(btrim(worker_ref),'') IS NOT NULL
     AND jsonb_typeof(input_snapshot->'identity_versions')='array'
     AND jsonb_array_length(input_snapshot->'identity_versions')>0
@@ -122,7 +122,7 @@ CREATE TABLE saly.creative_runs (
     AND input_snapshot ? 'screen_spec'
     AND nullif(output_evidence->>'artifact_ref','') IS NOT NULL
     AND (output_evidence->>'sha256') ~ '^[0-9a-f]{64}$'
-    AND nullif(output_evidence->>'worker_receipt','') IS NOT NULL))
+    AND nullif(output_evidence->>'worker_receipt','') IS NOT NULL),false))
 );
 CREATE UNIQUE INDEX creative_runs_one_active_per_item
   ON saly.creative_runs(item_id) WHERE state IN ('EN_COLA','EJECUTANDO');
@@ -146,7 +146,7 @@ BEGIN
    UNION
    SELECT d.depends_on_item_id FROM saly.creative_item_dependencies d
    JOIN walk w ON w.id=d.item_id
-   WHERE d.order_id=NEW.order_id AND (TG_OP='INSERT' OR d.id<>OLD.id)
+   WHERE d.order_id=NEW.order_id AND (CASE WHEN TG_OP='INSERT' THEN true ELSE d.id<>OLD.id END)
  )
  SELECT EXISTS(SELECT 1 FROM walk WHERE id=NEW.item_id) INTO v_cycle;
  IF v_cycle THEN RAISE EXCEPTION 'CREATIVE_DEPENDENCY_CYCLE'; END IF;
@@ -189,6 +189,8 @@ BEGIN
  SELECT status INTO v_order_status FROM saly.creative_orders WHERE id=NEW.order_id FOR UPDATE;
  IF v_order_status IN ('COMPLETADO','CANCELADO')
  THEN RAISE EXCEPTION 'CREATIVE_CLOSED_ORDER_IMMUTABLE_ITEMS'; END IF;
+ IF TG_OP='UPDATE' AND OLD.status='APROBADO'
+ THEN RAISE EXCEPTION 'CREATIVE_APPROVED_ITEM_IMMUTABLE'; END IF;
  IF NEW.status='APROBADO' AND (TG_OP='INSERT' OR OLD.status IS DISTINCT FROM NEW.status) THEN
    IF TG_OP='INSERT' OR OLD.status<>'EN_QA'
    THEN RAISE EXCEPTION 'CREATIVE_ITEM_NOT_IN_QA'; END IF;
@@ -199,13 +201,15 @@ BEGIN
    ) THEN RAISE EXCEPTION 'CREATIVE_DEPENDENCY_NOT_APPROVED'; END IF;
    v_run_id:=NEW.qa_receipt->>'run_id';
    IF v_run_id IS NULL OR v_run_id !~ '^[0-9]+$'
-      OR NEW.qa_receipt->>'verdict'<>'PASS'
+      OR (NEW.qa_receipt->>'verdict') IS DISTINCT FROM 'PASS'
       OR nullif(btrim(NEW.qa_receipt->>'reviewer_ref'),'') IS NULL
    THEN RAISE EXCEPTION 'CREATIVE_QA_RECEIPT_MISSING'; END IF;
    SELECT r.id,r.worker_ref INTO v_run
    FROM saly.creative_runs r
    WHERE r.id=v_run_id::bigint AND r.item_id=NEW.id AND r.order_id=NEW.order_id
-     AND r.state='EXITOSO' AND nullif(r.output_evidence->>'artifact_ref','') IS NOT NULL;
+     AND r.state='EXITOSO' AND nullif(r.output_evidence->>'artifact_ref','') IS NOT NULL
+     AND NOT EXISTS (SELECT 1 FROM saly.creative_runs newer
+       WHERE newer.item_id=r.item_id AND newer.attempt_number>r.attempt_number);
    IF NOT FOUND OR NEW.qa_receipt->>'reviewer_ref'=v_run.worker_ref
       OR NEW.approved_by IS DISTINCT FROM NEW.qa_receipt->>'reviewer_ref'
    THEN RAISE EXCEPTION 'CREATIVE_QA_NOT_INDEPENDENT_OR_RUN_MISSING'; END IF;
@@ -236,6 +240,22 @@ CREATE TRIGGER trg_creative_order_close_guard_l1
  BEFORE INSERT OR UPDATE ON saly.creative_orders
  FOR EACH ROW EXECUTE FUNCTION saly.creative_order_close_guard_l1();
 
+-- Evidence and work ledger are append-only. Deletions must be governed separately.
+CREATE FUNCTION saly.creative_delete_guard_l1()
+RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,saly
+AS $fn$
+BEGIN
+ RAISE EXCEPTION 'CREATIVE_LEDGER_DELETE_FORBIDDEN';
+END $fn$;
+CREATE TRIGGER trg_creative_order_delete_guard_l1 BEFORE DELETE ON saly.creative_orders
+ FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_creative_item_delete_guard_l1 BEFORE DELETE ON saly.creative_order_items
+ FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_creative_dependency_delete_guard_l1 BEFORE DELETE ON saly.creative_item_dependencies
+ FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_creative_run_delete_guard_l1 BEFORE DELETE ON saly.creative_runs
+ FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+
 -- Fail closed: only governed server transport can write. No public API/policies or workers.
 ALTER TABLE saly.creative_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE saly.creative_orders FORCE ROW LEVEL SECURITY;
@@ -247,10 +267,12 @@ ALTER TABLE saly.creative_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE saly.creative_runs FORCE ROW LEVEL SECURITY;
 REVOKE ALL ON saly.creative_orders,saly.creative_order_items,
   saly.creative_item_dependencies,saly.creative_runs FROM PUBLIC,anon,authenticated;
-REVOKE ALL ON ALL SEQUENCES IN SCHEMA saly FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON SEQUENCE saly.creative_orders_id_seq,
+  saly.creative_order_items_id_seq,saly.creative_item_dependencies_id_seq,
+  saly.creative_runs_id_seq FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION saly.creative_dependency_guard_l1(),
   saly.creative_run_guard_l1(),saly.creative_item_guard_l1(),
-  saly.creative_order_close_guard_l1() FROM PUBLIC,anon,authenticated;
+  saly.creative_order_close_guard_l1(),saly.creative_delete_guard_l1() FROM PUBLIC,anon,authenticated;
 
 -- Transactional selftest with intentional subtransaction rollback; no sample orders persist.
 DO $selftest$
