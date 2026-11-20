@@ -46,7 +46,10 @@ SELECT jsonb_build_object(
       ORDER BY a.code),'[]'::jsonb) FROM logos a),
  'standard_catalog_exists',(to_regclass('visual.standard_activations') IS NOT NULL),
  'active_standard_version_id',NULL,
- 'blocking_codes',jsonb_build_array('STANDARD_CATALOG_NOT_IMPLEMENTED',
+ 'blocking_codes',jsonb_build_array(
+   CASE WHEN to_regclass('visual.standard_activations') IS NULL
+     THEN 'STANDARD_CATALOG_NOT_IMPLEMENTED'
+     ELSE 'STANDARD_CATALOG_EXISTS_BUT_NOT_RESOLVED' END,
    'ACTIVE_STANDARD_NOT_RESOLVED','APP_SCREEN_AND_MOCKUP_SOURCES_NOT_VERIFIED'),
  'image_generation_allowed',false
 ) AS result;
