@@ -1,0 +1,1669 @@
+{
+  "schema": "LF_LOGIN_B2B_LOTE2_LIVE_SNAPSHOT_V1",
+  "read_mode": "SUPABASE_SELECT_ONLY",
+  "source_version": "PG_SOURCE_NOV_13_2026",
+  "source_pr3844_commit": "980c203d67df6469161cf44bbb457861cc32c065",
+  "source_pr3844_fixture_contract": "sandbox/lf_contract_gate_test/edge_function_operation/test_login_b2b_stage_b_2029_auth020_approvers_pg17_pg18.py",
+  "columns": [
+    {
+      "col": "id",
+      "typ": "integer"
+    },
+    {
+      "col": "codigo",
+      "typ": "text"
+    },
+    {
+      "col": "categoria",
+      "typ": "text"
+    },
+    {
+      "col": "titulo",
+      "typ": "text"
+    },
+    {
+      "col": "descripcion",
+      "typ": "text"
+    },
+    {
+      "col": "razon",
+      "typ": "text"
+    },
+    {
+      "col": "valor_config",
+      "typ": "jsonb"
+    },
+    {
+      "col": "es_transversal",
+      "typ": "boolean"
+    },
+    {
+      "col": "estado",
+      "typ": "text"
+    },
+    {
+      "col": "origen",
+      "typ": "text"
+    },
+    {
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "col": "pendiente_decision",
+      "typ": "boolean"
+    },
+    {
+      "col": "pendiente_detalle",
+      "typ": "text"
+    },
+    {
+      "col": "created_by",
+      "typ": "text"
+    }
+  ],
+  "rules": [
+    {
+      "snapshot": {
+        "id": 425,
+        "razon": "Evitar enumeración de usuarios por contenido, estado HTTP o diferencias observables de procesamiento, sin ocultar estados operativos que requieren una acción distinta del cliente.",
+        "codigo": "B2B-RULE-AUTH-004",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1",
+        "titulo": "Mensaje genérico ante credenciales inválidas",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-11T20:34:44.088194+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T02:15:49.636186+00:00",
+        "descripcion": "Ante fallos de credencial o denegaciones relacionadas con la cuenta, el Login no debe revelar si el correo existe, si el usuario está activo/restringido ni qué credencial falló. Las respuestas externas de estos fallos deben ser funcionalmente indistinguibles en mensaje y comportamiento observable, mitigando diferencias de tiempo. Estados no equivalentes como MFA requerido, rate limit o indisponibilidad del servicio conservan su tratamiento específico.",
+        "valor_config": {
+          "do_not_reveal": [
+            "email_exists",
+            "user_status",
+            "which_credential_failed",
+            "account_restriction_reason"
+          ],
+          "user_message_policy": "GENERIC",
+          "credential_failure_classes": [
+            "UNKNOWN_USER",
+            "BAD_PASSWORD",
+            "INACTIVE_OR_RESTRICTED_ACCOUNT"
+          ],
+          "distinct_operational_states": [
+            "MFA_REQUIRED",
+            "RATE_LIMITED",
+            "SERVICE_UNAVAILABLE"
+          ],
+          "consistent_external_behavior": true,
+          "timing_discrepancy_mitigation": "REQUIRED",
+          "internal_reason_exposure_to_client": "DENY",
+          "credential_failure_external_mapping": "INVALID_CREDENTIALS",
+          "provider_specific_error_passthrough": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "b10bf7eb9addb06a58d2daa71bcfab6e37a6ba16f7c65b7690a06e01b42922fc"
+    },
+    {
+      "snapshot": {
+        "id": 426,
+        "razon": "Reducir exposición de credenciales y mantener separación entre autenticación y datos operativos.",
+        "codigo": "B2B-RULE-AUTH-005",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1",
+        "titulo": "Contraseña solo en runtime",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-11T20:34:44.088194+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-11T23:04:58.392806+00:00",
+        "descripcion": "La contraseña ingresada en Login solo existe durante la autenticación. No se persiste en tablas funcionales, logs, analytics, session replay ni payloads de diseño.",
+        "valor_config": {
+          "logs": "DENY",
+          "field_id": 296,
+          "analytics": "DENY",
+          "field_alias": "B2B_FLD_LOGIN_PASSWORD",
+          "persistence": "DENY",
+          "session_replay": "MASK_FULL"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "2e4f645570d8df662e03ce154c3cd3a21ffe82772872e8c004b76b5de110193d"
+    },
+    {
+      "snapshot": {
+        "id": 427,
+        "razon": "Mantener el Login simple y evitar mezclar autenticación con recuperación de acceso.",
+        "codigo": "B2B-RULE-AUTH-006",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1",
+        "titulo": "Recuperación de contraseña visible y separada",
+        "categoria": "UX",
+        "created_at": "2026-08-11T20:34:44.088194+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T06:45:32.121271+00:00",
+        "descripcion": "El Login debe mostrar una acción visible de recuperación inmediatamente asociada al campo Contraseña. La recuperación se resuelve en un flujo separado y no debe ejecutarse dentro del formulario principal de Login.",
+        "valor_config": {
+          "flow": "SEPARATE_RECOVERY_FLOW",
+          "placement": "ADJACENT_TO_PASSWORD",
+          "field_aliases": [
+            "B2B_FLD_LOGIN_EMAIL",
+            "B2B_FLD_LOGIN_PASSWORD"
+          ],
+          "recovery_route_id": 9,
+          "recovery_screen_id": 52,
+          "login_form_field_ids": [
+            298,
+            296
+          ],
+          "recovery_new_password_screen_id": 53
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "1da087312eeea6ede10390d7faeab3f5f052116ea10da39b371df12a6aba7bf8"
+    },
+    {
+      "snapshot": {
+        "id": 428,
+        "razon": "Mejorar usabilidad sin debilitar el tratamiento sensible de la credencial.",
+        "codigo": "B2B-RULE-AUTH-007",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1",
+        "titulo": "Mostrar u ocultar contraseña sin alterar el valor",
+        "categoria": "UX",
+        "created_at": "2026-08-11T20:34:44.088194+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-11T23:04:58.392806+00:00",
+        "descripcion": "El campo Contraseña permite alternar entre contenido visible y enmascarado mediante control de visibilidad, sin modificar el valor ni enviarlo a telemetría.",
+        "valor_config": {
+          "control": "TOGGLE_VISIBILITY",
+          "default": "MASKED",
+          "telemetry_value": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "609d022ebafb893769b72235bf770e16bfae8da2ed7c32d6b7c8210f384f8cd5"
+    },
+    {
+      "snapshot": {
+        "id": 430,
+        "razon": "Favorecer el uso de credenciales fuertes y evitar prácticas de interfaz que dificulten gestores de contraseñas sin reducir la protección de la credencial.",
+        "codigo": "B2B-RULE-AUTH-011",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1",
+        "titulo": "Entrada compatible con gestores de credenciales",
+        "categoria": "UX",
+        "created_at": "2026-08-11T23:50:26.221626+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-21T03:04:25.447006+00:00",
+        "descripcion": "El Login debe permitir gestores de contraseñas y pegado de credenciales mediante controles estándar. El correo usa autocomplete=username y la contraseña autocomplete=current-password. Cuando se use divulgación progresiva, el input de contraseña no se desmonta: permanece asociado al mismo form para no romper la detección/autofill de gestores. El valor de la contraseña nunca se envía a telemetría.",
+        "valor_config": {
+          "email_paste": "ALLOW",
+          "email_field_id": 298,
+          "password_paste": "ALLOW",
+          "password_field_id": 296,
+          "email_autocomplete": "username",
+          "password_manager_qa": "REQUIRED_CROSS_BROWSER_AND_MANAGER",
+          "credential_value_logs": "DENY",
+          "password_autocomplete": "current-password",
+          "same_form_association": "REQUIRED",
+          "credential_value_telemetry": "DENY",
+          "password_default_visibility": "MASKED",
+          "password_conditional_unmount": "DENY",
+          "password_dom_presence_during_progressive_disclosure": "REQUIRED"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "7452c3fd2ea1cada745f2ab460f056f140d6c799362f46448a93df2623a1b58f"
+    },
+    {
+      "snapshot": {
+        "id": 431,
+        "razon": "Evitar solicitudes duplicadas y consumo accidental de políticas de rate limit sin duplicar cantidades configurables dentro de la regla.",
+        "codigo": "B2B-RULE-AUTH-012",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1",
+        "titulo": "Un solo intento de autenticación en vuelo",
+        "categoria": "UX",
+        "created_at": "2026-08-11T23:50:26.221626+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-12T03:45:04.453522+00:00",
+        "descripcion": "El Login aplica un patrón single-flight: mientras exista una solicitud de autenticación pendiente, se ignoran envíos duplicados y el CTA permanece en estado procesando. La regla expresa comportamiento, no un umbral numérico configurable.",
+        "valor_config": {
+          "concurrency_mode": "SINGLE_FLIGHT",
+          "duplicate_submit": "IGNORE",
+          "submit_button_state": "PROCESSING_DISABLED",
+          "new_attempt_after_response": "ALLOW",
+          "numeric_thresholds_in_rule": "DENY",
+          "credential_edit_during_request": "DISABLED",
+          "reenable_on_recoverable_response": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "8f541b13bd896d9f75f1c6743659dde062af856b14ab430eb825b39a142c6e9e"
+    },
+    {
+      "snapshot": {
+        "id": 432,
+        "razon": "Mantener una frontera de confianza estable entre frontend y proveedor, permitir sustitución del IdP sin rediseñar el Login y preservar el comportamiento fail-closed.",
+        "codigo": "B2B-RULE-AUTH-013",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_2A",
+        "titulo": "Autenticación desacoplada y fail-closed",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T02:16:07.037762+00:00",
+        "created_by": "GPT_LF_BACKOFFICE_LOTE_2A",
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "El Login se comunica exclusivamente con una capa de autenticación controlada por LF del lado servidor. Esa capa puede delegar la verificación a un IdP/proveedor confiable, pero el navegador no debe verificar credenciales por sí mismo ni depender directamente del contrato particular del proveedor. Si la identidad no puede verificarse válidamente, no se crea sesión ni se concede acceso.",
+        "valor_config": {
+          "fail_closed": true,
+          "auth_boundary": "LF_SERVER_AUTH_LAYER",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "gateway_runtime": "NEXTJS_STATIC_EXPORT",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "provider_binding": "OIDC_PROVIDER_PENDING_M1_SPIKE",
+          "consumer_boundary": "LF_AUTH_BOUNDARY",
+          "identity_protocol": "OIDC_JWT",
+          "provider_agnostic": true,
+          "security_policy_id": 18,
+          "aws_identity_target": "AMAZON_COGNITO",
+          "semantic_resolution": "NO_CONFLICT_GATEWAY_AGNOSTIC_CONSUMER_WITH_SELECTED_SERVER_ADAPTER",
+          "gateway_origin_model": "SAME_ORIGIN",
+          "production_authorized": false,
+          "auth_core_architecture": "FRAMEWORK_AGNOSTIC_DECOUPLED_PACKAGE",
+          "admin_identity_provider": "GOOGLE_WORKSPACE",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "selected_server_adapter": "OIDC_PROVIDER_PENDING_M1_SPIKE",
+          "local_bypass_credentials": "DENY",
+          "consumer_provider_agnostic": true,
+          "provider_semantics_version": "v1",
+          "brevo_webhook_runtime_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "browser_direct_provider_auth": "DENY",
+          "session_on_unverified_result": "DENY",
+          "admin_identity_provider_status": "PLANNED_NOT_PROVISIONED",
+          "provider_verification_location": "SERVER_SIDE_OR_TRUSTED_IDP",
+          "selected_server_adapter_status": "PENDING_M1_IDENTITY_SPIKE",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "browser_to_gateway_cross_origin": "DENY",
+          "credential_verification_implementation": "LF_AUTH_BOUNDARY",
+          "provider_architecture_security_policy_id": 23,
+          "supabase_edge_function_as_browser_gateway": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "913048734e534b21eba79a7338715b9acf824749470421d95aeb6dafa4935f26"
+    },
+    {
+      "snapshot": {
+        "id": 433,
+        "razon": "Evitar acoplamiento al proveedor y mantener códigos HTTP, textos y acciones en un único catálogo reutilizable.",
+        "codigo": "B2B-RULE-AUTH-014",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_2A",
+        "titulo": "Resultados normalizados del servicio de autenticación",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T02:16:18.791767+00:00",
+        "created_by": "GPT_LF_BACKOFFICE_LOTE_2A",
+        "updated_at": "2026-08-18T17:05:42.991272+00:00",
+        "descripcion": "La capa de autenticación LF traduce cualquier respuesta del proveedor a un outcome funcional estable. Para outcomes no exitosos se utiliza exclusivamente un error_id numérico del catálogo lf_ops.errores_catalogo; el HTTP y los mensajes visibles se resuelven desde ese catálogo y no se duplican en la regla.",
+        "valor_config": {
+          "relation_key": "error_id",
+          "credential_echo": "DENY",
+          "allowed_outcomes": [
+            "AUTHENTICATED",
+            "MFA_REQUIRED",
+            "INVALID_CREDENTIALS",
+            "RATE_LIMITED",
+            "ACCESS_DENIED",
+            "SERVICE_UNAVAILABLE"
+          ],
+          "error_id_mapping": {
+            "MFA_REQUIRED": 23,
+            "RATE_LIMITED": 26,
+            "ACCESS_DENIED": 20,
+            "INVALID_CREDENTIALS": 38,
+            "SERVICE_UNAVAILABLE": 36
+          },
+          "mfa_gate_rule_id": 437,
+          "relation_key_type": "NUMERIC_ID",
+          "required_metadata": [
+            "outcome",
+            "correlation_id"
+          ],
+          "http_status_source": "lf_ops.errores_catalogo.http_status",
+          "non_state_outcomes": [
+            "INVALID_CREDENTIALS",
+            "RATE_LIMITED",
+            "ACCESS_DENIED",
+            "SERVICE_UNAVAILABLE"
+          ],
+          "classification_rule": "API_OUTCOME_NE_UI_STATE_NE_SESSION_STATE_NE_DOMAIN_STATE",
+          "email_otp_screen_id": 54,
+          "mfa_contract_detail": "GATE_DEFINED_LOTE_3A",
+          "mfa_routing_rule_id": 452,
+          "user_message_source": "lf_ops.errores_catalogo",
+          "authenticated_error_id": null,
+          "mfa_challenge_route_id": 13,
+          "outcome_classification": {
+            "MFA_REQUIRED": {
+              "class": "AUTH_CONTROL",
+              "next_behavior": "MFA_ROUTE_RESOLUTION",
+              "semantic_role": "INTERMEDIATE_CHALLENGE_REQUIRED",
+              "session_effect": "FULL_SESSION_DENIED_UNTIL_MFA",
+              "source_rule_ids": [
+                437
+              ],
+              "error_id_required": true,
+              "auth_state_projection": "REQUIRED"
+            },
+            "RATE_LIMITED": {
+              "class": "ABUSE_CONTROL_OUTCOME",
+              "next_behavior": "POLICY_CONTROLLED_RETRY_OR_WAIT",
+              "semantic_role": "TEMPORARY_OPERATIONAL_BLOCK",
+              "session_effect": "NONE",
+              "source_rule_ids": [
+                440
+              ],
+              "error_id_required": true,
+              "auth_state_projection": "DENY"
+            },
+            "ACCESS_DENIED": {
+              "class": "AUTHORIZATION_FAILURE",
+              "next_behavior": "NO_AUTHENTICATED_SESSION",
+              "semantic_role": "DENIED_ATTEMPT",
+              "session_effect": "NONE",
+              "source_rule_ids": [
+                433
+              ],
+              "error_id_required": true,
+              "auth_state_projection": "DENY"
+            },
+            "AUTHENTICATED": {
+              "class": "AUTH_RESULT",
+              "next_behavior": "AUTHORIZED_ROUTE_RESOLUTION",
+              "semantic_role": "TERMINAL_SUCCESS",
+              "session_effect": "FULLY_AUTHENTICATED_SESSION_ALLOWED",
+              "source_rule_ids": [
+                441,
+                442
+              ],
+              "error_id_required": false,
+              "auth_state_projection": "REQUIRED"
+            },
+            "INVALID_CREDENTIALS": {
+              "class": "FUNCTIONAL_FAILURE",
+              "next_behavior": "REMAIN_ON_LOGIN",
+              "semantic_role": "RECOVERABLE_ATTEMPT_FAILURE",
+              "session_effect": "NONE",
+              "source_rule_ids": [
+                433,
+                444
+              ],
+              "error_id_required": true,
+              "auth_state_projection": "DENY"
+            },
+            "SERVICE_UNAVAILABLE": {
+              "class": "TECHNICAL_FAILURE",
+              "next_behavior": "REMAIN_UNAUTHENTICATED",
+              "semantic_role": "TRANSIENT_DEPENDENCY_FAILURE",
+              "session_effect": "NONE",
+              "source_rule_ids": [
+                444
+              ],
+              "error_id_required": true,
+              "auth_state_projection": "DENY"
+            }
+          },
+          "state_bearing_outcomes": [
+            "MFA_REQUIRED",
+            "AUTHENTICATED"
+          ],
+          "session_contract_detail": "SESSION_GATE_DEFINED_LOTE_5",
+          "outcome_semantics_version": "v1",
+          "email_otp_challenge_rule_id": 453,
+          "totp_enrollment_normal_flow": "DENY",
+          "provider_raw_payload_to_client": "DENY",
+          "legacy_totp_enrollment_route_id": 14,
+          "provider_specific_error_passthrough": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "3010c71c3512e0e90da5e29415529d7114814a515ea85d6e9852299b6572a01f"
+    },
+    {
+      "snapshot": {
+        "id": 436,
+        "razon": "Mantener un contrato estable, trazable y seguro entre backend y frontend sin duplicar datos canónicos ni filtrar detalles del proveedor.",
+        "codigo": "B2B-RULE-AUTH-017",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_2C",
+        "titulo": "Sobre de respuesta seguro de autenticación",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T04:35:12.108675+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "La respuesta de LF_AUTH_BOUNDARY expone únicamente el outcome funcional, un correlation_id generado por servidor y, cuando corresponda, un error_id numérico canónico. Los mensajes y HTTP se obtienen del catálogo de errores; no se exponen errores crudos, payloads del proveedor, credenciales, tokens internos ni razones sensibles.",
+        "valor_config": {
+          "message_source": "lf_ops.errores_catalogo",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "credential_echo": "DENY",
+          "required_fields": [
+            "outcome",
+            "correlation_id"
+          ],
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "identity_protocol": "OIDC_JWT",
+          "relation_key_type": "NUMERIC_ID",
+          "http_status_source": "lf_ops.errores_catalogo.http_status",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "correlation_id_source": "SERVER_GENERATED",
+          "production_authorized": false,
+          "conditional_error_field": "error_id",
+          "internal_token_exposure": "DENY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "provider_payload_exposure": "DENY",
+          "error_id_for_authenticated": null,
+          "provider_error_code_exposure": "DENY",
+          "error_id_required_for_outcomes": [
+            "MFA_REQUIRED",
+            "INVALID_CREDENTIALS",
+            "RATE_LIMITED",
+            "ACCESS_DENIED",
+            "SERVICE_UNAVAILABLE"
+          ],
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "account_restriction_reason_exposure": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "8957d0abeb7ee9b910ca892b9f5272ea934a9bdaef4b94a06219f1afae06cbb3"
+    },
+    {
+      "snapshot": {
+        "id": 442,
+        "razon": "Evitar open redirects y destinos hardcodeados por perfil, reutilizando el orden y autorización canónicos del menú para que cambios posteriores se reflejen sin modificar la regla de Login.",
+        "codigo": "B2B-RULE-AUTH-023",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_5",
+        "titulo": "Destino post-login resuelto contra rutas autorizadas",
+        "categoria": "AUTHORIZATION",
+        "created_at": "2026-08-12T05:58:55.681122+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-12T06:19:52.118623+00:00",
+        "descripcion": "Después de AUTHENTICATED, el destino de navegación se resuelve únicamente contra rutas internas autorizadas. Si existe una ruta solicitada antes del Login, puede retomarse solo si continúa autorizada. Si no existe, LF selecciona dinámicamente la primera ruta de menú visible y habilitada que satisfaga simultáneamente acceso de pantalla y permiso del perfil, ordenada por menu_item_id y luego route_id. El cliente no puede imponer URL, route_pattern ni destino arbitrario.",
+        "valor_config": {
+          "menu_registry": "lf_ops.menu_items",
+          "route_registry": "lf_ops.rutas",
+          "profile_registry": "lf_ops.perfiles",
+          "route_relation_key": "route_id",
+          "default_route_order": [
+            "menu_item_id",
+            "route_id"
+          ],
+          "permission_registry": "lf_ops.permisos",
+          "profile_relation_key": "profile_id",
+          "authorization_sources": [
+            "lf_ops.pantallas_perfiles",
+            "lf_ops.perfiles_permisos",
+            "lf_ops.menu_items_permisos"
+          ],
+          "arbitrary_url_redirect": "DENY",
+          "default_route_strategy": "FIRST_AUTHORIZED_VISIBLE_MENU_ROUTE",
+          "resume_requested_route": "ALLOW_IF_AUTHORIZED",
+          "permission_relation_key": "permission_id",
+          "route_relation_key_type": "NUMERIC_ID",
+          "profile_relation_key_type": "NUMERIC_ID",
+          "hardcoded_profile_route_map": "DENY",
+          "permission_relation_key_type": "NUMERIC_ID",
+          "server_side_authorization_recheck": "REQUIRED",
+          "client_route_pattern_authoritative": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "e54821523d81449d071e39e88a429ab0ed981ae72f61690b43527796ec2f0d34"
+    },
+    {
+      "snapshot": {
+        "id": 443,
+        "razon": "Permitir investigación reproducible de incidentes y abuso sin convertir los logs en una fuente de credenciales o PII, reutilizando las reglas transversales de auditoría, correlación y redacción existentes.",
+        "codigo": "B2B-RULE-AUTH-024",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_6",
+        "titulo": "Auditoría segura de eventos de autenticación",
+        "categoria": "AUDIT",
+        "created_at": "2026-08-12T06:00:25.286837+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-12T09:12:10.292709+00:00",
+        "descripcion": "Los eventos de seguridad relevantes del Login deben registrarse en lf_ops.auditoria_eventos con correlation_id y metadata_redacted. La auditoría debe permitir reconstruir éxito, fallo, requerimiento/resultado MFA, activación de rate limit o anti-bot, creación de sesión, recuperación y uso de acceso de emergencia, sin almacenar contraseña, OTP, tokens, payload crudo del proveedor ni correo completo. Analytics de producto no sustituye la auditoría de seguridad.",
+        "valor_config": {
+          "audit_sink": "lf_ops.auditoria_eventos",
+          "correlation_rule_id": 412,
+          "pii_redaction_rule_id": 37,
+          "forbidden_audit_values": [
+            "PASSWORD",
+            "OTP_VALUE",
+            "ACCESS_TOKEN",
+            "REFRESH_TOKEN",
+            "PROVIDER_RAW_PAYLOAD",
+            "FULL_EMAIL"
+          ],
+          "required_audit_actions": [
+            "LOGIN_SUCCESS",
+            "LOGIN_FAILURE",
+            "MFA_REQUIRED",
+            "MFA_SUCCESS",
+            "MFA_FAILURE",
+            "RATE_LIMIT_TRIGGERED",
+            "ANTIBOT_ESCALATED",
+            "SESSION_CREATED",
+            "RECOVERY_INITIATED",
+            "EMERGENCY_ACCESS_USED",
+            "MFA_RECOVERY_REQUESTED",
+            "MFA_RECOVERY_IDENTITY_VERIFIED",
+            "MFA_FACTOR_RESET",
+            "MFA_REENROLLED"
+          ],
+          "correlation_id_required": true,
+          "immutable_audit_rule_id": 416,
+          "metadata_redacted_required": true,
+          "numeric_thresholds_in_rule": "DENY",
+          "analytics_is_security_audit": "DENY",
+          "root_cause_without_canonical_logs": "UNKNOWN"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "91c623da4e2b9171d07e8bd880bece170f4b7321817877bd4e98d1acbfc08973"
+    },
+    {
+      "snapshot": {
+        "id": 444,
+        "razon": "Evitar diagnósticos falsos, enumeración accidental y divergencia entre lo que ve el usuario, lo que registra soporte y lo que ocurrió técnicamente.",
+        "codigo": "B2B-RULE-AUTH-025",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_V1_LOTE_6",
+        "titulo": "Errores de autenticación canónicos y trazables",
+        "categoria": "ERROR_HANDLING",
+        "created_at": "2026-08-12T06:00:25.286837+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-12T06:00:25.286837+00:00",
+        "descripcion": "Todo fallo técnico o funcional del Login que requiera registro de ocurrencia debe relacionarse por error_id numérico con lf_ops.errores_catalogo y conservar el mismo correlation_id del intento. La capa LF traduce el error del proveedor al error_id definido por AUTH-014 antes de responder o registrar la ocurrencia. Un timeout, indisponibilidad o error interno no puede reclasificarse como credenciales inválidas, y el payload técnico permanece redactado.",
+        "valor_config": {
+          "pantalla_id": 51,
+          "error_catalog": "lf_ops.errores_catalogo",
+          "error_relation_key": "error_id",
+          "occurrence_registry": "lf_ops.errores_ocurrencias",
+          "trace_code_required": true,
+          "error_mapping_rule_id": 433,
+          "correlation_id_required": true,
+          "error_relation_key_type": "NUMERIC_ID",
+          "payload_redacted_required": true,
+          "provider_raw_payload_to_client": "DENY",
+          "technical_failure_as_invalid_credentials": "DENY",
+          "provider_error_requires_canonical_mapping": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "55f34cb570a459af96980e094d687eb2303e02230e91e844e988ab59891e9ace"
+    },
+    {
+      "snapshot": {
+        "id": 446,
+        "razon": "Evitar enumeración de usuarios a través del flujo de recuperación y mantener una experiencia consistente sin ocultar fallos operativos que requieren una acción distinta.",
+        "codigo": "B2B-RULE-AUTH-027",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_RECOVERY_V1",
+        "titulo": "Recuperación sin enumeración de cuentas",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:36:40.968895+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-21T01:20:51.097596+00:00",
+        "descripcion": "Después de una solicitud de recuperación con formato válido, la respuesta visible y la navegación deben ser las mismas exista o no una cuenta asociada al correo, esté activa o restringida. El cliente no recibe existencia de cuenta, estado interno, resultado crudo del proveedor ni causa de no envío. RATE_LIMITED conserva tratamiento canónico siempre que su contador sea independiente de la existencia de cuenta. En /recovery/start, un fallo de proveedor o SERVICE_UNAVAILABLE no puede ser externamente alcanzable únicamente por el camino de una cuenta real: debe suprimirse/normalizarse dentro de la respuesta genérica o existir un camino sintético equivalente que preserve indistinguibilidad observable.",
+        "valor_config": {
+          "email_field_id": 299,
+          "response_message_id": 17,
+          "reveal_account_exists": "DENY",
+          "reveal_account_status": "DENY",
+          "recovery_verify_route_id": 11,
+          "recovery_verify_screen_id": 56,
+          "rate_limit_subject_rule_id": 501,
+          "generic_navigation_required": true,
+          "timing_discrepancy_mitigation": "REQUIRED",
+          "provider_raw_payload_to_client": "DENY",
+          "provider_failure_reason_to_client": "DENY",
+          "generic_response_for_account_states": [
+            "UNKNOWN_USER",
+            "ACTIVE_USER",
+            "DISABLED_OR_RESTRICTED_USER"
+          ],
+          "provider_specific_error_passthrough": "DENY",
+          "allowed_provider_failure_mitigations": [
+            "SUPPRESS_TO_GENERIC_EXTERNAL_RESPONSE",
+            "SYNTHETIC_EQUIVALENT_PATH"
+          ],
+          "service_unavailable_reachability_requirement": "ACCOUNT_EXISTENCE_INDEPENDENT",
+          "recovery_start_service_unavailable_account_oracle": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "80a4aea599825851683319dbe1a1c1b1423ed385aa947246aaa7d3de6288929d"
+    },
+    {
+      "snapshot": {
+        "id": 447,
+        "razon": "Mantener el mismo límite de confianza del Login, evitar exponer el proveedor en la UI y preparar un flujo PKCE/servidor verificable para el cambio posterior de contraseña.",
+        "codigo": "B2B-RULE-AUTH-028",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_RECOVERY_V1",
+        "titulo": "Solicitud de recuperación mediante la frontera LF",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:36:40.968895+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "B2B-AUTH-002 envía únicamente el correo validado a LF_AUTH_BOUNDARY. La respuesta y navegación son anti-enumeración. Para una cuenta elegible, el servidor crea el desafío OTP PASSWORD_RECOVERY mediante la operación B2B de correo y entrega el código por Brevo. Esta etapa no autentica al usuario, no crea sesión operativa y no concede acceso; solo inicia el contexto restringido de recuperación que continúa en B2B-AUTH-006.",
+        "valor_config": {
+          "gateway": "LF_AUTH_BOUNDARY",
+          "route_id": 9,
+          "screen_id": 52,
+          "ip_hard_limit": "DENY",
+          "otp_policy_id": 2,
+          "email_field_id": 299,
+          "ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "otp_operation_id": 5,
+          "provider_binding": "OIDC_PROVIDER_PENDING_M1_SPIKE",
+          "identity_protocol": "OIDC_JWT",
+          "primary_cta_label": "Enviar código",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "production_authorized": false,
+          "success_context_scope": "PASSWORD_RECOVERY_CHALLENGE_ONLY",
+          "arbitrary_redirect_url": "DENY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "anti_enumeration_rule_id": 446,
+          "operational_access_grant": "DENY",
+          "password_update_route_id": 12,
+          "recovery_verify_route_id": 11,
+          "authentication_completion": "DENY",
+          "password_update_screen_id": 53,
+          "recovery_rate_limit_scope": "FUNCTIONAL_OPERATION_ISOLATED",
+          "recovery_verify_screen_id": 56,
+          "recovery_rate_limit_rule_id": 501,
+          "browser_direct_provider_auth": "DENY",
+          "operational_session_creation": "DENY",
+          "recovery_rate_limit_policy_id": 7,
+          "fail_closed_security_policy_id": 18,
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "server_generates_correlation_id": true,
+          "password_values_in_recovery_email": "DENY",
+          "provider_architecture_security_policy_id": 23,
+          "password_fields_before_identity_verification": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "2beb33b121801853f68a2d6d7b841f518a5fec0300e8bda1587469f82ae76d7f"
+    },
+    {
+      "snapshot": {
+        "id": 448,
+        "razon": "Evitar que un enlace de recuperación actúe como sesión operativa, impedir reutilización o manipulación del redirect y mantener la verificación del token fuera del cliente.",
+        "codigo": "B2B-RULE-AUTH-029",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_RECOVERY_V1",
+        "titulo": "OTP de recuperación verificado y contexto restringido",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:45:32.121271+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-19T00:44:18.992744+00:00",
+        "descripcion": "B2B-AUTH-006 valida del lado servidor el OTP del contexto PASSWORD_RECOVERY. Solo una verificación válida habilita un contexto temporal restringido PASSWORD_UPDATE_ONLY para B2B-AUTH-003. Ese contexto no concede acceso operativo, no satisface MFA y no puede ser promovido por el cliente. Un código inválido, vencido, agotado o un contexto reutilizado se normaliza mediante error canónico sin revelar existencia o estado de la cuenta.",
+        "valor_config": {
+          "grant_mode": "OPAQUE_ONE_TIME_SERVER_VERIFIED",
+          "accepted_context": "PASSWORD_RECOVERY",
+          "recovery_context_scope": "PASSWORD_UPDATE_ONLY",
+          "recovery_otp_policy_id": 2,
+          "client_context_promotion": "DENY",
+          "recovery_verify_route_id": 11,
+          "invalid_recovery_error_id": 39,
+          "password_update_screen_id": 53,
+          "recovery_otp_operation_id": 5,
+          "recovery_verify_screen_id": 56,
+          "account_existence_exposure": "DENY",
+          "server_verification_required": true,
+          "mfa_satisfied_by_recovery_context": "DENY",
+          "new_password_payload_before_verification": "DENY",
+          "provider_architecture_security_policy_id": 23,
+          "operational_authorization_before_completion": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "f7b59a0fc9768ffed87b7c22a5eb681c73571f83610e994b4891972e68c43c9b"
+    },
+    {
+      "snapshot": {
+        "id": 449,
+        "razon": "Centralizar la seguridad de credenciales, evitar divergencias entre pantallas y mantener la contraseña fuera de almacenamiento funcional, logs y analytics.",
+        "codigo": "B2B-RULE-AUTH-030",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_RECOVERY_V1",
+        "titulo": "Cambio de contraseña gobernado por política central",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:45:32.121271+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "B2B-AUTH-003 solo puede actualizar la contraseña después de AUTH-029. El servidor valida la nueva credencial contra security_policy_id=24, comprueba la coincidencia exacta de los dos campos y delega la actualización a el proveedor OIDC que resulte del spike M1 de ADR-003. La UI muestra una guía dinámica derivada de la política, pero no mantiene una copia independiente de sus umbrales ni requisitos.",
+        "valor_config": {
+          "password_logs": "DENY",
+          "password_trim": "DENY",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "provider_binding": "OIDC_PROVIDER_PENDING_M1_SPIKE",
+          "identity_protocol": "OIDC_JWT",
+          "primary_cta_label": "Actualizar contraseña",
+          "password_analytics": "DENY",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "new_password_field_id": 300,
+          "production_authorized": false,
+          "client_policy_guidance": "DYNAMIC_FROM_SECURITY_POLICY",
+          "password_normalization": "DENY",
+          "checklist_initial_state": "NEUTRAL",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "password_case_transform": "DENY",
+          "provider_operation_alias": "PASSWORD_UPDATE",
+          "recovery_context_rule_id": 448,
+          "checklist_satisfied_state": "SATISFIED",
+          "confirm_password_field_id": 301,
+          "numeric_thresholds_in_rule": "DENY",
+          "password_persistence_lf_ops": "DENY",
+          "password_security_policy_id": 24,
+          "server_side_policy_validation": "REQUIRED",
+          "client_policy_state_evaluation": "UX_SUPPORT_ONLY",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "submit_requires_server_policy_pass": true,
+          "provider_architecture_security_policy_id": 23
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "6b82d5d7cb56f0318f3870437e0d7ec0e486c27b955bd29dd2fc34924a3df6d5"
+    },
+    {
+      "snapshot": {
+        "id": 450,
+        "razon": "Evitar que la sesión especial de recuperación omita controles de Login, MFA, sesión o autorización post-login.",
+        "codigo": "B2B-RULE-AUTH-031",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_RECOVERY_V1",
+        "titulo": "Recuperación finaliza con nueva autenticación completa",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:45:32.121271+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-12T06:45:32.121271+00:00",
+        "descripcion": "Después de actualizar correctamente la contraseña, LF debe cerrar o invalidar el contexto temporal de recuperación y no convertirlo en una sesión operativa. El usuario recibe el mensaje canónico de contraseña actualizada y vuelve a la ruta de Login. El siguiente acceso debe ejecutar nuevamente autenticación completa y MFA según profile_id.",
+        "valor_config": {
+          "login_route_id": 10,
+          "next_route_source": "NUMERIC_ROUTE_ID",
+          "success_message_id": 18,
+          "fresh_login_required": true,
+          "recovery_context_rule_id": 448,
+          "fresh_mfa_required_by_policy": true,
+          "client_redirect_authoritative": "DENY",
+          "operational_session_promotion": "DENY",
+          "recovery_context_after_success": "TERMINATE_OR_INVALIDATE"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "3417b84fdb889fd66a2b627c5f6417d215905b40825817b71fd42a43975a797d"
+    },
+    {
+      "snapshot": {
+        "id": 451,
+        "razon": "Facilitar contraseñas fuertes y uso de gestores sin introducir transformaciones o telemetría sobre una credencial sensible.",
+        "codigo": "B2B-RULE-AUTH-032",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_RECOVERY_V1",
+        "titulo": "Entrada de nueva contraseña compatible y segura",
+        "categoria": "UX",
+        "created_at": "2026-08-12T06:45:32.121271+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-19T00:44:18.992744+00:00",
+        "descripcion": "Los dos campos de B2B-AUTH-003 permanecen enmascarados por defecto, permiten mostrar/ocultar sin alterar el valor, admiten pegado y gestores de contraseñas, y usan autocomplete=new-password. La pantalla presenta en tiempo real los requisitos de security_policy_id=24: cada criterio inicia neutral, cambia a cumplido solo cuando corresponde y muestra error después de interacción cuando aplica. La coincidencia entre contraseñas sigue la misma lógica. Ningún valor se envía a logs, analytics o session replay.",
+        "valor_config": {
+          "logs": "DENY",
+          "paste": "ALLOW",
+          "analytics": "DENY",
+          "autocomplete": "new-password",
+          "session_replay": "MASK_FULL",
+          "password_manager": "ALLOW",
+          "visibility_toggle": "ALLOW_NO_VALUE_CHANGE",
+          "default_visibility": "MASKED",
+          "guidance_error_state": "ERROR_AFTER_INTERACTION",
+          "guidance_render_mode": "LIVE_REQUIREMENT_CHECKLIST",
+          "new_password_field_id": 300,
+          "guidance_initial_state": "NEUTRAL",
+          "guidance_success_state": "SATISFIED",
+          "confirm_password_field_id": 301,
+          "confirmation_match_initial_state": "NEUTRAL",
+          "confirmation_match_success_state": "SATISFIED",
+          "policy_guidance_source_security_policy_id": 24
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "f341263beac26ded75269678bc248a0a5c0aee1348c8c251212e1f40a7216106"
+    },
+    {
+      "snapshot": {
+        "id": 452,
+        "razon": "Mantener el control de MFA en servidor, impedir acceso operativo con autenticación parcial y reutilizar la política central de aplicabilidad/fortaleza en lugar de duplicar perfiles en la pantalla.",
+        "codigo": "B2B-RULE-AUTH-033",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_MFA_V1",
+        "titulo": "Enrutamiento del segundo control gobernado por política",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:49:40.031934+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega.",
+        "valor_config": {
+          "factor_source": "PROVIDER_VERIFIED_FACTORS",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "assurance_source": "LF_SERVER_VERIFIED_SECOND_FACTOR",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "identity_protocol": "OIDC_JWT",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "email_otp_screen_id": 54,
+          "server_side_recheck": "REQUIRED",
+          "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "production_authorized": false,
+          "mfa_challenge_route_id": 13,
+          "second_control_trigger": "UNRECOGNIZED_DEVICE_ONLY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "mfa_challenge_screen_id": 54,
+          "mfa_route_public_access": "DENY",
+          "non_admin_second_factor": "LF_EMAIL_OTP",
+          "challenge_needed_outcome": "MFA_REQUIRED",
+          "client_aal_authoritative": "DENY",
+          "legacy_totp_reactivation": "DENY",
+          "mfa_enrollment_screen_id": null,
+          "mfa_route_gate_semantics": "SERVER_MANAGED_TRANSIENT_MFA_CHALLENGE_CONTEXT",
+          "trusted_device_policy_id": 25,
+          "factor_security_policy_id": 19,
+          "recognized_device_outcome": "AUTHENTICATED",
+          "numeric_thresholds_in_rule": "DENY",
+          "mfa_applicability_policy_id": 3,
+          "satisfied_assurance_outcome": "AUTHENTICATED",
+          "totp_enrollment_normal_flow": "DENY",
+          "unrecognized_device_outcome": "MFA_REQUIRED",
+          "device_recognition_authority": "SERVER_ONLY",
+          "legacy_totp_enrollment_rule_id": 454,
+          "legacy_totp_operational_status": "RETIRED_LEGACY_TRACE_ONLY",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "legacy_totp_enrollment_route_id": 14,
+          "logout_preserves_trusted_device": true,
+          "legacy_totp_enrollment_screen_id": 55,
+          "mfa_route_authentication_required": true,
+          "client_factor_selection_authoritative": "DENY",
+          "provider_architecture_security_policy_id": 23,
+          "mfa_route_challenge_context_source_rule_id": 437,
+          "mfa_route_full_operational_session_required": false,
+          "mfa_route_direct_navigation_without_challenge": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "181389dac198874c07781bce78b9981803a52c9e845ed01926b86bd2f8ff939b"
+    },
+    {
+      "snapshot": {
+        "id": 453,
+        "razon": "Evitar que el cliente fabrique un desafío, reutilice identificadores sensibles o promueva una sesión sin verificación real del proveedor.",
+        "codigo": "B2B-RULE-AUTH-034",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_MFA_V1",
+        "titulo": "Desafío OTP por correo verificado por LF",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:49:40.031934+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-19T12:57:37.963188+00:00",
+        "descripcion": "B2B-AUTH-004 solicita un código OTP únicamente después de que AUTH-033 determine que corresponde el segundo control por correo. LF genera el desafío del lado servidor, entrega el código mediante Brevo al correo registrado y valida el valor antes de continuar. El código, credenciales de Brevo y respuesta cruda del proveedor no se registran ni se exponen a analytics o al cliente.",
+        "valor_config": {
+          "screen_id": 54,
+          "provider_id": 8,
+          "provider_code": "BREVO_EMAIL",
+          "otp_value_logs": "DENY",
+          "otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "routing_rule_id": 452,
+          "success_outcome": "LF_SECOND_FACTOR_VERIFIED",
+          "delivery_channel": "EMAIL",
+          "delivery_provider": "BREVO",
+          "otp_code_field_id": 302,
+          "delivery_execution": "LF_SERVER_ONLY",
+          "delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+          "otp_value_analytics": "DENY",
+          "production_authorized": false,
+          "server_side_generation": "REQUIRED",
+          "delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+          "new_device_ip_hard_limit": "DENY",
+          "server_side_verification": "REQUIRED",
+          "delivery_contract_rule_id": 505,
+          "new_device_ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "delivery_confirmed_outcome": "DELIVERED",
+          "supabase_native_aal2_claim": "DENY",
+          "delivery_confirmation_event": "delivered",
+          "provider_acceptance_outcome": "ACCEPTED_PENDING_DELIVERY",
+          "new_device_rate_limit_rule_id": 503,
+          "new_device_rate_limit_resource": "AUTH_NEW_DEVICE_OTP_SEND",
+          "provider_raw_payload_to_client": "DENY",
+          "delivery_state_contract_rule_id": 505,
+          "new_device_rate_limit_policy_id": 8,
+          "provider_acceptance_is_delivery": "DENY",
+          "provider_credentials_client_exposure": "DENY",
+          "webhook_required_before_challenge_ui": false,
+          "provider_acceptance_allows_challenge_ui": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "7556b0412ca1cabb5b2eadef82e4c3f8884ad6f3f8cc91e81a47e0fc4c8d0147"
+    },
+    {
+      "snapshot": {
+        "id": 454,
+        "razon": "Evitar acceso sin MFA a usuarios nuevos o no enrolados y proteger el secreto de enrolamiento como credencial sensible.",
+        "codigo": "B2B-RULE-AUTH-035",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_AUTH_MFA_V1",
+        "titulo": "Contrato legado de enrolamiento TOTP fuera del flujo normal",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-12T06:49:40.031934+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "B2B-AUTH-005 queda retirado del flujo operativo. Su contrato TOTP se conserva únicamente como trazabilidad histórica/legacy y no puede activarse, enrutar usuarios, provisionar runtime ni conceder acceso operativo. El segundo control vigente continúa gobernado por LF_EMAIL_OTP según AUTH-033/AUTH-034. Cualquier reintroducción futura de TOTP requiere una nueva decisión canónica explícita.",
+        "valor_config": {
+          "qr_logs": "DENY",
+          "route_id": 14,
+          "screen_id": 55,
+          "factor_type": "TOTP",
+          "normal_flow": "DENY",
+          "qr_field_id": 303,
+          "secret_logs": "DENY",
+          "qr_analytics": "DENY",
+          "qr_retention": "TRANSIENT",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "routing_rule_id": 452,
+          "secret_field_id": 304,
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "lifecycle_status": "RETIRED_LEGACY_TRACE_ONLY",
+          "provider_binding": "OIDC_PROVIDER_PENDING_M1_SPIKE",
+          "secret_analytics": "DENY",
+          "secret_retention": "TRANSIENT",
+          "factor_id_context": "SERVER_MANAGED_TRANSIENT",
+          "identity_protocol": "OIDC_JWT",
+          "legacy_trace_only": true,
+          "replacement_factor": "LF_EMAIL_OTP",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "email_otp_screen_id": 54,
+          "provider_operations": [
+            "MFA_ENROLL",
+            "MFA_CHALLENGE",
+            "MFA_VERIFY"
+          ],
+          "activation_authority": "DENY",
+          "invalid_totp_error_id": 40,
+          "production_authorized": false,
+          "verification_code_logs": "DENY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "operational_reactivation": "DENY",
+          "factor_security_policy_id": 19,
+          "unverified_factor_cleanup": "PROVIDER_OR_SERVER_MANAGED",
+          "numeric_thresholds_in_rule": "DENY",
+          "verification_code_field_id": 305,
+          "superseded_for_non_admin_by": "LF_EMAIL_OTP",
+          "verification_code_analytics": "DENY",
+          "implementation_as_active_path": "DENY",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "server_recheck_aal_after_verify": "REQUIRED",
+          "provider_architecture_security_policy_id": 23,
+          "operational_access_before_verified_factor": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "2faefb424ef2fbc447350a068324d93e7039fc1a98a1219953d5a13a3a35eec6"
+    },
+    {
+      "snapshot": {
+        "id": 469,
+        "razon": "Evitar que Story Creator o programación reconstruyan las acciones desde texto disperso o inventen destinos.",
+        "codigo": "B2B-RULE-AUTH-036",
+        "estado": "CANDIDATO",
+        "origen": "LF_INPUTS_BACKOFFICE_2026_47_FAMILIES",
+        "titulo": "Contrato de acciones del Login",
+        "categoria": "UX",
+        "created_at": "2026-08-18T05:11:44.911943+00:00",
+        "created_by": "CHATGPT_LF_BACKOFFICE",
+        "updated_at": "2026-10-10T03:35:14.70415+00:00",
+        "descripcion": "Las acciones del Login se resuelven desde reglas, campos y rutas B2B canónicas. Autenticación, visibilidad de contraseña y recuperación conservan sus destinos existentes; Términos, Privacidad y Soporte resuelven a rutas B2B oficiales accesibles sin autenticación.",
+        "valor_config": {
+          "actions": [
+            {
+              "target": "LF_IDENTITY_BOUNDARY_PENDING_M1",
+              "field_ids": [
+                298,
+                296
+              ],
+              "action_code": "SUBMIT_LOGIN",
+              "target_status": "PENDING_IDENTITY_SPIKE",
+              "source_rule_ids": [
+                431,
+                434
+              ]
+            },
+            {
+              "field_id": 296,
+              "action_code": "TOGGLE_PASSWORD_VISIBILITY",
+              "source_rule_id": 428
+            },
+            {
+              "route_id": 9,
+              "screen_id": 52,
+              "action_code": "START_PASSWORD_RECOVERY",
+              "source_rule_id": 427
+            },
+            {
+              "route_id": 15,
+              "action_code": "OPEN_TERMS",
+              "target_status": "APPROVED_B2B_CANONICAL",
+              "source_rule_id": 464
+            },
+            {
+              "route_id": 16,
+              "action_code": "OPEN_PRIVACY",
+              "target_status": "APPROVED_B2B_CANONICAL",
+              "source_rule_id": 464
+            },
+            {
+              "route_id": 17,
+              "action_code": "CONTACT_SUPPORT",
+              "target_status": "APPROVED_B2B_CANONICAL",
+              "source_rule_id": 464
+            }
+          ],
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "identity_protocol": "OIDC_JWT",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "numeric_ids_preferred": true,
+          "production_authorized": false,
+          "arbitrary_action_target": "DENY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "1e0f92bff3060d3f7b2361b96828e08864edb59a7bfcf45e67b3c2888465b83e"
+    },
+    {
+      "snapshot": {
+        "id": 493,
+        "razon": "Evitar reutilizar B2B-AUTH-004/MFA y preservar anti-enumeración durante todo el flujo de recuperación.",
+        "codigo": "B2B-RULE-AUTH-037",
+        "estado": "CANDIDATO",
+        "origen": "BACKOFFICE_B2B_PASSWORD_RECOVERY",
+        "titulo": "Desafío OTP de recuperación por correo",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T00:44:18.992744+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-19T18:22:54.725665+00:00",
+        "descripcion": "La verificación PASSWORD_RECOVERY usa una operación OTP B2B separada de MFA. Solo las cuentas elegibles reciben el código, pero la interfaz, navegación y mensajes no revelan esa elegibilidad. El código se genera y valida del lado servidor, no se registra ni se expone a analytics y una verificación válida solo habilita PASSWORD_UPDATE_ONLY.",
+        "valor_config": {
+          "provider_id": 8,
+          "otp_policy_id": 2,
+          "provider_code": "BREVO_EMAIL",
+          "success_scope": "PASSWORD_UPDATE_ONLY",
+          "otp_value_logs": "DENY",
+          "delivery_channel": "EMAIL",
+          "mfa_satisfaction": "DENY",
+          "otp_operation_id": 5,
+          "verify_screen_id": 56,
+          "delivery_provider": "BREVO",
+          "otp_code_field_id": 306,
+          "primary_cta_label": "Verificar código",
+          "request_screen_id": 52,
+          "delivery_execution": "LF_SERVER_ONLY",
+          "delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+          "otp_value_analytics": "DENY",
+          "resend_action_label": "Reenviar código",
+          "production_authorized": false,
+          "server_side_generation": "REQUIRED",
+          "anti_enumeration_rule_id": 446,
+          "delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+          "server_side_verification": "REQUIRED",
+          "delivery_contract_rule_id": 505,
+          "delivery_confirmed_outcome": "DELIVERED",
+          "delivery_confirmation_event": "delivered",
+          "provider_acceptance_outcome": "ACCEPTED_PENDING_DELIVERY",
+          "operational_session_creation": "DENY",
+          "delivery_state_contract_rule_id": 505,
+          "provider_acceptance_is_delivery": "DENY",
+          "webhook_required_before_verify_ui": false,
+          "provider_acceptance_allows_verify_ui": true,
+          "delivery_failure_account_existence_exposure": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "b845bb8fe2f4cb700450caea55534b6561287eba9e7ad0c54978a79f6e72ee9a"
+    },
+    {
+      "snapshot": {
+        "id": 494,
+        "razon": "Dar feedback temporal útil sin convertir números del mockup en reglas duplicadas o inconsistentes.",
+        "codigo": "B2B-RULE-AUTH-038",
+        "estado": "CANDIDATO",
+        "origen": "BACKOFFICE_B2B_PASSWORD_RECOVERY",
+        "titulo": "Expiración y reenvío OTP gobernados por política",
+        "categoria": "UX",
+        "created_at": "2026-08-19T00:44:18.992744+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-19T00:44:18.992744+00:00",
+        "descripcion": "B2B-AUTH-006 puede mostrar el tiempo restante de expiración y de habilitación de reenvío únicamente a partir del desafío y de OTP_POL_B2B_AUTH_EMAIL_BREVO. Los contadores son derivados del servidor, no valores hardcodeados. Al expirar, el código deja de ser válido. El estado del control Reenviar código también se resuelve por política y conserva anti-enumeración.",
+        "valor_config": {
+          "otp_policy_id": 2,
+          "expiry_display": "SERVER_DERIVED_COUNTDOWN",
+          "resend_display": "SERVER_POLICY_DERIVED_COUNTDOWN",
+          "hardcoded_expiry": "DENY",
+          "otp_operation_id": 5,
+          "verify_screen_id": 56,
+          "resend_control_state": "SERVER_POLICY_DERIVED",
+          "anti_enumeration_required": true,
+          "hardcoded_resend_countdown": "DENY",
+          "numeric_thresholds_in_rule": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "481ebfde98e2fc5ca2a709cb739579d79f85a5a582e98d26153386c98b2df0ca"
+    },
+    {
+      "snapshot": {
+        "id": 496,
+        "razon": "Evitar pedir OTP nuevamente después de cada cierre de sesión manteniendo revocación explícita ante eventos de seguridad.",
+        "codigo": "B2B-RULE-AUTH-039",
+        "estado": "VIGENTE",
+        "origen": "OWNER_APPROVAL_2026-08-18",
+        "titulo": "Ciclo de vida del dispositivo confiable",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T04:08:36.479266+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-21T06:05:02.602098+00:00",
+        "descripcion": "Cerrar sesión termina la sesión operativa pero conserva la confianza del dispositivo. La confianza termina por vencimiento, cambio de contraseña, usuario en estado canónico DISABLED o revocación manual autorizada. La revocación manual puede aplicarse a un dispositivo específico o a todos los dispositivos confiables del usuario; en ambos casos el servidor termina inmediatamente las sesiones activas afectadas y el siguiente acceso desde un dispositivo revocado exige OTP por correo. La acción requiere confirmación explícita y permiso B2B_USER_UPDATE. El cliente no puede auto-marcar, revocar ni restaurar confianza.",
+        "valor_config": {
+          "user_status_source": "lf_ops.empresa_usuarios.status",
+          "revocation_triggers": [
+            "TRUST_EXPIRED",
+            "PASSWORD_CHANGED",
+            "USER_DISABLED",
+            "MANUAL_REVOCATION"
+          ],
+          "user_disabled_scope": "ALL_TRUSTED_DEVICES_FOR_USER",
+          "device_registry_table": "lf_ops.dispositivos_confiables",
+          "disable_permission_id": 32,
+          "legacy_semantic_alias": "USER_SUSPENDED",
+          "password_change_scope": "ALL_TRUSTED_DEVICES_FOR_USER",
+          "session_logout_effect": "TERMINATE_OPERATIONAL_SESSION",
+          "client_trust_authority": "DENY",
+          "device_registry_status": "DEFINED_CANDIDATE",
+          "logout_effect_on_trust": "PRESERVE",
+          "server_trust_authority": "REQUIRED",
+          "disable_permission_code": "B2B_USER_DISABLE",
+          "manual_revocation_scope": [
+            "SINGLE_DEVICE",
+            "ALL_TRUSTED_DEVICES_FOR_USER"
+          ],
+          "trusted_device_policy_id": 25,
+          "manual_revocation_actions": [
+            "REVOKE_TRUSTED_DEVICE",
+            "REVOKE_ALL_TRUSTED_DEVICES"
+          ],
+          "manual_revocation_authority": "SERVER_ONLY",
+          "manual_revocation_next_login": "EMAIL_OTP_REQUIRED",
+          "trusted_device_token_storage": "HASH_ONLY",
+          "canonical_user_status_trigger": "DISABLED",
+          "manual_revocation_confirmation": "REQUIRED",
+          "manual_revocation_permission_id": 31,
+          "manual_revocation_session_effect": "TERMINATE_AFFECTED_ACTIVE_SESSIONS",
+          "manual_revocation_permission_code": "B2B_USER_UPDATE"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "d629b76e895959d6a253169ddada0506f4ff0b49d0c1474b3ad2216756714d4b"
+    },
+    {
+      "snapshot": {
+        "id": 497,
+        "razon": "Reduce fricción en dispositivos ya verificados sin convertir la cookie en autenticador ni persistir el secreto de confianza en base de datos.",
+        "codigo": "B2B-RULE-AUTH-040",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_APPROVAL_2026-08-19",
+        "titulo": "Token opaco de dispositivo confiable protegido por servidor",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T05:35:12.213614+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-19T05:35:12.213614+00:00",
+        "descripcion": "La confianza de dispositivo no sustituye la autenticación primaria. Después de validar email y contraseña, LF puede reconocer un dispositivo únicamente mediante un token opaco emitido por servidor. Un dispositivo nuevo obtiene el token solo después de validar correctamente el OTP por correo. El navegador conserva el token en una cookie host-only con HttpOnly, Secure, SameSite=Lax, Path=/ y prefijo __Host-. La cookie no contiene identidad ni autoriza acceso por sí sola. LF persiste únicamente el hash del token en lf_ops.dispositivos_confiables, valida vencimiento y revocación del lado servidor y genera un token nuevo después de cada nueva validación OTP; un token revocado nunca se reactiva.",
+        "valor_config": {
+          "token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+          "cookie_path": "/",
+          "issue_after": "SUCCESSFUL_EMAIL_OTP_FOR_UNRECOGNIZED_DEVICE",
+          "cookie_domain": "OMIT",
+          "cookie_prefix": "__Host-",
+          "cookie_secure": true,
+          "expiry_source": "lf_ops.empresas.trusted_device_duration_days",
+          "token_storage": "HASH_ONLY",
+          "registry_table": "lf_ops.dispositivos_confiables",
+          "token_rotation": "NEW_TOKEN_AFTER_SUCCESSFUL_EMAIL_OTP",
+          "cookie_http_only": true,
+          "cookie_same_site": "Lax",
+          "expiry_authority": "SERVER",
+          "token_generation": "SERVER_ONLY",
+          "cookie_identity_payload": "DENY",
+          "trusted_device_policy_id": 25,
+          "revoked_token_reactivation": "DENY",
+          "client_direct_registry_access": "DENY",
+          "cookie_authentication_authority": "DENY",
+          "primary_authentication_required": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "7f0256dcbae7c1f233301793e596bd4de785f4bdbafe9b033a80e29cbe746a89"
+    },
+    {
+      "snapshot": {
+        "id": 498,
+        "razon": "Evita aceptar simultáneamente códigos antiguos y nuevos, reduce riesgo de replay y mantiene una única fuente para límites numéricos.",
+        "codigo": "B2B-RULE-AUTH-041",
+        "estado": "CANDIDATO",
+        "origen": "LF_BACKOFFICE_B2B",
+        "titulo": "Uso único, reenvío estable y renovación controlada del OTP por correo",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T05:37:56.565961+00:00",
+        "created_by": "ChatGPT",
+        "updated_at": "2026-08-19T05:37:56.565961+00:00",
+        "descripcion": "Cada OTP emitido por OTP_POL_B2B_AUTH_EMAIL_BREVO es válido para un solo uso. Mientras el código permanezca vigente y tenga intentos disponibles, Reenviar entrega nuevamente el mismo código y conserva exactamente su expires_at y contador de intentos. Reenviar no amplía la vigencia ni concede intentos adicionales. Solo un OTP vencido o con intentos agotados puede ser sustituido por un código nuevo, sujeto al cooldown y rate limit aplicables. Un código consumido, vencido o agotado no vuelve a aceptarse.",
+        "valor_config": {
+          "one_time_use": "REQUIRED",
+          "otp_policy_id": 2,
+          "otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "accept_expired_code": "DENY",
+          "replay_after_success": "DENY",
+          "resend_resets_expiry": "DENY",
+          "accept_exhausted_code": "DENY",
+          "new_code_allowed_when": [
+            "EXPIRED",
+            "ATTEMPTS_EXHAUSTED"
+          ],
+          "active_resend_behavior": "RESEND_SAME_CODE",
+          "resend_resets_attempts": "DENY",
+          "applies_to_operation_ids": [
+            4,
+            5
+          ],
+          "numeric_thresholds_in_rule": "DENY",
+          "server_side_state_authority": "REQUIRED",
+          "new_code_subject_to_rate_limit": "REQUIRED"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "17005985437ac51d1b1dc467c1e748e93073a20f31140d401a80a7dd841b8c07"
+    },
+    {
+      "snapshot": {
+        "id": 501,
+        "razon": "Limitar abuso de recuperación sin afectar comunicaciones legítimas ni generar bloqueos colectivos en redes con NAT, CGNAT o IP pública compartida.",
+        "codigo": "B2B-RULE-AUTH-042",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_APPROVAL_CHAT_2026-08-19",
+        "titulo": "Rate limit de recuperación aislado por operación funcional",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T11:07:59.92482+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-21T01:20:51.097596+00:00",
+        "descripcion": "La solicitud inicial y los reenvíos del OTP de PASSWORD_RECOVERY comparten únicamente el contador de su operación funcional. El contador no consume ni bloquea otros correos transaccionales ni otras operaciones OTP. La IP se usa como señal preventiva de riesgo y puede escalar controles anti-bot o de abuso, pero no produce por sí sola un bloqueo. El sujeto del contador se deriva mediante HMAC de la representación canónica server-side del correo con secreto de runtime, y el contador se consume exista o no una cuenta, preservando anti-enumeración.",
+        "valor_config": {
+          "ip_escalation": "RISK_OR_ANTIBOT",
+          "ip_hard_limit": "DENY",
+          "resource_code": "AUTH_PASSWORD_RECOVERY_OTP_SEND",
+          "ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "counter_subject": "PRIVACY_PRESERVING_DERIVED_SUBJECT_KEY",
+          "otp_operation_id": 5,
+          "rate_limit_policy_id": 7,
+          "abuse_security_policy_id": 22,
+          "anti_enumeration_required": true,
+          "counter_subject_derivation": "HMAC(SERVER_CANONICAL_EMAIL_VALUE,SERVER_SECRET)",
+          "numeric_thresholds_in_rule": "DENY",
+          "anti_bot_security_policy_id": 17,
+          "account_existence_dependency": "DENY",
+          "functional_operation_isolation": "REQUIRED",
+          "counter_subject_secret_location": "RUNTIME_SECRET_OUTSIDE_LF_OPS",
+          "counter_consumed_when_account_unknown": true,
+          "other_otp_operation_counter_interference": "DENY",
+          "transactional_email_counter_interference": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "20ba67e22439a6526b80d9c4fab232f671b1c951b48b9dd465a9cc81f0159521"
+    },
+    {
+      "snapshot": {
+        "id": 503,
+        "razon": null,
+        "codigo": "B2B-RULE-AUTH-043",
+        "estado": "CANDIDATO",
+        "origen": "DECISION_USUARIO_2026-08-19",
+        "titulo": "Rate limit de segundo control aislado por operación funcional",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T12:26:30.181973+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-19T12:26:30.181973+00:00",
+        "descripcion": "La solicitud inicial y los reenvíos del OTP para dispositivo no reconocido comparten únicamente el contador de AUTH_NEW_DEVICE_OTP_SEND. El contador no consume ni bloquea PASSWORD_RECOVERY ni correos transaccionales. La IP es una señal preventiva de riesgo: puede elevar evaluación de abuso o anti-bot, pero no bloquea por sí sola. Mientras el OTP siga vigente y tenga intentos disponibles, Reenviar entrega el mismo código; la emisión de un código nuevo solo procede al vencer o agotar intentos y siempre queda sujeta a la política de rate limit de esta operación.",
+        "valor_config": {
+          "ip_escalation": "RISK_OR_ANTIBOT",
+          "ip_hard_limit": "DENY",
+          "resource_code": "AUTH_NEW_DEVICE_OTP_SEND",
+          "ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "otp_operation_id": 4,
+          "rate_limit_policy_id": 8,
+          "new_code_allowed_when": [
+            "EXPIRED",
+            "ATTEMPTS_EXHAUSTED"
+          ],
+          "active_resend_behavior": "RESEND_SAME_CODE",
+          "abuse_security_policy_id": 22,
+          "numeric_thresholds_in_rule": "DENY",
+          "anti_bot_security_policy_id": 17,
+          "functional_operation_isolation": "REQUIRED",
+          "new_code_subject_to_rate_limit": "REQUIRED",
+          "password_recovery_counter_interference": "DENY",
+          "transactional_email_counter_interference": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "3e15341ff449f436f3c8cef077be20f9282f260465e738468a76cecac5fbcea7"
+    },
+    {
+      "snapshot": {
+        "id": 505,
+        "razon": "La API transaccional permite mantener el proveedor detrás de LF_AUTH_API_GATEWAY, preservar trazabilidad y separar aceptación del proveedor de entrega real sin exponer secretos al cliente.",
+        "codigo": "B2B-RULE-AUTH-044",
+        "estado": "CANDIDATO",
+        "origen": "DEFINICION_FUNCIONAL_B2B_AUTH_BREVO_API_2026-08-19",
+        "titulo": "Entrega OTP mediante Brevo Transactional Email API",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T12:35:25.3821+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-08-19T16:33:48.077616+00:00",
+        "descripcion": "La entrega OTP usa Brevo Transactional Email API desde servidor LF. La aceptación del API habilita la UI como ACCEPTED_PENDING_DELIVERY pero no equivale a entrega. Los eventos relevantes de API/webhook se registran en lf_ops.otp_entrega_eventos como append-only, con correlation_id, operación OTP, provider_id, messageId técnico, tipo de evento, estado normalizado y tiempos; sin OTP, correo completo ni payload crudo. Los reintentos de webhook deben ser idempotentes y no pueden duplicar efectos funcionales.",
+        "valor_config": {
+          "provider_id": 8,
+          "provider_code": "BREVO_EMAIL",
+          "smtp_default_use": "DENY",
+          "credential_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+          "delivery_provider": "BREVO",
+          "delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+          "execution_boundary": "LF_SERVER_ONLY",
+          "webhook_idempotency": "REQUIRED",
+          "webhook_auth_rule_id": 506,
+          "webhook_storage_mode": "APPEND_ONLY",
+          "production_authorized": false,
+          "webhook_client_access": "DENY",
+          "delivery_failed_events": [
+            "hard_bounce",
+            "invalid_email",
+            "blocked",
+            "error"
+          ],
+          "webhook_https_required": "REQUIRED",
+          "delivery_failed_outcome": "DELIVERY_FAILED",
+          "applies_to_operation_ids": [
+            4,
+            5
+          ],
+          "webhook_ip_allowlist_role": "SECONDARY_DEFENSE",
+          "delivery_confirmed_outcome": "DELIVERED",
+          "client_direct_provider_call": "DENY",
+          "delivery_confirmation_event": "delivered",
+          "provider_acceptance_outcome": "ACCEPTED_PENDING_DELIVERY",
+          "runtime_validation_required": "REQUIRED",
+          "webhook_event_storage_table": "lf_ops.otp_entrega_eventos",
+          "webhook_invalid_auth_action": "REJECT_NO_PERSIST_NO_STATE_CHANGE",
+          "webhook_event_storage_status": "DEFINED_CANDIDATE_TABLE",
+          "delivery_pending_retry_events": [
+            "deferred",
+            "soft_bounce"
+          ],
+          "provider_event_id_correlation": "REQUIRED",
+          "webhook_authentication_method": "BEARER_TOKEN",
+          "webhook_idempotency_key_scope": "PROVIDER_PLUS_SERVER_DERIVED_EVENT_KEY",
+          "webhook_secret_storage_status": "BLOCKED_NO_DESTINATION",
+          "delivery_pending_retry_outcome": "DELIVERY_PENDING_RETRY",
+          "webhook_ip_only_authentication": "DENY",
+          "provider_acceptance_is_delivery": "DENY",
+          "provider_message_id_correlation": "REQUIRED",
+          "provider_raw_response_to_client": "DENY",
+          "provider_acceptance_allows_otp_ui": true,
+          "otp_value_in_provider_event_storage": "DENY",
+          "provider_credentials_client_exposure": "DENY",
+          "provider_raw_webhook_payload_storage": "DENY",
+          "full_recipient_email_in_observability": "DENY",
+          "credential_value_persistence_in_lf_ops": "DENY",
+          "webhook_required_before_user_navigation": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "5db7e9d1f25faab2aab97a67ab46e890e36f2f1479aad6e5c42e18064580f043"
+    },
+    {
+      "snapshot": {
+        "id": 506,
+        "razon": "Evita aceptar eventos de entrega falsificados y separa autenticación primaria del webhook de señales de red susceptibles a NAT, proxies o cambios del proveedor.",
+        "codigo": "B2B-RULE-AUTH-045",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_APPROVAL_CHAT_2026-08-19",
+        "titulo": "Autenticación del webhook de entrega Brevo",
+        "categoria": "SECURITY",
+        "created_at": "2026-08-19T16:33:30.115741+00:00",
+        "created_by": "chatgpt",
+        "updated_at": "2026-08-19T16:33:30.115741+00:00",
+        "descripcion": "El endpoint server-side que recibe eventos de entrega OTP desde Brevo exige HTTPS y autenticación Bearer válida antes de aceptar o persistir cualquier evento. Las IP oficiales del proveedor se usan únicamente como defensa secundaria y nunca sustituyen el secreto. Una petición sin autenticación válida se rechaza sin insertar en lf_ops.otp_entrega_eventos ni modificar estado funcional del OTP. El valor del secreto no se persiste en lf_ops.*.",
+        "valor_config": {
+          "provider_id": 8,
+          "provider_code": "BREVO_EMAIL",
+          "ip_allowlist_role": "SECONDARY_DEFENSE",
+          "webhook_transport": "HTTPS_ONLY",
+          "event_storage_table": "lf_ops.otp_entrega_eventos",
+          "invalid_auth_action": "REJECT_NO_PERSIST_NO_STATE_CHANGE",
+          "authorization_header": "Authorization",
+          "authorization_scheme": "Bearer",
+          "authentication_method": "BEARER_TOKEN",
+          "bearer_token_required": "REQUIRED",
+          "secret_storage_status": "BLOCKED_NO_DESTINATION",
+          "ip_only_authentication": "DENY",
+          "secret_client_exposure": "DENY",
+          "secret_rotation_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "negative_tests_required": [
+            "MISSING_BEARER",
+            "INVALID_BEARER",
+            "IP_ONLY_WITHOUT_BEARER",
+            "DUPLICATE_EVENT_AFTER_VALID_AUTH"
+          ],
+          "webhook_contract_rule_id": 505,
+          "runtime_validation_required": "REQUIRED",
+          "secret_value_persistence_in_lf_ops": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "7e8aaf186a077a29d38a865e6ffc5291267fe3e8b5621d3a8f6b903d8f611dd2"
+    },
+    {
+      "snapshot": {
+        "id": 580,
+        "razon": "Evitar que una adaptación por viewport cree una segunda máquina de estados o una ruta de autenticación distinta, preservar compatibilidad con gestores de credenciales y evitar submits prematuros que puedan consumir controles de abuso.",
+        "codigo": "B2B-RULE-AUTH-048",
+        "estado": "CANDIDATO",
+        "origen": "OWNER_REVIEW_2026-08-20",
+        "titulo": "Divulgación progresiva local sin duplicar lógica de autenticación por viewport",
+        "categoria": "UX",
+        "created_at": "2026-08-21T03:04:25.447006+00:00",
+        "created_by": null,
+        "updated_at": "2026-09-29T15:42:08.778738+00:00",
+        "descripcion": "B2B-AUTH-001 puede usar divulgación completa o progresiva según el modo responsive, pero el estado de divulgación pertenece al controlador del formulario de Login y no al layout. El layout responsive solo compone slots y no conoce pasos de autenticación. En modo progresivo, el primer avance valida localmente el correo y no ejecuta autenticación ni llamadas al gateway. El campo Contraseña permanece asociado al mismo formulario durante todo el flujo. El paso de contraseña muestra el correo en modo lectura con una acción visible para editarlo, gestiona foco al cambiar de etapa y anuncia el cambio mediante una región aria-live. La autenticación real continúa siendo una única solicitud con correo y contraseña juntos.",
+        "valor_config": {
+          "screen_id": 51,
+          "layout_role": "SLOTS_AND_COMPOSITION_ONLY",
+          "state_owner": "AUTH_LOGIN_FORM_CONTROLLER",
+          "submit_target": "LF_IDENTITY_BOUNDARY_PENDING_M1",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "disclosure_modes": [
+            "FULL",
+            "PROGRESSIVE"
+          ],
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "email_review_mode": "READ_ONLY_WITH_EDIT_ACTION",
+          "identity_protocol": "OIDC_JWT",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "focus_on_edit_email": "EMAIL_FIELD",
+          "implementation_alias": "AuthLoginForm",
+          "submit_target_status": "PENDING_IDENTITY_SPIKE",
+          "aria_live_step_change": "REQUIRED_POLITE",
+          "password_autocomplete": "current-password",
+          "production_authorized": false,
+          "credential_submit_mode": "EMAIL_AND_PASSWORD_TOGETHER",
+          "layout_state_authority": "DENY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "progressive_email_enter": "PREVENT_NATIVE_SUBMIT_AND_ADVANCE_LOCALLY_IF_VALID",
+          "numeric_thresholds_in_rule": "DENY",
+          "responsive_layout_strategy": "CONTAINER_QUERIES",
+          "password_input_dom_presence": "REQUIRED",
+          "viewport_resize_value_reset": "DENY",
+          "focus_on_progressive_advance": "PASSWORD_FIELD",
+          "password_conditional_unmount": "DENY",
+          "responsive_layout_components": "SINGLE",
+          "viewport_resize_network_submit": "DENY",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "progressive_stage1_is_auth_attempt": false,
+          "progressive_stage1_network_request": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "507cb33dbf34afe361cc37417ad1e0e43cf0b7867560bea8326b56bc8bdffcd2"
+    },
+    {
+      "snapshot": {
+        "id": 404,
+        "razon": "Impedir cambios de estado arbitrarios.",
+        "codigo": "B2B-RULE-STATE-001",
+        "estado": "VIGENTE",
+        "origen": "HANDOFF_B2B_v0.3",
+        "titulo": "Máquina de estados",
+        "categoria": "WORKFLOW",
+        "created_at": "2026-07-21T15:59:54.024242+00:00",
+        "created_by": "OpenAI",
+        "updated_at": "2026-08-21T05:56:04.996559+00:00",
+        "descripcion": "Solo se permiten transiciones registradas en lf_ops.estados_transiciones. El servidor toma de la transición vigente el estado origen/destino, required_permission_id, requires_comment, requires_idempotency_key y audit_required; el cliente no puede imponer estado destino, permiso ni saltar una transición.",
+        "valor_config": {
+          "registry": "lf_ops.estados_transiciones",
+          "entity_type": "UPLOAD_BATCH",
+          "audit_required": true,
+          "state_registry": "lf_ops.estados_catalogo",
+          "permission_recheck": "REQUIRED",
+          "unregistered_transition": "DENY",
+          "audit_required_from_transition": true,
+          "transition_fields_authoritative": [
+            "from_state_id",
+            "to_state_id",
+            "required_permission_id",
+            "requires_comment",
+            "requires_idempotency_key",
+            "audit_required"
+          ],
+          "server_side_transition_authority": "REQUIRED",
+          "client_supplied_target_state_authoritative": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "sha256": "5dc84de39a3a780bb2340f584b23995ee8b43713b9d760c1c9ffdb0c270d2764"
+    }
+  ],
+  "protected_codes": [
+    "B2B-RULE-AUTH-018",
+    "B2B-RULE-AUTH-019",
+    "B2B-RULE-AUTH-020",
+    "B2B-RULE-AUTH-021",
+    "B2B-RULE-AUTH-026",
+    "B2B-RULE-AUTH-047"
+  ],
+  "never_update_state_rule": "B2B-RULE-STATE-001",
+  "snapshot_note": "Added AUTH039 VIGENTE only for isolated option-C rollback; live value unchanged"
+}

@@ -1,0 +1,11 @@
+{
+  "solution_ref": "LF-LOGIN-B2B-LOTE2-OTHER-CANDIDATE-CONFLICTS-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/login_b2b_lote2_source_snapshot_20261113.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/login_b2b_lote2_conflict_only_patch_20261113.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_login_b2b_lote2_conflicts_pg17_pg18.py": "RUNTIME_TESTING",
+    "audits/login-b2b-lote2/01_matriz_conflictos_y_textos_propuestos.md": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-LOGIN-B2B-LOTE2-OTHER-CANDIDATE-CONFLICTS-V1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/login_b2b_lote2_option_c_policy25_20261113.json": "RUNTIME_TESTING"
+  }
+}
