@@ -1,0 +1,92 @@
+-- Núcleo de reglas, fase F0: catálogo de familias (instancia LF).
+-- Familia = de qué trata la regla. El alcance (dónde aplica) es una dimensión aparte.
+-- Las 47 familias de IG se registran con dominio CALIDAD; se suman 17 de NEGOCIO y BACKEND.
+-- Las familias con menos de 3 reglas nacen EN_FORMACION hasta completar su set mínimo.
+CREATE TABLE lf_ops.nucleo_familias (
+  codigo text PRIMARY KEY,
+  dominio text NOT NULL,
+  origen text NOT NULL,
+  descripcion text NOT NULL,
+  estado text NOT NULL DEFAULT 'EN_FORMACION',
+  min_pruebas integer NOT NULL DEFAULT 2,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT nucleo_familias_codigo_formato CHECK (codigo ~ '^[A-Z][A-Z0-9_]{2,62}$'),
+  CONSTRAINT nucleo_familias_dominio_valido CHECK (dominio IN ('CALIDAD','NEGOCIO','BACKEND')),
+  CONSTRAINT nucleo_familias_origen_valido CHECK (origen IN ('IG','NUEVA')),
+  CONSTRAINT nucleo_familias_estado_valido CHECK (estado IN ('EN_FORMACION','ACTIVA','RETIRADA')),
+  CONSTRAINT nucleo_familias_descripcion_minima CHECK (length(btrim(descripcion)) >= 20),
+  CONSTRAINT nucleo_familias_min_pruebas_positivo CHECK (min_pruebas >= 1)
+);
+COMMENT ON TABLE lf_ops.nucleo_familias IS
+  'Catálogo de familias del núcleo de reglas (instancia LF). Familia = tema de la regla; el alcance es otra dimensión. min_pruebas es propio de cada familia.';
+REVOKE ALL ON TABLE lf_ops.nucleo_familias FROM PUBLIC;
+ALTER TABLE lf_ops.nucleo_familias ENABLE ROW LEVEL SECURITY;
+CREATE POLICY deny_direct_client_access ON lf_ops.nucleo_familias
+  AS PERMISSIVE FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+REVOKE ALL ON lf_ops.nucleo_familias FROM anon, authenticated;
+
+INSERT INTO lf_ops.nucleo_familias (codigo, dominio, origen, descripcion, estado) VALUES
+  ('ACCESSIBILITY', 'CALIDAD', 'IG', 'Accesibilidad: interacción por teclado, lectores de pantalla y lenguaje claro.', 'ACTIVA'),
+  ('ACTIONS', 'CALIDAD', 'IG', 'Acciones disponibles en la pantalla y sus efectos sobre el flujo.', 'ACTIVA'),
+  ('ANALYTICS', 'CALIDAD', 'IG', 'Medición y eventos de analítica, sin datos personales.', 'ACTIVA'),
+  ('API_DATA_CONTRACT', 'CALIDAD', 'IG', 'Contrato de datos entre pantalla y API: campos, tipos y respuestas.', 'ACTIVA'),
+  ('APPLICABILITY_READINESS', 'CALIDAD', 'IG', 'Condiciones para que una regla o pantalla esté lista para aplicarse.', 'ACTIVA'),
+  ('ASSETS_ICONS', 'CALIDAD', 'IG', 'Recursos gráficos, íconos y logotipos oficiales.', 'ACTIVA'),
+  ('AUDIT', 'CALIDAD', 'IG', 'Registro auditable e inmutable de eventos relevantes.', 'ACTIVA'),
+  ('BROWSER_PLATFORM', 'CALIDAD', 'IG', 'Compatibilidad de navegadores y plataformas soportadas.', 'ACTIVA'),
+  ('CONFLICT_PRECEDENCE', 'CALIDAD', 'IG', 'Resolución de conflictos y precedencia entre reglas.', 'ACTIVA'),
+  ('CONTEXT_BUDGET_RETRIEVAL_POLICY', 'CALIDAD', 'IG', 'Política de contexto y recuperación de información para agentes.', 'ACTIVA'),
+  ('DEPENDENCIES', 'CALIDAD', 'IG', 'Dependencias de la pantalla con servicios, datos y otras pantallas.', 'ACTIVA'),
+  ('DESIGN_SYSTEM', 'CALIDAD', 'IG', 'Uso de tokens y componentes del sistema de diseño, sin valores visuales duros.', 'ACTIVA'),
+  ('EKB', 'CALIDAD', 'IG', 'Registro y consulta de errores conocidos y aprendizajes.', 'ACTIVA'),
+  ('ERRORS', 'CALIDAD', 'IG', 'Códigos de error canónicos, trazables y seguros para el usuario.', 'ACTIVA'),
+  ('FEATURE_FLAGS', 'CALIDAD', 'IG', 'Activación controlada de funcionalidades mediante interruptores.', 'ACTIVA'),
+  ('FIELDS', 'CALIDAD', 'IG', 'Campos de formulario: formato, ayuda, edición y autocompletado.', 'ACTIVA'),
+  ('FORCED_COLORS_CONTRAST', 'CALIDAD', 'IG', 'Contraste y modo de colores forzados sin pérdida funcional.', 'ACTIVA'),
+  ('FRESHNESS_INVALIDATION', 'CALIDAD', 'IG', 'Vigencia de los datos e invalidación cuando cambian sus fuentes.', 'ACTIVA'),
+  ('I18N_FORMATS', 'CALIDAD', 'IG', 'Formatos regionales de montos, fechas, teléfonos e idioma.', 'ACTIVA'),
+  ('IDEMPOTENCY_CONCURRENCY', 'CALIDAD', 'IG', 'Idempotencia y control de concurrencia en operaciones con efecto.', 'ACTIVA'),
+  ('LOADING_EMPTY_ERROR_STATES', 'CALIDAD', 'IG', 'Estados de carga, vacío y error de la pantalla.', 'ACTIVA'),
+  ('MFA_OTP_SSO', 'CALIDAD', 'IG', 'Autenticación: contraseña, segundo factor, OTP e inicio de sesión único.', 'ACTIVA'),
+  ('NEGATIVE_REQUIREMENTS', 'CALIDAD', 'IG', 'Lo que la pantalla explícitamente no debe hacer.', 'ACTIVA'),
+  ('OBJECTIVE_OUTCOMES', 'CALIDAD', 'IG', 'Objetivo de la pantalla y resultados esperados.', 'ACTIVA'),
+  ('OBSERVABILITY', 'CALIDAD', 'IG', 'Monitoreo, alertas y trazabilidad técnica.', 'ACTIVA'),
+  ('PERFORMANCE', 'CALIDAD', 'IG', 'Rendimiento percibido y métricas de carga.', 'ACTIVA'),
+  ('PERMISSIONS', 'CALIDAD', 'IG', 'Permisos y autorización por perfil y recurso.', 'ACTIVA'),
+  ('PRIVACY_PII', 'CALIDAD', 'IG', 'Protección de datos personales en logs, telemetría y pantallas.', 'ACTIVA'),
+  ('PROFILES', 'CALIDAD', 'IG', 'Perfiles de usuario que acceden a la pantalla.', 'ACTIVA'),
+  ('RATE_LIMIT', 'CALIDAD', 'IG', 'Límites de intentos, envíos y solicitudes.', 'ACTIVA'),
+  ('REDUCED_MOTION', 'CALIDAD', 'IG', 'Respeto a la preferencia de movimiento reducido.', 'ACTIVA'),
+  ('RESPONSIVE', 'CALIDAD', 'IG', 'Comportamiento por tamaño de pantalla y dispositivo.', 'ACTIVA'),
+  ('ROLLOUT_PRODUCTION_GATES', 'CALIDAD', 'IG', 'Condiciones para pasar a producción y despliegue gradual.', 'ACTIVA'),
+  ('ROUTING_NAVIGATION', 'CALIDAD', 'IG', 'Rutas, navegación y estructura de la aplicación.', 'ACTIVA'),
+  ('RUNTIME_CONFIG', 'CALIDAD', 'IG', 'Configuración en tiempo de ejecución leída desde fuentes gobernadas.', 'ACTIVA'),
+  ('SCREEN_IDENTITY', 'CALIDAD', 'IG', 'Identidad de la pantalla: código, nombre, módulo y versión.', 'ACTIVA'),
+  ('SECURITY', 'CALIDAD', 'IG', 'Seguridad: defensa ante ataques, aislamiento y manejo de secretos.', 'ACTIVA'),
+  ('SESSION', 'CALIDAD', 'IG', 'Sesión de usuario: inactividad, expiración, rotación y concurrencia.', 'ACTIVA'),
+  ('SOURCE_AUTHORITY_PROVENANCE', 'CALIDAD', 'IG', 'Fuente y autoridad que respaldan cada definición.', 'ACTIVA'),
+  ('STATES', 'CALIDAD', 'IG', 'Estados visuales y funcionales de componentes y pantallas.', 'ACTIVA'),
+  ('TESTING_OBLIGATIONS', 'CALIDAD', 'IG', 'Obligaciones de prueba derivadas antes de QA.', 'ACTIVA'),
+  ('THEME_LIGHT_DARK_SYSTEM', 'CALIDAD', 'IG', 'Tema claro, oscuro y del sistema sin valores duplicados.', 'ACTIVA'),
+  ('TIMEOUT_RETRY', 'CALIDAD', 'IG', 'Tiempos de espera y reintentos centralizados.', 'ACTIVA'),
+  ('TRANSITIONS', 'CALIDAD', 'IG', 'Transiciones permitidas entre pasos y pantallas del flujo.', 'ACTIVA'),
+  ('UI_MESSAGES', 'CALIDAD', 'IG', 'Mensajes y textos visibles para el usuario.', 'ACTIVA'),
+  ('VALIDATIONS', 'CALIDAD', 'IG', 'Validaciones de datos de entrada y unicidad.', 'ACTIVA'),
+  ('VISUAL_EVIDENCE', 'CALIDAD', 'IG', 'Evidencia visual que respalda el diseño aprobado.', 'ACTIVA'),
+  ('PAYMENTS_CHECKOUT', 'NEGOCIO', 'NUEVA', 'Pagos y checkout: medios de pago, estados del pago, proveedor Niubiz y confirmación.', 'ACTIVA'),
+  ('OFFERS_INSTALLMENTS', 'NEGOCIO', 'NUEVA', 'Ofertas, modalidades, planes de cuotas, precios y beneficios.', 'ACTIVA'),
+  ('B2B_PORTFOLIO_LOADS', 'NEGOCIO', 'NUEVA', 'Carga de cartera B2B: archivos, validación, historial y reproceso.', 'ACTIVA'),
+  ('B2B_PARTNERS', 'NEGOCIO', 'NUEVA', 'Aliados B2B: términos de la oferta, autorización y niveles de servicio.', 'ACTIVA'),
+  ('LEGAL_CONSENT', 'NEGOCIO', 'NUEVA', 'Textos legales, consentimientos, reclamos y constancias exigidas por norma.', 'ACTIVA'),
+  ('FINANCIAL_INTEGRITY_RECONCILIATION', 'NEGOCIO', 'NUEVA', 'Integridad financiera: ledger, conciliación, liquidación y redondeo.', 'ACTIVA'),
+  ('NOTIFICATIONS_DELIVERY', 'NEGOCIO', 'NUEVA', 'Notificaciones por canal (push, correo, SMS, WhatsApp), reintentos y reenvíos.', 'ACTIVA'),
+  ('COMMERCIAL_CAMPAIGNS', 'NEGOCIO', 'NUEVA', 'Campañas comerciales y descuentos aportados por empresas B2B.', 'ACTIVA'),
+  ('DASHBOARD_REPORTING', 'NEGOCIO', 'NUEVA', 'Tableros e indicadores para la operación de empresas y de LF.', 'ACTIVA'),
+  ('DOCUMENTS_CERTIFICATES', 'NEGOCIO', 'NUEVA', 'Documentos y constancias como la Carta de No Adeudo.', 'ACTIVA'),
+  ('GOVERNANCE_APPROVAL', 'BACKEND', 'NUEVA', 'Gobierno del sistema: aprobaciones, separación de funciones y bloqueos de producción.', 'ACTIVA'),
+  ('DOMAIN_LIFECYCLE', 'BACKEND', 'NUEVA', 'Ciclo de vida y máquinas de estado de las entidades de negocio.', 'ACTIVA'),
+  ('EXPERIMENTS_AB', 'BACKEND', 'NUEVA', 'Experimentos A/B: diseño, muestra mínima y lectura de resultados.', 'ACTIVA'),
+  ('HEATMAP_SESSION_RECORDING', 'BACKEND', 'NUEVA', 'Mapas de calor y grabación de sesión, solo comportamiento y con datos ofuscados.', 'ACTIVA'),
+  ('INTEGRATIONS_WEBHOOKS', 'BACKEND', 'NUEVA', 'Integraciones con proveedores externos y webhooks.', 'EN_FORMACION'),
+  ('SCHEDULED_PROCESSES', 'BACKEND', 'NUEVA', 'Procesos programados como la reconciliación de medianoche.', 'EN_FORMACION'),
+  ('DATA_RETENTION', 'BACKEND', 'NUEVA', 'Retención de datos y traslado a histórico.', 'EN_FORMACION');
