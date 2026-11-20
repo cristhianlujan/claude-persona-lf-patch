@@ -1,0 +1,133 @@
+{
+  "schema": "LF_L42_MISSING_COLOR_TOKENS_OWNER_DECISIONS_V1",
+  "decision_owner": "Cristhian Luján",
+  "status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "identity_verified": false,
+  "proposals": [
+    {
+      "literal_evidence": "#D7DEE8",
+      "proposed_name": "route_future_segment_soft",
+      "found_in": "UX-RUTA-ESTADOS-01",
+      "condition": "BLOCKS_STAGED_RULE_NOT_IN_REGISTRY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#F8FAFC",
+      "proposed_name": "cool_surface_soft",
+      "found_in": "UX-RUTA-ESTADOS-01 y evidencias de pantallas",
+      "condition": "BLOCKS_STAGED_RULE_NOT_IN_REGISTRY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#F4F8F3",
+      "proposed_name": "client_watermark_composite_low",
+      "found_in": "client_auth_watermark + evidencia",
+      "condition": "HISTORICAL_QA_OR_NEW_TOKEN_OWNER_DECISION",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#F7F9F6",
+      "proposed_name": "client_watermark_composite_high",
+      "found_in": "client_auth_watermark + evidencia",
+      "condition": "HISTORICAL_QA_OR_NEW_TOKEN_OWNER_DECISION",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#F1F7F1",
+      "proposed_name": "client_watermark_legacy_tint",
+      "found_in": "client_auth_watermark blocked_usage",
+      "condition": "HISTORICAL_QA_OR_NEW_TOKEN_OWNER_DECISION",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#F7F5F0",
+      "proposed_name": "warm_surface_legacy_variant",
+      "found_in": "decisiones visuales históricas",
+      "condition": "HISTORICAL_ONLY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#FEFCFA",
+      "proposed_name": "warm_surface_nearwhite_variant",
+      "found_in": "evidencias de pantalla",
+      "condition": "HISTORICAL_ONLY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#FEFDFA",
+      "proposed_name": "warm_surface_soft_variant",
+      "found_in": "evidencias de pantalla",
+      "condition": "HISTORICAL_ONLY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#FCFAFB",
+      "proposed_name": "soft_rose_cool_surface",
+      "found_in": "RGB de captura de QA, sin token",
+      "condition": "HISTORICAL_ONLY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    },
+    {
+      "literal_evidence": "#DDE2E8",
+      "proposed_name": "cool_border_qa_reference",
+      "found_in": "RGB de hallazgo QA, sin token",
+      "condition": "HISTORICAL_ONLY",
+      "exists_in_lf_design_color_tokens": false,
+      "created": false,
+      "owner_decision": "Si debe ser un token operativo, aprobar nombre/semántica/uso; si es solo evidencia, conservar literal en registro histórico"
+    }
+  ],
+  "critical_blockers": [
+    "route_future_segment_soft",
+    "cool_surface_soft"
+  ],
+  "non_critical_historical_proposals": [
+    "client_watermark_composite_low",
+    "client_watermark_composite_high",
+    "client_watermark_legacy_tint",
+    "warm_surface_legacy_variant",
+    "warm_surface_nearwhite_variant",
+    "warm_surface_soft_variant",
+    "soft_rose_cool_surface",
+    "cool_border_qa_reference"
+  ],
+  "compositing_caveat": {
+    "existing_shadow_tokens": [
+      "shadow_card_elevation",
+      "shadow_panel_deep",
+      "shadow_soft_ambient"
+    ],
+    "base_rgb_token": "navy_core",
+    "rgba_alpha": "RGBA alpha is not identical to opaque navy_core; values in canonical shadow token definitions remain authoritative",
+    "create_shadow_token": false
+  },
+  "protected_canonical_sources": [
+    "lf_design.color_tokens.hex_value/rgb_value",
+    "lf_design.spacing_tokens shadow notes",
+    "lf_design.visual_decisions históricos",
+    "lf_ops.pantalla_artefactos capturas y metadata",
+    "lf_ops.qa_auditorias/hallazgos",
+    "lf_ops.system_audit_*"
+  ],
+  "signature": false,
+  "token_registry_writes": 0,
+  "live_writes": 0
+}

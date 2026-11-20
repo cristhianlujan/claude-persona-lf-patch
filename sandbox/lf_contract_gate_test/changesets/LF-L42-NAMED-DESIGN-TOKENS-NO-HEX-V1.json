@@ -1,0 +1,11 @@
+{
+  "solution_ref": "LF-L42-NAMED-DESIGN-TOKENS-NO-HEX-V1",
+  "paths": {
+    "audits/design-token-no-hex-lote42/01_full_scan_84_tables_98_rows.json": "INPUT_GOVERNANCE",
+    "audits/design-token-no-hex-lote42/02_tablero_conciliacion_y_gates.md": "INPUT_GOVERNANCE",
+    "audits/design-token-no-hex-lote42/03_decisiones_humanas_tokens_sin_crear.json": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l42_color_token_mapping_and_staged_patches.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_l42_token_nohex_pg17_pg18.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-L42-NAMED-DESIGN-TOKENS-NO-HEX-V1.json": "CHANGESET_MANIFEST"
+  }
+}
