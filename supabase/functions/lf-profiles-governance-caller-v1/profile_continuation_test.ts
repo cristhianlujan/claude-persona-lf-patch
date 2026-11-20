@@ -134,6 +134,62 @@ Deno.test("continuation: screen semantic handoff preserves ordering and source",
     "lf_profile_screen_selector_semantic_submit_v1","lf_profile_native_bridge_prepare_v1"]);
   eq(n.calls[2].body?.p_draft,draft);
 });
+Deno.test("CP2: continuation: combined screen and skill bind before the bridge can write Step40",async()=>{
+  const n=network();
+  const calls:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    calls.push(url.split("/").pop()?.split("?")[0]??"");
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BOUND",execution_id:id}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const screen={decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"};
+  const skill={selected_skill_codes:["INPUT_GOVERNANCE_CONTEXT_PACK"],
+    reason:"Current screen and input require IG",review_mode:"CURRENT_CONTEXT_REVIEW"};
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:screen,skill_selection_decision:skill,
+  },config,fetchFn,sha);
+  eq(out.status,200);
+  eq((await out.json()).phase,"NATIVE_MODEL_INPUT_READY");
+  eq(calls,["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1",
+    "lf_profile_skill_selection_run_bind_v1","lf_profile_native_bridge_prepare_v1"]);
+  eq(n.calls.find(x=>x.url.endsWith("/lf_profile_screen_selector_semantic_submit_v1"))?.body?.p_draft,screen);
+});
+Deno.test("CP2: continuation: combined decision rejects failed skill binding without executing Step40",async()=>{
+  const n=network();
+  const calls:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+    const url=String(input);
+    calls.push(url.split("/").pop()?.split("?")[0]??"");
+    if(url.endsWith("/lf_profile_skill_selection_run_bind_v1"))
+      return new Response(JSON.stringify({status:"BLOCKED",blocking_code:"SKILL_SELECTION_NOT_IN_ELIGIBLE_INPUT_CANDIDATES"}),{status:200});
+    return n.fetchFn(input,init);
+  };
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:{decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"},
+    skill_selection_decision:{selected_skill_codes:["INPUT_GOVERNANCE_CONTEXT_PACK"],reason:"IG"},
+  },config,fetchFn,sha);
+  eq(out.status,409);
+  eq((await out.json()).code,"SKILL_SELECTION_NOT_IN_ELIGIBLE_INPUT_CANDIDATES");
+  eq(calls,["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1",
+    "lf_profile_skill_selection_run_bind_v1"]);
+});
+Deno.test("CP2: continuation: combined screen rejection never binds skill or executes Step40",async()=>{
+  const n=network({},"BLOCKED");
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:{decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"},
+    skill_selection_decision:{selected_skill_codes:["INPUT_GOVERNANCE_CONTEXT_PACK"],reason:"IG"},
+  },config,n.fetchFn,sha);
+  eq(out.status,409);
+  eq((await out.json()).code,"PROFILE_CONTINUATION_SCREEN_SELECTION_REJECTED");
+  eq(n.calls.map(c=>c.url.split("/").pop()?.split("?")[0]),
+    ["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1"]);
+});
+
 Deno.test("continuation: source-bound validator receipt records native output and advances to semantic judge",async()=>{
   const n=network();
   const receipt={

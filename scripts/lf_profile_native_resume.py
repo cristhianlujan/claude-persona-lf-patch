@@ -1362,8 +1362,8 @@ def main():
         raw_draft,profile_output,semantic_review = "",None,None
     elif isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
         execution_id = request["execution_id"]
-        # Source-bind carries skill decision; native-continue separately carries
-        # the screen draft, never its hashes or an authority claim.
+        # Source-bind handles skill-only continuations. When both screen and
+        # skill are supplied, native-continue binds screen then skill before Step40.
         raw_draft = (json.dumps(request["screen_selection_draft"], ensure_ascii=False)
                      if "screen_selection_draft" in request else "")
         profile_output, semantic_review = None, None
@@ -1371,7 +1371,11 @@ def main():
         execution_id, raw_draft, profile_output, semantic_review = request
 
     source_request = {"action":"profile_native_source_bind_v1", "execution_id":execution_id}
-    if isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
+    if (isinstance(request, dict)
+        and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION")
+        and "screen_selection_draft" not in request):
+        # With a screen draft, the screen is not yet bound: defer skill binding
+        # to native_continue, AFTER the semantic screen submit and BEFORE Step40.
         source_request["skill_semantic_decision" if request["kind"]=="SKILL_SEMANTIC_CONTINUATION"
                        else "skill_selection_decision"] = request.get("skill_selection_decision",request.get("skill_semantic_decision"))
     code, source = call_json(EDGE_URL, source_request, headers)
@@ -1436,6 +1440,12 @@ def main():
             print("SCREEN_SELECTION_DRAFT_NOT_JSON_OBJECT")
             return 1
         payload["screen_selection_draft"] = draft
+        if (isinstance(request, dict)
+            and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION")):
+            # One continuation carries both decisions; SQL binds them in order.
+            decision_field = ("skill_semantic_decision" if request["kind"] == "SKILL_SEMANTIC_CONTINUATION"
+                              else "skill_selection_decision")
+            payload[decision_field] = request.get("skill_selection_decision",request.get("skill_semantic_decision"))
 
     code, result = call_json(EDGE_URL, payload, headers)
     if code != 200:
