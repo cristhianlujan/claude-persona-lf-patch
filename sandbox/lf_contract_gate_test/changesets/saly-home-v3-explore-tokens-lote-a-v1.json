@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-home-v3-explore-tokens-lote-a-v1",
+  "paths": {
+    "docs/saly/design-system/candidate/SALY_HOME_V3_COLOR_ALIAS_LOTE_A_V1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/saly-home-v3-explore-tokens-lote-a-v1.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261120173045_lf_saly_home_v3_color_alias_explore_candidates_v1.sql": "MIGRATION"
+  }
+}

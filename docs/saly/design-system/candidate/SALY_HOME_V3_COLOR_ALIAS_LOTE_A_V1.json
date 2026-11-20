@@ -1,0 +1,98 @@
+{
+  "schema_version": "SALY_HOME_V3_EXPLORE_COLOR_ALIAS_CANDIDATES_V1",
+  "business": "SALY",
+  "project_code": "SALY-001",
+  "mode": "EXPLORE_ONLY",
+  "state": "CANDIDATE",
+  "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+  "source_reference": {
+    "provider": "GOOGLE_DRIVE",
+    "file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+    "filename": "SALY_HOME_IPHONE16PRO_REWARDS_SORTEOS_V3_APROBADA.png",
+    "sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+    "dimensions_px": [
+      1086,
+      1448
+    ],
+    "note": "Flattened phone mockup screenshot; does not attest to native pixels or design-source hex"
+  },
+  "official_tokens_untouched": {
+    "color.brand.primary": "#00C853",
+    "color.action.primary.bg": "#008200"
+  },
+  "reused_tokens_existing": 32,
+  "candidate_token_codes": [
+    "candidate.saly_home_v3.color.surface.benefits",
+    "candidate.saly_home_v3.semantic.color.navigation.active",
+    "candidate.saly_home_v3.semantic.color.navigation.inactive",
+    "candidate.saly_home_v3.semantic.color.navigation.background",
+    "candidate.saly_home_v3.semantic.color.module.benefits.bg",
+    "candidate.saly_home_v3.semantic.color.notification.badge"
+  ],
+  "new_tokens": [
+    {
+      "key": "color.surface.benefits",
+      "family": "COLOR",
+      "value_type": "COLOR",
+      "value": "#F4E7FD",
+      "kind": "ESTIMATED_COLOR_FROM_FLATTENED_PNG",
+      "confidence": "APPROXIMATE",
+      "usage": "Benefits card surface, not verified exact"
+    },
+    {
+      "key": "semantic.color.navigation.active",
+      "family": "COLOR",
+      "value_type": "JSON",
+      "value": "{color.action.primary.bg}",
+      "kind": "ALIAS_TO_APPROVED_CTA",
+      "confidence": "DESIGN_PROPOSAL",
+      "usage": "Navigation selected state, EXPLORE-only"
+    },
+    {
+      "key": "semantic.color.navigation.inactive",
+      "family": "COLOR",
+      "value_type": "JSON",
+      "value": "{color.ink.gray.600}",
+      "kind": "ALIAS_TO_CANDIDATE_DS_V1",
+      "confidence": "DESIGN_PROPOSAL",
+      "usage": "Unselected navigation label and icon"
+    },
+    {
+      "key": "semantic.color.navigation.background",
+      "family": "COLOR",
+      "value_type": "JSON",
+      "value": "{color.surface.white}",
+      "kind": "ALIAS_TO_CANDIDATE_DS_V1",
+      "confidence": "DESIGN_PROPOSAL",
+      "usage": "Bottom navigation background"
+    },
+    {
+      "key": "semantic.color.module.benefits.bg",
+      "family": "COLOR",
+      "value_type": "JSON",
+      "value": "{color.surface.benefits}",
+      "kind": "ALIAS_TO_NEW_CANDIDATE",
+      "confidence": "DESIGN_PROPOSAL",
+      "usage": "Benefits module card background"
+    },
+    {
+      "key": "semantic.color.notification.badge",
+      "family": "COLOR",
+      "value_type": "COLOR",
+      "value": "#E62F40",
+      "kind": "ESTIMATED_COLOR_FROM_FLATTENED_PNG",
+      "confidence": "APPROXIMATE",
+      "usage": "Decorative bell notification indicator; never the only status signal"
+    }
+  ],
+  "excluded_from_lot": [
+    "elevation.card.hero"
+  ],
+  "invariants": [
+    "No APPROVED/ACTIVE/version valid_from",
+    "No modification to two official green tokens",
+    "No automatic aliases to deprecated candidate.saly_ds_v1.semantic.color.action.primary.bg",
+    "No screenshots or design-system activation",
+    "Every alias target must exist in approved or candidate namespace, resolved only in EXPLORE"
+  ]
+}
