@@ -914,6 +914,42 @@ export async function handleProfileContinuation(
     typeof digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(digest)
   ) return blocked("PROFILE_CONTINUATION_SOURCE_BINDING_INVALID", 400);
 
+  // When a single governed continuation carries both semantic decisions, bind
+  // screen FIRST and skill SECOND, before the bridge can persist Step40.
+  // Both SQL binders validate against the same Router-admitted RUN. Other
+  // continuations retain the existing optional-skill fail-open behavior.
+  const hasScreenDraft = Object.prototype.hasOwnProperty.call(body, "screen_selection_draft");
+  const hasSkillDecision = Object.prototype.hasOwnProperty.call(body, "skill_selection_decision") ||
+    Object.prototype.hasOwnProperty.call(body, "skill_semantic_decision");
+  const coordinatedPre40 = hasScreenDraft && hasSkillDecision;
+  if (coordinatedPre40) {
+    const chosen = selectedSkillDecision(e, body);
+    if (chosen.error) return chosen.error;
+    if (!chosen.value) return blocked("SKILL_SELECTION_DECISION_INVALID", 400);
+    const draft = body.screen_selection_draft;
+    if (!draft || typeof draft !== "object" || Array.isArray(draft)) {
+      return blocked("PROFILE_CONTINUATION_SCREEN_SELECTION_DRAFT_INVALID", 400);
+    }
+    const submitted = await rpc(config, fetchFn, "lf_profile_screen_selector_semantic_submit_v1", {
+      p_execution_id: e.execution_id, p_draft: draft, p_actor_execution_id: e.execution_id,
+    });
+    if (submitted.error) return submitted.error;
+    if (!["BOUND", "ALREADY_BOUND"].includes(String(submitted.result?.status ?? ""))) {
+      return respond({ outcome: "BLOCKED", code: "PROFILE_CONTINUATION_SCREEN_SELECTION_REJECTED",
+        result: submitted.result }, 409);
+    }
+    const bound = await rpc(config, fetchFn, "lf_profile_skill_selection_run_bind_v1", {
+      p_execution_id: e.execution_id, p_decision: chosen.value,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (bound.error) return bound.error;
+    if (!["BOUND", "ALREADY_BOUND"].includes(String(bound.result?.status ?? ""))) {
+      return respond({ outcome: "BLOCKED", phase: "SKILL_SELECTION_CONTRACT",
+        code: String(bound.result?.blocking_code ?? "SKILL_SELECTION_BIND_INVALID"),
+        execution_id: e.execution_id }, 409);
+    }
+  }
+
   // The native prepare function enforces ordered checkpoints and validates
   // Router handoff, profile source, screen selection, IG and compact context.
   let prepared = await rpc(config, fetchFn, "lf_profile_native_bridge_prepare_v1", {
@@ -926,7 +962,7 @@ export async function handleProfileContinuation(
   let result = prepared.result!;
   // Only an explicit semantic decision may bind a screen; one candidate is NOT
   // auto-selected. SQL rehydrates the current shortlist and judges the draft.
-  if (Object.prototype.hasOwnProperty.call(body, "screen_selection_draft")) {
+  if (hasScreenDraft && !coordinatedPre40) {
     if (result.status !== "SCREEN_SELECTION_REQUIRED") {
       return blocked("PROFILE_CONTINUATION_SCREEN_SELECTION_NOT_REQUESTED", 409);
     }
