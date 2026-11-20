@@ -134,7 +134,7 @@ Deno.test("continuation: screen semantic handoff preserves ordering and source",
     "lf_profile_screen_selector_semantic_submit_v1","lf_profile_native_bridge_prepare_v1"]);
   eq(n.calls[2].body?.p_draft,draft);
 });
-Deno.test("continuation: combined screen and skill bind before the bridge can write Step40",async()=>{
+Deno.test("CP2: continuation: combined screen and skill bind before the bridge can write Step40",async()=>{
   const n=network();
   const calls:string[]=[];
   const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
@@ -157,7 +157,7 @@ Deno.test("continuation: combined screen and skill bind before the bridge can wr
     "lf_profile_skill_selection_run_bind_v1","lf_profile_native_bridge_prepare_v1"]);
   eq(n.calls.find(x=>x.url.endsWith("/lf_profile_screen_selector_semantic_submit_v1"))?.body?.p_draft,screen);
 });
-Deno.test("continuation: combined decision rejects failed skill binding without executing Step40",async()=>{
+Deno.test("CP2: continuation: combined decision rejects failed skill binding without executing Step40",async()=>{
   const n=network();
   const calls:string[]=[];
   const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
@@ -177,7 +177,7 @@ Deno.test("continuation: combined decision rejects failed skill binding without 
   eq(calls,["lf_operation_execution","lf_profile_screen_selector_semantic_submit_v1",
     "lf_profile_skill_selection_run_bind_v1"]);
 });
-Deno.test("continuation: combined screen rejection never binds skill or executes Step40",async()=>{
+Deno.test("CP2: continuation: combined screen rejection never binds skill or executes Step40",async()=>{
   const n=network({},"BLOCKED");
   const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
     execution_id:id,source_revision:sha,source_digest:digest,
