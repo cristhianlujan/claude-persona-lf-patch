@@ -100,7 +100,11 @@ BEGIN
    OR NEW.provenance IS DISTINCT FROM OLD.provenance
   THEN RAISE EXCEPTION 'CREATIVE_CONTEXT_IDENTITY_IMMUTABLE'; END IF;
  END IF;
- IF NEW.state='SEALED' AND (TG_OP='INSERT' OR OLD.state<>'SEALED') THEN
+ IF NEW.state='SEALED' THEN
+  -- Avoid dereferencing an unassigned OLD record on INSERT.
+  IF TG_OP='UPDATE' AND OLD.state='SEALED' THEN
+    RAISE EXCEPTION 'CREATIVE_CONTEXT_SET_IMMUTABLE';
+  END IF;
   -- Universal seal rule: two effective SALY official colors, no duplicate codes,
   -- verified immutable values; no 41-token hardcode for future EXPLORE sets.
   SELECT count(*)::int,
@@ -188,17 +192,26 @@ RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,saly
 AS $fn$
 DECLARE v_context record; v_tokens jsonb;
 BEGIN
- IF TG_OP='UPDATE' AND OLD.status<>'BORRADOR'
-    AND (NEW.context_set_id IS DISTINCT FROM OLD.context_set_id
-     OR NEW.identity_snapshot IS DISTINCT FROM OLD.identity_snapshot)
- THEN RAISE EXCEPTION 'CREATIVE_ORDER_CONTEXT_FROZEN'; END IF;
+ IF TG_OP='UPDATE' THEN
+   IF OLD.status<>'BORRADOR'
+      AND (NEW.context_set_id IS DISTINCT FROM OLD.context_set_id
+       OR NEW.identity_snapshot IS DISTINCT FROM OLD.identity_snapshot)
+   THEN RAISE EXCEPTION 'CREATIVE_ORDER_CONTEXT_FROZEN'; END IF;
+ END IF;
  IF NEW.status<>'BORRADOR' THEN
   SELECT project_id,mode,state INTO v_context FROM saly.creative_context_sets
   WHERE id=NEW.context_set_id;
   IF NOT FOUND OR v_context.project_id<>NEW.project_id
    OR v_context.mode<>NEW.design_mode OR v_context.state<>'SEALED'
   THEN RAISE EXCEPTION 'CREATIVE_ORDER_CONTEXT_NOT_SEALED'; END IF;
-  IF TG_OP='INSERT' OR OLD.status='BORRADOR' THEN
+  IF TG_OP='INSERT' THEN
+    SELECT jsonb_agg(jsonb_build_object('version_id',identity_version_id,
+      'sha256',value_sha256,'role',role) ORDER BY identity_version_id)
+    INTO v_tokens
+    FROM saly.creative_context_tokens WHERE context_set_id=NEW.context_set_id;
+    NEW.identity_snapshot:=jsonb_build_object('context_set_id',NEW.context_set_id,
+      'selected_versions',v_tokens);
+  ELSIF OLD.status='BORRADOR' THEN
     SELECT jsonb_agg(jsonb_build_object('version_id',identity_version_id,
       'sha256',value_sha256,'role',role) ORDER BY identity_version_id)
     INTO v_tokens
@@ -278,7 +291,8 @@ BEGIN
    JOIN visual.source_assets a ON a.id=s.source_asset_id
    WHERE s.item_id=v_item.id AND s.order_id=v_item.order_id
      AND (s.source_sha256 IS DISTINCT FROM a.source_sha256
-       OR NOT a.independent_sha_verified OR a.brand_code<>'SALY'))
+       OR NOT a.independent_sha_verified OR a.brand_code<>'SALY'
+       OR a.approval_status NOT IN ('CANDIDATE','APPROVED')))
  THEN RAISE EXCEPTION 'CREATIVE_ITEM_SOURCE_REFERENCE_DRIFT'; END IF;
  SELECT COALESCE(jsonb_agg(jsonb_build_object('asset_id',a.id,
   'asset_code',a.asset_code,'source_kind',a.source_kind,
