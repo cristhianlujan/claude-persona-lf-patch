@@ -17,7 +17,9 @@ class SalYVisualProbeTests(unittest.TestCase):
         response = hello_world(copy.deepcopy(FIXTURE))
         self.assertEqual(response["status"], "HELLO_WORLD_OFFLINE")
         self.assertEqual(response["mensaje"], "Hola mundo, ya llegué.")
-        self.assertEqual(response["transporte_recibido"], FIXTURE["transport"])
+        expected = copy.deepcopy(FIXTURE["transport"])
+        expected["request_context"]["credentials"] = "[REDACTED]"
+        self.assertEqual(response["transporte_recibido"], expected)
         self.assertTrue(response["simulated"])
         self.assertFalse(response["runtime_invoked"])
         self.assertFalse(response["effect_authority"])
