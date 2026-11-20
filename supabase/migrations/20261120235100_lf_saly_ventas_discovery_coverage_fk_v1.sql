@@ -12,8 +12,8 @@ BEGIN
  IF EXISTS (SELECT 1 FROM unnest(ARRAY[
  'ventas_discovery_catalogo','ventas_discovery_runs',
  'ventas_discovery_plan_fuentes','ventas_discovery_plan_batches',
- 'ventas_discovery_ejecuciones','ventas_discovery_consultas']) AS n
- WHERE to_regclass('saly.'||n) IS NOT NULL)
+ 'ventas_discovery_ejecuciones','ventas_discovery_consultas']) AS obj(tabla)
+ WHERE to_regclass(format('saly.%I',obj.tabla)) IS NOT NULL)
  THEN RAISE EXCEPTION 'L28_ALREADY_EXISTS'; END IF;
 END $pre$;
 CREATE TABLE saly.ventas_discovery_catalogo (
