@@ -82,7 +82,11 @@ BEGIN
  RAISE NOTICE 'PG17 FUNCTIONAL 9 CONTROLS PASS (transaction will rollback)';
 END $check$;
 ROLLBACK;
-SELECT CASE WHEN (SELECT count(*) FROM saly.ventas_hallazgos)<>0
- OR (SELECT count(*) FROM saly.ventas_discovery_ingestas)<>0
- OR (SELECT count(*) FROM saly.ventas_unidades_operativas)<>0
- THEN 1/0 ELSE 1 END AS transaction_rollback_verified;
+DO $check$
+BEGIN
+ IF (SELECT count(*) FROM saly.ventas_hallazgos) <> 0
+ OR (SELECT count(*) FROM saly.ventas_discovery_ingestas) <> 0
+ OR (SELECT count(*) FROM saly.ventas_unidades_operativas) <> 0
+ THEN RAISE EXCEPTION 'FUNCTIONAL_TEST_ROLLBACK_FAILED'; END IF;
+ RAISE NOTICE 'FUNCTIONAL_TEST_ROLLBACK_PASS';
+END $check$;
