@@ -1362,8 +1362,8 @@ def main():
         raw_draft,profile_output,semantic_review = "",None,None
     elif isinstance(request, dict) and request.get("kind") in ("SKILL_SEMANTIC_CONTINUATION", "SKILL_SELECTION_CONTINUATION"):
         execution_id = request["execution_id"]
-        # Source-bind carries skill decision; native-continue separately carries
-        # the screen draft, never its hashes or an authority claim.
+        # Source-bind handles skill-only continuations. When both screen and
+        # skill are supplied, native-continue binds screen then skill before Step40.
         raw_draft = (json.dumps(request["screen_selection_draft"], ensure_ascii=False)
                      if "screen_selection_draft" in request else "")
         profile_output, semantic_review = None, None
