@@ -134,8 +134,9 @@ CREATE INDEX creative_deps_ready_idx ON saly.creative_item_dependencies(order_id
 CREATE FUNCTION saly.creative_dependency_guard_l1()
 RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,saly
 AS $fn$
-DECLARE v_cycle boolean;
+DECLARE v_cycle boolean; v_excluded_id bigint:=-1;
 BEGIN
+ IF TG_OP='UPDATE' THEN v_excluded_id:=OLD.id; END IF;
  PERFORM 1 FROM saly.creative_orders WHERE id=NEW.order_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'CREATIVE_ORDER_NOT_FOUND'; END IF;
  IF EXISTS (SELECT 1 FROM saly.creative_order_items
@@ -146,7 +147,7 @@ BEGIN
    UNION
    SELECT d.depends_on_item_id FROM saly.creative_item_dependencies d
    JOIN walk w ON w.id=d.item_id
-   WHERE d.order_id=NEW.order_id AND (CASE WHEN TG_OP='INSERT' THEN true ELSE d.id<>OLD.id END)
+   WHERE d.order_id=NEW.order_id AND d.id<>v_excluded_id
  )
  SELECT EXISTS(SELECT 1 FROM walk WHERE id=NEW.item_id) INTO v_cycle;
  IF v_cycle THEN RAISE EXCEPTION 'CREATIVE_DEPENDENCY_CYCLE'; END IF;
@@ -171,7 +172,7 @@ BEGIN
  END IF;
  SELECT i.status,o.status INTO v_item_status,v_order_status
  FROM saly.creative_order_items i JOIN saly.creative_orders o ON o.id=i.order_id
- WHERE i.id=NEW.item_id AND i.order_id=NEW.order_id;
+ WHERE i.id=NEW.item_id AND i.order_id=NEW.order_id FOR UPDATE OF i;
  IF v_item_status IS NULL OR v_item_status IN ('APROBADO','OMITIDO')
     OR v_order_status IN ('COMPLETADO','CANCELADO')
  THEN RAISE EXCEPTION 'CREATIVE_RUN_ITEM_NOT_ELIGIBLE'; END IF;
