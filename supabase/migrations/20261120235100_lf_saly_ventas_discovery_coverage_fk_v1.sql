@@ -48,6 +48,8 @@ CREATE TABLE saly.ventas_discovery_runs (
  plan_hash text NOT NULL CHECK(plan_hash ~ '^[0-9a-f]{64}$'),
  estado text NOT NULL DEFAULT 'PREPARADO'
  CHECK(estado IN ('PREPARADO','EN_EJECUCION','PARTIAL','HOLD','CERRADO')),
+ -- Before finalizing RUNs, deploy a verified frozen-source coverage gate.
+ CONSTRAINT saly_l28_run_close_disabled CHECK(estado <> 'CERRADO'),
  created_at timestamptz NOT NULL DEFAULT now(),
  finished_at timestamptz,
  UNIQUE(id,catalog_version),
