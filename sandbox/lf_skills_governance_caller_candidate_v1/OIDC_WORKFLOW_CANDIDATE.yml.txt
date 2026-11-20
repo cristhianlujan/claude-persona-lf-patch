@@ -1,0 +1,36 @@
+# CANDIDATE TEMPLATE ONLY - DO NOT COPY TO .github/workflows OR DEPLOY
+# The parent profile may request a skill. It must not forge OIDC identity.
+# A privileged workflow requires independent admission, protected environment,
+# an exact Github Actions OIDC audience and a narrowly scoped Edge service.
+# This example is intentionally NON-EXECUTABLE.
+name: LF Native Skill Execution - Candidate Disabled
+on:
+  workflow_dispatch:
+    inputs:
+      request_ref:
+        description: Governed request reference; not an authority token
+        type: string
+        required: true
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  disabled_until_governed_admission:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    environment: lf-skills-governance
+    steps:
+      - name: Intentionally disabled; no token, secret, outbound RPC or deployment
+        run: exit 1
+# AFTER GOVERNED ADMISSION ONLY:
+# 1. Only accepted workflow_ref:
+#    cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-native-skill-execution.yml@refs/heads/main
+# 2. OIDC issuer: https://token.actions.githubusercontent.com
+#    aud: lf-skills-governance-caller-v1
+#    repository + repository_id + ref + workflow_ref + environment + run_id + workflow_sha verified
+#    exact workflow digest/source reviewed (workflow_sha alone is not authorizing)
+# 3. Environment protection and provider trust policy must be reviewed independently.
+# 4. Retrieve an existing parent RUN and corresponding skill authorization server-side.
+# 5. No direct service_role secret printed or passed in caller inputs.
+# 6. Strict idempotency of BEGIN and step submit; native SQL retains authority.
+# 7. No generic pull_request or caller-controlled workflow_ref path.

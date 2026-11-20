@@ -1,0 +1,209 @@
+{
+  "schema": "LF_SKILLS_NATIVE_RPC_QUALIFICATION_V1",
+  "lifecycle": "CANDIDATE_ONLY_NOT_INSTALLED_NOT_AUTHORIZED",
+  "scope": "ALL_ADMITTED_SKILLS_ON_EJECUCION_SKILL_LF",
+  "operation": "EJECUCION_SKILL_LF",
+  "security_model": {
+    "transport": "SEPARATE_EDGE_GITHUB_OIDC_EXACT_WORKFLOW_AND_ENVIRONMENT",
+    "privileges": "service_role_or_scoped_governed_server_only_NOT_MODEL",
+    "source": "EXACT_CANONICAL_ASSET_PATH_READ_FROM_MAIN_AT_COMMIT_AND_BLOB",
+    "router": "ACT-0001_SKILL_EXECUTION_SERVER_READBACK",
+    "business": "DERIVED_EXCLUSIVELY_FROM_PROFILE_RUN_AND_ROUTER_RECEIPT_NOT_INPUT",
+    "effect": "READ_ONLY_SKILL_MAY_WRITE_AUDIT_RUN_WITH_GOVERNED_HOST_BUT_NOT_BUSINESS_DATA",
+    "source_values_untrusted": true,
+    "judge_pass_authoritative": false
+  },
+  "native_dependencies": [
+    "public.fn_lf_operation_reserve_execution_v1",
+    "public.lf_record_operation_step_core_v1",
+    "public.lf_operation_execution",
+    "public.lf_operation_execution_steps",
+    "public.lf_skill_catalog_v1",
+    "public.lf_activos",
+    "public.lf_profile_write_authority_v1",
+    "public.lf_operation_step_contracts",
+    "public.lf_operation_step_judge_bindings",
+    "public.lf_operation_judges"
+  ],
+  "rpc": {
+    "lf_skill_native_preflight_v1": {
+      "args": [
+        "p_skill_code",
+        "p_parent_execution_id",
+        "p_caller"
+      ],
+      "returns": {
+        "success": "ELIGIBLE",
+        "fields": [
+          "status",
+          "source_path"
+        ],
+        "failure": "BLOCKED"
+      },
+      "authoritative_checks": [
+        "EXACT_PARENT_IN_PROGRESS_EJECUCION_PERFIL_LF_AND_ACTOR_BINDING",
+        "PARENT_ROOT_BUSINESS_EQUALS_ROUTER_HANDOFF_EQUALS_ROUTER_AUTHORIZATION_RECEIPT",
+        "PARENT_REQUEST_SHA256_VALID_AND_MATCHES_ROUTER_RECEIPT",
+        "CANONICAL_SKILL_ASSET_NOT_ARCHIVED_AND_RUNTIME_ENABLED",
+        "SKILL_CATALOG_READY_REQUIRED_OPERATION_EJECUCION_SKILL_LF_EFFECT_ALLOWED",
+        "PROFILE_SKILL_AUTHORITY_ACTIVE",
+        "ROUTER_SKILL_EXECUTION_ACTIVE_AND_OPERATION_SANDBOX_SCOPE_ALLOWED",
+        "SOURCE_PATH_FROM_ASSET_NOT_FROM_CALLER_OR_CODE",
+        "SERVER_SIDE_JUDGE_INVARIANT_COVERAGE_QUALIFIED",
+        "EXACT_OIDC_ACTOR_WORKFLOW_AND_ENVIRONMENT_RECEIPT"
+      ],
+      "must_not": [
+        "READ_OR_WRITE_SKILL_DATA_AS_PROFILE",
+        "INFER_SOURCE_PATH_FROM_CODE",
+        "ACCEPT_CALLER_AUTH_FIELDS"
+      ]
+    },
+    "lf_skill_execution_begin_from_handoff_v1": {
+      "args": [
+        "p_skill_code",
+        "p_parent_execution_id",
+        "p_caller",
+        "p_input",
+        "p_source"
+      ],
+      "returns": {
+        "success": "RUN_OPENED_PENDING_EXECUTION",
+        "fields": [
+          "status",
+          "execution_id",
+          "skill_run_id",
+          "step0_recorded",
+          "a3_allowed"
+        ],
+        "failure": "BLOCKED"
+      },
+      "atomic_transaction": [
+        "SERVER_REEXECUTES_PREFLIGHT_AND_ATTESTS_CURRENT_SOURCE_GITHUB_MAIN_SHA_AND_BLOB",
+        "VALIDATES_CANONICAL_INPUT_AND_CROSS_BUSINESS_DECLARED_FACTS",
+        "COMPUTES_CANONICAL_INPUT_SHA256_AND_IDEMPOTENCY_KEY_AND_CHILD_EXECUTION_ID",
+        "RESERVES_USING_EXISTING_FN_LF_OPERATION_RESERVE_EXECUTION_V1",
+        "AFTER_BOTH_NEW_AND_REPLAY_COMPARE_EXECUTION_ID_ACTOR_REQUEST_TARGET_SOURCE_AND_FULL_MANIFEST",
+        "NEW_ONLY_INSERT_IN_PROGRESS_INVOCATION_LINKED_TO_CHILD_AND_IMMUTABLE_STEP0",
+        "REPLAY_DO_NOT_DUPLICATE_INVOCATION_OR_STEP0",
+        "PERFORM_POST_WRITE_SERVER_READBACK_PARENT_CHILD_INVOCATION_STEP0",
+        "ROLLBACK_ALL_IF_ANY_GUARD_OR_READBACK_FAILS"
+      ],
+      "replay_requires": [
+        "SAME_PARENT",
+        "SAME_BUSINESS",
+        "SAME_SKILL",
+        "SAME_INPUT_SHA256",
+        "SAME_REQUEST_SHA256",
+        "SAME_IDEMPOTENCY_KEY",
+        "SAME_SOURCE_COMMIT_AND_BLOB",
+        "SAME_CALLER_AUTHORITY",
+        "SAME_CHILD_EXECUTION_ID",
+        "SAME_MANIFEST_WITH_ONLY_CANONICAL_POLICY_SNAPSHOTS_EXTENSION"
+      ],
+      "postconditions": [
+        "CHILD_RUN_IN_PROGRESS",
+        "INVOCATION_IN_PROGRESS",
+        "STEP0_CLEAN_WITH_EXACT_JUDGE_BINDING",
+        "NO_A3",
+        "NO_SEMANTIC_PASS",
+        "NOT_COMPLETED"
+      ]
+    },
+    "lf_record_skill_execution_step_v1": {
+      "args": [
+        "p_skill_code",
+        "p_parent_execution_id",
+        "p_caller",
+        "p_child_execution_id",
+        "p_step_id",
+        "p_evidence_ref",
+        "p_evidence_payload"
+      ],
+      "returns": {
+        "success": "STEP_RECORDED",
+        "fields": [
+          "outcome",
+          "step_id",
+          "replay"
+        ],
+        "failure": "BLOCKED"
+      },
+      "authoritative_checks": [
+        "CHILD_RUN_EXACT_PARENT_ACTOR_SKILL_AND_BUSINESS",
+        "OPERATION_EJECUCION_SKILL_LF_TARGET_SKILL",
+        "STEP0_IMMUTABLE_AND_STEP_ID_IN_EXISTING_REGISTRY",
+        "PREDECESSORS_ORDER_AND_REQUIRED_CLEAN_READ_FROM_DATABASE",
+        "EXACT_CONTRACT_BINDING_AND_JUDGE_IN_ACTIVE_ENFORCEMENT",
+        "SKILL_SPECIFIC_SERVER_TRUST_VALIDATION_REQUIRED",
+        "USE_LF_RECORD_OPERATION_STEP_CORE_V1_NOT_PARALLEL_RECORDER",
+        "DETERMINISTIC_FAIL_BLOCKS_SEMANTIC_OVERRIDE",
+        "STEP50_A2_A3_INTERNAL_JUDGE_PASS_REQUIRED_BEFORE_A3",
+        "STEP70_INDEPENDENT_SEMANTIC_JUDGE_SOURCE_AND_DIGEST_BOUND",
+        "STEP80_CLOSE_ONLY_AFTER_ALL_NINE_STEPS_CLEAN_AND_RECEIPTS_READBACK"
+      ],
+      "must_not": [
+        "ACCEPT_USER_JUDGE_PASS",
+        "ACCEPT_USER_ASSERTED_TRUST_VALIDATION",
+        "AUTO_COMPLETE_SQL_INVOKER",
+        "RECORD_INIT_EXECUTION_AS_NORMAL_STEP"
+      ]
+    },
+    "lf_skill_execution_status_v1": {
+      "args": [
+        "p_skill_code",
+        "p_parent_execution_id",
+        "p_caller",
+        "p_child_execution_id"
+      ],
+      "returns": {
+        "success": "READBACK",
+        "fields": [
+          "execution_id",
+          "skill_code",
+          "status",
+          "step0_clean"
+        ],
+        "failure": "BLOCKED"
+      },
+      "authoritative_checks": [
+        "READ_PARENT_CHILD_INVOCATION_STEP0_AND_STEPS_FROM_DATABASE",
+        "CHECK_ACTOR_PARENT_BUSINESS_REQUEST_AND_SKILL_LINEAGE",
+        "VERIFY_SOURCE_HEAD_AND_INPUT_DIGEST_BOUND_TO_CHILD",
+        "NO_SYNTHETIC_RECEIPTS_AND_NO_MODEL_CLAIMS",
+        "REPORT_COMMITTED_NATIVE_JUDGE_RECEIPT_SEPARATELY_FROM_INFERRED_PASS",
+        "NO_A3_DISPATCH_AUTHORITY_IN_STATUS_RPC"
+      ]
+    }
+  },
+  "oidc_candidate": {
+    "audience": "lf-skills-governance-caller-v1",
+    "branch": "refs/heads/main",
+    "event": "workflow_dispatch",
+    "environment": "lf-skills-governance",
+    "workflow_file": "lf-native-skill-execution.yml",
+    "permissions": {
+      "id-token": "write",
+      "contents": "read"
+    },
+    "workflow_not_installed": true,
+    "no_untrusted_pull_request_trigger": true
+  },
+  "judge_observation": {
+    "judge_code": "JUDGE-EJECUCION-SKILL-LF-v0.1",
+    "observed_status": "ACTIVE_ENFORCEMENT",
+    "observed_pass_if": [],
+    "observed_fail_if": [],
+    "qualification": "NOT_QUALIFIED_INVARIANT_COVERAGE",
+    "remediation": "INVARIANT_REQUIREMENT_RISK_EVIDENCE_POSITIVE_NEGATIVE_MATRIX_AND_INDEPENDENT_REVIEW"
+  },
+  "evidence": {
+    "kind": "DESIGN_READBACK_AND_STRUCTURAL_CHECKS_ONLY",
+    "preflight_live": false,
+    "begin_live": false,
+    "step0_live": false,
+    "step_live": false,
+    "status_live": false,
+    "judge_live": false,
+    "runtime_activated": false
+  }
+}
