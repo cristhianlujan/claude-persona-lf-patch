@@ -42,6 +42,26 @@ def main() -> int:
     assert expected_exact.issubset(policy.github_exact)
     checks += 1
 
+    # IG4066 | exact route only, no expansion of .github/workflows/*.
+    ig4064 = ".github/workflows/lf-ig-4064-live-rollback.yml"
+    assert policy.evaluate(ig4064) == {
+        "verdict": "ADMIT", "code": "PASS_GITHUB_EXACT_PATH_ADMISSION"
+    }
+    checks += 1
+    for unauthorized in (
+        ".github/workflows/lf-ig-4064-live-rollback-copy.yml",
+        ".github/workflows/lf-ig-4065-live-rollback.yml",
+        ".github/workflows/lf-ig-4064-live-rollback.yaml",
+        ".github/workflows/lf-ig-4064-live-rollback.yml.bak",
+    ):
+        assert policy.evaluate(unauthorized) == {
+            "verdict": "BLOCK", "code": "FAIL_UNAUTHORIZED_GITHUB_PATH"
+        }, unauthorized
+        checks += 1
+    assert json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))["path_admission"]["default_github"] == "DENY"
+    checks += 1
+    print("PASS_IG4066_EXACT_WORKFLOW_PATH_POSITIVE_NEGATIVE=6/6")
+
     # Exact, narrowly-scoped CI workflow admission: never a .github prefix.
     router_workflow = ".github/workflows/lf-router-level2-advisory-tests.yml"
     assert policy.evaluate(router_workflow) == {

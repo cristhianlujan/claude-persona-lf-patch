@@ -30,6 +30,20 @@ def main():
     assert not r["classification_required"]
     checks += 1
 
+    # IG4066: test the actual Changeset Governance entrypoint (not only path policy).
+    allowed_ig = ".github/workflows/lf-ig-4064-live-rollback.yml"
+    r = evaluate_pr_integrity([allowed_ig])
+    assert r["families"][allowed_ig] == "WORKFLOW"
+    assert not r["classification_required"]
+    checks += 1
+    blocked_ig = ".github/workflows/lf-ig-4064-live-rollback-copy.yml"
+    expect(
+        "FAIL_UNAUTHORIZED_GITHUB_PATH",
+        lambda: evaluate_pr_integrity([blocked_ig]),
+    )
+    checks += 1
+    print("PASS_IG4066_CHANGESET_ROUTE_POSITIVE_NEGATIVE=2/2")
+
     expect(
         "FAIL_UNAUTHORIZED_GITHUB_PATH",
         lambda: evaluate_pr_integrity([".github/workflows/x.yml"]),
@@ -94,7 +108,7 @@ def main():
     r = evaluate_pr_integrity([legacy_root])
     assert r["classification_required"] and r["violations"] == [f"UNDECLARED_PATH:{legacy_root}"]
     checks += 1
-    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/11 PASS")
+    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/13 PASS")
 
     r = evaluate_pr_integrity(
         [manifest("SOL-3"), "other/a.txt"],
