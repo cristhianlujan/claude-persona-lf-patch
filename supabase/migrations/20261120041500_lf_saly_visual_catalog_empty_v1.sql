@@ -88,12 +88,12 @@ CREATE TABLE visual.standard_activations (
   -- Crucial: exclude by the request context, NOT by standard_version_id;
   -- otherwise two different versions could be ACTIVE concurrently.
   EXCLUDE USING gist (
-    brand_code WITH =,
-    kind WITH =,
-    channel_code WITH =,
-    audience_code WITH =,
-    device_class WITH =,
-    output_target WITH =,
+    brand_code extensions.gist_text_ops WITH =,
+    kind extensions.gist_text_ops WITH =,
+    channel_code extensions.gist_text_ops WITH =,
+    audience_code extensions.gist_text_ops WITH =,
+    device_class extensions.gist_text_ops WITH =,
+    output_target extensions.gist_text_ops WITH =,
     tstzrange(valid_from,coalesce(valid_to,'infinity'::timestamptz),'[)') WITH &&
   )
 );
