@@ -1,0 +1,155 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "LF_AUDIT_TO_QUALITY_V2"
+    },
+    "report_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "base_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "candidate_head": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "contract_schema_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finding_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "consumer_target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorized_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "blocking_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "known_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ci_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "head_sha": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "conclusion": {
+            "enum": [
+              "SUCCESS",
+              "FAILURE",
+              "IN_PROGRESS",
+              "CANCELLED",
+              "NOT_EXECUTED"
+            ]
+          }
+        },
+        "required": [
+          "run_id",
+          "head_sha",
+          "conclusion"
+        ]
+      }
+    },
+    "flow_verdict": {
+      "enum": [
+        "FLOW_ACCREDITED",
+        "FLOW_NOT_ACCREDITED"
+      ]
+    },
+    "promotion_authorized": {
+      "const": false
+    },
+    "automatic_dispatch": {
+      "const": false
+    },
+    "next_gate": {
+      "const": "OWNER_REVIEW_OF_PR_NO_MERGE"
+    }
+  },
+  "required": [
+    "schema_version",
+    "report_ref",
+    "report_sha256",
+    "base_commit",
+    "candidate_head",
+    "contract_schema_ref",
+    "finding_ids",
+    "consumer_target",
+    "authorized_scope",
+    "evidence_refs",
+    "acceptance_criteria",
+    "blocking_criteria",
+    "known_risks",
+    "pending",
+    "ci_runs",
+    "flow_verdict",
+    "promotion_authorized",
+    "automatic_dispatch",
+    "next_gate"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

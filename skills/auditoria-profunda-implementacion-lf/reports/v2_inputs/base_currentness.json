@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-16T06:05:50.612138+00:00",
+  "audited_source_commit": "274b3c571ec58556916fa7738d66100fe4328824",
+  "delivery_base_main": "a9b124802ced0d59f52ffb2c6f31488be2cb7dde",
+  "step70_helpers": [
+    {
+      "path": "scripts/lf_profile_native_resume.py",
+      "unchanged": true,
+      "sha256": "8f17cceaf37531019a1c4b90b87098e9399d47d520bf6637e574417927f50c9a"
+    },
+    {
+      "path": "scripts/lf_step70_separate_call_receipt_v1.py",
+      "unchanged": true,
+      "sha256": "69fd695d432c1b02ddb0fd199f48054a7b26be6583730d338df481e9a634e43c"
+    },
+    {
+      "path": "scripts/lf_step70_same_llm_eval_v1.py",
+      "unchanged": true,
+      "sha256": "62a306f4f44aac9aee959c578b4d63c330a80e8918ae77133d1481ee21a5fce0"
+    }
+  ],
+  "runtime_function_hash_changes": [
+    "lf_profile_native_bridge_prepare_v1",
+    "lf_profile_native_bridge_record_report_v1"
+  ],
+  "new_runtime_definitions_reaudited": false,
+  "interpretation": "Measurements remain time-bound to captured definitions; no stale SQL export is asserted current. Step70 helper findings rechecked unchanged at delivery base."
+}

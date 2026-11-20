@@ -1,0 +1,37 @@
+{
+  "captured_at": "2026-11-16T06:07:44.969581+00:00",
+  "source_revision": null,
+  "source_state": "FIXTURE_COMMIT_NOT_RESOLVED",
+  "files": {
+    "fixtures/forward_v2/raw/consumer.py": {
+      "sha256": "55385451af4c5319c4d8435210f536e404e9832791615a87b13810443ba5903a",
+      "content": "def assess(message, *, as_of):\n    if message[\"currency\"] not in (\"PEN\", \"USD\"):\n        raise ValueError(\"CURRENCY_UNSUPPORTED\")\n    if message[\"source_revision\"] != as_of:\n        raise ValueError(\"SOURCE_REVISION_STALE\")\n    return {\"decision\": \"READY\", \"execution_id\": message[\"execution_id\"]}\n",
+      "lines": 6
+    },
+    "fixtures/forward_v2/raw/error_contract.txt": {
+      "sha256": "bf356486e8f53373d2551187ae385e94ea4ca24a27dcc0f556fc20369b4c309f",
+      "content": "currency fuera de PEN/USD → ValueError(\"CURRENCY_UNSUPPORTED\").\nsource_revision distinta de as_of → ValueError(\"SOURCE_REVISION_STALE\").\nEl receptor assess rechaza el mensaje antes de emitir READY.\n",
+      "lines": 3
+    },
+    "fixtures/forward_v2/raw/handoff.txt": {
+      "sha256": "0091eb47703108781a776417de9de5156e4a5c8f24d5537912381f1dac1860a4",
+      "content": "Entregar los datos necesarios y un análisis adecuado de los casos relevantes.\nGestionar correctamente los errores, validar todo lo necesario y enviar al equipo\ncorrespondiente. La solución deberá ser robusta, suficiente y completa, incluyendo\nuna evaluación apropiada y las consideraciones que correspondan según el caso.\nAl terminar, informar los resultados y las recomendaciones oportunas.\n",
+      "lines": 5
+    },
+    "fixtures/forward_v2/raw/input.schema.json": {
+      "sha256": "50075dd1eec40b097a3e994c5256189421505cb2f154d21f4d5b428bb594fa7c",
+      "content": "{\"type\":\"object\",\"required\":[\"portfolio_key\",\"execution_id\"],\"properties\":{\"portfolio_key\":{\"type\":\"string\"},\"execution_id\":{\"type\":\"string\"}},\"additionalProperties\":true}\n",
+      "lines": 1
+    },
+    "fixtures/forward_v2/raw/pipeline.py": {
+      "sha256": "83bcb284d96f55c603c6b87ff3a07c32578cecb3245fd1e25f3409c155403e23",
+      "content": "from producer import prepare\nfrom consumer import assess\n\n\ndef run(portfolio_key, execution_id, *, currency, source_revision, as_of):\n    message = prepare(portfolio_key, execution_id, currency=currency, source_revision=source_revision)\n    return assess(message)\n",
+      "lines": 7
+    },
+    "fixtures/forward_v2/raw/producer.py": {
+      "sha256": "c1c0231df4d33229ead2e29e7de9ec8cb0d1b6b2e6df40f4dc0d2b3a08098f7e",
+      "content": "def prepare(portfolio_key, execution_id, *, currency, source_revision):\n    return {\"portfolio_key\": portfolio_key, \"execution_id\": execution_id}\n",
+      "lines": 2
+    }
+  }
+}

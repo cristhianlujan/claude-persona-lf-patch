@@ -1,0 +1,31 @@
+{
+  "handoff_id": "AUDITORIA_PROFUNDA_IMPLEMENTACION_LF_TO_QUALITY_V2",
+  "target": "profiles/quality_pack",
+  "status": "CANDIDATE_SOURCE_ONLY_NOT_REGISTERED",
+  "required_payload": [
+    "schema_version",
+    "report_ref",
+    "report_sha256",
+    "base_commit",
+    "candidate_head",
+    "contract_schema_ref",
+    "finding_ids",
+    "consumer_target",
+    "authorized_scope",
+    "evidence_refs",
+    "acceptance_criteria",
+    "blocking_criteria",
+    "known_risks",
+    "pending",
+    "ci_runs",
+    "flow_verdict",
+    "promotion_authorized",
+    "automatic_dispatch",
+    "next_gate"
+  ],
+  "promotion_authorized": false,
+  "automatic_dispatch": false,
+  "next_gate": "OWNER_REVIEW_OF_PR_NO_MERGE",
+  "payload_schema": "schemas/quality_handoff_v2.schema.json",
+  "output_report_schema": "schemas/audit_report_v2.schema.json"
+}

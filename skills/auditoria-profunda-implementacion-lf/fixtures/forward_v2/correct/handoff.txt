@@ -1,0 +1,8 @@
+Receptor: mantenedor del fixture fixtures/forward_v2; ejecutar solo la propuesta local, sin efectos LF.
+Causa 1: raw/producer.py:prepare recibe currency/source_revision pero no los devuelve. Copiar ambos valores literalmente al mensaje, conservando portfolio_key/execution_id.
+Causa 2: raw/pipeline.py:run recibe as_of pero llama assess(message). Cambiar a assess(message, as_of=as_of).
+Contrato de entrada: declarar currency/source_revision/as_of en required; currency admite PEN/USD. El tipo y la procedencia de source_revision/as_of no están resueltos: no inventar una política.
+Código esperado: fixtures/forward_v2/correct/producer.py y pipeline.py. consumer.py conserva su comportamiento.
+Prueba/readback: python -B reports/forward_v2/reproduce.py desde la raíz del paquete; positivo PEN y USD devuelve READY con el mismo execution_id; EUR produce CURRENCY_UNSUPPORTED; revisión distinta produce SOURCE_REVISION_STALE; claves ausentes fallan antes de READY. Ver reports/forward_v2/reproduction.json para before/after y hashes.
+Si falla un positivo o negativo, detener la adopción del candidato y conservar raw como baseline. Rollback local: descartar correct; raw no se modifica.
+Límites: sin Git/PR/CI, red, base de datos, despliegue, promoción, E2E LF ni evidencia de independencia o autoridad real. No enviar este handoff automáticamente.

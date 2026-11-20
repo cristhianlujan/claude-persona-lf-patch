@@ -1,0 +1,20 @@
+{
+  "handoff_id": "AUDITORIA_PROFUNDA_IMPLEMENTACION_LF_TO_QUALITY_V1",
+  "target": "profiles/quality_pack",
+  "status": "CANDIDATE_SOURCE_ONLY_NOT_REGISTERED",
+  "required_payload": [
+    "upstream_output",
+    "skill_contract",
+    "schema_reference",
+    "acceptance_criteria",
+    "blocking_criteria",
+    "evidence_map",
+    "known_risks",
+    "base_commit",
+    "candidate_head",
+    "ci_runs"
+  ],
+  "promotion_authorized": false,
+  "automatic_dispatch": false,
+  "next_gate": "OWNER_REVIEW_OF_PR_NO_MERGE"
+}

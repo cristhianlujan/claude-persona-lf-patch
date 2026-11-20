@@ -1,0 +1,13 @@
+{
+  "verification": "STATIC_HTML_READBACK_ONLY",
+  "contract_rows": 13,
+  "field_cells": 169,
+  "expandable_details": 169,
+  "colors_and_escape": "covered by test_reporting_v2",
+  "visual_browser_status": "NOT_VERIFIED",
+  "visual_browser_error": "Chromium process_singleton_posix.cc: socket() failed: Operation not permitted (1)",
+  "interactive_filter_status": "NOT_VERIFIED_IN_BROWSER",
+  "network_used": false,
+  "captured_at": "2026-11-16T06:09:47.790306+00:00",
+  "html_sha256": "410af2dcae4488e71fa8cdc3555703123ca23d4d6d7981f4e52bcef031ab1bb1"
+}

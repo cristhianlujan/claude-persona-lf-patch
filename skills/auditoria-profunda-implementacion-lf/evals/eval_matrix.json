@@ -1,0 +1,99 @@
+{
+  "eval_id": "LF_DEEP_IMPLEMENTATION_AUDIT_EVAL_V1",
+  "cases": [
+    {
+      "case_id": "A01",
+      "objective": "SPEC con c y d omitidos",
+      "test": "test_A01_spec_two_undeclared_required_fields_from_consumer",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A02",
+      "objective": "Parámetro perdido en origen-transporte-consumidor",
+      "test": "test_A02_parameter_full_origin_transport_consumer_chain",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A03",
+      "objective": "Rama lógica faltante",
+      "test": "test_A03_missing_branch_from_state_contract",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A04",
+      "objective": "SQL con mejora medida, resultados iguales",
+      "test": "test_A04_sql_index_measured_equivalence_and_negative_tenant",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A05",
+      "objective": "Cinco lecturas a una y snapshot con identidad",
+      "test": "test_A05_repeated_queries_snapshot_and_currentness_negatives",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A06",
+      "objective": "Independencia como veto no autorizado",
+      "test": "test_A06_independence_not_extra_veto_when_context_is_authorized",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A07",
+      "objective": "Permiso sin autoridad",
+      "test": "test_A07_valid_review_does_not_create_authority",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A08",
+      "objective": "Contrato válido incompatible con consumidor",
+      "test": "test_A08_input_contract_passes_incompatible_consumer",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A09",
+      "objective": "Contexto perdido entre pasos",
+      "test": "test_A09_step_context_lost_at_transport",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    },
+    {
+      "case_id": "A10",
+      "objective": "Comentario superficial pese a evidencia",
+      "test": "test_A10_superficial_output_despite_available_evidence",
+      "source": "evals/test_acceptance.py",
+      "defective_and_corrected": true,
+      "required_observation": "behavioral consumer before/after and negative"
+    }
+  ],
+  "negative_groups": [
+    "immediate freshness forbids periodic materialization",
+    "wrong tenant/run/object/source/authority/hash",
+    "no authority or stale policy",
+    "context isolation same model",
+    "renamed undocumented fields",
+    "optional get does not mean required"
+  ],
+  "pass_rule": "all executed tests pass; dynamic counts in run evidence",
+  "does_not_prove": [
+    "production readiness",
+    "LF applied repairs",
+    "real independent judge execution"
+  ]
+}

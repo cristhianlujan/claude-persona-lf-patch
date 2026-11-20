@@ -1,0 +1,690 @@
+{
+  "captured_at": "2026-11-16T06:07:03.496211+00:00",
+  "command": "python -B reports/forward_v2/reproduce.py",
+  "working_directory": "/workspace/scratch/4bb35a0bf920/lf-audit-v2/skills/auditoria-profunda-implementacion-lf",
+  "source_revision": null,
+  "source_state": "FIXTURE_COMMIT_NOT_RESOLVED",
+  "runtime": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "jsonschema_draft": "2020-12"
+  },
+  "execution_scope": "FIXTURE_ONLY",
+  "new_lf_e2e_executed": false,
+  "cases": [
+    {
+      "id": "RAW_RUN_VALID",
+      "objective": "Entrada nominal por run: primer fallo de binding",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "TypeError",
+        "message": "assess() missing 1 required keyword-only argument: 'as_of'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "TypeError",
+        "message": "assess() missing 1 required keyword-only argument: 'as_of'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_PREPARE_LOSS",
+      "objective": "Readback del mensaje producido",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "portfolio_key": "portfolio-A",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "portfolio_key": "portfolio-A",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_AFTER_BINDING_ONLY",
+      "objective": "Probar defecto latente tras entregar as_of",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'currency'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'currency'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_AFTER_CURRENCY_ONLY",
+      "objective": "Descubrir segunda clave perdida sin confundir causa",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'source_revision'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'source_revision'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_DIRECT_CONSUMER_PEN",
+      "objective": "Positivo del consumidor sin pipeline",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_DIRECT_CONSUMER_USD",
+      "objective": "Segunda moneda admitida",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_UNSUPPORTED",
+      "objective": "Negativo del emisor READY: moneda inválida",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_STALE",
+      "objective": "Negativo del emisor READY: revisión distinta",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "SOURCE_REVISION_STALE"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "SOURCE_REVISION_STALE"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_ERROR_PRECEDENCE",
+      "objective": "Ambos defectos: comprobar primer rechazo",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_SCHEMA_MINIMAL",
+      "objective": "Schema actual admite entrada incompleta para run",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": true,
+        "errors": []
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": true
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_MINIMAL_TO_RUN",
+      "objective": "Misma entrada admitida: run no puede ejecutarse",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "TypeError",
+        "message": "run() missing 3 required keyword-only arguments: 'currency', 'source_revision', and 'as_of'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "TypeError",
+        "message": "run() missing 3 required keyword-only arguments: 'currency', 'source_revision', and 'as_of'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "RAW_SCHEMA_UNSUPPORTED",
+      "objective": "Enum de consumidor no está declarado",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": true,
+        "errors": []
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": true
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_RUN_PEN",
+      "objective": "Positivo del pipeline corregido",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_RUN_USD",
+      "objective": "Regresión del segundo valor admitido",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_PREPARE_READBACK",
+      "objective": "Readback de cuatro campos preservados",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "portfolio_key": "portfolio-A",
+          "execution_id": "run-A",
+          "currency": "PEN",
+          "source_revision": "revision-1"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "portfolio_key": "portfolio-A",
+          "execution_id": "run-A",
+          "currency": "PEN",
+          "source_revision": "revision-1"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_UNSUPPORTED",
+      "objective": "Negativo moneda por pipeline completo local",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_STALE",
+      "objective": "Negativo revisión por pipeline completo local",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "SOURCE_REVISION_STALE"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "SOURCE_REVISION_STALE"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_ERROR_PRECEDENCE",
+      "objective": "Regresión de prioridad del error",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "ValueError",
+        "message": "CURRENCY_UNSUPPORTED"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_EXECUTION_ID",
+      "objective": "Otro ID regresa sin reescritura",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-B"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-B"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_MISSING_CURRENCY",
+      "objective": "Clave ausente no debe emitir READY",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'currency'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'currency'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_MISSING_SOURCE_REVISION",
+      "objective": "Clave ausente no debe emitir READY",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'source_revision'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'source_revision'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_MISSING_EXECUTION_ID",
+      "objective": "Clave ausente no debe emitir READY",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'execution_id'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "KeyError",
+        "message": "'execution_id'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_NOMINAL",
+      "objective": "Schema propuesto admite nominal",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": true,
+        "errors": []
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": true
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_MISSING_CURRENCY",
+      "objective": "Required propuesto rechaza falta de currency",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": false,
+        "errors": [
+          {
+            "path": [],
+            "validator": "required",
+            "message": "'currency' is a required property"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": false
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_MISSING_SOURCE_REVISION",
+      "objective": "Required propuesto rechaza falta de source_revision",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": false,
+        "errors": [
+          {
+            "path": [],
+            "validator": "required",
+            "message": "'source_revision' is a required property"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": false
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_MISSING_AS_OF",
+      "objective": "Required propuesto rechaza falta de as_of",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": false,
+        "errors": [
+          {
+            "path": [],
+            "validator": "required",
+            "message": "'as_of' is a required property"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": false
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_UNSUPPORTED",
+      "objective": "Enum propuesto rechaza EUR",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": false,
+        "errors": [
+          {
+            "path": [
+              "currency"
+            ],
+            "validator": "enum",
+            "message": "'EUR' is not one of ['PEN', 'USD']"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": false
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_STALE",
+      "objective": "Límite: JSON Schema no comprueba igualdad entre tokens",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": true,
+        "errors": []
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": true
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_NULL_REVISION_BOUNDARY",
+      "objective": "Límite observado: sin política de tipo, null==null emite READY",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_WRONG_AS_OF_BOUNDARY",
+      "objective": "Límite: caller puede igualar dos tokens ajenos; no prueba currentness",
+      "observed": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "expected": {
+        "kind": "RETURN",
+        "value": {
+          "decision": "READY",
+          "execution_id": "run-A"
+        }
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_SCHEMA_EXTRA_BOUNDARY",
+      "objective": "Extensibilidad heredada del schema",
+      "observed": {
+        "kind": "SCHEMA",
+        "valid": true,
+        "errors": []
+      },
+      "expected": {
+        "kind": "SCHEMA",
+        "valid": true
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    },
+    {
+      "id": "CORRECT_RUN_EXTRA_BOUNDARY",
+      "objective": "Sin loader no hay proyección de campos extra a firma",
+      "observed": {
+        "kind": "RAISE",
+        "exception": "TypeError",
+        "message": "run() got an unexpected keyword argument 'extra'"
+      },
+      "expected": {
+        "kind": "RAISE",
+        "exception": "TypeError",
+        "message": "run() got an unexpected keyword argument 'extra'"
+      },
+      "assertion_pass": true,
+      "scope": "FIXTURE_ONLY"
+    }
+  ],
+  "summary": {
+    "total": 32,
+    "assertions_passed": 32,
+    "assertions_failed": 0
+  },
+  "source_hashes": {
+    "fixtures/forward_v2/raw/consumer.py": {
+      "sha256": "55385451af4c5319c4d8435210f536e404e9832791615a87b13810443ba5903a",
+      "bytes": 298
+    },
+    "fixtures/forward_v2/raw/error_contract.txt": {
+      "sha256": "bf356486e8f53373d2551187ae385e94ea4ca24a27dcc0f556fc20369b4c309f",
+      "bytes": 202
+    },
+    "fixtures/forward_v2/raw/handoff.txt": {
+      "sha256": "0091eb47703108781a776417de9de5156e4a5c8f24d5537912381f1dac1860a4",
+      "bytes": 397
+    },
+    "fixtures/forward_v2/raw/input.schema.json": {
+      "sha256": "50075dd1eec40b097a3e994c5256189421505cb2f154d21f4d5b428bb594fa7c",
+      "bytes": 172
+    },
+    "fixtures/forward_v2/raw/pipeline.py": {
+      "sha256": "83bcb284d96f55c603c6b87ff3a07c32578cecb3245fd1e25f3409c155403e23",
+      "bytes": 264
+    },
+    "fixtures/forward_v2/raw/producer.py": {
+      "sha256": "c1c0231df4d33229ead2e29e7de9ec8cb0d1b6b2e6df40f4dc0d2b3a08098f7e",
+      "bytes": 146
+    },
+    "fixtures/forward_v2/correct/consumer.py": {
+      "sha256": "55385451af4c5319c4d8435210f536e404e9832791615a87b13810443ba5903a",
+      "bytes": 298
+    },
+    "fixtures/forward_v2/correct/error_contract.txt": {
+      "sha256": "dc611c1153c6c1522036302dd56aa3dcc1e4f1e4d4e82701954367ed248584d6",
+      "bytes": 1092
+    },
+    "fixtures/forward_v2/correct/handoff.txt": {
+      "sha256": "2aa1a815b700a60b4b8d0c10e84b6ae1df7af17bce6f81b556563c46e376e03d",
+      "bytes": 1356
+    },
+    "fixtures/forward_v2/correct/input.schema.json": {
+      "sha256": "1194bf737e5b17d12de4b67109e030806ab3dd54a16ed2236853d32341fa98a6",
+      "bytes": 1151
+    },
+    "fixtures/forward_v2/correct/pipeline.py": {
+      "sha256": "8e58cd80ec771febf82794591018ca2baa4c667273bd57d195587d631458b254",
+      "bytes": 316
+    },
+    "fixtures/forward_v2/correct/producer.py": {
+      "sha256": "b2c93723c8e26c6c220b3c9d848bafdcfc7a24554f40f8889717e0007c7206a0",
+      "bytes": 243
+    }
+  },
+  "ast_inventory": [
+    {
+      "file": "fixtures/forward_v2/raw/consumer.py",
+      "function": "assess",
+      "line": 1,
+      "end_line": 6,
+      "parameters": [
+        "message"
+      ],
+      "keyword_only": [
+        "as_of"
+      ]
+    },
+    {
+      "file": "fixtures/forward_v2/raw/pipeline.py",
+      "function": "run",
+      "line": 5,
+      "end_line": 7,
+      "parameters": [
+        "portfolio_key",
+        "execution_id"
+      ],
+      "keyword_only": [
+        "currency",
+        "source_revision",
+        "as_of"
+      ]
+    },
+    {
+      "file": "fixtures/forward_v2/raw/producer.py",
+      "function": "prepare",
+      "line": 1,
+      "end_line": 2,
+      "parameters": [
+        "portfolio_key",
+        "execution_id"
+      ],
+      "keyword_only": [
+        "currency",
+        "source_revision"
+      ]
+    }
+  ],
+  "harness_sha256": "3b60901d0fd35575fc26fb97b8da3e59e502f2b3ad943b91422734cdf3906b6e",
+  "limits": [
+    "No red/DB/Git/PR/CI ni ejecución LF",
+    "READY local no prueba autoridad, independencia, despliegue ni E2E",
+    "Tipos y procedencia de tokens no resueltos",
+    "Schema no está integrado en ningún loader descubierto",
+    "Positivos del harness incluyen errores esperados; assertion_pass no significa flujo válido"
+  ]
+}

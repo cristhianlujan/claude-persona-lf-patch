@@ -1,0 +1,22 @@
+{
+  "status": "BLOCK_PIPELINE",
+  "skill_pack_id": "SKILL_AUDITORIA_PROFUNDA_IMPLEMENTACION_LF",
+  "source_authority": "OWNER_HANDOFF_20261115_CANDIDATE_PR_ONLY",
+  "deliverable_created": {
+    "summary": "Solo checklist genérico sin fuentes ni pruebas",
+    "example_only": true
+  },
+  "files_created": [
+    "SKILL.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "validators/validate_report.py"
+  ],
+  "evidence_map": [
+    "examples only; actual evidence lives in reports/pilot_report.json"
+  ],
+  "blocking_codes": [
+    "BASIC_SKILL_OUTPUT_NOT_ACCEPTABLE"
+  ],
+  "next_gate": "WORKER_CREATE_REAL_EVIDENCE"
+}

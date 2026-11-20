@@ -1,0 +1,13 @@
+{
+  "local_candidate_code": "LF-DEEP-AUDIT-CI-SHALLOW-BASELINE-001",
+  "canonical_ekb_registration_applied": false,
+  "status": "CANDIDATO_LOCAL",
+  "source_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43781616329",
+  "job_id": 133019864120,
+  "failed_head": "8c9921d0302e76be34ca87dfbb7ff135ecdadbc2",
+  "observed": "R17: 382 tests, one failure in new audit adapter, one skipped; pilot source files exist but their pinned base commit is absent from depth=1 checkout.",
+  "root_cause": "Adapter assumed complete Git history while report validator correctly required git show of the source commit.",
+  "prevention": "Fetch only the exact missing baseline hex commit from repository origin before validation. Cache presence within the job. Never skip or replace commit/hash/literal checks.",
+  "regression": "evals/test_ci_provenance.py creates a real shallow fixture clone; proves base missing, exact fetch/readback, no source modification, no second fetch, rejection of nonexistent or malformed commit.",
+  "fix_scope": "Candidate skill test adapter only; no workflow, credential, functional LF or DB change. Final exact-head CI determines closure."
+}

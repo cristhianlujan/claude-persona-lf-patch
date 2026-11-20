@@ -1,0 +1,71 @@
+{
+  "version": "LF_DEEP_AUDIT_TAXONOMY_V1",
+  "extensible": true,
+  "automatic_exhaustiveness_claim": false,
+  "classes": [
+    {
+      "code": "SPEC_REQUIRED_FIELD_OMITTED",
+      "description": "Obligación leída por consumidor pero no declarada"
+    },
+    {
+      "code": "CALL_BINDING_INCOMPATIBLE",
+      "description": "Parámetro omitido, incompatible o sobrescrito"
+    },
+    {
+      "code": "STATE_BRANCH_MISSING",
+      "description": "Estado/evento sin transición correcta"
+    },
+    {
+      "code": "CONTRACT_TYPE_MISMATCH",
+      "description": "Tipo/null/enum/version incompatible con consumidor"
+    },
+    {
+      "code": "SQL_COST_AVOIDABLE",
+      "description": "Costo demostrado de consulta/plan"
+    },
+    {
+      "code": "CONTEXT_REQUERY_REDUNDANT",
+      "description": "Lecturas/reconstrucciones repetidas bajo contexto idéntico"
+    },
+    {
+      "code": "SNAPSHOT_UNSAFE_REUSE",
+      "description": "Identidad/currentness/autoridad/tenant no preservados"
+    },
+    {
+      "code": "JUDGE_EXTRA_INDEPENDENCE_VETO",
+      "description": "Veto añadido contra política contextual suficiente"
+    },
+    {
+      "code": "JUDGE_AUTHORITY_OVERREACH",
+      "description": "PASS usado como permiso sin autoridad"
+    },
+    {
+      "code": "STEP_CONTEXT_INSUFFICIENT",
+      "description": "Dato disponible no llega al paso que lo necesita"
+    },
+    {
+      "code": "OUTPUT_NOT_ACTIONABLE",
+      "description": "Comentario superficial con evidencia suficiente"
+    },
+    {
+      "code": "EVAL_FAILURE_MASKED",
+      "description": "Validación material fallida eliminada al normalizar procedencia"
+    },
+    {
+      "code": "EXECUTION_ID_NOT_BOUND",
+      "description": "Identidad existe pero no se entrega al validador"
+    },
+    {
+      "code": "EVAL_INPUT_INCOMPATIBLE",
+      "description": "EVAL acepta entrada no admitida por contrato"
+    },
+    {
+      "code": "ERROR_RETRY_UNSAFE",
+      "description": "Errores/reintentos/concurrencia no preservan invariantes"
+    },
+    {
+      "code": "GOVERNANCE_CONTRACT_CONFLICT",
+      "description": "Política vigente contradice comportamiento solicitado"
+    }
+  ]
+}

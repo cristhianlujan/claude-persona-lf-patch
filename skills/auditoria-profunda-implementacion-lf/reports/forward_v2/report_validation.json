@@ -1,0 +1,30 @@
+{
+  "command": "python -B reports/forward_v2/write_report.py",
+  "report_json_readback": true,
+  "raw_hashes_match_reproduction": true,
+  "correct_hashes_match_reproduction": true,
+  "consumer_unchanged": true,
+  "contracts": 6,
+  "cells": 80,
+  "all_profile_fields_represented": true,
+  "all_formats_accepted_by_profile": true,
+  "cell_states": {
+    "NOT_APPLICABLE": 20,
+    "MISSING": 13,
+    "WEAK": 13,
+    "ACCEPTABLE": 26,
+    "NOT_EVALUATED": 3,
+    "CONTRADICTORY": 5
+  },
+  "grades": {
+    "C_INPUT": "LOW",
+    "C_PRODUCER": "LOW",
+    "C_PIPELINE": "LOW",
+    "C_CONSUMER": "NOT_EVALUATED",
+    "C_HANDOFF": "LOW",
+    "C_ERRORS": "ACCEPTABLE"
+  },
+  "report_sha256": "d8db2e8fd33e556119fa6766fde7af4ec90c48cbf3101ae464ba4cdf92aa6b35",
+  "markdown_sha256": "1091b1a7abcabc807c92aafdfe73ac124e943d57d23b69af3ce4e86beaec2d5a",
+  "report_kind": "CUSTOM_LOCAL_FORWARD_TEST_NOT_FULL_LF_V2"
+}

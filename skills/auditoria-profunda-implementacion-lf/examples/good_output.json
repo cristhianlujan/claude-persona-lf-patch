@@ -1,0 +1,21 @@
+{
+  "status": "SKILL_PACK_CREATED",
+  "skill_pack_id": "SKILL_AUDITORIA_PROFUNDA_IMPLEMENTACION_LF",
+  "source_authority": "OWNER_HANDOFF_20261115_CANDIDATE_PR_ONLY",
+  "deliverable_created": {
+    "summary": "Ejemplo de paquete candidato completo, sin habilitación",
+    "quality_gate": "READY_FOR_QUALITY_PACK",
+    "example_only": true
+  },
+  "files_created": [
+    "SKILL.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "validators/validate_report.py"
+  ],
+  "evidence_map": [
+    "examples only; actual evidence lives in reports/pilot_report.json"
+  ],
+  "blocking_codes": [],
+  "next_gate": "OWNER_REVIEW_OF_PR_NO_MERGE"
+}

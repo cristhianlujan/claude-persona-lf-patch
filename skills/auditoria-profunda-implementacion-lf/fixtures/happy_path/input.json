@@ -1,0 +1,25 @@
+{
+  "fixture_only": true,
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_commit": "28f38e5cec25fa24cca8024cd496f2eeefc52292",
+  "objective": "Auditar contrato y transporte local",
+  "read_scope": [
+    "fixtures/implementation"
+  ],
+  "write_scope": [
+    "fixture proposals only"
+  ],
+  "entrypoints": [
+    "producer.py:broken_transport"
+  ],
+  "consumer_targets": [
+    "consumer.py:apply_contract"
+  ],
+  "authority_refs": [
+    "owner handoff candidate only"
+  ],
+  "acceptance_criteria": [
+    "positive and negative consumer tests"
+  ],
+  "evidence_destination": "reports"
+}

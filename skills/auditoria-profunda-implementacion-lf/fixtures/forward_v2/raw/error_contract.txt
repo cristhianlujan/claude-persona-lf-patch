@@ -1,0 +1,3 @@
+currency fuera de PEN/USD → ValueError("CURRENCY_UNSUPPORTED").
+source_revision distinta de as_of → ValueError("SOURCE_REVISION_STALE").
+El receptor assess rechaza el mensaje antes de emitir READY.

@@ -1,0 +1,186 @@
+{
+  "executed_at": "2026-11-16T00:44:33.525580+00:00",
+  "scope": "LOCAL_TESTS_NOT_GOVERNANCE_PASS",
+  "command": "python skills/auditoria-profunda-implementacion-lf/scripts/run_evals.py --output <path>",
+  "tests_run": 33,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "successful": true,
+  "observations": [
+    {
+      "test": "test_acceptance.Acceptance.test_A01_spec_two_undeclared_required_fields_from_consumer",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A02_parameter_full_origin_transport_consumer_chain",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A03_missing_branch_from_state_contract",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A04_sql_index_measured_equivalence_and_negative_tenant",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A05_repeated_queries_snapshot_and_currentness_negatives",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A06_independence_not_extra_veto_when_context_is_authorized",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A07_valid_review_does_not_create_authority",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A08_input_contract_passes_incompatible_consumer",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A09_step_context_lost_at_transport",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_A10_superficial_output_despite_available_evidence",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N01_immediate_freshness_never_periodic_materialization",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N02_context_isolated_same_model_can_satisfy_independence",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N03_stale_wrong_scope_and_material_fail_remain_blocked",
+      "result": "PASS"
+    },
+    {
+      "test": "test_acceptance.Acceptance.test_N04_renamed_undocumented_consumer_fields_generalize",
+      "result": "PASS"
+    },
+    {
+      "test": "test_ci_provenance.ShallowCheckoutProvenance.test_exact_baseline_fetch_preserves_source_checks",
+      "result": "PASS"
+    },
+    {
+      "test": "test_ci_provenance.ShallowCheckoutProvenance.test_invalid_commit_is_rejected_before_transport",
+      "result": "PASS"
+    },
+    {
+      "test": "test_holdout.BlindCaseReplay.test_first_failure_masks_second_and_coordinated_fix_resolves_both",
+      "result": "PASS"
+    },
+    {
+      "test": "test_holdout.BlindCaseReplay.test_raw_snapshot_matches_actual_blind_test_sources",
+      "result": "PASS"
+    },
+    {
+      "test": "test_holdout.BlindCaseReplay.test_renamed_contract_call_and_state_discovered_from_raw_sources",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_authority_cannot_be_created_by_report_flag",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_changed_literal_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_evidence_hash_drift_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_fix_without_before_after_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_literal_commit_hash_and_consumers_resolve",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_missing_ref_and_nonexistent_json_pointer_are_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_path_escape_and_duplicate_ids_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_policy_strict_types_and_nonhex_hash_never_authorize",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_snapshot_missing_identity_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_unexecuted_confirmation_is_rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "test_integrity.ReportIntegrity.test_unrelated_bound_evidence_cannot_masquerade_as_authority",
+      "result": "PASS"
+    },
+    {
+      "test": "test_pilot.Step70Pilot.test_actual_material_failure_masking_is_reproducible",
+      "result": "PASS"
+    },
+    {
+      "test": "test_pilot.Step70Pilot.test_actual_run_argument_binding_gap_is_reproducible",
+      "result": "PASS"
+    },
+    {
+      "test": "test_pilot.Step70Pilot.test_spec_and_eval_mismatch_is_reproducible",
+      "result": "PASS"
+    }
+  ],
+  "log": "test_A01_spec_two_undeclared_required_fields_from_consumer (test_acceptance.Acceptance.test_A01_spec_two_undeclared_required_fields_from_consumer) ... ok\ntest_A02_parameter_full_origin_transport_consumer_chain (test_acceptance.Acceptance.test_A02_parameter_full_origin_transport_consumer_chain) ... ok\ntest_A03_missing_branch_from_state_contract (test_acceptance.Acceptance.test_A03_missing_branch_from_state_contract) ... ok\ntest_A04_sql_index_measured_equivalence_and_negative_tenant (test_acceptance.Acceptance.test_A04_sql_index_measured_equivalence_and_negative_tenant) ... ok\ntest_A05_repeated_queries_snapshot_and_currentness_negatives (test_acceptance.Acceptance.test_A05_repeated_queries_snapshot_and_currentness_negatives) ... ok\ntest_A06_independence_not_extra_veto_when_context_is_authorized (test_acceptance.Acceptance.test_A06_independence_not_extra_veto_when_context_is_authorized) ... ok\ntest_A07_valid_review_does_not_create_authority (test_acceptance.Acceptance.test_A07_valid_review_does_not_create_authority) ... ok\ntest_A08_input_contract_passes_incompatible_consumer (test_acceptance.Acceptance.test_A08_input_contract_passes_incompatible_consumer) ... ok\ntest_A09_step_context_lost_at_transport (test_acceptance.Acceptance.test_A09_step_context_lost_at_transport) ... ok\ntest_A10_superficial_output_despite_available_evidence (test_acceptance.Acceptance.test_A10_superficial_output_despite_available_evidence) ... ok\ntest_N01_immediate_freshness_never_periodic_materialization (test_acceptance.Acceptance.test_N01_immediate_freshness_never_periodic_materialization) ... ok\ntest_N02_context_isolated_same_model_can_satisfy_independence (test_acceptance.Acceptance.test_N02_context_isolated_same_model_can_satisfy_independence) ... ok\ntest_N03_stale_wrong_scope_and_material_fail_remain_blocked (test_acceptance.Acceptance.test_N03_stale_wrong_scope_and_material_fail_remain_blocked) ... ok\ntest_N04_renamed_undocumented_consumer_fields_generalize (test_acceptance.Acceptance.test_N04_renamed_undocumented_consumer_fields_generalize) ... ok\ntest_exact_baseline_fetch_preserves_source_checks (test_ci_provenance.ShallowCheckoutProvenance.test_exact_baseline_fetch_preserves_source_checks) ... ok\ntest_invalid_commit_is_rejected_before_transport (test_ci_provenance.ShallowCheckoutProvenance.test_invalid_commit_is_rejected_before_transport) ... ok\ntest_first_failure_masks_second_and_coordinated_fix_resolves_both (test_holdout.BlindCaseReplay.test_first_failure_masks_second_and_coordinated_fix_resolves_both) ... ok\ntest_raw_snapshot_matches_actual_blind_test_sources (test_holdout.BlindCaseReplay.test_raw_snapshot_matches_actual_blind_test_sources) ... ok\ntest_renamed_contract_call_and_state_discovered_from_raw_sources (test_holdout.BlindCaseReplay.test_renamed_contract_call_and_state_discovered_from_raw_sources) ... ok\ntest_authority_cannot_be_created_by_report_flag (test_integrity.ReportIntegrity.test_authority_cannot_be_created_by_report_flag) ... ok\ntest_changed_literal_is_rejected (test_integrity.ReportIntegrity.test_changed_literal_is_rejected) ... ok\ntest_evidence_hash_drift_is_rejected (test_integrity.ReportIntegrity.test_evidence_hash_drift_is_rejected) ... ok\ntest_fix_without_before_after_is_rejected (test_integrity.ReportIntegrity.test_fix_without_before_after_is_rejected) ... ok\ntest_literal_commit_hash_and_consumers_resolve (test_integrity.ReportIntegrity.test_literal_commit_hash_and_consumers_resolve) ... ok\ntest_missing_ref_and_nonexistent_json_pointer_are_rejected (test_integrity.ReportIntegrity.test_missing_ref_and_nonexistent_json_pointer_are_rejected) ... ok\ntest_path_escape_and_duplicate_ids_rejected (test_integrity.ReportIntegrity.test_path_escape_and_duplicate_ids_rejected) ... ok\ntest_policy_strict_types_and_nonhex_hash_never_authorize (test_integrity.ReportIntegrity.test_policy_strict_types_and_nonhex_hash_never_authorize) ... ok\ntest_snapshot_missing_identity_rejected (test_integrity.ReportIntegrity.test_snapshot_missing_identity_rejected) ... ok\ntest_unexecuted_confirmation_is_rejected (test_integrity.ReportIntegrity.test_unexecuted_confirmation_is_rejected) ... ok\ntest_unrelated_bound_evidence_cannot_masquerade_as_authority (test_integrity.ReportIntegrity.test_unrelated_bound_evidence_cannot_masquerade_as_authority) ... ok\ntest_actual_material_failure_masking_is_reproducible (test_pilot.Step70Pilot.test_actual_material_failure_masking_is_reproducible) ... ok\ntest_actual_run_argument_binding_gap_is_reproducible (test_pilot.Step70Pilot.test_actual_run_argument_binding_gap_is_reproducible) ... ok\ntest_spec_and_eval_mismatch_is_reproducible (test_pilot.Step70Pilot.test_spec_and_eval_mismatch_is_reproducible) ... ok\n\n----------------------------------------------------------------------\nRan 33 tests in 0.449s\n\nOK\n",
+  "sql_fixture_measurement": {
+    "engine": "SQLite in-memory fixture; not PG performance",
+    "rows": 20000,
+    "before": {
+      "plan": [
+        "SCAN payments"
+      ],
+      "vm_operations": 68013,
+      "result": [
+        [
+          19201,
+          38402
+        ]
+      ]
+    },
+    "after": {
+      "plan": [
+        "SEARCH payments USING INDEX payments_tenant_external (tenant=? AND external_id=?)"
+      ],
+      "vm_operations": 21,
+      "result": [
+        [
+          19201,
+          38402
+        ]
+      ]
+    },
+    "wrong_tenant_result": []
+  },
+  "freshness_fixture_measurement": {
+    "engine": "SQLite cache-table analogue, not PG materialized view",
+    "before": 5,
+    "source_after_change": 12,
+    "cached_after_change": 5
+  },
+  "query_count_fixture": {
+    "before": 5,
+    "after": 1,
+    "evidence_test": "test_A05_repeated_queries_snapshot_and_currentness_negatives"
+  },
+  "promotion_authorized": false
+}

@@ -1,0 +1,23 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "skill_pack_id": "SKILL_AUDITORIA_PROFUNDA_IMPLEMENTACION_LF",
+  "source_authority": "OWNER_HANDOFF_20261115_CANDIDATE_PR_ONLY",
+  "deliverable_created": {
+    "summary": "Ejemplo de paquete candidato completo, sin habilitación",
+    "quality_gate": "READY_FOR_QUALITY_PACK",
+    "example_only": true
+  },
+  "files_created": [
+    "SKILL.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "validators/validate_report.py"
+  ],
+  "evidence_map": [
+    "examples only; actual evidence lives in reports/pilot_report.json"
+  ],
+  "blocking_codes": [
+    "CONSUMER_READBACK_REQUIRED"
+  ],
+  "next_gate": "WORKER_ADD_EXECUTED_READBACK"
+}

@@ -1,0 +1,490 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "LF_DEEP_IMPLEMENTATION_AUDIT_REPORT_V1"
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "status": {
+      "enum": [
+        "READY_FOR_JUDGE",
+        "PARTIAL",
+        "BLOCKED"
+      ]
+    },
+    "promotion_authorized": {
+      "type": "boolean"
+    },
+    "authority_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 6
+      },
+      "uniqueItems": true
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "read": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "written": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "not_verified": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "read",
+        "written",
+        "not_verified"
+      ]
+    },
+    "evidence_files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "behavior_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "field",
+          "observation",
+          "evidence_refs"
+        ]
+      }
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ekb_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "applies": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "enum": [
+              "REVIEWED",
+              "NOT_VERIFIED",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "ekb_code",
+          "applies",
+          "reason",
+          "result",
+          "evidence_refs"
+        ]
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "DEFECT",
+              "OPTIMIZATION",
+              "GOVERNANCE_GAP"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "function": {
+                "type": "string",
+                "minLength": 1
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "commit": {
+                "type": "string",
+                "pattern": "^([0-9a-f]{40}|WORKTREE_UNCOMMITTED_FIXTURE)$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "file",
+              "function",
+              "start_line",
+              "end_line",
+              "commit",
+              "sha256"
+            ]
+          },
+          "found_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "behavior": {
+                "type": "string",
+                "minLength": 1
+              },
+              "contract_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "behavior",
+              "contract_refs"
+            ]
+          },
+          "defect": {
+            "type": "string",
+            "minLength": 1
+          },
+          "root_cause": {
+            "type": "string",
+            "minLength": 1
+          },
+          "impact": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "correction": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "targets": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "proposed_only": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "targets",
+              "proposed_only"
+            ]
+          },
+          "positive_test": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "executed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "description",
+              "evidence_ref",
+              "executed"
+            ]
+          },
+          "negative_test": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "executed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "description",
+              "evidence_ref",
+              "executed"
+            ]
+          },
+          "observed_result": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "executed": {
+                "type": "boolean"
+              },
+              "command": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "exit_code": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "scope": {
+                "enum": [
+                  "LOCAL_REAL_LF_HELPER",
+                  "FIXTURE_ONLY",
+                  "STATIC_SQL_READBACK",
+                  "NOT_EXECUTED"
+                ]
+              }
+            },
+            "required": [
+              "executed",
+              "command",
+              "exit_code",
+              "summary",
+              "evidence_refs",
+              "scope"
+            ]
+          },
+          "readback": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "verified": {
+                "type": "boolean"
+              },
+              "consumer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "effect": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "verified",
+              "consumer",
+              "effect",
+              "evidence_refs"
+            ]
+          },
+          "status": {
+            "enum": [
+              "CONFIRMED",
+              "HYPOTHESIS",
+              "NOT_VERIFIED",
+              "FIX_VERIFIED"
+            ]
+          },
+          "before_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "after_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fix_scope": {
+            "enum": [
+              "NONE",
+              "FIXTURE",
+              "LF_LOCAL",
+              "LF_DEPLOYED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "code",
+          "location",
+          "found_code",
+          "expected",
+          "defect",
+          "root_cause",
+          "impact",
+          "correction",
+          "positive_test",
+          "negative_test",
+          "observed_result",
+          "readback",
+          "status",
+          "before_ref",
+          "after_ref",
+          "fix_scope"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "repository",
+    "base_commit",
+    "status",
+    "promotion_authorized",
+    "authority_ref",
+    "phases",
+    "scope",
+    "evidence_files",
+    "behavior_chain",
+    "checklist",
+    "findings",
+    "limitations"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
