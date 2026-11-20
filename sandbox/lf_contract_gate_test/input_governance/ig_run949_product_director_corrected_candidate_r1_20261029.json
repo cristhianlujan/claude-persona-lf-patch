@@ -1,0 +1,303 @@
+{
+  "worker": "product_director_lf",
+  "output_type": "PRODUCT_DIRECTION_SPEC",
+  "deliverable_created": {
+    "product_decision": {
+      "decision_id": "PD-B2B-AUTH-IG949-20261029-CORRECTION-R1",
+      "selected_decision": "Las reglas de Iniciar sesión B2B no están totalmente definidas: el run 949 tiene 35 familias COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE, aunque sus 47 evaluaciones deterministas son PASS. Separar (a) las 6 familias P1 y 4 P2 con definición parcial, de (b) las 20 P1 NOT_READY para implementación, 4 P2 BLOCKED en QA y 1 P3 NOT_READY para producción. Clasificar cada brecha según autoridad y evidencia, sin inferir que requiere crear una regla; solo proponer cambios canónicos si falta una regla material confirmada y no existe equivalente. Derivar la implementación solicitada al Router mediante operación autorizada distinta: esta ejecución GPT_NATIVE es solo lectura.",
+      "rationale": "La solicitud original requiere evaluar completitud de Producto, UX y QA e implementar nuevas reglas. Run 949 demuestra integridad del análisis (47/47 validador PASS), pero no completitud de definiciones (35/10/2) ni readiness de implementación (20 P1 no listas). Las familias parciales deben inspeccionarse individualmente antes de decidir creación, corrección de binding, dependencia técnica o prueba QA. La implementación queda pendiente de otra ruta autorizada y no puede acreditarse por esta salida.",
+      "source_refs": [
+        {
+          "source_ref": "supabase://programacion.input_family_assessments/run_id=949",
+          "authority": "AUTHORITATIVE",
+          "supports": "Readback run 949: 47 assessments, 35 COMPLETE, 10 PARTIAL, 2 NOT_APPLICABLE; de las PARTIAL hay 6 P1 (DESIGN_SYSTEM, IDEMPOTENCY_CONCURRENCY, LOADING_EMPTY_ERROR_STATES, OBSERVABILITY, PRIVACY_PII, THEME_LIGHT_DARK_SYSTEM) y 4 P2 (BROWSER_PLATFORM, PERFORMANCE, TESTING_OBLIGATIONS, VISUAL_EVIDENCE). Readiness separada: 20 P1 implementation NOT_READY / QA BLOCKED; 4 P2 QA BLOCKED; 1 P3 production NOT_READY.",
+          "current": true
+        },
+        {
+          "source_ref": "supabase://programacion.input_readiness_runs/949",
+          "authority": "AUTHORITATIVE",
+          "supports": "Run 949 pantalla_id=51, version_id=19, COMPLETED, validator_outcome PASS para 47 de 47, sin invalidated_at; source_snapshot_sha256 087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c. Esto no acredita reglas completas ni implementación.",
+          "current": true
+        },
+        {
+          "source_ref": "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+          "authority": "AUTHORITATIVE",
+          "supports": "Contrato B2B-AUTH-001 v1.2: 283 reglas; AUTH-013 y AUTH-017 CANDIDATO, AUTH-015 y AUTH-022 VIGENTE; AUTH-015 mantiene M1 ADR-003 de identity binding pendiente, sin endpoint ni OIDC grant ejecutable; SESSION-001/002 consumen política central.",
+          "current": true
+        },
+        {
+          "source_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest",
+          "authority": "CONSTRAINT",
+          "supports": "Ejecución GPT Native Router autorizada con read_only=true, no_write=true, no_promotion=true y effect_authority=false.",
+          "current": true
+        }
+      ],
+      "rejected_alternatives": [
+        {
+          "alternative": "Crear automáticamente 10 reglas por las familias PARTIAL",
+          "reason": "PARTIAL expresa déficit de cobertura o evidencia, no prueba ausencia de una regla canónica; varias familias están bloqueadas por runtime, binding o QA."
+        },
+        {
+          "alternative": "Priorizar solo los 20 bloqueos P1 sin revisar completitud",
+          "reason": "Omitiría seis P1 y cuatro P2 con definición parcial, contraviniendo el pedido de identificar brechas Producto/UX/QA."
+        },
+        {
+          "alternative": "Declarar completo o implementable por 47/47 validator PASS",
+          "reason": "Confunde la integridad de evaluación con coverage_status/well_defined_status y readiness, que tienen estados distintos."
+        },
+        {
+          "alternative": "Modificar reglas desde la ejecución actual",
+          "reason": "Manifest read_only=true, no_write=true y effect_authority=false; la implementación requiere otra operación gobernada."
+        }
+      ],
+      "tradeoffs": [
+        "Corregir primero inventario y tipo de brecha evita duplicación, pero retrasa cambios sin evidencia exacta.",
+        "Atender primero seguridad/identidad bloqueante y, en paralelo, clasificar diez coberturas parciales sin convertir propuestas en autoridad."
+      ],
+      "preserved_constraints": [
+        "47/47 validator PASS certifica integridad del análisis, no completitud: run 949 conserva 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
+        "Las 10 familias PARTIAL son 6 P1 y 4 P2 y no equivalen automáticamente a 10 nuevas reglas.",
+        "20 P1 NOT_READY para implementación, 4 P2 QA BLOCKED y 1 P3 production NOT_READY son métricas de etapas distintas; no duplicar conteos.",
+        "Las reglas CANDIDATO no son VIGENTE ni pueden implementarse como autorizadas sin su transición gobernada.",
+        "AUTH-015 mantiene identity binding pendiente del spike M1 ADR-003; endpoint/grant/payload no están definidos para implementación.",
+        "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
+        "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
+        "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable."
+      ],
+      "semantic_qualifiers": [
+        "47/47 validator PASS certifica integridad del análisis, no completitud: run 949 conserva 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
+        "Las 10 familias PARTIAL son 6 P1 y 4 P2 y no equivalen automáticamente a 10 nuevas reglas.",
+        "20 P1 NOT_READY para implementación, 4 P2 QA BLOCKED y 1 P3 production NOT_READY son métricas de etapas distintas; no duplicar conteos.",
+        "Las reglas CANDIDATO no son VIGENTE ni pueden implementarse como autorizadas sin su transición gobernada.",
+        "AUTH-015 mantiene identity binding pendiente del spike M1 ADR-003; endpoint/grant/payload no están definidos para implementación.",
+        "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
+        "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
+        "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable."
+      ]
+    },
+    "included_scope": [
+      "Pantalla 51 B2B-AUTH-001, run 949, snapshot 087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c.",
+      "Revisar definición PARTIAL de seis P1: DESIGN_SYSTEM, IDEMPOTENCY_CONCURRENCY, LOADING_EMPTY_ERROR_STATES, OBSERVABILITY, PRIVACY_PII, THEME_LIGHT_DARK_SYSTEM.",
+      "Revisar definición PARTIAL y bloqueos QA de cuatro P2: BROWSER_PLATFORM, PERFORMANCE, TESTING_OBLIGATIONS, VISUAL_EVIDENCE.",
+      "Separar los otros catorce P1 que están COMPLETE documentalmente pero NOT_READY para implementación.",
+      "Clasificar hueco canónico, binding/ejecutor pendiente o evidencia QA antes de proponer una regla nueva.",
+      "Handoff a Orchestrator y Router para definir acciones de Producto/UX/QA con autoridad propia."
+    ],
+    "excluded_scope": [
+      "No reabrir innecesariamente las 47 familias, no repetir Curator/Validator por defecto.",
+      "No crear diez reglas a partir de PARTIAL ni duplicar reglas vigentes/candidatas.",
+      "No dar por implementado el cambio solicitado desde esta ejecución solo lectura.",
+      "No convertir CANDIDATO en VIGENTE, cambiar seguridad, selectores o endpoints sin autorización.",
+      "No crear feedback de desacuerdo IG sin contradicción material con evidencia.",
+      "No seleccionar perfiles ni ejecutores de efecto por fuera de Router ACT-0001."
+    ],
+    "priority": {
+      "P1": "Resolver identity binding AUTH-015 y otros bloqueos de seguridad; distinguir las seis familias P1 PARTIAL de las catorce P1 COMPLETE pero implementación NOT_READY. Proponer regla únicamente si gap canónico probado.",
+      "P2": "Completar definición y evidencia QA para BROWSER_PLATFORM, PERFORMANCE, TESTING_OBLIGATIONS y VISUAL_EVIDENCE; preservar datos UX y accesibilidad sin declaraciones de READY.",
+      "P3": "Registrar criterios/negativos y confirmar readiness sin confundir la única familia P3 NOT_READY de producción con P1 o P2."
+    },
+    "acceptance_criteria": [
+      {
+        "criterion_id": "AC-IG949-CURRENT",
+        "condition": "El análisis usa exactamente la versión vigente del run 949 y distingue integridad del validador.",
+        "observable_check": "Consultar run_id=949, pantalla_id=51, status COMPLETED, invalidated_at IS NULL, source_snapshot_sha256 exacto y 47/47 validator_outcome=PASS; falla si usa run 833 u otro invalidado."
+      },
+      {
+        "criterion_id": "AC-IG949-COVERAGE",
+        "condition": "La decisión cubre la completitud solicitada de Producto, UX y QA.",
+        "observable_check": "Agrupar coverage_status y well_defined_status en input_family_assessments para run 949; comprobar 35 COMPLETE, 10 PARTIAL, 2 NOT_APPLICABLE, con las seis PARTIAL P1 y cuatro PARTIAL P2 por código exacto; falla si trata 47 PASS como 47 COMPLETE."
+      },
+      {
+        "criterion_id": "AC-IG949-READINESS",
+        "condition": "Readiness por etapa se representa sin doble conteo.",
+        "observable_check": "Comprobar 20 P1 implementation NOT_READY/QA BLOCKED/production BLOCKED, 4 P2 implementation READY/QA BLOCKED, 1 P3 production NOT_READY; conservar 20 P4 READY y 2 P4 NOT_APPLICABLE; falla ante promoción nominal."
+      },
+      {
+        "criterion_id": "AC-IG949-GAP-TYPE",
+        "condition": "Ninguna familia PARTIAL se convierte automáticamente en nueva regla.",
+        "observable_check": "Para cada una de las diez PARTIAL exigir estado de cobertura, blocker_codes, source_ref canónico y categoría GAP_RULE/IMPLEMENTATION_DEPENDENCY/QA_EVIDENCE; propuesta de nueva regla solo con búsqueda de regla existente y ausencia demostrada, sin escritura en este run."
+      },
+      {
+        "criterion_id": "AC-IG949-AUTH",
+        "condition": "Identity y sesión continúan fail-closed.",
+        "observable_check": "Leer reglas AUTH-015 y AUTH-022 VIGENTE; prohibir endpoint, OIDC grant o sesión sin AUTHENTICATED/MFA; mantener AUTH-013/017 como CANDIDATO; exigir negativos de bypass MFA y fuga de credenciales al ejecutar QA posterior."
+      },
+      {
+        "criterion_id": "AC-IG949-EFFECT",
+        "condition": "La corrección y el handoff no conceden capacidad de escritura.",
+        "observable_check": "Confirmar manifest read_only/no_write/no_promotion=true, effect_authority=false y ningún cambio por execution_id a reglas, grants o selectores. Toda implementación posterior requiere recibo Router/operación de efecto distinta."
+      }
+    ],
+    "dependencies": [
+      "Análisis exacto por familia de las 10 PARTIAL contra origen canónico; diferenciar missing rule de binding y QA.",
+      "Spike M1 ADR-003 para contrato de identidad ejecutable, antes de implementación de autenticación.",
+      "Ruta gobernada separada para crear o modificar reglas únicamente cuando una brecha canónica esté comprobada.",
+      "Pruebas QA con evidencia por familia antes de READY."
+    ],
+    "risks": [
+      "Interpretar las 47 evaluaciones PASS como 47 definiciones completas.",
+      "Confundir 10 PARTIAL con diez reglas ausentes e introducir duplicados.",
+      "Resolver 20 P1 de implementación omitiendo 4 P2 con definición/QA parcial.",
+      "Elevar CANDIDATO sin autoridad.",
+      "Acreditar implementación o identidad ejecutable desde una ejecución no_write."
+    ],
+    "profiles_to_activate": [],
+    "blockers": [
+      "Ejecución solo lectura sin effect_authority.",
+      "10 familias PARTIAL requieren clasificación explícita antes de proponer nuevas reglas.",
+      "20 familias P1 NOT_READY para implementación y 4 P2 QA BLOCKED.",
+      "No se cuenta con salida DIRECT equiparable para el control de paridad Router/directo."
+    ],
+    "next_step": {
+      "target": "Orchestrator",
+      "action": "CLASSIFY_10_PARTIAL_GAPS_THEN_ROUTE_GOVERNED_RULE_OR_IMPLEMENTATION_WORK",
+      "note": "Resolver por fuente exacta antes de escoger ejecutor por Router; sin escritura ni actualización de estado en esta ejecución."
+    },
+    "final_verdict": "CORRECTED_PRODUCT_DECISION_CANDIDATE_PENDING_CANONICAL_VALIDATION_AND_INDEPENDENT_SEMANTIC_REVIEW_NOT_IMPLEMENTED",
+    "evidence_used": [
+      "supabase://programacion.input_family_assessments/run_id=949",
+      "supabase://programacion.input_readiness_runs/949",
+      "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+      "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest"
+    ],
+    "open_assumptions": [
+      "No se observa un output DIRECT equiparable al mismo literal en esta revisión; router_direct_consistency sigue NO_VERIFICADO, no se supone PASS.",
+      "El estado PARTIAL no basta para determinar cuántas reglas nuevas se requieren; clasificación detallada queda como tarea gobernada."
+    ],
+    "success_metric_or_proxy": {
+      "metric": "Brechas PARTIAL identificadas, clasificadas por causa y fuente sin crear reglas duplicadas",
+      "baseline": "0/10 clasificadas en la salida original del Product Director; run 949 contiene datos de las 10.",
+      "target": "10/10 con fuente/código de blocker y distinción GAP_RULE vs implementación/QA, antes de proponer cambios.",
+      "separate_readiness_baseline": "20 P1 implementation NOT_READY; 4 P2 QA BLOCKED; 1 P3 production NOT_READY"
+    },
+    "handoff_to_next": {
+      "target": "Orchestrator",
+      "input_contract": "Entregar 35 COMPLETE, 10 PARTIAL, 2 N/A y bloqueos de readiness por etapa; 6 PARTIAL P1: DESIGN_SYSTEM, IDEMPOTENCY_CONCURRENCY, LOADING_EMPTY_ERROR_STATES, OBSERVABILITY, PRIVACY_PII, THEME_LIGHT_DARK_SYSTEM; 4 PARTIAL P2: BROWSER_PLATFORM, PERFORMANCE, TESTING_OBLIGATIONS, VISUAL_EVIDENCE. Clasificar brechas con source_refs y blocker_codes antes de seleccionar por Router el trabajo autorizado de creación de regla, binding o QA. No realizar mutaciones bajo este execution_id.",
+      "qualifiers_to_preserve": [
+        "47/47 validator PASS certifica integridad del análisis, no completitud: run 949 conserva 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
+        "Las 10 familias PARTIAL son 6 P1 y 4 P2 y no equivalen automáticamente a 10 nuevas reglas.",
+        "20 P1 NOT_READY para implementación, 4 P2 QA BLOCKED y 1 P3 production NOT_READY son métricas de etapas distintas; no duplicar conteos.",
+        "Las reglas CANDIDATO no son VIGENTE ni pueden implementarse como autorizadas sin su transición gobernada.",
+        "AUTH-015 mantiene identity binding pendiente del spike M1 ADR-003; endpoint/grant/payload no están definidos para implementación.",
+        "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
+        "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
+        "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable."
+      ]
+    },
+    "authority_status": "SUPPORTED",
+    "material_claims": [
+      {
+        "claim": "Run 949 completó validación determinista de 47/47 assessments; no acredita completitud ni readiness.",
+        "authority_ref": "supabase://programacion.input_readiness_runs/949",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "Definición documental 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
+        "authority_ref": "supabase://programacion.input_family_assessments/run_id=949",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "Seis P1 parciales: DESIGN_SYSTEM, IDEMPOTENCY_CONCURRENCY, LOADING_EMPTY_ERROR_STATES, OBSERVABILITY, PRIVACY_PII, THEME_LIGHT_DARK_SYSTEM; cuatro P2 parciales: BROWSER_PLATFORM, PERFORMANCE, TESTING_OBLIGATIONS, VISUAL_EVIDENCE.",
+        "authority_ref": "supabase://programacion.input_family_assessments/run_id=949",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "Veinte P1 NOT_READY para implementación/QA BLOCKED, cuatro P2 QA BLOCKED y una P3 production NOT_READY.",
+        "authority_ref": "supabase://programacion.input_family_assessments/run_id=949",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "El contrato v1.2 tiene 283 reglas y AUTH-015 VIGENTE mantiene identity binding pendiente de ADR-003 M1.",
+        "authority_ref": "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "El manifest no autoriza escritura, implementación, promoción ni cambio de reglas.",
+        "authority_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest",
+        "status": "SUPPORTED"
+      }
+    ],
+    "decision_lineage": {
+      "objective": "Revisar completitud de las reglas de Iniciar sesión B2B para Producto/UX/QA, identificar brechas e implementar nuevas reglas solo cuando exista ruta autorizada y ausencia probada.",
+      "selected_decision": "Las reglas de Iniciar sesión B2B no están totalmente definidas: el run 949 tiene 35 familias COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE, aunque sus 47 evaluaciones deterministas son PASS. Separar (a) las 6 familias P1 y 4 P2 con definición parcial, de (b) las 20 P1 NOT_READY para implementación, 4 P2 BLOCKED en QA y 1 P3 NOT_READY para producción. Clasificar cada brecha según autoridad y evidencia, sin inferir que requiere crear una regla; solo proponer cambios canónicos si falta una regla material confirmada y no existe equivalente. Derivar la implementación solicitada al Router mediante operación autorizada distinta: esta ejecución GPT_NATIVE es solo lectura.",
+      "evidence_refs": [
+        "supabase://programacion.input_readiness_runs/949",
+        "supabase://programacion.input_family_assessments/run_id=949",
+        "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+        "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest"
+      ],
+      "preserved_constraints": [
+        "47/47 validator PASS certifica integridad del análisis, no completitud: run 949 conserva 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
+        "Las 10 familias PARTIAL son 6 P1 y 4 P2 y no equivalen automáticamente a 10 nuevas reglas.",
+        "20 P1 NOT_READY para implementación, 4 P2 QA BLOCKED y 1 P3 production NOT_READY son métricas de etapas distintas; no duplicar conteos.",
+        "Las reglas CANDIDATO no son VIGENTE ni pueden implementarse como autorizadas sin su transición gobernada.",
+        "AUTH-015 mantiene identity binding pendiente del spike M1 ADR-003; endpoint/grant/payload no están definidos para implementación.",
+        "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
+        "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
+        "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable."
+      ],
+      "acceptance_refs": [
+        "AC-IG949-CURRENT",
+        "AC-IG949-COVERAGE",
+        "AC-IG949-READINESS",
+        "AC-IG949-GAP-TYPE",
+        "AC-IG949-AUTH",
+        "AC-IG949-EFFECT"
+      ],
+      "handoff_effect": "Orchestrator obtiene diagnóstico de diez definiciones parciales separado de readiness, evidencias exactas y bloqueos, sin confundir esta salida con permiso de escritura ni forzar creación de reglas."
+    }
+  },
+  "score": {
+    "product_decision_clarity": 5,
+    "scope_control_mvp_separation": 5,
+    "acceptance_criteria_quality": 5,
+    "cross_profile_handoff_quality": 4,
+    "evidence_risk_governance_traceability": 4,
+    "total": 23,
+    "evidence_by_criterion": {
+      "product_decision_clarity": [
+        "selected_decision identifica 35/10/2 y discrimina coverage de readiness con fuente input_family_assessments/949"
+      ],
+      "scope_control_mvp_separation": [
+        "excluded_scope impide tratar 10 PARTIAL como regla ausente y preserva manifest no_write del execution_id"
+      ],
+      "acceptance_criteria_quality": [
+        "AC-IG949-COVERAGE, READINESS y GAP-TYPE requieren cifras, códigos y pruebas negativas comparables con Supabase"
+      ],
+      "cross_profile_handoff_quality": [
+        "handoff_to_next entrega 6 P1 y 4 P2 parciales y conserva los ocho calificadores sin nombrar ejecutor fuera de Router"
+      ],
+      "evidence_risk_governance_traceability": [
+        "material_claims anclan conclusiones al run 949, assessments, contrato v1.2 y manifest read_only"
+      ]
+    }
+  },
+  "handoff_to_next": {
+    "target": "Orchestrator",
+    "summary": "Salida corregida candidata: distinguir completitud 35/10/2 de los bloqueos 20 P1, 4 P2, 1 P3; no es prueba independiente ni implementación.",
+    "qualifiers_to_preserve": [
+      "47/47 validator PASS certifica integridad del análisis, no completitud: run 949 conserva 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
+      "Las 10 familias PARTIAL son 6 P1 y 4 P2 y no equivalen automáticamente a 10 nuevas reglas.",
+      "20 P1 NOT_READY para implementación, 4 P2 QA BLOCKED y 1 P3 production NOT_READY son métricas de etapas distintas; no duplicar conteos.",
+      "Las reglas CANDIDATO no son VIGENTE ni pueden implementarse como autorizadas sin su transición gobernada.",
+      "AUTH-015 mantiene identity binding pendiente del spike M1 ADR-003; endpoint/grant/payload no están definidos para implementación.",
+      "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
+      "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
+      "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable."
+    ]
+  },
+  "self_verdict": "PASS",
+  "traceability": {
+    "execution_id": "EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968",
+    "profile_source_revision": "8b22c92bb3cf4f46c749f47b69bbdcb86f024c9e",
+    "ig_run_id": 949,
+    "ig_snapshot_sha256": "087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c",
+    "feedback_emitted": false,
+    "semantic_review_status": "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+    "correction_revision": "R1",
+    "origin_raw_ref": "github://cristhianlujan/claude-persona-lf-patch@1ebcc4292816e52054a55a17b1b61cbb85fc0710/sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_raw_candidate_20261029.json",
+    "origin_raw_git_blob_sha": "e9d12e39fdc51c0ba84b0371705a4371a14d4991",
+    "correction_kind": "DERIVED_CANDIDATE_NOT_ORIGINAL_PROFILE_RUNTIME_OUTPUT",
+    "runtime_reexecution_claimed": false
+  }
+}
