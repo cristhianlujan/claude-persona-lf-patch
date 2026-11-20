@@ -1,0 +1,1718 @@
+{
+  "schema": "LF_L41_ALL_POLICIES_SOURCE_AND_GUARDS_V1",
+  "policies": [
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "category": "TENANT",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-10-09T20:04:22.962964+00:00",
+        "description": "Toda consulta y mutación B2B debe validar company_id y quedar protegida por políticas RLS efectivas antes de producción. Tener RLS habilitado sin políticas no satisface el gate; deben existir políticas aplicables y pruebas negativas de acceso cross-tenant.",
+        "policy_code": "SEC-B2B-TENANT-ISOLATION",
+        "policy_config": {
+          "production_gate": "RLS_POLICIES_VERIFIED",
+          "cross_tenant_access": "DENY",
+          "rls_policy_required": true,
+          "negative_cross_tenant_test": "REQUIRED",
+          "rls_enabled_without_policy": "FAIL_GATE",
+          "rls_required_before_production": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 1,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "fe79812f2cad51283f3bd2b2bd77165abd660d23af0c0b837d6ac1e2f11e488c"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHORIZATION",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Aplicar RBAC más política por empresa en backend y frontend.",
+        "policy_code": "SEC-B2B-RBAC",
+        "policy_config": {
+          "deny_by_default": true,
+          "server_side_enforcement": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 2,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "306b8443c89dd963a141e14ef39107051c026273ae0f4d828b79739addce2c2d"
+    },
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-10-09T20:04:22.962964+00:00",
+        "description": "Requerir MFA a todos los perfiles humanos del Backoffice B2B definidos por profile_id numérico. La política determina aplicabilidad; las reglas de pantalla no duplican listas de perfiles ni parámetros del factor.",
+        "policy_code": "SEC-B2B-MFA",
+        "policy_config": {
+          "profile_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "profile_codes_alias": [
+            "B2B_ADMIN_LF",
+            "B2B_ADMIN_EMPRESA",
+            "B2B_APROBADOR",
+            "B2B_OPERADOR_INTEGRAL",
+            "B2B_OPERADOR",
+            "B2B_LECTOR_AUDITOR"
+          ],
+          "applicability_source": "SECURITY_POLICY_ONLY",
+          "factor_policy_status": "DEFINED_LOTE_3B",
+          "profile_relation_key": "profile_id",
+          "coverage_review_status": "CLOSED_ALL_HUMAN_PROFILES",
+          "unresolved_profile_ids": [],
+          "factor_security_policy_id": 19,
+          "profile_relation_key_type": "NUMERIC_ID",
+          "numeric_thresholds_in_rule": "DENY",
+          "current_required_profile_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 3,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "f3e8366724d29a4d7a51e12f5ec3a863a9de39ae92485e7b41aaa328826fa243"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHORIZATION",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Otorgar únicamente permisos necesarios y revisar accesos periódicamente.",
+        "policy_code": "SEC-B2B-LEAST-PRIVILEGE",
+        "policy_config": {
+          "review_frequency_days": 90
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 4,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "9236e5ebe19bcd57d4adcc651fdf4caebfebe2753b41c2cb0272b40b356d3f4c"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "PRIVACY",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Bloquear PII en analytics, errores, logs y replay.",
+        "policy_code": "SEC-B2B-NO-PII-TELEMETRY",
+        "policy_config": {
+          "blocked_keys": [
+            "email",
+            "phone",
+            "document_number",
+            "tax_id",
+            "full_name",
+            "customer_full_name",
+            "token",
+            "password",
+            "secret"
+          ],
+          "enforced_by_trigger": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 5,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "53d7583fab40e139861de481308f98eda031e8330516980518df410c4f39154b"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "STORAGE",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Todos los archivos operativos deben permanecer en bucket privado.",
+        "policy_code": "SEC-B2B-STORAGE-PRIVATE",
+        "policy_config": {
+          "bucket": "lf-operational-assets",
+          "public": false,
+          "signed_url_ttl_seconds": 300
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 6,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "b8f02063659e337aac543a37dd61e12886b1285ab8e0759b5a91fd2bdeda8d88"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "UPLOAD",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Validar extensión, MIME, tamaño, checksum y malware antes de procesar.",
+        "policy_code": "SEC-B2B-UPLOAD-HARDENING",
+        "policy_config": {
+          "allowed_extensions": [
+            "csv",
+            "xlsx"
+          ],
+          "malware_scan_required": true,
+          "max_size_mb_candidate": 25
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 7,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "69763cc6a400d6d9095b1aff0eb5f1d31a01b20f83c505b18546c4e35900c2be"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUDIT",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Los eventos de auditoría no pueden modificarse ni eliminarse.",
+        "policy_code": "SEC-B2B-AUDIT-IMMUTABLE",
+        "policy_config": {
+          "database_trigger": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 8,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "fbb2bd08af6ef905555695afbddf99d16228dcda90fd94d0c2d42453b581889a"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "INTEGRITY",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Acciones críticas requieren idempotency_key única.",
+        "policy_code": "SEC-B2B-IDEMPOTENCY",
+        "policy_config": {
+          "actions": [
+            "upload",
+            "approve",
+            "return",
+            "reject",
+            "process",
+            "reprocess"
+          ]
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 9,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "4304dbaa80da4ce8d6baec9716a655f335968328b4654e4f92b9c3f668ae3c66"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "ENCRYPTION",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Usar cifrado en tránsito y en reposo administrado por Supabase.",
+        "policy_code": "SEC-B2B-ENCRYPTION",
+        "policy_config": {
+          "tls_required": true,
+          "at_rest_required": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 10,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "0cc532b2fa7ec2c23a02113e654e7cad224e18707819cfc27cbece898aaf377a"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "WEB_SECURITY",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Configurar CSP, HSTS, anti-clickjacking y no-sniff.",
+        "policy_code": "SEC-B2B-WEB-HEADERS",
+        "policy_config": {
+          "csp_required": true,
+          "hsts_required": true,
+          "frame_ancestors": "'none'",
+          "x_content_type_options": "nosniff"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 11,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "2fdb6f418cc92683df2634b5aaf25896999321f068df1da53d6a53c527c8dbd9"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "WEB_SECURITY",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Proteger mutaciones contra CSRF y sanitizar contenido contra XSS.",
+        "policy_code": "SEC-B2B-CSRF-XSS",
+        "policy_config": {
+          "same_site": "Lax",
+          "output_encoding": true,
+          "csrf_token_if_cookie_auth": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 12,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "fc4bad69f91b214155e619aadc312c3fec458b1eea267db12c57070d5ac1fe6a"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "SECRETS",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Credenciales externas solo en secretos del runtime.",
+        "policy_code": "SEC-B2B-SECRETS",
+        "policy_config": {
+          "client_bundle": "DENY",
+          "database_storage": "DENY",
+          "rotation_required": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 13,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "be1df6f1cf4bba58c344ecd765dc48ce39a2fb258546bfebeff9c93d8f0d2bc9"
+    },
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "category": "SESSION",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-10-09T20:04:22.962964+00:00",
+        "description": "Rotar sesión al autenticar, elevar privilegios y cambiar empresa.",
+        "policy_code": "SEC-B2B-SESSION-FIXATION",
+        "policy_config": {
+          "rotate_on_login": true,
+          "rotate_on_tenant_change": true,
+          "rotate_on_privilege_change": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 14,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "f6ee5324322534a7d22486fd3cfb559ca2c658f74e41da6df4d691cd169eb69b"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "RETENTION",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Aplicar retención diferenciada y borrado controlado.",
+        "policy_code": "SEC-B2B-RETENTION",
+        "policy_config": {
+          "audit_years_candidate": 5,
+          "pending_legal_confirmation": true,
+          "operational_files_days_candidate": 90
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 15,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "6d7571af529824ae8893ee2e63e0241c411ab7fa945feac8f41df0fa67775374"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "RESILIENCE",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "description": "Verificar backups y restauración antes de producción.",
+        "policy_code": "SEC-B2B-BACKUP-RECOVERY",
+        "policy_config": {
+          "restore_test_required": true,
+          "target_rpo_hours_candidate": 24,
+          "target_rto_hours_candidate": 4
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 16,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "ebb719b85e1957f18b30bc150b9941fb3f5957cb9bd3ee499d76ba3beb5e8f78"
+    },
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-11T20:34:44.088194+00:00",
+        "updated_at": "2026-10-09T20:04:22.962964+00:00",
+        "description": "Protección anti-bot de autenticación B2B mediante validación invisible y escalada visible solo ante riesgo o fallo de validación. Aplica a Login y solicitud de recuperación de contraseña.",
+        "policy_code": "SEC-B2B-LOGIN-ANTIBOT",
+        "policy_config": {
+          "mode": "invisible",
+          "provider": "Cloudflare Turnstile",
+          "resource": "AUTH_LOGIN",
+          "resources": [
+            "AUTH_LOGIN",
+            "AUTH_PASSWORD_RECOVERY"
+          ],
+          "frontend_only": "DENY",
+          "fallback_visible": true,
+          "rate_limit_policy_id": 1,
+          "resource_alias_legacy": "AUTH_LOGIN",
+          "abuse_security_policy_id": 22,
+          "server_side_verification": true,
+          "qa_required_before_active": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 17,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "176c31df86c6d73550f161f27ec612930292ec94f2338ec6a368fbbfd1c64191"
+    },
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T02:16:07.037762+00:00",
+        "updated_at": "2026-10-09T20:04:22.962964+00:00",
+        "description": "La autenticación del Backoffice B2B debe fallar de forma cerrada: si el servicio o proveedor no puede verificar de manera válida la identidad, no se crea sesión ni se concede acceso.",
+        "policy_code": "SEC-B2B-AUTH-FAIL-CLOSED",
+        "policy_config": {
+          "deny_on_timeout": true,
+          "provider_agnostic": true,
+          "fallback_allow_access": "DENY",
+          "local_bypass_credentials": "DENY",
+          "provider_selection_status": "PENDING",
+          "deny_on_provider_unavailable": true,
+          "client_side_success_authoritative": false,
+          "deny_on_invalid_or_unverifiable_response": true,
+          "session_creation_requires_verified_auth_result": true
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 18,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "source_decision_number": 52
+      },
+      "source_sha256": "7cf44012536ae960e79a2acc5784e135086fa7f368f1d75fbae0b64e5f0bd2de"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T05:54:52.111839+00:00",
+        "updated_at": "2026-11-13T19:26:48.596347+00:00",
+        "description": "La política central 19 determina el segundo factor por perfil cuando la política de aplicabilidad MFA lo exige; no altera los disparadores ni umbrales de MFA de la política central 3. Para Admin LF (profile_id 1) y Admin Empresa (profile_id 2), el inicio de sesión comienza con usuario y contraseña validados por el servidor. Si MFA corresponde a ese acceso, LF_AUTH_BOUNDARY genera un código de un solo uso (OTP), lo entrega al correo registrado mediante Brevo y verifica el código del lado servidor antes de completar AUTHENTICATED, crear una sesión operativa o conceder permisos. Para ambos administradores el segundo factor es OTP por correo/Brevo, sin exigir FIDO2/WebAuthn, passkeys o llaves de seguridad. Los perfiles 3, 4, 5 y 6 mantienen el segundo factor OTP por correo gestionado por LF y entregado mediante Brevo, verificado por el servidor cuando MFA aplique. Se prohíben el acceso mediante contraseña sola si MFA es requerido, el bypass por dispositivo reconocido, la aceptación de OTP inválido, vencido o no verificado y la elección de factor o estado AUTHENTICATED desde el cliente. SMS continúa como contingencia sin proveedor confirmado y sin fallback automático. El OTP por correo no es resistente a phishing y no se declara Supabase native AAL2 sin evidencia. La integración de Brevo, el binding del proveedor de identidad conforme ADR-003 M1, la recuperación de cuenta y las pruebas reales siguen pendientes. Riesgo residual aceptado por el dueño en conversación, pendiente de firma: el OTP por correo puede ser retransmitido mediante phishing.",
+        "policy_code": "SEC-B2B-MFA-FACTOR-ELIGIBILITY",
+        "policy_config": {
+          "profile_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "coverage_status": "ALL_HUMAN_PROFILES",
+          "admin_idp_status": "PLANNED_NOT_PROVISIONED",
+          "non_admin_method": "LF_EMAIL_OTP",
+          "totp_flow_status": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+          "admin_profile_ids": [
+            1,
+            2
+          ],
+          "admin_sso_protocol": "PENDING_ADR_003_M1_SPIKE",
+          "admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+          "email_otp_screen_id": 54,
+          "admin_primary_method": "USERNAME_PASSWORD_SERVER_VALIDATED",
+          "legacy_otp_policy_id": 1,
+          "standard_profile_ids": [
+            5,
+            6
+          ],
+          "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "non_admin_profile_ids": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "phone_otp_default_use": "DENY",
+          "admin_minimum_strength": "APPROVED_MFA",
+          "legacy_otp_default_use": "DENY",
+          "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+          "factor_selection_status": "OWNER_DECIDED_IN_CONVERSATION_PENDING_SIGNATURE_IMPLEMENTATION",
+          "high_impact_profile_ids": [
+            3,
+            4
+          ],
+          "non_admin_method_status": "DEFINED_IMPLEMENTATION_PENDING",
+          "totp_challenge_route_id": 13,
+          "factor_registry_strategy": "CENTRAL_POLICY",
+          "totp_challenge_screen_id": 54,
+          "totp_enrollment_route_id": 14,
+          "non_admin_assurance_model": "LF_SECOND_FACTOR_VERIFIED",
+          "standard_minimum_strength": "APPROVED_MFA",
+          "totp_enrollment_screen_id": 55,
+          "non_admin_delivery_channel": "EMAIL",
+          "non_admin_smtp_default_use": "DENY",
+          "numeric_thresholds_in_rule": "DENY",
+          "non_admin_delivery_provider": "BREVO",
+          "high_impact_minimum_strength": "APPROVED_MFA",
+          "non_admin_delivery_execution": "SERVER_SIDE_ONLY",
+          "non_admin_delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+          "admin_local_password_fallback": "DENY_IN_PRODUCTION",
+          "legacy_otp_default_eligibility": "NOT_APPROVED_AS_DEFAULT_BACKOFFICE_FACTOR",
+          "non_admin_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+          "phishing_resistant_option_required": false,
+          "admin_provider_configuration_status": "PENDING_REAL_IDP_AND_BREVO_INTEGRATION_QA",
+          "admin_phishing_resistant_requirement": "NOT_REQUIRED_FOR_PROFILES_1_2_OWNER_RISK_ACCEPTED_PENDING_SIGNATURE",
+          "totp_enrollment_screen_in_normal_flow": "DENY",
+          "provider_architecture_security_policy_id": 23,
+          "supabase_native_aal2_claim_for_email_otp": "DENY"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 19,
+        "source_decision_id": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "parameter_provenance": {
+          "provider_binding": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "admin_sso_protocol": {
+            "field": "admin_sso_protocol",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "admin_primary_method": {
+            "field": "admin_primary_method",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "admin_minimum_strength": {
+            "field": "admin_minimum_strength",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "admin_identity_provider": {
+            "field": "admin_identity_provider",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "factor_selection_status": {
+            "field": "factor_selection_status",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "admin_alternative_future_method": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "phishing_resistant_option_required": {
+            "field": "phishing_resistant_option_required",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "admin_provider_configuration_status": {
+            "field": "admin_provider_configuration_status",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "admin_phishing_resistant_requirement": {
+            "field": "admin_phishing_resistant_requirement",
+            "origin_type": "LF_CANONICAL",
+            "decision_ref": "L36-OWNER-ADMIN-LF-PROFILE1-OTP-BREVO-001",
+            "value_status": "LF_CANONICAL",
+            "change_purpose": "OWNER_DOCUMENTARY_DECISION_PROFILES_1_2_OTP_BREVO",
+            "origin_version": "2026-11-13",
+            "origin_reference": "docs/rule-quality-lote36/00_decision_dueno_admin_lf_perfil1_otp_brevo.json",
+            "identity_verified": false,
+            "source_fullrow_sha256": "f82cf4ed0887d8240e1a20d193a7a3a82f92271334de6eb543e4489ecac21b07",
+            "source_document_git_blob_sha1": "0b41825b9221c5d7a01a80190e2e2924e6fdc203"
+          },
+          "provider_architecture_security_policy_id": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          }
+        },
+        "source_decision_number": 136
+      },
+      "source_sha256": "b4845fbce7c28690a50908d77ad8194e65a708b5a4d23d909f938a2298e1d891"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T05:56:19.239592+00:00",
+        "updated_at": "2026-10-15T03:05:25.56612+00:00",
+        "description": "La recuperación del segundo control no puede convertirse en bypass. Para perfiles no administradores que usan OTP por correo, la contingencia por pérdida de acceso al correo queda PENDING_FUNCTIONAL_DEFINITION y bloquea producción de esa rama hasta definir validación de identidad y recuperación segura. Para administradores, la recuperación continúa delegada a Google Workspace. Cuando el mismo buzon recibe codigos para recuperar la contrasena y para el segundo control, controlar ese buzon no demuestra una segunda verificacion independiente de identidad. Ante sospecha o reporte de compromiso del correo, ningun codigo enviado a ese mismo canal puede justificar por si solo la recuperacion del factor o una sesion operativa. El procedimiento independiente y auditable para los perfiles no administradores permanece PENDING_FUNCTIONAL_DEFINITION. No se permite bypass ni degradacion a contrasena sola.",
+        "policy_code": "SEC-B2B-MFA-RECOVERY",
+        "policy_config": {
+          "profile_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "audit_actions": [
+            "MFA_RECOVERY_REQUESTED",
+            "MFA_RECOVERY_IDENTITY_VERIFIED",
+            "MFA_FACTOR_RESET",
+            "MFA_REENROLLED"
+          ],
+          "recovery_flow": "SEPARATE_GOVERNED_FLOW",
+          "admin_recovery_mode": "GOOGLE_WORKSPACE_IDP_MANAGED",
+          "password_only_bypass": "DENY",
+          "authorization_registry": "lf_ops.perfiles_permisos",
+          "factor_reset_authority": "SERVER_SIDE_PRIVILEGED_OPERATION_ONLY",
+          "lost_totp_recovery_mode": "SUPERSEDED_FOR_NON_ADMIN_CANDIDATE",
+          "new_factor_reenrollment": "REQUIRED",
+          "non_admin_recovery_mode": "PENDING_FUNCTIONAL_DEFINITION_EMAIL_ACCESS_RECOVERY",
+          "weaker_factor_downgrade": "DENY",
+          "future_profile_assignment": "ADD_PROFILE_PERMISSION_RELATION",
+          "admin_recovery_profile_ids": [
+            1,
+            2
+          ],
+          "authorization_relation_key": "permission_id",
+          "numeric_thresholds_in_rule": "DENY",
+          "email_access_recovery_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "assisted_recovery_profile_ids": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "authorization_relation_key_type": "NUMERIC_ID",
+          "authorized_recovery_actor_binding": "PERMISSION_BASED_DEFINED",
+          "authorized_recovery_permission_id": 38,
+          "emergency_access_is_user_recovery": "DENY",
+          "session_before_recovery_completion": "DENY",
+          "subscriber_notification_on_recovery": "REQUIRED",
+          "password_only_access_during_recovery": "DENY",
+          "lost_factor_revocation_or_replacement": "REQUIRED",
+          "required_assurance_after_reenrollment": "AAL2",
+          "authenticator_rebinding_after_recovery": "REQUIRED_WHEN_FACTOR_LOST",
+          "current_authorized_recovery_profile_ids": [
+            1
+          ],
+          "provider_architecture_security_policy_id": 23,
+          "identity_verification_before_factor_reset": "REQUIRED",
+          "authenticated_operational_session_before_completion": "DENY"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 20,
+        "source_decision_id": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "parameter_provenance": {
+          "provider_binding": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "provider_architecture_security_policy_id": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          }
+        },
+        "source_decision_number": 136
+      },
+      "source_sha256": "700c785c955107725c262681fd05031f6c69693989813dae861f88f421135f16"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T05:56:19.239592+00:00",
+        "updated_at": "2026-08-12T05:56:19.239592+00:00",
+        "description": "Mantener identidades de acceso de emergencia separadas del flujo normal de recuperación para evitar bloqueo total del Backoffice ante una falla del proveedor o de las políticas normales. Su uso es exclusivamente de contingencia, requiere autenticación fuerte independiente cuando sea posible, monitoreo y revisión posterior.",
+        "policy_code": "SEC-B2B-EMERGENCY-ACCESS",
+        "policy_config": {
+          "usage_scope": "EMERGENCY_ONLY",
+          "post_use_review": "REQUIRED",
+          "quantity_source": "CENTRAL_POLICY_ONLY",
+          "provider_binding": "PENDING",
+          "alert_on_every_use": "REQUIRED",
+          "normal_user_recovery": "DENY",
+          "target_admin_profile_id": 1,
+          "minimum_emergency_accounts": 2,
+          "user_selectable_from_login": "DENY",
+          "phishing_resistant_authentication": "REQUIRED",
+          "different_failure_domain_from_primary_auth": "REQUIRED_WHEN_SUPPORTED"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 21,
+        "source_decision_id": null,
+        "parameter_provenance": {},
+        "source_decision_number": null
+      },
+      "source_sha256": "55ae1b29a850e82cf4ce5d82d6a05371940b4d4ee556545ac851c3e7e8bd358a"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T05:57:22.737964+00:00",
+        "updated_at": "2026-10-09T20:59:34.904062+00:00",
+        "description": "La protección B2B contra abuso combina rate limits por operación funcional, anti-bot y señales de riesgo. Para recuperación, el límite fuerte se aplica al sujeto mediante un identificador derivado y aislado por operación; la IP es únicamente una señal preventiva de riesgo y no puede bloquear por sí sola, mitigando falsos positivos en NAT, CGNAT, redes corporativas o eventos.",
+        "policy_code": "SEC-B2B-AUTH-ABUSE-PROTECTION",
+        "policy_config": {
+          "ip_hard_limit": "DENY",
+          "ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "ip_alert_action": "ESCALATE_RISK_OR_ANTIBOT",
+          "signal_families": [
+            "NETWORK_OR_IP",
+            "RESOLVED_ACCOUNT_WHEN_AVAILABLE",
+            "REQUEST_PATTERN",
+            "BOT_RISK",
+            "CLIENT_CONTEXT_WHEN_ALLOWED"
+          ],
+          "rate_limit_policy_id": 1,
+          "new_device_ip_hard_limit": "DENY",
+          "new_device_ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "recovery_rate_limit_scope": "PRIVACY_PRESERVING_SUBJECT_PER_FUNCTIONAL_OPERATION",
+          "numeric_thresholds_in_rule": "DENY",
+          "single_signal_hard_lockout": "DENY",
+          "anti_bot_security_policy_id": 17,
+          "distributed_attack_detection": "REQUIRED",
+          "progressive_response_strategy": "CENTRAL_OR_PROVIDER_POLICY",
+          "recovery_functional_operation": "PASSWORD_RECOVERY_OTP_SEND",
+          "recovery_rate_limit_policy_id": 7,
+          "new_device_functional_operation": "AUTH_NEW_DEVICE_OTP_SEND",
+          "new_device_rate_limit_policy_id": 8,
+          "shared_ip_false_positive_mitigation": "REQUIRED",
+          "privacy_preserving_identifier_handling": "REQUIRED",
+          "other_otp_operation_counter_interference": "DENY",
+          "provider_architecture_security_policy_id": 23,
+          "transactional_email_counter_interference": "DENY",
+          "new_device_shared_ip_false_positive_mitigation": "REQUIRED",
+          "credential_validity_disclosure_during_abuse_control": "DENY"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 22,
+        "source_decision_id": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "parameter_provenance": {
+          "provider_binding": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "provider_architecture_security_policy_id": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          }
+        },
+        "source_decision_number": 136
+      },
+      "source_sha256": "016da7ef14978fff31f57c9243a4ae9487c9eda5ebf9a5488f8a4f20c25a7d95"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T06:06:30.899154+00:00",
+        "updated_at": "2026-10-09T20:59:34.904062+00:00",
+        "description": "Arquitectura B2B alineada con DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001: Backoffice Next.js exportado estaticamente, Core Spring Boot REST y autenticacion JWT/OIDC. Amazon Cognito es objetivo AWS, no un proveedor actualmente seleccionado. El proveedor local, intercambio de login, endpoints y credenciales siguen pendientes del spike M1/ADR-003. Para perfiles administradores se conserva el requisito de federacion Google Workspace SAML y para los no administradores el segundo control LF mediante OTP por correo/Brevo, sujetos a validacion de implementacion. No se autorizan produccion ni sesiones operativas sin MFA y pruebas correspondientes.",
+        "policy_code": "SEC-B2B-AUTH-PROVIDER-ARCHITECTURE",
+        "policy_config": {
+          "auth_gateway": "LF_AUTH_API_GATEWAY",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "admin_idp_status": "PLANNED_NOT_PROVISIONED",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "identity_protocol": "OIDC_JWT",
+          "admin_mfa_strategy": "SAML_SSO_WITH_PHISHING_RESISTANT_IDP_POLICY",
+          "admin_sso_protocol": "SAML_2_0",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "email_otp_screen_id": 54,
+          "identity_bridge_type": "UUID",
+          "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "email_otp_provider_id": 8,
+          "production_authorized": false,
+          "auth_core_architecture": "FRAMEWORK_AGNOSTIC_DECOUPLED_PACKAGE",
+          "business_user_registry": "lf_ops.empresa_usuarios",
+          "non_admin_mfa_strategy": "LF_EMAIL_OTP",
+          "admin_identity_provider": "GOOGLE_WORKSPACE",
+          "email_otp_provider_code": "BREVO_EMAIL",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "provider_binding_status": "PENDING_M1_IDENTITY_SPIKE",
+          "email_otp_secret_storage": "DENY",
+          "email_otp_smtp_default_use": "DENY",
+          "email_otp_delivery_provider": "BREVO",
+          "brevo_webhook_runtime_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "browser_cross_origin_gateway": "DENY",
+          "email_otp_acceptance_outcome": "ACCEPTED_PENDING_DELIVERY",
+          "email_otp_delivery_execution": "SERVER_SIDE_ONLY",
+          "email_otp_delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+          "business_user_identity_bridge": "auth_user_id",
+          "email_otp_webhook_idempotency": "REQUIRED",
+          "admin_sso_configuration_status": "PENDING_GOOGLE_WORKSPACE_TENANT_AND_SAML_METADATA",
+          "email_otp_webhook_auth_rule_id": 506,
+          "email_otp_webhook_storage_mode": "APPEND_ONLY",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "email_otp_webhook_client_access": "DENY",
+          "email_otp_webhook_storage_table": "lf_ops.otp_entrega_eventos",
+          "email_otp_delivery_failed_events": [
+            "hard_bounce",
+            "invalid_email",
+            "blocked",
+            "error"
+          ],
+          "email_otp_webhook_https_required": "REQUIRED",
+          "email_otp_webhook_storage_status": "DEFINED_CANDIDATE_TABLE",
+          "admin_phishing_resistance_strategy": "MATURE_PHISHING_RESISTANT_METHOD_OR_ENTERPRISE_IDP",
+          "email_otp_delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+          "email_otp_webhook_ip_allowlist_role": "SECONDARY_DEFENSE",
+          "admin_phishing_resistant_requirement": "GOOGLE_WORKSPACE_PASSKEY_OR_SECURITY_KEY_POLICY",
+          "email_otp_delivery_confirmed_outcome": "DELIVERED",
+          "native_passkey_production_dependency": "DENY_WHILE_EXPERIMENTAL",
+          "email_otp_delivery_confirmation_event": "delivered",
+          "email_otp_webhook_invalid_auth_action": "REJECT_NO_PERSIST_NO_STATE_CHANGE",
+          "email_otp_delivery_pending_retry_events": [
+            "deferred",
+            "soft_bounce"
+          ],
+          "email_otp_webhook_authentication_method": "BEARER_TOKEN",
+          "email_otp_webhook_secret_storage_status": "BLOCKED_NO_DESTINATION",
+          "email_otp_webhook_ip_only_authentication": "DENY",
+          "email_otp_webhook_secret_rotation_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "email_otp_provider_acceptance_is_delivery": "DENY",
+          "email_otp_provider_message_id_correlation": "REQUIRED",
+          "email_otp_provider_raw_response_to_client": "DENY",
+          "supabase_edge_function_as_browser_gateway": "DENY",
+          "provider_specific_contract_exposed_to_login": "DENY",
+          "email_otp_webhook_required_before_navigation": false,
+          "email_otp_provider_contract_exposed_to_client": "DENY",
+          "email_otp_provider_credentials_client_exposure": "DENY"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 23,
+        "source_decision_id": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "parameter_provenance": {
+          "backend_runtime": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "frontend_runtime": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "identity_protocol": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "preferred_adapter": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "selected_provider": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "aws_identity_target": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "saml_sso_capability": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "auth_gateway_runtime": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "native_mfa_capability": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "local_identity_decision": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "provider_binding_status": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "current_auth_users_count": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "auth_gateway_origin_model": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "current_mfa_factors_count": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "native_password_capability": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "admin_sso_via_supabase_auth": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "current_sso_providers_count": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "supabase_auth_user_registry": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "current_business_users_count": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "architecture_alignment_decision": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDE_LEGACY_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          }
+        },
+        "source_decision_number": 136
+      },
+      "source_sha256": "9fa60095558a8e36c1d1979c9fe8684c528356c4da8d450b445b4730861241c4"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-12T06:38:16.757989+00:00",
+        "updated_at": "2026-10-08T16:44:08.745122+00:00",
+        "description": "Politica central de contrasenas B2B: minimo 8 caracteres, una letra, un numero y una mayuscula o caracter especial no alfanumerico. Se rechazan contrasenas comprometidas antes de produccion; LF no almacena contrasenas ni hashes en lf_ops. El custodio, algoritmo y configuracion efectiva de hash dependen de la seleccion e implementacion del proveedor de identidad (M1/ADR-003). La UI proporciona guia y la validacion autoritativa permanece del lado servidor.",
+        "policy_code": "SEC-B2B-PASSWORD-CREDENTIAL",
+        "policy_config": {
+          "trim": "DENY",
+          "paste": "ALLOW",
+          "random_salt": "PROVIDER_MANAGED_REQUIRED",
+          "normalization": "DENY",
+          "minimum_length": 8,
+          "require_letter": true,
+          "require_number": true,
+          "password_manager": "ALLOW",
+          "admin_profile_ids": [
+            1,
+            2
+          ],
+          "composition_rules": "REQUIRE_LETTER_NUMBER_AND_UPPERCASE_OR_SPECIAL",
+          "periodic_rotation": "DENY_UNLESS_COMPROMISE_OR_ADMINISTRATIVE_RESET",
+          "require_lowercase": false,
+          "require_uppercase": false,
+          "bcrypt_minimum_cost": 10,
+          "hash_upgrade_review": "REQUIRED_WHEN_PROVIDER_OR_STANDARD_EVOLVES",
+          "client_guidance_mode": "DYNAMIC_REQUIREMENT_CHECKLIST",
+          "minimum_length_basis": "OWNER_APPROVED_USABILITY_SECURITY_BALANCE_WITH_UNRECOGNIZED_DEVICE_EMAIL_OTP",
+          "server_side_validation": "REQUIRED",
+          "special_character_rule": "NON_ALPHANUMERIC_SATISFIES_UPPERCASE_OR_SPECIAL",
+          "admin_identity_provider": "GOOGLE_WORKSPACE",
+          "admin_password_recovery": "GOOGLE_WORKSPACE_IDP_MANAGED",
+          "lf_ops_password_storage": "DENY",
+          "numeric_threshold_source": "CENTRAL_POLICY_ONLY",
+          "bcrypt_minimum_cost_scope": "IMPORTED_OR_CUSTOM_BCRYPT_HASHES",
+          "require_special_character": false,
+          "leaked_password_protection": "REQUIRED_BEFORE_PRODUCTION",
+          "password_storage_semantics": "HASH_NOT_REVERSIBLE_ENCRYPTION",
+          "plaintext_password_storage": "DENY",
+          "admin_local_password_signin": "DENY_IN_PRODUCTION",
+          "client_guidance_error_state": "ERROR_AFTER_INTERACTION",
+          "compromised_password_action": "REJECT",
+          "client_guidance_requirements": [
+            "MINIMUM_LENGTH",
+            "LETTER",
+            "NUMBER",
+            "UPPERCASE_OR_SPECIAL",
+            "NOT_COMPROMISED"
+          ],
+          "lf_ops_password_hash_storage": "DENY",
+          "require_uppercase_or_special": true,
+          "client_guidance_initial_state": "NEUTRAL",
+          "reversible_password_encryption": "DENY",
+          "client_guidance_satisfied_state": "SATISFIED",
+          "password_credential_profile_ids": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "provider_effective_cost_verification": "REQUIRED_BEFORE_PRODUCTION",
+          "provider_architecture_security_policy_id": 23
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 24,
+        "source_decision_id": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+        "parameter_provenance": {
+          "provider_binding": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "password_hash_custodian": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "provider_hash_algorithm": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "provider_cost_configuration_status": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          },
+          "provider_architecture_security_policy_id": {
+            "origin_type": "LF_PROVISIONAL_DEFAULT",
+            "decision_ref": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+            "value_status": "LF_PROVISIONAL",
+            "change_purpose": "SUPERSEDED_PROVIDER_BINDING",
+            "origin_version": "2026-09-28",
+            "origin_reference": "public.lf_decisiones_gov:136",
+            "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN"
+          }
+        },
+        "source_decision_number": 136
+      },
+      "source_sha256": "5fc3663fb4dc78d04122774c438674262aae9024791ed73dd97a40dfb91f4beb"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "category": "AUTHENTICATION",
+        "created_at": "2026-08-19T02:26:20.848648+00:00",
+        "updated_at": "2026-08-19T05:35:12.213614+00:00",
+        "description": "Control de dispositivo confiable para Backoffice Empresa. El OTP por correo se solicita únicamente cuando el login proviene de un dispositivo no reconocido. La duración de confianza es configurable por empresa y no puede ser permanente.",
+        "policy_code": "SEC-B2B-TRUSTED-DEVICE",
+        "policy_config": {
+          "permanent_trust": "DENY",
+          "editable_profiles": [
+            "B2B_ADMIN_LF",
+            "B2B_ADMIN_EMPRESA"
+          ],
+          "read_only_profiles": [
+            "B2B_LECTOR_AUDITOR"
+          ],
+          "company_configurable": true,
+          "device_registry_status": "DEFINED_CANDIDATE",
+          "second_control_channel": "EMAIL_OTP",
+          "second_control_trigger": "UNRECOGNIZED_DEVICE_ONLY",
+          "company_settings_screen": "B2B-ADMIN-001",
+          "manual_revocation_scope": [
+            "SINGLE_DEVICE",
+            "ALL_TRUSTED_DEVICES_FOR_USER"
+          ],
+          "trusted_device_rls_mode": "ENABLED_SERVER_ONLY",
+          "manual_revocation_actions": [
+            "REVOKE_TRUSTED_DEVICE",
+            "REVOKE_ALL_TRUSTED_DEVICES"
+          ],
+          "trust_revocation_triggers": [
+            "TRUST_EXPIRED",
+            "PASSWORD_CHANGED",
+            "USER_SUSPENDED",
+            "MANUAL_REVOCATION"
+          ],
+          "trusted_device_token_form": "CRYPTOGRAPHICALLY_RANDOM_OPAQUE",
+          "trusted_device_cookie_path": "/",
+          "manual_revocation_authority": "SERVER_ONLY",
+          "manual_revocation_next_login": "EMAIL_OTP_REQUIRED",
+          "trusted_device_cookie_domain": "OMIT",
+          "trusted_device_cookie_prefix": "__Host-",
+          "trusted_device_cookie_secure": true,
+          "trusted_device_token_storage": "HASH_ONLY",
+          "trusted_device_cookie_purpose": "DEVICE_RECOGNITION_AFTER_PRIMARY_AUTH",
+          "trusted_device_registry_table": "lf_ops.dispositivos_confiables",
+          "trusted_device_token_rotation": "NEW_TOKEN_AFTER_SUCCESSFUL_EMAIL_OTP",
+          "manual_revocation_confirmation": "REQUIRED",
+          "trusted_device_duration_source": "lf_ops.empresas.trusted_device_duration_days",
+          "trusted_device_registry_status": "DEFINED_CANDIDATE",
+          "logout_preserves_trusted_device": true,
+          "manual_revocation_permission_id": 31,
+          "trusted_device_cookie_http_only": true,
+          "trusted_device_cookie_same_site": "Lax",
+          "trusted_device_expiry_authority": "SERVER",
+          "trusted_device_token_generation": "SERVER_ONLY",
+          "manual_revocation_session_effect": "TERMINATE_AFFECTED_ACTIVE_SESSIONS",
+          "manual_revocation_permission_code": "B2B_USER_UPDATE",
+          "trusted_device_client_direct_access": "DENY",
+          "trusted_device_cookie_expiry_source": "lf_ops.empresas.trusted_device_duration_days",
+          "trusted_device_duration_allowed_days": [
+            7,
+            15,
+            30,
+            60,
+            90
+          ],
+          "trusted_device_duration_default_days": 30,
+          "trusted_device_cookie_contains_identity": "DENY",
+          "trusted_device_cookie_authenticates_user": "DENY",
+          "trusted_device_revoked_token_reactivation": "DENY"
+        },
+        "enforcement_level": "REQUIRED",
+        "security_policy_id": 25,
+        "source_decision_id": null,
+        "parameter_provenance": {},
+        "source_decision_number": null
+      },
+      "source_sha256": "b3eb2d4f3ab1a67bd99c58f243f55c7092dd8040e2710c3ce1d28a82d36bbc4c"
+    }
+  ],
+  "rates": [
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "error_id": 26,
+        "scope_key": "IP_USER",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-10-09T20:04:22.962964+00:00",
+        "burst_limit": 5,
+        "policy_code": "RATE-B2B-LOGIN",
+        "max_requests": 5,
+        "resource_code": "AUTH_LOGIN",
+        "window_seconds": 900,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 1,
+        "source_decision_number": 52
+      },
+      "source_sha256": "10eb22138ce577d6e4b41bee4f695e2da4f8da2b65cf534fbfd115c5dfa7cfd7"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "TENANT_USER",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "burst_limit": 25,
+        "policy_code": "RATE-B2B-UPLOAD",
+        "max_requests": 20,
+        "resource_code": "FILE_UPLOAD",
+        "window_seconds": 3600,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 2,
+        "source_decision_number": 52
+      },
+      "source_sha256": "2e8c350f4ab79ca1c23915bc7efc9e46700494bac532ef8cf3ef366ba635f42e"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "TENANT_USER",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "burst_limit": 30,
+        "policy_code": "RATE-B2B-APPROVAL",
+        "max_requests": 30,
+        "resource_code": "APPROVAL_DECISION",
+        "window_seconds": 60,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 3,
+        "source_decision_number": 52
+      },
+      "source_sha256": "7dbeb92b15b6a82754e5740dfdf4d1b67d1ae861fb048bf9e39ad1c3ebcff4f6"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "TENANT_USER",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "burst_limit": 80,
+        "policy_code": "RATE-B2B-DOWNLOAD",
+        "max_requests": 60,
+        "resource_code": "FILE_DOWNLOAD",
+        "window_seconds": 60,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 4,
+        "source_decision_number": 52
+      },
+      "source_sha256": "c73eebdc252b7a7bcfb25d6dfae6a7ece3f67e3346b5b901923e3f7d04bb9125"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "TENANT_USER",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "burst_limit": 400,
+        "policy_code": "RATE-B2B-API-READ",
+        "max_requests": 300,
+        "resource_code": "API_READ",
+        "window_seconds": 60,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 5,
+        "source_decision_number": 52
+      },
+      "source_sha256": "690b5ab9601e277b29f19610d6690d34168d9174e250fa8a7dc3fade91fec75c"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "USER",
+        "created_at": "2026-07-21T15:44:55.033367+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-07-21T17:25:41.538263+00:00",
+        "burst_limit": 12,
+        "policy_code": "RATE-B2B-SESSION-REFRESH",
+        "max_requests": 10,
+        "resource_code": "SESSION_REFRESH",
+        "window_seconds": 60,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 6,
+        "source_decision_number": 52
+      },
+      "source_sha256": "cb3d491fd8f91fc54177a6cad51140c0f286508d9d5754d6e6db7a1bd4b26b45"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "USER",
+        "created_at": "2026-08-19T11:07:01.15561+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-08-19T12:25:35.827053+00:00",
+        "burst_limit": 6,
+        "policy_code": "RATE-B2B-PASSWORD-RECOVERY-OTP",
+        "max_requests": 6,
+        "resource_code": "AUTH_PASSWORD_RECOVERY_OTP_SEND",
+        "window_seconds": 900,
+        "source_decision_id": null,
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 7,
+        "source_decision_number": null
+      },
+      "source_sha256": "acf4c938bc992f60c1df2f38d2b024a9eaa09479492808a482efcd230f972142"
+    },
+    {
+      "source_row": {
+        "status": "CANDIDATO",
+        "error_id": 26,
+        "scope_key": "USER",
+        "created_at": "2026-08-19T12:25:46.047893+00:00",
+        "error_code": "LF-B2B-SEC-003",
+        "updated_at": "2026-08-19T12:25:46.047893+00:00",
+        "burst_limit": 6,
+        "policy_code": "RATE-B2B-NEW-DEVICE-OTP",
+        "max_requests": 6,
+        "resource_code": "AUTH_NEW_DEVICE_OTP_SEND",
+        "window_seconds": 900,
+        "source_decision_id": null,
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 8,
+        "source_decision_number": null
+      },
+      "source_sha256": "56393a01ce8be262f431d6de76705f976c49a1202a33c1f2e59de91e89c0c975"
+    },
+    {
+      "source_row": {
+        "status": "VIGENTE",
+        "error_id": null,
+        "scope_key": "PHONE_HASH",
+        "created_at": "2026-08-19T22:48:58.942181+00:00",
+        "error_code": "CLIENT_OTP_RATE_LIMITED",
+        "updated_at": "2026-08-19T22:48:58.942181+00:00",
+        "burst_limit": 5,
+        "policy_code": "RATE-CLIENT-OTP-PHONE-CROSSSESSION",
+        "max_requests": 5,
+        "resource_code": "CLIENT_OTP_SEND",
+        "window_seconds": 3600,
+        "source_decision_id": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+        "parameter_provenance": {},
+        "rate_limit_policy_id": 9,
+        "source_decision_number": 105
+      },
+      "source_sha256": "d2edaa6589d55fddd277df8ee55ef9058ca8192dc324e217c3b5a5514c232728"
+    }
+  ],
+  "columns": [
+    {
+      "tab": "politicas_rate_limit",
+      "col": "policy_code",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "resource_code",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "window_seconds",
+      "typ": "integer"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "max_requests",
+      "typ": "integer"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "burst_limit",
+      "typ": "integer"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "scope_key",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "error_code",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "rate_limit_policy_id",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "error_id",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_rate_limit",
+      "col": "parameter_provenance",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "policy_code",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "category",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "description",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "enforcement_level",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "policy_config",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "status",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "source_decision_id",
+      "typ": "text"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "security_policy_id",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "source_decision_number",
+      "typ": "bigint"
+    },
+    {
+      "tab": "politicas_seguridad",
+      "col": "parameter_provenance",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "reglas",
+      "col": "id",
+      "typ": "integer"
+    },
+    {
+      "tab": "reglas",
+      "col": "codigo",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "categoria",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "titulo",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "descripcion",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "razon",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "valor_config",
+      "typ": "jsonb"
+    },
+    {
+      "tab": "reglas",
+      "col": "es_transversal",
+      "typ": "boolean"
+    },
+    {
+      "tab": "reglas",
+      "col": "estado",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "origen",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "created_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "reglas",
+      "col": "updated_at",
+      "typ": "timestamp with time zone"
+    },
+    {
+      "tab": "reglas",
+      "col": "pendiente_decision",
+      "typ": "boolean"
+    },
+    {
+      "tab": "reglas",
+      "col": "pendiente_detalle",
+      "typ": "text"
+    },
+    {
+      "tab": "reglas",
+      "col": "created_by",
+      "typ": "text"
+    }
+  ],
+  "guards": [
+    {
+      "proname": "fn_guard_input_parameter_provenance_v1",
+      "ddl": "CREATE OR REPLACE FUNCTION programacion.fn_guard_input_parameter_provenance_v1()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'programacion'\nAS $function$\ndeclare\n  v_new jsonb:=to_jsonb(new);\n  v_old jsonb:=case when tg_op='UPDATE' then to_jsonb(old) else '{}'::jsonb end;\n  v_prov jsonb:=coalesce(v_new->'parameter_provenance','{}'::jsonb);\n  v_old_prov jsonb:=coalesce(v_old->'parameter_provenance','{}'::jsonb);\n  v_keys text[];\n  v_key text;\n  v_changed boolean;\n  v_old_cfg jsonb;\n  v_new_cfg jsonb;\nbegin\n  if not programacion.fn_input_parameter_provenance_valid_v1(v_prov) then\n    raise exception 'PARAMETER_PROVENANCE_INVALID:%',tg_table_name;\n  end if;\n\n  if tg_table_name='politicas_rate_limit' then\n    v_keys:=array['window_seconds','max_requests','burst_limit','scope_key'];\n  elsif tg_table_name='politicas_timeout' then\n    v_keys:=array['timeout_seconds','retry_limit','backoff_strategy'];\n  elsif tg_table_name='politicas_sesion' then\n    v_keys:=array['idle_timeout_seconds','warning_before_timeout_seconds','absolute_timeout_seconds','access_token_ttl_seconds','refresh_rotation_enabled','max_concurrent_sessions','extend_on_user_activity'];\n  elsif tg_table_name='otp_politicas' then\n    v_keys:=array['longitud','digitos_permitidos','expiracion_minutos','max_intentos','max_reenvios','bloqueo_reenvio_min','canal_primario','canal_fallback','fallback_segundos'];\n  elsif tg_table_name='politicas_seguridad' then\n    v_old_cfg:=coalesce(v_old->'policy_config','{}'::jsonb);\n    v_new_cfg:=coalesce(v_new->'policy_config','{}'::jsonb);\n    for v_key in\n      select key from (\n        select jsonb_object_keys(v_old_cfg) key\n        union\n        select jsonb_object_keys(v_new_cfg) key\n      ) q order by key\n    loop\n      v_changed:=tg_op='INSERT' or (v_new_cfg->v_key is distinct from v_old_cfg->v_key);\n      if v_changed then\n        if not (v_prov ? v_key) then\n          raise exception 'PARAMETER_PROVENANCE_REQUIRED:%:%',tg_table_name,v_key;\n        end if;\n        if tg_op='UPDATE' and v_prov->v_key is not distinct from v_old_prov->v_key then\n          raise exception 'PARAMETER_PROVENANCE_REFRESH_REQUIRED:%:%',tg_table_name,v_key;\n        end if;\n      end if;\n    end loop;\n    return new;\n  else\n    raise exception 'PARAMETER_PROVENANCE_TABLE_UNSUPPORTED:%',tg_table_name;\n  end if;\n\n  foreach v_key in array v_keys\n  loop\n    v_changed:=tg_op='INSERT' or (v_new->v_key is distinct from v_old->v_key);\n    if v_changed and jsonb_typeof(v_new->v_key)<>'null' then\n      if not (v_prov ? v_key) then\n        raise exception 'PARAMETER_PROVENANCE_REQUIRED:%:%',tg_table_name,v_key;\n      end if;\n      if tg_op='UPDATE' and v_prov->v_key is not distinct from v_old_prov->v_key then\n        raise exception 'PARAMETER_PROVENANCE_REFRESH_REQUIRED:%:%',tg_table_name,v_key;\n      end if;\n    end if;\n  end loop;\n  return new;\nend;\n$function$\n"
+    },
+    {
+      "proname": "fn_input_parameter_provenance_valid_v1",
+      "ddl": "CREATE OR REPLACE FUNCTION programacion.fn_input_parameter_provenance_valid_v1(p_provenance jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n  r record;\n  v_origin text;\n  v_status text;\n  v_decision text;\n  v_ref text;\n  v_clause text;\n  v_version text;\nbegin\n  if p_provenance is null or jsonb_typeof(p_provenance)<>'object' then\n    return false;\n  end if;\n\n  for r in select key,value from jsonb_each(p_provenance)\n  loop\n    if nullif(btrim(r.key),'') is null or jsonb_typeof(r.value)<>'object' then return false; end if;\n    v_origin:=r.value->>'origin_type';\n    v_status:=r.value->>'value_status';\n    v_decision:=nullif(btrim(coalesce(r.value->>'decision_ref','')),'');\n    v_ref:=nullif(btrim(coalesce(r.value->>'origin_reference','')),'');\n    v_clause:=nullif(btrim(coalesce(r.value->>'origin_clause','')),'');\n    v_version:=nullif(btrim(coalesce(r.value->>'origin_version','')),'');\n\n    if v_origin not in ('LF_CANONICAL','INTERNATIONAL_STANDARD','INDUSTRY_GUIDANCE','LF_PROVISIONAL_DEFAULT','UNCLASSIFIED_LEGACY') then return false; end if;\n    if v_status not in ('LF_CANONICAL','EXTERNAL_REFERENCE','LF_PROVISIONAL','LEGACY_UNCLASSIFIED') then return false; end if;\n\n    if v_origin='LF_CANONICAL' and (v_status<>'LF_CANONICAL' or v_decision is null) then return false; end if;\n    if v_origin='INTERNATIONAL_STANDARD' and (v_ref is null or (v_clause is null and v_version is null)) then return false; end if;\n    if v_origin='INDUSTRY_GUIDANCE' and v_ref is null then return false; end if;\n    if v_origin='LF_PROVISIONAL_DEFAULT' and (\n      v_status<>'LF_PROVISIONAL'\n      or r.value->>'replacement_policy'<>'MUST_BE_RATIFIED_OR_OVERRIDDEN'\n    ) then return false; end if;\n    if v_origin='UNCLASSIFIED_LEGACY' and v_status<>'LEGACY_UNCLASSIFIED' then return false; end if;\n\n    -- External provenance may become LF canonical only through an explicit LF ratification decision.\n    if v_status='LF_CANONICAL' and v_origin<>'LF_CANONICAL' and (\n      coalesce((r.value->>'ratified_by_lf')::boolean,false) is not true\n      or v_decision is null\n    ) then return false; end if;\n  end loop;\n  return true;\nexception when others then\n  return false;\nend;\n$function$\n"
+    }
+  ],
+  "triggers": [
+    {
+      "tgname": "trg_politicas_seguridad_parameter_provenance",
+      "ddl": "CREATE TRIGGER trg_politicas_seguridad_parameter_provenance BEFORE INSERT OR UPDATE ON lf_ops.politicas_seguridad FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_parameter_provenance_v1()"
+    },
+    {
+      "tgname": "trg_politicas_seguridad_touch_updated_at",
+      "ddl": "CREATE TRIGGER trg_politicas_seguridad_touch_updated_at BEFORE UPDATE ON lf_ops.politicas_seguridad FOR EACH ROW EXECUTE FUNCTION lf_ops.touch_updated_at()"
+    }
+  ],
+  "live_writes": 0
+}

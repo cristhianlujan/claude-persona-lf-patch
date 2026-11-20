@@ -1,0 +1,79 @@
+{
+  "schema": "LF_L41_OWNER_DECISIONS_SEPARATE_FROM_TECHNICAL_GATES_V1",
+  "identity_verified": false,
+  "not_signed": true,
+  "scope": "ONLY_RESIDUAL_LOGIN_B2B_NOT_PR3844_3846_3847",
+  "owner_decisions": [
+    {
+      "id": "L41-H01",
+      "status": "PENDIENTE_CONFIRMACION_DE_ALCANCE",
+      "topic": "RATE-B2B-LOGIN scope_key=IP_USER vs dueño 'por IP separada'",
+      "evidence": "rate_limit_policy_id=1 VIGENTE, scope_key IP_USER, max_requests=5, window_seconds=900; SEC22 ip_hard_limit=DENY",
+      "decision_required": "¿IP independiente por red con clave IP solamente o por pareja IP_USER? No cambiar a IP sola automáticamente por bloqueo colateral NAT/CGNAT",
+      "owner": "Dueño + Seguridad",
+      "impact": "Sin decisión no cambiar scope_key, conservar como bloqueo de homologación del runtime."
+    },
+    {
+      "id": "L41-H02",
+      "status": "YA_EN_PR3847_SIN_DUPLICAR",
+      "topic": "Inicio de 48h en recuperación soporte, avisos previos fallidos, proveedor IDV / selfie solo en Cliente",
+      "evidence": "PR3847 decisiones H01-H04 documentadas",
+      "decision_required": "Mantener en PR3847; no emitir decisiones nuevas ni atribuir firma",
+      "owner": "Dueño, Producto/Legal/Seguridad",
+      "impact": "No bloquea borradores L41; sí E2E recuperación"
+    },
+    {
+      "id": "L41-H03",
+      "status": "YA_DECIDIDO_EN_CONVERSACION_PENDIENTE_FIRMA",
+      "topic": "Opción C dispositivo, Brevo primero/Intico soporte, 1–2 aprobadores y tokens de diseño",
+      "evidence": "Mandato actual y PR3846/3844, identity_verified=false",
+      "decision_required": "No pedir nueva elección funcional; la ruta oficial exige recibo/identidad según gate antes de producción",
+      "owner": "Dueño/IG",
+      "impact": "El presente PR solo pruebas y documentación"
+    }
+  ],
+  "technical_gates_not_owner_decisions": [
+    {
+      "id": "L41-T01",
+      "issue": "Intico entrega, recibo, seguridad y auditoría de SMS",
+      "owner": "Ingeniería/Seguridad/QA",
+      "status": "PENDING_INTEGRATION_AND_PROVENANCE",
+      "note": "AUTH045 webhook solo Brevo. No reutilizar secret Bearer Brevo en Intico"
+    },
+    {
+      "id": "L41-T02",
+      "issue": "MFA OTP general rate, RATE-B2B-NEW-DEVICE-OTP (policy 8) solo dispositivo nuevo",
+      "owner": "Arquitectura/DBA/QA",
+      "status": "PENDING_HOMOLOGATION",
+      "note": "La política 8 no cubre OTP por contraseña de 3 meses; no inventar policy_code o resource_code"
+    },
+    {
+      "id": "L41-T03",
+      "issue": "Recuperación asistida requiere rate limit propio, RATE-B2B-PASSWORD-RECOVERY-OTP (policy 7) es OTP legacy",
+      "owner": "Arquitectura/Operaciones/QA",
+      "status": "PENDING_CANONICAL_MAPPING",
+      "note": "Sin sustituir ningún ID de la política 7"
+    },
+    {
+      "id": "L41-T04",
+      "issue": "IdP primario y timestamp de última rotación de contraseña",
+      "owner": "IAM/Seguridad/QA",
+      "status": "PENDING_ADR003_M1_AND_VERIFIED_EVENT",
+      "note": "No atribuir runtime implementado"
+    },
+    {
+      "id": "L41-T05",
+      "issue": "4 reglas UX fuera de Login B2B contienen valores HEX, aunque B2B THEME y DESIGN no",
+      "owner": "Diseño/IG",
+      "status": "SEPARATE_GOVERNED_SCOPE",
+      "note": "UX-GAMIF-TERMOMETRO-01, UX-RUTA-ACCESIBILIDAD-01, UX-RUTA-ESTADOS-01, UX-TOKEN-CONSOLIDACION-01; decisión owner de usar tokens ya existe, no inventar patch sin lectura de diseño"
+    },
+    {
+      "id": "L41-T06",
+      "issue": "Políticas SEC22/SEC24 CANDIDATO, firmar y registrar procedencia canónica de cada clave antes de aplicar",
+      "owner": "IG/Arquitectura/Seguridad",
+      "status": "L41_PROVENANCE_LAB_ONLY",
+      "note": "LF_PROVISIONAL_DEFAULT/LF_PROVISIONAL en laboratorio, no firma canónica"
+    }
+  ]
+}

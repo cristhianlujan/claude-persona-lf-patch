@@ -1,0 +1,306 @@
+{
+  "schema": "LF_L41_LOGIN_B2B_RESIDUAL_CONFLICT_PROPOSALS_V1",
+  "scope": "ONLY_NOT_COVERED_BY_3844_3846_3847",
+  "base_refs": {
+    "pr3844": 3844,
+    "pr3846": 3846,
+    "pr3847": 3847
+  },
+  "identity_verified": false,
+  "owner_status": "DECIDIDA_EN_CONVERSACION_PENDIENTE_FIRMA",
+  "count": 3,
+  "proposals": [
+    {
+      "kind": "RULE",
+      "code": "B2B-RULE-AUTH-044",
+      "source_state": "CANDIDATO",
+      "source_sha256": "5db7e9d1f25faab2aab97a67ab46e890e36f2f1479aad6e5c42e18064580f043",
+      "reason": "Texto Brevo exclusivo omite contingencia Intico manual autorizada, susceptible de interpretarse como canal único.",
+      "new_description": "El canal primario del OTP B2B es correo Brevo Transactional Email desde LF server-side; la aceptación del proveedor solo significa ACCEPTED_PENDING_DELIVERY, no DELIVERED ni OTP verificado. Si el usuario ya actualizó el correo y el OTP no llega, únicamente soporte tras llamada del usuario, con permiso can_enable_sms_contingency, puede habilitar y auditar manualmente SMS Intico como contingencia; nunca por fallo, webhook, temporizador, timeout o rebote automático, ni por selección del navegador. Un OTP entregado por SMS requiere verificación LF server-side antes de sesión u operación y no permite bypass. AUTH-045 autentica exclusivamente el webhook de entrega Brevo y sus eventos, sin autorizar eventos de Intico bajo ese contrato; la integración/confirmación de entrega Intico continúa pendiente de validación técnica. La entrega Brevo registra eventos API/webhook append-only en lf_ops.otp_entrega_eventos con correlation_id, operación OTP, provider_id, messageId técnico, tipo, estado y tiempos, sin código OTP, correo completo ni payload crudo. Los reintentos de webhook son idempotentes y nunca duplican efectos. Aplicable a las operaciones B2B canónicas existentes 4 y 5 según sus contextos; recuperación asistida y cambio de correo/teléfono requieren homologación de operación, no IDs nuevos inventados.",
+      "config_patch": {
+        "primary_delivery_channel": "EMAIL",
+        "primary_delivery_provider": "BREVO",
+        "sms_contingency_provider": "INTICO",
+        "sms_contingency_activation": "SUPPORT_CALL_AFTER_EMAIL_UPDATED_AND_OTP_NOT_RECEIVED",
+        "sms_contingency_support_permission": "can_enable_sms_contingency",
+        "sms_contingency_manual_approval": "REQUIRED",
+        "sms_contingency_audit": "REQUIRED",
+        "sms_contingency_automatic_fallback": "DENY",
+        "sms_contingency_client_selection": "DENY",
+        "sms_contingency_server_verification": "REQUIRED",
+        "sms_delivery_adapter_status": "PENDING_INTICO_IMPLEMENTATION_QA",
+        "sms_delivery_event_mapping": "SEPARATE_PROVIDER_CONTRACT_PENDING",
+        "brevo_webhook_applies_only_to": "BREVO_EVENTS_AUTH045",
+        "sms_provider_acceptance_is_otp_verification": "DENY"
+      }
+    },
+    {
+      "kind": "SECURITY_POLICY",
+      "code": "SEC-B2B-AUTH-ABUSE-PROTECTION",
+      "id": 22,
+      "source_state": "CANDIDATO",
+      "source_sha256": "016da7ef14978fff31f57c9243a4ae9487c9eda5ebf9a5488f8a4f20c25a7d95",
+      "reason": "Configuración original asocia recuperación y OTP a recursos legados; nuevo soporte y MFA condicional son operaciones distintas, además de lockout escalonado.",
+      "new_description": "La defensa contra abuso del Login B2B separa tres controles: (1) RATE-B2B-LOGIN, limitación de solicitudes a la frontera de Login según su política de red, independiente del contador de contraseña; (2) AUTH_LOGIN_FAILED_PASSWORD, escalones por fallos de credencial 5→15 minutos, 3 adicionales→1 hora y 3 adicionales→24 horas, con reinicio por Login válido o 24 horas sin intentos, aviso por correo en 1h y 24h, y liberación del bloqueo 24h por soporte, sin diferencia observable para usuario existente o inexistente; (3) operación OTP por MFA condicional (dispositivo nuevo/revocado o sin uso autenticado 30 días, o contraseña sin cambiar 3 meses) y solicitudes de recuperación asistida por soporte con DNI, 48h y approvers_required 1 o 2. Los límites de operación no comparten contadores ni invalidan seguridad anti-enumeración. La IP se usa como señal anti-abuso, sin bloqueo permanente por un único indicio; los eventos de soporte requieren recurso/rate limit canónico por homologar. La política previa RATE-B2B-PASSWORD-RECOVERY-OTP y RATE-B2B-NEW-DEVICE-OTP no se declaran automáticamente suficientes para todo el flujo nuevo. SMS Intico es solo contingencia manual y auditada, nunca fallback automático. La protección anti-bot sigue separada.",
+      "config_patch": {
+        "recovery_functional_operation": "SUPPORT_ASSISTED_RECOVERY_PENDING_CANONICAL_RESOURCE",
+        "recovery_rate_limit_policy_id": null,
+        "legacy_recovery_otp_rate_limit_policy_id": 7,
+        "new_device_otp_rate_limit_scope": "LEGACY_NEW_DEVICE_ONLY_NOT_GENERAL_MFA",
+        "general_mfa_otp_resource": "PENDING_CANONICAL_MFA_EMAIL_OTP_RESOURCE",
+        "password_failure_policy_code": "AUTH_LOGIN_FAILED_PASSWORD",
+        "password_failure_counter_interference": "DENY",
+        "login_ip_request_limit_policy_id": 1,
+        "login_ip_request_counter_independent": "REQUIRED",
+        "assisted_recovery_support_ticket_rate_limit": "PENDING_CANONICAL_RATE_MAPPING_NO_NEW_ID",
+        "assisted_recovery_policy_id": 20,
+        "support_recovery_wait_hours": 48,
+        "support_recovery_approvers_allowed": [
+          1,
+          2
+        ],
+        "sms_support_only_manual": true,
+        "sms_automatic_fallback": "DENY"
+      },
+      "parameter_provenance_patch": {
+        "recovery_functional_operation": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "recovery_rate_limit_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "legacy_recovery_otp_rate_limit_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "new_device_otp_rate_limit_scope": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "general_mfa_otp_resource": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "password_failure_policy_code": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "password_failure_counter_interference": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "login_ip_request_limit_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "login_ip_request_counter_independent": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "assisted_recovery_support_ticket_rate_limit": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "assisted_recovery_policy_id": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "support_recovery_wait_hours": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "support_recovery_approvers_allowed": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "sms_support_only_manual": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "sms_automatic_fallback": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        }
+      },
+      "changed_config_keys": [
+        "recovery_functional_operation",
+        "recovery_rate_limit_policy_id",
+        "legacy_recovery_otp_rate_limit_policy_id",
+        "new_device_otp_rate_limit_scope",
+        "general_mfa_otp_resource",
+        "password_failure_policy_code",
+        "password_failure_counter_interference",
+        "login_ip_request_limit_policy_id",
+        "login_ip_request_counter_independent",
+        "assisted_recovery_support_ticket_rate_limit",
+        "assisted_recovery_policy_id",
+        "support_recovery_wait_hours",
+        "support_recovery_approvers_allowed",
+        "sms_support_only_manual",
+        "sms_automatic_fallback"
+      ]
+    },
+    {
+      "kind": "SECURITY_POLICY",
+      "code": "SEC-B2B-PASSWORD-CREDENTIAL",
+      "id": 24,
+      "source_state": "CANDIDATO",
+      "source_sha256": "5fc3663fb4dc78d04122774c438674262aae9024791ed73dd97a40dfb91f4beb",
+      "reason": "Config aún obliga Google Workspace y prohíbe password admin, incompatibles con usuario+contraseña server-side para perfiles 1 a 6 y recuperación por soporte.",
+      "new_description": "Política central de contraseñas B2B para perfiles humanos 1 a 6, administradores incluidos: usuario y contraseña validados por servidor LF_AUTH_BOUNDARY con proveedor primario real aún pendiente del ADR-003/M1; no se requiere Google Workspace/SAML ni autenticación exclusiva de proveedor. Mantener mínimo 8 caracteres, letra, número y mayúscula o carácter especial, protección contra contraseñas comprometidas, gestor de contraseñas, sin almacenar contraseñas ni hashes en lf_ops y validación final server-side. No forzar rotación periódica: superar 3 meses calendario desde último cambio de contraseña exige OTP Brevo al iniciar sesión, incluso en dispositivo reconocido; la fuente del timestamp y binding de proveedor deben verificarse en QA. Para todo cambio efectivo de contraseña se revocan todos los tokens de dispositivos confiables (política 25/AUTH-039). La recuperación, también para Admin LF y Admin Empresa, es por soporte bajo política 20: DNI escaneado, aprobadores autorizados 1 o 2 (inicial 1), avisos al contacto anterior, auditoría, espera 48 horas, clave temporal de uso único y OTP obligatorio aun en dispositivo reconocido; aprobar la recuperación revoca tokens antes de restablecer credenciales. Sin bypass por contraseña sola cuando MFA corresponda. El hash efectivo y su costo dependen del proveedor real y no se presumen implementados.",
+      "config_patch": {
+        "admin_identity_provider": "PENDING_ADR_003_M1_SPIKE",
+        "admin_password_recovery": "SUPPORT_ASSISTED_RECOVERY_POLICY20",
+        "admin_local_password_signin": "USERNAME_PASSWORD_SERVER_VALIDATED_BINDING_PENDING",
+        "password_credential_profile_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "minimum_length_basis": "OWNER_APPROVED_BALANCE_WITH_DEVICE_30D_AND_PASSWORD_3MO_MFA",
+        "admin_saml_required": "DENY",
+        "password_age_mfa_trigger": "3_CALENDAR_MONTHS",
+        "password_change_last_changed_source": "PENDING_REAL_IDP_CANONICAL_EVENT_QA",
+        "password_change_revoke_device_tokens": "ALL_USER_TOKENS",
+        "assisted_recovery_revoke_device_tokens": "ALL_ON_APPROVED_RECOVERY"
+      },
+      "parameter_provenance_patch": {
+        "admin_identity_provider": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "admin_password_recovery": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "admin_local_password_signin": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "password_credential_profile_ids": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "minimum_length_basis": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "admin_saml_required": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "password_age_mfa_trigger": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "password_change_last_changed_source": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "password_change_revoke_device_tokens": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        },
+        "assisted_recovery_revoke_device_tokens": {
+          "origin_type": "LF_PROVISIONAL_DEFAULT",
+          "value_status": "LF_PROVISIONAL",
+          "replacement_policy": "MUST_BE_RATIFIED_OR_OVERRIDDEN",
+          "origin_reference": "OWNER_LOGIN_B2B_NEW_DECISIONS_20261113_PENDING_SIGNATURE",
+          "identity_verified": false
+        }
+      },
+      "changed_config_keys": [
+        "admin_identity_provider",
+        "admin_password_recovery",
+        "admin_local_password_signin",
+        "password_credential_profile_ids",
+        "minimum_length_basis",
+        "admin_saml_required",
+        "password_age_mfa_trigger",
+        "password_change_last_changed_source",
+        "password_change_revoke_device_tokens",
+        "assisted_recovery_revoke_device_tokens"
+      ]
+    }
+  ],
+  "live_writes": 0,
+  "writer_calls": 0,
+  "approval_not_assumed": true
+}

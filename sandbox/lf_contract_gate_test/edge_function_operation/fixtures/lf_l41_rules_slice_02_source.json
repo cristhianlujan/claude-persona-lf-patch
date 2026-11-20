@@ -1,0 +1,2559 @@
+{
+  "schema": "LF_L41_RULES_FROZEN_SELECT_V1",
+  "scope": "READ_ONLY_LF_OPS",
+  "slice": 2,
+  "order": "r.codigo",
+  "count": 65,
+  "source_rows": [
+    {
+      "source_row": {
+        "id": 208,
+        "razon": "El double submit en checkout puede generar cobros duplicados.",
+        "codigo": "REG_CHK_004",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "El CTA de pago se desbloquea solo por outcome seguro",
+        "categoria": "checkout",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-26T18:11:25.79975+00:00",
+        "descripcion": "Al primer click el CTA se bloquea inmediatamente para impedir doble submit. No se rehabilita por un error técnico genérico. Solo backend puede habilitar un nuevo intento cuando el outcome normalizado lo permite, por ejemplo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT. PAYMENT_PENDING_CONFIRMATION y PAYMENT_CONFIRMED mantienen el bloqueo.",
+        "valor_config": {
+          "reconciled_at": "2026-08-26",
+          "retry_authority": "SERVER_OUTCOME_GATED",
+          "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "deny_retry_outcomes": [
+            "PAYMENT_PENDING_CONFIRMATION",
+            "PAYMENT_CONFIRMED"
+          ],
+          "allow_retry_outcomes": [
+            "PAYMENT_DECLINED_CONFIRMED",
+            "PAYMENT_NOT_SUBMITTED",
+            "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+          ],
+          "disable_on_first_click": true,
+          "generic_technical_error_reenables": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "895e382f34df00eb4e458160137f465ba5646bf4da1c6a81cb03825687eed7a4",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 314,
+        "razon": "Alinea el UX con recuperación server-side y evita una advertencia falsa o innecesaria.",
+        "codigo": "REG_CHK_024",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "Estado transitorio no depende de mantener la ventana abierta",
+        "categoria": "ux",
+        "created_at": "2026-06-29T17:37:55.745992+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-26T14:59:21.670134+00:00",
+        "descripcion": "ABRIENDO y CONFIRMANDO pueden mostrar copy neutral de espera, pero la integridad del pago no depende de mantener abierta la ventana. No es obligatorio mostrar “No cierres esta ventana”. El estado y la reconciliación dependen del backend/adaptador y de evidencia canónica del proveedor.",
+        "valor_config": {
+          "revised_at": "2026-08-26",
+          "state_authority": "SERVER_SIDE_PAYMENT_ADAPTER",
+          "superseded_by_rule": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+          "mandatory_warning_copy": false,
+          "recommended_neutral_copy": "Esto puede tomar unos segundos.",
+          "browser_window_required_for_integrity": false
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "ea574176f6c9e3355b566a359a779d83d54cba07389a0590301348d90e0ff636",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 514,
+        "razon": "Permitir que acceso, alta y recuperación terminen en un contrato funcional estable sin ocultar la discrepancia entre pantallas semánticas y variantes visuales heredadas.",
+        "codigo": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+        "estado": "VIGENTE",
+        "origen": "SEALED_HMO_SPECS_PLUS_EXISTING_HOME_VARIANTS",
+        "titulo": "Resolución funcional del Home Cliente autenticado",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T17:32:45.504234+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-HOME-20260819-01",
+        "updated_at": "2026-08-19T23:05:02.582302+00:00",
+        "descripcion": "Después de obtener AUTHENTICATED_CLIENT_ACCOUNT, el backend resuelve el estado funcional del Home a partir de las ofertas activas y vigentes visibles para esa cuenta. Con cero ofertas activas el estado es NO_ACTIVE_OFFER_HOME y no se renderizan montos, modalidades ni CTA de pago. Con una o más ofertas activas el estado es ACTIVE_OFFER_HOME y la presentación se especializa según cantidad de ofertas y modalidades disponibles. La resolución funcional no fija todavía si el código canónico final será HOME_002/HOME_003 o alguna variante PASO3_*; esa reconciliación permanece separada y no puede resolverse por inferencia del frontend.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "paso3_role": "HOME_RENDER_VARIANT_NOT_ROUTE",
+          "offer_source": "public.fn_lf_my_active_offers",
+          "sealed_specs": [
+            "HU-HMO-001",
+            "HU-HMO-002",
+            "HU-HMO-003",
+            "HU-HMO-004",
+            "HU-HMO-005"
+          ],
+          "canonical_route": "CLIENT_HOME_ENTRY",
+          "no_offer_rule_code": "REG_CLIENT_HOME_NO_OFFER_001",
+          "zero_offer_behavior": {
+            "amounts": "HIDE",
+            "modalities": "HIDE",
+            "payment_cta": "HIDE",
+            "orientation_content": "ALLOW"
+          },
+          "legacy_variant_rules": [
+            "REG_HMV_001",
+            "REG_HMV_002",
+            "REG_HMV_003",
+            "REG_HMV_004",
+            "REG_HMV_005",
+            "REG_FLU_010"
+          ],
+          "resolution_authority": "SERVER_ONLY",
+          "active_offer_behavior": {
+            "preselect_offer": "DENY",
+            "selection_model": "PER_OFFER",
+            "partial_selection": "ALLOW",
+            "checkout_requires_at_least_one_valid_selection": true
+          },
+          "client_session_policy": "SESSION-CLIENT-DEFAULT",
+          "requires_auth_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+          "business_client_entity": "lf_client.client_accounts",
+          "technical_failure_state": "OFFER_DATA_UNAVAILABLE",
+          "canonical_screen_mapping": {
+            "ACTIVE_OFFER_HOME": "HOME_002",
+            "MULTI_OFFER_VISUAL": "PASO3_MULTI_OFERTA",
+            "NO_ACTIVE_OFFER_HOME": "HOME_003"
+          },
+          "session_context_contract": "public.fn_lf_client_session_context",
+          "stale_legacy_rule_notice": "REG_HOME_001_AND_REG_FLUJO_005_PRE_DATE_CELL_FIRST_POST_DNI_FLOW",
+          "zero_active_offers_state": "NO_ACTIVE_OFFER_HOME",
+          "visual_variant_candidates": [
+            "PASO3_SIN_OFERTA",
+            "PASO3_OFERTA_UNICA_PAGO_UNICO_V2",
+            "PASO3_OFERTA_UNICA_AMBAS",
+            "PASO3_MULTI_OFERTA",
+            "PASO3_CUOTAS_DESGLOSE",
+            "PASO3_OFERTA_UNICA_CUOTAS_V2"
+          ],
+          "context_pack_source_status": "CLOSED",
+          "semantic_screen_candidates": [
+            "HOME_002",
+            "HOME_003"
+          ],
+          "offer_load_failure_rule_code": "REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "source_context_pack_decision": "DEC-CLIENT-HMO-CONTEXTPACK-CLOSURE-001",
+          "active_offer_variant_rule_code": "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001",
+          "one_or_more_active_offers_state": "ACTIVE_OFFER_HOME",
+          "client_cannot_choose_home_variant": true,
+          "legacy_zero_offer_fallback_on_failure": "DENY_FOR_CLIENT_HOME",
+          "zero_offer_requires_authoritative_success": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4be309e2d84b2ea5262113cc2e05782bf208c957ad6dad58964a7ece822ceb21",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 535,
+        "razon": "Evitar doble cobro y dependencia de una sesión de navegador durante confirmaciones asíncronas.",
+        "codigo": "REG_CLIENT_CHECKOUT_CONFIRMING_STATE_001",
+        "estado": "VIGENTE",
+        "origen": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "titulo": "Estado de confirmación de pago desacoplado de la ventana del navegador",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T17:56:07.914489+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-CHECKOUT-20260819-05",
+        "updated_at": "2026-08-26T16:23:28.708183+00:00",
+        "descripcion": "CHECKOUT_ESTADO_CONFIRMANDO representa un intento ya entregado al circuito de pago cuyo resultado autoritativo aún está siendo validado o reconciliado. La operación continúa server-side aunque el usuario cierre, recargue o abandone la ventana; el navegador no es autoridad del resultado. Mientras el intento esté en confirmación no se permite reintentar, cambiar de medio ni crear otra operación equivalente. Al volver, el Sistema Cliente consulta el ledger y deriva a éxito, error confirmado o continúa mostrando pendiente según el estado real. El nombre/logo del proveedor solo puede aparecer si existe binding productivo canónico.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_ESTADO_CONFIRMANDO",
+          "amount_source": "CHECKOUT_SNAPSHOT_OR_PLAN_SNAPSHOT",
+          "resume_behavior": "READ_AUTHORITATIVE_LEDGER_STATE",
+          "parallel_attempt": "DENY",
+          "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+          "payment_ledger_debt": "PEND-CLIENT-PAYMENT-LEDGER-001",
+          "visual_artifact_code": "CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826",
+          "retry_while_confirming": "DENY",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+          "visual_discrepancy_debt": "PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001",
+          "allowed_processing_states": [
+            "PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT",
+            "PAYMENT_PENDING_CONFIRMATION"
+          ],
+          "operation_reference_source": "PAYMENT_LEDGER_OR_RESERVED_OPERATION",
+          "server_side_reconciliation": "REQUIRED",
+          "canonical_drive_evidence_id": "1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc",
+          "change_method_while_confirming": "DENY",
+          "close_or_refresh_cancels_payment": "DENY",
+          "browser_window_must_remain_open_for_correctness": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Funcionalidad y visual cerrados. Implementación productiva sigue bloqueada por ausencia de ledger/reconciliación técnica canónicos y proveedor productivo validado.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "625eb571ba2f6436e5da9fa58c9364ddc480ab3c8f12f6d7c6c560d74a2cf1c2",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 519,
+        "razon": "Aplicar directamente la especificación sellada HU-HMO-004 y mantener el checkout desacoplado del gateway y de pantallas históricas.",
+        "codigo": "REG_CLIENT_CHECKOUT_ENTRY_001",
+        "estado": "VIGENTE",
+        "origen": "SEALED_HMO_SPECS_PLUS_CLIENT_CHECKOUT_REVIEW",
+        "titulo": "Entrada segura al checkout Cliente con revalidación server-side",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T17:41:47.900998+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-CHECKOUT-20260819-01",
+        "updated_at": "2026-08-19T23:06:55.367335+00:00",
+        "descripcion": "El checkout Cliente solo puede iniciarse desde una sesión autenticada con al menos una selección válida. Antes de crear cualquier intento de cobro, el backend revalida de forma individual cada oferta seleccionada: vigencia, versión, modalidad, plan, montos, primera cuota cuando aplique, comisiones, ahorro, campos críticos y riesgo de duplicidad. Una oferta vencida, inactiva o inválida se excluye sin descartar las demás selecciones válidas y se recalculan los totales. Si cambió monto o versión material, esa oferta requiere reconfirmación explícita antes de cobro. Si después de revalidar no queda ninguna selección válida, no se inicia pago. Si existe riesgo de operación duplicada, el cobro se bloquea. El frontend no fija precios ni transforma una selección no validada en orden de pago.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "revalidate": [
+            "OFFER_ACTIVE",
+            "OFFER_VERSION",
+            "MODALITY",
+            "PLAN_IF_APPLICABLE",
+            "AMOUNTS",
+            "INITIAL_PAYMENT_IF_APPLICABLE",
+            "FEES",
+            "SAVINGS",
+            "CRITICAL_FIELDS",
+            "DUPLICATION_RISK"
+          ],
+          "sealed_sources": [
+            "HU-HMO-002",
+            "HU-HMO-004"
+          ],
+          "pricing_authority": "BACKEND_VERSIONED_CONFIGURATION_PER_HU_HMO_002",
+          "operation_reference": "SERVER_GENERATED_OPAQUE_REFERENCE",
+          "payment_ledger_debt": "DOWNSTREAM_PAYMENT_EXECUTION_DEPENDENCY",
+          "expired_offer_action": "EXCLUDE_AND_RECALCULATE",
+          "idempotency_required": true,
+          "invalid_offer_action": "EXCLUDE_AND_RECALCULATE_KEEP_OTHER_VALID_SELECTIONS",
+          "per_offer_validation": true,
+          "validation_authority": "SERVER_ONLY",
+          "duplicate_risk_action": "BLOCK_PAYMENT",
+          "pricing_quote_storage": "lf_proto.checkout_pricing_quotes",
+          "requires_auth_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+          "pricing_quote_function": "public.fn_lf_my_checkout_pricing_quote",
+          "pay_only_canonical_debt": "DOWNSTREAM_STORY_NOT_ENTRY_PRECONDITION",
+          "pricing_quote_rule_code": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "context_pack_hmo001_role": "BOUNDARY_ONLY_NO_PAYMENT_EXECUTION",
+          "minimum_valid_selections": 1,
+          "checkout_snapshot_storage": "PAYMENT_LEDGER_REQUIRED_BEFORE_PROVIDER_INVOCATION_NOT_AT_ENTRY",
+          "payment_outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "context_pack_source_status": "CLOSED",
+          "frontend_pricing_authority": "DENY",
+          "schedule_context_rule_code": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+          "autodebit_consent_rule_code": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+          "idempotency_registry_status": "CANONICAL_REUSE_WITH_AUTH_UID_TECH_PRINCIPAL_AND_CLIENT_CONTEXT",
+          "provider_invocation_at_entry": "DENY",
+          "source_context_pack_decision": "DEC-CLIENT-HMO-CONTEXTPACK-CLOSURE-001",
+          "idempotency_architecture_debt": "RESOLVED_BY_DEC_CLIENT_AUTH_SESSION_RUNTIME_001",
+          "zero_valid_after_revalidation": "RETURN_WITHOUT_PAYMENT_OPERATION",
+          "idempotency_registry_candidate": "public.lf_checkout_idempotency_reservations",
+          "material_amount_or_version_change": "REQUIRE_EXPLICIT_RECONFIRMATION",
+          "installments_checkout_view_rule_code": "REG_CLIENT_CHECKOUT_INSTALLMENTS_VIEW_001",
+          "payment_method_eligibility_rule_code": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "4175572d9476ec8f8b694b73cccf88f37ba8667c6c66c81abea96542554d0333",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 522,
+        "razon": "Reutilizar el mecanismo técnico existente que implementa versionado/fail-closed de precio, manteniendo explícito el bloqueo arquitectónico de identidad Cliente.",
+        "codigo": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+        "estado": "VIGENTE",
+        "origen": "EXISTING_CHECKOUT_PRICING_QUOTE_CONTRACT",
+        "titulo": "Quote de checkout Cliente versionado y fail-closed",
+        "categoria": "precio",
+        "created_at": "2026-08-19T17:46:17.408675+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-CHECKOUT-20260819-03",
+        "updated_at": "2026-08-25T03:25:08.235796+00:00",
+        "descripcion": "El checkout debe consumir un quote server-side vigente para la selección exacta. La estructura existente lf_proto.checkout_pricing_quotes conserva selection_sha256, snapshot de selección, versión de configuración, componentes de precio, total final, ahorro, estado y expiración. La función pública fn_lf_my_checkout_pricing_quote solo devuelve READY cuando existe un quote VALID no expirado para auth.uid() y la configuración lf_b2b_pricing_config referenciada está APROBADO o VIGENTE y coincide exactamente en versión. Cualquier ausencia, expiración, configuración no autorizada o mismatch bloquea el checkout; el frontend no recalcula ni sustituye los valores.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "quote_table": "lf_proto.checkout_pricing_quotes",
+          "ready_outcome": "READY",
+          "quote_function": "public.fn_lf_my_checkout_pricing_quote",
+          "blocked_outcome": "BLOCKED",
+          "selection_digest": "SHA256",
+          "architecture_debt": "PEND-CLIENT-CHECKOUT-IDEMPOTENCY-AUTH-001",
+          "identity_resolution": "auth.uid()",
+          "pricing_config_table": "public.lf_b2b_pricing_config",
+          "required_quote_status": "VALID",
+          "commercial_adjustments": {
+            "snapshot_path": "selection_snapshot.applied_commercial_adjustments",
+            "refund_component": "DENY_SEPARATE_POST_PAYMENT_FLOW",
+            "demo_fixture_allowed": true,
+            "frontend_application": "DENY",
+            "demo_fixture_authority": "NON_AUTHORITATIVE",
+            "wallet_balance_component": "DENY",
+            "runtime_quote_generation_status": "PENDING_CANONICAL_GENERATOR_SUPPORT",
+            "total_savings_must_reconcile_after_adjustments": true,
+            "final_customer_price_must_include_applied_adjustments": true
+          },
+          "frontend_recalculation": "DENY",
+          "quote_must_be_unexpired": true,
+          "refund_policy_rule_code": "REG_CLIENT_PAYMENT_REFUND_POLICY_001",
+          "current_runtime_readiness": "BLOCKED_NO_APPROVED_PRICING_CONFIG_AND_NO_CLIENT_AUTH_MAPPING",
+          "pricing_config_version_match": "REQUIRED",
+          "client_identity_mapping_status": "PENDING_CANONICAL_CLIENT_AUTH_MAPPING",
+          "pricing_config_allowed_statuses": [
+            "APROBADO",
+            "VIGENTE"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Contrato de quote cerrado para pricing base y extendido para ajustes comerciales en selection_snapshot. Implementación Cliente sigue bloqueada hasta identidad Cliente↔auth.uid(), pricing config APROBADO/VIGENTE y soporte canónico del generador para bonuses/coupons. Fixtures DEMO sí pueden probar el contrato; no promover la plantilla CANDIDATO actual.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "47996b21f1d1bfce5b5cb61775024dfe8e144428c8980296373f05bb987eff22",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 540,
+        "razon": "Separar la apertura de la interfaz del proveedor de la ejecución del cobro y evitar estados ambiguos, open redirects o dependencias del navegador.",
+        "codigo": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+        "estado": "VIGENTE",
+        "origen": "CLIENT_CHECKOUT_PROVIDER_HANDOFF_RECONCILIATION",
+        "titulo": "Preparación segura del handoff al proveedor de pago",
+        "categoria": "pago",
+        "created_at": "2026-08-19T18:01:17.556398+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-CHECKOUT-20260819-07",
+        "updated_at": "2026-08-26T14:59:21.670134+00:00",
+        "descripcion": "CHECKOUT_ESTADO_ABRIENDO representa únicamente la preparación server-side de la sesión/handoff del proveedor después de que checkout, quote y medio de pago hayan sido validados. En este estado todavía no se considera enviado un intento de cobro ni existe PAYMENT_PENDING_CONFIRMATION. El backend crea u obtiene la referencia opaca necesaria para abrir hosted fields, iframe, SDK o redirección autorizada según el proveedor canónico. El cliente no construye URLs del proveedor, return_url ni callback_url arbitrarios. Si la preparación falla antes de que el proveedor acepte una sesión de pago, el resultado es PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT o PAYMENT_NOT_SUBMITTED según la causa y puede reintentarse de forma controlada; nunca se afirma que hubo un intento de cobro. La transición a un estado de pago enviado/confirmando ocurre solo cuando el backend/adaptador posee evidencia de que el intento entró al circuito de pago.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_ESTADO_ABRIENDO",
+          "amount_source": "CHECKOUT_PRICING_QUOTE_OR_CHECKOUT_SNAPSHOT",
+          "requires_rules": [
+            "REG_CLIENT_CHECKOUT_ENTRY_001",
+            "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+            "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001"
+          ],
+          "state_semantic": "PROVIDER_HANDOFF_PREPARING",
+          "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER",
+          "handoff_authority": "SERVER_SIDE_PAYMENT_ADAPTER",
+          "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+          "arbitrary_return_url": "DENY",
+          "visual_artifact_code": "CHECKOUT-ESTADO-ABRIENDO-PROVIDER-HANDOFF-PREPARING-20260826",
+          "allowed_handoff_modes": [
+            "HOSTED_FIELDS_OR_IFRAME",
+            "AUTHORIZED_SDK",
+            "AUTHORIZED_REDIRECT"
+          ],
+          "provider_binding_debt": "PEND-CLIENT-PAYMENT-PROVIDER-BINDING-001",
+          "arbitrary_callback_url": "DENY",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+          "payment_attempt_submitted": false,
+          "operation_reference_source": "RESERVED_OPERATION_OR_CANONICAL_PAYMENT_LEDGER",
+          "canonical_drive_evidence_id": "1nFzL3_ty2SZ-d2MjBRURwqsjcEcibMKF",
+          "handoff_failure_claims_charge": "DENY",
+          "provider_origin_or_destination": "CANONICAL_PROVIDER_CONFIGURATION_ONLY",
+          "client_constructed_provider_url": "DENY",
+          "transition_to_submitted_requires": "SERVER_EVIDENCE_PROVIDER_PAYMENT_ATTEMPT_ACCEPTED_OR_EQUIVALENT",
+          "opaque_provider_session_reference": "ALLOW_IF_SERVER_GENERATED_OR_PROVIDER_ISSUED",
+          "browser_window_required_for_integrity": false,
+          "payment_pending_confirmation_at_entry": false,
+          "handoff_failure_before_provider_acceptance": [
+            "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT",
+            "PAYMENT_NOT_SUBMITTED"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Funcionalidad cerrada. Pendiente proveedor productivo y contrato técnico exacto de hosted fields/SDK/redirección; el visual Drive puede conservar un estado de espera, pero el nombre Niubiz y el mecanismo de navegación no son autoridad hasta binding.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "902405fc74dbf3907f29707a23f7989b888e9750eec20a18a476bf9da0d7c1a8",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 551,
+        "razon": "Alinear la Ruta de Claridad con la arquitectura celular-first y eliminar el flujo histórico al simulador.",
+        "codigo": "REG_CLIENT_HOME_CLARITY_CTA_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "CTA comercial de Ruta de Claridad entra al onboarding celular-first",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T18:26:28.928781+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-HOME-CLARITY-20260819-01",
+        "updated_at": "2026-08-19T18:26:28.928781+00:00",
+        "descripcion": "Los nodos pueden abrir contenido educativo sin autenticación. Cuando un popup o nodo ofrece continuar con LF —por ejemplo “Ver mi primer paso” o el cierre comercial históricamente rotulado “Calcular mi deuda”— la acción funcional no ejecuta un simulador ni consulta deudas/ofertas desde la Ruta. Todos esos cierres comerciales conducen a ONB_001; desde ahí celular → OTP → DNI y el backend resuelve alta, acceso o recuperación. El copy visible puede conservar la variante aprobada/candidata de cada nodo hasta revisión de contenido, pero el destino funcional es único.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_RUTA_CLARIDAD",
+          "route_pattern": "PENDING_CANONICAL_CLIENT_ROUTE",
+          "visible_copy_change": "PENDING_CONTENT_REVIEW",
+          "node_01_candidate_copy": "Ver mi primer paso →",
+          "educational_node_action": "OPEN_EDUCATIONAL_CONTENT",
+          "legacy_simulator_target": "DENY",
+          "legacy_popup_closing_copy": "Calcular mi deuda",
+          "commercial_continuation_rule": "REG_FLOW_CELL_FIRST_001",
+          "commercial_continuation_target": "ONB_001",
+          "offer_or_debt_lookup_before_onb_001": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Destino funcional cerrado. Ruta Cliente/route_pattern continúa pendiente por ausencia de shell/rutas Cliente; copy exacto de cierres puede revisarse después sin cambiar la navegación.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "e675c50232a53687daf5940fee156037c3c61b2371330a6f46b748e8b5f64f75",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 554,
+        "razon": "Alinear preguntas frecuentes con el onboarding celular-first, revalidación HMO, privacidad pendiente y seguridad transaccional moderna.",
+        "codigo": "REG_CLIENT_HOME_FAQ_001",
+        "estado": "VIGENTE",
+        "origen": "CLIENT_HOME_FAQ_RECONCILIATION",
+        "titulo": "FAQ público derivado de contratos Cliente vigentes",
+        "categoria": "contenido",
+        "created_at": "2026-08-19T18:30:12.828733+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-HOME-FAQ-20260819-01",
+        "updated_at": "2026-08-19T18:30:12.828733+00:00",
+        "descripcion": "HOME_FAQ conserva seis temas, pero las respuestas se derivan de los contratos actuales y no de copy histórico. (1) Para empezar no se piden “datos personales básicos” completos: ONB_001 solicita celular, ONB_002 confirma control por OTP y solo después se solicita DNI cuando corresponde. (2) Si una consulta autoritativa confirma cero ofertas activas, el Home autenticado usa NO_ACTIVE_OFFER_HOME y Ruta de Claridad; una falla técnica no equivale a “sin oferta”. (3) Una oferta mostrada es una oferta disponible/versionada, pero antes del checkout se revalidan vigencia, versión, montos, modalidad y plan; cambios materiales exigen reconfirmación. (4) La identidad del gestor/aliado y datos de la deuda se muestran únicamente desde fuentes autoritativas; contenido educativo sobre cesión no sustituye esos datos. (5) La privacidad se explica conforme a políticas vigentes y los consentimientos aplicables; no se afirma que todo tratamiento dependa del mismo checkbox ni se usa la regla histórica de ubicación del consentimiento como verdad actual. (6) Antes de enviar un intento de pago el usuario puede abandonar sin crear un pago; después de un intento enviado o PAYMENT_CONFIRMED aplican los estados de pago y condiciones del acuerdo. Salir de la web o detener un débito automático no cancela una deuda ni un plan por sí mismo.",
+        "valor_config": {
+          "faq_1": {
+            "topic": "START_REQUIREMENTS",
+            "semantic": "PHONE_FIRST_OTP_THEN_DNI_IF_REQUIRED",
+            "source_rules": [
+              "REG_FLOW_CELL_FIRST_001",
+              "REG_FLUJO_003"
+            ],
+            "basic_profile_data_before_otp": "DENY"
+          },
+          "faq_2": {
+            "topic": "NO_OFFER",
+            "source_rules": [
+              "REG_CLIENT_HOME_NO_OFFER_001",
+              "REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001"
+            ],
+            "technical_failure_equals_no_offer": "DENY"
+          },
+          "faq_3": {
+            "topic": "OFFER_FINALITY",
+            "source_rules": [
+              "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001",
+              "REG_CLIENT_CHECKOUT_ENTRY_001"
+            ],
+            "material_change": "RECONFIRM",
+            "pre_checkout_revalidation": "REQUIRED"
+          },
+          "faq_4": {
+            "topic": "DEBT_MANAGER",
+            "education_source": "EDU-NODO-02-EXPLORA",
+            "authoritative_account_data_required": true,
+            "candidate_education_as_account_truth": "DENY"
+          },
+          "faq_5": {
+            "topic": "DATA_PROTECTION",
+            "source_rules": [
+              "REG_ANL_002",
+              "REG_SEG_003",
+              "LEGAL-CONSENTIMIENTO-DATOS-01"
+            ],
+            "consent_location_status": "PENDING_LEGAL_PRIVACY_VALIDATION",
+            "claim_all_processing_based_on_single_consent": "DENY"
+          },
+          "faq_6": {
+            "topic": "CAN_I_STOP",
+            "source_rules": [
+              "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+              "REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001"
+            ],
+            "before_payment_submit": "ALLOW_ABANDON_WITHOUT_PAYMENT_ATTEMPT",
+            "after_payment_confirmed": "CONTRACTUAL_OBLIGATIONS_APPLY",
+            "stop_autodebit_cancels_debt": "DENY",
+            "payment_pending_confirmation": "NO_NEW_ATTEMPT_UNTIL_RECONCILED",
+            "after_possible_provider_submit": "FOLLOW_PAYMENT_OUTCOME_STATE"
+          },
+          "front": "CLIENTE",
+          "screen": "HOME_FAQ",
+          "visual_debt": "PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001",
+          "question_count": 6,
+          "public_boundary_rule": "REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Funcionalidad y fuentes cerradas. Copy exacto final pendiente de revisión visual/legal; FAQ 4 debe limitarse a datos autoritativos mientras EDU-NODO-02 siga CANDIDATO y FAQ 5 no debe cerrar la ubicación legal del consentimiento aún pendiente.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "7054b3e184822b9b896dee41d529f6a81bd101c14cadbeb4a368593496ed9ba7",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 552,
+        "razon": "Evitar duplicidad de contenido y mantener esta sección sincronizada con onboarding celular-first, HMO/checkout y fuentes externas revalidadas.",
+        "codigo": "REG_CLIENT_HOME_LEARN_DECIDE_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-HOME-SIMULADOR-NAMING-001_PLUS_CLIENT_FLOW_RECONCILIATION",
+        "titulo": "Aprenda antes de decidir reutiliza fuentes gobernadas y no mantiene copy paralelo",
+        "categoria": "contenido",
+        "created_at": "2026-08-19T18:28:30.810422+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-HOME-LEARN-20260819-01",
+        "updated_at": "2026-08-19T18:28:30.810422+00:00",
+        "descripcion": "HOME_APRENDA_ANTES_DECIDIR conserva tres tarjetas de respuesta rápida, pero cada popup consume semántica de reglas fuente ya gobernadas en vez de mantener una verdad paralela. Card 1 “Tu deuda puede haber cambiado de manos” depende de EDU-NODO-02-EXPLORA y no publica detalles legales precisos mientras esa fuente permanezca CANDIDATO o con claims pendientes. Card 2 “¿Cómo funciona el simulador?” explica el flujo actual: iniciar en ONB_001, verificar control del celular por OTP, identificar por DNI cuando corresponda y dejar que backend resuelva si existe una oferta/cuenta; el nombre visual “simulador” puede mantenerse según decisión 46, pero no representa una simulación hipotética ni un lookup desde la card. Card 3 “¿Qué ocurre después de revisar tu opción?” reutiliza EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA: pago único/cuotas según oferta válida, confirmación de pago y gestión de constancia/carta según liquidación real; no promete 7–9 días para actualización SBS.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_APRENDA_ANTES_DECIDIR",
+          "card_count": 3,
+          "card_2_flow": [
+            "PHONE",
+            "OTP_PHONE_CONTROL",
+            "DNI_IF_REQUIRED",
+            "BACKEND_RESOLUTION"
+          ],
+          "visual_debt": "PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001",
+          "card_1_title": "Tu deuda puede haber cambiado de manos",
+          "card_2_title": "¿Cómo funciona el simulador?",
+          "card_3_title": "¿Qué ocurre después de revisar tu opción?",
+          "visual_mapping": "PENDING_CANONICAL_VISUAL",
+          "card_2_entry_rule": "REG_CLIENT_HOME_PUBLIC_ENTRY_001",
+          "card_1_source_rule": "EDU-NODO-02-EXPLORA",
+          "card_2_entry_target": "ONB_001",
+          "card_3_source_rules": [
+            "EDU-NODO-03-ELIGE",
+            "EDU-NODO-04-CIERRA"
+          ],
+          "card_3_letter_semantic": "PER_DEBT_AFTER_SETTLED_CONFIRMED",
+          "popup_content_strategy": "REFERENCE_SOURCE_RULES_NOT_PARALLEL_COPY",
+          "commercial_close_target": "ONB_001",
+          "card_2_naming_decision_number": 46,
+          "card_3_hardcoded_sbs_7_9_days": "DENY",
+          "external_claim_freshness_rule": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001",
+          "card_1_popup_publish_condition": "SOURCE_RULE_PUBLICABLE",
+          "legacy_simulator_direct_lookup": "DENY",
+          "card_2_hypothetical_simulation_semantic": "DENY",
+          "card_1_precise_legal_claims_when_source_candidate": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Estructura funcional cerrada. Card 1 queda con popup legal condicionado a que EDU-NODO-02-EXPLORA sea publicable. Copy/layout exactos siguen pendientes por ausencia de visual canónico.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "a2d39ebceae8bac79c9adf5629689bc47dcca284d1bc9c94fceab9c6792fd596",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 546,
+        "razon": "Mantener una entrada única y simple coherente con el onboarding celular-first aprobado y evitar duplicar login/registro.",
+        "codigo": "REG_CLIENT_HOME_PUBLIC_ENTRY_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "HOME_001 inicia el acceso Cliente únicamente mediante ONB_001",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T18:19:21.332732+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-HOME001-20260819-01",
+        "updated_at": "2026-08-19T18:19:21.332732+00:00",
+        "descripcion": "Los CTA de entrada del Home público que expresan intención de revisar una oferta o comenzar deben llevar al mismo punto funcional ONB_001. HOME_001 no decide si el visitante es cliente existente o nuevo, no pide que el usuario elija “registrarse” versus “iniciar sesión” y no necesita un formulario de login separado. ONB_001 solicita celular; ONB_002 verifica control del número; el backend resuelve posteriormente cuenta existente o continuidad del onboarding según las reglas vigentes. El route_pattern permanece pendiente hasta que exista arquitectura Cliente canónica.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_001",
+          "client_shell": "PENDING_CANONICAL_APP_SHELL",
+          "entry_actions": [
+            "HEADER_CTA",
+            "HERO_PRIMARY_CTA"
+          ],
+          "route_pattern": "PENDING_CANONICAL_CLIENT_ROUTE",
+          "post_dni_branch_rule": "REG_FLOW_PHONE_BRANCH_001",
+          "functional_target_rule": "REG_FLOW_CELL_FIRST_001",
+          "current_locked_cta_copy": "Ver si tengo una oferta",
+          "source_decision_numbers": [
+            31,
+            71,
+            100
+          ],
+          "functional_target_screen": "ONB_001",
+          "account_resolution_authority": "BACKEND",
+          "existing_account_access_rule": "REG_CLIENT_PHONE_PASSWORDLESS_ACCESS_001",
+          "separate_login_form_from_home": "DENY",
+          "ask_existing_or_new_before_phone": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Funcionalidad cerrada. Pendiente registrar ruta/shell Cliente; el CTA visual actual puede mantenerse y no requiere un login paralelo.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "f213feb67363b1b957716d453e8e89c9c56c62f8f7f754a4ae44dcfdda299d43",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 532,
+        "razon": "Evitar dobles cobros y separar correctamente un problema de procesamiento de un incumplimiento contractual.",
+        "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+        "estado": "VIGENTE",
+        "origen": "CLIENT_MY_OPERATIONS_PAYMENT_SAFETY",
+        "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+        "categoria": "pago",
+        "created_at": "2026-08-19T17:52:30.739642+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-MYOPS-20260819-03",
+        "updated_at": "2026-08-19T17:52:30.739642+00:00",
+        "descripcion": "Un intento de cobro de una cuota reutiliza los outcomes normalizados de pago. PAYMENT_CONFIRMED marca esa cuota como pagada. PAYMENT_DECLINED_CONFIRMED mantiene la cuota sin pagar y puede habilitar una acción de recuperación/manual solo si backend lo permite. PAYMENT_PENDING_CONFIRMATION mantiene la cuota en estado de confirmación y bloquea nuevos intentos hasta reconciliar. PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT no constituye rechazo del cliente ni pago fallido confirmado. Ninguno de estos estados técnicos, por sí solo, marca la cuota como vencida o en mora: esa clasificación depende exclusivamente de la fecha contractual y de una política de gracia/mora gobernada.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "payment_ledger": "PENDING_CANONICAL_PAYMENT_PLAN_LEDGER",
+          "source_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "PAYMENT_CONFIRMED": "MARK_TARGET_INSTALLMENT_PAID",
+          "overdue_authority": "CONTRACTUAL_SCHEDULE_PLUS_CANONICAL_GRACE_POLICY",
+          "decline_marks_overdue": "DENY_WITHOUT_CONTRACTUAL_DUE_POLICY",
+          "PAYMENT_DECLINED_CONFIRMED": "KEEP_UNPAID_ALLOW_RECOVERY_ACTION_ONLY_IF_SERVER_ENABLED",
+          "grace_or_delinquency_policy": "PENDING_BUSINESS_LEGAL_POLICY",
+          "PAYMENT_PENDING_CONFIRMATION": "KEEP_CONFIRMING_BLOCK_ALL_NEW_ATTEMPTS",
+          "technical_failure_marks_overdue": "DENY",
+          "manual_recovery_payment_rule_code": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT": "KEEP_UNPAID_ALLOW_CONTROLLED_RETRY_LATER"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Outcomes técnicos cerrados. Pendiente política Negocio/Legal de vencimiento, gracia, mora y consecuencias; no mostrar “atrasado/mora” hasta que esa política exista.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "bf4a7fcad3282227d164e92107dc6970e1238a08b60bafcee6e06d1ddf99b96b",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 515,
+        "razon": "Evitar un OTP redundante inmediatamente después del alta sin permitir que un estado parcial de registro se convierta en acceso operativo.",
+        "codigo": "REG_CLIENT_NEW_ACCOUNT_ACCESS_AFTER_CREATION_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-NEW-DATA-COMPLETION-001",
+        "titulo": "Acceso Cliente después de alta nueva completada",
+        "categoria": "autenticacion",
+        "created_at": "2026-08-19T17:33:42.729993+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-AUTH-20260819-02",
+        "updated_at": "2026-08-19T22:48:24.765896+00:00",
+        "descripcion": "Cuando REG_NEW_CLIENT_COMPLETION_SUBMIT_001 finaliza exitosamente la creación del cliente y la misma sesión server-side conserva el celular verificado en ONB_002, el backend puede crear la sesión autenticada Cliente sin solicitar otro OTP ni volver a pedir DNI. El acceso solo ocurre después del commit completo del alta; un submit parcial, fallido o ambiguo no puede promoverse a sesión autenticada. Si la sesión OTP ya expiró, fue bloqueada o cambió el celular ligado, se exige reiniciar el acceso desde ONB_001.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "auth_provider": "SUPABASE_AUTH",
+          "post_auth_route": "CLIENT_HOME_ENTRY",
+          "success_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+          "source_rule_code": "REG_NEW_CLIENT_COMPLETION_SUBMIT_001",
+          "phone_binding_store": "lf_client.client_phone_bindings",
+          "dni_reentry_required": false,
+          "client_session_policy": "SESSION-CLIENT-DEFAULT",
+          "business_client_entity": "lf_client.client_accounts",
+          "invalid_session_action": "RESTART_FROM_ONB_001",
+          "invalid_session_states": [
+            "EXPIRED",
+            "BLOCKED",
+            "UNVERIFIED",
+            "PHONE_BINDING_CHANGED"
+          ],
+          "source_decision_number": 101,
+          "session_context_contract": "public.fn_lf_client_session_context",
+          "required_business_outcome": "CLIENT_ONBOARDING_COMPLETED",
+          "session_must_remain_valid": true,
+          "current_phone_proof_source": "ONB_002_SAME_SERVER_SESSION",
+          "session_creation_authority": "SERVER_ONLY",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "post_auth_home_resolver_rule_code": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+          "partial_creation_session_promotion": "DENY",
+          "same_verified_supabase_session_reused": true,
+          "repeat_current_phone_otp_after_creation": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "5a5d135086825520df522fe8e2777f3b3b410fec06545a8c671119e8c37d1428",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 512,
+        "razon": "Dar significado implementable a ACCESS_EXISTING_ACCOUNT manteniendo la distinción entre control de un factor registrado y prueba de identidad civil.",
+        "codigo": "REG_CLIENT_PHONE_PASSWORDLESS_ACCESS_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Acceso passwordless Cliente por celular previamente asociado y OTP válido",
+        "categoria": "autenticacion",
+        "created_at": "2026-08-19T17:28:15.140453+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-AUTH-20260819-01",
+        "updated_at": "2026-08-19T22:48:15.063595+00:00",
+        "descripcion": "Si ONB_002 verifica por OTP un celular que ya está asociado de forma permanente a una cuenta activa verificada, el backend puede autenticar esa cuenta sin solicitar DNI ni contraseña. La identificación de la cuenta proviene exclusivamente de la asociación server-side ya existente; el cliente no envía account_id ni decide la cuenta. OTP demuestra control del factor registrado y, combinado con la asociación previa, habilita ACCESS_EXISTING_ACCOUNT. Si el celular no está previamente asociado, el mismo OTP no identifica a una persona y el flujo continúa a ONB_003 según las reglas vigentes.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "required": [
+            "OTP_VERIFIED",
+            "PHONE_BOUND_TO_ACTIVE_VERIFIED_ACCOUNT"
+          ],
+          "auth_mode": "PASSWORDLESS_PHONE_OTP",
+          "entry_screen": "ONB_002",
+          "otp_semantic": "REGISTERED_FACTOR_CONTROL",
+          "auth_provider": "SUPABASE_AUTH",
+          "auth_principal": "auth.users.id",
+          "otp_policy_code": "OTP_POL_DEFAULT",
+          "post_auth_route": "CLIENT_HOME_ENTRY",
+          "success_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+          "password_required": false,
+          "account_resolution": "SERVER_SIDE_BY_EXISTING_PHONE_BINDING",
+          "otp_operation_code": "OTP_OP_ONBOARDING",
+          "phone_binding_store": "lf_client.client_phone_bindings",
+          "otp_delivery_adapter": "SUPABASE_SEND_SMS_HOOK_TO_LF_N8N_META",
+          "client_session_policy": "SESSION-CLIENT-DEFAULT",
+          "business_client_entity": "lf_client.client_accounts",
+          "source_decision_numbers": [
+            71,
+            98,
+            100
+          ],
+          "session_context_contract": "public.fn_lf_client_session_context",
+          "client_supplied_account_id": "DENY",
+          "session_creation_authority": "SERVER_ONLY",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "post_auth_home_resolver_rule_code": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+          "dni_required_when_phone_already_bound": false,
+          "otp_alone_without_existing_binding_authenticates": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "199736fa4c56e690bd8dc3a587cd336c2b1d56b396cbdbb7a3cbb98ff0bb55dd",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 513,
+        "razon": "Evitar fricción duplicada después de una recuperación exitosa sin permitir promoción de sesiones parciales o expiradas.",
+        "codigo": "REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-RECOVERY-PHONE-CONTROL-001",
+        "titulo": "Acceso Cliente después de recuperación y reasignación exitosa",
+        "categoria": "autenticacion",
+        "created_at": "2026-08-19T17:28:15.140453+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-AUTH-20260819-01",
+        "updated_at": "2026-08-19T22:48:34.803054+00:00",
+        "descripcion": "Después de una recuperación válida, el acceso operativo solo se habilita cuando REG_CLIENT_RECOVERY_REBIND_ATOMIC_001 consolida el vínculo del celular actual y el principal Supabase Auth de la misma sesión ONB_002 pasa a ser el principal vigente de la entidad Cliente. El principal anterior pierde inmediatamente la asociación de negocio y sus sesiones deben revocarse server-side. No se repite OTP del celular actual si la misma sesión verificada sigue válida; un recovery parcial o pendiente nunca obtiene acceso Cliente.",
+        "valor_config": {
+          "flow": "RECOVERY_FLOW",
+          "front": "CLIENTE",
+          "rebind_model": "ATOMIC_BUSINESS_CLIENT_AUTH_PRINCIPAL_REBIND",
+          "auth_provider": "SUPABASE_AUTH",
+          "post_auth_route": "CLIENT_HOME_ENTRY",
+          "success_outcome": "AUTHENTICATED_CLIENT_ACCOUNT",
+          "phone_binding_store": "lf_client.client_phone_bindings",
+          "client_session_policy": "SESSION-CLIENT-DEFAULT",
+          "business_client_entity": "lf_client.client_accounts",
+          "invalid_session_action": "RESTART_FROM_ONB_001",
+          "invalid_session_states": [
+            "EXPIRED",
+            "BLOCKED",
+            "UNVERIFIED",
+            "PHONE_BINDING_CHANGED"
+          ],
+          "required_rebind_outcome": "REBIND_COMMITTED",
+          "source_decision_numbers": [
+            71,
+            103,
+            104
+          ],
+          "session_context_contract": "public.fn_lf_client_session_context",
+          "required_rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+          "session_must_remain_valid": true,
+          "current_phone_proof_source": "ONB_002_SAME_SERVER_SESSION",
+          "session_creation_authority": "SERVER_ONLY",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "old_principal_business_access": "REVOKE_IMMEDIATELY",
+          "old_principal_session_revocation": "SERVER_SIDE_REQUIRED",
+          "post_auth_home_resolver_rule_code": "REG_CLIENT_AUTH_HOME_RESOLUTION_001",
+          "partial_recovery_session_promotion": "DENY",
+          "repeat_current_phone_otp_after_successful_rebind": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "77689e352c330caa41e9355d6f5606483d19159485ab76ad60e34434fe60778a",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 511,
+        "razon": "Desacoplar la funcionalidad Cliente del proveedor de identidad y evitar que fallos técnicos o respuestas específicas se conviertan en bypass o efectos parciales.",
+        "codigo": "REG_CLIENT_RECOVERY_IDV_OUTCOME_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Resultados normalizados del step-up de recuperación Cliente",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T17:26:34.127488+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-RECOVERY-20260819-02",
+        "updated_at": "2026-08-19T17:26:34.127488+00:00",
+        "descripcion": "El mecanismo de identidad usado en recuperación se traduce en backend a resultados funcionales estables. VERIFIED habilita únicamente la reasignación atómica gobernada; RETRYABLE_FAILURE permite nuevo intento sujeto a la política del mecanismo; DENIED, RISK_BLOCKED y SERVICE_UNAVAILABLE no modifican la cuenta ni conceden acceso. La UI no consume códigos, razones ni payloads crudos del proveedor.",
+        "valor_config": {
+          "flow": "RECOVERY_FLOW",
+          "front": "CLIENTE",
+          "outcomes": {
+            "IDENTITY_VALIDATION_DENIED": {
+              "next": "GENERIC_RECOVERY_FAILURE",
+              "rebind": "DENY",
+              "operational_access": "DENY"
+            },
+            "IDENTITY_VALIDATION_VERIFIED": {
+              "rebind": "ALLOW_VIA_REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+              "operational_access": "AFTER_SUCCESSFUL_REBIND_ONLY"
+            },
+            "IDENTITY_VALIDATION_RISK_BLOCKED": {
+              "next": "TEMPORARY_SECURITY_STOP",
+              "rebind": "DENY",
+              "operational_access": "DENY"
+            },
+            "IDENTITY_VALIDATION_RETRYABLE_FAILURE": {
+              "next": "RETRY_SUBJECT_TO_PROVIDER_POLICY",
+              "rebind": "DENY",
+              "operational_access": "DENY"
+            },
+            "IDENTITY_VALIDATION_SERVICE_UNAVAILABLE": {
+              "next": "RETRY_LATER_NO_BYPASS",
+              "rebind": "DENY",
+              "operational_access": "DENY"
+            }
+          },
+          "allowed_outcomes": [
+            "IDENTITY_VALIDATION_VERIFIED",
+            "IDENTITY_VALIDATION_RETRYABLE_FAILURE",
+            "IDENTITY_VALIDATION_DENIED",
+            "IDENTITY_VALIDATION_RISK_BLOCKED",
+            "IDENTITY_VALIDATION_SERVICE_UNAVAILABLE"
+          ],
+          "source_rule_code": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
+          "source_decision_numbers": [
+            71,
+            103,
+            104
+          ],
+          "support_can_override_outcome": "DENY",
+          "provider_result_normalization": "SERVER_SIDE_REQUIRED",
+          "provider_raw_payload_to_client": "DENY",
+          "provider_specific_reason_to_client": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Pendiente catalogar mensajes/errores Cliente y mapearlos a la futura pantalla de recuperación; no reutilizar errores B2B por código aunque sus patrones sean equivalentes.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "772b74d119e1b471e997432273585bc410f081567bd87c26c58dcfacfb4eb30d",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 510,
+        "razon": "Cerrar el flujo de recuperación sin celular anterior sin imponer un proveedor concreto y sin degradar la seguridad mediante factores no gobernados.",
+        "codigo": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Step-up de identidad para recuperación Cliente sin factor anterior",
+        "categoria": "seguridad",
+        "created_at": "2026-08-19T17:26:34.127488+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-RECOVERY-20260819-02",
+        "updated_at": "2026-08-19T22:50:51.257327+00:00",
+        "descripcion": "La recuperación Cliente requiere validación reforzada de identidad cuando el usuario no controla el celular anterior o cuando el riesgo de exploración multi-DNI/multi-cuenta alcanza HIGH. El celular actual verificado en ONB_002 sigue siendo requisito de contexto, pero por sí solo no autoriza reasignar una cuenta existente. Conocer el DNI tampoco constituye prueba suficiente. Hasta obtener un resultado IDENTITY_VALIDATION_VERIFIED emitido y validado server-side, no se reasigna el celular, no se crea acceso operativo y no se promueve la sesión. Correo, soporte humano o preguntas de conocimiento no pueden actuar como bypass salvo decisión futura que los gobierne explícitamente como factor de recuperación.",
+        "valor_config": {
+          "flow": "RECOVERY_FLOW",
+          "front": "CLIENTE",
+          "triggers": [
+            "OLD_PHONE_UNAVAILABLE",
+            "PHONE_MULTI_DNI_RISK_HIGH"
+          ],
+          "raw_pii_in_logs": "DENY",
+          "provider_binding": "PENDING_CANONICAL_IDV_PROVIDER",
+          "rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+          "support_override": "DENY",
+          "target_route_code": "CLIENT_RECOVERY",
+          "raw_pii_in_analytics": "DENY",
+          "target_screen_mapping": "REC_001",
+          "source_decision_numbers": [
+            71,
+            103,
+            104
+          ],
+          "required_identity_outcome": "IDENTITY_VALIDATION_VERIFIED",
+          "provider_agnostic_contract": true,
+          "current_phone_control_source": "ONB_002_SAME_SERVER_SESSION",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "account_rebind_before_verified": "DENY",
+          "current_phone_control_required": true,
+          "dni_knowledge_alone_sufficient": false,
+          "raw_provider_payload_to_client": "DENY",
+          "knowledge_based_questions_default": "DENY",
+          "operational_access_before_verified": "DENY",
+          "current_phone_control_alone_sufficient": false,
+          "email_otp_approved_as_client_recovery_factor": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "La pantalla/route de recuperación ya existen (REC_001 / CLIENT_RECOVERY). Persiste exclusivamente la selección y validación del proveedor/mecanismo canónico de IDV step-up, sus límites operativos/costo y evidencia visual antes de producción.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "95185d992bf1c7e03773796030024b3642f26757fcea899f1ed02fda681d42b4",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 507,
+        "razon": "Evitar un OTP duplicado al mismo celular sin debilitar la recuperación: el nuevo teléfono ya tiene prueba de control, mientras la reasignación de cuenta requiere una segunda prueba independiente mediante celular anterior o validación reforzada.",
+        "codigo": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-RECOVERY-PHONE-CONTROL-001",
+        "titulo": "Recuperación Cliente reutiliza el celular actual ya verificado",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T16:38:30.268129+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-RECOVERY-20260819-01",
+        "updated_at": "2026-08-19T22:50:44.357266+00:00",
+        "descripcion": "Cuando ONB_003 resuelve RECOVERY_FLOW porque el DNI corresponde a una cuenta existente y el celular actual no está vinculado a ella, el celular de la sesión ONB_001/ONB_002 se considera el nuevo celular candidato porque ya demostró control por OTP. No se vuelve a solicitar ni se repite OTP al mismo número mientras la sesión server-side siga válida y ligada al mismo celular. El sistema pregunta si el cliente todavía tiene acceso al celular anterior. Si responde que sí, se envía y verifica un OTP al celular anterior mediante OTP_OP_RECUPERAR_CLAVE. Si responde que no, se deriva al step-up reforzado de identidad definido por REG_IDV_PROGRESSIVE_001.",
+        "valor_config": {
+          "source_state": "RECOVERY_FLOW",
+          "source_screen": "ONB_003",
+          "target_route_code": "CLIENT_RECOVERY",
+          "current_phone_role": "NEW_VERIFIED_PHONE_CANDIDATE",
+          "reask_current_phone": "DENY",
+          "show_full_old_phone": "DENY",
+          "ask_old_phone_access": true,
+          "old_phone_accessible": "VERIFY_OLD_PHONE_OTP",
+          "old_phone_otp_channel": "whatsapp",
+          "old_phone_unavailable": "IDENTITY_VALIDATION_REQUIRED",
+          "target_screen_mapping": "REC_001",
+          "source_decision_number": 103,
+          "old_phone_otp_operation": "OTP_OP_RECUPERAR_CLAVE",
+          "old_phone_otp_field_code": "CAMPO_OTP_CODE",
+          "repeat_current_phone_otp": false,
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "current_verified_phone_source": "ONB_001_PLUS_ONB_002",
+          "identity_validation_rule_code": "REG_IDV_PROGRESSIVE_001",
+          "same_session_binding_required": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Pantalla funcional y ruta ya canónicas: REC_001 / CLIENT_RECOVERY. Persiste el gap del mecanismo/proveedor IDV step-up y su referencia visual final cuando el celular anterior no está disponible.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "2043f8575951db0e61cdeeec58624f22c035425e929096ae973b9ef159a89dfa",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 508,
+        "razon": "Prevenir secuestro de cuenta, doble asociación, carreras de concurrencia y efectos parciales durante la recuperación.",
+        "codigo": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-RECOVERY-PHONE-CONTROL-001",
+        "titulo": "Reasignación de celular de cuenta Cliente atómica e idempotente",
+        "categoria": "seguridad",
+        "created_at": "2026-08-19T16:38:30.268129+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-RECOVERY-20260819-01",
+        "updated_at": "2026-08-19T22:50:20.20344+00:00",
+        "descripcion": "La asociación del celular actual verificado a una cuenta existente solo puede cambiar después de satisfacer una prueba de recuperación válida: OTP del celular anterior o validación reforzada cuando el anterior no está disponible. Antes del commit, el servidor revalida que la sesión ONB_002 siga ligada al celular actual, que la resolución DNI corresponda a RECOVERY_FLOW y que el celular objetivo no esté asociado a otra cuenta activa verificada. El reemplazo de asociación, invalidación del vínculo anterior, auditoría enmascarada y transición de recuperación se ejecutan como una única operación atómica e idempotente. Reintentos equivalentes devuelven el resultado ya consolidado; carreras o conflictos no pueden crear dos asociaciones. Antes del commit también se evalúa el riesgo de exploración multi-DNI/multi-cuenta asociado al celular verificado; un resultado HIGH requiere step-up y bloquea el commit hasta resolverlo.",
+        "valor_config": {
+          "idempotency": "REQUIRED",
+          "atomic_commit": "REQUIRED",
+          "audit_storage": "lf_client.security_events",
+          "auth_provider": "SUPABASE_AUTH",
+          "audit_rule_code": "REG_AUD_004",
+          "raw_dni_in_logs": "DENY",
+          "raw_phone_in_logs": "DENY",
+          "concurrent_conflict": "GENERIC_FAILURE_NO_PARTIAL_COMMIT",
+          "auth_principal_rebind": "UPDATE_CLIENT_ACCOUNT_AUTH_USER_ID_ATOMICALLY_AFTER_VERIFIED_RECOVERY",
+          "source_decision_number": 103,
+          "account_binding_storage": "lf_client.client_accounts + lf_client.client_phone_bindings",
+          "old_phone_otp_operation": "OTP_OP_RECUPERAR_CLAVE",
+          "accepted_recovery_proofs": [
+            "OLD_PHONE_OTP_VERIFIED",
+            "IDENTITY_VALIDATION_VERIFIED"
+          ],
+          "current_phone_otp_source": "ONB_002_SAME_SERVER_SESSION",
+          "precommit_risk_rule_code": "REG_RISK_PHONE_MULTI_DNI_001",
+          "identity_stepup_rule_code": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
+          "current_phone_otp_required": true,
+          "identity_outcome_rule_code": "REG_CLIENT_RECOVERY_IDV_OUTCOME_001",
+          "post_rebind_access_rule_code": "REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "target_phone_uniqueness_rule": "REG_UNI_002",
+          "old_principal_business_access": "REVOKE_IMMEDIATELY",
+          "old_principal_session_revocation": "SERVER_SIDE_REQUIRED",
+          "operational_access_before_commit": "DENY",
+          "invalidate_previous_phone_binding": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "88b650cd7f9c964281f40b23823c3000b0da9bf91d3b5ef423d453f2129f5557",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 11,
+        "razon": "El tiempo no es el problema. El problema real es que el mensaje cae en solicitudes si el número de LF no está guardado.",
+        "codigo": "REG_COPY_002",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-VISUAL-COPY-NORMALIZATION-001",
+        "titulo": "Microcopy de ayuda en OTP",
+        "categoria": "copy",
+        "created_at": "2026-06-23T18:25:18.948018+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T17:06:57.14591+00:00",
+        "descripcion": "Reemplazar \"Este proceso es seguro y puede tomar entre 15 y 30 segundos\" por \"Revisa tu WhatsApp, incluyendo la pestaña de solicitudes de mensajes nuevos.\"",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "c9176b92b712d928d488046e500610405fbaa70d818b109af8e36509560f7703",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 191,
+        "razon": "El usuario necesita saber si el problema es el número o el sistema.",
+        "codigo": "REG_ERR_003",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "Error en envío de OTP",
+        "categoria": "error_states",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Si el OTP no se puede enviar: \"No pudimos enviar el código a tu WhatsApp. Verifica que el número sea correcto o inténtalo en unos minutos.\" con opciones \"Cambiar número\" y \"Reintentar\".",
+        "valor_config": {
+          "mensaje": "No pudimos enviar el código a tu WhatsApp. Verifica que el número sea correcto o inténtalo en unos minutos.",
+          "opciones": [
+            "Cambiar número",
+            "Reintentar"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "572901a22822f82e1adf5451d0ecbc47ca6357f3706e0daf1771f0b6a08d9754",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 196,
+        "razon": "El usuario no debe perder su trabajo si la sesión expira por inactividad.",
+        "codigo": "REG_ERR_008",
+        "estado": "VIGENTE",
+        "origen": "ux",
+        "titulo": "Error de sesión expirada",
+        "categoria": "error_states",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Si la sesión expira mientras el usuario navega: \"Tu sesión expiró por inactividad.\" con CTA \"Volver a ingresar\". Si estaba en el Paso 3, guardar el estado de selección de ofertas en sessionStorage para restaurarlo al reingresar.",
+        "valor_config": {
+          "cta": "Volver a ingresar",
+          "mensaje": "Tu sesión expiró por inactividad.",
+          "guardar_seleccion": "session_storage",
+          "restaurar_al_reingresar": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "8187c3bc2ff2bab53e796f62497081e2e066f734a57acfa7935037420c090f8f",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 455,
+        "razon": "Reducir fricción, mantener el dato de contacto actualizado y permitir una entrada única para clientes nuevos y existentes.",
+        "codigo": "REG_FLOW_CELL_FIRST_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Celular es el primer dato del onboarding Cliente",
+        "categoria": "flujo",
+        "created_at": "2026-08-15T07:32:00.473307+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-08-15T08:23:55.097895+00:00",
+        "descripcion": "ONB_001 solicita únicamente el celular como primer dato operativo y deriva a ONB_002 para OTP antes de solicitar DNI u otros datos del perfil.",
+        "valor_config": {
+          "next_screen": "ONB_002",
+          "entry_screen": "ONB_001",
+          "dni_before_otp": "DENY",
+          "next_condition": "OTP_CHALLENGE",
+          "first_field_code": "CAMPO_CELULAR",
+          "source_decision_number": 71,
+          "profile_fields_before_otp": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "2b576f9a343b337cd294b6f15595103aeba606d6c7aa4117feb1adfb91172ae7",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 457,
+        "razon": "Unificar login y onboarding sin obligar al usuario a recordar si ya está registrado, manteniendo bajo costo y evitando revelación explícita de existencia de cuenta.",
+        "codigo": "REG_FLOW_PHONE_BRANCH_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-POSTDNI-PRAGMATIC-BRANCH-001",
+        "titulo": "Bifurcación posterior a OTP por asociación del celular",
+        "categoria": "flujo",
+        "created_at": "2026-08-15T07:32:00.473307+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-08-20T23:55:18.688488+00:00",
+        "descripcion": "Después de OTP, el sistema resuelve si el celular pertenece a una cuenta activa verificada. Si pertenece, continúa al acceso sin mostrar ONB_003. Si no pertenece, muestra ONB_003 y solicita tipo/número de documento y consentimiento de tratamiento de datos. Solo con OTP verificado + consentimiento requerido + documento válido ligados a la misma sesión el backend resuelve alta o recuperación. No se revela explícitamente existencia de cuenta.",
+        "valor_config": {
+          "dni_new": "NEW_CLIENT_DATA_COMPLETION",
+          "step_up": "RISK_OR_RECOVERY_WITHOUT_OLD_PHONE",
+          "after_screen": "ONB_002",
+          "phone_not_linked": "ONB_003",
+          "branch_visibility": "AFTER_OTP_AND_DNI_RESOLUTION",
+          "consent_rule_code": "REG_ONB003_CONSENT_DATA_001",
+          "target_field_code": "CAMPO_NRO_DOC",
+          "backend_resolution": true,
+          "consent_field_code": "CAMPO_CONSENT_DATA",
+          "post_dni_new_route": "CLIENT_NEW_DATA_COMPLETION",
+          "post_dni_new_screen": "ONB_004",
+          "base_decision_number": 98,
+          "dni_existing_account": "RECOVERY_FLOW",
+          "mandatory_biometrics": false,
+          "target_field_context": "IDENTITY_DOCUMENT",
+          "paid_provider_default": false,
+          "target_screen_mapping": "ONB_003",
+          "allowed_document_types": [
+            "DNI",
+            "CE",
+            "PASAPORTE"
+          ],
+          "source_decision_number": 100,
+          "target_type_field_code": "CAMPO_TIPO_DOC",
+          "api_account_exists_flag": "DENY",
+          "post_dni_recovery_route": "CLIENT_RECOVERY",
+          "post_dni_recovery_screen": "REC_001",
+          "reveal_account_existence": "DENY",
+          "target_number_field_code": "CAMPO_NRO_DOC",
+          "existing_verified_account": "ACCESS_EXISTING_ACCOUNT",
+          "navigation_branch_allowed": true,
+          "silent_server_side_checks": "PREFERRED",
+          "default_user_visible_step4": false,
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "post_dni_target_screen_mapping": "CANONICAL_BY_BACKEND_OUTCOME",
+          "existing_verified_account_route": "CLIENT_HOME_ENTRY",
+          "new_client_completion_rule_code": "REG_NEW_CLIENT_DATA_COMPLETION_001",
+          "generic_business_errors_required": true,
+          "existing_account_access_rule_code": "REG_CLIENT_PHONE_PASSWORDLESS_ACCESS_001",
+          "explicit_account_existence_disclosure": "DENY",
+          "new_client_completion_decision_number": 101,
+          "requires_consent_data_before_document_resolution": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "46deb9095ff72e3401c930d59da23db8c145ae4ff60fdebf66c7fd145533e40c",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 67,
+        "razon": "OTP siempre corresponde al número activo.",
+        "codigo": "REG_FLU_002",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Paso 2 se reinicia al cambiar número",
+        "categoria": "flujo",
+        "created_at": "2026-06-23T19:00:05.066082+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:00:05.066082+00:00",
+        "descripcion": "Al cambiar número inline: otp_code se invalida, otp_attempts=0, otp_resend_count=0, nuevo OTP generado.",
+        "valor_config": null,
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "b304196b4b327a2b7fba788ddecac0d44c8741ca6de010ecb348ba744850cdd1",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 69,
+        "razon": "Evitar Home vacío o indefinido.",
+        "codigo": "REG_FLU_004",
+        "estado": "CANDIDATO",
+        "origen": "negocio",
+        "titulo": "home_variant debe resolverse antes de mostrar Paso 3",
+        "categoria": "flujo",
+        "created_at": "2026-06-23T19:00:05.066082+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:00:05.066082+00:00",
+        "descripcion": "Al completar OTP, sistema cruza DNI para determinar home_variant. Paso 3 no se muestra hasta resolver. Timeout 5 segundos muestra estado intermedio.",
+        "valor_config": {
+          "timeout_segundos": 5,
+          "estado_intermedio": "pendiente_cruce"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "d39ff2033389d4a8548d008b3b736518b46229996fe5b1f89529dbe297cf9d98",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 31,
+        "razon": "Integridad del flujo. Evita estados inconsistentes.",
+        "codigo": "REG_FLUJO_001",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Transiciones válidas de onboarding_step",
+        "categoria": "flujo",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "El flujo solo avanza hacia adelante: 1→2→3. No se permite saltar pasos ni retroceder una vez verificado el OTP.",
+        "valor_config": {
+          "transiciones_validas": [
+            "1->2",
+            "2->3"
+          ],
+          "transiciones_bloqueadas": [
+            "2->1_si_otp_verified",
+            "3->cualquiera"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "caa377b5c68bfd0b50bbcbb263ead9f375c892e2523bb047f3dbd569dd58d003",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 32,
+        "razon": "Evitar que el usuario llegue al OTP sin haber completado datos y consentimientos obligatorios.",
+        "codigo": "REG_FLUJO_002",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Paso 2 solo accesible si Paso 1 está completo",
+        "categoria": "flujo",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T17:21:59.242799+00:00",
+        "descripcion": "ONB_002 solo puede renderizarse cuando ONB_001 ya entregó un phone_number válido y existe un desafío OTP activo o generable para esa sesión. Bajo celular-first no exige DNI, nombre, email ni consentimientos de perfil antes de OTP.",
+        "valor_config": {
+          "required": [
+            "phone_number_valid",
+            "otp_challenge_available"
+          ],
+          "source_decision_number": 71,
+          "profile_fields_before_otp": "DENY"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f5070c83891d14924f55697cdf7e8eee55ab35723d7266e4bc72745d4666e96b",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 33,
+        "razon": "El Home personalizado contiene información sensible del usuario.",
+        "codigo": "REG_FLUJO_003",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB003-DNI-POSTOTP-001",
+        "titulo": "ONB_003 solo accesible después de OTP y para celular no vinculado",
+        "categoria": "flujo",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T17:21:59.242799+00:00",
+        "descripcion": "ONB_003 solo se muestra si otp_verified=true y el celular no está asociado a una cuenta activa verificada. Un cliente ya reconocido por su celular no pasa por ONB_003 y continúa al acceso.",
+        "valor_config": {
+          "required": [
+            "otp_verified=true",
+            "phone_not_linked_to_active_verified_account"
+          ],
+          "source_decision_number": 98,
+          "existing_account_bypass": "ACCESS_EXISTING_ACCOUNT"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "222e99d4fd74b45ae0bf0307d64957ea138e4a0ab901a92e26e6ce6e7edf5aa2",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 34,
+        "razon": "Trazabilidad del funnel y diagnóstico de abandono.",
+        "codigo": "REG_FLUJO_004",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Estados posibles de la sesión de onboarding",
+        "categoria": "flujo",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Los estados válidos son: INICIADO, PASO1_COMPLETO, OTP_ENVIADO, OTP_VERIFICADO, COMPLETADO, ABANDONADO, BLOQUEADO, EXPIRADO.",
+        "valor_config": {
+          "estados": [
+            "INICIADO",
+            "PASO1_COMPLETO",
+            "OTP_ENVIADO",
+            "OTP_VERIFICADO",
+            "COMPLETADO",
+            "ABANDONADO",
+            "BLOQUEADO",
+            "EXPIRADO"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "08d5d5544aff0a5a7e7e96fdb5e089743ff2c150cd6bfc9fd98a25ff872cb145",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 106,
+        "razon": "Clarity no tiene límite de sesiones grabadas. Costo cero relevante para el MVP.",
+        "codigo": "REG_HMP_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Herramienta de heatmap y session recording",
+        "categoria": "heatmap",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Microsoft Clarity es la herramienta principal de heatmaps y grabación de sesiones. Es gratuita y cumple con GDPR. Hotjar queda como alternativa si se requieren funciones avanzadas.",
+        "valor_config": {
+          "alternativa": "Hotjar",
+          "implementacion": "GTM",
+          "herramienta_principal": "Microsoft Clarity"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "53e344d0ffcec4113692c2035fb64c930c1b74b626d58d060a34210199dd2616",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 107,
+        "razon": "Clarity graba la pantalla. Sin masking, los datos personales quedan grabados en servidores de Microsoft.",
+        "codigo": "REG_HMP_002",
+        "estado": "VIGENTE",
+        "origen": "legal",
+        "titulo": "Masking obligatorio de campos PII en Clarity",
+        "categoria": "heatmap",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Todos los campos de formulario con PII deben tener el atributo data-clarity-mask=\"true\" o configurarse como masked en el panel de Clarity. Esto incluye: nombre, DNI, celular, correo y campo OTP.",
+        "valor_config": {
+          "metodo": "data-clarity-mask=true",
+          "campos_masked": [
+            "CAMPO_NOMBRE_COMPLETO",
+            "CAMPO_NRO_DOC",
+            "CAMPO_CELULAR",
+            "CAMPO_EMAIL",
+            "CAMPO_OTP_CODE",
+            "CAMPO_CELULAR_NUEVO"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "23381cb6d125bf23dc18cbf44a98972a0a32c3e2c290e2ae6140ba666ec956d6",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 108,
+        "razon": "El OTP es un dato de seguridad activo. Grabarlo compromete la verificación.",
+        "codigo": "REG_HMP_003",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Session recording no activo en Paso 2 con OTP visible",
+        "categoria": "heatmap",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Si el OTP es visible en pantalla durante la grabación, la grabación de esa pantalla debe estar desactivada o el campo OTP completamente masked.",
+        "valor_config": {
+          "accion": "masked_total_campo_otp",
+          "pantalla_critica": "ONB_002"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "be0e1141e5695e836fa1cd2e88a95f69b81ce0e0eb6fd63d0de6bcd0b25c9f3a",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 109,
+        "razon": "El segmento NSE B-/C tiene patrones de interacción distintos. Los heatmaps revelan problemas que las métricas no muestran.",
+        "codigo": "REG_HMP_004",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Heatmaps revisados por producto mensualmente",
+        "categoria": "heatmap",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "El equipo de producto revisa heatmaps y grabaciones de sesiones del onboarding al menos una vez por mes para detectar fricciones no anticipadas.",
+        "valor_config": {
+          "frecuencia": "mensual",
+          "responsable": "producto",
+          "pantallas_prioritarias": [
+            "ONB_001",
+            "ONB_002"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "a91705ace5020613fd5f5f6bafa5fcea5438b92941f48446fe4b25b1de5306e3",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 13,
+        "razon": "El valor del registro para el usuario es ver si tiene una oferta. El Home debe responder esa pregunta de inmediato.",
+        "codigo": "REG_HOME_001",
+        "estado": "CANDIDATO",
+        "origen": "decision_producto",
+        "titulo": "Home Paso 3 muestra variante según oferta",
+        "categoria": "negocio",
+        "created_at": "2026-06-23T18:25:18.948018+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:25:18.948018+00:00",
+        "descripcion": "Al completar OTP, el sistema cruza el DNI y determina home_variant: con_oferta, sin_oferta o pendiente_cruce. El Home no se muestra hasta resolver la variante.",
+        "valor_config": {
+          "variantes": [
+            "con_oferta",
+            "sin_oferta",
+            "pendiente_cruce"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "d22c843f3a54a734d09d7a0018a3b2b10080a0b5952cf94d1f20084553995ebb",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 458,
+        "razon": "Controlar costo de validación sin perder la capacidad de endurecer el flujo cuando la telemetría muestre abuso o en recuperación de cuenta.",
+        "codigo": "REG_IDV_PROGRESSIVE_001",
+        "estado": "CANDIDATO",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Validación de identidad progresiva activable por riesgo",
+        "categoria": "seguridad",
+        "created_at": "2026-08-15T07:32:00.473307+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-08-19T17:26:34.127488+00:00",
+        "descripcion": "La validación de identidad pagada no se ejecuta por defecto en el flujo normal. Debe poder activarse en OFF, RISK_BASED o ALWAYS y es obligatoria en recuperación cuando el usuario no controla el celular anterior.",
+        "valor_config": {
+          "modes": [
+            "OFF",
+            "RISK_BASED",
+            "ALWAYS"
+          ],
+          "default_mode": "OFF",
+          "feature_flag_rule_code": "REG_TEC_011",
+          "source_decision_number": 71,
+          "recovery_with_old_phone": "OTP_OLD_AND_NEW",
+          "recovery_stepup_rule_code": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
+          "recovery_without_old_phone": "REQUIRED",
+          "feature_flag_storage_status": "PENDING_CANONICAL_IMPLEMENTATION",
+          "normalized_outcome_rule_code": "REG_CLIENT_RECOVERY_IDV_OUTCOME_001",
+          "clarified_by_decision_numbers": [
+            103,
+            104
+          ],
+          "client_email_recovery_factor_status": "NOT_APPROVED_AS_IDENTITY_FACTOR",
+          "normal_flow_paid_identity_validation": "DISABLED"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "Feature flag OFF/RISK_BASED/ALWAYS sigue pendiente de almacenamiento canónico. Para recuperación sin celular anterior o riesgo HIGH, el contrato obligatorio queda en REG_CLIENT_RECOVERY_IDV_STEPUP_001; aún falta seleccionar y validar proveedor/mecanismo canónico antes de producción.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "0846aef2b1637185b5b324be17265c66dc3ea7184221b5da2bfad92ba22570b3",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 504,
+        "razon": "Cerrar la funcionalidad de alta sin acoplarla a una tabla, proveedor de identidad o ruta que todavía no están gobernados.",
+        "codigo": "REG_NEW_CLIENT_COMPLETION_SUBMIT_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB004-WEB-V04-001",
+        "titulo": "Submit de completar datos para alta de cliente nuevo",
+        "categoria": "flujo",
+        "created_at": "2026-08-19T12:35:21.917202+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-NEW-COMPLETION-20260819-01",
+        "updated_at": "2026-08-21T17:26:14.725103+00:00",
+        "descripcion": "Cuando el backend haya resuelto NEW_CLIENT_DATA_COMPLETION, el submit exige CAMPO_NOMBRE_COMPLETO, CAMPO_EMAIL y CAMPO_CONSENT_TERMS. CAMPO_CONSENT_MKT es opcional y no bloqueante. CAMPO_EMAIL aplica validación obligatoria, formato y longitud. CAMPO_CONSENT_DATA debe existir previamente como consentimiento válido ligado a la misma sesión ONB_003 y no se vuelve a solicitar. El submit sigue siendo server-side, atómico e idempotente.",
+        "valor_config": {
+          "idempotency": "REQUIRED",
+          "reuse_rules": [
+            "REG_NEW_CLIENT_DATA_COMPLETION_001",
+            "REG_FLU_005",
+            "REG_TEC_008",
+            "REG_SES_005",
+            "REG_UNI_001",
+            "REG_UNI_002"
+          ],
+          "source_state": "NEW_CLIENT_DATA_COMPLETION",
+          "account_store": "lf_client.client_accounts",
+          "atomic_submit": "REQUIRED",
+          "auth_provider": "SUPABASE_AUTH",
+          "automatic_retry": "DENY_UNLESS_SAME_IDEMPOTENCY_KEY",
+          "optional_fields": [
+            "CAMPO_CONSENT_MKT"
+          ],
+          "required_fields": [
+            "CAMPO_NOMBRE_COMPLETO",
+            "CAMPO_EMAIL",
+            "CAMPO_CONSENT_TERMS"
+          ],
+          "client_validation": "IMMEDIATE_FEEDBACK",
+          "server_validation": "AUTHORITATIVE",
+          "post_success_route": "CLIENT_HOME_ENTRY",
+          "phone_binding_store": "lf_client.client_phone_bindings",
+          "session_policy_code": "SESSION-CLIENT-DEFAULT",
+          "onboarding_completed": true,
+          "recheck_before_commit": [
+            "DNI_UNIQUENESS",
+            "VERIFIED_PHONE_UNIQUENESS",
+            "SESSION_ACTIVE",
+            "SOURCE_STATE_NEW_CLIENT_DATA_COMPLETION"
+          ],
+          "consent_data_rule_code": "REG_ONB003_CONSENT_DATA_001",
+          "required_prior_context": [
+            "ONB003_CONSENT_DATA_ACCEPTED",
+            "OTP_VERIFIED",
+            "DOCUMENT_RESOLVED"
+          ],
+          "source_decision_number": 114,
+          "session_context_contract": "public.fn_lf_client_session_context",
+          "success_business_outcome": "CLIENT_ONBOARDING_COMPLETED",
+          "consent_data_source_screen": "ONB_003",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "post_creation_access_rule_code": "REG_CLIENT_NEW_ACCOUNT_ACCESS_AFTER_CREATION_001",
+          "consent_relocated_by_decision_number": 108
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "edeab7787c384e3022097c03c4fa41fe808e8c4418e3aaf15e54482503ac8177",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 219,
+        "razon": "El segmento NSE B-/C tiene mayor tasa de apertura en WhatsApp que en correo.",
+        "codigo": "REG_NOT_001",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Canal principal de notificaciones",
+        "categoria": "notificaciones",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "WhatsApp es el canal principal de todas las notificaciones operativas. El correo es canal secundario solo si el usuario lo proporcionó. SMS es fallback si WhatsApp falla.",
+        "valor_config": {
+          "fallback": "sms",
+          "canal_principal": "whatsapp",
+          "canal_secundario": "email_si_disponible"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "651f8030c7a17c6fab6d43906bf805aa887a7f638fdf620004873855c6262f59",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 220,
+        "razon": "Estas 6 notificaciones cubren los momentos de mayor ansiedad del usuario.",
+        "codigo": "REG_NOT_002",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Notificaciones operativas mínimas",
+        "categoria": "notificaciones",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Notificaciones obligatorias: (1) OTP de verificación, (2) Confirmación de registro exitoso, (3) Confirmación de pago, (4) Carta de no adeudo lista para descargar, (5) Alerta de oferta próxima a vencer (24h antes), (6) Oferta vencida.",
+        "valor_config": {
+          "notificaciones_obligatorias": [
+            "otp_verificacion",
+            "registro_exitoso",
+            "confirmacion_pago",
+            "carta_lista",
+            "alerta_vencimiento_24h",
+            "oferta_vencida"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "e7cfbcde007057cbc7b76b5bed9508bbad0c7706afc8d0a4d6195c9bf3cf54d8",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 221,
+        "razon": "Mezclar notificaciones operativas con comerciales sin consentimiento es una infracción legal.",
+        "codigo": "REG_NOT_003",
+        "estado": "VIGENTE",
+        "origen": "legal",
+        "titulo": "Consentimiento de marketing antes de notificaciones comerciales",
+        "categoria": "notificaciones",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Las notificaciones operativas (OTP, confirmaciones, alertas de vencimiento) no requieren consent_marketing. Las notificaciones comerciales (nuevas ofertas, promociones) solo se envían si consent_marketing=true.",
+        "valor_config": {
+          "operativas_sin_consentimiento": [
+            "otp",
+            "confirmaciones",
+            "alertas_vencimiento"
+          ],
+          "comerciales_requieren_consentimiento": [
+            "nuevas_ofertas",
+            "promociones"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "2d75d94b607e39017701f7e4b1df6f2443620192fc9d2a55bd1eaf840af8f425",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 222,
+        "razon": "Meta penaliza templates con categoría incorrecta. MARKETING tiene costo mayor que UTILITY.",
+        "codigo": "REG_NOT_004",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Templates de WhatsApp por tipo de notificación",
+        "categoria": "notificaciones",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Cada tipo de notificación usa un template aprobado por Meta con categoría correcta: OTP → AUTHENTICATION, confirmaciones → UTILITY, alertas → UTILITY, comerciales → MARKETING. No mezclar categorías.",
+        "valor_config": {
+          "categorias": {
+            "otp": "AUTHENTICATION",
+            "alertas": "UTILITY",
+            "comerciales": "MARKETING",
+            "confirmaciones": "UTILITY"
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "74ae3dc7f2874abdea4b7493a7e37ecf50877c42e63b3e0423b79d437e94ed3a",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 223,
+        "razon": "El exceso de notificaciones genera bloqueos del número de WhatsApp por parte del usuario.",
+        "codigo": "REG_NOT_005",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Límite de notificaciones por usuario por día",
+        "categoria": "notificaciones",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Máximo 3 notificaciones por usuario por día. Las notificaciones operativas críticas (OTP, confirmación de pago) no cuentan en el límite. Las alertas de vencimiento y comerciales sí cuentan.",
+        "valor_config": {
+          "limite_diario": 3,
+          "incluidos_en_limite": [
+            "alerta_vencimiento",
+            "comerciales"
+          ],
+          "excluidos_del_limite": [
+            "otp",
+            "confirmacion_pago"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "c393d306f88c7ade43e0ef43e804cc76bf1179115f12364925e80b69e8268e19",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 224,
+        "razon": "Notificaciones nocturnas generan bloqueos y quejas. Las operativas no tienen restricción porque el usuario las inicia.",
+        "codigo": "REG_NOT_006",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Horario de envío de notificaciones",
+        "categoria": "notificaciones",
+        "created_at": "2026-06-24T13:43:51.118159+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-24T13:43:51.118159+00:00",
+        "descripcion": "Las notificaciones no operativas (alertas, comerciales) solo se envían entre 8:00 y 20:00 hora Perú. Las notificaciones operativas (OTP, confirmación de pago) se envían en cualquier horario.",
+        "valor_config": {
+          "operativas": "sin_restriccion_horario",
+          "horario_no_operativas": {
+            "fin": "20:00",
+            "inicio": "08:00",
+            "timezone": "America/Lima"
+          }
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "82dcef9c7add3d7ea09f1f612e8f7a8c15e220f92fb39c4c8f1cbbac8496eb8d",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 95,
+        "razon": "Sentry almacena datos en servidores externos. PII no debe salir del entorno controlado.",
+        "codigo": "REG_OBS_002",
+        "estado": "VIGENTE",
+        "origen": "legal",
+        "titulo": "PII prohibido en Sentry",
+        "categoria": "observabilidad",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Sentry nunca recibe DNI, celular, correo ni nombre. Se activa beforeSend para filtrar estos campos antes de enviar el evento.",
+        "valor_config": {
+          "allowlist": [
+            "session_id_anonimo",
+            "pantalla",
+            "paso",
+            "error_tipo"
+          ],
+          "beforeSend_filtrar": [
+            "dni",
+            "phone",
+            "email",
+            "full_name",
+            "otp_code"
+          ]
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "fce30c96688289b00b6443644de2fba03840236944e2b9a13a48e2ec6dd5c335",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 96,
+        "razon": "Estos errores bloquean el funnel completo. Minutos sin detección = leads perdidos.",
+        "codigo": "REG_OBS_003",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Errores críticos del onboarding a monitorear",
+        "categoria": "observabilidad",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Sentry debe alertar inmediatamente ante: fallo en envío de OTP por WhatsApp, fallo en cruce de DNI para home_variant, timeout en Paso 3, y tasa de error en submit Paso 1 superior al 5%.",
+        "valor_config": {
+          "alertas_criticas": [
+            "otp_whatsapp_send_failed",
+            "home_variant_cruce_timeout",
+            "paso1_submit_error_rate>5%",
+            "paso3_load_failed"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "47f1984c047e915da4cb258c9232e4ed46345d7a42de1c637778cac18a8321b3",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 97,
+        "razon": "Documentado en REQ_HOME_07. El segmento usa dispositivos de gama media-baja con conexión variable.",
+        "codigo": "REG_OBS_004",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Performance monitoring — Core Web Vitals",
+        "categoria": "observabilidad",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Se monitorean LCP < 2.5s, CLS < 0.1 y FID < 100ms en todas las pantallas del onboarding. Alerta si cualquier métrica supera el umbral en más del 10% de sesiones.",
+        "valor_config": {
+          "cls": 0.1,
+          "fid_ms": 100,
+          "lcp_ms": 2500,
+          "alerta_porcentaje_sesiones": 10
+        },
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "0f4cb594a7a05b08b054254d56161c47d5470e610aef3e375db58976083264cf",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 98,
+        "razon": "El OTP por WhatsApp debe llegar rápido. Demoras sostenidas indican problema con el canal.",
+        "codigo": "REG_OBS_005",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Tiempo de entrega OTP monitoreado",
+        "categoria": "observabilidad",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Se mide el tiempo entre otp_sent y otp_verified. Si el percentil p95 supera 30 segundos, se activa alerta operativa.",
+        "valor_config": {
+          "metrica": "tiempo_entrega_otp",
+          "p95_segundos": 30,
+          "alerta_si_supera": true
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "752784c6a015d09e0efd7e7b086da8b2f3289ee8e1c179d7a0de2dc046d35de1",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 99,
+        "razon": "n8n es el middleware crítico entre el producto y Meta Cloud API. Fallo silencioso = OTP no llega.",
+        "codigo": "REG_OBS_006",
+        "estado": "VIGENTE",
+        "origen": "tecnico",
+        "titulo": "Logs de n8n monitoreados",
+        "categoria": "observabilidad",
+        "created_at": "2026-06-23T19:06:49.376117+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T19:06:49.376117+00:00",
+        "descripcion": "Los workflows de n8n para envío de OTP deben tener logging activo. Errores de ejecución generan alerta en Sentry o canal de Slack interno.",
+        "valor_config": {
+          "log_nivel": "error",
+          "herramienta": "n8n",
+          "destino_alerta": [
+            "sentry",
+            "slack_interno"
+          ]
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "bc0db0248eef7188703a97a3405e652dbb6a8b1024b51320439e3c74a7a2c923",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 152,
+        "razon": "Evitar checkout incompleto o ambiguo.",
+        "codigo": "REG_OFR_007",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Bloqueo de checkout sin modalidad",
+        "categoria": "oferta",
+        "created_at": "2026-06-23T22:45:51.64198+00:00",
+        "created_by": "gpt",
+        "updated_at": "2026-06-23T22:47:45.08019+00:00",
+        "descripcion": "No permitir avanzar al checkout si alguna oferta seleccionada no tiene modalidad definida.",
+        "valor_config": null,
+        "es_transversal": true,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "75be21043ea9505d583450047c7af58448562d38b9634c71b6cdad08f14db15f",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 7,
+        "razon": "Evitar que el usuario repita información ya ingresada.",
+        "codigo": "REG_ONB_002",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Datos del Paso 1 no se borran al cambiar número",
+        "categoria": "tecnico",
+        "created_at": "2026-06-23T18:25:18.948018+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T17:21:59.242799+00:00",
+        "descripcion": "En ONB_002, cambiar el número reinicia únicamente phone_number y el desafío OTP asociado. Bajo celular-first todavía no existen nombre, DNI ni correo capturados en ese punto del flujo.",
+        "valor_config": {
+          "reset": [
+            "phone_number",
+            "otp_challenge",
+            "otp_attempts",
+            "otp_resend_count"
+          ],
+          "source_decision_number": 71,
+          "profile_data_present_before_otp": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "81c102b16b4d4ba3116acaa9af0e6d2c4bb2be9654aa383242ae004c99ecf79b",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 486,
+        "razon": "DEC-CLIENT-ONB-CELL-FIRST-001 y REG_AUTH_PHONE_OWNERSHIP_001 establecen que OTP prueba PHONE_CONTROL, no PERSON_IDENTITY.",
+        "codigo": "REG_ONB002_COPY_PHONE_CONTROL_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-LOCAL-CONTRACT-001",
+        "titulo": "ONB_002 no puede afirmar que OTP verifica identidad",
+        "categoria": "copy",
+        "created_at": "2026-08-18T07:37:24.451792+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-ONB002-20260818-02",
+        "updated_at": "2026-08-20T21:01:41.185534+00:00",
+        "descripcion": "El copy visible de ONB_002 debe comunicar que el código confirma control o acceso al celular. No puede afirmar que el OTP por sí solo verifica la identidad civil de la persona.",
+        "valor_config": {
+          "required_semantic": "PHONE_CONTROL",
+          "prohibited_semantic": "PERSON_IDENTITY_VERIFIED_BY_OTP",
+          "approved_visible_copy": "Solo para verificar tu número",
+          "drive_conflicting_copy": "Usamos este código para verificar tu identidad y proteger tu información.",
+          "source_decision_number": 86,
+          "source_visual_decision": "VD_CLIENT_ONB002_WEB_V06_20260820",
+          "candidate_replacement_copy": "Usamos este código para confirmar que tienes acceso a este celular y proteger tu información.",
+          "exact_replacement_copy_status": "VIGENTE"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "b27cf0daec6d399185213c58fd732b3097a330c795d5491369d0b2cd0d20204c",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 488,
+        "razon": "No existen rutas registradas para ONB_001/ONB_002 ni shell/módulo Cliente canónico.",
+        "codigo": "REG_ONB002_NAVIGATION_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-LOCAL-CONTRACT-001",
+        "titulo": "Destinos de navegación visibles en ONB_002 requieren rutas Cliente canónicas",
+        "categoria": "flujo",
+        "created_at": "2026-08-18T07:37:24.451792+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-ONB002-20260818-02",
+        "updated_at": "2026-08-20T06:23:48.356078+00:00",
+        "descripcion": "Back, Ayuda e Ingresar solo pueden implementarse cuando existan destinos/rutas Cliente canónicos. No se inventan URLs ni se reutilizan rutas de otro frente por inferencia.",
+        "valor_config": {
+          "status": "PENDING_CANONICAL_ROUTES",
+          "visible_when": "CANONICAL_CLIENT_ROUTE_REGISTERED",
+          "hardcoded_url": "DENY",
+          "render_policy": "HIDE_UNTIL_CANONICAL_ROUTE",
+          "route_registry": "lf_ops.rutas",
+          "visible_actions": [
+            "BACK",
+            "HELP",
+            "LOGIN"
+          ],
+          "current_route_ids": [],
+          "source_decision_number": 86
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "adee95c00355231d1f9f0a49a65c22bd47ee42244711c0e14b628bdf486c7fd6",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 487,
+        "razon": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001 ya dejó canónicos los destinos posteriores y ONB_001 vigente usa Paso 1 de 3. Se fija el total como longitud máxima de la secuencia pre-resolución, permitiendo salida temprana después de OTP.",
+        "codigo": "REG_ONB002_STEP_INDICATOR_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB002-LOCAL-CONTRACT-001",
+        "titulo": "Total de pasos de ONB_002 no se fija hasta resolver bifurcación posterior",
+        "categoria": "ux",
+        "created_at": "2026-08-18T07:37:24.451792+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-ONB002-20260818-02",
+        "updated_at": "2026-08-20T05:08:48.982322+00:00",
+        "descripcion": "ONB_002 es el segundo paso visible de la secuencia pre-resolución. El indicador usa Paso 2 de 3 como máximo de la secuencia ONB_001 → ONB_002 → ONB_003. Si el celular ya pertenece a una cuenta activa verificada, el flujo puede terminar después de OTP sin mostrar ONB_003; ONB_004 y REC_001 son destinos condicionales posteriores y no incrementan este total.",
+        "valor_config": {
+          "ordinal_step": 2,
+          "visible_total": 3,
+          "fixed_total_status": "RESOLVED",
+          "progress_semantics": "MAXIMUM_PRE_RESOLUTION_ONBOARDING_SEQUENCE",
+          "current_drive_label": "Paso 2 de 3",
+          "source_decision_number": 105,
+          "early_exit_after_otp_allowed": true,
+          "conditional_post_dni_steps_counted": false,
+          "allow_fixed_total_before_resolution": false
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "7553b667e9900169581f54d71a3fa025f17df6590d9ba4b03c10fea212fb5254",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 568,
+        "razon": "Convierte los tres mockups aprobados en contrato implementable y trazable sin modificar la política OTP transversal.",
+        "codigo": "REG_ONB002_UI_STATES_001",
+        "estado": "VIGENTE",
+        "origen": "OWNER_APPROVAL_ONB002_WEB_V06_20260820",
+        "titulo": "ONB_002 — estados visuales A/B/C",
+        "categoria": "UI",
+        "created_at": "2026-08-20T21:01:41.185534+00:00",
+        "created_by": "assistant_on_owner_approval",
+        "updated_at": "2026-08-20T21:01:41.185534+00:00",
+        "descripcion": "Define los tres estados visuales aprobados de ONB_002: A normal, B contador agotado con reenvío y fallback SMS visible, C código incorrecto con borde rojo y mensaje exacto. La línea de error se reserva siempre para evitar layout shift; H1, CTA y trust row permanecen anclados.",
+        "valor_config": {
+          "title": "Te enviamos un código",
+          "state_A": {
+            "code": "NORMAL",
+            "timer_text": "(00:45)",
+            "resend_label": "Reenviar código",
+            "resend_muted": true,
+            "cta_visual_state": "ACTIVE_GREEN",
+            "timer_underlined": false,
+            "resend_underlined": true
+          },
+          "state_B": {
+            "code": "COUNTER_EXHAUSTED",
+            "resend_label": "Reenviar código",
+            "cta_visual_state": "ACTIVE_GREEN",
+            "sms_fallback_label": "¿No te llegó? Enviar por SMS",
+            "runtime_timing_status": "PENDING_RECONCILIATION"
+          },
+          "state_C": {
+            "code": "INVALID_CODE",
+            "error_copy": "Código incorrecto. Revisa e intenta de nuevo.",
+            "otp_border": "ERROR_RED",
+            "cta_visual_state": "ACTIVE_GREEN"
+          },
+          "otp_slots": 6,
+          "layout_shift": false,
+          "runtime_refs": [
+            "REG_RATE_005",
+            "REG_SEG_001",
+            "REG_SEG_002",
+            "OTP_POL_DEFAULT"
+          ],
+          "vertical_anchors": {
+            "h1": "MATCH_ONB001_H1",
+            "trust_row": "MATCH_ONB001_TRUST_ROW",
+            "primary_cta": "MATCH_ONB001_PRIMARY_CTA"
+          },
+          "error_line_reserved": true,
+          "source_visual_decision": "VD_CLIENT_ONB002_WEB_V06_20260820"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Runtime: 45s visual vs OTP_POL_DEFAULT 60s SMS fallback / 2min resend block requires reconciliation before production.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "60d5b3105f550a927efe8bcaede671cbd9e8afef83b610ec68bc18207382f8b0",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 499,
+        "razon": "Reducir enumeración explícita sin añadir una verificación KYC o biométrica obligatoria ni costo fijo al onboarding normal.",
+        "codigo": "REG_ONB003_ANTI_ENUM_EXPLICIT_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-POSTDNI-PRAGMATIC-BRANCH-001",
+        "titulo": "No revelar explícitamente existencia de cuenta desde ONB_003",
+        "categoria": "seguridad",
+        "created_at": "2026-08-19T05:53:16.002616+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-POSTDNI-20260819-01",
+        "updated_at": "2026-08-19T05:53:16.002616+00:00",
+        "descripcion": "La resolución de DNI se ejecuta server-side. El cliente no recibe flags de existencia de cuenta, estados internos ni mensajes/códigos de negocio que indiquen si el DNI corresponde a una cuenta existente. Se permite que la navegación posterior a OTP verificado + DNI válido derive al flujo resuelto por backend. Los errores de validación, bloqueo o falla operativa usan contratos genéricos sin PII.",
+        "valor_config": {
+          "screen": "ONB_003",
+          "backend_resolution": true,
+          "pii_in_error_or_logs": "DENY",
+          "reveal_account_exists": "DENY",
+          "reveal_account_status": "DENY",
+          "source_decision_number": 100,
+          "account_exists_flag_to_client": "DENY",
+          "generic_business_errors_required": true,
+          "raw_internal_resolution_to_client": "DENY",
+          "navigation_after_otp_and_dni_resolution": "ALLOW"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "f1bed90b8635ab1e9876801105bfcb6a4abeaff1d6b7804e21d995b1a778bd53",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 492,
+        "razon": "Reduce exposición de PII sensible y evita que la regla de guardado offline de otras pantallas se aplique a DNI.",
+        "codigo": "REG_ONB003_DNI_CLIENT_STORAGE_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB003-DNI-POSTOTP-001",
+        "titulo": "DNI no persiste en almacenamiento del navegador",
+        "categoria": "seguridad",
+        "created_at": "2026-08-18T17:24:06.22281+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-ONB003-20260818-02",
+        "updated_at": "2026-08-18T17:24:06.22281+00:00",
+        "descripcion": "ONB_003 no guarda el DNI en localStorage, sessionStorage, URL, analytics, session replay ni caché offline. El valor solo permanece el tiempo necesario para validación/envío y el almacenamiento persistente, si corresponde, es exclusivamente server-side bajo las reglas de protección de datos.",
+        "valor_config": {
+          "deny": [
+            "localStorage",
+            "sessionStorage",
+            "URL",
+            "analytics",
+            "session_replay",
+            "offline_cache"
+          ],
+          "screen": "ONB_003",
+          "server_storage_only": true,
+          "source_decision_number": 98
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "90afabce7705316b902213d9843c9970d415ccc164107361afc2771489767ba3",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 490,
+        "razon": "Evita duplicar un campo equivalente y preserva el alcance aprobado de matching posterior por DNI.",
+        "codigo": "REG_ONB003_DNI_ONLY_001",
+        "estado": "CANDIDATO",
+        "origen": "DEC-CLIENT-ONB003-DNI-POSTOTP-001",
+        "titulo": "ONB_003 usa CAMPO_NRO_DOC en contexto DNI-only",
+        "categoria": "flujo",
+        "created_at": "2026-08-18T17:21:59.242799+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-ONB003-20260818-01",
+        "updated_at": "2026-08-20T21:37:19.394772+00:00",
+        "descripcion": "ONB_003 reutiliza CAMPO_NRO_DOC como DNI peruano de 8 dígitos. No muestra selector de tipo de documento ni habilita CE/Pasaporte en esta pantalla sin una decisión posterior.",
+        "valor_config": {
+          "length": 8,
+          "context": "DNI_ONLY",
+          "field_code": "CAMPO_NRO_DOC",
+          "numeric_only": true,
+          "type_selector": "HIDDEN",
+          "allowed_document_type": "DNI",
+          "source_decision_number": 98
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Regla histórica reemplazada para ONB_003 por REG_ONB003_DOCUMENT_TYPE_001 según DEC-CLIENT-ONB003-DOCUMENT-TYPE-001. Se conserva para trazabilidad.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "dd86bc6022ab6077755b8afcd923db3e427ceb0341f232250e5409e8ae1d6f60",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 495,
+        "razon": "Evitar carreras, doble submit, reintentos no deterministas y side-effects persistentes que puedan romper la no enumeración o asociar una sesión OTP a más de una identidad.",
+        "codigo": "REG_ONB003_DNI_RESOLUTION_ATOMIC_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-POSTDNI-ANTIENUM-GATE-001",
+        "titulo": "Resolución DNI atómica e idempotente por sesión OTP",
+        "categoria": "seguridad",
+        "created_at": "2026-08-19T03:15:57.583892+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-POSTDNI-20260818-01",
+        "updated_at": "2026-08-19T03:15:57.583892+00:00",
+        "descripcion": "La resolución de DNI de ONB_003 se ejecuta server-side de forma atómica dentro de la misma sesión OTP verificada. Solicitudes concurrentes no pueden producir dos resoluciones distintas ni dos transiciones de flujo. Un reintento equivalente debe reutilizar el resultado neutral ya resuelto; si una resolución ya fue consolidada y llega un DNI diferente para la misma sesión, se rechaza de forma genérica y requiere una nueva sesión de onboarding. Ningún mecanismo de idempotencia puede contener el DNI crudo ni exponer el resultado nuevo/existente al cliente.",
+        "valor_config": {
+          "screen": "ONB_003",
+          "raw_dni_in_logs": "DENY",
+          "equivalent_retry": "RETURN_SAME_NEUTRAL_RESULT",
+          "atomic_resolution": "REQUIRED",
+          "idempotency_storage": "PENDING_CANONICAL_STORAGE",
+          "idempotency_required": true,
+          "concurrent_resolution": "SINGLE_COMMIT",
+          "source_decision_number": 99,
+          "branch_result_to_client": "DENY_UNTIL_SUFFICIENT_IDENTITY_ASSURANCE",
+          "raw_dni_in_idempotency_key": "DENY",
+          "same_server_side_otp_session": true,
+          "different_dni_after_committed_resolution": "REJECT_GENERIC_AND_REQUIRE_NEW_ONBOARDING_SESSION"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Contrato cerrado; sigue pendiente identificar/reutilizar almacenamiento canónico para enforcement atómico e idempotencia. No se crea una tabla nueva sin verificar estructura equivalente.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "6cb494033c34acffc22eebf9503e9265aff475c82ddcc53b83e93623569de39e",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 491,
+        "razon": "Evita bypass directo de ONB_003, session fixation y mezcla de identidad entre sesiones.",
+        "codigo": "REG_ONB003_SESSION_BINDING_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB003-DNI-POSTOTP-001",
+        "titulo": "DNI ligado a la misma sesión OTP verificada",
+        "categoria": "seguridad",
+        "created_at": "2026-08-18T17:24:06.22281+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-ONB003-20260818-02",
+        "updated_at": "2026-08-18T17:24:06.22281+00:00",
+        "descripcion": "ONB_003 solo acepta el DNI dentro de la misma sesión server-side que completó OTP. La verificación debe comprobar otp_verified=true y que el celular asociado a la sesión no cambió desde la verificación. Un session_id ajeno, expirado, bloqueado o sin OTP verificado no puede resolver DNI.",
+        "valor_config": {
+          "screen": "ONB_003",
+          "server_side_check": true,
+          "reject_session_states": [
+            "EXPIRED",
+            "BLOCKED",
+            "UNVERIFIED"
+          ],
+          "requires_otp_verified": true,
+          "bind_to_verified_phone": true,
+          "source_decision_number": 98
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "a55ef02b043de0e7bfa12ea43f692220ac60ba651dfab61e9b7ad73daa0893e6",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 27,
+        "razon": "Capa adicional de protección ante ataques distribuidos.",
+        "codigo": "REG_RATE_002",
+        "estado": "VIGENTE",
+        "origen": "seguridad",
+        "titulo": "Límite de intentos de validación OTP por IP",
+        "categoria": "rate_limiting",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-06-23T18:55:04.306381+00:00",
+        "descripcion": "Máximo 10 intentos de validación OTP desde el mismo IP en 10 minutos, independientemente de la sesión.",
+        "valor_config": {
+          "max_intentos": 10,
+          "ventana_minutos": 10
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "1808a46ba97f01aba9acdf4e071d894bd2dbdb5c9d2da9f1f0b9ba82c990076e",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 28,
+        "razon": "Proteger el canal WhatsApp de abuso y evitar costos innecesarios de mensajería.",
+        "codigo": "REG_RATE_003",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-ONB-SECURITY-PREPENTEST-SIM-001",
+        "titulo": "Límite de solicitudes de nuevo código OTP por número",
+        "categoria": "rate_limiting",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-19T22:51:11.956049+00:00",
+        "descripcion": "Un mismo número de celular no puede recibir más de 5 códigos OTP en 60 minutos sumando todas las sesiones. Reiniciar ONB_001 o crear un nuevo session_id no reinicia este límite global.",
+        "valor_config": {
+          "scope": "por_numero_celular_cross_session",
+          "max_codigos": 5,
+          "ventana_minutos": 60,
+          "enforcement_side": "SERVER",
+          "phone_key_storage": "HASH_ONLY",
+          "raw_phone_in_logs": "DENY",
+          "reset_on_new_session": false,
+          "source_decision_number": 88,
+          "canonical_event_storage": "lf_client.otp_security_events",
+          "canonical_storage_status": "IMPLEMENTED",
+          "canonical_rate_policy_code": "RATE-CLIENT-OTP-PHONE-CROSSSESSION",
+          "atomic_enforcement_required": true,
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "ec16164366b09fbcb03b186e718623659acf5cd64210da6d0ae7a91715ac8e09",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 30,
+        "razon": "Evitar spam de mensajes WhatsApp y dar tiempo al usuario de revisar.",
+        "codigo": "REG_RATE_005",
+        "estado": "VIGENTE",
+        "origen": "decision_producto",
+        "titulo": "Cooldown entre reenvíos OTP",
+        "categoria": "rate_limiting",
+        "created_at": "2026-06-23T18:55:04.306381+00:00",
+        "created_by": null,
+        "updated_at": "2026-08-18T07:45:43.217455+00:00",
+        "descripcion": "Entre reenvíos OTP ordinarios debe transcurrir al menos el timer visible, default 45 segundos. Si el usuario agotó los 5 intentos del OTP actual, prevalece el cooldown de seguridad de 2 minutos definido por REG_SEG_001 antes de permitir un nuevo código.",
+        "valor_config": {
+          "campo_timer": "otp_last_sent_at",
+          "cooldown_segundos": 45,
+          "cooldown_agotamiento_segundos": 120,
+          "precedencia_si_intentos_agotados": "REG_SEG_001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": null,
+        "pendiente_decision": false
+      },
+      "source_sha256": "524ad28b3ab781a61bd962cb133cc45ea8b93af0329a61fda11ce2f7b104510f",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 460,
+        "razon": "Permitir cambio legítimo de número sin asumir costo de identidad cuando todavía existe el factor anterior, manteniendo protección ante secuestro de cuenta.",
+        "codigo": "REG_REC_PHONE_001",
+        "estado": "CANDIDATO",
+        "origen": "DEC-CLIENT-RECOVERY-PHONE-CONTROL-001",
+        "titulo": "Recuperación de cuenta cuando el cliente cambió de celular",
+        "categoria": "flujo",
+        "created_at": "2026-08-15T07:32:00.473307+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-08-19T16:38:30.268129+00:00",
+        "descripcion": "Si el cliente conserva acceso al celular anterior, el celular actual ya verificado en ONB_002 satisface la prueba de control del nuevo número y se exige OTP adicional únicamente sobre el celular anterior. Si perdió acceso al anterior, el celular actual mantiene su prueba de control y se requiere validación adicional de identidad antes de reemplazar la asociación.",
+        "valor_config": {
+          "audit_rule_code": "REG_AUD_004",
+          "antifraud_rule_code": "REG_SEG_005",
+          "old_phone_available": "OTP_OLD_AND_NEW",
+          "new_phone_field_code": "CAMPO_CELULAR_NUEVO",
+          "rate_limit_rule_code": "REG_RL_003",
+          "old_phone_unavailable": "IDENTITY_VALIDATION_REQUIRED",
+          "target_screen_mapping": "PENDING_CANONICAL_SCREEN",
+          "new_phone_otp_required": true,
+          "source_decision_number": 71,
+          "atomic_rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+          "old_phone_otp_operation": "OTP_OP_RECUPERAR_CLAVE",
+          "repeat_current_phone_otp": false,
+          "recovery_control_rule_code": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001",
+          "clarified_by_decision_number": 103,
+          "current_verified_phone_source": "ONB_001_PLUS_ONB_002"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Pantalla canónica de recuperación Cliente aún no registrada.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "7f42e6658feb98d37f0d1b1dbfa9a23b7a8cab6403943fb199cfb5dfae46742e",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 459,
+        "razon": "Permitir activar RISK_BASED con evidencia y no asumir que todo abandono es fraude.",
+        "codigo": "REG_RISK_ONB_TELEMETRY_001",
+        "estado": "CANDIDATO",
+        "origen": "DEC-CLIENT-ONB-CELL-FIRST-001",
+        "titulo": "Telemetría de exploración sospechosa separada del abandono comercial",
+        "categoria": "analytics",
+        "created_at": "2026-08-15T07:32:00.473307+00:00",
+        "created_by": "CHATGPT",
+        "updated_at": "2026-08-19T16:50:09.328124+00:00",
+        "descripcion": "Medir el funnel y señales agregadas de abuso para distinguir usuarios que rechazan una oferta de patrones de exploración automatizada o competencia.",
+        "valor_config": {
+          "thresholds": "PENDING_BASELINE",
+          "risk_outputs": [
+            "NORMAL",
+            "SUSPECT",
+            "HIGH"
+          ],
+          "risk_signals": [
+            "DISTINCT_DNI_PER_ORIGIN",
+            "DISTINCT_PHONE_PER_ORIGIN",
+            "REPEATED_QUERIES",
+            "RATE_LIMIT_HITS",
+            "SYSTEMATIC_MATCH_EXIT",
+            "DISTINCT_DNI_PER_VERIFIED_PHONE",
+            "DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE"
+          ],
+          "funnel_events": [
+            "HOME_CTA",
+            "PHONE_SUBMITTED",
+            "OTP_VERIFIED",
+            "DNI_SUBMITTED",
+            "MATCH_RESULT",
+            "OFFER_INTEREST",
+            "OFFER_VIEW",
+            "EXIT"
+          ],
+          "raw_pii_in_analytics": "DENY",
+          "source_decision_number": 71,
+          "phone_multi_dni_rule_code": "REG_RISK_PHONE_MULTI_DNI_001",
+          "identity_validation_rule_code": "REG_IDV_PROGRESSIVE_001"
+        },
+        "es_transversal": false,
+        "pendiente_detalle": "Eventos analytics Cliente específicos aún deben registrarse en lf_ops.analytics_eventos_definicion/parametros/pantallas.",
+        "pendiente_decision": false
+      },
+      "source_sha256": "a9028c86eb25279840f343af2fc076ecd18b921e5c856164bb6b62d90d1ac621",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    },
+    {
+      "source_row": {
+        "id": 509,
+        "razon": "Detectar búsqueda sistemática de información o intentos de takeover que reutilizan un mismo celular controlado contra múltiples identidades, sin castigar automáticamente usos legítimos o celulares compartidos.",
+        "codigo": "REG_RISK_PHONE_MULTI_DNI_001",
+        "estado": "VIGENTE",
+        "origen": "DEC-CLIENT-RISK-PHONE-MULTI-DNI-001",
+        "titulo": "Múltiples DNI o cuentas exploradas desde un mismo celular verificado",
+        "categoria": "seguridad",
+        "created_at": "2026-08-19T16:50:09.328124+00:00",
+        "created_by": "CHATGPT-LF-CLIENT-RISK-20260819-01",
+        "updated_at": "2026-10-02T17:43:14.180839+00:00",
+        "descripcion": "El backend debe medir cuántos DNI distintos y cuántas cuentas distintas de recuperación son exploradas desde el mismo celular que ya superó OTP. La correlación se realiza con claves derivadas server-side y no con PII crudo en analytics o logs. Un patrón creciente incrementa el nivel de riesgo. En nivel alto se pueden detener temporalmente nuevas resoluciones post-DNI o reasignaciones y exigir validación reforzada antes de continuar. La detección no modifica la regla de unicidad: un celular nunca puede quedar asociado simultáneamente a varias cuentas activas verificadas.",
+        "valor_config": {
+          "thresholds": "PENDING_BASELINE",
+          "high_action": "TEMPORARY_STOP_POST_DNI_OR_REBIND_AND_REQUIRE_STEP_UP",
+          "subject_key": "PRIVACY_PRESERVING_SERVER_DERIVED_KEY",
+          "risk_outputs": [
+            "NORMAL",
+            "SUSPECT",
+            "HIGH"
+          ],
+          "signal_codes": [
+            "DISTINCT_DNI_PER_VERIFIED_PHONE",
+            "DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE"
+          ],
+          "suspect_action": "RISK_SCORE_AND_OBSERVE",
+          "raw_dni_in_logs": "DENY",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "raw_phone_in_logs": "DENY",
+          "supporting_signals": [
+            "REPEATED_QUERIES",
+            "SYSTEMATIC_MATCH_EXIT",
+            "RATE_LIMIT_HITS",
+            "RECOVERY_ATTEMPTS_ACROSS_DISTINCT_ACCOUNTS"
+          ],
+          "raw_pii_in_analytics": "DENY",
+          "source_decision_number": 104,
+          "first_signal_hard_block": "DENY",
+          "phone_binding_rule_code": "REG_UNI_002",
+          "verified_phone_required": true,
+          "identity_step_up_rule_code": "REG_CLIENT_RECOVERY_IDV_STEPUP_001"
+        },
+        "es_transversal": true,
+        "pendiente_detalle": "Pendiente calibrar ventanas y umbrales numéricos con telemetría real/baseline antes de convertir esta señal en una política cuantitativa de rate limit. No crear números por inferencia.",
+        "pendiente_decision": true
+      },
+      "source_sha256": "48654a72df8bb3108b97f4cfd3548a0676373da029bf06b3386054cef8d6d997",
+      "screen_links": [],
+      "source_cohort": "KEYWORD"
+    }
+  ],
+  "live_writes": 0
+}

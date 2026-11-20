@@ -1,0 +1,16 @@
+{
+  "solution_ref": "LF-L41-LOGIN-B2B-RESIDUAL-IMPACT-V1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l41_rules_slice_00_source.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l41_rules_slice_01_source.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l41_rules_slice_02_source.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l41_rules_slice_03_source.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l41_policies_rate_guard_source.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/fixtures/lf_l41_remaining_conflicts_patch.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_lf_l41_b2b_impact_pg17_pg18.py": "RUNTIME_TESTING",
+    "audits/login-b2b-lote41/01_inventario_260_reglas_politicas_estado_choque.json": "INPUT_GOVERNANCE",
+    "audits/login-b2b-lote41/02_tablero_impacto_y_propuestas.md": "INPUT_GOVERNANCE",
+    "audits/login-b2b-lote41/03_decisiones_humanas_separadas.json": "INPUT_GOVERNANCE",
+    "sandbox/lf_contract_gate_test/changesets/LF-L41-LOGIN-B2B-RESIDUAL-IMPACT-V1.json": "CHANGESET_MANIFEST"
+  }
+}
