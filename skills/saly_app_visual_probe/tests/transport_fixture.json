@@ -1,0 +1,46 @@
+{
+  "pilot_mode": "OFFLINE_CONTRACT_TEST",
+  "transport": {
+    "fixture_only": true,
+    "stage1_payload": {
+      "schema_version": "LF_ROUTER_STAGE1_V2",
+      "negocio_codigo": "SALY",
+      "canal_candidato": "PRODUCTO",
+      "texto_original": "Crear prototipos de APP y mockups SALY mediante UI Architect. Probar un skill Hola mundo.",
+      "downstream_execution_allowed": false,
+      "razon_seleccion": "El pedido cita SALY explícitamente y requiere UI/APP."
+    },
+    "route_result": {
+      "paso": "PRODUCTO_PROFILE_SELECTION_REQUIRED",
+      "negocio_codigo": "SALY",
+      "mock_route": true,
+      "effect_authority": false,
+      "downstream_execution_allowed": false
+    },
+    "semantic_result": {
+      "decision": "SELECTED",
+      "selected_profile_code": "PERFIL-UI-ARCHITECT",
+      "reason": "Descriptor CURRENT: transforma decisiones del producto en especificaciones UI (selección sintética, no validada por catálogo del Router)."
+    },
+    "gate2_derivation": {
+      "status": "SYNTHETIC_NO_AUTHORIZATION",
+      "effect_authority": false
+    },
+    "router_profile_handoff": {
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "effect_authority": false,
+      "execution_id": "FIXTURE_NO_RUN"
+    },
+    "skill_selection": {
+      "skill_code": "SALY_APP_VISUAL_PROBE",
+      "selection_mode": "SEMANTIC_OPTIONAL",
+      "descriptor_status": "CANDIDATE_NOT_REGISTERED",
+      "reason": "Piloto de entrada/transporte solamente"
+    },
+    "request_context": {
+      "mode": "VISUAL_PROBE",
+      "source": "LOCAL_SYNTHETIC_FIXTURE",
+      "credentials": "NO_REAL_SECRETS"
+    }
+  }
+}
