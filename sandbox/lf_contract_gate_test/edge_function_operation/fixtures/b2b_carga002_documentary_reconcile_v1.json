@@ -1,0 +1,732 @@
+{
+  "patch": {
+    "schema_version": "LF_B2B_CARGA002_DOCUMENTARY_PATCH_V1",
+    "source_analysis_execution": "EXEC-PROFILE-GATE2-808379962BF5ACA150004167",
+    "repair_execution": "EXEC-PROFILE-GATE2-4E7A86DAECA05A09424BA1D1",
+    "source_main": "0780a690ead97cb11df259b16888c37344c67d67",
+    "rules": [
+      {
+        "id": 581,
+        "code": "B2B-RULE-LOAD-WIZARD-001",
+        "state": "VIGENTE",
+        "before_sha256": "5683d2c599169bddcd85794e27bf770035014eca38815aa1849bcc1016a80c9d",
+        "protected_sha256": "47c0e8ce23813d65948433d8b28125efa9b70e170af55155aee8de769f1a2f4f",
+        "after_description": "\nB2B-CARGA-002 organiza la preparación de cartera en tres pasos UI: seleccionar tipo y formato, subir y preparar datos, y validar con resultado. «Cartera preparada» no constituye un cuarto paso UI ni afirma procesamiento definitivo: el resultado del paso 3 conserva la transición de dominio a B2B_LOAD_VALIDADO y ofrece salida a detalle o historial. La carga requiere el formato LF de la modalidad y no admite estructuras arbitrarias de la empresa ni un paso de mapeo de columnas. En Cuotas, el sistema autodetecta EXCEL_COMPLETO o EXCEL_ASISTIDO mediante el contrato versionado; no solicita una selección explícita de canal. Los estados UI no sustituyen estados de UPLOAD_BATCH; las mutaciones siguen gobernadas por lf_ops.estados_transiciones.\n",
+        "after_pending": "Pago único cerrado funcional y visualmente. Cuotas opera con EXCEL_COMPLETO o EXCEL_ASISTIDO autodetectados por contrato versionado, sin selección explícita de canal. La evidencia visual anterior Asistente LF recomendado + Excel alternativo está deprecada y requiere una nueva exploración UX. La base temporal de deuda, conciliación exacta y generación gobernada de fechas ya tienen semántica funcional registrada; su mapeo físico, PLAN_ID y configuración empresarial continúan según sus reglas específicas. La activación de planes sin cuota 0 activa permanece PENDING_FUNCTIONAL_DEFINITION. Mapping físico/versionado de B2B_FLD_PROCESSING_SCOPE continúa pendiente de implementación."
+      },
+      {
+        "id": 617,
+        "code": "B2B-RULE-INSTALLMENT-PLAN-001",
+        "state": "CANDIDATO",
+        "before_sha256": "88f68b707b19ec18cd12146426141ddaca7473324c4962547c79bbf5aec160a3",
+        "protected_sha256": "aa9c6cc4003b65383a67332f7d602126a96eef8b272538d736a1a849fa1d43f7",
+        "after_description": "Cada alternativa de cuotas de una oferta tiene identidad propia. El pago inicial o cuota 0 pertenece al plan y no forma parte del cronograma regular; la cuota 1 es la primera cuota posterior. En Cuotas, offer_amount representa el monto económico total acordado del plan y debe cumplirse exactamente pago inicial + suma del cronograma regular = offer_amount, a 2 decimales. En el Excel Completo estándar V4, la empresa aporta la numeración y los montos del cronograma, que LF preserva y valida sin corrección silenciosa. El estándar no recibe fechas absolutas de vencimiento: LF calcula las fechas regulares server-side desde la configuración gobernada después de PAYMENT_CONFIRMED de una cuota 0 activa y las congela en el snapshot contractual. Esta regla no autoriza inferir la activación de planes sin cuota 0 activa. Cuando LF lo genera mediante Asistente, el residuo de división se absorbe exclusivamente en la última cuota. La cantidad de cuotas elegibles se gobierna por configuración de empresa: el límite base es hasta 12 cuotas, pero cada empresa puede habilitar un conjunto discreto como 1, 3, 6 y 12, o todas las cantidades de 1 a 12. La configuración de empresa puede ampliar el máximo por encima de 12 cuando esté autorizada. El Excel Completo no define libremente un plazo fuera de esa configuración: el número efectivo de cuotas se deriva del cronograma detallado y se valida contra el conjunto habilitado para la empresa. El Asistente LF solo puede proponer cantidades habilitadas por esa misma configuración. El mapeo físico de PLAN_ID y de la configuración empresarial de plazos permanece pendiente. La ventana mínima entre la activación del plan mediante pago confirmado de la cuota 0 y la primera cuota regular no se hardcodea en LF ni en el Excel: la define la empresa mediante configuración gobernada. LF calcula server-side la primera fecha de pago permitida que satisfaga esa ventana; si la próxima fecha permitida queda demasiado cerca, usa el siguiente ciclo permitido. Antes del pago el cronograma es propuesto; después de PAYMENT_CONFIRMED las fechas definitivas se congelan en el snapshot contractual. Aclaración del propietario 2026-10-15: cada alternativa de plan tiene su propia oferta económica y su monto específico. La referencia contenedora o su identificador de oferta vigente NO autoriza agregar los importes de planes alternativos; para descuentos conjuntos solamente se consideran las ofertas económicas seleccionadas y validadas server-side. La identidad física oferta-versión-plan y su cardinalidad final quedan pendientes del modelado y de reconciliar el contrato Cliente sin alterar sus reglas vigentes. Cuota 0 puede venir en el cronograma durante la carga, pero no es obligatoria; solo constituye un pago inicial activo si su monto supera el umbral parametrizado (hoy mayor que 1 en la moneda del plan). Cero no se considera pago inicial activo; para valores iguales o menores al umbral no se inicia cobro de cuota 0. La activación de planes sin cuota 0 activa queda PENDING_FUNCTIONAL_DEFINITION y nunca se presume automática. Fechas y ventanas actuales son sugerencias de diseño; faltan el modelo físico y sus relaciones con oferta, plan, cobro, calendario, ledger y snapshot; no fijar fechas definitivas ni constantes de frontend.",
+        "after_pending": "GOVERNED_CANDIDATE_REQUIRES_REVIEW"
+      },
+      {
+        "id": 620,
+        "code": "B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001",
+        "state": "CANDIDATO",
+        "before_sha256": "b8875ace62fa3fbadf29ad8ea4ab2015be0e88251db22bf35a836ba416a792e7",
+        "protected_sha256": "282b87f071e7957b581b3bd6dbb885086b125337778b8eec67cda5394501e1be",
+        "after_description": "En modalidad Cuotas, ambos caminos parten de un archivo Excel y LF admite únicamente dos contratos versionados y estrictos. EXCEL_ASISTIDO contiene la base común de deuda y sus fechas temporales obligatorias; si cumple exactamente ese contrato, entra al Asistente LF para completar oferta, plan y cronograma. EXCEL_COMPLETO contiene esa misma base más la oferta y el cronograma detallado requerido; si cumple exactamente ese contrato, pasa a validación. No existe un tercer contrato ni combinaciones intermedias. En el EXCEL_COMPLETO estándar V4, el cronograma detallado es la autoridad para la numeración y los montos de las cuotas: CRONOGRAMA contiene REFERENCIA_EMPRESA, PLAN, CUOTA y MONTO. REFERENCIA_EMPRESA + PLAN solo relaciona las hojas del archivo; LF genera las identidades internas. El estándar no recibe fechas absolutas de vencimiento ni IDs externos de oferta o cuota. Las fechas regulares se calculan server-side mediante configuración gobernada después de PAYMENT_CONFIRMED de una cuota 0 activa y se congelan en el snapshot contractual; la activación sin cuota 0 activa permanece PENDING_FUNCTIONAL_DEFINITION conforme B2B-RULE-INSTALLMENT-PLAN-001. B2B_IMP_INSTALLMENT_AMOUNT no es una fuente autoritativa frente a B2B_IMP_SCHEDULE_AMOUNT. LF no corrige silenciosamente el cronograma externo. Los campos físicos de fecha_inicio_mora y fecha_corte_cartera, y el mapeo físico de PLAN_ID, siguen pendientes de materialización gobernada; su semántica funcional ya está definida.",
+        "after_pending": "GOVERNED_CANDIDATE_REQUIRES_REVIEW"
+      }
+    ],
+    "relation": {
+      "id": 9492,
+      "rule_id": 581,
+      "screen_id": 44,
+      "before": "Flujo de preparación UI aprobado en cuatro estados condicionales. Los estados visuales no equivalen a estados UPLOAD_BATCH; toda mutación debe resolver contra lf_ops.estados_transiciones.",
+      "after": "Flujo de preparación UI aprobado en tres pasos: tipo y formato, subir y preparar datos, y validar con resultado. Los estados visuales no equivalen a estados UPLOAD_BATCH; toda mutación debe resolver contra lf_ops.estados_transiciones. Cuotas autodetecta los dos contratos Excel versionados, sin selección explícita de canal."
+    }
+  },
+  "source_rules": [
+    {
+      "id": 581,
+      "razon": "Reducir fricción B2B evitando un wizard rígido y pasos innecesarios, sin crear una máquina de estados paralela al dominio.",
+      "codigo": "B2B-RULE-LOAD-WIZARD-001",
+      "estado": "VIGENTE",
+      "origen": "OWNER_DECISION_2026-08-23",
+      "titulo": "Carga de cartera con flujo de tres pasos",
+      "categoria": "WORKFLOW",
+      "created_at": "2026-08-21T06:01:59.23816+00:00",
+      "created_by": "ChatGPT",
+      "updated_at": "2026-11-15T21:56:42.826816+00:00",
+      "descripcion": "\nB2B-CARGA-002 organiza la preparación de cartera en tres pasos UI: seleccionar tipo y formato, subir y preparar datos, y validar con resultado. «Cartera preparada» no constituye un cuarto paso UI ni afirma procesamiento definitivo: el resultado del paso 3 conserva la transición de dominio a B2B_LOAD_VALIDADO y ofrece salida a detalle o historial. El mapeo de columnas es condicional: se omite para formato LF y puede omitirse cuando existe un mapeo gobernado previamente para la empresa. Los estados UI no sustituyen estados de UPLOAD_BATCH; las mutaciones siguen gobernadas por lf_ops.estados_transiciones.\n",
+      "valor_config": {
+        "screen_id": 44,
+        "ui_states": [
+          "OFFER_TYPE_AND_TEMPLATE",
+          "UPLOAD_AND_PREPARE_DATA",
+          "VALIDATE"
+        ],
+        "flow_model": "CONDITIONAL_NOT_RIGID_WIZARD",
+        "screen_code": "B2B-CARGA-002",
+        "owner_decision": "APPROVED",
+        "ui_state_count": 3,
+        "upload_contract": {
+          "upload_ui_state": "UPLOAD_AND_PREPARE_DATA",
+          "accepted_structure": "LF_MODALITY_TEMPLATE_ONLY",
+          "upload_file_required": true,
+          "template_download_role": "OPTIONAL_SUPPORT_ACTION",
+          "arbitrary_partner_structure": false,
+          "template_download_is_load_method": false,
+          "upload_file_required_in_first_state": false
+        },
+        "fast_path_target": "SELECT_MODALITY_CONTINUE_UPLOAD_VALIDATE_COMPLETE",
+        "mapping_behavior": {
+          "ARBITRARY_OWN_FILE": "DENY",
+          "LF_STANDARD_TEMPLATE": "REQUIRED_FOR_UPLOAD",
+          "COLUMN_MAPPING_IN_PREPARATION": "NOT_REQUIRED_FOR_STANDARD_TEMPLATE"
+        },
+        "transition_source": "lf_ops.estados_transiciones(entity_type=UPLOAD_BATCH)",
+        "wizard_completion": {
+          "fourth_ui_step": "DENY",
+          "result_variants": [
+            "RESULT_CLEAN",
+            "RESULT_WITH_ISSUES"
+          ],
+          "primary_exit_route": "B2B_ROUTE_CARGAS_DETALLE",
+          "completion_ui_state": "VALIDATE",
+          "primary_exit_action": "VIEW_LOAD_DETAIL",
+          "secondary_exit_route": "B2B_ROUTE_CARGAS_HISTORIAL",
+          "secondary_exit_action": "GO_TO_LOAD_HISTORY",
+          "portfolio_loaded_claim": "DENY",
+          "domain_state_after_completion": "B2B_LOAD_VALIDADO",
+          "approval_or_autoapproval_resolution": "BY_VERSIONED_LOAD_APPROVAL_POLICY",
+          "approval_or_processing_inside_wizard": "DENY"
+        },
+        "domain_state_source": "lf_ops.estados_catalogo(entity_type=UPLOAD_BATCH)",
+        "first_state_semantic": {
+          "support_action": "DOWNLOAD_MODALITY_TEMPLATE",
+          "required_action": "CONTINUE_TO_UPLOAD_AND_PREPARE_DATA",
+          "required_decision": "OFFER_TYPE",
+          "alternative_file_structure": false,
+          "file_upload_in_first_state": false,
+          "template_download_is_support": true
+        },
+        "second_state_semantic": {
+          "purpose": "RECEIVE_FILE_AND_VERIFY_TECHNICAL_READINESS_BEFORE_BUSINESS_VALIDATION",
+          "ui_state": "UPLOAD_AND_PREPARE_DATA",
+          "success_outcome": "FILE_PREPARED_FOR_VALIDATION",
+          "technical_checks": [
+            "UPLOAD_COMPLETED",
+            "FORMAT_ALLOWED",
+            "NONEMPTY",
+            "SIZE_POLICY_PASS",
+            "TEMPLATE_RECOGNIZED",
+            "REQUIRED_SHEETS_PRESENT",
+            "REQUIRED_COLUMNS_PRESENT",
+            "CHECKSUM_NOT_DUPLICATED",
+            "MALWARE_SCAN_CLEAN"
+          ],
+          "file_upload_required": true,
+          "allowed_formats_source": "B2B_VAL_FILE_FORMAT",
+          "same_screen_state_changes": [
+            "EMPTY",
+            "PROCESSING",
+            "READY",
+            "ERROR"
+          ],
+          "business_validation_next_state": "VALIDATE",
+          "business_validation_in_this_state": "DENY"
+        },
+        "next_phase_after_ready": "INSTALLMENT_STRATEGY_OR_MODALITY_SPECIFIC_NEXT_STEP",
+        "preparation_flow_closed": true,
+        "third_state_visual_status": "ALL_STATES_APPROVED",
+        "cuotas_step1_visual_status": "APPROVED_VIGENTE",
+        "second_state_visual_status": "ALL_STATES_APPROVED",
+        "domain_state_mapping_status": "STEP_2_AND_STEP_3_CLOSED",
+        "second_state_domain_mapping": {
+          "EMPTY": {
+            "semantics": "UI_ONLY_NO_DOMAIN_MUTATION",
+            "transition": null,
+            "domain_state": "B2B_LOAD_BORRADOR"
+          },
+          "ERROR": {
+            "semantics": "REMAIN_DRAFT_ALLOW_RECOVERY_ACTION",
+            "transition": null,
+            "domain_state": "B2B_LOAD_BORRADOR"
+          },
+          "READY": {
+            "to_state": "B2B_LOAD_ARCHIVO_CARGADO",
+            "from_state": "B2B_LOAD_BORRADOR",
+            "transition": "TR_LOAD_CREATE",
+            "precondition": "ALL_STEP_2_TECHNICAL_CHECKS_PASS"
+          },
+          "PROCESSING": {
+            "semantics": "EPHEMERAL_UI_WHILE_TECHNICAL_CHECKS_RUN",
+            "transition": null,
+            "domain_state": "B2B_LOAD_BORRADOR"
+          },
+          "CONTINUE_TO_VALIDATE": {
+            "to_state": "B2B_LOAD_VALIDANDO",
+            "authority": "SERVER_ONLY",
+            "from_state": "B2B_LOAD_ARCHIVO_CARGADO",
+            "transition": "TR_LOAD_VALIDATE_START"
+          }
+        },
+        "second_state_error_behavior": {
+          "blocking_errors": [
+            "LF-B2B-UPL-001",
+            "LF-B2B-UPL-002",
+            "LF-B2B-VAL-001",
+            "LF-B2B-VAL-002",
+            "LF-B2B-VAL-003",
+            "LF-B2B-VAL-004",
+            "LF-B2B-VAL-005",
+            "LF-B2B-VAL-006",
+            "LF-B2B-VAL-007"
+          ],
+          "primary_recovery_actions": [
+            "RETRY_UPLOAD",
+            "REPLACE_FILE",
+            "DOWNLOAD_TEMPLATE",
+            "VIEW_EXISTING_LOAD_WHEN_DUPLICATE"
+          ],
+          "use_existing_error_catalog": true,
+          "do_not_open_parallel_error_screen": true
+        },
+        "second_state_owner_decision": "APPROVED",
+        "server_transition_authority": "REQUIRED",
+        "third_state_visual_evidence": {
+          "VALIDATING": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V04-P3-VALIDATING",
+          "RESULT_CLEAN": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V04-P3-RESULT-CLEAN",
+          "owner_approved_at": "2026-08-24",
+          "RESULT_WITH_ISSUES": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V04-P3-RESULT-WITH-ISSUES",
+          "visual_decision_code": "LF-B2B-VIS-CARGA-002-VALIDATE-VALIDATING-001",
+          "result_clean_visual_decision_code": "LF-B2B-VIS-CARGA-002-VALIDATE-RESULT-CLEAN-001",
+          "result_with_issues_visual_decision_code": "LF-B2B-VIS-CARGA-002-VALIDATE-RESULT-WITH-ISSUES-001"
+        },
+        "cuotas_step1_visual_evidence": {
+          "artifact_code": "B2B-CARGA-002-DESKTOP-LIGHT-CUOTAS-V01-P1-CHANNEL-SELECTION",
+          "visual_decision_code": "LF-B2B-VIS-CARGA-002-CUOTAS-CHANNEL-SELECTION-001"
+        },
+        "second_state_visual_approval": {
+          "approved_at": "2026-08-24",
+          "artifact_code": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V03-P2-EMPTY",
+          "drive_file_id": "1I6w3fr4wugsg-uDrg9RWqdKu6P0IouWR",
+          "state_variant": "P2_EMPTY_PAGO_UNICO",
+          "owner_decision": "APPROVED",
+          "visual_decision_code": "LF-B2B-VIS-CARGA-002-PREPARE-DATA-EMPTY-001"
+        },
+        "second_state_visual_evidence": {
+          "EMPTY": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V03-P2-EMPTY",
+          "ERROR": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V03-P2-ERROR",
+          "READY": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V03-P2-READY",
+          "PROCESSING": "B2B-CARGA-002-DESKTOP-LIGHT-PAGO-UNICO-V03-P2-PROCESSING",
+          "owner_approved_at": "2026-08-24",
+          "visual_decision_code": "LF-B2B-VIS-CARGA-002-PREPARE-DATA-STATES-V2-001"
+        },
+        "client_ui_state_as_domain_state": "DENY",
+        "third_state_operational_contract": {
+          "ui_state": "VALIDATE",
+          "issue_source": "lf_ops.validacion_incidencias",
+          "result_fields": [
+            "B2B_FLD_TOTAL_RECORDS",
+            "B2B_FLD_VALID_COUNT",
+            "B2B_FLD_OBSERVED_COUNT",
+            "B2B_FLD_REJECTED_COUNT",
+            "B2B_FLD_DUPLICATE_COUNT",
+            "B2B_FLD_FORMAT_ERROR_COUNT",
+            "B2B_FLD_BUSINESS_ERROR_COUNT"
+          ],
+          "start_transition": "TR_LOAD_VALIDATE_START",
+          "ui_runtime_states": [
+            "VALIDATING",
+            "RESULT_CLEAN",
+            "RESULT_WITH_ISSUES"
+          ],
+          "validation_source": "lf_ops.v_b2b_validations_contract + lf_ops.v_b2b_rel_screen_validation",
+          "complete_transition": "TR_LOAD_VALIDATE_OK",
+          "domain_state_running": "B2B_LOAD_VALIDANDO",
+          "error_export_contract": {
+            "rule_code": "B2B-RULE-VALIDATION-VALID-ONLY-001",
+            "export_rows": "EXCLUDED_ROWS_ONLY",
+            "action_source": "validacion_incidencias.suggested_action",
+            "additional_column": "DETALLE_ERROR",
+            "description_source": "validacion_incidencias.user_message",
+            "highlight_invalid_cells": "RED_CELL_HIGHLIGHT",
+            "same_input_template_columns": true,
+            "all_compatible_issues_same_run": true
+          },
+          "domain_state_completed": "B2B_LOAD_VALIDADO",
+          "error_codes_pago_unico": [
+            "LF-B2B-SEC-002",
+            "LF-B2B-VAL-008",
+            "LF-B2B-VAL-009",
+            "LF-B2B-VAL-012",
+            "LF-B2B-VAL-013",
+            "LF-B2B-VAL-014",
+            "LF-B2B-VAL-015",
+            "LF-B2B-VAL-016"
+          ],
+          "shell_integration_policy": {
+            "shell_code": "B2B_APP_SHELL",
+            "owner_decision": "APPROVED_2026-09-18_V1",
+            "current_design_scope": "CONTENT_DATA_ONLY",
+            "shell_structure_authority": "EXISTING_SHELL",
+            "stepper_structure_authority": "EXISTING_WIZARD",
+            "screen_content_must_not_redefine_shell": true,
+            "screen_content_must_not_redefine_stepper": true
+          },
+          "transition_permission_code": "B2B_LOAD_VALIDATE",
+          "next_step_processing_policy": "VALID_ONLY",
+          "result_with_issues_recovery": {
+            "allowed_actions": [
+              "DOWNLOAD_ERRORS",
+              "CONTINUE_WITH_VALID_COUNT"
+            ],
+            "patch_current_load": "DENY",
+            "replace_current_load": "DENY",
+            "corrected_excluded_rows_return_via": "NEW_INDEPENDENT_LOAD"
+          },
+          "ui_runtime_state_is_domain_state": "DENY",
+          "collect_compatible_issues_same_run": true,
+          "error_detail_download_permission_code": "B2B_LOAD_ERRORS_DOWNLOAD",
+          "result_with_issues_still_means_validation_completed": true
+        },
+        "second_state_operational_contract": {
+          "progress": {
+            "source": "APPLICABLE_TECHNICAL_CHECK_INVENTORY_RUNTIME",
+            "fixed_total": "DENY",
+            "fixed_percentage": "DENY",
+            "elapsed_time_ui_only": "ALLOW",
+            "scroll_when_overflow": true,
+            "auto_focus_active_check": true,
+            "numeric_eta_without_measured_estimator": "DENY"
+          },
+          "ready_receipt": {
+            "label": "Registros detectados",
+            "created_at_source": "lf_ops.cargas_lotes.created_at",
+            "show_file_metadata": [
+              "B2B_FLD_FILE_NAME",
+              "B2B_FLD_MIME_TYPE",
+              "B2B_FLD_SIZE_BYTES",
+              "B2B_FLD_TEMPLATE_VERSION_DETECTED",
+              "B2B_FLD_MALWARE_SCAN_STATUS"
+            ],
+            "total_records_field": "B2B_FLD_TOTAL_RECORDS",
+            "total_records_source": "lf_ops.cargas_lotes.total_records",
+            "business_acceptance_claim": "DENY"
+          },
+          "technical_error_report": {
+            "issue_source": "lf_ops.validacion_incidencias",
+            "download_columns": [
+              "sheet_name",
+              "row_number",
+              "field_code",
+              "current_value_masked",
+              "error_code",
+              "user_message",
+              "suggested_action",
+              "trace_code"
+            ],
+            "group_summary_by": [
+              "error_code",
+              "field_code"
+            ],
+            "fail_fast_only_when": [
+              "SECURITY_BLOCKS_FURTHER_ANALYSIS",
+              "FILE_UNREADABLE_OR_UNPARSABLE"
+            ],
+            "download_permission_code": "B2B_LOAD_ERRORS_DOWNLOAD",
+            "business_data_errors_stage": "VALIDATE",
+            "collect_compatible_issues_same_run": true
+          }
+        },
+        "profile_contract_review_wizard_completion": {
+          "mode": "CRITERIA_APPLIED_NOT_RUNTIME_EXECUTION",
+          "repo_commit": "99ab86737b7224d5f345a1df8acf55ad45bfa631",
+          "quality_pack": {
+            "vote": "REMOVE_STEP_4",
+            "basis": "Evita mezclar estado de dominio con paso UI e introducir acciones sin contrato."
+          },
+          "ui_architect": {
+            "vote": "REMOVE_STEP_4",
+            "basis": "Carga validada es resultado del Paso 3, no una interacción separada."
+          },
+          "product_director": {
+            "vote": "REMOVE_STEP_4",
+            "basis": "Paso 4 no agrega una decisión o tarea del usuario y amplía alcance/fricción."
+          },
+          "independent_profile_execution": false
+        }
+      },
+      "es_transversal": false,
+      "pendiente_detalle": "Pago único cerrado funcional y visualmente. Cuotas Paso 1 (selección de canal: Asistente LF recomendado + Excel alternativo) aprobado y VIGENTE. Pendientes de Cuotas permanecen en B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001: inputs mínimos del asistente, PLAN_ID físico, fuente de fechas, modalidad de cobro y tolerancia/redondeo. Mapping físico/versionado de B2B_FLD_PROCESSING_SCOPE continúa pendiente de implementación.",
+      "pendiente_decision": false
+    },
+    {
+      "id": 617,
+      "razon": "Permitir que cada empresa defina su política de corte evita un umbral global rígido —por ejemplo 30 días— y evita extremos donde una diferencia de un día empuje la primera cuota casi un mes adicional. La plantilla conserva la estructura económica y la resolución de fechas queda gobernada server-side.",
+      "codigo": "B2B-RULE-INSTALLMENT-PLAN-001",
+      "estado": "CANDIDATO",
+      "origen": "OWNER_DECISION_2026-09-16",
+      "titulo": "Identidad de plan y cuota 0 asociada al plan",
+      "categoria": "OFERTAS_CUOTAS",
+      "created_at": "2026-08-23T03:35:56.083461+00:00",
+      "created_by": "chatgpt",
+      "updated_at": "2026-10-15T16:05:32.717506+00:00",
+      "descripcion": "Cada alternativa de cuotas de una oferta tiene identidad propia. El pago inicial o cuota 0 pertenece al plan y no forma parte del cronograma regular; la cuota 1 es la primera cuota posterior. En Cuotas, offer_amount representa el monto económico total acordado del plan y debe cumplirse exactamente pago inicial + suma del cronograma regular = offer_amount, a 2 decimales. Cuando la empresa aporta un cronograma completo, sus montos y fechas son la fuente operativa de ese cronograma dentro de las validaciones LF y no se corrigen silenciosamente. Cuando LF lo genera mediante Asistente, el residuo de división se absorbe exclusivamente en la última cuota. La cantidad de cuotas elegibles se gobierna por configuración de empresa: el límite base es hasta 12 cuotas, pero cada empresa puede habilitar un conjunto discreto como 1, 3, 6 y 12, o todas las cantidades de 1 a 12. La configuración de empresa puede ampliar el máximo por encima de 12 cuando esté autorizada. El Excel Completo no define libremente un plazo fuera de esa configuración: el número efectivo de cuotas se deriva del cronograma detallado y se valida contra el conjunto habilitado para la empresa. El Asistente LF solo puede proponer cantidades habilitadas por esa misma configuración. El mapeo físico de PLAN_ID y de la configuración empresarial de plazos permanece pendiente. La ventana mínima entre la activación del plan mediante pago confirmado de la cuota 0 y la primera cuota regular no se hardcodea en LF ni en el Excel: la define la empresa mediante configuración gobernada. LF calcula server-side la primera fecha de pago permitida que satisfaga esa ventana; si la próxima fecha permitida queda demasiado cerca, usa el siguiente ciclo permitido. Antes del pago el cronograma es propuesto; después de PAYMENT_CONFIRMED las fechas definitivas se congelan en el snapshot contractual. Aclaración del propietario 2026-10-15: cada alternativa de plan tiene su propia oferta económica y su monto específico. La referencia contenedora o su identificador de oferta vigente NO autoriza agregar los importes de planes alternativos; para descuentos conjuntos solamente se consideran las ofertas económicas seleccionadas y validadas server-side. La identidad física oferta-versión-plan y su cardinalidad final quedan pendientes del modelado y de reconciliar el contrato Cliente sin alterar sus reglas vigentes. Cuota 0 puede venir en el cronograma durante la carga, pero no es obligatoria; solo constituye un pago inicial activo si su monto supera el umbral parametrizado (hoy mayor que 1 en la moneda del plan). Cero no se considera pago inicial activo; para valores iguales o menores al umbral no se inicia cobro de cuota 0. La activación de planes sin cuota 0 activa queda PENDING_FUNCTIONAL_DEFINITION y nunca se presume automática. Fechas y ventanas actuales son sugerencias de diseño; faltan el modelo físico y sus relaciones con oferta, plan, cobro, calendario, ledger y snapshot; no fijar fechas definitivas ni constantes de frontend.",
+      "valor_config": {
+        "current_gap": "CONFIRMED_NO_CANONICAL_B2B_INSTALLMENT_PLAN_ID_IN_LF_OPS",
+        "owner_decision": "APPROVED_2026-09-16_V3",
+        "physical_creation": "BLOCKED_UNTIL_EXISTING_STRUCTURES_RECONCILED",
+        "schedule_authority": "AUTHORITATIVE_SERVER_PLAN_VALUES_REQUIRED_BEFORE_CLIENT_COMMIT",
+        "pending_subdecisions": [
+          "PHYSICAL_PLAN_ID_MAPPING",
+          "COMPANY_INSTALLMENT_TERM_CONFIGURATION_PHYSICAL_MAPPING",
+          "COMPANY_FIRST_INSTALLMENT_WINDOW_PHYSICAL_MAPPING"
+        ],
+        "plan_column_semantic": "LOCAL_FILE_SEQUENCE_OR_REFERENCE_NOT_PRIMARY_KEY",
+        "initial_payment_scope": "PER_PLAN",
+        "offer_amount_semantic": "TOTAL_ECONOMIC_AMOUNT_OF_PLAN",
+        "summary_fields_policy": "INSTALLMENT_COUNT_OR_SUMMARY_AMOUNT_NEVER_REPLACE_DETAILED_SCHEDULE_WHEN_SCHEDULE_IS_REQUIRED",
+        "collection_mode_source": "GOVERNED_COMPANY_OR_PLAN_CONFIGURATION_WITH_AUTHORIZED_OVERRIDE_ONLY",
+        "plan_identity_required": true,
+        "reconciliation_formula": "initial_payment_amount + sum(schedule_amount) = offer_amount",
+        "canonical_plan_identity": "LF_GENERATED_INTERNAL_ID",
+        "installment_term_policy": {
+          "authority": "GOVERNED_COMPANY_CONFIGURATION",
+          "above_12_policy": "ALLOW_ONLY_WHEN_GOVERNED_COMPANY_CONFIG_EXPLICITLY_INCREASES_LIMIT",
+          "client_consumption": "SERVER_ELIGIBLE_PLANS_ONLY",
+          "allowed_counts_model": "EXPLICIT_DISCRETE_SET",
+          "assistant_count_source": "SELECT_ONLY_FROM_COMPANY_ALLOWED_SET",
+          "allowed_counts_examples": [
+            [
+              1,
+              3,
+              6,
+              12
+            ],
+            [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12
+            ]
+          ],
+          "default_max_installments": 12,
+          "frontend_hardcoded_terms": "DENY",
+          "company_may_enable_subset": true,
+          "excel_complete_count_source": "DERIVE_FROM_DETAILED_SCHEDULE_AND_VALIDATE_AGAINST_COMPANY_ALLOWED_SET",
+          "company_may_enable_full_range_1_to_12": true
+        },
+        "client_snapshot_contract": "REUSE_REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+        "existing_structure_audit": {
+          "existing_import_fields": [
+            "B2B_IMP_INITIAL_PAYMENT_AMOUNT",
+            "B2B_IMP_INSTALLMENT_COUNT",
+            "B2B_IMP_INSTALLMENT_AMOUNT",
+            "B2B_IMP_FIRST_INSTALLMENT_DATE",
+            "B2B_IMP_EXTERNAL_INSTALLMENT_ID",
+            "B2B_IMP_INSTALLMENT_NUMBER"
+          ],
+          "tariff_plan_id_semantic": "COMPANY_COMMERCIAL_TARIFF_NOT_OFFER_INSTALLMENT_PLAN",
+          "lf_ops_plan_identity_field": false,
+          "lf_ops_physical_plan_tables": false
+        },
+        "initial_payment_semantic": "CUOTA_0_OR_INITIAL_PAYMENT_BEFORE_REGULAR_SCHEDULE",
+        "minimum_plan_information": [
+          "PLAN_ID",
+          "OFFER_REFERENCE",
+          "INITIAL_PAYMENT_AMOUNT_OR_EXPLICIT_NONE",
+          "INSTALLMENT_COUNT",
+          "COLLECTION_MODE",
+          "TERMS_OR_SCHEDULE_VERSION",
+          "PLAN_CURRENT_AND_ACTIVE_STATUS"
+        ],
+        "assistant_rounding_policy": "ROUND_TO_2_DECIMALS_RESIDUAL_TO_LAST_INSTALLMENT",
+        "information_source_policy": {
+          "LF_PRICING_FEES_AND_TAXES": "VERSIONED_LF_CONFIGURATION_NOT_UPLOAD",
+          "CLIENT_FRONTEND_CALCULATION": "DENY",
+          "PAYMENT_AND_PLAN_EXECUTION_STATE": "CANONICAL_LEDGER_NOT_UPLOAD",
+          "PARTNER_OWNED_OFFER_AND_PLAN_TERMS": "LOAD_OR_GOVERNED_PARTNER_CONFIGURATION"
+        },
+        "regular_schedule_starts_at": 1,
+        "external_schedule_authority": "PRESERVE_RECEIVED_AMOUNTS_AND_DATES_SUBJECT_TO_VALIDATION",
+        "initial_payment_excel_policy": {
+          "source": "CRONOGRAMA",
+          "semantic": "CUOTA_0",
+          "required_per_plan": false,
+          "header_duplication": "DENY",
+          "zero_amount_behavior": "NOT_CONSIDERED_AS_ACTIVE_CUOTA_0",
+          "explicit_zero_allowed": true,
+          "activation_amount_min_exclusive": 1,
+          "activation_evaluation_authority": "SERVER_CONFIG_DRIVEN",
+          "below_or_equal_threshold_behavior": "NOT_ACTIVE_INITIAL_PAYMENT",
+          "without_active_initial_payment_plan_activation": "PENDING_FUNCTIONAL_DEFINITION"
+        },
+        "minimum_schedule_information": [
+          "PLAN_ID",
+          "INSTALLMENT_NUMBER_STARTING_AT_1",
+          "DUE_DATE",
+          "INSTALLMENT_AMOUNT"
+        ],
+        "client_visual_evidence_review": {
+          "overflow_examples": [
+            18,
+            24
+          ],
+          "canonical_client_rule": "REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001",
+          "selected_plan_example": "6_INSTALLMENTS_DEMO",
+          "overflow_examples_authority": "DEMO_ONLY_NON_AUTHORITATIVE"
+        },
+        "first_installment_date_policy": {
+          "authority": "GOVERNED_COMPANY_OR_PLAN_CONFIGURATION",
+          "prepay_schedule": "SERVER_PROPOSED",
+          "postpay_schedule": "FREEZE_IN_CONTRACTUAL_SNAPSHOT",
+          "activation_anchor": "PAYMENT_CONFIRMED_FOR_INSTALLMENT_0",
+          "hardcoded_default_days": "DENY",
+          "next_due_date_resolution": "FIRST_ALLOWED_DUE_DATE_THAT_SATISFIES_CONFIGURED_MINIMUM_WINDOW",
+          "physical_date_model_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "if_next_allowed_date_too_close": "MOVE_TO_NEXT_ALLOWED_CYCLE",
+          "predevelopment_due_dates_status": "SUGGESTED_NOT_FINAL",
+          "excel_absolute_due_dates_required": "DENY_FOR_DYNAMIC_DATE_MODEL",
+          "dependency_reconciliation_required": "PLAN_OFFER_PAYMENT_LEDGER_AND_COMPANY_CALENDAR",
+          "minimum_days_to_first_regular_installment": "CONFIGURABLE_BY_COMPANY"
+        },
+        "offer_may_have_multiple_plans": true,
+        "optional_schedule_information": [
+          "EXTERNAL_INSTALLMENT_ID"
+        ],
+        "candidate_existing_offer_field": "B2B_IMP_INITIAL_PAYMENT_AMOUNT",
+        "first_schedule_date_derivation": "INSTALLMENT_1_DUE_DATE_WHEN_COMPLETE_SCHEDULE_PRESENT",
+        "installment_count_excel_policy": {
+          "validation": "N_CUOTAS_MUST_EQUAL_COUNT_OF_CUOTA_1_TO_N_FOR_REFERENCIA_EMPRESA_PLUS_PLAN",
+          "owner_decision": "APPROVED_2026-09-17_V1",
+          "silent_correction": "DENY",
+          "OFERTAS_PLANES_N_CUOTAS": "REQUIRED_SUMMARY_INPUT",
+          "authoritative_count_source": "COUNT_REGULAR_INSTALLMENTS_FROM_CRONOGRAMA"
+        },
+        "initial_payment_is_installment_1": false,
+        "installment_count_summary_policy": "DERIVED_FROM_DETAILED_SCHEDULE_WHEN_COMPLETE_EXCEL",
+        "currency_precision_source_rule_id": 422,
+        "company_plan_config_physical_status": "PENDING_NO_CANONICAL_COMPANY_PLAN_CONFIGURATION_STRUCTURE_FOUND",
+        "external_schedule_silent_correction": "DENY",
+        "plan_activation_after_initial_payment": "REUSE_REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+        "standard_excel_dynamic_schedule_policy": {
+          "owner_decision": "APPROVED_2026-09-17_V4",
+          "regular_due_dates": "CALCULATED_BY_LF_AFTER_PAYMENT_CONFIRMED_CUOTA_0_USING_GOVERNED_DATE_POLICY",
+          "n_cuotas_authority": "COUNT_CUOTA_1_TO_N_IN_CRONOGRAMA",
+          "plan_transport_key": "REFERENCIA_EMPRESA_PLUS_PLAN_FILE_RELATION_ONLY",
+          "schedule_amount_source": "CRONOGRAMA_MONTO",
+          "initial_payment_location": "CRONOGRAMA_CUOTA_0",
+          "n_cuotas_summary_location": "OFERTAS_PLANES",
+          "silent_schedule_correction": "DENY",
+          "regular_installments_start_at": 1,
+          "due_date_column_in_standard_cronograma": "DENY",
+          "separate_initial_payment_column_in_ofertas_planes": "DENY"
+        }
+      },
+      "es_transversal": false,
+      "pendiente_detalle": "GOVERNED_CANDIDATE_REQUIRES_REVIEW",
+      "pendiente_decision": true
+    },
+    {
+      "id": 620,
+      "razon": "Reducir variantes, pruebas, duplicidad de datos y ambigüedad operativa: dos contratos determinísticos y un único cronograma autoritativo evitan pedir o interpretar dos veces la misma información.",
+      "codigo": "B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001",
+      "estado": "CANDIDATO",
+      "origen": "OWNER_DECISION_2026-09-15",
+      "titulo": "Carga de cuotas por Excel completo o Excel asistido",
+      "categoria": "B2B_CARGAS",
+      "created_at": "2026-08-23T04:17:41.244227+00:00",
+      "created_by": "chatgpt",
+      "updated_at": "2026-09-17T22:32:26.649198+00:00",
+      "descripcion": "En modalidad Cuotas, ambos caminos parten de un archivo Excel y LF admite únicamente dos contratos versionados y estrictos. EXCEL_ASISTIDO contiene la base común de deuda y sus fechas temporales obligatorias; si cumple exactamente ese contrato, entra al Asistente LF para completar oferta, plan y cronograma. EXCEL_COMPLETO contiene esa misma base más la oferta y el cronograma detallado requerido; si cumple exactamente ese contrato, pasa a validación. No existe un tercer contrato ni combinaciones intermedias. En EXCEL_COMPLETO, el cronograma detallado es la autoridad para montos y fechas de las cuotas regulares: B2B_IMP_FIRST_INSTALLMENT_DATE se deriva de la fecha de vencimiento de la cuota 1 y B2B_IMP_INSTALLMENT_AMOUNT no es una fuente autoritativa frente a B2B_IMP_SCHEDULE_AMOUNT. LF no corrige silenciosamente el cronograma externo. Los campos físicos de fecha_inicio_mora y fecha_corte_cartera, y el mapeo físico de PLAN_ID, siguen pendientes de materialización gobernada; su semántica funcional ya está definida.",
+      "valor_config": {
+        "assistant_goal": "COMPLETE_ONLY_MISSING_OFFER_PLAN_AND_SCHEDULE_AFTER_EXCEL_ASSISTED_CONTRACT_MATCH",
+        "entry_channels": [
+          "EXCEL_COMPLETE",
+          "EXCEL_ASSISTED"
+        ],
+        "excel_behavior": {
+          "EXCEL_ASSISTED": "BASE_DEBT_INPUT_THEN_ASSISTANT_COMPLETION",
+          "EXCEL_COMPLETE": "VALIDATE_PREDEFINED_OFFER_PLAN_SCHEDULE",
+          "same_traceability": true,
+          "same_final_business_validations": true
+        },
+        "owner_decision": "APPROVED_2026-09-17_V4",
+        "excel_available": true,
+        "path_resolution": "AUTO_DETECT_BY_EXACT_TEMPLATE_CONTRACT",
+        "rounding_policy": "ROUND_TO_2_DECIMALS_RESIDUAL_TO_LAST_INSTALLMENT",
+        "canonical_output": "SAME_VALIDATED_OFFER_PLAN_SCHEDULE_MODEL",
+        "commercial_intent": "DETERMINISTIC_TWO_CONTRACTS_NO_PRESELECTION_NO_FLEXIBLE_INTERMEDIATE_VARIANTS",
+        "assistant_behavior": {
+          "preview_before_commit": true,
+          "proposal_only_until_confirmed": true,
+          "server_side_generation_required": true,
+          "explicit_partner_confirmation_required": true,
+          "saved_company_patterns_allowed_when_governed": true,
+          "never_infer_business_terms_without_partner_input_or_governed_company_configuration": true
+        },
+        "date_source_policy": "GOVERNED_CONFIGURATION_AFTER_CUOTA0_PAYMENT_CONFIRMED_FOR_STANDARD_DYNAMIC_DATE_MODEL",
+        "step1_visual_status": "SUPERSEDED_FUNCTIONALLY_PENDING_NEW_UX_EXPLORATION",
+        "pending_subdecisions": [
+          "PHYSICAL_PLAN_ID_MAPPING",
+          "DELINQUENCY_START_DATE_PHYSICAL_FIELD_MAPPING",
+          "PORTFOLIO_CUTOFF_DATE_PHYSICAL_FIELD_MAPPING"
+        ],
+        "reconciliation_policy": "EXACT_AFTER_2_DECIMAL_NORMALIZATION",
+        "step1_visual_evidence": {
+          "artifact_code": "B2B-CARGA-002-DESKTOP-LIGHT-CUOTAS-V01-P1-CHANNEL-SELECTION",
+          "drive_file_id": "1Fbq6zhfVYKCLAlvwEqKCpEePDVlPsXoH",
+          "owner_approved_at": "2026-08-25",
+          "selected_modality": "CUOTAS",
+          "alternative_channel": "EXCEL",
+          "recommended_channel": "ASSISTED",
+          "visual_decision_code": "LF-B2B-VIS-CARGA-002-CUOTAS-CHANNEL-SELECTION-001",
+          "current_functional_authority": false,
+          "superseded_by_owner_decision": "APPROVED_2026-09-15_V2"
+        },
+        "collection_mode_policy": "INHERIT_IF_SINGLE_AUTHORIZED_SELECT_OR_IMPORT_ONLY_IF_AUTHORIZED",
+        "strict_contract_policy": "ONLY_TWO_VERSIONED_CONTRACTS",
+        "assistant_minimum_inputs": [
+          "B2B_IMP_EXTERNAL_DEBT_ID",
+          "B2B_IMP_DOCUMENT_TYPE",
+          "B2B_IMP_DOCUMENT_NUMBER",
+          "B2B_IMP_ORIGINAL_CREDITOR_CODE",
+          "B2B_IMP_CURRENT_OWNER_CODE",
+          "B2B_IMP_ORIGINAL_DEBT_AMOUNT",
+          "B2B_IMP_CURRENT_DEBT_AMOUNT",
+          "B2B_IMP_CURRENCY_CODE",
+          "B2B_IMP_SOURCE_UPDATED_AT"
+        ],
+        "contract_field_matrix_v3": {
+          "common_optional": [
+            "B2B_IMP_CUSTOMER_FULL_NAME"
+          ],
+          "common_required": [
+            "B2B_IMP_EXTERNAL_DEBT_ID",
+            "B2B_IMP_DOCUMENT_TYPE",
+            "B2B_IMP_DOCUMENT_NUMBER",
+            "B2B_IMP_ORIGINAL_CREDITOR_CODE",
+            "B2B_IMP_CURRENT_OWNER_CODE",
+            "B2B_IMP_ORIGINAL_DEBT_AMOUNT",
+            "B2B_IMP_CURRENT_DEBT_AMOUNT",
+            "B2B_IMP_CURRENCY_CODE",
+            "DELINQUENCY_START_DATE",
+            "PORTFOLIO_CUTOFF_DATE",
+            "B2B_IMP_SOURCE_UPDATED_AT"
+          ],
+          "excel_assisted_semantic": "COMMON_DEBT_BASE_ONLY_THEN_ASSISTANT_COMPLETES_OFFER_PLAN_AND_SCHEDULE",
+          "excel_complete_optional_offer": [
+            "B2B_IMP_TERMS_CODE",
+            "B2B_IMP_TERMS_SUMMARY",
+            "B2B_IMP_CAMPAIGN_CODE"
+          ],
+          "excel_complete_required_offer": [
+            "B2B_IMP_EXTERNAL_OFFER_ID",
+            "B2B_IMP_INSTALLMENT_COUNT",
+            "B2B_IMP_OFFER_AMOUNT",
+            "B2B_IMP_VALID_FROM",
+            "B2B_IMP_VALID_UNTIL",
+            "INITIAL_PAYMENT_AMOUNT_OR_EXPLICIT_ZERO"
+          ],
+          "excel_complete_optional_schedule": [
+            "B2B_IMP_EXTERNAL_INSTALLMENT_ID"
+          ],
+          "excel_complete_required_schedule": [
+            "B2B_IMP_EXTERNAL_OFFER_ID",
+            "B2B_IMP_INSTALLMENT_NUMBER",
+            "B2B_IMP_DUE_DATE",
+            "B2B_IMP_SCHEDULE_AMOUNT"
+          ]
+        },
+        "contract_field_matrix_v4": {
+          "date_generation_anchor": "PAYMENT_CONFIRMED_FOR_CUOTA_0",
+          "file_relation_semantic": "REFERENCIA_EMPRESA_PLUS_PLAN_ONLY_RELATES_OFERTAS_PLANES_TO_CRONOGRAMA_WITHIN_THE_FILE; LF_GENERATES_CANONICAL_INTERNAL_IDS",
+          "initial_payment_semantic": "CRONOGRAMA_CUOTA_0",
+          "date_generation_authority": "GOVERNED_COMPANY_OR_PLAN_CONFIGURATION",
+          "regular_installment_semantic": "CRONOGRAMA_CUOTA_1_TO_N",
+          "standard_excel_schedule_headers": [
+            "REFERENCIA_EMPRESA",
+            "PLAN",
+            "CUOTA",
+            "MONTO"
+          ],
+          "external_offer_id_in_standard_excel": "DENY_LF_GENERATES_INTERNAL_IDENTITY",
+          "absolute_due_dates_in_standard_excel": "DENY",
+          "standard_excel_complete_offer_headers": [
+            "REFERENCIA_EMPRESA",
+            "TIPO_DOCUMENTO",
+            "DOCUMENTO",
+            "CLIENTE",
+            "ACREEDOR_ORIGINAL",
+            "DEUDA_ORIGINAL",
+            "DEUDA_ACTUAL",
+            "MONEDA",
+            "FECHA_INICIO_MORA",
+            "FECHA_CORTE_CARTERA",
+            "PLAN",
+            "MONTO_PLAN",
+            "N_CUOTAS",
+            "VIGENTE_DESDE",
+            "VIGENTE_HASTA",
+            "NEGOCIABLE",
+            "MONTO_MIN_REVISION",
+            "MONTO_MIN_AUTO",
+            "LINK_CARTA_CESION"
+          ],
+          "separate_initial_payment_amount_header": "DENY_DUPLICATES_CUOTA_0",
+          "external_installment_id_in_standard_excel": "DENY_LF_GENERATES_INTERNAL_IDENTITY"
+        },
+        "contract_mismatch_action": "REJECT_WITH_CORRECT_TEMPLATE_GUIDANCE",
+        "external_schedule_policy": "PRESERVE_AND_VALIDATE_NO_SILENT_CORRECTION",
+        "known_common_base_fields": [
+          "B2B_IMP_EXTERNAL_DEBT_ID",
+          "B2B_IMP_DOCUMENT_TYPE",
+          "B2B_IMP_DOCUMENT_NUMBER",
+          "B2B_IMP_ORIGINAL_CREDITOR_CODE",
+          "B2B_IMP_CURRENT_OWNER_CODE",
+          "B2B_IMP_ORIGINAL_DEBT_AMOUNT",
+          "B2B_IMP_CURRENT_DEBT_AMOUNT",
+          "B2B_IMP_CURRENCY_CODE",
+          "B2B_IMP_SOURCE_UPDATED_AT"
+        ],
+        "exact_field_matrix_status": "FUNCTIONALLY_CLOSED_PENDING_PHYSICAL_TEMPORAL_FIELDS_AND_PLAN_ID",
+        "redundant_complete_fields": [
+          "B2B_IMP_FIRST_INSTALLMENT_DATE",
+          "B2B_IMP_INSTALLMENT_AMOUNT"
+        ],
+        "assisted_contract_semantic": "BASE_DEBT_MINIMUM_THEN_ASSISTANT_COMPLETES_OFFER_PLAN_AND_SCHEDULE",
+        "complete_contract_semantic": "BASE_DEBT_PLUS_FULL_OFFER_PLAN_AND_SCHEDULE",
+        "explicit_channel_selection": "DENY",
+        "default_recommended_channel": "NONE_AUTO_DETECTED",
+        "detailed_schedule_authority": "AUTHORITATIVE_FOR_INSTALLMENT_NUMBERS_AND_AMOUNTS_IN_STANDARD_DYNAMIC_DATE_MODEL",
+        "direct_validation_condition": "MATCH_EXCEL_COMPLETE_CONTRACT",
+        "excel_required_for_all_paths": true,
+        "first_installment_date_policy": "DERIVED_BY_LF_AFTER_CUOTA0_PAYMENT_CONFIRMED_NOT_FILE_INPUT",
+        "assistant_activation_condition": "MATCH_EXCEL_ASSISTED_CONTRACT",
+        "frontend_calculation_authority": "DENY",
+        "physical_field_mutation_status": "NOT_EXECUTED_RULE_RECONCILIATION_ONLY",
+        "assistant_minimum_inputs_status": "PARTIAL_PENDING_TEMPORAL_FIELDS",
+        "intermediate_field_combinations": "DENY",
+        "unauthorized_collection_mode_action": "BLOCK_RECORD",
+        "complete_first_installment_date_policy": "NOT_FILE_INPUT_IN_STANDARD_DYNAMIC_DATE_MODEL",
+        "complete_installment_amount_summary_policy": "NOT_AUTHORITATIVE_WHEN_DETAILED_SCHEDULE_PRESENT"
+      },
+      "es_transversal": false,
+      "pendiente_detalle": "GOVERNED_CANDIDATE_REQUIRES_REVIEW",
+      "pendiente_decision": true
+    }
+  ],
+  "source_relation": {
+    "id": 9492,
+    "nota": "Flujo de preparación UI aprobado en cuatro estados condicionales. Los estados visuales no equivalen a estados UPLOAD_BATCH; toda mutación debe resolver contra lf_ops.estados_transiciones.",
+    "regla_id": 581,
+    "created_at": "2026-08-21T06:01:59.23816+00:00",
+    "pantalla_id": 44
+  }
+}
