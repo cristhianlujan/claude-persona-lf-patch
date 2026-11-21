@@ -197,8 +197,8 @@ def reduced(path, data, monthly_dups, sample=None, archives=None):
     counts.update(header_sha256=hashlib.sha256(header).hexdigest(),column_count=len(cols),trailing_delimiter=trailing,matched_unique_keys=len(seen),duplicate_matched_keys=len(dup),unmatched_monthly_unique_keys=len(data)-len(monthly_dups)-len(seen),matched_unambiguous_named=good,state_diff=state_diff,condition_diff=cond_diff,ubigeo_diff=ubigeo_diff,workers_numeric=worker_num,ciiu_four_digits=ciiu_codes)
     if sample is not None:
         sys.path.insert(0,str(Path(__file__).resolve().parents[1] / 'adapters'))
-        from sunat_company_v1 import company, batches
-        captures = []
+        from sunat_join_batches_v1 import joined_batches
+        monthly_sample, reduced_sample = [], []
         for key in sorted(sample_reduced.keys() - dup - monthly_dups - malformed_keys):
             month, m_ordinal = sample[key]
             red, r_ordinal = sample_reduced[key]
@@ -206,9 +206,11 @@ def reduced(path, data, monthly_dups, sample=None, archives=None):
                 continue
             m = dict(url=MONTHLY, zip_sha256=archives[0]['sha256'], header_sha256=HEADER_SHA, ordinal=m_ordinal)
             r = dict(url=REDUCED, zip_sha256=archives[1]['sha256'], header_sha256=counts['header_sha256'], ordinal=r_ordinal)
-            captures.append(company(month,red,m,r))
-        payloads = list(batches(captures,32,512*1024))
-        counts['pilot_dry_run'] = {'rows':len(captures), 'batches':[{'bytes':len(p),'sha256':hashlib.sha256(p).hexdigest()} for p in payloads]}
+            monthly_sample.append((month,m))
+            reduced_sample.append((red,r))
+        payloads = list(joined_batches(monthly_sample,reduced_sample,spool_pages=128,
+                                       max_source_rows=32,max_batch_rows=32,max_batch_bytes=512*1024))
+        counts['pilot_dry_run'] = {'rows':sum(len(json.loads(p)) for p in payloads), 'batches':[{'bytes':len(p),'sha256':hashlib.sha256(p).hexdigest()} for p in payloads]}
     return counts
 
 def self_test():
@@ -236,13 +238,15 @@ def self_test():
     print('PASS_SUNAT_JOIN_QA 5')
 
 def main():
+    import time, resource
+    started = time.monotonic()
     with tempfile.TemporaryDirectory() as d:
         m=Path(d)/'monthly.zip'; r=Path(d)/'reduced.zip'
         a=fetch(MONTHLY,m); require(a['sha256']==MONTHLY_SHA,'MONTHLY_SNAPSHOT_CHANGED')
         sample = {}
         data,dups,mc=monthly(m,HEADER_SHA,sample); m.unlink()
         b=fetch(REDUCED,r); rc=reduced(r,data,dups,sample,(a,b))
-        print('SUNAT_JOIN_QA '+json.dumps({'monthly_archive':a,'reduced_archive':b,'monthly':mc,'reduced':rc,'crc_verified':True,'rows_published':0},sort_keys=True))
+        print('SUNAT_JOIN_QA '+json.dumps({'monthly_archive':a,'reduced_archive':b,'monthly':mc,'reduced':rc,'crc_verified':True,'rows_published':0,'peak_rss_kib_linux':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,'elapsed_s':round(time.monotonic()-started,3)},sort_keys=True))
 
 if __name__=='__main__':
     try:
