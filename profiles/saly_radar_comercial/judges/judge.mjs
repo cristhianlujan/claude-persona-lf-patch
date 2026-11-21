@@ -84,3 +84,14 @@ export function judgeDetails(packet, context) {
     judged_sha256, capture_sha256: computed});
 }
 export function judge(packet, context) { return judgeDetails(packet, context).status; }
+
+/* A2: revalidate the hash against CURRENT content at the point of use. */
+export function verifyJudgedHash(verdict, packet, context) {
+  if (!exactFields(verdict, ['status','code','judged_sha256','capture_sha256'])) return false;
+  if (verdict.status !== 'VALID_OUTPUT' || verdict.code !== 'RADAR_SEMANTIC_READ_ONLY_PASS' ||
+      typeof verdict.judged_sha256 !== 'string' || !HEX64.test(verdict.judged_sha256)) return false;
+  const current = judgeDetails(packet, context);
+  return current.status === 'VALID_OUTPUT' &&
+    current.judged_sha256 === verdict.judged_sha256 &&
+    current.capture_sha256 === verdict.capture_sha256;
+}
