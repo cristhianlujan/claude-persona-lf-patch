@@ -774,6 +774,27 @@ BEGIN
     'controles', ctl);
 END $function$;
 
+-- Catálogo de excepciones: el control de contrato T1/T2 exige paridad exacta.
+INSERT INTO lf_ops.nucleo_errores(codigo,puerta,significado,accion) VALUES
+ ('NUCLEO_REVISION_VERSION_CONFLICT','PROPUESTA','Cambió la versión candidata mientras se revisaba','Releer versión y hash antes de reintentar'),
+ ('NUCLEO_REVISION_SCOPE_CONFLICT','PROPUESTA','La aplicación de alcance cambió durante la revisión','Releer la aplicación sin crear otra ruta de escritura');
+INSERT INTO saly.nucleo_errores(codigo,puerta,significado,accion) VALUES
+ ('NUCLEO_REVISION_VERSION_CONFLICT','PROPUESTA','Cambió la versión candidata mientras se revisaba','Releer versión y hash antes de reintentar'),
+ ('NUCLEO_REVISION_SCOPE_CONFLICT','PROPUESTA','La aplicación de alcance cambió durante la revisión','Releer la aplicación sin crear otra ruta de escritura');
+-- Contrato V2 adicional; V1 conserva su versión y pasa a REEMPLAZADO.
+INSERT INTO lf_ops.nucleo_contratos(puerta,version,funcion,descripcion,entrada,salida,estado)
+SELECT puerta,2,funcion,'Puerta gobernada de propuesta: NUEVA, CAMBIO y REVISION atómica de candidata nunca publicada',
+ entrada || jsonb_build_object('tipo','NUEVA|CAMBIO|REVISION','version_anterior','entero requerido para REVISION','hash_anterior','sha256 requerido para REVISION','motivo_revision','texto de al menos 10 caracteres para REVISION'),
+ salida || jsonb_build_object('tipo','NUEVA|CAMBIO|REVISION'),'VIGENTE'
+ FROM lf_ops.nucleo_contratos WHERE puerta='PROPUESTA' AND version=1 AND estado='VIGENTE';
+UPDATE lf_ops.nucleo_contratos SET estado='REEMPLAZADO' WHERE puerta='PROPUESTA' AND version=1 AND estado='VIGENTE';
+INSERT INTO saly.nucleo_contratos(puerta,version,funcion,descripcion,entrada,salida,estado)
+SELECT puerta,2,funcion,'Puerta gobernada de propuesta: NUEVA, CAMBIO y REVISION atómica de candidata nunca publicada',
+ entrada || jsonb_build_object('tipo','NUEVA|CAMBIO|REVISION','version_anterior','entero requerido para REVISION','hash_anterior','sha256 requerido para REVISION','motivo_revision','texto de al menos 10 caracteres para REVISION'),
+ salida || jsonb_build_object('tipo','NUEVA|CAMBIO|REVISION'),'VIGENTE'
+ FROM saly.nucleo_contratos WHERE puerta='PROPUESTA' AND version=1 AND estado='VIGENTE';
+UPDATE saly.nucleo_contratos SET estado='REEMPLAZADO' WHERE puerta='PROPUESTA' AND version=1 AND estado='VIGENTE';
+
 DO $revtest$
 DECLARE p jsonb; r jsonb; e jsonb; q jsonb; prev_hash text; before_row jsonb; before_tests jsonb; before_judgements jsonb; pts jsonb;
 BEGIN
