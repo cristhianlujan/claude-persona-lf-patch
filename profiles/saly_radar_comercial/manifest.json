@@ -23,9 +23,12 @@
     "SKILL.md",
     "README.md",
     "contracts/main_contract.md",
+    "config/pte_pilot.v1.json",
     "schemas/output.schema.json",
+    "judges/judge.mjs",
     "judges/mini_judge.md",
     "evals/eval_matrix.json",
+    "evals/test_judge.mjs",
     "manifest.json"
   ],
   "native_profile_receipt_required": true
