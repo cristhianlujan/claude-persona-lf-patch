@@ -1,0 +1,7 @@
+{
+  "solution_ref": "a4-no-new-legacy-readers-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/guard_legacy_readers.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/a4-no-new-legacy-readers-v1.json": "CHANGESET_MANIFEST"
+  }
+}

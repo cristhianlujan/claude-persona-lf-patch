@@ -233,6 +233,27 @@ jobs:
           fi
           PYTHONPATH=. python3 sandbox/lf_contract_gate_test/post_pase_e2e/test_post_pase_multi_scenario_e2e_v1.py
 
+      - name: A4 guard against new direct LF legacy rule readers
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          LF_A4_BASE_SHA: ${{ steps.pase_plan.outputs.resolved_base_sha }}
+          LF_A4_HEAD_SHA: ${{ steps.pase_plan.outputs.resolved_head_sha }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/nucleo_ci/guard_legacy_readers.py --base "$LF_A4_BASE_SHA" --head "$LF_A4_HEAD_SHA"
+
+      - name: Run LF/SALY nucleus regression on isolated PG17
+        if: github.event_name == 'pull_request'
+        timeout-minutes: 20
+        shell: bash
+        env:
+          LF_NUCLEO_BASE_SHA: ${{ steps.pase_plan.outputs.resolved_base_sha }}
+          LF_NUCLEO_HEAD_SHA: ${{ steps.pase_plan.outputs.resolved_head_sha }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py --base "$LF_NUCLEO_BASE_SHA" --head "$LF_NUCLEO_HEAD_SHA"
+
       - name: Persist canonical PASE plan
         uses: actions/upload-artifact@v4
         with:

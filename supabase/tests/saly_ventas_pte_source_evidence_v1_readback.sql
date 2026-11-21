@@ -1,0 +1,1 @@
+SELECT c.source_id,c.rights_status,c.habilitada,c.persist_business_data,c.runtime_status,e.hechos FROM saly.ventas_discovery_catalogo c JOIN saly.evidencias e ON c.rights_evidence_ref='saly.evidencias:'||e.codigo WHERE c.catalog_version='PE-SALY-DISCOVERY-2026-11-V0.2' AND c.source_id='PE-PTE';
