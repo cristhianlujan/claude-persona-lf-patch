@@ -129,3 +129,17 @@ jobs:
         run: python3 skills/ai_sales_discovery/tests/sunat_full_archive_probe.py --self-test
       - name: Download official ZIP and inspect header, CRC and aggregate counts
         run: python3 skills/ai_sales_discovery/tests/sunat_full_archive_probe.py
+
+  sunat-join-one-shot:
+    name: SUNAT monthly reduced join QA (aggregate only)
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT cruce de padrones v1.0')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify join and rejection fixtures
+        run: python3 skills/ai_sales_discovery/tests/sunat_join_probe.py --self-test
+      - name: Download and join official sources by RUC, report aggregate evidence
+        run: python3 skills/ai_sales_discovery/tests/sunat_join_probe.py
