@@ -112,6 +112,24 @@ COMMIT;""")
     assert psql(call(query_a)) == received
     assert psql("SELECT count(*) FROM saly.ventas_discovery_ingestas")=="1"
     assert psql("SELECT count(*) FROM saly.ventas_hallazgos WHERE captura_empresarial IS NOT NULL")=="2"
+    # Different scheduled batch for the same source snapshot tries the same RUCs.
+    d_id = str(uuid.uuid4())
+    psql(f"""BEGIN;
+    INSERT INTO saly.ventas_discovery_plan_batches(run_id,source_id,scope_key,batch_key,query_hash,estado)
+    SELECT run_id,source_id,scope_key,'OVERLAP',query_hash,estado FROM saly.ventas_discovery_plan_batches
+    WHERE run_id=(SELECT run_id FROM saly.ventas_discovery_consultas WHERE id={lit(query_b)}::uuid);
+    INSERT INTO saly.ventas_discovery_consultas(id,ejecucion_id,run_id,run_ref,catalog_version,source_id,connector_id,
+    substep_code,scope_key,batch_key,query_hash,herramienta,inicio,fin,estado,cantidad_hallazgos,evidencia_ref)
+    SELECT {lit(d_id)}::uuid,ejecucion_id,run_id,run_ref,catalog_version,source_id,connector_id,substep_code,scope_key,
+    'OVERLAP',query_hash,herramienta,inicio,fin,estado,cantidad_hallazgos,evidencia_ref FROM saly.ventas_discovery_consultas
+    WHERE id={lit(query_b)}::uuid; COMMIT;""")
+    try:
+        psql(call(d_id))
+    except subprocess.CalledProcessError as exc:
+        assert "SUNAT_OVERLAPPING_BATCH" in exc.stderr, exc.stderr
+    else:
+        raise AssertionError("overlapping batch accepted")
+    assert psql("SELECT count(*) FROM saly.ventas_discovery_ingestas")=="1"
     print("PASS_SUNAT_PG17_ROLLBACK_NEGATIVE_CROSS_RUN_LOCK_REPLAY_1_BATCH_2_COMPANIES")
 
 
