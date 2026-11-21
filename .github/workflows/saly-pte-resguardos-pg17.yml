@@ -104,6 +104,8 @@ jobs:
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs
 
+      - name: Validate resumable clean retry and byte limits
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_download_v1.py
       - name: Validate SUNAT dual-observation contract and bounded JSON batches
         run: python3 skills/ai_sales_discovery/tests/test_sunat_company_v1.py
       - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
