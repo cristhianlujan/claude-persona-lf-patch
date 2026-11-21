@@ -40,12 +40,17 @@ class LayerTests(unittest.TestCase):
         logo=[20,20,100,30] if wide else [20,36,100,30]
         card=[120,65,220,130] if wide else [12,96,216,208]
         action=[140,140,180,40] if wide else [30,250,180,40]
-        regions=[{'name':'Scene','owner':'NATIVE','box':[0,0,*dims],'ops':[]},
-          {'name':'Logo','owner':'COMPOSITOR','box':logo,'ops':[{'kind':'ASSET','box':[0,0,100,30],'source_id':'LOGO'}]},
-          {'name':'Card','owner':'NATIVE','box':card,'ops':[]},
-          {'name':'Action','owner':'COMPOSITOR','box':action,'ops':[{'kind':'FILL','box':[0,0,180,40],'color_source':'CTA','radius':20},{'kind':'TEXT','box':[4,4,172,32],'copy':'Continue','size':17,'weight':700,'font_source':'FONT','color_source':'WHITE'}]},
-          {'name':'Reference','owner':'REFERENCE_ONLY','box':None,'ops':[]}]
-        return {'schema_version':SCHEMA,'review_only':True,'render_authorized':False,'body_origin':'SYNTHETIC_REVIEW','plan':copy.deepcopy(self.plan),'proposal_sha256':preflight(self.plan)['proposal_sha256'],'canvas':dims,'backdrop':{'kind':'COLOR','source_id':'WHITE'},'regions':regions,'files':copy.deepcopy(self.files)}
+        regions=[{'name':'Scene','owner':'NATIVE','coverage':'BOX','box':[0,0,*dims],'ops':[]},
+          {'name':'Logo','owner':'COMPOSITOR','coverage':'BOX','box':logo,'ops':[{'kind':'ASSET','box':[0,0,100,30],'source_id':'LOGO'}]},
+          {'name':'Card','owner':'NATIVE','coverage':'BOX','box':card,'ops':[]},
+          {'name':'Action','owner':'COMPOSITOR','coverage':'BOX','box':action,'ops':[{'kind':'FILL','box':[0,0,180,40],'color_source':'CTA','radius':20},{'kind':'TEXT','box':[4,4,172,32],'copy':'Continue','size':17,'weight':700,'font_source':'FONT','color_source':'WHITE'}]},
+          {'name':'Reference','owner':'REFERENCE_ONLY','coverage':'NONE','box':None,'ops':[]}]
+        m={'schema_version':SCHEMA,'review_only':True,'render_authorized':False,'body_origin':'SYNTHETIC_REVIEW','plan':copy.deepcopy(self.plan),'proposal_sha256':preflight(self.plan)['proposal_sha256'],'canvas':dims,'backdrop':{'kind':'COLOR','source_id':'WHITE'},'regions':regions,'files':copy.deepcopy(self.files)}
+        return self.seal(m)
+    def seal(self,m):
+        layout={key:copy.deepcopy(m[key]) for key in ('canvas','backdrop','regions')}
+        bp=m['plan']['blueprint'];bp['composition_layout']=layout;bp['design_lock']['LOCK']['composition_layout']=copy.deepcopy(layout)
+        m['proposal_sha256']=preflight(m['plan'])['proposal_sha256'];return m
     def body(self,m):
         im=Image.new('RGBA',tuple(m['canvas']),'#F2F6F5'); d=ImageDraw.Draw(im)
         def r(b): x,y,w,h=b;return x,y,x+w-1,y+h-1
@@ -68,6 +73,8 @@ class LayerTests(unittest.TestCase):
           ('LAYER_COMPONENT_COVERAGE',lambda m:m['regions'].pop()),
           ('LAYER_COMPONENT_BINDING',lambda m:m['regions'][1].update(owner='NATIVE')),
           ('LAYER_FIXED_OVERLAP',lambda m:m['regions'][1].update(box=m['regions'][3]['box'])),
+          ('LAYER_ALPHA_NOT_TRANSPARENT',lambda m:m['regions'][1].update(coverage='ALPHA',ops=[{'kind':'ASSET','box':[0,0,80,20],'source_id':'LOGO'}],box=[20,36,80,20])),
+          ('LAYER_ALPHA_ASSET_ONLY',lambda m:m['regions'][3].update(coverage='ALPHA')),
           ('LAYER_SOURCE_UNBOUND',lambda m:m['regions'][1]['ops'][0].update(source_id='CTA')),
           ('LAYER_TEXT_UNBOUND',lambda m:m['regions'][3]['ops'][1].update(copy='Invented')),
           ('LAYER_RADIUS',lambda m:m['regions'][3]['ops'][0].update(radius=80)),
@@ -80,6 +87,7 @@ class LayerTests(unittest.TestCase):
         for code,change in cases:
             with self.subTest(code=code):
                 m=copy.deepcopy(self.m);change(m)
+                if code!='LAYER_PLAN_HASH_DRIFT': self.seal(m)
                 with self.assertRaisesRegex(CompositionError,'^'+code+'$'): compose(m,self.body(self.m))
     def test_native_cannot_overwrite_nested_action(self):
         body=self.body(self.m);body.putpixel((40,260),(255,0,0,255))
@@ -87,6 +95,30 @@ class LayerTests(unittest.TestCase):
     def test_asset_byte_tamper(self):
         Path(self.files['LOGO']).write_bytes(b'changed')
         with self.assertRaisesRegex(CompositionError,'^LAYER_FILE_HASH_DRIFT$'):compose(self.m,self.body(self.m))
+    def test_unsealed_geometry_rejected(self):
+        m=copy.deepcopy(self.m);m['regions'][3]['box'][1]-=5
+        with self.assertRaisesRegex(CompositionError,'^LAYER_BLUEPRINT_LAYOUT_DRIFT$'):compose(m,self.body(self.m))
+    def test_transparent_frame_and_backdrop(self):
+        m=copy.deepcopy(self.m);p=m['plan'];root=Path(self.tmp.name);w,h=m['canvas']
+        frame=Image.new('RGBA',(w,h));draw=ImageDraw.Draw(frame);draw.rectangle((0,0,w-1,h-1),outline='#202020',width=5)
+        bg=Image.new('RGBA',(w,h),'#FFFFFF');ImageDraw.Draw(bg).ellipse((140,-70,330,110), fill='#EAF9EE')
+        for sid,im in [('FRAME',frame),('BG',bg)]:
+            path=root/(sid+'.png');im.save(path);m['files'][sid]=str(path)
+            src=json.dumps({'file_sha256':digest(path.read_bytes()),'mime_type':'image/png'},sort_keys=True)
+            p['sources'].append({'id':sid,'business_code':'DEMO','ref':'synthetic:'+sid,'version':'1','status':'CANDIDATE','text':src,'sha256':digest(src.encode())})
+        m['backdrop']={'kind':'ASSET','source_id':'BG'}
+        c={'name':'Frame','owner':'COMPOSITOR','freedom':'LOCK','instruction':'Preserve frame silhouette','copy':[],'source_ids':['FRAME'],'requirements':['R1']}
+        p['components'].append(c);p['blueprint']['hierarchy'].append('Frame')
+        p['blueprint']['design_lock']['LOCK']['hierarchy']=copy.deepcopy(p['blueprint']['hierarchy'])
+        m['regions'].append({'name':'Frame','owner':'COMPOSITOR','coverage':'ALPHA','box':[0,0,w,h],'ops':[{'kind':'ASSET','box':[0,0,w,h],'source_id':'FRAME'}]})
+        self.seal(m)
+        body=self.body(self.m);body.paste((0,0,0,0),(0,0,w,5));body.paste((0,0,0,0),(0,h-5,w,h));body.paste((0,0,0,0),(0,0,5,h));body.paste((0,0,0,0),(w-5,0,w,h));body.paste((0,0,0,0),(140,10,200,36))
+        out,r=compose(m,body)
+        self.assertEqual(out.getpixel((0,0)),(32,32,32,255));self.assertEqual(out.getpixel((170,20)),bg.getpixel((170,20)))
+        self.assertEqual(r['source_sha256']['FRAME'],digest((root/'FRAME.png').read_bytes()))
+        self.assertEqual(r['source_sha256']['BG'],digest((root/'BG.png').read_bytes()))
+        body.putpixel((0,0),(255,0,0,255))
+        with self.assertRaisesRegex(CompositionError,'^BODY_OVERWRITES_FIXED$'):compose(m,body)
     def test_legacy_dispatch_unchanged(self):
         with self.assertRaisesRegex(CompositionError,'^REVIEW_AUTHORITY$'):
             compose({'schema_version':'CREATIVE_COMPOSITION_REVIEW_V1','review_only':False},None)
