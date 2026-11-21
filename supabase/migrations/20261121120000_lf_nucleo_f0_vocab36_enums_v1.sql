@@ -110,7 +110,7 @@ BEGIN
  THEN RAISE EXCEPTION 'F0_LOGICAL_COUNT_BAD'; END IF;
  FOR f IN SELECT value FROM jsonb_array_elements(a->'families') LOOP
    SELECT count(*) INTO found FROM lf_ops.nucleo_familia_vocabulario z WHERE z.familia=f->>'familia';
-   IF found<>jsonb_array_length(f->'physical')+CASE WHEN f->'logical' IS NULL THEN 0 ELSE 1 END
+   IF found <> jsonb_array_length(f->'physical') + COALESCE((jsonb_typeof(f->'logical')='object')::integer,0)
    THEN RAISE EXCEPTION 'F0_VOCAB_MAPPING_MISMATCH % %',f->>'familia',found; END IF;
  END LOOP;
  FOR e IN SELECT value FROM jsonb_array_elements(a->'enums') LOOP
