@@ -14,7 +14,7 @@ BEGIN
  -- Same incident family, new observed recurrence; no duplicate EKB code.
  UPDATE public.lf_error_knowledge SET frecuencia=frecuencia+1,ultima_vez=now(),updated_at=now(),
    source_ref=concat_ws(';',source_ref,'github://cristhianlujan/claude-persona-lf-patch/pull/4519#train-44881563302'),
-   evidencia=concat_ws(' | ',evidencia,'SALY #4519 PRE-APPLY STOP run 44881563302: 20261121074000 occupied by lf_nucleo_am_checkout_piloto_v1. Renamed to unused provisional version 20261121075843, exact blob c605c5c274b572cd652b88e574ab335953b5eedb; no SQL replay.')
+   evidencia=concat_ws(' | ',evidencia,'SALY #4519 PRE-APPLY STOP run 44881563302: 20261121074000 occupied by the checkout pilot migration (ledger identity verified in the linked Train run). Renamed to unused provisional version 20261121075843, exact blob c605c5c274b572cd652b88e574ab335953b5eedb; no SQL replay.')
  WHERE codigo='IG-M96-MIGRATION-VERSION-COLLISION-001'
  AND position('pull/4519#train-44881563302' in coalesce(source_ref,''))=0;
  IF NOT FOUND THEN RAISE EXCEPTION 'SALY_CREATIVE_EKB_RECURRENCE_MISSING_OR_DUPLICATE'; END IF;
