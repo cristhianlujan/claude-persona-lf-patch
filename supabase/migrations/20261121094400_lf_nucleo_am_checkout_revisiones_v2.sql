@@ -47,7 +47,7 @@ BEGIN
   END IF;
   SELECT jsonb_agg(jsonb_build_object('casuistica',casuistica,'entrada',entrada,'esperado',esperado) ORDER BY n)
    INTO p FROM lf_ops.nucleo_regla_pruebas WHERE regla=code AND version=1;
-  proposal:=v1.ficha || jsonb_build_object('pruebas',p) || item->'patch' ||
+  proposal:=v1.ficha || jsonb_build_object('pruebas',p) || (item->'patch') ||
    jsonb_build_object('tipo','REVISION','version_anterior',1,'hash_anterior',v1.hash,'motivo_revision',item->>'motivo_revision');
   -- No new product decisions: preserve original origin and authority.
   IF proposal->'origen' IS DISTINCT FROM v1.origen
