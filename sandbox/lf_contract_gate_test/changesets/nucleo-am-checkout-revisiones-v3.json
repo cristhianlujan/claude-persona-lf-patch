@@ -1,0 +1,10 @@
+{
+  "solution_ref": "nucleo-am-checkout-revisiones-v3",
+  "paths": {
+    "supabase/migrations/20261121104000_lf_nucleo_am_checkout_revisiones_v3.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/checkout_am_revisiones_v3.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/checkout_am_auto_paquete_aprobacion_v1.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/nucleo-am-checkout-revisiones-v3.json": "CHANGESET_MANIFEST"
+  }
+}

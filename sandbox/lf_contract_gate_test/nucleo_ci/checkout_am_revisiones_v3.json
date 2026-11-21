@@ -1,0 +1,1064 @@
+{
+  "schema": "LF-AM-CHECKOUT-REVISIONES-V3",
+  "scope": "6 V3 CANDIDATA mediante puerta REVISION; ningún cambio a VIGENTE. Juicio contexto actual/no independiente; hechos lógicos con binding runtime pendiente, no AUTO forzado.",
+  "sources": [
+    "PR #4533",
+    "Supabase lf_ops.nucleo_regla_versiones V2",
+    "lf_ops.reglas 207,208,209,212,521,523,524,525,533,534,539,540",
+    "EKB LF-LEGACY-CHECKOUT-RULES-DUPLICATED-20261121-001",
+    "contratos de los hechos/atributos consultados SELECT 2026-11-21"
+  ],
+  "excluded": [
+    "REG_CHK_006 comisiones",
+    "REG_CHK_CUO_003 Yape cuotas",
+    "REG_CHK_002 AUTO",
+    "REG_TEC_007 AUTO",
+    "REG_CHK_007 AUTO"
+  ],
+  "facts": [
+    {
+      "codigo": "quote_misma_operacion_vigente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Hecho lógico sin binding runtime: backend coteja user_id, quote_status VALID, expires_at y selección de lf_proto.checkout_pricing_quotes con intento reservado."
+    },
+    {
+      "codigo": "estado_carta_normalizado",
+      "tipo_dato": "text",
+      "unidad": "ninguna",
+      "descripcion": "Hecho lógico sin binding runtime: estado documental por deuda definido por REG_CLIENT_NO_DEBT_LETTER_STATUS_001; registry backend aún PENDING."
+    },
+    {
+      "codigo": "integracion_aliado_carta_auto_habilitada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Hecho lógico sin binding runtime: capacidad contractual e integración real del aliado para solicitar carta automáticamente (regla vigente 534)."
+    },
+    {
+      "codigo": "consentimiento_debito_evidencia_vinculada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Hecho lógico sin binding runtime: evidencia de timestamp, medio y versión de cronograma aceptado exigida por regla 521."
+    },
+    {
+      "codigo": "reserva_idempotente_corresponde_request",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Hecho lógico sin binding runtime: match de user_id/idempotency_key/request_sha256/operation_number en public.lf_checkout_idempotency_reservations."
+    },
+    {
+      "codigo": "evidencia_qr_corresponde_misma_operacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Hecho lógico sin binding runtime: referencia de evidencia autoritativa QR coincide con operación reservada; 539 exige conservar referencia."
+    }
+  ],
+  "bindings": [
+    {
+      "codigo": "REG_CHK_004",
+      "campos_reales": [
+        "lf_proto.checkout_pricing_quotes.user_id",
+        "lf_proto.checkout_pricing_quotes.quote_status",
+        "lf_proto.checkout_pricing_quotes.expires_at",
+        "lf_proto.checkout_pricing_quotes.selection_sha256",
+        "public.lf_checkout_idempotency_reservations.operation_number"
+      ],
+      "pendientes": [
+        "intento_pago_iniciado",
+        "reintento_autorizado_backend",
+        "estado_pago_normalizado",
+        "quote_misma_operacion_vigente",
+        "join quote-reserva/operación real, reconciliación y decisión server-side"
+      ],
+      "estado": "NO_VERIFICADO_RUNTIME"
+    },
+    {
+      "codigo": "REG_CHK_005",
+      "campos_reales": [],
+      "pendientes": [
+        "estado_pago_normalizado desde ledger/proveedor",
+        "datos_pago_backend_verificados: referencia, fecha, monto confirmados",
+        "guard real de CHECKOUT_PAGO_EXITOSO"
+      ],
+      "estado": "NO_VERIFICADO_RUNTIME"
+    },
+    {
+      "codigo": "REG_CHK_008",
+      "campos_reales": [],
+      "pendientes": [
+        "estado_liquidacion_deuda por deuda (ledger canónico pendiente)",
+        "estado_carta_normalizado por deuda (registro documental pendiente)",
+        "integracion_aliado_carta_auto_habilitada verificada contrato/adapter"
+      ],
+      "estado": "NO_VERIFICADO_RUNTIME"
+    },
+    {
+      "codigo": "REG_CHK_013",
+      "campos_reales": [],
+      "pendientes": [
+        "debito_automatico_requerido del flag backend RECURRING_AUTODEBIT_AUTH_REQUIRED",
+        "autoriza_debito_automatico firmado y registrado",
+        "consentimiento_debito_evidencia_vinculada con timestamp/version cronograma/medio"
+      ],
+      "estado": "NO_VERIFICADO_RUNTIME"
+    },
+    {
+      "codigo": "REG_TEC_009",
+      "campos_reales": [
+        "public.lf_checkout_idempotency_reservations.user_id",
+        "public.lf_checkout_idempotency_reservations.idempotency_key",
+        "public.lf_checkout_idempotency_reservations.request_sha256",
+        "public.lf_checkout_idempotency_reservations.operation_number",
+        "public.lf_checkout_idempotency_reservations.created_at"
+      ],
+      "pendientes": [
+        "reserva_idempotente_corresponde_request desde verificación transaccional",
+        "edad_clave_idempotencia desde reloj server y AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+        "retorno del resultado persistido sin ejecutar nuevo cargo",
+        "semántica del borde exacto de ventana y retención del resultado"
+      ],
+      "estado": "CAMPOS_VERIFICADOS_SIN_BINDING"
+    },
+    {
+      "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001",
+      "campos_reales": [],
+      "pendientes": [
+        "evidencia_autoritativa_pago del proveedor canónico",
+        "evidencia_qr_corresponde_misma_operacion ligada a referencia reservada",
+        "vencimiento QR sin impedir confirmación tardía",
+        "conector/ledger y conciliador de callbacks verificable"
+      ],
+      "estado": "NO_VERIFICADO_RUNTIME"
+    }
+  ],
+  "consolidacion": [
+    {
+      "candidata": "REG_CHK_005",
+      "vigente": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001",
+      "vigente_id": 525,
+      "accion": "PROPUESTA_NO_EJECUTADA",
+      "detalle": "Incorporar el guard negativo de éxito sin PAYMENT_CONFIRMED o sin datos backend a la regla vigente que ya define contenido seguro. Antes comparar ramas de cuotas, pago único, documento, datos sensibles y visual; verificar owners/CI/rollback. No fusionar ni retirar."
+    },
+    {
+      "candidata": "REG_CHK_008",
+      "vigente": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+      "vigente_id": 534,
+      "accion": "PROPUESTA_NO_EJECUTADA",
+      "detalle": "Integrar inicio automático por deuda y capacidad de aliado en el ciclo NOT_ELIGIBLE→ELIGIBLE→REQUESTED sin exigir CTA manual y sin adelantar AVAILABLE. Validar ledger/registry/aliado y UX; no fusionar ni retirar."
+    },
+    {
+      "candidata": "REG_CHK_013",
+      "vigente": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+      "vigente_id": 521,
+      "accion": "PROPUESTA_NO_EJECUTADA",
+      "detalle": "Integrar prueba de evidencia vinculada a versión de cronograma y medio cuando RECURRING_AUTODEBIT_AUTH_REQUIRED es true; no exigir cuotas manuales. Validar legal copy y soporte real antes de tocar vigente; no fusionar ni retirar."
+    }
+  ],
+  "entries": [
+    {
+      "codigo": "REG_CHK_004",
+      "version_anterior": 2,
+      "nota_anterior": 70,
+      "hash_v2": "621f8002b3d92689015e2b637ecbbb21a7b48004950da6cd213fe5196f600969",
+      "motivo_revision": "Agregar cotejo de quote y operación real al reintento seguro, sin afirmar binding runtime del backend.",
+      "patch": {
+        "titulo": "Bloqueo de reintento no reconciliado, no autorizado o con quote inválido",
+        "descripcion": "Un intento de checkout ya iniciado mantiene bloqueado el reintento mientras no exista un outcome normalizado seguro, permiso explícito del backend o validez de la misma reserva de operación y quote original. El backend debe comprobar user_id, quote_status=VALID, expires_at y referencia reservada antes de emitir los hechos. Un timeout ambiguo nunca autoriza segundo cobro. Antes del primer envío esta regla no bloquea el inicio.",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "intento_pago_iniciado"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "y",
+              "izq": {
+                "op": "!=",
+                "izq": {
+                  "hecho": "estado_pago_normalizado"
+                },
+                "der": {
+                  "lit": "PAYMENT_DECLINED_CONFIRMED"
+                }
+              },
+              "der": {
+                "op": "y",
+                "izq": {
+                  "op": "!=",
+                  "izq": {
+                    "hecho": "estado_pago_normalizado"
+                  },
+                  "der": {
+                    "lit": "PAYMENT_NOT_SUBMITTED"
+                  }
+                },
+                "der": {
+                  "op": "!=",
+                  "izq": {
+                    "hecho": "estado_pago_normalizado"
+                  },
+                  "der": {
+                    "lit": "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+                  }
+                }
+              }
+            },
+            "der": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "reintento_autorizado_backend"
+                },
+                "der": {
+                  "lit": false
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "quote_misma_operacion_vigente"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+              "reintento_autorizado_backend": false,
+              "quote_misma_operacion_vigente": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+              "reintento_autorizado_backend": true,
+              "quote_misma_operacion_vigente": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_DECLINED_CONFIRMED",
+              "reintento_autorizado_backend": true,
+              "quote_misma_operacion_vigente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_NOT_SUBMITTED",
+              "reintento_autorizado_backend": false,
+              "quote_misma_operacion_vigente": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_DECLINED_CONFIRMED",
+              "reintento_autorizado_backend": true,
+              "quote_misma_operacion_vigente": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_NOT_SUBMITTED",
+              "reintento_autorizado_backend": true,
+              "quote_misma_operacion_vigente": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": true,
+              "estado_pago_normalizado": "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT",
+              "reintento_autorizado_backend": true,
+              "quote_misma_operacion_vigente": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "intento_pago_iniciado": false,
+              "estado_pago_normalizado": "SIN_INTENTO",
+              "reintento_autorizado_backend": false,
+              "quote_misma_operacion_vigente": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica AM V3 (contexto actual, no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "208: bloquear CTA para impedir doble submit."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "CLIENT_PAYMENTS evita aplicar a home, onboarding o legal."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto identifica bloqueo y resultados que habilitan reintento."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR coincide con bloqueo de CTA."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Condición incluye primer intento, outcome seguro, permiso backend y quote de la misma operación vigente; comprobación funcional hecha con negativos, binding runtime aún pendiente."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Restringe reintento a misma operación y quote respaldado; no contradice normalización de 523 ni handoff 540. Falta demostrar señal backend real."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Comparte estados con 523/540, pero se limita al bloqueo CTA de reintento; consolidación de fuentes no realizada."
+          }
+        }
+      },
+      "riesgos": [
+        "intento_pago_iniciado",
+        "reintento_autorizado_backend",
+        "estado_pago_normalizado",
+        "quote_misma_operacion_vigente",
+        "join quote-reserva/operación real, reconciliación y decisión server-side"
+      ]
+    },
+    {
+      "codigo": "REG_CHK_005",
+      "version_anterior": 2,
+      "nota_anterior": 75,
+      "hash_v2": "df05be0a06e55226b8cf6582d2ad5e941576fca6bb0dfa85746040cfb58728fe",
+      "motivo_revision": "Convertir permiso amplio en guard de bloqueo explícito de render; proponer consolidación con regla vigente de éxito 525, sin ejecutarla.",
+      "patch": {
+        "titulo": "Bloquear pantalla de éxito si faltan confirmación o datos autoritativos",
+        "descripcion": "En CHECKOUT_PAGO_EXITOSO bloquear el render como pago exitoso cuando el backend aún no ha confirmado PAYMENT_CONFIRMED o no verificó referencia, fecha y monto real. No genera acciones de post-pago, no cambia onboarding_completed ni emite carta: esas operaciones permanecen sujetas a las reglas backend vigentes. Es la condición negativa de seguridad para la pantalla y se propone integrarla después con REG_CLIENT_PAYMENT_SUCCESS_VIEW_001; no sustituye esa regla.",
+        "efecto": "BLOQUEAR",
+        "condicion": {
+          "op": "o",
+          "izq": {
+            "op": "!=",
+            "izq": {
+              "hecho": "estado_pago_normalizado"
+            },
+            "der": {
+              "lit": "PAYMENT_CONFIRMED"
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "datos_pago_backend_verificados"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+              "datos_pago_backend_verificados": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_DECLINED_CONFIRMED",
+              "datos_pago_backend_verificados": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+              "datos_pago_backend_verificados": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+              "datos_pago_backend_verificados": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica AM V3 (contexto actual, no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "209/524: permite acciones solo tras confirmación."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "PANTALLA-33 es CHECKOUT_PAGO_EXITOSO verificada en árbol de alcance; deja backend por deuda fuera de esta vista."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define pantalla de éxito, outcome y datos del backend sin prometer activación del plan."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR representa el guard negativo de render, separado de contenido de éxito."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Se bloquea si no hay PAYMENT_CONFIRMED o falta verificación backend, con caso de rechazo y confirmado sin datos."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "No muta onboarding ni emite carta; 524 y reglas de plan quedan con el backend."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Sigue solapado con REG_CLIENT_PAYMENT_SUCCESS_VIEW_001 (525); se documenta propuesta de consolidación, sin ejecución ni retiro."
+          }
+        }
+      },
+      "riesgos": [
+        "estado_pago_normalizado desde ledger/proveedor",
+        "datos_pago_backend_verificados: referencia, fecha, monto confirmados",
+        "guard real de CHECKOUT_PAGO_EXITOSO"
+      ]
+    },
+    {
+      "codigo": "REG_CHK_008",
+      "version_anterior": 2,
+      "nota_anterior": 72,
+      "hash_v2": "e8485ea9c6db5d442f70fc5c0d4dd483f2cd3b6a63d0bb676c3c3a75effc1e6d",
+      "motivo_revision": "Corregir supuesto de solicitud manual: backend inicia automáticamente por deuda cuando el aliado tiene integración, sin fusionar regla 534.",
+      "patch": {
+        "titulo": "Inicio automático de trámite de Carta solo por deuda liquidada y aliado habilitado",
+        "descripcion": "En BACKEND y para cada deuda, permitir iniciar automáticamente la solicitud o generación de Carta de No Adeudo solo cuando el ledger establece SETTLED_CONFIRMED, el estado documental es ELIGIBLE y la integración vigente del aliado permite el inicio automático. El frontend no exige una solicitud manual ni equipara pago inicial a liquidación, emisión o descarga. El ciclo NOT_ELIGIBLE a AVAILABLE y la descarga siguen gobernados por REG_CLIENT_NO_DEBT_LETTER_STATUS_001; la consolidación con esa regla se propone sin ejecutarse.",
+        "clase": "BACKEND",
+        "alcance": "BACKEND",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "estado_liquidacion_deuda"
+            },
+            "der": {
+              "lit": "SETTLED_CONFIRMED"
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "estado_carta_normalizado"
+              },
+              "der": {
+                "lit": "ELIGIBLE"
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "integracion_aliado_carta_auto_habilitada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "SETTLED_CONFIRMED",
+              "estado_carta_normalizado": "ELIGIBLE",
+              "integracion_aliado_carta_auto_habilitada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "PLAN_ACTIVO",
+              "estado_carta_normalizado": "NOT_ELIGIBLE",
+              "integracion_aliado_carta_auto_habilitada": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "SETTLED_CONFIRMED",
+              "estado_carta_normalizado": "PROCESSING",
+              "integracion_aliado_carta_auto_habilitada": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "SETTLED_CONFIRMED",
+              "estado_carta_normalizado": "ELIGIBLE",
+              "integracion_aliado_carta_auto_habilitada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "PAYMENT_PENDING_CONFIRMATION",
+              "estado_carta_normalizado": "ELIGIBLE",
+              "integracion_aliado_carta_auto_habilitada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica AM V3 (contexto actual, no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "212/280/292/327: diferir solicitud hasta liquidación total."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "BACKEND más condición por deuda ajusta flujo de solicitud automática, sin CTA manual en CLIENT_PAYMENTS."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El requisito de SETTLED_CONFIRMED es explícito."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "PERMITIR solicitud cuando la deuda está liquidada coincide con elegibilidad."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Liquidación SETTLED_CONFIRMED, ELIGIBLE y capacidad de integración del aliado hacen explícitas tres precondiciones de auto solicitud."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Coherente con no emitir carta por pago inicial y con estados del documento regulados aparte."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "El ciclo documental y la auto solicitud ya constan en 534; consolidación propuesta, sin editar fuente vigente."
+          }
+        }
+      },
+      "riesgos": [
+        "estado_liquidacion_deuda por deuda (ledger canónico pendiente)",
+        "estado_carta_normalizado por deuda (registro documental pendiente)",
+        "integracion_aliado_carta_auto_habilitada verificada contrato/adapter"
+      ]
+    },
+    {
+      "codigo": "REG_CHK_013",
+      "version_anterior": 2,
+      "nota_anterior": 75,
+      "hash_v2": "fc83ad384693305504857f1264e49c4ee2964ecdeae9b514a9c9760a91156c75",
+      "motivo_revision": "Incorporar evidencia vinculada de consentimiento; mantener autoridad de regla vigente 521 hasta consolidación aprobada.",
+      "patch": {
+        "titulo": "Bloquear cuotas automáticas sin consentimiento y evidencia vinculada",
+        "descripcion": "En CHECKOUT_CUOTAS_MEDIO_PAGO, cuando el backend determina que el medio elegido requiere débito recurrente automático, bloquear hasta que exista autorización explícita y evidencia verificable de timestamp, contexto del medio y versión del cronograma o condiciones aceptadas. No bloquear cuotas con cobro futuro manual ni pago único por este consentimiento. El contrato vigente REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001 conserva la autoridad; la consolidación es solo propuesta.",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "modalidad_pago"
+            },
+            "der": {
+              "lit": "CUOTAS"
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "debito_automatico_requerido"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "autoriza_debito_automatico"
+                },
+                "der": {
+                  "lit": false
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "consentimiento_debito_evidencia_vinculada"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "CUOTAS",
+              "debito_automatico_requerido": true,
+              "autoriza_debito_automatico": false,
+              "consentimiento_debito_evidencia_vinculada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "CUOTAS",
+              "debito_automatico_requerido": true,
+              "autoriza_debito_automatico": true,
+              "consentimiento_debito_evidencia_vinculada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "CUOTAS",
+              "debito_automatico_requerido": true,
+              "autoriza_debito_automatico": true,
+              "consentimiento_debito_evidencia_vinculada": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "CUOTAS",
+              "debito_automatico_requerido": false,
+              "autoriza_debito_automatico": false,
+              "consentimiento_debito_evidencia_vinculada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "PAGO_UNICO",
+              "debito_automatico_requerido": false,
+              "autoriza_debito_automatico": false,
+              "consentimiento_debito_evidencia_vinculada": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica AM V3 (contexto actual, no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "276/288: bloquear CTA sin consentimiento."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "PANTALLA-21 corresponde a CHECKOUT_CUOTAS_MEDIO_PAGO; no hereda a otros flujos."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El texto comunica el requisito, aunque lo generaliza."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR cuando falta autorización coincide con el texto histórico."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Además de requerir débito recurrente, bloquea si falta evidencia vinculada a cronograma/medio aun con checkbox marcado."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Respeta no exigir autorización en cuotas manuales y la prueba exige evidencia antes de iniciar automático."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001 (521) gobierna exactamente el consentimiento; consolidación no ejecutada."
+          }
+        }
+      },
+      "riesgos": [
+        "debito_automatico_requerido del flag backend RECURRING_AUTODEBIT_AUTH_REQUIRED",
+        "autoriza_debito_automatico firmado y registrado",
+        "consentimiento_debito_evidencia_vinculada con timestamp/version cronograma/medio"
+      ]
+    },
+    {
+      "codigo": "REG_TEC_009",
+      "version_anterior": 2,
+      "nota_anterior": 75,
+      "hash_v2": "5bbd755219c88a504d831943f8ee224ff2ab96e853a8ae2cd50f436c2340a70b",
+      "motivo_revision": "Amarrar reutilización al usuario, hash de request y operation_number existentes; sin afirmar resultado original recuperable ni resolver borde no acreditado.",
+      "patch": {
+        "titulo": "Respuesta idempotente reutilizable solo para reserva y petición equivalentes",
+        "descripcion": "En checkout, una clave previamente registrada solo permite recuperar la misma respuesta de operación si coincide usuario, idempotency_key y request_sha256, existe operation_number asociado y la antigüedad es estrictamente menor que AUTH/IDEMPOTENCY_KEY_VALIDITY_MINUTES. En el borde exacto no se abre una segunda operación: se requiere reconciliación aparte, criterio técnico conservador no validado aún contra runtime. La respuesta original se devuelve sin repetir cargo ni rechazar indiscriminadamente la misma petición. Los campos existen en public.lf_checkout_idempotency_reservations, pero el binding y la recuperación real del resultado no están acreditados.",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "operacion_es_checkout"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "clave_idempotencia_repetida"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "y",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "peticion_idempotente_equivalente"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "y",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "reserva_idempotente_corresponde_request"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "<",
+                  "izq": {
+                    "hecho": "edad_clave_idempotencia"
+                  },
+                  "der": {
+                    "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "operacion_es_checkout": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "reserva_idempotente_corresponde_request": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "operacion_es_checkout": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "reserva_idempotente_corresponde_request": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "operacion_es_checkout": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "reserva_idempotente_corresponde_request": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": 1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "operacion_es_checkout": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": false,
+              "reserva_idempotente_corresponde_request": false,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "operacion_es_checkout": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "reserva_idempotente_corresponde_request": false,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "operacion_es_checkout": false,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "reserva_idempotente_corresponde_request": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica AM V3 (contexto actual, no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "185: devolver resultado anterior sin duplicados."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "operacion_es_checkout limita la regla a checkout aunque el nodo técnico sea BACKEND."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Describe reenvío con clave y ventana configurada."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "PERMITIR describe reutilizar la respuesta anterior, no generar otra operación, frente al antiguo RECHAZAR."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Comprueba reserva asociada a usuario/request_sha256/operation_number y el límite parametrizado; el borde exacto y la recuperación de resultado aún necesitan prueba runtime."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "No reprocesa ni rechaza indiscriminadamente una petición equivalente; condición restringe resultado al mismo intento."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Comparte idempotencia con fuentes B2B/ONB; no se afirma integración ni sustitución de la legada 185."
+          }
+        }
+      },
+      "riesgos": [
+        "reserva_idempotente_corresponde_request desde verificación transaccional",
+        "edad_clave_idempotencia desde reloj server y AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+        "retorno del resultado persistido sin ejecutar nuevo cargo",
+        "semántica del borde exacto de ventana y retención del resultado"
+      ]
+    },
+    {
+      "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001",
+      "version_anterior": 2,
+      "nota_anterior": 75,
+      "hash_v2": "55bf33b5895be2ef9791dcc4e08fc092515b5030376aef903b57b0dd1734a002",
+      "motivo_revision": "Validar que evidencia QR corresponde a la misma operación y preservar confirmaciones tardías sin permitir otro cargo.",
+      "patch": {
+        "titulo": "Bloquear confirmación QR sin evidencia de la misma operación",
+        "descripcion": "En la pantalla CHECKOUT_ESTADO_YAPE_QR, bloquear el avance a PAYMENT_CONFIRMED si falta evidencia autoritativa de pago o si la evidencia no corresponde a la misma referencia de operación QR reservada. El CTA Ya escaneé solo solicita al backend consulta o reconciliación de esa referencia, nunca crea otra operación ni certifica éxito por clic. La expiración gobierna reutilizar el QR para un nuevo pago, no revoca por sí misma una confirmación genuina tardía; la reconciliación y expiración permanecen bajo la regla vigente 539.",
+        "condicion": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "evidencia_autoritativa_pago"
+            },
+            "der": {
+              "lit": false
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "evidencia_qr_corresponde_misma_operacion"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "evidencia_autoritativa_pago": false,
+              "evidencia_qr_corresponde_misma_operacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "evidencia_autoritativa_pago": true,
+              "evidencia_qr_corresponde_misma_operacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "evidencia_autoritativa_pago": true,
+              "evidencia_qr_corresponde_misma_operacion": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "evidencia_autoritativa_pago": false,
+              "evidencia_qr_corresponde_misma_operacion": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica AM V3 (contexto actual, no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "539/316: verificar mismo QR sin inventar confirmación."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "PANTALLA-28 corresponde exactamente a CHECKOUT_ESTADO_YAPE_QR."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El texto distingue consulta y confirmación de pago."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR se limita a confirmar como pagado sin evidencia, no impide consultar estado mediante el CTA."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Combina evidencia autoritativa y pertenencia a la misma operación; una confirmación tardía legítima no queda invalidada solo por expirar el QR."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Respeta reconciliación backend y no habilita un nuevo pago desde CTA manual."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "La norma vigente 539 conserva la consulta, expiración y estados; solo se modela guard, sin consolidar ni retirar."
+          }
+        }
+      },
+      "riesgos": [
+        "evidencia_autoritativa_pago del proveedor canónico",
+        "evidencia_qr_corresponde_misma_operacion ligada a referencia reservada",
+        "vencimiento QR sin impedir confirmación tardía",
+        "conector/ledger y conciliador de callbacks verificable"
+      ]
+    }
+  ]
+}
