@@ -35,8 +35,11 @@ def valid_sha(value: Any) -> bool:
 
 
 def strict_json_bytes(value: dict[str, Any]) -> bytes:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True,
-                      separators=(',', ':'), allow_nan=False).encode('utf-8')
+    try:
+        return json.dumps(value, ensure_ascii=False, sort_keys=True,
+                          separators=(',', ':'), allow_nan=False).encode('utf-8')
+    except (TypeError, ValueError, UnicodeError) as exc:
+        raise CaptureRejected('NATIVE_CAPTURE_WIRE_SERIALIZATION_INVALID') from exc
 
 
 def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -91,7 +94,11 @@ def sealed_envelope(packet: dict[str, Any]) -> dict[str, Any]:
             envelope['prompt_sha256'] == handoff.get('prompt_sha256'), 'NATIVE_CAPTURE_PROMPT_BINDING')
     require(payload['prompt'] == handoff.get('native_prompt') and
             payload['attachments'] == handoff.get('attachments'), 'NATIVE_CAPTURE_PAYLOAD_DRIFT')
-    require(sha(payload['prompt'].encode('utf-8')) == envelope['prompt_sha256'], 'NATIVE_CAPTURE_PROMPT_HASH')
+    try:
+        prompt_bytes = payload['prompt'].encode('utf-8')
+    except UnicodeError as exc:
+        raise CaptureRejected('NATIVE_CAPTURE_UTF8_INVALID') from exc
+    require(sha(prompt_bytes) == envelope['prompt_sha256'], 'NATIVE_CAPTURE_PROMPT_HASH')
     require(type(packet.get('composition_svg_assets')) is dict, 'NATIVE_CAPTURE_ASSET_SNAPSHOT_MISSING')
     return envelope
 
