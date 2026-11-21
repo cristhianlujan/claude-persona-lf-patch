@@ -6,6 +6,7 @@
     "skills/ai_sales_discovery/contracts/SUNAT_RECORDS_V06.md": "RUNTIME_CODE",
     "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
     "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
-    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-records-v06.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-records-v06.json": "CHANGESET_MANIFEST",
+    "skills/ai_sales_discovery/tests/sunat_records_mutation.test.mjs": "RUNTIME_TESTING"
   }
 }
