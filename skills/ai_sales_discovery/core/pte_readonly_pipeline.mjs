@@ -184,5 +184,6 @@ export async function inspectPteReadOnly(request, providers) {
    mark(stage,'BLOCKED:'+receipt.reason);
    mark('CLOSE_RECEIPT','TERMINAL_BLOCK');
  }
+ Object.freeze(events);
  return Object.freeze(receipt);
 }
