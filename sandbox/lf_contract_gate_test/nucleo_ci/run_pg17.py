@@ -137,6 +137,7 @@ def main():
                 raise RuntimeError("F0_VOCAB36_PG17_FIXTURE_MISSING")
             psql(name, f0_fixture.read_text())
             print("F0_VOCAB36_PG17_SCHEMA_SEEDED", flush=True)
+        replayed_names = [p.name for p in replay]
         for path in replay:
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
             replay = psql(name, path.read_text())
@@ -169,6 +170,40 @@ def main():
                 if sum("SALY_AM14_RESULT " in line for line in lines) != 14 or sum("SALY_AM14_PASS " in line for line in lines) != 1:
                     raise RuntimeError("SALY_AM14_INCOMPLETE_REPLAY_EVIDENCE")
                 print("\n".join(lines), flush=True)
+        # F4: verify committed TS against the real PostgreSQL-17 catalog; mutate a
+        # family in the disposable DB under BEGIN/ROLLBACK and require drift detection.
+        if any("_lf_nucleo_f4_tipos_constantes_v1.sql" in n for n in replayed_names):
+            codegen = HERE / "f4_codegen.py"
+            generated = ROOT / "sdk" / "lf_nucleo_catalog.generated.ts"
+            if not codegen.is_file() or not generated.is_file():
+                raise RuntimeError("F4_CODEGEN_SOURCE_MISSING")
+            cmd = ["python3", str(codegen), "--verify", str(generated)]
+            raw_catalog = psql(name, "SELECT lf_ops.f4_tipos_catalogo_v1();").stdout
+            positive = run_cmd(cmd, data=raw_catalog, check=False)
+            if positive.returncode != 0 or "F4_CODEGEN_PASS families=64 enum_groups=25 enum_values=94" not in positive.stdout:
+                raise RuntimeError("F4_CODEGEN_PRODUCTION_SOURCE_MISMATCH " + positive.stderr)
+            print(positive.stdout.strip(), flush=True)
+            mutation = psql(name, """BEGIN;
+              INSERT INTO lf_ops.nucleo_familias
+                (codigo,dominio,origen,descripcion,estado,min_pruebas,tipo)
+              VALUES ('F4_MUTANTE_PG17','CALIDAD','NUEVA',
+                      'Familia de mutación descartable para la prueba de tipado F4',
+                      'EN_FORMACION',2,'TECNICA');
+              SELECT lf_ops.f4_tipos_catalogo_v1();
+              ROLLBACK;""")
+            docs = [line for line in mutation.stdout.splitlines() if line.strip().startswith("{")]
+            if len(docs) != 1:
+                raise RuntimeError("F4_CODEGEN_MUTATION_PAYLOAD_MISSING")
+            rejected = run_cmd(cmd, data=docs[0], check=False)
+            if rejected.returncode == 0 or "F4_CODEGEN_DRIFT" not in rejected.stderr:
+                raise RuntimeError("F4_CODEGEN_MUTANT_WAS_ACCEPTED")
+            print("F4_CODEGEN_MUTATION_REJECTED", flush=True)
+            if psql(name, "SELECT COUNT(*) FROM lf_ops.nucleo_familias WHERE codigo='F4_MUTANTE_PG17';").stdout.strip() != "0":
+                raise RuntimeError("F4_CODEGEN_MUTATION_ROLLBACK_FAILED")
+            again = run_cmd(cmd, data=psql(name, "SELECT lf_ops.f4_tipos_catalogo_v1();").stdout, check=False)
+            if again.returncode != 0:
+                raise RuntimeError("F4_CODEGEN_AFTER_ROLLBACK_FAILED " + again.stderr)
+            print("F4_CODEGEN_AFTER_ROLLBACK_PASS", flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
