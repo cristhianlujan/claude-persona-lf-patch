@@ -37,11 +37,16 @@ def generate(doc):
         if not isinstance(e["hecho"], str) or not e["hecho"].startswith("COL-") or not isinstance(e["valores"], list) or not e["valores"]:
             raise ValueError("F4_CODEGEN_ENUM_BAD")
         vals = e["valores"]
-        if not all(isinstance(v, str) and v.strip() for v in vals) or vals != sorted(set(vals)):
+        if not all(isinstance(v, str) and v.strip() for v in vals) or len(vals) != len(set(vals)):
             raise ValueError("F4_CODEGEN_ENUM_VALUES_UNTRUSTED")
+        e["valores"] = sorted(vals)
         enum_codes.append(e["hecho"])
-    if family_codes != sorted(set(family_codes)) or enum_codes != sorted(set(enum_codes)):
-        raise ValueError("F4_CODEGEN_DUPLICATE_OR_UNSORTED")
+    # Database collations can differ. Fail on duplicates, but normalize order
+    # canonically in code so SDK bytes do not vary by PostgreSQL locale.
+    if len(family_codes) != len(set(family_codes)) or len(enum_codes) != len(set(enum_codes)):
+        raise ValueError("F4_CODEGEN_DUPLICATE")
+    families = sorted(families, key=lambda x: x["codigo"])
+    enums = sorted(enums, key=lambda x: x["hecho"])
     lines = [
         "// GENERATED; do not hand-edit. Source: lf_ops.f4_tipos_catalogo_v1() (Supabase LF).",
         "// No runtime binding or business implementation is implied by these types.",
