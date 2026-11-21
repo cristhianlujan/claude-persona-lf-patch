@@ -1,10 +1,10 @@
 -- L28 read-only readback AFTER governed migration. No production mutation.
-SELECT obj AS tabla,to_regclass('saly.'||obj) IS NOT NULL AS desplegada
+SELECT src.obj AS tabla,to_regclass(format('saly.%I',src.obj)) IS NOT NULL AS desplegada
 FROM unnest(ARRAY[
  'ventas_discovery_catalogo','ventas_discovery_runs',
  'ventas_discovery_plan_fuentes','ventas_discovery_plan_batches',
  'ventas_discovery_ejecuciones','ventas_discovery_consultas',
- 'ventas_discovery_ingestas','ventas_hallazgos','ventas_unidades_operativas']) obj ORDER BY obj;
+ 'ventas_discovery_ingestas','ventas_hallazgos','ventas_unidades_operativas']) AS src(obj) ORDER BY src.obj;
 
 SELECT c.relname AS tabla,c.relrowsecurity AS rls
 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
