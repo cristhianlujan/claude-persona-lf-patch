@@ -53,7 +53,8 @@ BEGIN
   IF proposal->'origen' IS DISTINCT FROM v1.origen
    OR proposal->>'autoridad' IS DISTINCT FROM v1.autoridad
    OR proposal->>'codigo' IS DISTINCT FROM code
-  THEN RAISE EXCEPTION 'AM_V2_ORIGIN_OR_AUTHORITY_DRIFT %',code; END IF;
+  THEN RAISE EXCEPTION 'AM_V2_ORIGIN_OR_AUTHORITY_DRIFT % json_origin=% v_origin=% json_aut=% v_aut=% json_code=% v_code=%',
+  code,proposal->'origen',v1.origen,proposal->>'autoridad',v1.autoridad,proposal->>'codigo',code; END IF;
   dry:=lf_ops.nucleo_regla_proponer_v1(proposal,false);
   IF dry->>'resultado'<>'EVALUADA_SIN_ESCRIBIR' OR (dry->>'bloqueantes')::integer<>0
   THEN RAISE EXCEPTION 'AM_V2_PREFLIGHT_REJECTED % %',code,dry; END IF;
