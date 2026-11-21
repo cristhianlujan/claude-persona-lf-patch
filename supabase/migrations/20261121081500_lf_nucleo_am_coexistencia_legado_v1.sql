@@ -70,8 +70,7 @@ UNION ALL
   WHERE n.estado = ANY (ARRAY['CANDIDATA'::text, 'VIGENTE'::text])
     AND n.regla_legacy_id IS NULL
     AND NOT EXISTS (SELECT 1 FROM lf_ops.reglas old WHERE old.codigo = n.codigo)
-    AND NOT (COALESCE(v.origen->>'tipo','') = 'MIGRACION'
-             AND COALESCE(v.origen->>'ref','') LIKE 'lf_ops.reglas/%');
+    ;
 CREATE OR REPLACE FUNCTION lf_ops.lf_puente_autotest_v1()
  RETURNS text LANGUAGE plpgsql SET search_path TO 'pg_catalog','lf_ops','public'
 AS $test$
