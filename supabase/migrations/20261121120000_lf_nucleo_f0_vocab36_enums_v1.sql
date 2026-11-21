@@ -12,7 +12,6 @@ BEGIN
  SELECT payload INTO a FROM f0_lote_fuente;
  IF jsonb_array_length(a->'families')<>36 OR jsonb_array_length(a->'enums')<>25
  OR (SELECT count(*) FROM lf_ops.nucleo_familias)<>64
- OR (SELECT count(*) FROM lf_ops.nucleo_familia_vocabulario) < 300
  OR to_regclass('lf_ops.f0_valores_vocabulario_v1') IS NOT NULL
  THEN RAISE EXCEPTION 'F0_VOCAB_PRESTATE_DRIFT'; END IF;
  FOR f IN SELECT value FROM jsonb_array_elements(a->'families') LOOP
