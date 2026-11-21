@@ -28,14 +28,16 @@
     {
       "source_id": "SUNAT",
       "adapter": null,
-      "state": "ZIP_METADATA_PREFLIGHT_CANDIDATE_ONLY_NO_DECOMPRESSION",
+      "state": "ZIP_CONTENT_VERIFIED_SYNTHETIC_CANDIDATE_NO_SOURCE_ADAPTER",
       "source_variant": "SUNAT-RUC",
       "official_catalog_url": "https://www.datosabiertos.gob.pe/dataset/padr%C3%B3n-ruc-superintendencia-nacional-de-aduanas-y-de-administraci%C3%B3n-tributaria-sunat",
       "observed_resource": "PadronRUC_202610.zip",
       "format": "ZIP",
       "runtime_enabled": false,
       "zip_preflight_ref": "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs",
-      "zip_preflight_contract": "skills/ai_sales_discovery/contracts/ZIP_PREFLIGHT_V04.md"
+      "zip_preflight_contract": "skills/ai_sales_discovery/contracts/ZIP_PREFLIGHT_V04.md",
+      "zip_content_contract": "skills/ai_sales_discovery/contracts/ZIP_CONTENT_V05.md",
+      "zip_content_verifier": "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs#verifyZipContentCandidate"
     },
     {
       "source_id": "SUNARP",
