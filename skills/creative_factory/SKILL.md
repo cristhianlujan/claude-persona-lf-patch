@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.2 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.3 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -130,6 +130,53 @@ El recibo SIEMPRE declara:
 No elevar a `QA_PASS`, `NATIVE_DELIVERED` ni `RENDER_AUTHORIZED`.
 Un juicio visual/semántico independiente y la recepción del proveedor requieren
 contratos y evidencias separados, fuera del alcance autónomo actual.
+
+## Protocolo obligatorio ante rechazo o incidencia — readback del handoff
+
+**Disparador:** cualquier ERROR, BLOCKED, FAIL, REJECTED o incumplimiento observado
+durante la preparación, transporte, generación, composición o QA. No esperar
+a que el usuario pida el handoff. Detener la entrega y el reintento automático.
+
+1. Identificar etapa, componente emisor y receptor, pedido/item/variante y
+   referencia real de la ejecución o intento, si existe.
+2. Recuperar el handoff funcional exacto preparado por el emisor y, si hubo
+   envío, su evidencia de salida. Mantener referencias, adjuntos y hashes
+   originales; no regenerar el prompt.
+3. **Solicitar inmediatamente al receptor del mismo intento que envíe el
+   handoff funcional que recibió**. Mensaje de diagnóstico, no de generación:
+   "Devuelve el handoff funcional exacto que recibiste para este intento, sin
+   resumirlo, corregirlo ni completarlo. Incluye los adjuntos/referencias
+   recibidos y el identificador del intento, si están disponibles. Si no
+   puedes recuperar el mensaje exacto, indícalo expresamente. No generes
+   otra imagen ni ejecutes otro pedido."
+   Usar solo un canal de readback disponible y autorizado. No pedir
+   instrucciones internas, credenciales ni datos de otros negocios.
+4. Mostrar al usuario ambos handoffs, distinguiendo explícitamente:
+   PREPARADO, ENVIADO (solo evidencia de salida) y RECIBIDO (respuesta del
+   receptor). Comparar texto/bytes, adjuntos, fuentes y huellas disponibles;
+   señalar las diferencias y qué comprobación falló. Una declaración del
+   receptor no equivale a atestación del proveedor. No fabricar readback
+   ni presentar el handoff de Supabase como si fuera el recibido.
+5. Si no hubo envío, informar HANDOFF_NOT_SENT y el último contrato
+   disponible. Si no hay canal de consulta o no hay readback del mismo
+   intento, informar HANDOFF_RECEIVER_READBACK_UNAVAILABLE y mantener el
+   bloqueo. Mostrar por separado el handoff preparado y la evidencia real
+   disponible; nunca inventar un identificador o recibo.
+6. Localizar la primera divergencia, corregir solo la etapa responsable y
+   conservar la evidencia del intento rechazado. Reintentar únicamente
+   dentro de la autorización vigente cuando la causa esté resuelta. No
+   elevar permisos de render ni promover QA por el simple hecho de obtener
+   el handoff.
+
+**Aceptación del protocolo:** rechazo con ambos handoffs permite comparar;
+rechazo sin evidencia de recepción permanece bloqueado; error antes del
+envío identifica HANDOFF_NOT_SENT. Un eco local, una imagen con texto PASS
+o una respuesta reconstruida no prueba recepción. En todos los casos el
+usuario recibe el diagnóstico y handoff disponible sin tener que solicitarlo.
+
+Este es un contrato de actuación de la skill; no agrega capacidades al
+proveedor ni activa un transporte nuevo. No invoca Router, perfiles ni sus
+RUNs y no cambia permisos o registros de Supabase.
 
 ## Ejecución y prueba
 
