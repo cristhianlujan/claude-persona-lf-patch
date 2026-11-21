@@ -115,3 +115,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Read at most 128 KiB of the official archive, emit schema metadata only
         run: python3 skills/ai_sales_discovery/tests/sunat_real_schema_probe.py
+
+  sunat-full-archive-one-shot:
+    name: SUNAT full archive QA (ephemeral aggregate only)
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT archivo completo v0.9')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test positive and negative fixtures
+        run: python3 skills/ai_sales_discovery/tests/sunat_full_archive_probe.py --self-test
+      - name: Download official ZIP and inspect header, CRC and aggregate counts
+        run: python3 skills/ai_sales_discovery/tests/sunat_full_archive_probe.py
