@@ -89,3 +89,16 @@ for (const mutant of mutants) {
   assert.notEqual(result.code,sample[3],'mutation survived: '+mutant.caseName);
 }
 console.log('PASS_RADAR_JUDGE '+cases.length+' functional cases, 4 guard mutations killed by intended assertions, input stable, verdict hash dynamic');
+
+const verdictModule = await import('../judges/judge.mjs');
+const priorVerdict = verdictModule.judgeDetails(good,trusted);
+assert.equal(verdictModule.verifyJudgedHash(priorVerdict,good,trusted),true);
+assert.equal(verdictModule.verifyJudgedHash(priorVerdict,{...good,evidence_map:['modified']},trusted),false);
+assert.equal(verdictModule.verifyJudgedHash(priorVerdict,good,{...trusted,authority:{...trusted.authority,query_ref:'different-query'}}),false);
+assert.equal(verdictModule.verifyJudgedHash({...priorVerdict, judged_sha256:'0'.repeat(64)},good,trusted),false);
+const anchor = "current.judged_sha256 === verdict.judged_sha256";
+assert.equal(source.split(anchor).length,2);
+const bypass = await import('data:text/javascript;base64,'+
+ Buffer.from(source.replace(anchor,'true')).toString('base64'));
+assert.equal(bypass.verifyJudgedHash(priorVerdict,good,{...trusted,authority:{...trusted.authority,query_ref:'different-query'}}),true);
+console.log('PASS_RADAR_JUDGE_CURRENTNESS 4 checks; mutation of current-verdict hash caught');
