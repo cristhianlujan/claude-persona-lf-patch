@@ -11,3 +11,5 @@
 ## Estado
 CANDIDATO técnico con esquema sintético, no fuente operativa. Las 24 pruebas Node 22.16.0 se ejecutaron localmente sobre blobs exactos `51c0aaa928cb1f69ca72886d6b7be87d573a9e1d` y `d92d6da268f25cfda030a85a89cc1ab1f23ac647`. No se modifican perfiles, Router ni Supabase. Prueba CI en workflow existente.
 Faltan: esquema mensual real, transporte autorizado con cuotas/timeout, integración de stream ZIP con retención de resultado hasta CRC final, licencia/privacidad efectiva, prueba de filas reales y reconciliación. El resultado marca schema_authority_verified=false, archive_integrity_verified=false, identity_verified=false, runtime_authorized=false, write_authorized=false y contact_authorized=false. No registrar SUNAT en registry de ejecución. 
+
+Mutaciones dirigidas B28: 3/3 PASS local, blob `04cb0337557b8ca21bb1928d00c2717ed06a5b38`. Se anulan individualmente los controles de orden de columnas, exclusión de otros prefijos RUC y cuota de candidatos; cada fixture demuestra la violación que el control original impide. CI ejecuta los tres casos.
