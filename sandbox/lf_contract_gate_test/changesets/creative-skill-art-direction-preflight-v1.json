@@ -1,0 +1,9 @@
+{
+  "solution_ref": "creative-skill-art-direction-preflight-v1",
+  "paths": {
+    "skills/creative_factory/SKILL.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/art_direction_preflight_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/test_art_direction_preflight_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/creative-skill-art-direction-preflight-v1.json": "CHANGESET_MANIFEST"
+  }
+}
