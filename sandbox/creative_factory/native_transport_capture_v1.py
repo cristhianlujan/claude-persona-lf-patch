@@ -178,3 +178,84 @@ def capture_review_only(packet: dict[str, Any],
 def validate_provider_ack(*_args: Any, **_kwargs: Any) -> None:
     """No verified provider callback adapter exists. Fail closed, including for forged JSON receipts."""
     raise CaptureRejected('NATIVE_PROVIDER_ATTESTATION_UNAVAILABLE')
+
+
+def archive_pre_dispatch(wire, reference_files, protected_assets, output_dir):
+    """Save exact intended payload and actual assets before a tool call, not a receipt.
+
+    protected_assets: {component: {'path': local_path, 'sha256': source_pin,
+                                   'source_ref': registered_ref}}.
+    The caller must obtain pins from the authoritative business adapter.
+    This function cannot authorize or invoke an external tool.
+    """
+    import os
+    import tempfile
+    from pathlib import Path
+
+    payload = parse_wire(wire, require_local_canonical=False)
+    require(set(payload) == {'prompt', 'attachments'} and isinstance(payload['prompt'], str)
+            and bool(payload['prompt'].strip()) and isinstance(payload['attachments'], list),
+            'NATIVE_ARCHIVE_PAYLOAD')
+    require(type(reference_files) is dict and type(protected_assets) is dict, 'NATIVE_ARCHIVE_FILES')
+    snapshots = {'payload.json': wire, 'prompt.txt': payload['prompt'].encode('utf-8')}
+    references = []
+    names = set()
+    for entry in payload['attachments']:
+        require(type(entry) is dict and isinstance(entry.get('filename'), str)
+                and entry['filename'] and Path(entry['filename']).name == entry['filename']
+                and entry['filename'] not in ('.', '..') and entry['filename'] not in names,
+                'NATIVE_ARCHIVE_ATTACHMENT_NAME')
+        name = entry['filename']; names.add(name)
+        require(name in reference_files and valid_sha(entry.get('sha256')), 'NATIVE_ARCHIVE_ATTACHMENT_PIN')
+        path = Path(reference_files[name])
+        require(path.is_file() and not path.is_symlink(), 'NATIVE_ARCHIVE_ATTACHMENT_FILE')
+        data = path.read_bytes()
+        require(sha(data) == entry['sha256'], 'NATIVE_ARCHIVE_ATTACHMENT_DRIFT')
+        snapshots['references/' + name] = data
+        references.append({'filename': name, 'sha256': sha(data), 'bytes': len(data)})
+    require(names == set(reference_files), 'NATIVE_ARCHIVE_ATTACHMENT_SET')
+    fixed = []
+    for component, pin in sorted(protected_assets.items()):
+        require(type(component) is str and component and type(pin) is dict
+                and set(pin) == {'path', 'sha256', 'source_ref'} and valid_sha(pin['sha256'])
+                and isinstance(pin['source_ref'], str) and pin['source_ref'].strip(), 'NATIVE_ARCHIVE_PROTECTED_PIN')
+        path = Path(pin['path'])
+        require(path.is_file() and not path.is_symlink(), 'NATIVE_ARCHIVE_PROTECTED_FILE')
+        data = path.read_bytes()
+        require(sha(data) == pin['sha256'], 'NATIVE_ARCHIVE_PROTECTED_DRIFT')
+        name = 'protected/asset_' + str(len(fixed) + 1)
+        snapshots[name] = data
+        fixed.append({'component': component, 'source_ref': pin['source_ref'], 'file': name,
+                      'sha256': sha(data), 'bytes': len(data)})
+    receipt = {'status': 'HANDOFF_PREPARED_NOT_SENT', 'payload_sha256': sha(wire),
+               'prompt_sha256': sha(snapshots['prompt.txt']), 'payload_bytes': len(wire),
+               'attachments': references, 'protected_assets': fixed,
+               'invocation_recorded': False, 'provider_receipt': None,
+               'reception_status': 'NOT_SENT', 'production_approved': False}
+    snapshots['archive.json'] = strict_json_bytes(receipt)
+    out = Path(output_dir)
+    require(out.parent.is_dir() and not out.parent.is_symlink() and not out.exists(), 'NATIVE_ARCHIVE_OUTPUT_EXISTS')
+    # Create exclusively: a second attempt must use a new directory. On error remove only own files.
+    with tempfile.TemporaryDirectory(prefix='.handoff-stage-', dir=out.parent) as stage:
+        root = Path(stage)
+        for name, data in snapshots.items():
+            dst = root / name; dst.parent.mkdir(parents=True, exist_ok=True)
+            with dst.open('xb') as f:
+                f.write(data); f.flush(); os.fsync(f.fileno())
+            require(dst.read_bytes() == data, 'NATIVE_ARCHIVE_READBACK_DRIFT')
+        out.mkdir()
+        created = []
+        try:
+            for name, data in snapshots.items():
+                dst = out / name; dst.parent.mkdir(parents=True, exist_ok=True)
+                with dst.open('xb') as f:
+                    created.append(dst); f.write(data); f.flush(); os.fsync(f.fileno())
+                require(dst.read_bytes() == data, 'NATIVE_ARCHIVE_READBACK_DRIFT')
+        except (OSError, CaptureRejected):
+            for dst in reversed(created): dst.unlink()
+            for folder in ('references', 'protected'):
+                p = out / folder
+                if p.exists(): p.rmdir()
+            out.rmdir()
+            raise
+    return receipt
