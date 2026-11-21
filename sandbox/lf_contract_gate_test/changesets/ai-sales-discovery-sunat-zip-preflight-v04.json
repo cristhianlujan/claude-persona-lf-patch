@@ -1,0 +1,11 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-zip-preflight-v04",
+  "paths": {
+    "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/zip_archive_preflight.test.mjs": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/contracts/ZIP_PREFLIGHT_V04.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-zip-preflight-v04.json": "CHANGESET_MANIFEST"
+  }
+}
