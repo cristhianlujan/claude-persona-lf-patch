@@ -54,3 +54,6 @@ La función genérica inspectDiscoveryReadOnly delega al registro explícito en 
 
 ## Lote v0.6 — lector candidato SUNAT
 `adapters/sunat_records_candidate.mjs` procesa flujos de bytes con esquema exacto y política inyectados. Selección conservadora RUC 20, territorio configurable, cuotas y detección de cambios de columnas; descarta otros prefijos y columnas fuera del contrato. El esquema mensual real sigue sin verificar; no usar el reducido como equivalente. Prueba local 24 casos sintéticos, sin conexión a ZIP ni altas de fuentes. Ver `contracts/SUNAT_RECORDS_V06.md`.
+
+## Lote v0.7 — integración ZIP → lector SUNAT
+`adapters/sunat_zip_candidate.mjs` conecta el procesador ZIP reutilizable con el lector por stream sin descomprimir a disco. Valida toda la estructura/CRC del ZIP antes de entregar filas candidatas; controla bytes reales, selección exacta, cuotas y timeout externo explícito. 16 pruebas locales y 1 mutación CRC, fixtures únicamente. Contrato: `contracts/SUNAT_ZIP_INTEGRATION_V07.md`. Sigue pendiente el esquema real, transporte y autorización comercial de fuente. No se habilita runtime.
