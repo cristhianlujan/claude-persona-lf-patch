@@ -68,11 +68,11 @@ GRANT EXECUTE ON FUNCTION lf_ops.f0_valor_permitido_v1(text,text) TO service_rol
 
 -- Insertar una sola vez cada columna física existente y derivar su tipo de information_schema en v_nucleo_vocabulario.
 INSERT INTO lf_ops.nucleo_hechos(codigo,tabla_ref,columna_ref)
-SELECT DISTINCT p->>'fact', p->>'source_table',p->>'source_column'
+SELECT DISTINCT p.value->>'fact', p.value->>'source_table',p.value->>'source_column'
 FROM f0_lote_fuente i,
  jsonb_array_elements(i.payload->'families') AS f,
  jsonb_array_elements(f.value->'physical') AS p
-WHERE NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_hechos h WHERE h.codigo=p->>'fact');
+WHERE NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_hechos h WHERE h.codigo=p.value->>'fact');
 
 -- Hechos puramente lógicos: de la definición canónica de cada familia, sin binding operativo ni valores inventados.
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion)
