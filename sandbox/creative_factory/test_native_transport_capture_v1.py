@@ -112,6 +112,20 @@ class CaptureTest(unittest.TestCase):
     def test_provider_fake_ack(self):
         with self.assertRaisesRegex(CaptureRejected,'NATIVE_PROVIDER_ATTESTATION_UNAVAILABLE'):
             validate_provider_ack({'provider_receipt':{'provider_id':'forged'},'transmitted':True})
+    def test_invalid_surrogate_prompt(self):
+        self.deny(lambda p:(p['native_transport']['payload'].__setitem__('prompt','\ud800'),
+            p['review_contract']['contract']['handoff'].__setitem__('native_prompt','\ud800')),
+            'NATIVE_CAPTURE_UTF8_INVALID')
+    def test_non_json_attachment_value(self):
+        packet=copy.deepcopy(self.packet)
+        packet['native_transport']['payload']['attachments'].append(float('inf'))
+        packet['review_contract']['contract']['handoff']['attachments'].append(float('inf'))
+        with self.assertRaisesRegex(CaptureRejected,'NATIVE_CAPTURE_WIRE_SERIALIZATION_INVALID'):
+            self.capture(packet)
+        self.assertEqual(len(self.sink.invocations),0)
+    def test_native_provider_receipt_never_accepted(self):
+        with self.assertRaisesRegex(CaptureRejected,'NATIVE_PROVIDER_ATTESTATION_UNAVAILABLE'):
+            validate_provider_ack(None, {'native_execution_authorized':True}, b'fake-image')
     def test_no_oracle_after_invalid(self):
         self.deny(lambda p:p['native_transport']['payload'].__setitem__('prompt','changed'), 'NATIVE_CAPTURE_PAYLOAD_DRIFT')
         self.assertEqual(self.oracle_calls,0)
