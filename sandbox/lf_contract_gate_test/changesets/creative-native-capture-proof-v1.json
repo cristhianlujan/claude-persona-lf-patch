@@ -3,7 +3,8 @@
   "paths": {
     "sandbox/creative_factory/native_transport_capture_v1.py": "SERVICE_RUNTIME",
     "sandbox/creative_factory/test_native_transport_capture_v1.py": "RUNTIME_TESTING",
-    "sandbox/creative_factory/README_NATIVE_CAPTURE_V1.md": "DOCUMENTATION",
-    "sandbox/lf_contract_gate_test/changesets/creative-native-capture-proof-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/creative_factory/README_NATIVE_CAPTURE_V1.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/creative-native-capture-proof-v1.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261121114923_lf_saly_native_local_capture_ledger_v1.sql": "MIGRATION"
   }
 }
