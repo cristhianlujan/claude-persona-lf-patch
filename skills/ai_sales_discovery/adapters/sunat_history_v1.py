@@ -50,10 +50,12 @@ def read_snapshot(source, cohort, policy):
                 while (raw := line()) is not None:
                     ordinal += 1
                     require(ordinal <= policy["rows_per_archive"], "ROW_LIMIT")
-                    row = next(csv.reader([raw.decode("utf-8")], strict=True))
+                    # One-to-one byte mapping preserves ASCII CSV syntax even when unrelated
+                    # labels contain legacy bytes. Only an ASCII RUC is compared.
+                    row = next(csv.reader([raw.decode("latin-1")], strict=True))
                     require(len(row) == len(columns), "ROW_WIDTH")
                     ruc = row[idx].strip()
-                    if ruc in cohort:
+                    if ruc.isascii() and ruc in cohort:
                         found.setdefault(ruc, ordinal)
                 require(ordinal > 0, "EMPTY_SNAPSHOT")
             return found

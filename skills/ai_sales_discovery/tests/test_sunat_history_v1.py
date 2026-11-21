@@ -29,6 +29,14 @@ class TestHistory(unittest.TestCase):
         self.assertEqual((first["first_seen_period"],first["ordinal"],first["min_full_months"]),("2023-10",1,36))
         self.assertIsNone(missing["min_full_months"])
 
+    def test_legacy_label_with_quoted_comma(self):
+        source = self.snapshots[1]
+        path = Path(source["path"])
+        with ZipFile(path,"w") as z:
+            z.writestr("monthly.csv",b'RUC,UBIGEO\n'+self.ruc.encode()+b',"PE\xd1A, SECTOR"\n')
+        source["sha256"]=hashlib.sha256(path.read_bytes()).hexdigest()
+        self.assertEqual(evaluate(self.request)["records"][0]["min_full_months"],36)
+
     def test_boundary(self):
         self.request.update(as_of="2026-10-01",snapshots=[self.snapshots[1]])
         self.assertEqual(evaluate(self.request)["records"][0]["min_full_months"],35)
