@@ -1,0 +1,8 @@
+{
+  "solution_ref": "nucleo-am-checkout-revisiones-v2",
+  "paths": {
+    "supabase/migrations/20261121094400_lf_nucleo_am_checkout_revisiones_v2.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/checkout_am_revisiones_v2.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/nucleo-am-checkout-revisiones-v2.json": "CHANGESET_MANIFEST"
+  }
+}
