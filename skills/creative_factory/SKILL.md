@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.11 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.12 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -111,7 +111,8 @@ de cada intención y de las fuentes del negocio.
    y sombras cuando procede), tipografía, jerarquía/composición y calidad
    visual/impacto buscado. Para una dimensión no aplicable explicar por qué.
    No basta "premium", "moderno" o "wow": describir qué los materializa.
-   Aplicar el método de razonamiento compositivo y eficiencia espacial de abajo.
+   Aplicar el método v0.11 de razonamiento compositivo y el ciclo de criterio
+   creativo, alternativas y refinamiento v0.12 descrito abajo.
 4. **Desglose por componente:** recorrer toda la jerarquía del
    `CREATIVE_VISUAL_BLUEPRINT_V1`, no un checklist fijo de Home. Cada parte
    precisa propósito, posición/relación, estilo, textos exactos cuando
@@ -147,7 +148,8 @@ de cada intención y de las fuentes del negocio.
    generador y compositor, (f) creatividad compatible con LOCK/GUIDED/FREE,
    (g) que la instrucción final sea renderizable y libre de metadatos QA,
    y (h) hash del plan y evidencia de la revisión, incluido el QA de eficiencia
-   espacial descrito abajo. No confundir un resultado
+   espacial y las dimensiones de calidad creativa v0.12 descritas abajo.
+   No confundir un resultado
    estructural ni una autorrevisión con PASS independiente.
    Si el revisor o la evidencia no están disponibles, mantener
    `SEMANTIC_QA_PENDING` y no enviar.
@@ -243,6 +245,166 @@ La incorporación es una capacidad metodológica del constructor semántico.
 El preflight estructural existente no mide la calidad visual ni sustituye
 la revisión independiente; los casos anteriores no acreditan por sí mismos
 una prueba gráfica ejecutada.
+
+### Desarrollo de criterio creativo y dirección visual avanzada (v0.12)
+
+**Propósito:** mejorar la calidad del pensamiento de la skill y del texto que
+produce, antes de delegar al generador. No sustituir criterio por adjetivos,
+copiar una plantilla universal, multiplicar agentes ni crear otro motor.
+La calidad creativa se decide dentro de la intención, fuentes y libertades
+del pedido. Una alternativa atractiva que contradice el contenido o un LOCK
+es inválida. Aplicar el razonamiento espacial v0.11 como parte de este método.
+
+#### A. Seis habilidades que se ejercitan en cada dirección de arte
+
+1. **Dirección de arte y criterio estético.** Formular una tesis visual
+   ligada al público, función, emoción y medio: qué debe entenderse primero,
+   qué sensación debe producir y qué evidencia visual la sustenta. Derivar
+   un lenguaje coherente de formas, color, contraste, luz, profundidad,
+   tipografía, iconografía y proporciones según el activo. Comparar la
+   coherencia entre esas decisiones; no confundir más adornos, sombras,
+   brillo o saturación con calidad. Identificar la primera lectura, la
+   segunda y la acción esperada. Cuando una dimensión no corresponda,
+   justificarlo en lugar de agregar decoración artificial.
+2. **Creatividad funcional y exploración divergente.** Buscar alternativas
+   realmente distintas en concepto, composición, ritmo o recurso visual,
+   no simples variaciones de color. Para un pedido nuevo o una revisión
+   sustancial con libertad, desarrollar al menos dos enfoques viables
+   cuando existan; incluir un enfoque conservador y otro que mejore el
+   problema observado. Si el cambio es acotado o no hay libertad suficiente,
+   comparar solo las soluciones permitidas y explicar el límite, sin
+   expandir el alcance. Identificar riesgo y beneficio de cada enfoque.
+   Elegir por adecuación al objetivo y originalidad útil, no por novedad
+   obligatoria. No alterar copy, identidad, cifras, funciones, geometría
+   bloqueada ni hechos para hacer una propuesta más llamativa.
+3. **Composición y jerarquía.** Construir el esqueleto visual antes de
+   ornamentar: ancla dominante, grupos semánticos, grilla o ejes pertinentes,
+   relaciones de tamaño, pesos y contrastes, dirección de lectura, balance,
+   repetición y espacios de separación. Distinguir alineación óptica de
+   alineación geométrica cuando proceda y explicitar por qué. Deducir
+   el tratamiento de cada componente desde su función; comprobar que la
+   escena completa conserve foco y ritmo. No hacer que todos los bloques
+   compitan ni aplicar simetría si contradice su función.
+4. **Eficiencia espacial y legibilidad.** Aplicar v0.11 a la longitud real
+   de las etiquetas, valores y descripciones. Comparar distribución
+   horizontal, vertical o mixta; eliminar filas o contenedores redundantes
+   antes de reducir letra o área de interacción. Mantener agrupaciones,
+   espacios útiles, separación y consistencia entre componentes. Considerar
+   cambios de longitud del contenido y ancho del destino; distinguir
+   envoltura natural de fragmentación innecesaria. En un mockup no afirmar
+   cumplimiento de accesibilidad o medidas de producto que no se puedan
+   comprobar. Si existe especificación dimensional aprobada, respetarla.
+5. **Redacción gráfica de alta precisión.** Convertir cada decisión en
+   lenguaje de render, no instrucciones para que el receptor vuelva a
+   diseñar la estrategia. Especificar efecto buscado mediante relaciones
+   observables: posición relativa, tamaño relativo, orden, agrupación,
+   alineación, tratamiento tipográfico, contraste, material, iluminación,
+   separación, encuadre y límites pertinentes. Usar copy literal y fuentes
+   de autoridad; separar requisitos obligatorios de orientación flexible.
+   Evitar palabras ambiguas, contradicciones, redundancias y prohibiciones
+   genéricas. Ejemplo: sustituir "tarjeta elegante y compacta" por una
+   descripción de cómo se reduce una fila, dónde se alinea el valor y qué
+   separación se conserva. Releer el prompt como lo entendería un receptor
+   que no conoce el contexto: ninguna referencia implícita a nombres,
+   archivos ni decisiones que no estén resueltos en el contrato.
+6. **Autocrítica y QA visual.** Distinguir intención, diseño propuesto,
+   instrucción efectiva e imagen obtenida. Primero examinar la propuesta
+   como autor, buscando omisiones, incoherencia, repetición, exceso y
+   alternativas mejores; luego someter el plan a la revisión independiente
+   vigente. En el arte real observar a tamaño normal de destino y, cuando
+   aplique, en detalle: foco, orden de lectura, texto, contraste, agrupación,
+   proporciones, espacios, consistencia iconográfica, integridad de activos,
+   desbordes y artefactos. Señalar componente, evidencia visible, impacto
+   y corrección concreta. No atribuir el defecto a una transformación
+   interna del generador sin evidencia de transporte; no solicitar texto
+   al generador de imágenes como condición de QA. Usar el registro anterior
+   al envío y la imagen recibida. Para otro receptor con readback disponible,
+   mantener el protocolo existente. Sin imagen, declarar QA visual pendiente.
+
+#### B. Método de decisión y refinamiento
+
+Ejecutar las seis habilidades como un ciclo dentro de los pasos 3, 4 y 6 del
+constructor: interpretar → diagnosticar → explorar → comparar → seleccionar
+→ redactar → revisar → refinar. La decisión debe ser rastreable a la intención
+y las fuentes, no a preferencias inventadas. Comparar alternativas sobre
+criterios explícitos del destino, descartar las inviables antes de ponderar
+calidad, explicar el compromiso de la elegida e identificar su principal
+riesgo. No presentar exploración como entrega final ni invocar un proveedor
+para cada alternativa sin autorización. Ante ajustes menores preservar todo
+lo que funciona; no rediseñar por iniciativa propia.
+
+Conservar tesis, alternativas, evaluación y motivo de elección en rationale
+de las dimensiones existentes, y el análisis por componente en el plan/QA
+existentes. Solo la dirección elegida y las instrucciones renderizables
+pasan a instruction y la proyección gráfica. No añadir claves ni estados
+al contrato canónico, ni meter deliberaciones, puntuaciones o QA en el
+mensaje al generador. Las reservas y propietarios se conservan. La mejora
+creativa no añade autoridad de ejecución, ni cambia campos, tokens, copy,
+fuentes oficiales o el modo de revisión.
+
+#### C. Evaluación verificable y mejora continua
+
+Usar una rúbrica de revisión comparativa, no una predicción automática de
+calidad ni una certificación académica. Para cada criterio registrar
+evidencia observable, observación y resultado (0 = deficiente; 1 = básico;
+2 = funcional; 3 = sólido; 4 = excelente). Si no hay evidencia usar
+NO_EVALUADO, nunca asignar una puntuación ficticia.
+- Dirección: coherencia entre propósito, lenguaje visual y efecto.
+- Creatividad: diferencia sustantiva entre alternativas viables y utilidad
+  de la solución seleccionada.
+- Composición: foco, jerarquía, alineación, ritmo y relaciones.
+- Espacio: aprovechamiento, adaptación del texto y legibilidad.
+- Handoff: instrucciones concretas, completas, no contradictorias y
+  comprensibles para el receptor sin conocimientos implícitos.
+- QA: diagnóstico localizado, reproducción de la evidencia y propuesta
+  de corrección que preserve lo correcto.
+
+Los controles duros del contrato (identidad, copy/cifras, LOCK, fuentes,
+dueño de ejecución, autorización, alcance) no se compensan con puntuaciones.
+Una revisión de texto no demuestra calidad de imagen. Evaluar por separado
+la dirección escrita y el resultado visual. No declarar excelencia ni
+promover a producción solo por una rúbrica; la revisión independiente y
+la ruta gobernada siguen vigentes. Conservar hallazgos y versiones con la
+trazabilidad existente; proponer mejoras reutilizables sin convertir una
+preferencia de un pedido en política global sin aprobación.
+
+**Prueba comparativa de la capacidad:** congelar un pedido y sus fuentes,
+referencias, modo, restricciones y baseline; producir una dirección con la
+versión candidata sin enseñar la solución esperada. En una revisión
+independiente/pareada comparar baseline y candidato sobre la misma evidencia,
+idealmente ocultando las versiones al evaluador. Si se autoriza render,
+mantener las condiciones comparables del proveedor que estén disponibles,
+archivar cada intento antes de generar y cotejar los resultados. No repetir
+generaciones indefinidamente; aislar la primera desviación sustentable.
+Registrar resultados por criterio, evidencia, condiciones no controlables
+y limitaciones. Sin evidencia comparativa suficiente no afirmar mejora
+medida. Los casos de evaluación de abajo son criterios y ejemplos de
+contraste, no certifican un benchmark ejecutado.
+
+**Casos de contraste para evaluar transferencia:**
+- HOME financiero: separar foco de saldo/acción y resumen secundario.
+  Comparar iconos superiores vs laterales con el copy actual y el ancho
+  real; seleccionar agrupación compacta si mejora lectura sin recortar
+  texto. Mantener montos, logo y CTA protegidos. Rechazar una dirección
+  que solo diga "más premium" o copies históricos de una referencia.
+- Tarjeta promocional estrecha: elegir una estructura que permita destacar
+  el mensaje y conserve lectura; no forzar la solución lateral del HOME.
+  Contrastar qué aporta una jerarquía vertical frente a una mixta.
+- Infografía de proceso: convertir relaciones y pasos en recorrido visual
+  entendible; comparar flujo horizontal/vertical según medio y conservar
+  cada dependencia. Rechazar líneas decorativas que falseen el proceso.
+- Corrección localizada: si solo cambia una cifra u otro elemento fijo
+  autorizado, preservar layout y activos no afectados; no usar la
+  creatividad como permiso para cambiar el resto.
+- Negativos transversales: alternativas cosméticas disfrazadas de
+  exploración, adjetivos sin instrucciones visibles, modificar una fuente
+  oficial, comprimir texto hasta perder legibilidad o aprobar una imagen
+  no inspeccionada. El diagnóstico debe detectar el motivo específico.
+
+Este desarrollo modifica la metodología de la skill, no el generador de
+imágenes. El preflight existente valida estructura, no creatividad ni
+percepción; el benchmark creativo y visual requiere casos ejecutados y
+evidencia independiente.
 
 ### Pruebas y límites
 
@@ -447,6 +609,8 @@ sin estados de aprobación, hashes, resultados de QA, rutas locales ni
 metadatos operativos en el texto gráfico. Trasladar las decisiones de
 composición y eficiencia espacial a relaciones visuales explícitas y cotejar
 que la proyección no las pierda; no trasladar el razonamiento interno.
+Aplicar la habilidad v0.12 de redacción gráfica al texto final, conservando
+el copy y la asignación de propietarios.
 
 Invocar `graphical_handoff_candidate_v1.build_candidate(plan, projection, files)`.
 La proyección contiene direction (las seis dimensiones del preflight),
@@ -529,7 +693,9 @@ contratos y evidencias separados, fuera del alcance autónomo actual.
   transmitirlo inmediatamente en la misma ejecución, sin esperar respuesta,
   confirmación, mensaje nuevo ni microaprobación del usuario.
 - Al detectar cualquier error, rechazo o incumplimiento: solicitar al
-  receptor el handoff del mismo intento, comparar y mostrar el diagnóstico
+  receptor con readback disponible el handoff del mismo intento; para un
+  generador de salida solo imagen, recuperar el registro previo y diagnosticar
+  el resultado. Comparar y mostrar el diagnóstico
   automáticamente según el protocolo siguiente, sin esperar una instrucción.
 
 La visualización no es una pausa de aprobación. No agrega permisos, no
@@ -581,8 +747,9 @@ habilita proveedores ni convierte un resultado de revisión en producción.
    Nunca presentar el hash preparado como prueba de envío o recepción.
 6. Continuar automáticamente con recepción y QA autorizados. Ante fallo
    aplicar el protocolo de readback de abajo en esa misma ejecución:
-   solicitar al receptor su handoff funcional exacto, recuperar el readback
-   si existe, comparar y mostrar divergencias sin esperar otro turno.
+   solicitar al receptor su handoff funcional exacto únicamente si el canal
+   admite readback; cuando el resultado sea solo imagen, recuperar el registro
+   previo y comparar el arte. Mostrar divergencias sin esperar otro turno.
    Si el canal no recupera el payload recibido, informar
    `HANDOFF_RECEIVER_READBACK_UNAVAILABLE` y recuperar automáticamente el
    registro previo y evidencia de la invocación. Continuar con el QA técnico
@@ -612,8 +779,10 @@ la misma ejecución; detener solo la entrega y el reintento no verificado.
 2. Recuperar el handoff funcional exacto preparado por el emisor y, si hubo
    envío, su evidencia de salida. Mantener referencias, adjuntos y hashes
    originales; no regenerar el prompt.
-3. **Solicitar inmediatamente al receptor del mismo intento que envíe el
-   handoff funcional que recibió**. Mensaje de diagnóstico, no de generación:
+3. **Si el receptor admite readback, solicitar inmediatamente el handoff
+   funcional que recibió en el mismo intento**. Para un generador cuyo
+   único resultado es una imagen y cuyo canal no dispone de readback,
+   omitir esta solicitud, recuperar el registro previo y evaluar el arte. Mensaje de diagnóstico, no de generación:
    "Devuelve el handoff funcional exacto que recibiste para este intento, sin
    resumirlo, corregirlo ni completarlo. Incluye los adjuntos/referencias
    recibidos y el identificador del intento, si están disponibles. Si no
