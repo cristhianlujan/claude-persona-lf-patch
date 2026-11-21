@@ -42,3 +42,6 @@ La base SALY mantiene la extracción inicial de 519 registros; el runner actual 
 
 ## Lote v0.2 — separación de adaptadores
 La función genérica inspectDiscoveryReadOnly delega al registro explícito en adapters/registry.mjs; únicamente PE-PTE está admitido mediante adapters/pte_csv_adapter.mjs. La función inspectPteReadOnly queda como alias de compatibilidad con el piloto. Validación de URL/licencia, política territorial y parseo viven en el adaptador PTE. No activar conectores ausentes ni cambiar Router o perfiles.
+
+## Lote v0.3 — preflight de nuevas fuentes sin activarlas
+`adapters/source_admission_v1.mjs` comprueba coincidencia de catálogo, política del negocio, licencia, privacidad, límites de tamaño, seguridad ZIP, esquema y autorización de API. La salida **siempre** es candidata/no autorizada para runtime; no introduce SUNAT, SUNARP, OECE ni Google Places en el registro operativo. Ver `contracts/SOURCE_REVIEW_20261121.md`. Comando de regresión: `node skills/ai_sales_discovery/tests/source_admission_v1.test.mjs`.
