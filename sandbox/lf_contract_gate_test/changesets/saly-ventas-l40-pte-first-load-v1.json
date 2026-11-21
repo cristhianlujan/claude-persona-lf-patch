@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-ventas-l40-pte-first-load-v1",
+  "paths": {
+    "supabase/migrations/20261121055544_lf_saly_ventas_pte_first_load_v1.sql": "MIGRATION",
+    "supabase/tests/saly_ventas_pte_first_load_v1_readback.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-l40-pte-first-load-v1.json": "CHANGESET_MANIFEST"
+  }
+}
