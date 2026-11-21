@@ -32,17 +32,21 @@ BEGIN
  SELECT config_value::jsonb INTO v_policy FROM public.lf_global_config
  WHERE scope='SALY_DISCOVERY' AND config_key='PTE_POLICY_V1' AND value_status='REAL'
  ORDER BY valid_from DESC LIMIT 1;
- IF v_count<>1 OR v_policy IS NULL OR jsonb_typeof(v_policy)<>'object'
- OR jsonb_typeof(v_policy->'ubigeo_prefixes')<>'array'
- OR jsonb_array_length(v_policy->'ubigeo_prefixes')=0
- OR v_policy->>'source_id'<>'PE-PTE' OR v_policy->>'scope_key'<>'LIMA_ICA'
- OR v_policy->>'allowed_effect'<>'READ_ONLY'
+ IF v_count<>1 OR v_policy IS NULL OR jsonb_typeof(v_policy) IS DISTINCT FROM 'object'
+ THEN RAISE EXCEPTION 'PTE_POLICY_INVALID'; END IF;
+ IF NOT (v_policy ?& ARRAY['source_id','scope_key','ubigeo_prefixes','allowed_effect'])
+ OR jsonb_typeof(v_policy->'ubigeo_prefixes') IS DISTINCT FROM 'array'
+ THEN RAISE EXCEPTION 'PTE_POLICY_INVALID'; END IF;
+ IF jsonb_array_length(v_policy->'ubigeo_prefixes')=0
+ OR v_policy->>'source_id' IS DISTINCT FROM 'PE-PTE'
+ OR v_policy->>'scope_key' IS DISTINCT FROM 'LIMA_ICA'
+ OR v_policy->>'allowed_effect' IS DISTINCT FROM 'READ_ONLY'
  OR EXISTS(SELECT 1 FROM jsonb_array_elements(v_policy->'ubigeo_prefixes') AS x(e)
-     WHERE jsonb_typeof(e)<>'string' OR e#>>'{}' !~ '^[0-9]{2}$')
+     WHERE jsonb_typeof(e) IS DISTINCT FROM 'string' OR e#>>'{}' !~ '^[0-9]{2}$')
  OR (SELECT count(*) FROM jsonb_array_elements(v_policy->'ubigeo_prefixes'))
     <> (SELECT count(DISTINCT e) FROM jsonb_array_elements(v_policy->'ubigeo_prefixes') AS x(e))
  THEN RAISE EXCEPTION 'PTE_POLICY_INVALID'; END IF;
- RETURN v_policy;
+  RETURN v_policy;
 END $policy$;
 REVOKE ALL ON FUNCTION public.lf_saly_discovery_pte_policy_v1() FROM PUBLIC,anon,authenticated,service_role;
 GRANT EXECUTE ON FUNCTION public.lf_saly_discovery_pte_policy_v1() TO supabase_read_only_user;
