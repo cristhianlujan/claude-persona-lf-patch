@@ -69,3 +69,7 @@ CREATE TABLE lf_ops.rutas (
   route_type text,
   CONSTRAINT rutas_type_ck CHECK ((route_type = ANY (ARRAY['INTERNAL'::text, 'CONTEXTUAL'::text, 'EXTERNAL'::text, 'REDIRECT'::text])))
 );
+
+-- PG17 aislado: los CHECK existen anónimos en base_pg17; agregar también sus nombres reales.
+ALTER TABLE public.lf_global_config ADD CONSTRAINT lf_global_config_status_check CHECK ((value_status = ANY (ARRAY['FICTICIO'::text, 'REAL'::text])));
+ALTER TABLE public.lf_global_config ADD CONSTRAINT lf_global_config_type_check CHECK ((value_type = ANY (ARRAY['TEXT'::text, 'INTEGER'::text, 'DECIMAL'::text, 'BOOLEAN'::text, 'JSON'::text, 'EMAIL'::text])));
