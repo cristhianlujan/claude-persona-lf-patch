@@ -1,0 +1,12 @@
+{
+  "schema_version": "saly-radar-pte-policy/v1",
+  "project_code": "SALY",
+  "profile_code": "PERFIL-RADAR-COMERCIAL-SALY",
+  "source_id": "PE-PTE",
+  "scope_key": "LIMA_ICA",
+  "ubigeo_prefixes": [
+    "15",
+    "11"
+  ],
+  "allowed_effect": "READ_ONLY"
+}
