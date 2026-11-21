@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.4 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.5 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -83,6 +83,95 @@ La prueba SQL de despliegue consume Home B canónico, compara ambos outputs
 directos de las funciones existentes, ejecuta 13 negativos y verifica que las
 cantidades de pedidos, items, RUNs, capturas y recibos QA no cambian.
 El cliente limitado de lectura puede cotejar filas/hashes pero no llamar esta RPC.
+
+## Constructor de dirección de arte y QA previo (v0.5)
+
+**Objetivo:** interpretar el entregable completo, no confundir el arte final con
+el cuerpo que recibe un generador parcial. No convertir el ejemplo Home en
+una receta fija. La dirección de arte es propuesta por la skill en función
+de cada intención y de las fuentes del negocio.
+
+### Secuencia obligatoria antes de compilar un nuevo handoff
+
+1. **Entregable y destino:** aclarar en la interpretación si el pedido exige
+   escena completa de producto (`FULL_SCENE`), cuerpo separado
+   (`BODY_ONLY`) u otro activo (`OTHER_ASSET`). Mantener vista, encuadre,
+   soporte y finalidad pedidos. Una escena completa puede incluir partes que
+   ejecutan distintos componentes; no degradarla a cuerpo aislado ni hacer
+   dibujar a Native un activo fijo que corresponde al compositor.
+2. **Descubrimiento de fuentes:** localizar identidad, tokens, activos,
+   textos, datos, reglas/patrones, referencia visual y geometría aplicables.
+   Usar las fuentes del adaptador del negocio y la versión congelada; si
+   un elemento (logo, dispositivo, icono, copy, etc.) es obligatorio y
+   no está resuelto, declararlo pendiente. No inventar leyendas, valores,
+   permisos, ubicación de archivos ni decisiones oficiales.
+3. **Dirección de arte:** especificar seis dimensiones con una instrucción
+   concreta y una justificación ligada al pedido/fuentes: escena y
+   presentación, estilo y lenguaje visual, fondo y ambiente (incluye luz
+   y sombras cuando procede), tipografía, jerarquía/composición y calidad
+   visual/impacto buscado. Para una dimensión no aplicable explicar por qué.
+   No basta "premium", "moderno" o "wow": describir qué los materializa.
+4. **Desglose por componente:** recorrer toda la jerarquía del
+   `CREATIVE_VISUAL_BLUEPRINT_V1`, no un checklist fijo de Home. Cada parte
+   precisa propósito, posición/relación, estilo, textos exactos cuando
+   correspondan, iconografía/imagen, fuente y responsable de ejecución.
+   Reutilizar `design_lock.LOCK/GUIDED/FREE`: preservar contenido fijo,
+   orientar tratamiento creativo y delimitar libertades. Separar los
+   responsables NATIVE / COMPOSITOR / REFERENCE_ONLY para evitar duplicación.
+   Un texto solicitado se conserva literal y no autoriza cambiar una fuente
+   oficial; si hay conflicto mostrarlo y bloquear la compilación afectada.
+5. **Preflight estructural obligatorio:** invocar
+   `sandbox/creative_factory/art_direction_preflight_v1.py:preflight(plan)`
+   con el blueprint y la propuesta. El plan incluye `business_code`,
+   `literal_request`, `blueprint`, `presentation` (mode, destination),
+   `direction`, `components`, `sources` y `requirements`.
+   Las seis claves de direction son scene/style/background/typography/
+   hierarchy/visual_impact, cada una con instruction, rationale, requirements.
+   Cada componente contiene name, owner, freedom, instruction, copy,
+   source_ids, requirements. Cada requisito tiene id, source y quote literal
+   del pedido (REQUEST) o de una fuente; cada fuente tiene id,
+   business_code, ref, version, status, text y sha256 de sus bytes UTF-8.
+   Obtener snapshots reales del adaptador; la huella del texto es integridad
+   local, no autenticación de origen ni hash del archivo gráfico.
+   El resultado `STRUCTURAL_PASS_SEMANTIC_PENDING` es un suplemento
+   de planificación para el constructor existente, **no** un payload Native.
+   Un fallo bloquea y muestra el código, aplicando el protocolo de incidencias.
+6. **QA semántico previo independiente:** un revisor diferente del autor de
+   la propuesta coteja el pedido literal y las fuentes, no solo el resumen del
+   autor. Evaluar (a) completitud del entregable, (b) cobertura real de todos
+   los requisitos, incluida la detección de requisitos omitidos antes de
+   construir la lista, (c) consistencia con activos/tokens/copy oficiales y
+   candidatos, (d) especificidad de dirección de arte y tratamiento por
+   componente, (e) responsabilidad y ausencia de contradicciones entre
+   generador y compositor, (f) creatividad compatible con LOCK/GUIDED/FREE,
+   (g) que la instrucción final sea renderizable y libre de metadatos QA,
+   y (h) hash del plan y evidencia de la revisión. No confundir un resultado
+   estructural ni una autorrevisión con PASS independiente.
+   Si el revisor o la evidencia no están disponibles, mantener
+   `SEMANTIC_QA_PENDING` y no enviar.
+7. **Compilación:** tras el QA previo, adaptar los campos de arte y componentes
+   al blueprint canónico y reutilizar el compilador vigente para su nuevo
+   contrato/hash. No concatenar el suplemento directamente al prompt
+   sellado, no reescribir contratos históricos, no alterar el modo de
+   revisión, permisos ni activos. Mostrar el payload exacto (únicamente las
+   instrucciones pertinentes al receptor) y continuar automáticamente
+   solo si existe canal y autoridad, conforme a los controles de abajo.
+
+### Pruebas y límites
+
+```bash
+cd sandbox/creative_factory
+python -m unittest -v test_art_direction_preflight_v1.py
+```
+
+El preflight es transversal y local: no llama Router, perfiles, Supabase
+ni proveedores. Valida los requisitos **declarados**, no descubre por sí solo
+todos los requisitos ni autentica las fuentes. Los escenarios positivos
+incluyen escena completa, cuerpo aislado y otro negocio/activo; los 19
+negativos incluyen fuentes cruzadas, hash alterado, omisiones de componentes,
+copy no sustentado, falta de dirección y conflicto de responsables.
+No declara QA semántico independiente, render real ni persistencia de
+nuevos pedidos. El flujo L2C anterior permanece intacto.
 
 ## Contrato de entrada
 
