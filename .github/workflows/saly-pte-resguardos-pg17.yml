@@ -1,0 +1,57 @@
+name: SALY PTE writer PG17 regression
+on:
+  pull_request:
+    paths:
+      - 'profiles/saly_radar_comercial/**'
+      - 'supabase/migrations/*_lf_saly_ventas_pte*'
+      - 'supabase/tests/saly_ventas_pte_writer_core_v1_concurrency.py'
+      - '.github/workflows/saly-pte-resguardos-pg17.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  saly-pte-pg17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_pte_writer_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_pte_writer_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_pte_writer_ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PG client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Bootstrap disposable SALY fixture only
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN; CREATE ROLE supabase_read_only_user NOLOGIN;"
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE SCHEMA saly; CREATE TABLE saly.proyecto (codigo text PRIMARY KEY, estado text NOT NULL); INSERT INTO saly.proyecto VALUES ('SALY-001','ACTIVO');"
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261121012002_lf_saly_ventas_discovery_staging_v1.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261121014653_lf_saly_ventas_discovery_coverage_fk_v1.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261121030300_lf_saly_ventas_pte_writer_core_v1.sql
+      - name: Run TWO concurrent real PG17 writer sessions
+        run: python3 supabase/tests/saly_ventas_pte_writer_core_v1_concurrency.py
+      - name: Verify no fixture remains
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_discovery_runs;')" = "0"
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_hallazgos;')" = "0"
+          echo PASS_PG17_FIXTURE_CLEANUP
+      - name: Run Radar semantic judge & mutation qualifications
+        run: node profiles/saly_radar_comercial/evals/test_judge.mjs
