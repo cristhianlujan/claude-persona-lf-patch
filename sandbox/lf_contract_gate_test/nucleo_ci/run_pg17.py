@@ -222,6 +222,19 @@ def main():
                     or "DPIG03_ROLLBACK_PASS 14/14" not in dpig03.stderr):
                 raise RuntimeError("DPIG03_TEST_OR_ROLLBACK_FAILED")
         f4_conformance.run(name, ROOT, args.base, args.head, psql)
+        if any("_lf_nucleo_deprecacion_gobernada_v1.sql" in n for n in replayed_names):
+            dep_fixture = (HERE / "deprecacion_pg17.sql").read_text()
+            for schema in ("lf_ops", "saly"):
+                dep = psql(name, "BEGIN;\n" + dep_fixture.replace("@SCHEMA@", schema) + "\nROLLBACK;", check=False)
+                print(dep.stdout + dep.stderr, flush=True)
+                if dep.returncode or dep.stderr.count("DEP_PASS " + schema + " ") != 10:
+                    raise RuntimeError("DEP_TEST_FAILED " + schema)
+                for table in ("nucleo_reglas", "nucleo_deprecaciones"):
+                    field = "codigo" if table == "nucleo_reglas" else "regla"
+                    residue = psql(name, f"SELECT count(*) FROM {schema}.{table} WHERE {field}='ZZT-DEPRECACION';").stdout.strip()
+                    if residue != "0":
+                        raise RuntimeError("DEP_ROLLBACK_FAILED " + schema + "." + table)
+                print("DEP_ROLLBACK_PASS " + schema + " 10/10", flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
