@@ -1,0 +1,10 @@
+{
+  "solution_ref": "saly-ventas-l47-pte-scope-config-v1",
+  "paths": {
+    "supabase/migrations/20261121101746_lf_saly_ventas_pte_scope_config_v1.sql": "MIGRATION",
+    "supabase/tests/saly_ventas_pte_scope_config_v1_readback.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-l47-pte-scope-config-v1.json": "CHANGESET_MANIFEST",
+    "docs/saly/ventas/candidate/pte/normalize_pte_csv.mjs": "RUNTIME_CODE",
+    "docs/saly/ventas/candidate/pte/test_normalize_pte_csv.mjs": "RUNTIME_TESTING"
+  }
+}
