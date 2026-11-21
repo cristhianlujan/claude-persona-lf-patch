@@ -1,0 +1,10 @@
+{
+  "solution_ref": "creative-native-canonical-wire-v2",
+  "paths": {
+    "sandbox/creative_factory/native_transport_capture_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/test_native_transport_capture_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/README_NATIVE_CAPTURE_V1.md": "SERVICE_RUNTIME",
+    "supabase/migrations/20261121154917_lf_saly_native_canonical_wire_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/creative-native-canonical-wire-v2.json": "CHANGESET_MANIFEST"
+  }
+}

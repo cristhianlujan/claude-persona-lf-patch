@@ -5,13 +5,15 @@ A local readback is never a native/provider receipt.
 """
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
 import json
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
 
 SCHEMA = 'SALY_NATIVE_TRANSPORT_V2'
-VALIDATION_SCHEMA = 'SALY_NATIVE_TRANSPORT_VALIDATION_V2'
+VALIDATION_SCHEMA = 'SALY_CANONICAL_NATIVE_WIRE_V1'
 SHA64 = set('0123456789abcdef')
 
 
@@ -50,7 +52,7 @@ def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return out
 
 
-def parse_wire(wire: bytes) -> dict[str, Any]:
+def parse_wire(wire: bytes, require_local_canonical: bool = True) -> dict[str, Any]:
     require(type(wire) is bytes, 'NATIVE_CAPTURE_WIRE_TYPE')
     try:
         parsed = json.loads(wire.decode('utf-8'), object_pairs_hook=reject_duplicate_keys)
@@ -59,7 +61,8 @@ def parse_wire(wire: bytes) -> dict[str, Any]:
             raise
         raise CaptureRejected('NATIVE_CAPTURE_BAD_WIRE_JSON') from exc
     require(type(parsed) is dict, 'NATIVE_CAPTURE_WIRE_OBJECT')
-    require(strict_json_bytes(parsed) == wire, 'NATIVE_CAPTURE_NONCANONICAL_WIRE')
+    if require_local_canonical:
+        require(strict_json_bytes(parsed) == wire, 'NATIVE_CAPTURE_NONCANONICAL_WIRE')
     return parsed
 
 
@@ -131,26 +134,42 @@ def capture_review_only(packet: dict[str, Any],
                         used_request_ids: set[str]) -> LocalCapture:
     """A real service-role preflight can be injected; a local fake proves only local flow."""
     envelope = sealed_envelope(packet)
-    require(type(request_id) is str and 1 <= len(request_id) <= 128 and request_id.strip() == request_id,
+    require(type(request_id) is str and 1 <= len(request_id) <= 128
+            and request_id.isascii() and request_id[0].isalnum()
+            and all(c.isalnum() or c in '._:-' for c in request_id),
             'NATIVE_CAPTURE_REQUEST_ID')
     require(request_id not in used_request_ids, 'NATIVE_CAPTURE_REPLAY')
+    # First check JSON encodability. The DB owns the authoritative wire bytes.
+    strict_json_bytes(envelope['payload'])
     receipt = db_preflight(envelope)
     require(type(receipt) is dict and receipt.get('schema_version') == VALIDATION_SCHEMA
-            and receipt.get('status') == 'PAYLOAD_MATCH_REVIEW_ONLY'
+            and receipt.get('status') == 'CANONICAL_WIRE_REVIEW_ONLY'
             and receipt.get('item_id') == envelope['item_id']
             and receipt.get('prompt_sha256') == envelope['prompt_sha256']
             and receipt.get('contract_sha256') == envelope['contract_sha256']
             and receipt.get('render_authorized') is False
-            and receipt.get('transmitted') is False
-            and receipt.get('provider_receipt') is None, 'NATIVE_CAPTURE_DB_PREFLIGHT_MISMATCH')
-    wire = strict_json_bytes(envelope['payload'])
+            and receipt.get('native_transmitted') is False
+            and receipt.get('qa_verdict') == 'NOT_EVALUATED'
+            and 'provider_receipt' in receipt
+            and receipt['provider_receipt'] is None, 'NATIVE_CAPTURE_DB_PREFLIGHT_MISMATCH')
+    require(valid_sha(receipt.get('wire_sha256')) and
+            receipt.get('payload_sha256') == receipt.get('wire_sha256') and
+            type(receipt.get('wire_base64')) is str,
+            'NATIVE_CAPTURE_DB_WIRE_FIELDS')
+    try:
+        wire = base64.b64decode(receipt['wire_base64'], validate=True)
+    except (ValueError, binascii.Error) as exc:
+        raise CaptureRejected('NATIVE_CAPTURE_DB_WIRE_BASE64') from exc
+    require(sha(wire) == receipt['wire_sha256'], 'NATIVE_CAPTURE_DB_WIRE_HASH')
+    require(parse_wire(wire, require_local_canonical=False) == envelope['payload'],
+            'NATIVE_CAPTURE_DB_WIRE_PAYLOAD_DRIFT')
     # Avoid a false 'delivered' state if the sink cannot return its *actual* readback.
     readback = sink.capture(request_id, wire)
     require(type(readback) is bytes and readback == wire, 'NATIVE_CAPTURE_RECEIVER_BYTES_DRIFT')
-    require(parse_wire(readback) == envelope['payload'], 'NATIVE_CAPTURE_RECEIVER_PAYLOAD_DRIFT')
+    require(parse_wire(readback, require_local_canonical=False) == envelope['payload'], 'NATIVE_CAPTURE_RECEIVER_PAYLOAD_DRIFT')
     used_request_ids.add(request_id)
     return LocalCapture(request_id=request_id,item_id=envelope['item_id'],
-                        wire_sha256=sha(wire),payload_sha256=sha(wire),
+                        wire_sha256=sha(wire),payload_sha256=receipt['payload_sha256'],
                         prompt_sha256=envelope['prompt_sha256'],
                         contract_sha256=envelope['contract_sha256'],
                         captured_bytes=len(wire))
