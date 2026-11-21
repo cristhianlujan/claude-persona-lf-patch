@@ -137,6 +137,11 @@ def main():
                 raise RuntimeError("F0_VOCAB36_PG17_FIXTURE_MISSING")
             psql(name, f0_fixture.read_text())
             print("F0_VOCAB36_PG17_SCHEMA_SEEDED", flush=True)
+        if any("_lf_nucleo_dpig03_contrato_lectura_v1.sql" in p.name for p in replay):
+            dpig03_fixture = HERE / "dpig03_legacy_oracle_pg17.sql"
+            if not dpig03_fixture.is_file():
+                raise RuntimeError("DPIG03_ORACLE_FIXTURE_MISSING")
+            psql(name, dpig03_fixture.read_text())
         replayed_names = [p.name for p in replay]
         for path in replay:
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
@@ -204,6 +209,15 @@ def main():
             if again.returncode != 0:
                 raise RuntimeError("F4_CODEGEN_AFTER_ROLLBACK_FAILED " + again.stderr)
             print("F4_CODEGEN_AFTER_ROLLBACK_PASS", flush=True)
+        if any("_lf_nucleo_dpig03_contrato_lectura_v1.sql" in n for n in replayed_names):
+            dpig03_test = HERE / "dpig03_lectura_pg17.sql"
+            if not dpig03_test.is_file():
+                raise RuntimeError("DPIG03_TEST_MISSING")
+            dpig03 = psql(name, dpig03_test.read_text(), check=False)
+            print(dpig03.stdout + dpig03.stderr, flush=True)
+            if (dpig03.returncode or dpig03.stderr.count("DPIG03_TEST_PASS ") != 14
+                    or "DPIG03_ROLLBACK_PASS 14/14" not in dpig03.stderr):
+                raise RuntimeError("DPIG03_TEST_OR_ROLLBACK_FAILED")
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
