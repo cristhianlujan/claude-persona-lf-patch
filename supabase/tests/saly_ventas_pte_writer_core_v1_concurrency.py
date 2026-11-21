@@ -7,6 +7,8 @@ import os
 import subprocess
 import time
 import uuid
+import hashlib
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 def psql(sql, *, timeout=30):
@@ -76,6 +78,34 @@ COMMIT;""")
             count = psql(f"SELECT count(*)||':'||(SELECT count(*) FROM saly.ventas_hallazgos h JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id WHERE i.consulta_id={q}::uuid) FROM saly.ventas_discovery_ingestas WHERE consulta_id={q}::uuid")
             if count != "1:2":
                 raise AssertionError("PTE_CONCURRENT_DUPLICATE_EFFECT:" + count)
+            # Read back through the actual SKILL SQL contract, not a fake callback.
+            # Positive and negative share the same persisted two-row fixture.
+            template = Path("skills/ai_sales_discovery/queries/pte_exact_readback.sql").read_text()
+            if template.count("WITH expected AS (") != 1:
+                raise AssertionError("SKILL_READBACK_TEMPLATE_MISSING")
+            sql_select = template.split("WITH expected AS (", 1)[1].split(";", 1)[0]
+            sql_select = "WITH expected AS (" + sql_select
+            if sql_select.count("$4::jsonb") != 1 or sql_select.count("$1") != 1:
+                raise AssertionError("SKILL_READBACK_TEMPLATE_PARAMS_DRIFT")
+            def execute_readback(capture_json):
+                statement = ("PREPARE skill_pte_rb(text,text,text,jsonb) AS " +
+                             sql_select + "; EXECUTE skill_pte_rb('PE-PTE','fixture','LIMA_ICA'," +
+                             lit(capture_json) + "::jsonb);")
+                output = psql(statement).split("|")
+                if len(output) != 7:
+                    raise AssertionError("SKILL_READBACK_RESULT_SHAPE:"+str(output))
+                return output
+            good = execute_readback(capture)
+            expected_hash = hashlib.sha256(capture.encode("utf-8")).hexdigest()
+            if good[:3] != ["PE-PTE","fixture","LIMA_ICA"] or \
+               good[3] != expected_hash or good[4:6] != ["2","2"] or \
+               not good[6].startswith("saly.ventas_discovery_ingestas:"):
+                raise AssertionError("SKILL_READBACK_POSITIVE_FAIL:"+str(good))
+            changed = capture.replace("Concurrent A","Changed A")
+            negative = execute_readback(changed)
+            if negative[3] != expected_hash or negative[4:6] != ["2","1"]:
+                raise AssertionError("SKILL_READBACK_MUTATION_NOT_DETECTED:"+str(negative))
+            print("PASS_AI_SALES_SKILL_PTE_SQL_READBACK_PG17_POSITIVE_NEGATIVE")
             print("PASS_PTE_TWO_SESSIONS_ONE_EFFECT")
         finally:
             if a.poll() is None:
