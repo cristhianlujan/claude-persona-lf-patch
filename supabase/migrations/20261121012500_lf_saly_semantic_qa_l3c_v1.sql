@@ -111,6 +111,8 @@ BEGIN
    v_actual:=p_receipt#>ARRAY[v_group,'checks'];
    IF jsonb_typeof(v_actual) IS DISTINCT FROM 'array'
    THEN RAISE EXCEPTION 'CREATIVE_DUAL_QA_CHECKS_MISSING'; END IF;
+   IF (SELECT count(DISTINCT check_item->>'code') FROM jsonb_array_elements(v_expected) AS t(check_item))<>jsonb_array_length(v_expected)
+   THEN RAISE EXCEPTION 'CREATIVE_DUAL_QA_INVALID_EXPECTED_CODES'; END IF;
    IF jsonb_array_length(v_actual)<>jsonb_array_length(v_expected)
    THEN RAISE EXCEPTION 'CREATIVE_DUAL_QA_CHECK_COUNT'; END IF;
    SELECT count(*) INTO v_n
@@ -165,6 +167,9 @@ BEGIN
       OR NEW.approved_by IS DISTINCT FROM NEW.qa_receipt->>'reviewer_ref'
    THEN RAISE EXCEPTION 'CREATIVE_QA_NOT_INDEPENDENT_OR_RUN_MISSING'; END IF;
    IF NEW.acceptance_json ? 'semantic_qa' THEN
+     IF v_run.input_snapshot#>'{visual_contract,qa_checks}' IS DISTINCT FROM
+        saly.creative_item_visual_contract_l3b(NEW.id)#>'{contract,qa_checks}'
+     THEN RAISE EXCEPTION 'CREATIVE_TECHNICAL_CHECK_EXPECTATIONS_MISMATCH'; END IF;
      PERFORM saly.creative_assert_dual_qa_l3c(
         NEW.acceptance_json,NEW.qa_receipt,v_run.input_snapshot,v_run.output_evidence);
    END IF;
