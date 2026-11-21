@@ -122,7 +122,16 @@ def main():
         if not fixture.is_file():
             raise RuntimeError("NUCLEO_CI_BASE_MISSING")
         psql(name, fixture.read_text())
-        for path in replay_paths(relevant):
+        # SALY legadas existen en producción pero no en la dependencia sintética base.
+        # Sólo PG17 aislado: reproducir las 14 fuentes antes de las migraciones gobernadas.
+        replay = replay_paths(relevant)
+        if any("_lf_nucleo_saly_14_candidatas_v1.sql" in p.name for p in replay):
+            saly_fixture = HERE / "saly_am_14_fixture_pg17.sql"
+            if not saly_fixture.is_file():
+                raise RuntimeError("SALY_AM14_PG17_SOURCE_FIXTURE_MISSING")
+            psql(name, saly_fixture.read_text())
+            print("SALY_AM14_PG17_SOURCE_SEEDED 14/14", flush=True)
+        for path in replay:
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
             replay = psql(name, path.read_text())
             if "_lf_nucleo_am_checkout_piloto_v1.sql" in path.name:
@@ -142,6 +151,12 @@ def main():
                          if "AM_V3_RESULT " in line or "AM_V3_PASS " in line]
                 if sum("AM_V3_RESULT " in line for line in lines) != 6 or sum("AM_V3_PASS " in line for line in lines) != 1:
                     raise RuntimeError("AM_V3_INCOMPLETE_REPLAY_EVIDENCE")
+                print("\n".join(lines), flush=True)
+            if "_lf_nucleo_saly_14_candidatas_v1.sql" in path.name:
+                lines = [line for line in replay.stderr.splitlines()
+                         if "SALY_AM14_RESULT " in line or "SALY_AM14_PASS " in line]
+                if sum("SALY_AM14_RESULT " in line for line in lines) != 14 or sum("SALY_AM14_PASS " in line for line in lines) != 1:
+                    raise RuntimeError("SALY_AM14_INCOMPLETE_REPLAY_EVIDENCE")
                 print("\n".join(lines), flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
