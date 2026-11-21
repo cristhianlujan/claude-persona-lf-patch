@@ -20,7 +20,7 @@ VALUES('SALY_DISCOVERY','PTE_POLICY_V1',
        'JSON','REAL',
        'SALY Ventas pilot PTE: territorial selection Lima/Ica, read-only adapter policy. Owner-approved fixed scope; commercial runtime separately governed.');
 CREATE FUNCTION public.lf_saly_discovery_pte_policy_v1() RETURNS jsonb
-LANGUAGE plpgsql STABLE SECURITY INVOKER
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER
 SET search_path=pg_catalog,public
 AS $policy$
 DECLARE
