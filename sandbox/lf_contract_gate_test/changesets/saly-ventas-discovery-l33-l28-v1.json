@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-ventas-discovery-l33-l28-v1",
+  "paths": {
+    "supabase/migrations/20261121011751_lf_saly_ventas_discovery_coverage_fk_v1.sql": "MIGRATION",
+    "supabase/tests/saly_ventas_discovery_coverage_fk_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    "supabase/tests/saly_ventas_discovery_coverage_fk_v1_readback.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-discovery-l33-l28-v1.json": "CHANGESET_MANIFEST"
+  }
+}
