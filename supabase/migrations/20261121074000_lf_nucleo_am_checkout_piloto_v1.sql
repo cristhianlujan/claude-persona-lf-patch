@@ -51,6 +51,7 @@ BEGIN
    RAISE EXCEPTION 'AM_CHECKOUT_BAD_HASH_ACCEPTED %',k;
   EXCEPTION WHEN others THEN
    IF SQLERRM NOT LIKE 'NUCLEO_JUICIO_HASH_DISTINTO:%' THEN RAISE; END IF;
+   RAISE NOTICE 'AM_CHECKOUT_NEGATIVE_HASH %: rejected',k;
   END;
   jr:=lf_ops.nucleo_juicio_registrar_v1(j||jsonb_build_object('regla',k,'hash_evaluado',h,'evidencia_ref','https://github.com/cristhianlujan/claude-persona-lf-patch/blob/main/sandbox/lf_contract_gate_test/nucleo_ci/checkout_am_juicios_v1.json'||' #'||k));
   e:=lf_ops.nucleo_regla_evaluar_v1(k,true);
@@ -61,6 +62,7 @@ BEGIN
     RAISE EXCEPTION 'AM_CHECKOUT_UNSAFE_PUBLICATION %',k;
    EXCEPTION WHEN others THEN
     IF SQLERRM NOT LIKE 'NUCLEO_PUBLICAR_SIN_PROMOCION:%' THEN RAISE; END IF;
+    RAISE NOTICE 'AM_CHECKOUT_NEGATIVE_PUBLICATION %: rejected',k;
    END;
   END IF;
   -- Even an AUTO result does not switch the old path. Same-code legacy and

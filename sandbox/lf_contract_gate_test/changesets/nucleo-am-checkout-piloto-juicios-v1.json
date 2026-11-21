@@ -3,6 +3,7 @@
   "paths": {
     "sandbox/lf_contract_gate_test/nucleo_ci/base_pg17.sql": "PASE_SUPPORT",
     "sandbox/lf_contract_gate_test/nucleo_ci/checkout_am_juicios_v1.json": "PASE_SUPPORT",
-    "sandbox/lf_contract_gate_test/changesets/nucleo-am-checkout-piloto-juicios-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/nucleo-am-checkout-piloto-juicios-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT"
   }
 }

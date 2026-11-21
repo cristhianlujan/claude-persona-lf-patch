@@ -120,7 +120,13 @@ def main():
         psql(name, fixture.read_text())
         for path in replay_paths(relevant):
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
-            psql(name, path.read_text())
+            replay = psql(name, path.read_text())
+            if "_lf_nucleo_am_checkout_piloto_v1.sql" in path.name:
+                lines = [line for line in replay.stderr.splitlines()
+                         if "AM_CHECKOUT_RESULT " in line or "AM_CHECKOUT_NEGATIVE_" in line or "AM_CHECKOUT_PASS " in line]
+                if sum("AM_CHECKOUT_RESULT " in line for line in lines) != 10 or sum("AM_CHECKOUT_NEGATIVE_HASH " in line for line in lines) != 10 or sum("AM_CHECKOUT_NEGATIVE_PUBLICATION " in line for line in lines) != 9 or sum("AM_CHECKOUT_PASS " in line for line in lines) != 1:
+                    raise RuntimeError("AM_CHECKOUT_INCOMPLETE_REPLAY_EVIDENCE")
+                print("\n".join(lines), flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
