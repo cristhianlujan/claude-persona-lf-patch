@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ekb-nucleo-am-revision-resuelta-v1",
+  "paths": {
+    "supabase/migrations/20261121093000_lf_ekb_nucleo_am_revision_resuelta_20261121_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/ekb-nucleo-am-revision-resuelta-v1.json": "CHANGESET_MANIFEST"
+  }
+}
