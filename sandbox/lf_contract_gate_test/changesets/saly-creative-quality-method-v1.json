@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-creative-quality-method-v1",
+  "paths": {
+    "skills/creative_factory/SKILL.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-quality-method-v1.json": "CHANGESET_MANIFEST"
+  }
+}
