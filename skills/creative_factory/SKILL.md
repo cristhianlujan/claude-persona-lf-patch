@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.10 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.11 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -111,6 +111,7 @@ de cada intención y de las fuentes del negocio.
    y sombras cuando procede), tipografía, jerarquía/composición y calidad
    visual/impacto buscado. Para una dimensión no aplicable explicar por qué.
    No basta "premium", "moderno" o "wow": describir qué los materializa.
+   Aplicar el método de razonamiento compositivo y eficiencia espacial de abajo.
 4. **Desglose por componente:** recorrer toda la jerarquía del
    `CREATIVE_VISUAL_BLUEPRINT_V1`, no un checklist fijo de Home. Cada parte
    precisa propósito, posición/relación, estilo, textos exactos cuando
@@ -145,7 +146,8 @@ de cada intención y de las fuentes del negocio.
    componente, (e) responsabilidad y ausencia de contradicciones entre
    generador y compositor, (f) creatividad compatible con LOCK/GUIDED/FREE,
    (g) que la instrucción final sea renderizable y libre de metadatos QA,
-   y (h) hash del plan y evidencia de la revisión. No confundir un resultado
+   y (h) hash del plan y evidencia de la revisión, incluido el QA de eficiencia
+   espacial descrito abajo. No confundir un resultado
    estructural ni una autorrevisión con PASS independiente.
    Si el revisor o la evidencia no están disponibles, mantener
    `SEMANTIC_QA_PENDING` y no enviar.
@@ -156,6 +158,91 @@ de cada intención y de las fuentes del negocio.
    revisión, permisos ni activos. Mostrar el payload exacto (únicamente las
    instrucciones pertinentes al receptor) y continuar automáticamente
    solo si existe canal y autoridad, conforme a los controles de abajo.
+
+### Habilidad de razonamiento compositivo y eficiencia espacial (v0.11)
+
+La dirección visual es una habilidad de decisión y redacción, no una lista fija
+de posiciones ni un prompt genérico. Aplicarla al construir hierarchy, a las
+instrucciones de cada componente y a su proyección gráfica. Es transversal:
+interfaces, escenas, piezas promocionales, diagramas u otros activos según su
+destino. No crear otro motor ni imponer el ejemplo SALY a todos los pedidos.
+
+**Método de trabajo de la skill antes de redactar:**
+
+1. Interpretar la función y prioridad de cada unidad visual: dato, acción,
+   navegación, promoción, explicación u otra. Identificar contenido literal,
+   longitud, relaciones semánticas, orden de lectura, soporte, área disponible,
+   restricciones de marca/legibilidad, fuentes y referencias. Separar lo fijo
+   de lo orientable y lo libre según LOCK/GUIDED/FREE.
+2. Leer críticamente la referencia, si existe: qué agrupaciones, alineaciones,
+   proporciones, densidad, espacios y jerarquía ayudan al objetivo, y cuáles
+   ocasionan filas evitables, saltos incómodos, espacios muertos o competencia
+   visual. No copiar errores, textos antiguos ni activos aproximados.
+   Sin referencia, analizar el blueprint y el destino; no inventar mediciones.
+3. Comparar configuraciones horizontales, verticales o mixtas que sean
+   pertinentes. Para cada alternativa relevante, evaluar uso de ancho/alto,
+   legibilidad del contenido real, agrupación, alineación, ritmo, jerarquía,
+   accesibilidad y conflictos con zonas fijas. Explicar qué se gana y qué se
+   sacrifica. Preferir agrupar icono y contenido asociado cuando evita una
+   fila adicional, pero no imponerlo si el ancho disponible exige otra
+   composición. Preservar áreas de interacción y tamaños legibles; no ocultar
+   información ni comprimir fuentes, márgenes o controles indebidamente.
+4. Elegir y justificar la alternativa por componente y comprobar el conjunto:
+   contenido de mayor prioridad obtiene énfasis; componentes secundarios
+   ocupan el espacio necesario; relaciones, márgenes y separaciones son
+   coherentes. Si la solución no cabe o contradice un LOCK, revisar la
+   alternativa o bloquear la parte afectada, no mover reservas por cuenta propia.
+5. Transformar la decisión en instrucciones renderizables de arte:
+   disposición y dirección de lectura, icono respecto del texto, agrupación
+   de etiqueta/valor, alineaciones, distribución de ancho/alto, jerarquía
+   tipográfica, comportamiento de líneas y espacios, y qué evitar.
+   Especificar solo restricciones que puedan sustentarse; cuando exista
+   geometría congelada respetarla, y cuando no, expresar relaciones visuales
+   sin inventar coordenadas o umbrales. No dictar contenido nuevo ni dar
+   instrucciones al generador sobre activos de otro responsable.
+6. Conservar el razonamiento y las alternativas descartadas como justificación
+   de planificación en los campos existentes de dirección de arte
+   (hierarchy.rationale) y del QA; la instrucción elegida alimenta
+   hierarchy.instruction y components[].instruction. No añadir claves al
+   contrato, ni concatenar razonamientos, estados o checks al prompt gráfico.
+   Releer la proyección final contra el plan: debe conservar las relaciones
+   elegidas, el copy literal, reservas, responsables y libertades.
+
+**QA de eficiencia espacial:** antes de enviar, el revisor independiente
+evalúa si la instrucción indica el tratamiento específico y su fundamentación,
+si la distribución elegida es adecuada para el contenido y destino, si
+preserva legibilidad, jerarquía y restricciones, y si la proyección ha perdido
+alguna relación visual. Sobre el arte recibido, comparar con referencia
+aplicable y plan: inspeccionar agrupación, filas evitables, desbordes, saltos,
+alineación, equilibrio, altura innecesaria y tamaño/legibilidad de textos y
+controles. Separar observación comprobable de preferencia estética. Cuando
+la evidencia permita cuantificar espacio o geometría, registrar medidas del
+arte real y su fuente; no fabricar métricas ni exigir un umbral universal.
+Distinguir un defecto de una elección válida por restricciones de espacio.
+Ante desviación, localizar el componente y la primera causa sustentable
+(dirección, proyección, render o composición), mejorar la instrucción de
+esa etapa preservando lo correcto y conservar los intentos conforme al
+protocolo de handoff. Si solo se dispone del arte y del registro previo,
+no atribuir divergencias a transformaciones internas del generador.
+
+**Casos de razonamiento de referencia (no son layouts globales):**
+- Resumen financiero móvil compacto: iconos laterales y grupos etiqueta/valor
+  pueden eliminar una fila reservada a iconos; verificar ancho de columnas,
+  salto legible de etiquetas, alineación de valores y chevron. Si esa
+  alternativa no cabe, evaluar otra distribución sin eliminar copy.
+- Tarjeta promocional de ancho reducido: icono superior puede favorecer
+  identidad, lectura y mensaje; evitar forzar icono lateral si estrecha el
+  texto y aumenta su altura. Elegir según la pieza y referencia.
+- Diagrama o infografía: comparar lectura horizontal y vertical según
+  relaciones, destino y proporción; preservar texto y conexiones.
+- Negativos: una instrucción que solo dice "premium y compacto", una que
+  impone iconos laterales a todos los activos, o una que reduce fuentes o
+  altera una reserva para encajar, no satisface la revisión de esta habilidad.
+
+La incorporación es una capacidad metodológica del constructor semántico.
+El preflight estructural existente no mide la calidad visual ni sustituye
+la revisión independiente; los casos anteriores no acreditan por sí mismos
+una prueba gráfica ejecutada.
 
 ### Pruebas y límites
 
@@ -357,7 +444,9 @@ Antes de compilar el wire canónico, construir una proyección visual del
 blueprint existente, no un segundo pedido ni otro motor. La skill redacta
 instrucciones visuales específicas de la dirección de arte y del componente,
 sin estados de aprobación, hashes, resultados de QA, rutas locales ni
-metadatos operativos en el texto gráfico.
+metadatos operativos en el texto gráfico. Trasladar las decisiones de
+composición y eficiencia espacial a relaciones visuales explícitas y cotejar
+que la proyección no las pierda; no trasladar el razonamiento interno.
 
 Invocar `graphical_handoff_candidate_v1.build_candidate(plan, projection, files)`.
 La proyección contiene direction (las seis dimensiones del preflight),
