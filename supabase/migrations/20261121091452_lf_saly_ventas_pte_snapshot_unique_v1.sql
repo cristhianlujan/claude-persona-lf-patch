@@ -99,8 +99,8 @@ BEGIN
  OR EXISTS(SELECT 1 FROM saly.ventas_discovery_ingestas WHERE run_ref=v_ref)
  THEN RAISE EXCEPTION 'PTE_INDEX_FIXTURE_LEAK'; END IF;
  IF (SELECT count(*) FROM saly.ventas_hallazgos h
-     JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id
-     WHERE i.source_id='PE-PTE' AND i.scope_key='LIMA_ICA')<>519
+     JOIN saly.ventas_discovery_ingestas di ON di.id=h.ingesta_id
+     WHERE di.source_id='PE-PTE' AND di.scope_key='LIMA_ICA')<>519
  THEN RAISE EXCEPTION 'PTE_ORIGINAL_HALLAZGOS_CHANGED'; END IF;
  RAISE NOTICE 'PASS_PTE_CROSS_RUN_UNIQUE_INDEX_NEGATIVE_ROLLBACK';
 END $negative$;
