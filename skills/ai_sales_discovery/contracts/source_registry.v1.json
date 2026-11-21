@@ -1,0 +1,44 @@
+{
+  "schema_version": "ai-sales-discovery-sources/v1",
+  "owner": "AI_SALES_3_0_U07",
+  "state": "CANDIDATE_READ_ONLY_NO_RUNTIME",
+  "adapter_selection": "by source_id only; business policy independent",
+  "entries": [
+    {
+      "source_id": "PE-PTE",
+      "substep_code": "13.03",
+      "provider": "PCM PTE",
+      "adapter": "docs/saly/ventas/candidate/pte/normalize_pte_csv.mjs",
+      "state": "ONE_SOURCE_READ_ONLY_PILOT_TESTED",
+      "source_url": "https://www.datosabiertos.gob.pe/sites/default/files/01%20listado_entidades_2026_08.csv",
+      "no_recurrent_writes": true
+    },
+    {
+      "source_id": "GOOGLE_PLACES_API_NEW",
+      "provider": "Google Places API (New)",
+      "adapter": null,
+      "state": "PLAN_CANDIDATE_LICENSE_AND_BILLING_PENDING",
+      "no_api_calls": true
+    },
+    {
+      "source_id": "SUNAT",
+      "adapter": null,
+      "state": "NO_ADAPTER_OR_RIGHTS_VERIFIED"
+    },
+    {
+      "source_id": "SUNARP",
+      "adapter": null,
+      "state": "NO_ADAPTER_OR_RIGHTS_VERIFIED"
+    },
+    {
+      "source_id": "OSCE",
+      "adapter": null,
+      "state": "NO_ADAPTER_OR_RIGHTS_VERIFIED"
+    },
+    {
+      "source_id": "GOOGLE_MAPS",
+      "adapter": null,
+      "state": "NOT_AVAILABLE_SCRAPING_DISALLOWED"
+    }
+  ]
+}
