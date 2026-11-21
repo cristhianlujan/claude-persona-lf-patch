@@ -104,6 +104,11 @@ jobs:
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs
 
+      - name: Validate SUNAT dual-observation contract and bounded JSON batches
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_company_v1.py
+      - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
+        run: python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
+
   sunat-source-schema-one-shot:
     name: SUNAT official ZIP schema evidence (bounded read only)
     if: github.event_name == 'push' && (contains(github.event.head_commit.added, 'skills/ai_sales_discovery/tests/sunat_real_schema_probe.py') || contains(github.event.head_commit.modified, 'skills/ai_sales_discovery/tests/sunat_real_schema_probe.py') || contains(github.event.head_commit.message, 'SUNAT esquema real v0.8'))
