@@ -111,7 +111,13 @@ BEGIN
  INSERT INTO visual.standard_versions(standard_id,brand_code,kind,version,parent_version_id,manifest_json,state)
  VALUES(prev.standard_id,prev.brand_code,prev.kind,'0.3',prev.id,spec,'CANDIDATE')
  RETURNING id,manifest_sha256 INTO v_id,v_sha;
- UPDATE saly.creative_order_items SET context_json=context_json||jsonb_build_object('template_version_id',v_id,'template_sha256',v_sha) WHERE id=item.id;
+ UPDATE saly.creative_order_items SET context_json=context_json||jsonb_build_object(
+ 'template_version_id',v_id,'template_sha256',v_sha,
+ 'token_codes',(SELECT jsonb_agg(DISTINCT code ORDER BY code) FROM (
+ SELECT jsonb_array_elements_text(item.context_json->'token_codes') AS code
+ UNION ALL
+ SELECT b.value FROM jsonb_each(spec->'style_bindings') c CROSS JOIN LATERAL jsonb_each_text(c.value) b
+ ) selected)) WHERE id=item.id;
  b_compiled:=saly.creative_template_review_v1(item.id);
  WITH expected(component,property,version_id,consumer) AS (VALUES
 ('identidad','fuente base',34,'native'),
@@ -146,7 +152,9 @@ BEGIN
   INSERT INTO visual.standard_versions(standard_id,brand_code,kind,version,parent_version_id,manifest_json,state)
   VALUES(prev.standard_id,prev.brand_code,prev.kind,'0.3-negative-test',v_id,bad_spec,'CANDIDATE')
   RETURNING id,manifest_sha256 INTO bad_id,bad_sha;
-  UPDATE saly.creative_order_items SET context_json=context_json||jsonb_build_object('template_version_id',bad_id,'template_sha256',bad_sha) WHERE id=item.id;
+  UPDATE saly.creative_order_items SET context_json=context_json||jsonb_build_object(
+ 'template_version_id',bad_id,'template_sha256',bad_sha,
+ 'token_codes',(context_json->'token_codes')||jsonb_build_array('candidate.saly_home_v3.elevation.card.hero')) WHERE id=item.id;
   PERFORM saly.creative_template_review_v1(item.id);
   RAISE EXCEPTION 'NEGATIVE_TEST_UNEXPECTED_PASS';
  EXCEPTION WHEN raise_exception THEN
