@@ -1,10 +1,10 @@
--- DP-IG-03: extensión aditiva de diagnóstico de la única puerta canónica.
+-- DP-IG-03: adaptador aditivo LF de diagnóstico de la única puerta canónica.
 -- No reemplaza firma de nodo/fecha, no activa consumidores ni modifica controles IG.
 BEGIN;
 DO $pre$
 BEGIN
- IF to_regprocedure('lf_ops.nucleo_reglas_efectivas_v1(integer,text,text)') IS NOT NULL
- THEN RAISE EXCEPTION 'DP_IG_03_SOBRECARGA_EXISTENTE'; END IF;
+ IF to_regprocedure('lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text)') IS NOT NULL
+ THEN RAISE EXCEPTION 'DP_IG_03_ADAPTADOR_EXISTENTE'; END IF;
  IF md5(pg_get_functiondef('lf_ops.nucleo_reglas_efectivas_v1(text,timestamptz)'::regprocedure))
     IS DISTINCT FROM '6a7f47636bb1150d650d61214d93152b'
     OR to_regclass('lf_ops.v_reglas_compat_v1') IS NULL
@@ -12,7 +12,7 @@ BEGIN
  THEN RAISE EXCEPTION 'DP_IG_03_PREIMAGEN_DISTINTA'; END IF;
 END $pre$;
 
-CREATE FUNCTION lf_ops.nucleo_reglas_efectivas_v1(
+CREATE FUNCTION lf_ops.lf_nucleo_lectura_transicion_v1(
  p_pantalla_id integer, p_consumer text, p_proyeccion text
 ) RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY INVOKER
@@ -120,8 +120,8 @@ BEGIN
 END $dpig03$;
 -- Solo diagnóstico: ejecutar con los permisos existentes del invocador.
 -- No conceder una nueva vía de acceso a consumidores runtime antes del siguiente criterio.
-REVOKE ALL ON FUNCTION lf_ops.nucleo_reglas_efectivas_v1(integer,text,text) FROM PUBLIC,anon,authenticated,service_role;
-GRANT EXECUTE ON FUNCTION lf_ops.nucleo_reglas_efectivas_v1(integer,text,text) TO supabase_read_only_user;
-COMMENT ON FUNCTION lf_ops.nucleo_reglas_efectivas_v1(integer,text,text) IS
- 'DP-IG-03, contrato transitorio de lectura actual por pantalla. Núcleo original por nodo/fecha preservado. Respaldo compatible por proyección y procedencia explícita; mixto sin resolver queda diagnóstico. No es autorización de efecto, cutover ni prueba de igualdad futura.';
+REVOKE ALL ON FUNCTION lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text) FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text) TO supabase_read_only_user;
+COMMENT ON FUNCTION lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text) IS
+ 'DP-IG-03, adaptador transitorio LF de lectura actual por pantalla. Núcleo original por nodo/fecha preservado. Respaldo compatible por proyección y procedencia explícita; mixto sin resolver queda diagnóstico. No es autorización de efecto, cutover ni prueba de igualdad futura.';
 COMMIT;

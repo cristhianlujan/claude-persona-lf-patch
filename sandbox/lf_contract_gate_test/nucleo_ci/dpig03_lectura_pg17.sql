@@ -17,17 +17,17 @@ DECLARE
 BEGIN
  -- 1. Firma original intacta, sin nuevo acceso por consumidores no habilitados.
  IF md5(pg_get_functiondef('lf_ops.nucleo_reglas_efectivas_v1(text,timestamptz)'::regprocedure)) IS DISTINCT FROM '6a7f47636bb1150d650d61214d93152b'
-  OR has_function_privilege('anon','lf_ops.nucleo_reglas_efectivas_v1(integer,text,text)','EXECUTE')
-  OR has_function_privilege('authenticated','lf_ops.nucleo_reglas_efectivas_v1(integer,text,text)','EXECUTE')
-  OR has_function_privilege('service_role','lf_ops.nucleo_reglas_efectivas_v1(integer,text,text)','EXECUTE')
-  OR NOT has_function_privilege('supabase_read_only_user','lf_ops.nucleo_reglas_efectivas_v1(integer,text,text)','EXECUTE')
-  OR EXISTS(SELECT 1 FROM pg_proc WHERE oid='lf_ops.nucleo_reglas_efectivas_v1(integer,text,text)'::regprocedure AND (prosecdef OR provolatile<>'s'))
+  OR has_function_privilege('anon','lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text)','EXECUTE')
+  OR has_function_privilege('authenticated','lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text)','EXECUTE')
+  OR has_function_privilege('service_role','lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text)','EXECUTE')
+  OR NOT has_function_privilege('supabase_read_only_user','lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text)','EXECUTE')
+  OR EXISTS(SELECT 1 FROM pg_proc WHERE oid='lf_ops.lf_nucleo_lectura_transicion_v1(integer,text,text)'::regprocedure AND (prosecdef OR provolatile<>'s'))
  THEN RAISE EXCEPTION 'DPIG03_TEST_01_PRIVILEGIOS'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 01 ACL y firma';
  -- 2. Directas: filas legadas exactas, incluso CANDIDATO, sin promoción.
  SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY r.categoria,r.codigo,r.id),'[]'::jsonb) INTO exp
  FROM lf_ops.reglas_pantallas rp JOIN lf_ops.reglas r ON r.id=rp.regla_id WHERE rp.pantalla_id=59;
- a:=lf_ops.nucleo_reglas_efectivas_v1(59,'INPUT_GOVERNANCE','DIRECTAS');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(59,'INPUT_GOVERNANCE','DIRECTAS');
  IF a->>'estado' IS DISTINCT FROM 'RESPALDO_COMPAT' OR a->'reglas' IS DISTINCT FROM exp
    OR NOT (a->'reglas' @> '[{"codigo":"ZZT-DPIG03-DIRECT","estado":"CANDIDATO"}]')
    OR a->'nativas'<>'[]'::jsonb THEN RAISE EXCEPTION 'DPIG03_TEST_02_DIRECTAS %',a; END IF;
@@ -35,12 +35,12 @@ BEGIN
  -- 3. Selección IG, con las tres rutas; oráculo legada real extraído.
  SELECT coalesce(jsonb_agg(jsonb_build_object('binding_source',l.binding_source,'regla',to_jsonb(r)) ORDER BY r.codigo,l.binding_source,r.id),'[]'::jsonb) INTO exp
  FROM programacion.fn_input_effective_rule_links_v1(59,'INPUT_GOVERNANCE') l JOIN lf_ops.reglas r ON r.id=l.regla_id;
- a:=lf_ops.nucleo_reglas_efectivas_v1(59,'INPUT_GOVERNANCE','IG_EFECTIVAS');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(59,'INPUT_GOVERNANCE','IG_EFECTIVAS');
  IF a->'reglas' IS DISTINCT FROM exp OR NOT (exp @> '[{"binding_source":"LEGACY_EXPLICIT","regla":{"codigo":"ZZT-DPIG03-DIRECT"}},{"binding_source":"DECLARATIVE_APPLICABILITY_V1","regla":{"codigo":"ZZT-DPIG03-DECL"}},{"binding_source":"DERIVED_GLOBAL","regla":{"codigo":"ZZT-DPIG03-GLOBAL"}}]')
  THEN RAISE EXCEPTION 'DPIG03_TEST_03_EFECTIVAS'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 03 efectivas';
  -- 4. Consumer distinto no recibe selector declarativo ajeno.
- b:=lf_ops.nucleo_reglas_efectivas_v1(59,'ZZT-OTHER','IG_EFECTIVAS');
+ b:=lf_ops.lf_nucleo_lectura_transicion_v1(59,'ZZT-OTHER','IG_EFECTIVAS');
  IF b->'reglas' @> '[{"regla":{"codigo":"ZZT-DPIG03-DECL"}}]' THEN RAISE EXCEPTION 'DPIG03_TEST_04_CONSUMER'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 04 selector consumer';
  -- 5. Proyección de contrato legacy (directas + solo DERIVED_GLOBAL).
@@ -51,30 +51,30 @@ BEGIN
  'title',r.titulo,'description',r.descripcion,'reason',r.razon,'config',r.valor_config,'transversal',r.es_transversal,
  'status',r.estado,'origin',r.origen,'pending_decision',r.pendiente_decision,'pending_detail',r.pendiente_detalle) ORDER BY r.codigo),'[]'::jsonb)
  INTO exp FROM attached r;
- a:=lf_ops.nucleo_reglas_efectivas_v1(59,'ZZT-PROFILE','CONTRATO_PANTALLA');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(59,'ZZT-PROFILE','CONTRATO_PANTALLA');
  IF a->'reglas' IS DISTINCT FROM exp OR exp @> '[{"rule_code":"ZZT-DPIG03-DECL"}]' THEN RAISE EXCEPTION 'DPIG03_TEST_05_CONTRATO'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 05 contrato pantalla';
  -- 6. Mutaciones del resultado deben romper equivalencia.
- IF jsonb_array_length(exp)=0 OR (a->'reglas' - 0) IS NOT DISTINCT FROM exp THEN RAISE EXCEPTION 'DPIG03_TEST_06_NEGATIVO'; END IF;
+ IF jsonb_array_length(exp)=0 OR ((a->'reglas') - 0) IS NOT DISTINCT FROM exp THEN RAISE EXCEPTION 'DPIG03_TEST_06_NEGATIVO'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 06 pérdida detectada';
  -- 7/8. Pantalla fuera de árbol conocida vs inexistente; no inventar nodo.
- a:=lf_ops.nucleo_reglas_efectivas_v1(99999,'INPUT_GOVERNANCE','DIRECTAS');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(99999,'INPUT_GOVERNANCE','DIRECTAS');
  IF a->>'estado' IS DISTINCT FROM 'RESPALDO_SIN_NODO' OR a->'nodo' IS DISTINCT FROM 'null'::jsonb THEN RAISE EXCEPTION 'DPIG03_TEST_07_SIN_NODO'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 07 fuera árbol';
  ok:=false;
- BEGIN PERFORM lf_ops.nucleo_reglas_efectivas_v1(-1,'INPUT_GOVERNANCE','DIRECTAS');
+ BEGIN PERFORM lf_ops.lf_nucleo_lectura_transicion_v1(-1,'INPUT_GOVERNANCE','DIRECTAS');
  EXCEPTION WHEN invalid_parameter_value THEN ok:=SQLERRM LIKE 'DP_IG_03_PANTALLA_INEXISTENTE%'; END;
  IF NOT ok THEN RAISE EXCEPTION 'DPIG03_TEST_08_PANTALLA'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 08 inexistente';
  -- 9. Sin contrato legado no se hace pasar por conjunto vacío.
- a:=lf_ops.nucleo_reglas_efectivas_v1(99999,'INPUT_GOVERNANCE','CONTRATO_PANTALLA');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(99999,'INPUT_GOVERNANCE','CONTRATO_PANTALLA');
  IF a->>'estado' IS DISTINCT FROM 'SIN_CONTRATO_LEGADO' OR a->'reglas' IS DISTINCT FROM 'null'::jsonb THEN RAISE EXCEPTION 'DPIG03_TEST_09_SIN_CONTRATO'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 09 sin contrato';
  -- 10/11. Argumentos inválidos.
- ok:=false; BEGIN PERFORM lf_ops.nucleo_reglas_efectivas_v1(59,'INPUT_GOVERNANCE','ZZT'); EXCEPTION WHEN invalid_parameter_value THEN ok:=SQLERRM LIKE 'DP_IG_03_PROYECCION_INVALIDA%'; END;
+ ok:=false; BEGIN PERFORM lf_ops.lf_nucleo_lectura_transicion_v1(59,'INPUT_GOVERNANCE','ZZT'); EXCEPTION WHEN invalid_parameter_value THEN ok:=SQLERRM LIKE 'DP_IG_03_PROYECCION_INVALIDA%'; END;
  IF NOT ok THEN RAISE EXCEPTION 'DPIG03_TEST_10_PROYECCION'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 10 proyección inválida';
- ok:=false; BEGIN PERFORM lf_ops.nucleo_reglas_efectivas_v1(59,NULL,'DIRECTAS'); EXCEPTION WHEN invalid_parameter_value THEN ok:=SQLERRM LIKE 'DP_IG_03_CONSUMER_INVALIDO%'; END;
+ ok:=false; BEGIN PERFORM lf_ops.lf_nucleo_lectura_transicion_v1(59,NULL,'DIRECTAS'); EXCEPTION WHEN invalid_parameter_value THEN ok:=SQLERRM LIKE 'DP_IG_03_CONSUMER_INVALIDO%'; END;
  IF NOT ok THEN RAISE EXCEPTION 'DPIG03_TEST_11_CONSUMER'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 11 consumer inválido';
 
@@ -94,7 +94,7 @@ BEGIN
  jsonb_build_object('casuistica','SOBRE_EL_LIMITE','entrada',jsonb_build_object('zzt_intentos',jsonb_build_object('param','ZZT.MAX_INTENTOS','mas',1)),'esperado',true)));
  result:=lf_ops.nucleo_regla_proponer_v1(base);
  IF result->>'resultado' IS DISTINCT FROM 'CANDIDATA' THEN RAISE EXCEPTION 'DPIG03_TEST_12_CANDIDATE %',result; END IF;
- a:=lf_ops.nucleo_reglas_efectivas_v1(900010,'INPUT_GOVERNANCE','DIRECTAS');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(900010,'INPUT_GOVERNANCE','DIRECTAS');
  IF a->'nativas' IS DISTINCT FROM '[]'::jsonb OR a->'reglas' IS DISTINCT FROM '[]'::jsonb THEN RAISE EXCEPTION 'DPIG03_TEST_12_CANDIDATE_VISIBLE'; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 12 candidata no efectiva';
  result:=lf_ops.nucleo_regla_evaluar_v1('ZZT-DPIG03-NATIVE',false);
@@ -102,12 +102,12 @@ BEGIN
  PERFORM lf_ops.nucleo_juicio_registrar_v1(jsonb_build_object('regla','ZZT-DPIG03-NATIVE','hash_evaluado',result->>'hash_paquete','veredicto','PASS','puntajes',pts,'juez','AUTOTEST','modo','CONTEXTO_ACTUAL','revisor_es_productor',true,'llamadas_modelo',0,'evidencia_ref','DPIG03 isolated test'));
  result:=lf_ops.nucleo_regla_promover_v1('ZZT-DPIG03-NATIVE');
  IF result->>'resultado' IS DISTINCT FROM 'PROMOVIDA_AUTO' THEN RAISE EXCEPTION 'DPIG03_TEST_13_PROMOTE %',result; END IF;
- a:=lf_ops.nucleo_reglas_efectivas_v1(900010,'INPUT_GOVERNANCE','DIRECTAS');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(900010,'INPUT_GOVERNANCE','DIRECTAS');
  IF a->>'estado' IS DISTINCT FROM 'NUCLEO_DISPONIBLE' OR a->'reglas' IS DISTINCT FROM a->'nativas'
   OR NOT (a->'nativas' @> '[{"resolucion":{"regla":"ZZT-DPIG03-NATIVE","version":1},"version":{"estado":"PUBLICADA"}}]')
  THEN RAISE EXCEPTION 'DPIG03_TEST_13_NATIVE %',a; END IF;
  RAISE NOTICE 'DPIG03_TEST_PASS 13 nativa publicada';
- a:=lf_ops.nucleo_reglas_efectivas_v1(900011,'INPUT_GOVERNANCE','DIRECTAS');
+ a:=lf_ops.lf_nucleo_lectura_transicion_v1(900011,'INPUT_GOVERNANCE','DIRECTAS');
  IF a->>'estado' IS DISTINCT FROM 'PARIDAD_MIXTA_PENDIENTE' OR a->'reglas' IS DISTINCT FROM 'null'::jsonb
   OR NOT (a->'respaldo' @> '[{"codigo":"ZZT-DPIG03-DIRECT"}]') OR jsonb_array_length(a->'nativas')=0
  THEN RAISE EXCEPTION 'DPIG03_TEST_14_MIXED %',a; END IF;
