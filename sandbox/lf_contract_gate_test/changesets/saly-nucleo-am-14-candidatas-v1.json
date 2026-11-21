@@ -1,0 +1,11 @@
+{
+  "solution_ref": "saly-nucleo-am-14-candidatas-v1",
+  "paths": {
+    "supabase/migrations/20261121114500_lf_nucleo_saly_14_candidatas_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/saly_am_14_v1.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/saly_am_14_fixture_pg17.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/saly-nucleo-am-14-candidatas-v1.json": "CHANGESET_MANIFEST",
+    "docs/nucleo/SALY_am_14_reporte_diferencias_20261121.md": "PASE_SUPPORT"
+  }
+}
