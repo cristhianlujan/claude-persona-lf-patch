@@ -1,0 +1,13 @@
+{
+  "schema_version": "saly-ekb-recurrence-candidate/v1",
+  "state": "CANDIDATO_NO_PERSISTIDO",
+  "codigo": "PE10_C6_UNAUTHORIZED_GITHUB_WORKFLOW_ENTRYPOINT_V1",
+  "classification": "RECURRENCE_PROPOSAL",
+  "source_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/pull/4522",
+  "source_context": "SALY Ventas PTE — original workflow attempt blocked by FAIL_UNAUTHORIZED_GITHUB_PATH; resolved with exact path admission #4538 then workflow #4540",
+  "evidencia": "PASE PR #4522 FAIL_UNAUTHORIZED_GITHUB_PATH; PR #4538 merged exact path, PR #4540 merged; real B7 PG17 two-session run 44901335603 success",
+  "recommended_governed_writer": "public.lf_write_pipeline_ekb_v1",
+  "target_operation": "ACTUALIZACION_DB_LF",
+  "writer_gate_observed": "PRE_EKB_GATE contract not active; DO NOT WRITE THROUGH MIGRATION OR READ_ONLY CONNECTOR",
+  "readback_status": "NO_EKB_WRITE_VERIFIED"
+}
