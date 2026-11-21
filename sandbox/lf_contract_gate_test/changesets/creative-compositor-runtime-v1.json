@@ -1,0 +1,11 @@
+{
+  "solution_ref": "creative-compositor-runtime-v1",
+  "paths": {
+    "sandbox/creative_factory/README.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/compositor_core_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/adapter_saly_review_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/test_compositor_core_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/test_adapter_saly_review_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/creative-compositor-runtime-v1.json": "CHANGESET_MANIFEST"
+  }
+}
