@@ -50,7 +50,15 @@ class LocalCompositorReceiver:
                     'BLUEPRINT_BODY_PNG_REQUIRED')
             src.load()
             body = src.copy()
-        return compose(obj['manifest'], body)
+        m=obj['manifest']
+        if m['body_origin']=='RGB_REFERENCE_REVIEW':
+            binding=m['plan']['blueprint']['design_lock']['LOCK'].get('rgb_reference_binding') or {}
+            sources={s['id']:s for s in m['plan']['sources']}
+            sid=binding.get('source_id')
+            require(sid in sources,'RGB_REFERENCE_SOURCE_MISSING')
+            meta=json.loads(sources[sid]['text'])
+            require(meta.get('file_sha256')==digest(body_bytes),'RGB_REFERENCE_FILE_BINDING_DRIFT')
+        return compose(m, body)
 
     def readback(self):
         return self.received
@@ -69,7 +77,7 @@ def run_blueprint_review(request, emit):
                 'plan_path','plan_sha256','body_path','body_sha256','body_origin','files','output_dir'},
                 'BLUEPRINT_REQUEST_FIELDS')
         require(request['schema_version'] == REQUEST and request['mode'] == 'BLUEPRINT_REVIEW_ONLY'
-                and request['body_origin'] == 'SYNTHETIC_REVIEW', 'BLUEPRINT_REVIEW_AUTHORITY')
+                and request['body_origin'] in ('SYNTHETIC_REVIEW','RGB_REFERENCE_REVIEW'), 'BLUEPRINT_REVIEW_AUTHORITY')
         raw = read_pinned(request['plan_path'], request['plan_sha256'], 2_000_000)
         plan = json.loads(raw, object_pairs_hook=strict_pairs)
         p = preflight(plan)
@@ -82,7 +90,7 @@ def run_blueprint_review(request, emit):
         require(not out.exists() and out.parent.is_dir() and not out.parent.is_symlink(),
                 'BLUEPRINT_OUTPUT_NOT_NEW')
         manifest = {'schema_version': SCHEMA, 'review_only': True, 'render_authorized': False,
-                    'body_origin': 'SYNTHETIC_REVIEW', 'plan': plan,
+                    'body_origin': request['body_origin'], 'plan': plan,
                     'proposal_sha256': p['proposal_sha256'], 'files': request['files'], **layout}
         wire = canonical({'manifest': manifest, 'body_file_sha256': digest(body_bytes)})
         # Visible intermediate event is mandatory; an exception here prevents invocation.
@@ -110,7 +118,7 @@ def run_blueprint_review(request, emit):
                       local_readback_sha256=digest(readback), technical_qa='PASS_LOCAL',
                       semantic_qa='PENDING_INDEPENDENT_REVIEW', final_delivery_allowed=False,
                       native_handoff='NOT_COMPILED_NOT_SENT', artifact_sha256=digest(png),
-                      source_authenticity=p['source_authenticity'], compositor=evidence)
+                      source_authenticity=p['source_authenticity'], body_origin=request['body_origin'], compositor=evidence)
         # A candidate preview is not a final delivery. Exclusively create a new output folder.
         out.mkdir()
         created = []

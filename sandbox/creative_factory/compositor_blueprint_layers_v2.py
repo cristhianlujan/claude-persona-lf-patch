@@ -33,7 +33,8 @@ def rect(b):
 def compose_blueprint(m, body):
     fields(m, 'schema_version review_only render_authorized body_origin plan proposal_sha256 canvas backdrop regions files')
     need(m['schema_version'] == SCHEMA and m['review_only'] is True and m['render_authorized'] is False
-         and m['body_origin'] == 'SYNTHETIC_REVIEW', 'LAYER_REVIEW_ONLY')
+         and m['body_origin'] in ('SYNTHETIC_REVIEW','RGB_REFERENCE_REVIEW'), 'LAYER_REVIEW_ONLY')
+    rgb_review = m['body_origin']=='RGB_REFERENCE_REVIEW'
     try:
         p = preflight(m['plan'])
     except ArtBlocked as exc:
@@ -43,12 +44,20 @@ def compose_blueprint(m, body):
     need(type(dims) is list and len(dims)==2 and all(type(x) is int and 0<x<=4096 for x in dims)
          and dims[0]*dims[1]<=8_000_000, 'LAYER_CANVAS')
     w,h = dims
-    need(isinstance(body,Image.Image) and body.mode=='RGBA' and body.size==(w,h), 'BODY_FORMAT')
+    need(isinstance(body,Image.Image) and body.mode==('RGB' if rgb_review else 'RGBA') and body.size==(w,h), 'BODY_FORMAT')
     plan=m['plan']; sources={s['id']:s for s in plan['sources']}
     layout={key:m[key] for key in ('canvas','backdrop','regions')}
     need(plan['blueprint']['design_lock']['LOCK'].get('composition_layout')==layout, 'LAYER_BLUEPRINT_LAYOUT_DRIFT')
     parsed={}; used={}; files=m['files']
     need(type(files) is dict, 'LAYER_FILE_REGISTRY')
+    if rgb_review:
+        binding=plan['blueprint']['design_lock']['LOCK'].get('rgb_reference_binding')
+        fields(binding,'source_id pixel_sha256 alignment')
+        need(plan['presentation']['mode']=='FULL_SCENE' and binding['alignment']=='CANDIDATE_MANUAL_REVIEW', 'RGB_REFERENCE_ALIGNMENT_PENDING')
+        need(binding['source_id'] in sources, 'RGB_REFERENCE_SOURCE_MISSING')
+        ref=json.loads(sources[binding['source_id']]['text'])
+        need(ref.get('role')=='previous_generated_visual_reference_only' and ref.get('mode')=='RGB'
+             and ref.get('dimensions')==dims and digest(body.tobytes())==binding['pixel_sha256'], 'RGB_REFERENCE_BINDING_DRIFT')
     def source(sid, allowed):
         need(type(sid) is str and sid in allowed and sid in sources, 'LAYER_SOURCE_UNBOUND')
         if sid not in parsed:
@@ -108,6 +117,7 @@ def compose_blueprint(m, body):
             ImageDraw.Draw(native).rectangle(rect(b),fill=255); continue
         need(bool(r['ops']), 'LAYER_FIXED_EMPTY')
         need(r['coverage'] in ('BOX','ALPHA'), 'LAYER_COVERAGE_MODE')
+        if rgb_review: need(r['coverage']=='BOX','RGB_REFERENCE_ALPHA_OVERLAY_UNSAFE')
         occupied.append((c,r,b))
     prepared=[]
     for c,r,b in occupied:
@@ -145,7 +155,17 @@ def compose_blueprint(m, body):
         need(not ImageChops.multiply(fixed,current).getbbox(),'LAYER_FIXED_OVERLAP')
         fixed=ImageChops.lighter(fixed,current)
         prepared.append((layer,x,y,c['name']))
-    alpha=body.getchannel('A'); permitted=ImageChops.subtract(native,fixed)
+    permitted=ImageChops.subtract(native,fixed)
+    rgb_evidence=None
+    if rgb_review:
+        # Do not resize, crop, infer geometry or inpaint. The approved-for-review
+        # plan owns every reserved box. Everything outside is byte-identical RGB.
+        need(ImageChops.lighter(native,fixed).getextrema()==(255,255),'RGB_REFERENCE_INCOMPLETE_CANVAS')
+        need(bool(fixed.getbbox()),'RGB_REFERENCE_NO_FIXED_REGIONS')
+        original_rgb=body
+        body=body.convert('RGBA'); body.putalpha(permitted)
+        need(m['backdrop']['kind'] in ('COLOR','ASSET'),'RGB_REFERENCE_CLEAN_PLATE_REQUIRED')
+    alpha=body.getchannel('A')
     need(not ImageChops.multiply(alpha,ImageChops.invert(permitted)).getbbox(),'BODY_OVERWRITES_FIXED')
     need(not native.getbbox() or alpha.getbbox(),'BODY_EMPTY')
     # Base layer may be a pinned background asset or a resolved color.
@@ -158,14 +178,26 @@ def compose_blueprint(m, body):
         need(back['kind']=='ASSET','LAYER_BACKDROP_KIND')
         out=asset(back['source_id'],list(sources),(w,h))
         need(out.size==(w,h), 'LAYER_BACKDROP_DIMENSIONS')
+    if rgb_review: need(out.getchannel('A').getextrema()==(255,255),'RGB_REFERENCE_CLEAN_PLATE_NOT_OPAQUE')
     out.alpha_composite(body)
     for layer,x,y,name in prepared:
         out.alpha_composite(layer,(x,y)); rendered.append(name)
     need(set(files)==set(used),'LAYER_UNUSED_FILE')
+    if rgb_review:
+        # Compare actual output against input, including all original scene pixels.
+        diff=ImageChops.difference(original_rgb,out.convert('RGB'))
+        r,g,b=diff.split(); changed=ImageChops.lighter(ImageChops.lighter(r,g),b).point(lambda v:255 if v else 0)
+        need(not ImageChops.multiply(changed,ImageChops.invert(fixed)).getbbox(),'RGB_REFERENCE_OUTSIDE_PIXELS_CHANGED')
+        rgb_evidence={'alignment':'CANDIDATE_MANUAL_REVIEW','reference_pixel_sha256':digest(original_rgb.tobytes()),
+                      'mask_sha256':digest(fixed.tobytes()),'fixed_pixel_count':fixed.histogram()[255],
+                      'preserved_pixel_count':w*h-fixed.histogram()[255],
+                      'changed_pixel_count':changed.histogram()[255],'outside_changed_pixels':0,
+                      'resize_or_inpaint':False,'clean_plate_visual_qa':'PENDING','provider_provenance':'UNVERIFIED_REFERENCE'}
     return out,{'status':'LOCAL_BLUEPRINT_COMPOSITOR_PASS','schema_version':SCHEMA,
                 'business_code':plan['business_code'],'proposal_sha256':p['proposal_sha256'],
                 'manifest_sha256':digest(canonical(m)),'source_sha256':used,'fixed_components':rendered,
-                'dimensions':[w,h],'body_origin':'SYNTHETIC_REVIEW','body_sha256':digest(body.tobytes()),
+                'dimensions':[w,h],'body_origin':m['body_origin'],'body_sha256':digest(body.tobytes()),
+                'rgb_reference_review':rgb_evidence,
                 'image_sha256':digest(out.tobytes()),'source_authenticity':'NOT_ATTESTED_BY_LOCAL_GATE',
                 'qa_verdict':'NOT_EVALUATED','native_transmitted':False,'provider_receipt':None,
                 'image_generation_allowed':False,'production_approved':False}
