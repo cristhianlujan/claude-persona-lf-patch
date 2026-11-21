@@ -1,3 +1,4 @@
+import base64
 import copy
 import json
 import unittest
@@ -38,10 +39,14 @@ class CaptureTest(unittest.TestCase):
         self.sink=EchoSink();self.used=set();self.oracle_calls=0
     def oracle(self,envelope):
         self.oracle_calls+=1
-        return {'schema_version':'SALY_NATIVE_TRANSPORT_VALIDATION_V2','status':'PAYLOAD_MATCH_REVIEW_ONLY',
+        # A test double for PG jsonb::text; the real wire must come from SQL.
+        wire=json.dumps(envelope['payload'],ensure_ascii=False,separators=(', ',': ')).encode('utf8')
+        return {'schema_version':'SALY_CANONICAL_NATIVE_WIRE_V1','status':'CANONICAL_WIRE_REVIEW_ONLY',
                 'item_id':envelope['item_id'],'prompt_sha256':envelope['prompt_sha256'],
-                'contract_sha256':envelope['contract_sha256'],'render_authorized':False,
-                'transmitted':False,'provider_receipt':None}
+                'contract_sha256':envelope['contract_sha256'],'native_transmitted':False,
+                'qa_verdict':'NOT_EVALUATED','provider_receipt':None,
+                'wire_base64':base64.b64encode(wire).decode('ascii'),
+                'wire_sha256':sha(wire),'payload_sha256':sha(wire)}
     def capture(self,packet=None,oracle=None,sink=None,request_id='capture-1'):
         return capture_review_only(self.packet if packet is None else packet,
                                    self.oracle if oracle is None else oracle,
@@ -91,8 +96,28 @@ class CaptureTest(unittest.TestCase):
             self.capture(oracle=lambda _:None)
         self.assertEqual(len(self.sink.invocations),0)
     def test_db_preflight_forged_transmitted(self):
-        def oracle(e):return self.oracle(e)|{'transmitted':True}
+        def oracle(e):return self.oracle(e)|{'native_transmitted':True}
         with self.assertRaisesRegex(CaptureRejected,'NATIVE_CAPTURE_DB_PREFLIGHT_MISMATCH'):
+            self.capture(oracle=oracle)
+        self.assertEqual(len(self.sink.invocations),0)
+    def test_db_wire_digest_mismatch(self):
+        def oracle(e):return self.oracle(e)|{'wire_sha256':'0'*64,'payload_sha256':'0'*64}
+        with self.assertRaisesRegex(CaptureRejected,'NATIVE_CAPTURE_DB_WIRE_HASH'):
+            self.capture(oracle=oracle)
+        self.assertEqual(len(self.sink.invocations),0)
+    def test_db_wire_wrong_payload(self):
+        def oracle(e):
+            r=self.oracle(e)
+            payload={'prompt':'not the sealed prompt','attachments':[]}
+            wire=json.dumps(payload,ensure_ascii=False,separators=(', ',': ')).encode('utf8')
+            r.update(wire_base64=base64.b64encode(wire).decode(),wire_sha256=sha(wire),payload_sha256=sha(wire))
+            return r
+        with self.assertRaisesRegex(CaptureRejected,'NATIVE_CAPTURE_DB_WIRE_PAYLOAD_DRIFT'):
+            self.capture(oracle=oracle)
+        self.assertEqual(len(self.sink.invocations),0)
+    def test_db_wire_invalid_base64(self):
+        def oracle(e):return self.oracle(e)|{'wire_base64':'#invalid!'}
+        with self.assertRaisesRegex(CaptureRejected,'NATIVE_CAPTURE_DB_WIRE_BASE64'):
             self.capture(oracle=oracle)
         self.assertEqual(len(self.sink.invocations),0)
     def test_sink_mutation(self):
