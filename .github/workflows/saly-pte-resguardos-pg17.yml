@@ -95,5 +95,9 @@ jobs:
         run: node skills/ai_sales_discovery/tests/zip_archive_preflight.test.mjs
       - name: Test bounded ZIP content CRC, actual sizes and local headers
         run: node skills/ai_sales_discovery/tests/zip_content_verify.test.mjs
+      - name: Test SUNAT candidate records bounded stream and schema guards
+        run: node skills/ai_sales_discovery/tests/sunat_records_candidate.test.mjs
+      - name: Test SUNAT header, privacy and quota guard mutations
+        run: node skills/ai_sales_discovery/tests/sunat_records_mutation.test.mjs
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs

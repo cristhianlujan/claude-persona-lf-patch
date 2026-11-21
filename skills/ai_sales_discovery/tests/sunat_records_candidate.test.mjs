@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {inspectSunatRecordsCandidate} from '../adapters/sunat_records_candidate.mjs';
+const schema={resource_variant:'SUNAT_MONTHLY_RUC',source_version:'fixture',schema_ref:'fixture://not-official',evidence_status:'FIXTURE_ONLY',encoding:'utf-8',delimiter:'|',trailing_delimiter:true,columns:['RUC','NOMBRE','ESTADO','CONDICION','UBIGEO','EXTRA'],field_map:{ruc:'RUC',nombre:'NOMBRE',estado:'ESTADO',condicion:'CONDICION',ubigeo:'UBIGEO'}};
+const policy={business_code:'FIXTURE',policy_ref:'fixture://policy',resource_variant:schema.resource_variant,source_version:schema.source_version,allowed_effect:'READ_ONLY',ubigeo_prefixes:['15','11'],limits:{max_input_bytes:4096,max_record_bytes:256,max_records:20,max_candidates:10}};
+const header=schema.columns.join('|')+'|\r\n';
+const a='20000000001|"Compañía | A"|ACTIVO|HABIDO|150101|NO RETENER|\r\n';
+const b='10000000001|PERSONA SINTETICA|ACTIVO|HABIDO|150101|PRIVADO|\n';
+const c='20000000002|Entidad B|ACTIVO|HABIDO|040101|IGNORAR|\n';
+const d='20000000003|Entidad C|BAJA|NO HABIDO|110101||';
+const raw=header+a+b+c+d;
+async function* stream(text,n=7){const buf=Buffer.isBuffer(text)?text:Buffer.from(text);for(let i=0;i<buf.length;i+=n)yield buf.subarray(i,i+n);}
+let passed=0;
+async function good(label,text,s=schema,p=policy,n=7){const r=await inspectSunatRecordsCandidate(stream(text,n),s,p);assert.equal(r.state,'SUNAT_RECORDS_CANDIDATE_ONLY',label);assert.equal(r.runtime_authorized,false);assert.equal(r.write_authorized,false);assert.equal(r.contact_authorized,false);assert.equal(r.archive_integrity_verified,false);assert.equal(r.identity_verified,false);assert.equal(r.schema_authority_verified,false);assert.ok(Object.isFrozen(r.rows));passed++;return r;}
+async function bad(label,text,code,s=schema,p=policy){await assert.rejects(()=>inspectSunatRecordsCandidate(stream(text),s,p),e=>e.code===code,label);passed++;}
+const ok=await good('byte-wise chunks / quoted delimiter / CRLF / final row',raw,schema,policy,1);
+assert.equal(ok.records_read,4);assert.equal(ok.selected_count,2);assert.equal(ok.excluded_non_legal_prefix,1);assert.equal(ok.excluded_territory,1);assert.deepEqual(ok.rows[0],{fila_origen:1,ruc:'20000000001',nombre:'Compañía | A',estado:'ACTIVO',condicion:'HABIDO',ubigeo:'150101'});assert.equal(ok.rows[1].fila_origen,4);assert.ok(!JSON.stringify(ok).includes('PERSONA SINTETICA'));assert.ok(!JSON.stringify(ok).includes('NO RETENER'));
+const other=await good('independent geography',raw,schema,{...policy,ubigeo_prefixes:['04']});assert.equal(other.selected_count,1);assert.equal(other.rows[0].nombre,'Entidad B');
+await good('BOM header','\uFEFF'+raw);
+await good('windows-1252 fixture',Buffer.from(header+'20000000001|Compañía|ACTIVO|HABIDO|150101||','latin1'),{...schema,encoding:'windows-1252'});
+await bad('schema provenance missing',raw,'SUNAT_SCHEMA_CONTRACT_INVALID',{...schema,schema_ref:''});
+await bad('mapping collision',raw,'SUNAT_SCHEMA_CONTRACT_INVALID',{...schema,field_map:{...schema.field_map,nombre:'RUC'}});
+await bad('policy scope wrong',raw,'SUNAT_POLICY_CONTRACT_INVALID',schema,{...policy,source_version:'different'});
+await bad('missing quotas',raw,'SUNAT_POLICY_CONTRACT_INVALID',schema,{...policy,limits:{}});
+await bad('header drift',raw.replace('RUC|NOMBRE','NOMBRE|RUC'),'SUNAT_HEADER_DRIFT');
+await bad('bad RUC',header+a.replace('20000000001','x'),'SUNAT_RUC_SHAPE_INVALID');
+await bad('bad UBIGEO',header+a.replace('150101','xx'),'SUNAT_UBIGEO_SHAPE_INVALID');
+await bad('missing name',header+'20000000001||ACTIVO|HABIDO|150101||','SUNAT_REQUIRED_VALUE_MISSING');
+await bad('duplicate RUC',header+a+a,'SUNAT_DUPLICATE_CANDIDATE_RUC');
+await bad('mismatched row width',header+'20000000001|A|ACTIVO|HABIDO|150101|','SUNAT_ROW_WIDTH_MISMATCH');
+await bad('trailing delimiter missing',header+a.trimEnd().slice(0,-1),'SUNAT_TRAILING_DELIMITER_MISSING');
+await bad('unclosed quote',header+'20000000001|"A|ACTIVO|HABIDO|150101||','SUNAT_QUOTE_INVALID');
+await bad('multiline quote unsupported',header+'20000000001|"A\nB"|ACTIVO|HABIDO|150101||','SUNAT_QUOTE_INVALID');
+await bad('invalid UTF8',Buffer.concat([Buffer.from(header),Buffer.from([255])]),'SUNAT_ENCODING_INVALID');
+await bad('input quota',raw,'SUNAT_INPUT_LIMIT',schema,{...policy,limits:{...policy.limits,max_input_bytes:100,max_record_bytes:90}});
+await bad('line quota',raw,'SUNAT_RECORD_BYTE_LIMIT',schema,{...policy,limits:{...policy.limits,max_record_bytes:40}});
+await bad('row quota',raw,'SUNAT_RECORD_LIMIT',schema,{...policy,limits:{...policy.limits,max_records:2,max_candidates:2}});
+await bad('candidate quota',raw,'SUNAT_CANDIDATE_LIMIT',schema,{...policy,limits:{...policy.limits,max_candidates:1}});
+await bad('header only',header,'SUNAT_NO_RECORDS');
+await bad('empty input','','SUNAT_HEADER_MISSING');
+console.log('PASS_AI_SALES_SUNAT_RECORDS_CANDIDATE '+passed+' scenarios; schema fixture, no contact or writes');

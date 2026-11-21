@@ -51,3 +51,6 @@ La función genérica inspectDiscoveryReadOnly delega al registro explícito en 
 
 ## Lote v0.5 — procesador ZIP transversal
 `verifyZipContentCandidate` reutiliza el preflight y valida CRC y bytes reales mediante descompresión por stream. No extrae archivos ni analiza registros. Los límites vienen del consumidor; los 18 casos locales usan fixtures, no política real. Formatos no compatibles bloqueados. Contrato: `contracts/ZIP_CONTENT_V05.md`. Próximo módulo: verificar el recurso y esquema interior de SUNAT, no activar conectores ni perfiles.
+
+## Lote v0.6 — lector candidato SUNAT
+`adapters/sunat_records_candidate.mjs` procesa flujos de bytes con esquema exacto y política inyectados. Selección conservadora RUC 20, territorio configurable, cuotas y detección de cambios de columnas; descarta otros prefijos y columnas fuera del contrato. El esquema mensual real sigue sin verificar; no usar el reducido como equivalente. Prueba local 24 casos sintéticos, sin conexión a ZIP ni altas de fuentes. Ver `contracts/SUNAT_RECORDS_V06.md`.

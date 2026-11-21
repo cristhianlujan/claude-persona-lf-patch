@@ -1,0 +1,15 @@
+# SUNAT — lector de registros candidato v0.6
+
+## Fuente y variantes (21/11/2026)
+- Mensual: https://www.datosabiertos.gob.pe/dataset/padr%C3%B3n-ruc-superintendencia-nacional-de-aduanas-y-de-administraci%C3%B3n-tributaria-sunat-58 — recurso exacto https://www.datosabiertos.gob.pe/sites/default/files/PadronRUC_202610.zip (250.19 MB, 30/10/2026). No se descargó el archivo; formato interior, codificación, columnas, delimitador, tipos ZIP y muestra real NO_VERIFICADOS.
+- Reducido: https://orientacion.sunat.gob.pe/7-padron-reducido-del-ruc — SUNAT documenta RUC, nombre/razón social, estado, condición, ubigeo y domicilio. https://www.sunat.gob.pe/descargaPRR/mrc137_padron_reducido.html indica actualización 21/11/2026. NO usar este esquema como si fuera el mensual. Segunda variante no integrada.
+- Tipo de RUC: https://centrovirtual.sunat.gob.pe/tramites/inscribete-ruc — SUNAT describe los prefijos 10/15 para personas naturales y 20 para jurídicas. En este candidato se aplica selección conservadora exclusivamente prefijo 20; no es autenticación, validación de existencia ni decisión definitiva sobre cobertura comercial.
+
+## Módulo
+`inspectSunatRecordsCandidate(chunks,schema,policy)` consume AsyncIterable<Uint8Array>, no abre ZIP, no transporta datos por red. Exige variante y versión coincidentes, referencia de esquema, columnas exactas ordenadas, mapping de campos, delimitador, encoding, trailing delimiter y cuotas explícitas en política. Solo línea única; rechaza multiline quoted. No inferir el formato de un archivo real desde fixtures. Los campos canónicos son ruc, nombre, estado, condicion, ubigeo y ordinal; no persiste domicilio, identificadores de personas naturales ni columnas extra. Los valores de estado y condición se preservan literalmente, sin declarar elegibilidad comercial. No clasifica como identidad verificada. El filtro geográfico pertenece a la política inyectada, no a SALY en duro. Bloquea cuotas excedidas y duplicados de RUC seleccionado, y no emite resultado parcial cuando falla.
+
+## Estado
+CANDIDATO técnico con esquema sintético, no fuente operativa. Las 24 pruebas Node 22.16.0 se ejecutaron localmente sobre blobs exactos `51c0aaa928cb1f69ca72886d6b7be87d573a9e1d` y `d92d6da268f25cfda030a85a89cc1ab1f23ac647`. No se modifican perfiles, Router ni Supabase. Prueba CI en workflow existente.
+Faltan: esquema mensual real, transporte autorizado con cuotas/timeout, integración de stream ZIP con retención de resultado hasta CRC final, licencia/privacidad efectiva, prueba de filas reales y reconciliación. El resultado marca schema_authority_verified=false, archive_integrity_verified=false, identity_verified=false, runtime_authorized=false, write_authorized=false y contact_authorized=false. No registrar SUNAT en registry de ejecución. 
+
+Mutaciones dirigidas B28: 3/3 PASS local, blob `04cb0337557b8ca21bb1928d00c2717ed06a5b38`. Se anulan individualmente los controles de orden de columnas, exclusión de otros prefijos RUC y cuota de candidatos; cada fixture demuestra la violación que el control original impide. CI ejecuta los tres casos.
