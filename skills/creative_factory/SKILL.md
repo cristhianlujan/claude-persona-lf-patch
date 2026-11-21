@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.5 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.7 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -204,6 +204,120 @@ LF/futuro nunca reutiliza los datos de SALY como sustituto.
    bytes/píxeles y registrar hashes. La entrega contiene solo esos dos archivos.
 7. Cualquier error impide la publicación y devuelve código específico.
    No modificar artefactos previos.
+
+## Composición flexible por blueprint (v0.6, revisión local)
+
+No imponer el layout de Home B a una escena nueva. El mismo entrypoint
+`compositor_core_v1.compose(manifest, body)` admite el contrato histórico
+`CREATIVE_COMPOSITION_REVIEW_V1` y el contrato candidato
+`CREATIVE_COMPOSITION_BLUEPRINT_REVIEW_V2`. La extensión
+`compositor_blueprint_layers_v2.py` reutiliza primitives y preflight
+existentes; no es otra skill ni otro pipeline.
+
+Para preparar V2:
+- Partir del plan de dirección de arte y jerarquía, con la propuesta de
+  geometría aprobable por el flujo de QA. Incluir en el blueprint
+  `composition_layout` y en `design_lock.LOCK.composition_layout` la misma
+  estructura {canvas, backdrop, regions}. Congelar el hash de propuesta del
+  preflight. El manifest no puede sustituir esas posiciones.
+- Cada región respeta nombre, orden y propietario de los componentes del
+  plan; contiene name, owner, box (x,y,ancho,alto), coverage y ops. NATIVE
+  reserva zonas BOX sin operaciones fijas; REFERENCE_ONLY usa NONE, box null,
+  ops vacías. COMPOSITOR BOX reserva toda la caja, ALPHA reserva únicamente
+  los píxeles no transparentes de un único activo fijado (por ejemplo, marco).
+- Las operaciones compositor, ordenadas dentro de cada caja, son FILL
+  (box, color_source, radius), ASSET (box, source_id) o TEXT
+  (box, copy, size, weight, font_source, color_source). Sus fuentes deben
+  pertenecer al componente; los textos coinciden con el copy declarado.
+  FILL y TEXT pueden compartir la caja del CTA dentro de una tarjeta mayor.
+  Un activo con texto sigue necesitando verificación visual del copy.
+- El fondo es TRANSPARENT, COLOR vinculado al token, o ASSET con archivo
+  fijado por SHA y dimensiones exactas de salida. Cada fuente usada como
+  archivo incluye file_sha256 en su snapshot JSON, y las fuentes tipográficas
+  además weight; no inventar huellas de archivos oficiales. El registro
+  files mapea identificadores de fuente a las rutas materializadas.
+- El cuerpo RGBA sintético tiene exactamente las dimensiones canvas. Debe
+  dejar transparentes los píxeles fijos y no invadir zonas ajenas. No recortar
+  arbitrariamente un resultado Native para hacerlo pasar. El marco con
+  apertura transparente se compone mediante su silueta; cajas de activos
+  fijos BOX no pueden colisionar con otras máscaras fijas.
+- Manifest V2 contiene schema_version, review_only=true,
+  render_authorized=false, body_origin=SYNTHETIC_REVIEW, plan,
+  proposal_sha256, canvas, backdrop, regions y files. Realizar preflight
+  antes de componer, comprobar SHA de los activos, generar recibo y
+  aplicar el protocolo de incidencia ante fallo. No declarar un resultado
+  de Native desde un fixture ni usar el modo revisión para eludir autoridad.
+
+Ejecución técnica directa, sin Router, perfiles, proveedor ni generación:
+
+```bash
+python sandbox/creative_factory/compositor_core_v1.py manifest.json body.png preview.png --receipt receipt.json
+cd sandbox/creative_factory
+python -m unittest -v test_compositor_blueprint_layers_v2.py
+```
+
+El recibo V2 `LOCAL_BLUEPRINT_COMPOSITOR_PASS` acredita composición local
+reproducible, no QA semántico ni autenticidad de fuentes por sí solo.
+El adaptador L2C histórico conserva su contrato V1 y no se migra
+automáticamente a V2. El nuevo layout es un candidato local: todavía
+requiere materialización/compilación gobernada, revisión independiente y
+canal de recepción Native verificable antes de cualquier uso productivo.
+
+## Ejecución integrada desde la skill (v0.7)
+
+Usar el mismo CLI `sandbox/creative_factory/skill_run_review_v1.py --request request.json`
+para V1 histórico y para la rama V2 de revisión. No invocar otros perfiles o
+Router. En V2 el constructor toma el layout exclusivamente del LOCK del
+plan, en lugar de usar un manifest redactado de nuevo por el ejecutor.
+
+El request V2 tiene exactamente:
+```json
+{
+  "schema_version": "CREATIVE_SKILL_BLUEPRINT_REVIEW_V2",
+  "mode": "BLUEPRINT_REVIEW_ONLY",
+  "business_code": "<negocio del plan>",
+  "plan_path": "<plan local con layout en LOCK>",
+  "plan_sha256": "<SHA de bytes del plan>",
+  "body_path": "<PNG RGBA de ensayo>",
+  "body_sha256": "<SHA de bytes del cuerpo>",
+  "body_origin": "SYNTHETIC_REVIEW",
+  "files": {"<id de fuente>": "<ruta materializada>"},
+  "output_dir": "<directorio nuevo>"
+}
+```
+
+Secuencia automática de `skill_blueprint_review_v2.run_blueprint_review`:
+
+1. Leer bytes fijados, ejecutar el preflight existente, comprobar negocio
+   y construir manifest V2 a partir del layout bloqueado.
+2. Emitir el evento visible PREPARED_NOT_SENT con el **handoff local literal
+   completo**, SHA y hash del cuerpo adjunto. El CLI hace flush antes
+   de invocar al receptor local. Sin aprobación intermedia, pasar los mismos
+   bytes al compositor en esta ejecución. No es un handoff GPT Native.
+3. El receptor local verifica los bytes y el hash del adjunto antes de
+   deserializar y ejecutar el compositor existente. Conservar su readback.
+4. Ante rechazo, emitir REJECTION_READBACK con el mensaje realmente
+   recibido, hashes preparado/recibido y código; si se rechazó antes de
+   invocar, HANDOFF_NOT_SENT. No simular una recepción de Native.
+5. Validar recibo del compositor, manifest/propuesta, dimensiones, hash
+   de píxeles y lectura del PNG. Guardar solo revisión local en directorio
+   nuevo: composition_review.png, local_handoff.json y receipt.json.
+6. Estado LOCAL_REVIEW_COMPLETE_SEMANTIC_PENDING: QA técnico local PASS;
+   QA semántico independiente pendiente, entrega final no autorizada.
+   No compilar ni enviar Native a partir de este manifest local.
+   No declarar un fixture como arte generado ni admitir body_origin
+   PROVIDER_IMAGE sin contrato y evidencia independientes de origen.
+
+El preflight no produce todavía un blueprint canónico nuevo ni autentica
+la fuente de cada snapshot. Mantener separadas la futura compilación
+gobernada, la recepción de Native y el QA independiente del resultado.
+Los tests ejercitan envío/diagnóstico local real; ninguna prueba de
+recepción local acredita el canal externo.
+
+```bash
+cd sandbox/creative_factory
+python -m unittest -v test_skill_blueprint_review_v2.PipelineTests test_compositor_blueprint_layers_v2.LayerTests
+```
 
 ## Resultado y límites de QA
 

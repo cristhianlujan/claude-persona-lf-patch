@@ -1,0 +1,10 @@
+{
+  "solution_ref": "creative-skill-blueprint-layers-v2",
+  "paths": {
+    "skills/creative_factory/SKILL.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/compositor_core_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/compositor_blueprint_layers_v2.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/test_compositor_blueprint_layers_v2.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/creative-skill-blueprint-layers-v2.json": "CHANGESET_MANIFEST"
+  }
+}
