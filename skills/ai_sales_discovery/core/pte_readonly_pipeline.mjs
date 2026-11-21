@@ -2,7 +2,7 @@
 // A caller supplies trusted-policy/source/readback providers; the skill cannot
 // authenticate that caller itself. The existing PTE CSV parser is reused.
 import {createHash} from 'node:crypto';
-import {normalizePteCsv} from '../../../docs/saly/ventas/candidate/pte/normalize_pte_csv.mjs';
+import {resolveSourceAdapter} from '../adapters/registry.mjs';
 
 const digest = s => createHash('sha256').update(s,'utf8').digest('hex');
 const obj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
@@ -14,39 +14,16 @@ export const DISCOVERY_STEPS = Object.freeze([
  'ADMIT_REQUEST','RESOLVE_BUSINESS_POLICY','CHECK_SOURCE_AUTHORITY',
  'FETCH_SOURCE','NORMALIZE_SOURCE','COMPARE_READBACK','CLOSE_RECEIPT'
 ]);
-function validatePolicy(p,r) {
- if(!obj(p) || p.business_code !== r.business_code ||
-    p.source_id !== r.source_id || p.scope_key !== r.scope_key ||
+function validatePolicy(p,r){
+ if(!obj(p) || p.business_code!==r.business_code ||
+    p.source_id!==r.source_id || p.scope_key!==r.scope_key ||
     !nonempty(p.policy_ref) || !nonempty(p.policy_version) ||
-    p.allowed_effect !== 'READ_ONLY' ||
-    !Array.isArray(p.ubigeo_prefixes) || p.ubigeo_prefixes.length===0 ||
-    p.ubigeo_prefixes.some(x=>typeof x!=='string'|| !/^[0-9]{2}$/.test(x)) ||
-    new Set(p.ubigeo_prefixes).size !== p.ubigeo_prefixes.length ||
-    !obj(p.transport) ||
+    p.allowed_effect!=='READ_ONLY' || !obj(p.transport) ||
     !Number.isSafeInteger(p.transport.max_attempts) || p.transport.max_attempts<1 ||
     !Number.isSafeInteger(p.transport.max_bytes) || p.transport.max_bytes<1 ||
     !Number.isSafeInteger(p.transport.max_rows) || p.transport.max_rows<1 ||
     !Number.isSafeInteger(p.transport.timeout_ms) || p.transport.timeout_ms<1)
    fail('DISCOVERY_POLICY_NOT_READY');
-}
-function validateSource(s,r) {
- if(!obj(s) || s.source_id !== r.source_id ||
-    s.source_version !== r.source_version ||
-    !nonempty(s.source_ref) || !nonempty(s.rights_evidence_ref) ||
-    !nonempty(s.rights_checked_at) || !nonempty(s.license_code) ||
-    !nonempty(s.attribution) ||
-    s.habilitada !== true || s.persist_business_data !== true ||
-    s.rights_status !== 'PERSISTENCIA_PERMITIDA' ||
-    s.runtime_status !== 'PILOT_BOOTSTRAP_ONLY_NO_RUNTIME')
-    fail('DISCOVERY_SOURCE_AUTHORITY_BLOCK');
- let u;
- try{u=new URL(s.resource_url);}catch{fail('DISCOVERY_SOURCE_URI_DENIED');}
- if(u.protocol!=='https:' || u.hostname!=='www.datosabiertos.gob.pe' ||
-    u.port || u.username || u.password || u.search || u.hash ||
-    !u.pathname.startsWith('/sites/default/files/') ||
-    !u.pathname.toLowerCase().endsWith('.csv'))
-    fail('DISCOVERY_SOURCE_URI_DENIED');
- return u.href;
 }
 function compareReadback(b,r,n,hash) {
  if(!obj(b) || b.source_id!==r.source_id ||
@@ -68,7 +45,7 @@ function compareReadback(b,r,n,hash) {
  return 'SNAPSHOT_IDENTICAL';
 }
 
-export async function inspectPteReadOnly(request, providers) {
+export async function inspectDiscoveryReadOnly(request, providers) {
  const events=[];
  const receipt={
    schema_version:'ai-sales-discovery-skill/v1', mode:'READ_ONLY',
@@ -84,7 +61,7 @@ export async function inspectPteReadOnly(request, providers) {
    if(!obj(request) || !nonempty(request.business_code) ||
       !nonempty(request.source_id) || !nonempty(request.source_version) ||
       !nonempty(request.scope_key) || !nonempty(request.request_ref) ||
-      request.source_id!=='PE-PTE')
+      !resolveSourceAdapter(request.source_id))
      fail('DISCOVERY_UNSUPPORTED_OR_INCOMPLETE_REQUEST');
    Object.assign(receipt,{
      request_ref:request.request_ref,business_code:request.business_code,
@@ -101,13 +78,15 @@ export async function inspectPteReadOnly(request, providers) {
      scope_key:request.scope_key
    });
    validatePolicy(policy,request);
+   const adapter=resolveSourceAdapter(request.source_id);
+   adapter.validatePolicy(policy,request);
    receipt.policy_ref=policy.policy_ref;
    mark('RESOLVE_BUSINESS_POLICY','PASS');
    const source=await providers.loadSource({
      source_id:request.source_id,source_version:request.source_version,
      business_code:request.business_code
    });
-   const url=validateSource(source,request);
+   const url=adapter.validateSource(source,request);
    receipt.source_ref=source.source_ref;
    mark('CHECK_SOURCE_AUTHORITY','PASS');
 
@@ -151,10 +130,7 @@ export async function inspectPteReadOnly(request, providers) {
    }
    if(!response || response.status!==200)fail('DISCOVERY_FETCH_FAILED');
    mark('FETCH_SOURCE','PASS');
-   const normalized=normalizePteCsv(response.body.replace(/^\uFEFF/,''),{
-     source_id:request.source_id,scope_key:request.scope_key,
-     ubigeo_prefixes:policy.ubigeo_prefixes
-   });
+   const normalized=adapter.normalize(response.body,policy,request);
    if(!count(normalized.total) ||
       normalized.total>policy.transport.max_rows ||
       normalized.rows.length>policy.transport.max_rows)
@@ -187,3 +163,6 @@ export async function inspectPteReadOnly(request, providers) {
  Object.freeze(events);
  return Object.freeze(receipt);
 }
+
+// Compatibility with the initial PTE-only proof; shared callers use the generic entrypoint.
+export const inspectPteReadOnly=inspectDiscoveryReadOnly;
