@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v0.1
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.1
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -57,3 +57,24 @@ La función genérica inspectDiscoveryReadOnly delega al registro explícito en 
 
 ## Lote v0.7 — integración ZIP → lector SUNAT
 `adapters/sunat_zip_candidate.mjs` conecta el procesador ZIP reutilizable con el lector por stream sin descomprimir a disco. Valida toda la estructura/CRC del ZIP antes de entregar filas candidatas; controla bytes reales, selección exacta, cuotas y timeout externo explícito. 16 pruebas locales y 1 mutación CRC, fixtures únicamente. Contrato: `contracts/SUNAT_ZIP_INTEGRATION_V07.md`. Sigue pendiente el esquema real, transporte y autorización comercial de fuente. No se habilita runtime.
+
+## Lote v1.1 — secuencia candidata SUNAT 12.01
+
+La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `contracts/source_registry.v1.json`, entrada SUNAT, define `sequence.steps` con dependencias, componentes y gates. La numeración 12.01.1–12.01.8 es interna, no nuevos substeps registrados en Supabase. La fuente sigue `SPEC_ONLY_NOT_CONNECTED` y el registro ejecutable conserva solo PTE. Las secciones v0.2–v0.7 son históricas; este bloque actualiza el estado de SUNAT.
+
+| Subpaso | Función | Estado técnico |
+|---|---|---|
+| 12.01.1 | Admisión y transporte | COMPONENTS_TESTED_RUNTIME_PENDING |
+| 12.01.2 | Integridad ZIP y esquema | COMPONENTS_TESTED_DUAL_SOURCE_WIRING_PENDING |
+| 12.01.3 | Lectura y selección | QA_REAL_DATA_STREAMS_PENDING |
+| 12.01.4 | Cruce por RUC | JOIN_COMPONENT_TESTED_REAL_SAMPLE_ONLY |
+| 12.01.5 | Proyección empresarial y lotes | IMPLEMENTED_WITHIN_JOIN |
+| 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
+| 12.01.7 | Persistencia gobernada | WRITER_DEPLOYED_DISABLED |
+| 12.01.8 | Reconciliación y cierre | END_TO_END_PENDING |
+
+Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
+
+Evidencia: PR #4583, 478657 coincidencias únicas con nombre, 32 filas de piloto en seco y cero publicadas (`tests/evidence/sunat_202610_join_20261121.json`). #4586 incorporó antigüedad y #4588/#4589 su piloto y corrección de codificación; no afirmar resultado del piloto sin log. #4582 instaló escritor invoker deshabilitado; captura empresarial v1 no admite antigüedad. Mensual aporta 13 campos, reducido 5 observaciones (RUC compartido, razón social, estado, condición, UBIGEO). No activar runtime, persistencia ni regla comercial en este lote.
+
+Criterio de avance: actualizar secuencia, componente, prueba y estado en el mismo PR cada vez que cambie un subpaso. Mantener separado registro operativo de candidatos. No declarar integración hasta probar la secuencia completa con casos positivos y negativos y evidencia de cierre correspondiente.
