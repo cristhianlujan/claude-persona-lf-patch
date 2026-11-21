@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {normalizePteCsv} from '../../../docs/saly/ventas/candidate/pte/normalize_pte_csv.mjs';
-import {inspectPteReadOnly, DISCOVERY_STEPS} from '../core/pte_readonly_pipeline.mjs';
+import {inspectPteReadOnly, inspectDiscoveryReadOnly, DISCOVERY_STEPS} from '../core/pte_readonly_pipeline.mjs';
+import {listSourceAdapters,resolveSourceAdapter} from '../adapters/registry.mjs';
 
 const hash = input => createHash('sha256').update(input,'utf8').digest('hex');
 const header='DSC_INSTITUCION,DSC_RUC,COD_UBICACION\n';
@@ -73,6 +74,11 @@ let verified=0;
 async function test(name,r,p,status,code=null){
   const v=await check(name,r,p,status,code);verified++;return v;
 }
+assert.equal(inspectPteReadOnly,inspectDiscoveryReadOnly);
+assert.deepEqual(listSourceAdapters(),['PE-PTE']);
+assert.equal(resolveSourceAdapter('PE-PTE').adapter_code,'AI_SALES_PTE_CSV_V1');
+assert.equal(resolveSourceAdapter('SUNAT'),null);
+assert.equal(resolveSourceAdapter('GOOGLE_PLACES_API_NEW'),null);
 const ok=await test('identical baseline',request,providers(),'SNAPSHOT_IDENTICAL');
 assert.equal(ok.capture_sha256,expectedHash);
 assert.equal(ok.observed_count,3);
