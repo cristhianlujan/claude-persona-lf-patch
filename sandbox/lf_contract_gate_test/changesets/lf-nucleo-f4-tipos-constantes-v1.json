@@ -1,0 +1,12 @@
+{
+  "solution_ref": "lf-nucleo-f4-tipos-constantes-v1",
+  "paths": {
+    "supabase/migrations/20261121160000_lf_nucleo_f4_tipos_constantes_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f4_codegen.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sdk/lf_nucleo_catalog.generated.ts": "PASE_SUPPORT",
+    "docs/nucleo/LF_PLAN_ANEXO_BINDINGS_RUNTIME_Paulo_20261121.md": "PASE_SUPPORT",
+    "docs/nucleo/LF_F4_TIPOS_CONST_REGISTRO_20261121.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-f4-tipos-constantes-v1.json": "CHANGESET_MANIFEST"
+  }
+}
