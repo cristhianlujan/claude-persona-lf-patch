@@ -8,6 +8,7 @@
     "docs/saly/ventas/candidate/STEP10_L27_MAPPING_AND_GATE.md": "ENGINEERING_CHECKPOINTS",
     "supabase/migrations/20261120235100_lf_saly_ventas_discovery_coverage_fk_v1.sql": "MIGRATION",
     "supabase/tests/saly_ventas_discovery_coverage_fk_v1_pg17_rollback.sql": "RUNTIME_TESTING",
-    "supabase/tests/saly_ventas_discovery_coverage_fk_v1_readback.sql": "RUNTIME_TESTING"
+    "supabase/tests/saly_ventas_discovery_coverage_fk_v1_readback.sql": "RUNTIME_TESTING",
+    "supabase/tests/saly_ventas_l29_pg17_isolated_runner.sh": "RUNTIME_TESTING"
   }
 }
