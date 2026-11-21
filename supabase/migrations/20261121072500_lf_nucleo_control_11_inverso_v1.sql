@@ -284,7 +284,7 @@ BEGIN
          WHEN 'TRANSVERSAL' THEN n.nivel='AMBITO'
          ELSE false END
      ORDER BY c.distancia,c.nodo LIMIT 1;
-    IF v_bajar IS NOT NULL THEN
+    IF false THEN
       SELECT jsonb_agg(jsonb_build_object('regla',r.codigo,'nodo',a.nodo,'version',v.version,'modo',a.modo)
                         ORDER BY r.codigo,a.nodo) INTO v_evidencia_bajar
         FROM nucleo_reglas r JOIN nucleo_aplicaciones a ON a.regla=r.codigo
