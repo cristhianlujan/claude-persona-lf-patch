@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.8 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.9 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -349,6 +349,52 @@ Prueba local:
 ```bash
 cd sandbox/creative_factory
 python -m unittest -v test_rgb_reference_review.RGBTests test_compositor_blueprint_layers_v2.LayerTests
+```
+
+## Proyección gráfica del handoff (v0.9, candidato)
+
+Antes de compilar el wire canónico, construir una proyección visual del
+blueprint existente, no un segundo pedido ni otro motor. La skill redacta
+instrucciones visuales específicas de la dirección de arte y del componente,
+sin estados de aprobación, hashes, resultados de QA, rutas locales ni
+metadatos operativos en el texto gráfico.
+
+Invocar `graphical_handoff_candidate_v1.build_candidate(plan, projection, files)`.
+La proyección contiene direction (las seis dimensiones del preflight),
+components (mapa de nombres exactos de componentes NATIVE a su instrucción
+visual) y references (source_id, guidance). El constructor vuelve a ejecutar
+el preflight, recorre la jerarquía bloqueada, añade el copy literal de cada
+componente NATIVE y usa las cajas BOX de cada COMPOSITOR exclusivamente como
+reservas limpias. No pedir a Native que redibuje el logo o botón asignado al
+compositor. El lienzo, encuadre, dirección de arte y demás componentes siguen
+siendo los de la escena completa cuando así se solicita.
+
+Para referencias PNG de arte previo, usar snapshots del negocio con role
+previous_generated_visual_reference_only y file_sha256; el mapa files
+materializa sus rutas. Verificar los bytes antes de preparar descriptores de
+adjunto sin rutas internas. No adjuntar fuentes reservadas solo al compositor.
+Las reservas ALPHA y otros roles de adjunto no se soportan en este candidato:
+bloquear en lugar de inventar otro formato. No inferir geometría exacta a
+partir de la referencia. El alineamiento de la imagen obtenida deberá pasar
+QA antes de aplicar la normalización RGB protegida.
+
+El resultado GRAPHICAL_CANDIDATE_SEMANTIC_PENDING contiene payload {prompt,
+attachments} y huella de bytes calculada localmente. Mostrarlo literalmente
+junto con cada referencia materializada; el hash local no es el wire
+canónico de Supabase ni un recibo de Native. El filtro léxico solo detecta
+metadatos operativos comunes y no sustituye la revisión semántica de las
+instrucciones redactadas. Un revisor independiente debe cotejar el literal
+original, la dirección, las fuentes, el copy, los límites de responsabilidades,
+las referencias, las reservas y la totalidad del pedido. Nunca presentar
+la cobertura estructural como aprobación. Si falla, aplicar el protocolo
+de incidencia; no enviar. Solo continuar automáticamente con el envío
+exacto, cuando exista compilación canónica, QA independiente, autoridad
+y canal habilitado. Este módulo no ejecuta ningún proveedor.
+
+Pruebas locales:
+```bash
+cd sandbox/creative_factory
+python -m unittest -v test_graphical_handoff_candidate_v1.CandidateTests
 ```
 
 ## Resultado y límites de QA
