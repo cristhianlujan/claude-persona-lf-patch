@@ -146,4 +146,24 @@ VALUES('DEPRECACION',1,'nucleo_regla_deprecar_v1','Cierra una versión publicada
  '{"regla":"text","version":"integer","hash_version":"sha256","autoridad":"vigente","motivo":"text >=10"}',
  '{"estado":"DEPRECADA","regla":"text","version":"integer","hash_version":"sha256","autoridad":"text","motivo":"text","vigente_hasta":"timestamptz"}','VIGENTE');
 
+INSERT INTO lf_ops.nucleo_errores(codigo,puerta,significado,accion) VALUES
+('NUCLEO_DEPRECAR_AUTORIDAD_NO_VIGENTE','DEPRECACION','La autoridad indicada no está vigente','Verificar la autoridad correspondiente; no sustituirla.'),
+('NUCLEO_DEPRECAR_CANDIDATA_PENDIENTE','DEPRECACION','La regla tiene una candidata pendiente','Resolver la candidata por la ruta autorizada antes de deprecar.'),
+('NUCLEO_DEPRECAR_CIERRE_INEXACTO','DEPRECACION','No se cerró exactamente una versión','Abortar y verificar estado, versión y vigencia.'),
+('NUCLEO_DEPRECAR_DEPENDIENTE_VIGENTE','DEPRECACION','Una regla vigente depende de esta regla','Evaluar dependencia y obtener autorización para resolverla.'),
+('NUCLEO_DEPRECAR_ESTADO_INEXACTO','DEPRECACION','No se cambió exactamente una identidad vigente','Abortar y comprobar estado y concurrencia.'),
+('NUCLEO_DEPRECAR_NO_VIGENTE','DEPRECACION','La identidad no está vigente','No deprecar candidatas, borradores, deprecadas o retiradas.'),
+('NUCLEO_DEPRECAR_SIN_MOTIVO','DEPRECACION','El motivo no cumple la longitud mínima','Registrar un motivo concreto de la decisión autorizada.'),
+('NUCLEO_DEPRECAR_VERSION_OBSOLETA','DEPRECACION','La versión/hash no coincide con la publicación abierta','Releer la publicación vigente y validar el hash antes de solicitar deprecación.');
+
+INSERT INTO saly.nucleo_errores(codigo,puerta,significado,accion) VALUES
+('NUCLEO_DEPRECAR_AUTORIDAD_NO_VIGENTE','DEPRECACION','La autoridad indicada no está vigente','Verificar la autoridad correspondiente; no sustituirla.'),
+('NUCLEO_DEPRECAR_CANDIDATA_PENDIENTE','DEPRECACION','La regla tiene una candidata pendiente','Resolver la candidata por la ruta autorizada antes de deprecar.'),
+('NUCLEO_DEPRECAR_CIERRE_INEXACTO','DEPRECACION','No se cerró exactamente una versión','Abortar y verificar estado, versión y vigencia.'),
+('NUCLEO_DEPRECAR_DEPENDIENTE_VIGENTE','DEPRECACION','Una regla vigente depende de esta regla','Evaluar dependencia y obtener autorización para resolverla.'),
+('NUCLEO_DEPRECAR_ESTADO_INEXACTO','DEPRECACION','No se cambió exactamente una identidad vigente','Abortar y comprobar estado y concurrencia.'),
+('NUCLEO_DEPRECAR_NO_VIGENTE','DEPRECACION','La identidad no está vigente','No deprecar candidatas, borradores, deprecadas o retiradas.'),
+('NUCLEO_DEPRECAR_SIN_MOTIVO','DEPRECACION','El motivo no cumple la longitud mínima','Registrar un motivo concreto de la decisión autorizada.'),
+('NUCLEO_DEPRECAR_VERSION_OBSOLETA','DEPRECACION','La versión/hash no coincide con la publicación abierta','Releer la publicación vigente y validar el hash antes de solicitar deprecación.');
+
 COMMIT;
