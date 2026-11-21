@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.7 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.8 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -278,7 +278,7 @@ El request V2 tiene exactamente:
   "business_code": "<negocio del plan>",
   "plan_path": "<plan local con layout en LOCK>",
   "plan_sha256": "<SHA de bytes del plan>",
-  "body_path": "<PNG RGBA de ensayo>",
+  "body_path": "<PNG RGBA de ensayo o PNG RGB de referencia>",
   "body_sha256": "<SHA de bytes del cuerpo>",
   "body_origin": "SYNTHETIC_REVIEW",
   "files": {"<id de fuente>": "<ruta materializada>"},
@@ -317,6 +317,38 @@ recepción local acredita el canal externo.
 ```bash
 cd sandbox/creative_factory
 python -m unittest -v test_skill_blueprint_review_v2.PipelineTests test_compositor_blueprint_layers_v2.LayerTests
+```
+
+## Referencia RGB completa: composición protegida (v0.8)
+
+El mismo flujo local admite body_origin RGB_REFERENCE_REVIEW cuando el plan
+declara FULL_SCENE y una referencia previa RGB, sin acreditar origen Native.
+El snapshot de referencia debe identificar los bytes (file_sha256), modo RGB,
+dimensiones exactas y role previous_generated_visual_reference_only.
+El blueprint y su LOCK contienen el mismo rgb_reference_binding con source_id,
+pixel_sha256 y alignment CANDIDATE_MANUAL_REVIEW. No es una validación
+automática de alineación ni aprobación semántica.
+
+La geometría bloqueada debe cubrir todo el lienzo y reservar cajas BOX
+explícitas para cada elemento fijo. No se permite ALPHA en este modo.
+El receptor comprueba el hash del archivo; el compositor valida píxeles,
+geometría, cobertura y fondo limpio opaco. No redimensiona, recorta ni
+reconstruye el cuerpo. Convierte RGB a RGBA conservando los píxeles creativos
+y retirando únicamente las cajas protegidas. Compone los activos oficiales
+en esas cajas y compara el resultado contra la referencia original.
+Si cambia un píxel exterior, se bloquea. El recibo registra máscara, cantidades
+reservadas, preservadas y cambiadas, y origen no verificado.
+
+Revisar visualmente la correspondencia de las cajas, continuidad del fondo
+limpio, logo, CTA y demás componentes. LOCAL_REVIEW_COMPLETE_SEMANTIC_PENDING
+no autoriza entrega final, publicación ni render de producción. No confundir
+esta referencia con una respuesta certificada del proveedor, ni declarar que
+componentes no reemplazados son activos oficiales.
+
+Prueba local:
+```bash
+cd sandbox/creative_factory
+python -m unittest -v test_rgb_reference_review.RGBTests test_compositor_blueprint_layers_v2.LayerTests
 ```
 
 ## Resultado y límites de QA
