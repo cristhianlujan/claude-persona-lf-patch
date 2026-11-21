@@ -28,7 +28,7 @@
     {
       "source_id": "SUNAT",
       "adapter": null,
-      "state": "ZIP_TO_RECORDS_INTEGRATION_SYNTHETIC_ONLY_REAL_SCHEMA_UNVERIFIED",
+      "state": "DUAL_SOURCE_JOIN_MEASURED_RIGHTS_PENDING",
       "source_variant": "SUNAT-RUC",
       "official_catalog_url": "https://www.datosabiertos.gob.pe/dataset/padr%C3%B3n-ruc-superintendencia-nacional-de-aduanas-y-de-administraci%C3%B3n-tributaria-sunat",
       "observed_resource": "PadronRUC_202610.zip",
@@ -40,11 +40,19 @@
       "zip_content_verifier": "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs#verifyZipContentCandidate",
       "resource_url": "https://www.datosabiertos.gob.pe/sites/default/files/PadronRUC_202610.zip",
       "source_version": "2026-10",
-      "schema_status": "UNVERIFIED",
+      "schema_status": "OBSERVED_202610_MONTHLY_20261121_REDUCED",
       "records_candidate_ref": "skills/ai_sales_discovery/adapters/sunat_records_candidate.mjs",
       "records_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_RECORDS_V06.md",
       "zip_records_candidate_ref": "skills/ai_sales_discovery/adapters/sunat_zip_candidate.mjs",
-      "zip_records_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_ZIP_INTEGRATION_V07.md"
+      "zip_records_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_ZIP_INTEGRATION_V07.md",
+      "catalog_source_id": "PE-SUNAT-RUC",
+      "connector_id": "SALY-U07-S12-C01",
+      "substep_code": "12.01",
+      "company_projection_ref": "skills/ai_sales_discovery/adapters/sunat_company_v1.py",
+      "joined_batch_ref": "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py",
+      "aggregate_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_202610_join_20261121.json",
+      "reduced_url": "https://www2.sunat.gob.pe/padron_reducido_ruc.zip",
+      "reduced_rights_status": "PENDIENTE_VERIFICAR"
     },
     {
       "source_id": "SUNARP",
