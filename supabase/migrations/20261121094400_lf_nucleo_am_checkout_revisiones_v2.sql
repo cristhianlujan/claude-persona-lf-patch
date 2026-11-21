@@ -90,13 +90,17 @@ BEGIN
   IF new_eval->>'decision' NOT IN ('AUTO','MANUAL','DEVUELTA')
    OR (judge->>'veredicto'='DEVOLVER' AND new_eval->>'decision'<>'DEVUELTA')
   THEN RAISE EXCEPTION 'AM_V2_UNEXPECTED_EVALUATION % %',code,new_eval; END IF;
-  -- Negative: a score is not permission for direct publication.
-  BEGIN
-   PERFORM lf_ops.nucleo_version_publicar_v1(code,2);
-   RAISE EXCEPTION 'AM_V2_DIRECT_PUBLICATION_ACCEPTED %',code;
-  EXCEPTION WHEN others THEN
-   IF SQLERRM NOT LIKE 'NUCLEO_PUBLICAR_SIN_PROMOCION:%' THEN RAISE; END IF;
-  END;
+  -- Only a DEVUELTA candidate can be used as a negative publication probe.
+  -- The existing internal publisher legitimately accepts AUTO evaluations; NEVER
+  -- invoke it for PASS/AUTO in this migration, even in a test.
+  IF judge->>'veredicto'='DEVOLVER' THEN
+   BEGIN
+    PERFORM lf_ops.nucleo_version_publicar_v1(code,2);
+    RAISE EXCEPTION 'AM_V2_DIRECT_PUBLICATION_ACCEPTED %',code;
+   EXCEPTION WHEN others THEN
+    IF SQLERRM NOT LIKE 'NUCLEO_PUBLICAR_SIN_PROMOCION:%' THEN RAISE; END IF;
+   END;
+  END IF;
   p:=lf_ops.nucleo_regla_proponer_v1(proposal,false);
   IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(p->'controles') x
    WHERE x->>'n'='0' AND x->>'detalle'='REVISION_VERSION_OBSOLETA' AND (x->>'ok')::boolean=false)
