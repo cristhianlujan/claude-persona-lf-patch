@@ -55,7 +55,7 @@ def lines(raw):
 def norm(s):
     return ' '.join(''.join(c for c in unicodedata.normalize('NFKD',s.upper().replace('_',' ')) if not unicodedata.combining(c)).split())
 
-def monthly(path,header_sha):
+def monthly(path,header_sha,sample=None):
     data={}; duplicates=set(); counts={'rows':0,'scope_rows':0,'bad_ubigeo':0}
     with zipfile.ZipFile(path) as z, z.open(member(z,'.csv')) as raw:
         it=lines(raw); header=next(it)
@@ -77,16 +77,22 @@ def monthly(path,header_sha):
             if ruc in data: duplicates.add(ruc); continue
             require(len(data)<MAX_KEYS,'MONTHLY_KEY_LIMIT')
             data[ruc]=(norm(status),norm(cond),u,ciiu,workers)
+            if sample is not None and len(sample) < 32:
+                sample[ruc] = (dict(zip(cols, row)), counts['rows'])
     require(counts['rows']>0 and data,'MONTHLY_EMPTY')
     counts.update(unique_keys=len(data),duplicate_keys=len(duplicates))
     return data,duplicates,counts
 
-def reduced(path, data, monthly_dups):
+def reduced(path, data, monthly_dups, sample=None, archives=None):
     seen={}; dup=set(); counts={'rows':0,'legal_rows':0,'matching_rows':0,'missing_name_rows':0}
     rejections = Counter()
     malformed_keys = set()
+    sample_reduced = {}
     geography = {level: Counter() for level in ('department', 'province', 'district')}
     worker_forms = Counter()
+    worker_literals = Counter()
+    ciiu_formats = Counter()
+    name_encodings = Counter()
     numeric_workers = []
     with zipfile.ZipFile(path) as z, z.open(member(z,'.txt')) as raw:
         info = member(z, '.txt')
@@ -132,6 +138,22 @@ def reduced(path, data, monthly_dups):
             def val(i):
                 try: return norm(fields[ix[i]].decode('utf-8').strip())
                 except UnicodeDecodeError: return norm(fields[ix[i]].decode('cp1252').strip())
+            try:
+                name.decode('utf-8')
+                encoding = 'ascii' if name.isascii() else 'utf8_non_ascii'
+            except UnicodeDecodeError:
+                try:
+                    name.decode('cp1252')
+                    encoding = 'cp1252_decodable_non_utf8'
+                except UnicodeDecodeError:
+                    encoding = 'unresolved'
+            name_encodings[encoding] += 1
+            if sample is not None and key in sample and encoding != 'unresolved':
+                codec = 'cp1252' if encoding.startswith('cp1252') else 'utf-8'
+                def decode_value(index):
+                    return fields[ix[index]].decode(codec)
+                sample_reduced[key] = (dict(zip(('RUC','nombre','estado','condicion','ubigeo'),
+                                                 (decode_value(i) for i in range(5)))), counts['rows'])
             item=(bool(name),hashlib.sha256(name).digest(),val(2),val(3),val(4))
             if key in seen: dup.add(key); continue
             seen[key]=item
@@ -143,6 +165,22 @@ def reduced(path, data, monthly_dups):
         for level, width in [('department', 2), ('province', 4), ('district', 6)]:
             geography[level][m[2][:width]] += 1
         literal = m[4]
+        # Bounded frequencies for worker tokens, never release arbitrary source text.
+        token = literal if re.fullmatch(r'[ A-Za-zÁÉÍÓÚÑáéíóúñ0-9./_-]{0,32}', literal) else '<other format>'
+        if not re.fullmatch(r'[0-9]+', literal) and len(worker_literals) < 128:
+            worker_literals[token] += 1
+        ciiu = m[3]
+        if re.fullmatch(r'[0-9]{4}', ciiu):
+            form = 'four_digits'
+        elif re.match(r'^[0-9]{4}\s*[-: ]\s*\S', ciiu):
+            form = 'code_and_description'
+        elif re.fullmatch(r'[A-Za-zÁÉÍÓÚÑáéíóúñ .,/()-]{4,}', ciiu):
+            form = 'text'
+        elif ciiu.strip() in ('','-','N/D','ND','S/I'):
+            form = 'unknown'
+        else:
+            form = 'other'
+        ciiu_formats[form] += 1
         if re.fullmatch(r'[0-9]{1,9}', literal):
             worker_forms['integer'] += 1
             numeric_workers.append(int(literal))
@@ -154,11 +192,26 @@ def reduced(path, data, monthly_dups):
             worker_forms['other'] += 1
         state_diff+=m[0]!=item[2]; cond_diff+=m[1]!=item[3]; ubigeo_diff+=m[2]!=item[4]
         worker_num+=bool(re.fullmatch(r'[0-9]+',m[4])); ciiu_present+=bool(re.fullmatch(r'[0-9]{4}',m[3]))
+    counts.update(worker_special_literals=worker_literals, ciiu_rev4_forms=ciiu_formats, name_byte_classes=name_encodings)
     counts.update(keys_with_malformed_rows=len(malformed_keys), rejected_by_reason=dict(rejections), geography=geography,
                   worker_forms=dict(worker_forms), workers_min=min(numeric_workers, default=None),
                   workers_max=max(numeric_workers, default=None))
     require(all(sum(bucket.values()) == good for bucket in geography.values()), 'GEOGRAPHY_RECONCILIATION')
     counts.update(header_sha256=hashlib.sha256(header).hexdigest(),column_count=len(cols),trailing_delimiter=trailing,matched_unique_keys=len(seen),duplicate_matched_keys=len(dup),unmatched_monthly_unique_keys=len(data)-len(monthly_dups)-len(seen),matched_unambiguous_named=good,state_diff=state_diff,condition_diff=cond_diff,ubigeo_diff=ubigeo_diff,workers_numeric=worker_num,ciiu_four_digits=ciiu_present)
+    if sample is not None:
+        sys.path.insert(0,str(Path(__file__).resolve().parents[1] / 'adapters'))
+        from sunat_company_v1 import company, batches
+        captures = []
+        for key in sorted(sample_reduced.keys() - dup - monthly_dups - malformed_keys):
+            month, m_ordinal = sample[key]
+            red, r_ordinal = sample_reduced[key]
+            if not red['nombre'].strip():
+                continue
+            m = dict(url=MONTHLY, zip_sha256=archives[0]['sha256'], header_sha256=HEADER_SHA, ordinal=m_ordinal)
+            r = dict(url=REDUCED, zip_sha256=archives[1]['sha256'], header_sha256=counts['header_sha256'], ordinal=r_ordinal)
+            captures.append(company(month,red,m,r))
+        payloads = list(batches(captures,32,512*1024))
+        counts['pilot_dry_run'] = {'rows':len(captures), 'batches':[{'bytes':len(p),'sha256':hashlib.sha256(p).hexdigest()} for p in payloads]}
     return counts
 
 def self_test():
@@ -189,8 +242,9 @@ def main():
     with tempfile.TemporaryDirectory() as d:
         m=Path(d)/'monthly.zip'; r=Path(d)/'reduced.zip'
         a=fetch(MONTHLY,m); require(a['sha256']==MONTHLY_SHA,'MONTHLY_SNAPSHOT_CHANGED')
-        data,dups,mc=monthly(m,HEADER_SHA); m.unlink()
-        b=fetch(REDUCED,r); rc=reduced(r,data,dups)
+        sample = {}
+        data,dups,mc=monthly(m,HEADER_SHA,sample); m.unlink()
+        b=fetch(REDUCED,r); rc=reduced(r,data,dups,sample,(a,b))
         print('SUNAT_JOIN_QA '+json.dumps({'monthly_archive':a,'reduced_archive':b,'monthly':mc,'reduced':rc,'crc_verified':True,'rows_published':0},sort_keys=True))
 
 if __name__=='__main__':
