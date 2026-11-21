@@ -27,9 +27,11 @@ DECLARE
  v_policy jsonb;
  v_count int;
 BEGIN
- SELECT count(*),max(config_value::jsonb) INTO v_count,v_policy
- FROM public.lf_global_config
+ SELECT count(*) INTO v_count FROM public.lf_global_config
  WHERE scope='SALY_DISCOVERY' AND config_key='PTE_POLICY_V1' AND value_status='REAL';
+ SELECT config_value::jsonb INTO v_policy FROM public.lf_global_config
+ WHERE scope='SALY_DISCOVERY' AND config_key='PTE_POLICY_V1' AND value_status='REAL'
+ ORDER BY valid_from DESC LIMIT 1;
  IF v_count<>1 OR v_policy IS NULL OR jsonb_typeof(v_policy)<>'object'
  OR jsonb_typeof(v_policy->'ubigeo_prefixes')<>'array'
  OR jsonb_array_length(v_policy->'ubigeo_prefixes')=0
