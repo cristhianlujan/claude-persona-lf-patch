@@ -1,0 +1,26 @@
+{
+  "status": "READ_ONLY_REAL_REPLAY_MATCH",
+  "source_id": "PE-PTE",
+  "connector_id": "SALY-U07-S13-C03",
+  "source_url": "https://www.datosabiertos.gob.pe/sites/default/files/01%20listado_entidades_2026_08.csv",
+  "scope": "LIMA_ICA",
+  "source_version": "2026-08",
+  "total_csv_records": 2336,
+  "unit_tests_executed_on_identical_function": 7,
+  "readback": {
+    "fetched": 519,
+    "prior_ingestas": 1,
+    "hash": "6d084c6bb98a488a88c2050b1a1465ed420fbf3b81f1ee79e7e3695ab403685d",
+    "exact_replay": 1,
+    "stored": 519,
+    "unmatched": 0
+  },
+  "checked_at": "2026-11-21T07:40:22.440Z",
+  "limits": [
+    "No operational RUN was created",
+    "No direct writes",
+    "No recurrent runtime enabled",
+    "SHA256 of capture JSON, not original CSV bytes",
+    "Same snapshot observed; no changed-source behavior yet"
+  ]
+}

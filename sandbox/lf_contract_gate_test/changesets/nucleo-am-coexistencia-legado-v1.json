@@ -1,0 +1,7 @@
+{
+  "solution_ref": "nucleo-am-coexistencia-legado-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/nucleo-am-coexistencia-legado-v1.json": "CHANGESET_MANIFEST"
+  }
+}

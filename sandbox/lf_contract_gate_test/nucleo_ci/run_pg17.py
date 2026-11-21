@@ -27,7 +27,7 @@ TESTS = {
 }
 TESTS.update({
     "public.lf_nucleo_autotest_conjunto_v1": "CONJUNTO 5/5",
-    "lf_ops.lf_puente_autotest_v1": "PUENTE 4/4",
+    "lf_ops.lf_puente_autotest_v1": "PUENTE 8/8",
     "lf_ops.lf_puente2_autotest_v1": "PUENTE2 6/6",
 })
 FIRST = "20261120215000_lf_nucleo_familias_v1.sql"
@@ -61,7 +61,7 @@ def sql_literal(value):
     return "'" + value.replace("'", "''") + "'"
 
 def suite_sql(mutate=False):
-    out = ["BEGIN;"]
+    out = ["BEGIN;", "DO $parity$\nBEGIN\n IF EXISTS(SELECT * FROM lf_ops.reglas EXCEPT ALL SELECT * FROM lf_ops.v_reglas_compat_v1 WHERE id IS NOT NULL) OR\n    EXISTS(SELECT * FROM lf_ops.v_reglas_compat_v1 WHERE id IS NOT NULL EXCEPT ALL SELECT * FROM lf_ops.reglas)\n THEN RAISE EXCEPTION 'AM_COEX_LEGACY_PARITY_FAILED'; END IF;\n IF EXISTS(SELECT codigo FROM lf_ops.v_reglas_compat_v1 GROUP BY codigo HAVING count(*)>1)\n THEN RAISE EXCEPTION 'AM_COEX_DUPLICATE_CODE'; END IF;\n RAISE NOTICE 'AM_COEX_LEGACY_PARITY_OK';\nEND $parity$;\n"]
     if mutate:
         # Deliberate real DB mutation of a single test, rolled back when the session exits.
         out.append("CREATE OR REPLACE FUNCTION lf_ops.nucleo_autotest_puerta_v1() RETURNS text LANGUAGE sql AS $$ SELECT 'PUERTA 0/26'::text $$;")
@@ -75,6 +75,10 @@ def suite_sql(mutate=False):
 
 def replay_paths(relevant):
     paths = {p.name: p for p in MIG.glob("*.sql") if CORE_NAME.fullmatch(p.name)}
+    # This EKB transition updates an existing finding. Replay its real source
+    # migration and resolution in order so the isolated catalog is reproducible.
+    am_ekb = re.compile(r"^\d{14}_lf_ekb_nucleo_am_(?:checkout_coexistencia_20261121_v1|coexistencia_revision_v1)\.sql$")
+    paths.update({p.name: p for p in MIG.glob("*.sql") if am_ekb.fullmatch(p.name)})
     if FIRST not in paths:
         raise RuntimeError("NUCLEO_CI_MISSING_FIRST_MIGRATION")
     for name in relevant:
@@ -133,7 +137,7 @@ def main():
         print(result.stdout + result.stderr, flush=True)
         if result.returncode:
             raise RuntimeError("NUCLEO_CI_AUTOTESTS_FAILED")
-        if result.stderr.count("NUCLEO_CI_OK ") != len(TESTS):
+        if result.stderr.count("NUCLEO_CI_OK ") != len(TESTS) or "AM_COEX_LEGACY_PARITY_OK" not in result.stderr:
             raise RuntimeError("NUCLEO_CI_INCOMPLETE_EVIDENCE")
         # Use precisely the same SQL gate; its failure must be caused by the injected verdict.
         negative = psql(name, suite_sql(True), check=False)

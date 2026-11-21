@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ekb-nucleo-am-coexistencia-revision-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/ekb-nucleo-am-coexistencia-revision-v1.json": "CHANGESET_MANIFEST"
+  }
+}
