@@ -21,11 +21,12 @@ def box(values, name, w, h):
         raise CompositionError('BOX_BOUNDS:'+name)
     return x,y,a,b
 
-def font(size,weight):
-    mapping={400:'Regular',600:'SemiBold',700:'Bold'}
-    if weight not in mapping:raise CompositionError('FONT_WEIGHT_INVALID')
-    fn=Path('/usr/share/fonts/opentype/inter')/('Inter-'+mapping[weight]+'.otf')
-    if not fn.exists():raise CompositionError('FONT_NOT_FOUND')
+def font(size,weight,registry):
+    ref=registry.get(str(weight))
+    if not isinstance(ref,dict):raise CompositionError('FONT_WEIGHT_INVALID')
+    fn=Path(ref.get('path',''))
+    if not fn.is_file():raise CompositionError('FONT_NOT_FOUND')
+    if digest(fn.read_bytes())!=ref.get('sha256'):raise CompositionError('FONT_SHA256')
     return ImageFont.truetype(str(fn),size)
 
 def svg_image(data,color=None):
@@ -90,13 +91,13 @@ def compose(m,body):
     native.alpha_composite(logo,(x,y+(bb-logo.height)//2))
     x,y,a,bb=b['cta']
     d.rounded_rectangle((x,y,x+a-1,y+bb-1),radius=m['cta_radius'],fill=colors['cta_bg'])
-    cf=font(m['cta_font_size'],m['cta_font_weight']);txt=m['cta_copy'];bounds=d.textbbox((0,0),txt,font=cf)
+    cf=font(m['cta_font_size'],m['cta_font_weight'],m['font_files']);txt=m['cta_copy'];bounds=d.textbbox((0,0),txt,font=cf)
     ww,hh=bounds[2]-bounds[0],bounds[3]-bounds[1]
     if ww>a-16 or hh>bb-12:raise CompositionError('CTA_OVERFLOW')
     d.text((x+(a-ww)/2,y+(bb-hh)/2-bounds[1]),txt,font=cf,fill=colors['cta_text'])
     x,y,a,bb=b['footer'];d.rectangle((x,y,x+a-1,y+bb-1),fill=colors['nav_bg'])
     d.line((x,y,x+a,y),fill='#D9DDE4')
-    nf=font(m['nav_font_size'],m['nav_font_weight']);sz=m['icon_size']
+    nf=font(m['nav_font_size'],m['nav_font_weight'],m['font_files']);sz=m['icon_size']
     for j,label in enumerate(labels):
         color=colors['nav_active' if label==active else 'nav_inactive']
         icon=svg_image(assets[label],color).resize((sz,sz),Image.Resampling.LANCZOS)
