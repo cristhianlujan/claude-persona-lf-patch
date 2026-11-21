@@ -242,7 +242,7 @@ jobs:
           LF_NUCLEO_HEAD_SHA: ${{ steps.pase_plan.outputs.resolved_head_sha }}
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py --base "$LF_NUCLEO_BASE_SHA" --head "$LF_NUCLEO_HEAD_SHA"
+          python3 sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py --base "$LF_NUCLEO_BASE_SHA" --head "$LF_NUCLEO_HEAD_SHA" --force-fail
 
       - name: Persist canonical PASE plan
         uses: actions/upload-artifact@v4
