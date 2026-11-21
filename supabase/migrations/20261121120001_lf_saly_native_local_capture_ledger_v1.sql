@@ -40,6 +40,36 @@ CREATE TRIGGER creative_capture_immutable_v1 BEFORE UPDATE OR DELETE
 REVOKE ALL ON FUNCTION saly.creative_capture_immutable_guard_v1()
  FROM PUBLIC,anon,authenticated,service_role;
 
+-- One SQL-owned canonical wire representation, denying ambiguous JSON bytes.
+CREATE FUNCTION saly.creative_native_canonical_wire_v1(p_item_id bigint)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO pg_catalog,saly,visual,extensions,pg_temp AS $fn$
+DECLARE pkt jsonb; validation jsonb; raw_bytes bytea;
+BEGIN
+ pkt:=saly.creative_item_work_packet_l2c(p_item_id);
+ validation:=saly.creative_assert_native_transport_v2(pkt->'native_transport');
+ IF validation->>'status' IS DISTINCT FROM 'PAYLOAD_MATCH_REVIEW_ONLY'
+ OR validation->'render_authorized' IS DISTINCT FROM 'false'::jsonb
+ OR validation->'transmitted' IS DISTINCT FROM 'false'::jsonb
+ OR validation->'provider_receipt' IS DISTINCT FROM 'null'::jsonb
+ THEN RAISE EXCEPTION 'CREATIVE_CANONICAL_WIRE_NOT_REVIEW'; END IF;
+ raw_bytes:=convert_to((pkt#>'{native_transport,payload}')::text,'UTF8');
+ RETURN jsonb_build_object(
+  'schema_version','SALY_CANONICAL_NATIVE_WIRE_V1',
+  'status','CANONICAL_WIRE_REVIEW_ONLY',
+  'item_id',p_item_id,
+  'contract_sha256',validation->>'contract_sha256',
+  'prompt_sha256',validation->>'prompt_sha256',
+  'payload_sha256',validation->>'payload_sha256',
+  'wire_base64',encode(raw_bytes,'base64'),
+  'wire_sha256',encode(extensions.digest(raw_bytes,'sha256'),'hex'),
+  'native_transmitted',false,'provider_receipt',NULL,'qa_verdict','NOT_EVALUATED');
+END $fn$;
+REVOKE ALL ON FUNCTION saly.creative_native_canonical_wire_v1(bigint)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION saly.creative_native_canonical_wire_v1(bigint)
+ TO service_role;
+
 CREATE FUNCTION saly.creative_capture_append_v1(
  p_item_id bigint,p_request_id text,p_wire_base64 text,p_readback_base64 text
 ) RETURNS jsonb
@@ -47,7 +77,7 @@ LANGUAGE plpgsql VOLATILE SECURITY DEFINER
 SET search_path TO pg_catalog,saly,extensions,pg_temp AS $fn$
 DECLARE
  pkt jsonb; preflight jsonb; expected jsonb;
- wire_bytes bytea; readback_bytes bytea;
+ wire_bytes bytea; readback_bytes bytea; source_wire jsonb;
  wire_object jsonb; wire_sha text; v_id uuid;
 BEGIN
  IF p_item_id IS NULL OR p_item_id<=0
@@ -79,6 +109,10 @@ BEGIN
  THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_WIRE_SIZE'; END IF;
  IF wire_bytes IS DISTINCT FROM readback_bytes
  THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_READBACK_DRIFT'; END IF;
+ source_wire:=saly.creative_native_canonical_wire_v1(p_item_id);
+ IF wire_bytes IS DISTINCT FROM decode(source_wire->>'wire_base64','base64')
+ OR encode(extensions.digest(wire_bytes,'sha256'),'hex') IS DISTINCT FROM source_wire->>'wire_sha256'
+ THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_NONCANONICAL_WIRE'; END IF;
  wire_object:=(convert_from(wire_bytes,'UTF8'))::jsonb;
  IF jsonb_typeof(wire_object) IS DISTINCT FROM 'object'
  OR (SELECT count(*) FROM jsonb_object_keys(wire_object))<>2
@@ -123,8 +157,8 @@ BEGIN
  payload:=pkt#>'{native_transport,payload}';
  IF pkt->>'readiness_code'<>'READY_FOR_REVIEW_ONLY' OR payload IS NULL
  THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_TEST_SOURCE_MISSING'; END IF;
- wire_b64:=encode(convert_to(payload::text,'UTF8'),'base64');
- changed_b64:=encode(convert_to(payload::text||' ','UTF8'),'base64');
+ wire_b64:=saly.creative_native_canonical_wire_v1(9)->>'wire_base64';
+ changed_b64:=encode(decode(wire_b64,'base64')||convert_to(' ','UTF8'),'base64');
 
  BEGIN
   receipt:=saly.creative_capture_append_v1(9,request_key,wire_b64,wire_b64);
@@ -147,6 +181,14 @@ BEGIN
    rejected:=rejected+1;
   END;
   BEGIN
+   PERFORM saly.creative_capture_append_v1(9,request_key||'-noncanonical',
+       changed_b64,changed_b64);
+   RAISE EXCEPTION 'TEST_NONCANONICAL_UNEXPECTED_PASS';
+  EXCEPTION WHEN raise_exception THEN
+   IF SQLERRM IS DISTINCT FROM 'CREATIVE_CAPTURE_NONCANONICAL_WIRE' THEN RAISE; END IF;
+   rejected:=rejected+1;
+  END;
+  BEGIN
    UPDATE saly.creative_native_capture_evidence_v1 SET status='FAKE_PROVIDER_PASS'
    WHERE item_id=9 AND request_id=request_key;
    RAISE EXCEPTION 'TEST_MUTATION_UNEXPECTED_PASS';
@@ -154,7 +196,7 @@ BEGIN
    IF SQLERRM IS DISTINCT FROM 'CREATIVE_NATIVE_CAPTURE_IMMUTABLE' THEN RAISE; END IF;
    rejected:=rejected+1;
   END;
-  IF rejected<>3 THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_NEGATIVE_COUNT'; END IF;
+  IF rejected<>4 THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_NEGATIVE_COUNT'; END IF;
   RAISE EXCEPTION 'CREATIVE_CAPTURE_TEST_ROLLBACK';
  EXCEPTION WHEN raise_exception THEN
   IF SQLERRM IS DISTINCT FROM 'CREATIVE_CAPTURE_TEST_ROLLBACK' THEN RAISE; END IF;
@@ -162,10 +204,13 @@ BEGIN
 
  IF EXISTS(SELECT 1 FROM saly.creative_native_capture_evidence_v1)
  OR has_table_privilege('service_role','saly.creative_native_capture_evidence_v1','INSERT')
+ OR has_function_privilege('anon','saly.creative_native_canonical_wire_v1(bigint)','EXECUTE')
+ OR has_function_privilege('authenticated','saly.creative_native_canonical_wire_v1(bigint)','EXECUTE')
+ OR NOT has_function_privilege('service_role','saly.creative_native_canonical_wire_v1(bigint)','EXECUTE')
  OR has_function_privilege('anon','saly.creative_capture_append_v1(bigint,text,text,text)','EXECUTE')
  OR has_function_privilege('authenticated','saly.creative_capture_append_v1(bigint,text,text,text)','EXECUTE')
  OR NOT has_function_privilege('service_role','saly.creative_capture_append_v1(bigint,text,text,text)','EXECUTE')
  THEN RAISE EXCEPTION 'CREATIVE_CAPTURE_TEST_READBACK_FAILED'; END IF;
- RAISE NOTICE 'SALY NATIVE LOCAL CAPTURE: positive, 3 negatives, append-only, rollback, ACL PASS. Zero provider receipt.';
+ RAISE NOTICE 'SALY NATIVE LOCAL CAPTURE: positive, 4 negatives, canonical wire, append-only, rollback, ACL PASS. Zero provider receipt.';
 END $test$;
 COMMIT;
