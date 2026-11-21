@@ -62,6 +62,14 @@ def load_json(path: Path, *, max_bytes: int = 2_000_000) -> tuple[dict[str, Any]
     return data, hash_bytes(raw)
 
 
+def execute_skill(request: dict[str, Any], emit) -> dict[str, Any]:
+    """Single CLI dispatcher. V1 caller contract stays unchanged."""
+    if type(request) is dict and request.get('schema_version') == 'CREATIVE_SKILL_BLUEPRINT_REVIEW_V2':
+        from skill_blueprint_review_v2 import run_blueprint_review
+        return run_blueprint_review(request, emit)
+    return run_review(request)
+
+
 def run_review(request: dict[str, Any]) -> dict[str, Any]:
     """Offline test/review only; the request and packet cannot grant production authority."""
     ensure(type(request) is dict and request.get('schema_version') == SCHEMA, 'SKILL_REQUEST_SCHEMA')
@@ -172,8 +180,10 @@ def main() -> None:
     args = ap.parse_args()
     try:
         request, _ = load_json(Path(args.request), max_bytes=50_000)
-        result = run_review(request)
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+        result = execute_skill(request, lambda event: print(json.dumps(event, ensure_ascii=False), flush=True))
+        print(json.dumps(result, ensure_ascii=False, sort_keys=True), flush=True)
+        if result.get('status') == 'BLOCKED':
+            raise SystemExit(2)
     except SkillBlocked as exc:
         print(json.dumps({'status': 'BLOCKED', 'blocking_code': exc.code,
                           'native_transmitted': False, 'production_approved': False}))

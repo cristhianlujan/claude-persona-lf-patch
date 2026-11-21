@@ -1,0 +1,10 @@
+{
+  "solution_ref": "creative-skill-integrated-blueprint-review-v2",
+  "paths": {
+    "skills/creative_factory/SKILL.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/skill_run_review_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/skill_blueprint_review_v2.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/test_skill_blueprint_review_v2.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/creative-skill-integrated-blueprint-review-v2.json": "CHANGESET_MANIFEST"
+  }
+}
