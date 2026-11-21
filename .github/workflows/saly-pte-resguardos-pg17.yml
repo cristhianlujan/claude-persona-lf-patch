@@ -1,16 +1,11 @@
 name: SALY PTE writer PG17 regression
 on:
-  pull_request:
-    paths:
-      - 'profiles/saly_radar_comercial/**'
-      - 'supabase/migrations/*_lf_saly_ventas_pte*'
-      - 'supabase/tests/saly_ventas_pte_writer_core_v1_concurrency.py'
-      - '.github/workflows/saly-pte-resguardos-pg17.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   saly-pte-pg17:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     services:
