@@ -20,7 +20,7 @@ Petición y fuente -> política por negocio -> evidencia de derechos -> fetch ac
 | D06 | Readback y reconciliación de hash, conteos, fila a fila | Contrato de callback implementado; readback SQL de caller pendiente |
 | D07 | Recibo auditable, estados y cierre garantizado | Implementado |
 | D08 | Persistencia gobernada de nuevas versiones | Fuera de alcance actual; NO habilitado |
-| D09 | Adaptadores multifuente (SUNAT, SUNARP, Google Places, etc.) | Pendiente, cada uno requiere fuente y contrato |
+| D09 | Registro de adaptadores por fuente; PTE separado del núcleo | Registro implementado; SUNAT/SUNARP/Google Places pendientes |
 | D10 | Telemetría productiva, lease y cierre de RUN | Pendiente; no forzar desde esta skill |
 | D11 | Pruebas E2E, negativas, timeout y retry | Archivo de tests; PASS solo tras ejecución |
 
@@ -39,3 +39,6 @@ Petición y fuente -> política por negocio -> evidencia de derechos -> fetch ac
 Comando: node skills/ai_sales_discovery/tests/pte_readonly_pipeline.test.mjs.
 Ejecución de CI: workflow existente saly-pte-resguardos-pg17.yml, no workflow nuevo.
 La base SALY mantiene la extracción inicial de 519 registros; el runner actual solo inspecciona snapshots y verifica por callback. La evidencia histórica L48 de PG17 prueba al escritor, NO es un RUN de esta skill.
+
+## Lote v0.2 — separación de adaptadores
+La función genérica inspectDiscoveryReadOnly delega al registro explícito en adapters/registry.mjs; únicamente PE-PTE está admitido mediante adapters/pte_csv_adapter.mjs. La función inspectPteReadOnly queda como alias de compatibilidad con el piloto. Validación de URL/licencia, política territorial y parseo viven en el adaptador PTE. No activar conectores ausentes ni cambiar Router o perfiles.

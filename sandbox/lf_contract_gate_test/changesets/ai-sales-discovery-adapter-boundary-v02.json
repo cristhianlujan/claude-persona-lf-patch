@@ -1,0 +1,12 @@
+{
+  "solution_ref": "ai-sales-discovery-adapter-boundary-v02",
+  "paths": {
+    "skills/ai_sales_discovery/adapters/pte_csv_adapter.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/adapters/registry.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/core/pte_readonly_pipeline.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/pte_readonly_pipeline.test.mjs": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-adapter-boundary-v02.json": "CHANGESET_MANIFEST"
+  }
+}

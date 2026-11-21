@@ -8,10 +8,12 @@
       "source_id": "PE-PTE",
       "substep_code": "13.03",
       "provider": "PCM PTE",
-      "adapter": "docs/saly/ventas/candidate/pte/normalize_pte_csv.mjs",
+      "adapter": "skills/ai_sales_discovery/adapters/pte_csv_adapter.mjs",
       "state": "ONE_SOURCE_READ_ONLY_PILOT_TESTED",
       "source_url": "https://www.datosabiertos.gob.pe/sites/default/files/01%20listado_entidades_2026_08.csv",
-      "no_recurrent_writes": true
+      "no_recurrent_writes": true,
+      "parser_ref": "docs/saly/ventas/candidate/pte/normalize_pte_csv.mjs",
+      "runtime_enabled": false
     },
     {
       "source_id": "GOOGLE_PLACES_API_NEW",
@@ -40,5 +42,6 @@
       "adapter": null,
       "state": "NOT_AVAILABLE_SCRAPING_DISALLOWED"
     }
-  ]
+  ],
+  "adapter_registry": "skills/ai_sales_discovery/adapters/registry.mjs"
 }
