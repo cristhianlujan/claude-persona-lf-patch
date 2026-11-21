@@ -45,7 +45,8 @@ BEGIN
  END IF;
  SELECT * INTO STRICT logo FROM saly.brand_assets WHERE id=(h#>>'{logo,id}')::bigint
   AND code=h#>>'{logo,code}' AND version_number=(h#>>'{logo,version}')::integer
-  AND sha256=h#>>'{logo,sha256}' AND approval_status='APPROVED';
+  AND sha256=h#>>'{logo,sha256}' AND approval_status='APPROVED' AND valid_to IS NULL;
+ IF h#>'{composition,logo_ref}' IS DISTINCT FROM jsonb_build_object('asset_id',logo.id,'provider',logo.file_provider,'file_id',logo.external_file_id,'sha256',logo.sha256,'version',logo.version_number,'mime_type','image/png') THEN RAISE EXCEPTION 'COMPOSITION_LOGO_LOCATOR'; END IF;
  SELECT count(*) INTO n FROM jsonb_array_elements(h->'trace') x
  WHERE x->>'consumer'='composition' AND x->>'component'='navegacion'
  AND x->>'property' IN ('activa','fondo','inactiva','fuente base','tipografía etiqueta');
@@ -67,7 +68,7 @@ BEGIN
    jsonb_build_object('code','NO_UNREQUESTED_CHANGES','severity','BLOCK','expected','Sin funciones, cifras, fechas ni adornos añadidos'),
    jsonb_build_object('code','FUNCTIONAL_PURPOSE_PRESERVED','severity','BLOCK','expected','Copy, monto, servicios y navegación de la estrategia guardada')));
  checks:=jsonb_build_array(
-   jsonb_build_object('code','ASSET_INTEGRITY','severity','BLOCK','expected',refs,'method','COMPARE_RENDER_INPUT_BYTES_AND_SHA256'),
+   jsonb_build_object('code','ASSET_INTEGRITY','severity','BLOCK','expected',jsonb_build_object('svg_assets',refs,'logo',h#>'{composition,logo_ref}'),'method','COMPARE_RENDER_INPUT_BYTES_AND_SHA256'),
    jsonb_build_object('code','GEOMETRY','severity','BLOCK','expected',g,'method','COMPARE_RENDER_BOXES_WITH_MANIFEST'),
    jsonb_build_object('code','STYLE_TOKENS','severity','BLOCK','expected',h->'trace','method','VERIFY_RENDER_MEASUREMENTS_AND_COLOR'),
    jsonb_build_object('code','COPY_AND_NUMBERS','severity','BLOCK','expected',item.scope_json->'strategy','method','INDEPENDENT_OCR_AND_VISUAL_REVIEW'),
@@ -85,7 +86,7 @@ REVOKE ALL ON FUNCTION saly.creative_template_preflight_v1(bigint) FROM PUBLIC,a
 DO $integrate$
 DECLARE
  item saly.creative_order_items%ROWTYPE; prev visual.standard_versions%ROWTYPE;
- refs jsonb; spec jsonb; v_id bigint; v_sha text; h jsonb; p jsonb; a_before jsonb;
+ refs jsonb; logo_ref jsonb; spec jsonb; v_id bigint; v_sha text; h jsonb; p jsonb; a_before jsonb;
 BEGIN
  SELECT i.* INTO STRICT item FROM saly.creative_order_items i JOIN saly.creative_orders o ON o.id=i.order_id
  WHERE i.id=9 AND i.code='HOME_B' AND i.status='PENDIENTE' AND o.id=5
@@ -108,8 +109,13 @@ BEGIN
  WHERE a.brand_code='SALY' AND a.version_number=1 AND a.approval_status='CANDIDATE'
  AND a.provider='SUPABASE_INLINE_SVG' AND a.source_sha256=encode(extensions.digest(convert_to(a.metadata->>'svg','UTF8'),'sha256'),'hex');
  IF refs IS NULL OR (SELECT count(*) FROM jsonb_object_keys(refs))<>5 THEN RAISE EXCEPTION 'COMPOSITION_ASSETS_MISSING'; END IF;
+ SELECT jsonb_build_object('asset_id',id,'provider',file_provider,'file_id',external_file_id,'sha256',sha256,'version',version_number,'mime_type','image/png') INTO STRICT logo_ref FROM saly.brand_assets
+ WHERE id=(prev.manifest_json#>>'{logo,id}')::bigint AND code=prev.manifest_json#>>'{logo,code}'
+ AND version_number=(prev.manifest_json#>>'{logo,version}')::integer
+ AND sha256=prev.manifest_json#>>'{logo,sha256}' AND approval_status='APPROVED' AND valid_to IS NULL
+ AND sha256='5573f0503ddb3dd1029221a9ee336d0e28155c392598286628dbf294da146995';
  spec:=jsonb_set(prev.manifest_json,'{composition}',(prev.manifest_json->'composition')||
- jsonb_build_object('asset_refs',refs,'pending_assets','[]'::jsonb,'render_ready',false,
+ jsonb_build_object('asset_refs',refs,'logo_ref',logo_ref,'pending_assets','[]'::jsonb,'render_ready',false,
  'frame_app_opening','[16,48,400,848]'::jsonb,'frame_outer','[432,928]'::jsonb,
  'navigation_layout',jsonb_build_object('columns',4,'icon_size_px',24,'icon_top_offset_px',16,
  'label_top_offset_px',44,'align','center','color_mode','RESOLVED_TOKEN_CURRENT_COLOR'),
@@ -132,6 +138,7 @@ BEGIN
  OR jsonb_array_length(p#>'{contract,qa_checks}')<>5
  OR jsonb_array_length(p#>'{contract,acceptance_criteria,semantic_qa,checks}')<>5
  OR p#>'{contract,handoff}' IS DISTINCT FROM h
+ OR p#>'{contract,handoff,composition,logo_ref}' IS DISTINCT FROM logo_ref
  THEN RAISE EXCEPTION 'COMPOSITION_QA_CONTRACT_MISMATCH'; END IF;
  UPDATE saly.creative_order_items SET context_json=context_json||jsonb_build_object('handoff_review',h,'preflight_review',p) WHERE id=item.id;
  IF (SELECT context_json->'handoff_review' FROM saly.creative_order_items WHERE id=8) IS DISTINCT FROM a_before
