@@ -15,27 +15,18 @@ MAX_LINE=65536
 MAX_ROWS=30_000_000
 MAX_KEYS=1_500_000
 
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self,*args,**kwargs):
-        raise ValueError('REDIRECT_DENIED')
+sys.path.insert(0,str(Path(__file__).resolve().parents[1] / 'adapters'))
+from sunat_download_v1 import acquire
 
-def require(ok,code):
-    if not ok: raise ValueError(code)
+def require(ok, code):
+    if not ok:
+        raise ValueError(code)
 
-def fetch(url,path):
-    require(url in (MONTHLY,REDUCED),'SOURCE_DENIED')
-    req=urllib.request.Request(url,headers={'Accept-Encoding':'identity','User-Agent':'AIS30-join-qa/1.0'})
-    h=hashlib.sha256(); n=0
-    with urllib.request.build_opener(NoRedirect()).open(req,timeout=30) as r, path.open('xb') as out:
-        require(r.status==200 and r.geturl()==url and r.headers.get('Content-Encoding','identity').lower()=='identity','HTTP_DENIED')
-        expected=r.headers.get('Content-Length')
-        require(expected is None or 0<int(expected)<=MAX_ZIP,'DOWNLOAD_LIMIT')
-        while True:
-            b=r.read(1024**2)
-            if not b: break
-            n+=len(b); require(n<=MAX_ZIP,'DOWNLOAD_LIMIT'); h.update(b); out.write(b)
-        require(n>0 and (expected is None or n==int(expected)),'DOWNLOAD_INCOMPLETE')
-    return {'bytes':n,'sha256':h.hexdigest(),'http_last_modified':r.headers.get('Last-Modified')}
+def fetch(url, path):
+    # Limits below belong exclusively to this GitHub Actions measurement.
+    return acquire(url, path, allowed_urls={MONTHLY, REDUCED}, max_bytes=MAX_ZIP,
+                   attempts=3, socket_timeout=30, deadline_seconds=240, backoff_seconds=1,
+                   expected_sha=MONTHLY_SHA if url == MONTHLY else None)
 
 def member(z,ext):
     infos=z.infolist()
@@ -76,7 +67,9 @@ def monthly(path,header_sha,sample=None):
             counts['scope_rows']+=1
             if ruc in data: duplicates.add(ruc); continue
             require(len(data)<MAX_KEYS,'MONTHLY_KEY_LIMIT')
-            data[ruc]=(norm(status),norm(cond),u,ciiu,workers)
+            secondary = tuple(row[cols.index(c)].strip() if c in cols else '' for c in (
+                'Actividad_Economica_CIIU_revision3_Principal','Actividad_Economica_CIIU_revision3_Secundaria'))
+            data[ruc]=(norm(status),norm(cond),u,ciiu,workers,*secondary)
             if sample is not None and len(sample) < 32:
                 sample[ruc] = (dict(zip(cols, row)), counts['rows'])
     require(counts['rows']>0 and data,'MONTHLY_EMPTY')
@@ -92,6 +85,7 @@ def reduced(path, data, monthly_dups, sample=None, archives=None):
     worker_forms = Counter()
     worker_literals = Counter()
     ciiu_formats = Counter()
+    ciiu_present = Counter()
     name_encodings = Counter()
     numeric_workers = []
     with zipfile.ZipFile(path) as z, z.open(member(z,'.txt')) as raw:
@@ -158,7 +152,7 @@ def reduced(path, data, monthly_dups, sample=None, archives=None):
             if key in seen: dup.add(key); continue
             seen[key]=item
     require(counts['rows']>0,'REDUCED_EMPTY')
-    good=state_diff=cond_diff=ubigeo_diff=worker_num=ciiu_present=0
+    good=state_diff=cond_diff=ubigeo_diff=worker_num=ciiu_codes=0
     for key,item in seen.items():
         if key in malformed_keys or key in dup or not item[0]: continue
         good+=1; m=data[key]
@@ -169,6 +163,9 @@ def reduced(path, data, monthly_dups, sample=None, archives=None):
         token = literal if re.fullmatch(r'[ A-Za-zÁÉÍÓÚÑáéíóúñ0-9./_-]{0,32}', literal) else '<other format>'
         if not re.fullmatch(r'[0-9]+', literal) and len(worker_literals) < 128:
             worker_literals[token] += 1
+        for revision, activity in zip(('r4_principal','r3_principal','r3_secundaria'),(m[3],m[5],m[6])):
+            if norm(activity) not in ('', '-', 'NO DISPONIBLE', 'NO DECLARADO', 'NINGUNO','N/D','S/I'):
+                ciiu_present[revision] += 1
         ciiu = m[3]
         if re.fullmatch(r'[0-9]{4}', ciiu):
             form = 'four_digits'
@@ -191,13 +188,13 @@ def reduced(path, data, monthly_dups, sample=None, archives=None):
         else:
             worker_forms['other'] += 1
         state_diff+=m[0]!=item[2]; cond_diff+=m[1]!=item[3]; ubigeo_diff+=m[2]!=item[4]
-        worker_num+=bool(re.fullmatch(r'[0-9]+',m[4])); ciiu_present+=bool(re.fullmatch(r'[0-9]{4}',m[3]))
-    counts.update(worker_special_literals=worker_literals, ciiu_rev4_forms=ciiu_formats, name_byte_classes=name_encodings)
+        worker_num+=bool(re.fullmatch(r'[0-9]+',m[4])); ciiu_codes+=bool(re.fullmatch(r'[0-9]{4}',m[3]))
+    counts.update(ciiu_with_reported_literal=ciiu_present, worker_special_literals=worker_literals, ciiu_rev4_forms=ciiu_formats, name_byte_classes=name_encodings)
     counts.update(keys_with_malformed_rows=len(malformed_keys), rejected_by_reason=dict(rejections), geography=geography,
                   worker_forms=dict(worker_forms), workers_min=min(numeric_workers, default=None),
                   workers_max=max(numeric_workers, default=None))
     require(all(sum(bucket.values()) == good for bucket in geography.values()), 'GEOGRAPHY_RECONCILIATION')
-    counts.update(header_sha256=hashlib.sha256(header).hexdigest(),column_count=len(cols),trailing_delimiter=trailing,matched_unique_keys=len(seen),duplicate_matched_keys=len(dup),unmatched_monthly_unique_keys=len(data)-len(monthly_dups)-len(seen),matched_unambiguous_named=good,state_diff=state_diff,condition_diff=cond_diff,ubigeo_diff=ubigeo_diff,workers_numeric=worker_num,ciiu_four_digits=ciiu_present)
+    counts.update(header_sha256=hashlib.sha256(header).hexdigest(),column_count=len(cols),trailing_delimiter=trailing,matched_unique_keys=len(seen),duplicate_matched_keys=len(dup),unmatched_monthly_unique_keys=len(data)-len(monthly_dups)-len(seen),matched_unambiguous_named=good,state_diff=state_diff,condition_diff=cond_diff,ubigeo_diff=ubigeo_diff,workers_numeric=worker_num,ciiu_four_digits=ciiu_codes)
     if sample is not None:
         sys.path.insert(0,str(Path(__file__).resolve().parents[1] / 'adapters'))
         from sunat_company_v1 import company, batches
