@@ -6,6 +6,7 @@ import re
 import subprocess
 import time
 import uuid
+import f4_conformance
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 HERE = pathlib.Path(__file__).resolve().parent
@@ -40,6 +41,8 @@ def changed_core(base, head):
         raise RuntimeError("NUCLEO_CI_MISSING_BASE_OR_HEAD")
     paths = git("diff", "--name-only", base, head).splitlines()
     relevant = []
+    if f4_conformance.needed(ROOT, base, head, paths):
+        relevant.append(f4_conformance.MANIFEST)
     for path in paths:
         if path == ".github/workflows/pase.yml" or path.startswith(str(HERE.relative_to(ROOT)) + "/"):
             relevant.append(path)
@@ -218,6 +221,7 @@ def main():
             if (dpig03.returncode or dpig03.stderr.count("DPIG03_TEST_PASS ") != 14
                     or "DPIG03_ROLLBACK_PASS 14/14" not in dpig03.stderr):
                 raise RuntimeError("DPIG03_TEST_OR_ROLLBACK_FAILED")
+        f4_conformance.run(name, ROOT, args.base, args.head, psql)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)

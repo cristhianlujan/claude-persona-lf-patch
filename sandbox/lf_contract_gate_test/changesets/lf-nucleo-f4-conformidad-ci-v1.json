@@ -1,0 +1,12 @@
+{
+  "solution_ref": "lf-nucleo-f4-conformidad-ci-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/f4_conformance_pg17.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f4_conformance_cases_pg17.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f4_conformance.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sdk/lf_nucleo_implementation_claims.v1.json": "PASE_SUPPORT",
+    "docs/nucleo/LF_F4_CONFORMIDAD_CI_20261121.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-f4-conformidad-ci-v1.json": "CHANGESET_MANIFEST"
+  }
+}
