@@ -137,6 +137,7 @@ def main():
                 raise RuntimeError("F0_VOCAB36_PG17_FIXTURE_MISSING")
             psql(name, f0_fixture.read_text())
             print("F0_VOCAB36_PG17_SCHEMA_SEEDED", flush=True)
+        replayed_names = [p.name for p in replay]
         for path in replay:
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
             replay = psql(name, path.read_text())
@@ -171,7 +172,7 @@ def main():
                 print("\n".join(lines), flush=True)
         # F4: verify committed TS against the real PostgreSQL-17 catalog; mutate a
         # family in the disposable DB under BEGIN/ROLLBACK and require drift detection.
-        if any("_lf_nucleo_f4_tipos_constantes_v1.sql" in p.name for p in replay):
+        if any("_lf_nucleo_f4_tipos_constantes_v1.sql" in n for n in replayed_names):
             codegen = HERE / "f4_codegen.py"
             generated = ROOT / "sdk" / "lf_nucleo_catalog.generated.ts"
             if not codegen.is_file() or not generated.is_file():
