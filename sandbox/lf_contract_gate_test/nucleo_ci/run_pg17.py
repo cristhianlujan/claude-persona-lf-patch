@@ -77,7 +77,7 @@ def replay_paths(relevant):
     paths = {p.name: p for p in MIG.glob("*.sql") if CORE_NAME.fullmatch(p.name)}
     # This EKB transition updates an existing finding. Replay its real source
     # migration and resolution in order so the isolated catalog is reproducible.
-    am_ekb = re.compile(r"^\d{14}_lf_ekb_nucleo_am_(?:checkout_coexistencia_20261121_v1|coexistencia_revision_v1)\.sql$")
+    am_ekb = re.compile(r"^\d{14}_lf_ekb_nucleo_am_(?:checkout_coexistencia_20261121_v1|coexistencia_revision_v1|revision_resuelta_20261121_v1)\.sql$")
     paths.update({p.name: p for p in MIG.glob("*.sql") if am_ekb.fullmatch(p.name)})
     if FIRST not in paths:
         raise RuntimeError("NUCLEO_CI_MISSING_FIRST_MIGRATION")
@@ -130,6 +130,12 @@ def main():
                          if "AM_CHECKOUT_RESULT " in line or "AM_CHECKOUT_NEGATIVE_" in line or "AM_CHECKOUT_PASS " in line]
                 if sum("AM_CHECKOUT_RESULT " in line for line in lines) != 10 or sum("AM_CHECKOUT_NEGATIVE_HASH " in line for line in lines) != 10 or sum("AM_CHECKOUT_NEGATIVE_PUBLICATION " in line for line in lines) != 9 or sum("AM_CHECKOUT_PASS " in line for line in lines) != 1:
                     raise RuntimeError("AM_CHECKOUT_INCOMPLETE_REPLAY_EVIDENCE")
+                print("\n".join(lines), flush=True)
+            if "_lf_nucleo_am_checkout_revisiones_v2.sql" in path.name:
+                lines = [line for line in replay.stderr.splitlines()
+                         if "AM_V2_RESULT " in line or "AM_V2_PASS " in line]
+                if sum("AM_V2_RESULT " in line for line in lines) != 8 or sum("AM_V2_PASS " in line for line in lines) != 1:
+                    raise RuntimeError("AM_V2_INCOMPLETE_REPLAY_EVIDENCE")
                 print("\n".join(lines), flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
