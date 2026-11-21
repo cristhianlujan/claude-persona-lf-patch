@@ -75,6 +75,10 @@ def suite_sql(mutate=False):
 
 def replay_paths(relevant):
     paths = {p.name: p for p in MIG.glob("*.sql") if CORE_NAME.fullmatch(p.name)}
+    # This EKB transition updates an existing finding. Replay its real source
+    # migration and resolution in order so the isolated catalog is reproducible.
+    am_ekb = re.compile(r"^\d{14}_lf_ekb_nucleo_am_(?:checkout_coexistencia_20261121_v1|coexistencia_revision_v1)\.sql$")
+    paths.update({p.name: p for p in MIG.glob("*.sql") if am_ekb.fullmatch(p.name)})
     if FIRST not in paths:
         raise RuntimeError("NUCLEO_CI_MISSING_FIRST_MIGRATION")
     for name in relevant:
