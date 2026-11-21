@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-ventas-l48-pg17-two-session-tests",
+  "paths": {
+    "supabase/tests/saly_ventas_pte_crossrun_pg17_concurrency.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-l48-pg17-two-session-tests.json": "CHANGESET_MANIFEST"
+  }
+}
