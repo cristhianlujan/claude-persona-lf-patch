@@ -39,13 +39,16 @@ async function fileRead(handle,bytes,start){
  }
  return buf;
 }
-async function inspectArchive(filePath,limits,verifyContent){
+async function inspectArchive(filePath,limits,verifyContent,selection=null){
  validLimits(limits);
+ limits=structuredClone(limits);
+ selection?.checkDeadline();
  if(typeof filePath!=='string'||!filePath)
    reject('ZIP_INPUT_INVALID');
  // Use a single descriptor, reject symlinks/FIFOs, and never reopen by path.
  const file=await open(filePath,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK).catch(()=>reject('ZIP_INPUT_NOT_FOUND'));
  try{
+  selection?.checkDeadline();
   const details=await file.stat();
   if(!details.isFile()||details.size<22||details.size>limits.max_download_bytes)
     reject('ZIP_FILE_SIZE_OR_TYPE_BLOCK');
@@ -75,6 +78,7 @@ async function inspectArchive(filePath,limits,verifyContent){
   let cursor=0,totalUnpacked=0,totalCompressed=0;
   const seen=new Set(),descriptors=[];
   for(let n=0;n<entries;n++){
+    selection?.checkDeadline();
     if(cursor+46>cd.length||cd.readUInt32LE(cursor)!==SIG_CENTRAL)
       reject('ZIP_CENTRAL_DIRECTORY_CORRUPT');
     const flags=cd.readUInt16LE(cursor+8),method=cd.readUInt16LE(cursor+10);
@@ -109,22 +113,26 @@ async function inspectArchive(filePath,limits,verifyContent){
     totalUnpacked+=uncomp;totalCompressed+=comp;
     if(totalUnpacked>limits.max_unpacked_bytes)
       reject('ZIP_TOTAL_UNPACKED_EXCEEDS_LIMIT');
-    if(verifyContent)descriptors.push({offset:localOffset,flags,method,crc,compressed:comp,
+    if(verifyContent)descriptors.push({name,offset:localOffset,flags,method,crc,compressed:comp,
       uncompressed:uncomp,nameBytes:cd.subarray(cursor+46,cursor+46+fileNameBytes)});
     cursor=end;
   }
   if(cursor!==cd.length)reject('ZIP_CENTRAL_DIRECTORY_EXTRA_DATA');
-  const actualBytes=verifyContent?await verifyZipEntries(file,descriptors,cdOffset,limits):null;
+  const proof=verifyContent?await verifyZipEntries(file,descriptors,cdOffset,limits,selection):null;
+  const actualBytes=selection?proof.total:proof;
   const hash=createHash('sha256');
   for(let offset=0;offset<details.size;){
+    selection?.checkDeadline();
     const chunk=await fileRead(file,Math.min(65536,details.size-offset),offset);
     hash.update(chunk);offset+=chunk.length;
   }
   const after=await file.stat();
+  selection?.checkDeadline();
   if(after.size!==details.size||after.mtimeMs!==details.mtimeMs||after.ctimeMs!==details.ctimeMs)
     reject('ZIP_FILE_CHANGED_DURING_INSPECTION');
   const verified=verifyContent?{content_crc_verified:true,actual_unpacked_bytes:actualBytes}:{};
-  return Object.freeze({state:verifyContent?'ZIP_CONTENT_VERIFIED_CANDIDATE':'ZIP_METADATA_CANDIDATE',...verified,entry_count:entries,
+  const parsed=selection?{entry_name:selection.name,selected_unpacked_bytes:proof.selectedBytes,entry_result:proof.selectedResult}:{};
+  return Object.freeze({state:selection?'ZIP_ENTRY_VERIFIED_CANDIDATE':verifyContent?'ZIP_CONTENT_VERIFIED_CANDIDATE':'ZIP_METADATA_CANDIDATE',...verified,...parsed,entry_count:entries,
     compressed_bytes:details.size,declared_unpacked_bytes:totalUnpacked,
     declared_payload_compressed_bytes:totalCompressed,
     archive_sha256:hash.digest('hex'),
@@ -135,3 +143,18 @@ async function inspectArchive(filePath,limits,verifyContent){
 
 export const inspectZipCandidate=(filePath,limits)=>inspectArchive(filePath,limits,false);
 export const verifyZipContentCandidate=(filePath,limits)=>inspectArchive(filePath,limits,true);
+
+// Internal skill integration: consumer must be pure, fully drain the stream and
+// retain its result privately. No result is returned until ALL entries pass CRC.
+export async function readZipEntryCandidate(filePath,limits,entryName,consume){
+ validLimits(limits);
+ if(!positive(limits.timeout_ms)||limits.timeout_ms>2147483647)reject('ZIP_TIMEOUT_POLICY_INVALID');
+ if(typeof entryName!=='string'||entryName.endsWith('/')||typeof consume!=='function')reject('ZIP_SELECTED_ENTRY_INVALID');
+ safeName(entryName,new Set());
+ const cap=structuredClone(limits),controller=new AbortController(),deadline=performance.now()+cap.timeout_ms;
+ const timeout=()=>controller.abort(Object.assign(new Error('ZIP_OPERATION_TIMEOUT'),{code:'ZIP_OPERATION_TIMEOUT'}));
+ const checkDeadline=()=>{if(performance.now()>=deadline)timeout();controller.signal.throwIfAborted();};
+ const timer=setTimeout(timeout,cap.timeout_ms);
+ try{return await inspectArchive(filePath,cap,true,{name:entryName,consume,signal:controller.signal,checkDeadline});}
+ finally{clearTimeout(timer);}
+}

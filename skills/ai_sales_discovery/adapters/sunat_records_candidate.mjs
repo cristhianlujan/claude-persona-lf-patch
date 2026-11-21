@@ -89,3 +89,5 @@ export async function inspectSunatRecordsCandidate(chunks,inputSchema,inputPolic
   schema_authority_verified:false,archive_integrity_verified:false,identity_verified:false,
   runtime_authorized:false,write_authorized:false,contact_authorized:false});
 }
+
+export {check as validateSunatRecordsContract};

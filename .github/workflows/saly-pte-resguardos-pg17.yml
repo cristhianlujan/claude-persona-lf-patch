@@ -99,5 +99,7 @@ jobs:
         run: node skills/ai_sales_discovery/tests/sunat_records_candidate.test.mjs
       - name: Test SUNAT header, privacy and quota guard mutations
         run: node skills/ai_sales_discovery/tests/sunat_records_mutation.test.mjs
+      - name: Test integrated SUNAT ZIP to candidate records, full archive CRC barrier
+        run: node skills/ai_sales_discovery/tests/sunat_zip_candidate.test.mjs
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs
