@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ekb-nucleo-ci-s-20261121",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/base_pg17.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/ekb-nucleo-ci-s-20261121.json": "CHANGESET_MANIFEST"
+  }
+}

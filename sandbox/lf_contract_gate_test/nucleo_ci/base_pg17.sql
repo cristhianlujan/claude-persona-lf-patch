@@ -104,3 +104,14 @@ INSERT INTO lf_ops.campos(codigo,nombre,tipo_dato,entity_code) VALUES('FIXTURE_F
 INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status,description,valid_from) VALUES
 ('AUTH','OTP_MAX_RESENDS','3','INTEGER','REAL','Historical fixture value','2020-01-01'),
 ('AUTH','SESSION_IDLE_TIMEOUT_SECONDS','86400','INTEGER','REAL','Historical fixture value','2020-01-01');
+
+-- EKB dependency for migrations of CI findings. Column names/types read
+-- from information_schema in LF on 2026-11-21. Empty local fixture, no live data.
+CREATE TABLE public.lf_error_knowledge (
+ id uuid, codigo text, categoria text, titulo text, descripcion text,
+ causa_raiz text, patron text, prevencion text, validacion text, severidad text,
+ frecuencia integer, primera_vez timestamptz, ultima_vez timestamptz,
+ lote_origen text, pr text, estado text, evidencia text, created_at timestamptz,
+ updated_at timestamptz, lifecycle_phase text, consumer_role text[],
+ root_cause_family text, detectability text, source_context text, source_ref text
+);
