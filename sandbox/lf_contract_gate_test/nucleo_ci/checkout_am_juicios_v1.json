@@ -1,0 +1,2032 @@
+{
+  "schema": "LF-AM-CHECKOUT-JUICIO-V1",
+  "source_main": "bec92a1e8c0b0879713f3ccf04117c88847ba568",
+  "source_pilot": "reglas_checkout_piloto.json",
+  "scope": "10 candidatos; REG_CHK_CUO_003 excluida. Juicio actual, no independiente; no promoción ni sustitución FK por colisión de códigos en vista de compatibilidad. 61 reglas de familia revisadas, comparadores específicos fuera de ella; no se afirma prueba de runtime de pagos ni cobertura exhaustiva de fuentes externas.",
+  "rubric": [
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "CAL_CLARIDAD",
+    "COH_EFECTO",
+    "COH_TEXTO_CONDICION",
+    "SEM_NO_CONTRADICE",
+    "SEM_NO_DUPLICA"
+  ],
+  "source_rows": [
+    {
+      "id": 155,
+      "codigo": "REG_CHK_001",
+      "categoria": "checkout",
+      "titulo": "Checkout consolidado",
+      "descripcion": "El checkout consolida las ofertas y modalidades seleccionadas en un único resumen.",
+      "razon": "Entregar una revisión final unificada sin perder detalle por oferta.",
+      "valor_config": null,
+      "es_transversal": true,
+      "estado": "VIGENTE",
+      "origen": "decision_producto",
+      "huella": "326324ac1471bca44a81baf929fbc709"
+    },
+    {
+      "id": 156,
+      "codigo": "REG_CHK_002",
+      "categoria": "checkout",
+      "titulo": "Total consolidado",
+      "descripcion": "El total consolidado es la suma del monto correspondiente a la modalidad elegida en cada oferta.",
+      "razon": "Asegurar cálculo consistente del resumen.",
+      "valor_config": {
+        "formula": "sum(items[].monto_total)"
+      },
+      "es_transversal": true,
+      "estado": "VIGENTE",
+      "origen": "decision_producto",
+      "huella": "841e65181e42b1087aa99dab8c28260b"
+    },
+    {
+      "id": 183,
+      "codigo": "REG_TEC_007",
+      "categoria": "tecnico",
+      "titulo": "Comportamiento offline",
+      "descripcion": "Si el usuario pierde conexión durante el onboarding: Paso 1 y Paso 2 muestran banner \"Sin conexión. Tus datos están guardados.\" sin perder lo escrito. El checkout bloquea el botón de pago y muestra \"Necesitas conexión para completar el pago.\"",
+      "razon": "El segmento NSE B-/C tiene conexión intermitente. El sistema no debe perder datos ante una desconexión momentánea.",
+      "valor_config": {
+        "banner": "Sin conexión. Tus datos están guardados.",
+        "pasos_con_guardado_local": [
+          "paso1",
+          "paso2"
+        ],
+        "checkout_requiere_conexion": true
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "tecnico",
+      "huella": "9034eea8fdc39a3e65fb0b454781f022"
+    },
+    {
+      "id": 185,
+      "codigo": "REG_TEC_009",
+      "categoria": "tecnico",
+      "titulo": "Idempotency key en operaciones críticas",
+      "descripcion": "El submit del Paso 1 y el checkout incluyen un idempotency_key generado en el cliente con formato uuid_v4. Si la misma petición se reenvía por timeout o doble click, el servidor reconoce la clave dentro de la ventana configurada y devuelve el resultado anterior sin crear duplicados. La ventana de validez en minutos se obtiene exclusivamente de public.lf_global_config mediante public.lf_auth_config_integer_v1 con AUTH/IDEMPOTENCY_KEY_VALIDITY_MINUTES; el número en uuid_v4 identifica el formato, no constituye un umbral.",
+      "razon": "Doble submit por doble click o timeout es el error más común en formularios móviles. El idempotency_key lo previene sin bloquear el botón.",
+      "valor_config": {
+        "header": "X-Idempotency-Key",
+        "aplica_a": [
+          "submit_paso1",
+          "checkout"
+        ],
+        "generacion": "uuid_v4_en_cliente",
+        "ventana_validez_minutos_config": {
+          "scope": "AUTH",
+          "config_key": "IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+        }
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "tecnico",
+      "huella": "9ccef486b946129e1b39cac7750eaa80"
+    },
+    {
+      "id": 207,
+      "codigo": "REG_CHK_003",
+      "categoria": "checkout",
+      "titulo": "Estados normalizados del flujo de checkout",
+      "descripcion": "El checkout distingue preparación previa al envío, intento enviado esperando resultado autoritativo, pago confirmado, rechazo confirmado, estado pendiente de confirmación y fallas previas al envío. Los estados crudos o nombres de un proveedor no son autoridad del frontend. PAYMENT_PENDING_CONFIRMATION usa CHECKOUT_ESTADO_CONFIRMANDO y bloquea reintento/cambio de medio hasta reconciliación.",
+      "razon": "Alinear el flujo heredado con REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001 y evitar que un ERROR/timeout ambiguo se trate como fallo terminal o sin cargo.",
+      "valor_config": {
+        "confirmed": "PAYMENT_CONFIRMED",
+        "not_submitted": "PAYMENT_NOT_SUBMITTED",
+        "reconciled_at": "2026-08-26",
+        "confirming_visual": "CHECKOUT_ESTADO_CONFIRMANDO",
+        "outcome_authority": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "declined_confirmed": "PAYMENT_DECLINED_CONFIRMED",
+        "pending_confirmation": "PAYMENT_PENDING_CONFIRMATION",
+        "provider_unavailable_before_submit": "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT",
+        "provider_specific_state_passthrough": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "decision_producto",
+      "huella": "f710224b3885c13c109b16f88b2b0af9"
+    },
+    {
+      "id": 208,
+      "codigo": "REG_CHK_004",
+      "categoria": "checkout",
+      "titulo": "El CTA de pago se desbloquea solo por outcome seguro",
+      "descripcion": "Al primer click el CTA se bloquea inmediatamente para impedir doble submit. No se rehabilita por un error técnico genérico. Solo backend puede habilitar un nuevo intento cuando el outcome normalizado lo permite, por ejemplo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT. PAYMENT_PENDING_CONFIRMATION y PAYMENT_CONFIRMED mantienen el bloqueo.",
+      "razon": "El double submit en checkout puede generar cobros duplicados.",
+      "valor_config": {
+        "reconciled_at": "2026-08-26",
+        "retry_authority": "SERVER_OUTCOME_GATED",
+        "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "deny_retry_outcomes": [
+          "PAYMENT_PENDING_CONFIRMATION",
+          "PAYMENT_CONFIRMED"
+        ],
+        "allow_retry_outcomes": [
+          "PAYMENT_DECLINED_CONFIRMED",
+          "PAYMENT_NOT_SUBMITTED",
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+        ],
+        "disable_on_first_click": true,
+        "generic_technical_error_reenables": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "tecnico",
+      "huella": "3996fee2ec3dc573d9381af341d4032a"
+    },
+    {
+      "id": 209,
+      "codigo": "REG_CHK_005",
+      "categoria": "checkout",
+      "titulo": "Confirmación post-pago solo después de PAYMENT_CONFIRMED",
+      "descripcion": "La pantalla de éxito y los efectos post-pago se ejecutan solo después de PAYMENT_CONFIRMED. La referencia, fecha/hora y montos provienen de backend/ledger. En cuotas, el pago inicial confirmado activa el plan; no cancela la deuda completa ni habilita Carta de No Adeudo. El checkout no modifica onboarding_completed.",
+      "razon": "La confirmación cierra el loop emocional del usuario. Sin ella, el usuario queda con incertidumbre sobre si el pago se procesó.",
+      "valor_config": {
+        "display": [
+          "OPERATION_REFERENCE",
+          "CONFIRMED_AT",
+          "CONFIRMED_AMOUNT_OR_SUMMARY"
+        ],
+        "reconciled_at": "2026-08-26",
+        "required_outcome": "PAYMENT_CONFIRMED",
+        "post_actions_rule_code": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+        "installments_post_action": "INSTALLMENT_PLAN_ACTIVATED",
+        "onboarding_completed_mutation_at_checkout": "DENY",
+        "no_debt_letter_on_initial_installment_payment": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "decision_producto",
+      "huella": "5adf8813e27368280ecaa0eb06b00314"
+    },
+    {
+      "id": 210,
+      "codigo": "REG_CHK_006",
+      "categoria": "checkout",
+      "titulo": "Comisión de servicio visible antes de pagar",
+      "descripcion": "El checkout muestra de forma visible la comisión del servicio (2% LF + 3.5% Niubiz) antes de que el usuario confirme el pago. No puede estar oculta ni en letra pequeña.",
+      "razon": "Documentado en DOC_02_03_DATA_DISPLAY_RULES. Requisito legal de transparencia en costos.",
+      "valor_config": {
+        "tamano": "no_letra_pequeña",
+        "visibilidad": "antes_de_confirmar",
+        "comision_lf_porcentaje": 2,
+        "comision_niubiz_porcentaje": 3.5
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "legal",
+      "huella": "14a473aed8fb568318157cd3b7227bd4"
+    },
+    {
+      "id": 211,
+      "codigo": "REG_CHK_007",
+      "categoria": "checkout",
+      "titulo": "Resumen inmutable en pantalla de confirmación",
+      "descripcion": "Una vez en la pantalla de confirmación, el usuario no puede modificar su selección de ofertas. Solo puede ver el resumen y continuar.",
+      "razon": "Modificar la selección después de iniciar el proceso de pago genera inconsistencias con Niubiz.",
+      "valor_config": {
+        "accion_disponible": "ver_resumen_y_continuar",
+        "modificacion_seleccion": false
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "tecnico",
+      "huella": "9eaccb2331b2fd95983c8afe0b564ad2"
+    },
+    {
+      "id": 212,
+      "codigo": "REG_CHK_008",
+      "categoria": "checkout",
+      "titulo": "Carta de No Adeudo se genera solo después de cancelación total confirmada",
+      "descripcion": "Un pago confirmado no dispara por sí solo la Carta de No Adeudo. La deuda debe alcanzar SETTLED_CONFIRMED. Recién entonces el estado normalizado puede pasar de NOT_ELIGIBLE a ELIGIBLE/REQUESTED/PROCESSING y finalmente AVAILABLE según integración del aliado. Solo AVAILABLE habilita descarga oficial.",
+      "razon": "La carta es el diferenciador principal del producto. Su generación debe ser automática y notificada.",
+      "valor_config": {
+        "states": [
+          "NOT_ELIGIBLE",
+          "ELIGIBLE",
+          "REQUESTED",
+          "PROCESSING",
+          "AVAILABLE",
+          "FAILED_OR_DELAYED"
+        ],
+        "reconciled_at": "2026-08-26",
+        "status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+        "download_allowed_state": "AVAILABLE",
+        "required_settlement_state": "SETTLED_CONFIRMED",
+        "initial_state_before_settlement": "NOT_ELIGIBLE"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "decision_producto",
+      "huella": "adf7dadc08ace3c32ee2f640ec9b58d0"
+    },
+    {
+      "id": 226,
+      "codigo": "REG_NIU_002",
+      "categoria": "niubiz",
+      "titulo": "Comisión Niubiz visible en checkout",
+      "descripcion": "La comisión de Niubiz (3.5%) se muestra de forma visible en el resumen del checkout junto con la comisión de LF (2%). El monto final que paga el usuario incluye ambas comisiones.",
+      "razon": "Transparencia de costos requerida legalmente. Documentado en DOC_02_03.",
+      "valor_config": {
+        "mostrar_en": "resumen_checkout",
+        "comision_lf": 0.02,
+        "comision_niubiz": 0.035,
+        "incluir_en_total": true
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "legal",
+      "huella": "2e1ed3f0a06649a4034d7ab2ff9212b3"
+    },
+    {
+      "id": 228,
+      "codigo": "REG_NIU_004",
+      "categoria": "niubiz",
+      "titulo": "Respuestas del proveedor se normalizan server-side",
+      "descripcion": "Las respuestas crudas del proveedor nunca gobiernan directamente la UI. Una aprobación se convierte en PAYMENT_CONFIRMED solo con evidencia autoritativa; un rechazo en PAYMENT_DECLINED_CONFIRMED solo cuando está confirmado; ERROR, timeout, callback perdido o respuesta ambigua se convierten en PAYMENT_PENDING_CONFIRMATION si el intento pudo haberse enviado. Una falla demostrada antes del envío puede ser PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT.",
+      "razon": "Desacoplar el Sistema Cliente del proveedor y evitar interpretar ERROR como sin cargo.",
+      "valor_config": {
+        "approved": "PAYMENT_CONFIRMED_IF_AUTHORITATIVE",
+        "declined": "PAYMENT_DECLINED_CONFIRMED_IF_AUTHORITATIVE",
+        "reconciled_at": "2026-08-26",
+        "superseded_by_rule": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "failure_before_submit": [
+          "PAYMENT_NOT_SUBMITTED",
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+        ],
+        "normalization_authority": "SERVER_ONLY",
+        "provider_error_passthrough": "DENY",
+        "ambiguous_after_possible_submit": "PAYMENT_PENDING_CONFIRMATION"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "tecnico",
+      "huella": "0e785b019f59cefe88de0e07eec3bafa"
+    },
+    {
+      "id": 276,
+      "codigo": "REG_CHK_013",
+      "categoria": "checkout",
+      "titulo": "Autorización de débito automático obligatoria",
+      "descripcion": "El usuario debe marcar explícitamente \"Autorizo el cobro automático de las cuotas según el cronograma del plan.\" antes de poder completar el pago. El botón \"Pagar\" queda deshabilitado sin esta autorización.",
+      "razon": "El débito automático requiere consentimiento explícito. Es un requisito legal y operativo.",
+      "valor_config": {
+        "tipo": "checkbox",
+        "campo": "auth_debito_automatico",
+        "texto": "Autorizo el cobro automático de las cuotas según el cronograma del plan.",
+        "bloquea_cta": true,
+        "obligatorio": true
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "legal",
+      "huella": "91c6b0a1d47bad33c24299c0478f1798"
+    },
+    {
+      "id": 280,
+      "codigo": "REG_CHK_017",
+      "categoria": "checkout",
+      "titulo": "Carta de no adeudo se emite al cancelar totalmente",
+      "descripcion": "En planes de cuotas, la carta de no adeudo se emite cuando la deuda está totalmente cancelada, no al pagar el monto inicial. El resumen lateral muestra: \"Se emitirá al confirmar la cancelación total de tu deuda.\"",
+      "razon": "El pago inicial no cancela la deuda. La carta solo tiene validez cuando la deuda está saldada completamente.",
+      "valor_config": {
+        "copy_resumen": "Se emitirá al confirmar la cancelación total de tu deuda.",
+        "no_emitir_al": "pago_inicial",
+        "momento_emision": "cancelacion_total_de_deuda"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "negocio",
+      "huella": "5bbb22ddc1822eded3b2e34b681af6f4"
+    },
+    {
+      "id": 288,
+      "codigo": "REG_CHK_CUO_005",
+      "categoria": "checkout",
+      "titulo": "Autorización de cobro automático es obligatoria",
+      "descripcion": "El checkbox \"Autorizo el cobro automático de las cuotas según el cronograma del plan.\" es obligatorio antes de pagar. Sin esta autorización el botón de pago permanece deshabilitado.",
+      "razon": "Requisito legal. El usuario debe autorizar explícitamente el débito recurrente antes de comprometerse al plan.",
+      "valor_config": {
+        "texto": "Autorizo el cobro automático de las cuotas según el cronograma del plan.",
+        "checkbox_obligatorio": true,
+        "bloquea_pago_si_no_marcado": true
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "legal",
+      "huella": "96497d675e13700c47ce3b3953970a0f"
+    },
+    {
+      "id": 292,
+      "codigo": "REG_CHK_CUO_009",
+      "categoria": "checkout",
+      "titulo": "Carta de no adeudo se emite al cancelar la deuda total",
+      "descripcion": "En el contexto de cuotas, la carta de no adeudo se emite cuando el usuario completa el pago total del plan (última cuota). No se emite al pagar el monto inicial. El texto dice: \"Se emitirá al confirmar la cancelación total de tu deuda.\"",
+      "razon": "En cuotas el usuario no cancela la deuda con el primer pago. La carta es el certificado de cancelación total.",
+      "valor_config": {
+        "texto_ui": "Se emitirá al confirmar la cancelación total de tu deuda.",
+        "no_emitir_en": "monto_inicial",
+        "momento_emision": "ultima_cuota_pagada"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "negocio",
+      "huella": "d54d00f78989e5b62bf3d6e8f83937fe"
+    },
+    {
+      "id": 316,
+      "codigo": "REG_CHK_026",
+      "categoria": "ux",
+      "titulo": "Yape QR con doble CTA para confirmar",
+      "descripcion": "La pantalla de Yape QR tiene dos formas de confirmar: (1) Escanear el QR desde la app Yape. (2) CTA \"Ya escaneé / Continuar\" para usuarios que escanearon pero el sistema no detectó el pago aún. El sistema verifica el estado del pago Yape antes de avanzar al estado CONFIRMANDO.",
+      "razon": "Algunos usuarios escanean el QR pero no ven confirmación automática por latencia. El CTA manual les da control sin generar confusión.",
+      "valor_config": {
+        "opciones_confirmacion": [
+          "qr_automatico",
+          "cta_manual_ya_escane"
+        ],
+        "verificacion_previa_a_confirmando": "estado_pago_yape"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "ux",
+      "huella": "ae1ed26a0c69dfa15345da9c8db42037"
+    },
+    {
+      "id": 327,
+      "codigo": "REG_SUC_004",
+      "categoria": "checkout",
+      "titulo": "Carta de No Adeudo en estado pendiente en pantalla de éxito",
+      "descripcion": "La carta de no adeudo aparece en la sección de documentos con estado PENDIENTE y el texto: \"Se emitirá cuando termines de cancelar tu deuda total.\" No hay CTA de descarga hasta que la deuda esté cancelada.",
+      "razon": "La carta se emite al cancelar la deuda completa, no al activar el plan. El usuario debe saberlo desde el primer momento para no generar expectativas incorrectas.",
+      "valor_config": {
+        "texto": "Se emitirá cuando termines de cancelar tu deuda total.",
+        "cta_descarga": "solo_al_cancelar_deuda_total",
+        "estado_en_exito": "PENDIENTE"
+      },
+      "es_transversal": false,
+      "estado": "CANDIDATO",
+      "origen": "legal",
+      "huella": "a231473494c4d6f3368fcfc1b70fa186"
+    },
+    {
+      "id": 403,
+      "codigo": "B2B-RULE-IDEMP-001",
+      "categoria": "INTEGRITY",
+      "titulo": "Idempotencia obligatoria",
+      "descripcion": "La idempotencia de una mutación de carga se deriva de la transición registrada. Si lf_ops.estados_transiciones.requires_idempotency_key=true, el servidor exige una clave idempotente antes de ejecutar la transición y un reintento lógico equivalente no puede duplicar efectos.",
+      "razon": "Evitar operaciones duplicadas.",
+      "valor_config": {
+        "registry": "lf_ops.estados_transiciones",
+        "duplicate_effect": "DENY",
+        "requirement_field": "requires_idempotency_key",
+        "idempotency_enforcement": "SERVER_SIDE",
+        "client_generated_state_authority": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "HANDOFF_B2B_v0.3",
+      "huella": "2e1db64228abe4b5e49d31bd1e25efd8"
+    },
+    {
+      "id": 495,
+      "codigo": "REG_ONB003_DNI_RESOLUTION_ATOMIC_001",
+      "categoria": "seguridad",
+      "titulo": "Resolución DNI atómica e idempotente por sesión OTP",
+      "descripcion": "La resolución de DNI de ONB_003 se ejecuta server-side de forma atómica dentro de la misma sesión OTP verificada. Solicitudes concurrentes no pueden producir dos resoluciones distintas ni dos transiciones de flujo. Un reintento equivalente debe reutilizar el resultado neutral ya resuelto; si una resolución ya fue consolidada y llega un DNI diferente para la misma sesión, se rechaza de forma genérica y requiere una nueva sesión de onboarding. Ningún mecanismo de idempotencia puede contener el DNI crudo ni exponer el resultado nuevo/existente al cliente.",
+      "razon": "Evitar carreras, doble submit, reintentos no deterministas y side-effects persistentes que puedan romper la no enumeración o asociar una sesión OTP a más de una identidad.",
+      "valor_config": {
+        "screen": "ONB_003",
+        "raw_dni_in_logs": "DENY",
+        "equivalent_retry": "RETURN_SAME_NEUTRAL_RESULT",
+        "atomic_resolution": "REQUIRED",
+        "idempotency_storage": "PENDING_CANONICAL_STORAGE",
+        "idempotency_required": true,
+        "concurrent_resolution": "SINGLE_COMMIT",
+        "source_decision_number": 99,
+        "branch_result_to_client": "DENY_UNTIL_SUFFICIENT_IDENTITY_ASSURANCE",
+        "raw_dni_in_idempotency_key": "DENY",
+        "same_server_side_otp_session": true,
+        "different_dni_after_committed_resolution": "REJECT_GENERIC_AND_REQUIRE_NEW_ONBOARDING_SESSION"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "DEC-CLIENT-POSTDNI-ANTIENUM-GATE-001",
+      "huella": "485bdfe5191529edc39d6dca6e0e4c3c"
+    },
+    {
+      "id": 521,
+      "codigo": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+      "categoria": "legal",
+      "titulo": "Autorización de débito automático solo cuando el cobro recurrente automático aplica",
+      "descripcion": "La autorización explícita de débito automático bloquea el pago únicamente cuando la modalidad y el medio de pago seleccionados generan cobros recurrentes automáticos. No se solicita ni se trata como requisito para un pago único ni para un esquema de cuotas cuyo cobro futuro sea manual. El backend informa si el intento requiere autorización recurrente; el frontend no lo infiere por el nombre del medio. La autorización debe registrarse de forma demostrable y ligada a la versión del cronograma/condiciones aceptadas antes del primer cobro automático.",
+      "razon": "Reconciliar las reglas candidatas de autorización automática con la posibilidad de medios manuales y evitar obtener un consentimiento innecesario o engañoso.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "prechecked": "DENY",
+        "server_flag": "RECURRING_AUTODEBIT_AUTH_REQUIRED",
+        "required_when": "OFFER_MODALITY=CUOTAS",
+        "explicit_opt_in": true,
+        "exact_legal_copy": "PENDING_LEGAL_VALIDATION",
+        "evidence_required": [
+          "TIMESTAMP",
+          "TERMS_OR_SCHEDULE_VERSION",
+          "PAYMENT_METHOD_CONTEXT"
+        ],
+        "not_required_when": [
+          "PAGO_UNICO"
+        ],
+        "frontend_inference": "DENY",
+        "yape_for_installments": "DENY",
+        "owner_conformance_date": "2026-08-26",
+        "legacy_rules_to_reconcile": [
+          "REG_CHK_013",
+          "REG_CHK_CUO_005",
+          "REG_CHK_011",
+          "REG_CHK_CUO_003"
+        ],
+        "consent_must_precede_initial_payment": true,
+        "installments_manual_future_collection": "DENY_CURRENT_PRODUCT_POLICY",
+        "blocks_payment_when_required_and_missing": true,
+        "installments_initial_payment_method_policy": "CARD_ONLY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_CHECKOUT_RECONCILIATION",
+      "huella": "64b79c752efa54359e5c7927e816d5e7"
+    },
+    {
+      "id": 523,
+      "codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+      "categoria": "pago",
+      "titulo": "Resultados normalizados y manejo seguro de estado ambiguo de pago",
+      "descripcion": "Todo resultado del proveedor de pago se normaliza server-side antes de afectar el Sistema Cliente. Un pago solo se considera confirmado cuando existe evidencia autoritativa de aprobación. Un rechazo solo habilita nuevo intento cuando existe confirmación autoritativa de que el intento no quedó aprobado. Si el request pudo haber llegado al proveedor pero LF no posee resultado final verificable —por timeout, pérdida de callback, desconexión o respuesta ambigua— el estado es PAYMENT_PENDING_CONFIRMATION: se bloquea cualquier nuevo intento equivalente o alternativo para esa misma operación hasta reconciliar el estado. Una falla ocurrida antes de entregar el intento al proveedor puede clasificarse PAYMENT_NOT_SUBMITTED y sí permite reintento con la misma reserva/quote válido. Nunca se afirma “no hubo cargo” a partir de un error técnico no reconciliado.",
+      "razon": "Evitar dobles cobros y mensajes falsos ante fallos distribuidos, corrigiendo el supuesto candidato de que todo ERROR del gateway implica ausencia de cargo.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "outcomes": {
+          "PAYMENT_CONFIRMED": {
+            "retry": "DENY",
+            "terminal": true,
+            "success_flow": "ALLOW"
+          },
+          "PAYMENT_NOT_SUBMITTED": {
+            "retry": "ALLOW_SAME_LOGICAL_OPERATION_SUBJECT_TO_QUOTE_AND_IDEMPOTENCY",
+            "terminal": false
+          },
+          "PAYMENT_DECLINED_CONFIRMED": {
+            "retry": "ALLOW_NEW_ATTEMPT",
+            "terminal": true,
+            "claim_no_charge": "ALLOW_ONLY_IF_PROVIDER_EVIDENCE_SUPPORTS"
+          },
+          "PAYMENT_PENDING_CONFIRMATION": {
+            "retry": "DENY_UNTIL_RECONCILED",
+            "terminal": false,
+            "change_payment_method": "DENY_UNTIL_RECONCILED"
+          },
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT": {
+            "retry": "ALLOW_LATER",
+            "terminal": false,
+            "selection": "PRESERVE"
+          }
+        },
+        "payment_ledger": "PENDING_CANONICAL_PAYMENT_LEDGER",
+        "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER",
+        "payment_ledger_debt": "PEND-CLIENT-PAYMENT-LEDGER-001",
+        "error_visual_candidate": "CHECKOUT_ERROR_PAGO",
+        "success_view_rule_code": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001",
+        "normalization_authority": "SERVER_ONLY",
+        "payment_error_to_wallet": "DENY",
+        "refund_policy_rule_code": "REG_CLIENT_PAYMENT_REFUND_POLICY_001",
+        "success_visual_candidate": "CHECKOUT_PAGO_EXITOSO",
+        "legacy_rules_to_reconcile": [
+          "REG_NIU_004",
+          "REG_ERR_005",
+          "REG_ERR_006",
+          "REG_CHK_003"
+        ],
+        "provider_error_passthrough": "DENY",
+        "confirming_visual_candidate": "CHECKOUT_ESTADO_CONFIRMANDO",
+        "bonus_as_payment_error_refund": "DENY",
+        "confirmed_post_actions_rule_code": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+        "technical_error_implies_no_charge": "DENY",
+        "refund_is_separate_post_payment_flow": true,
+        "missing_callback_after_possible_submit": "PAYMENT_PENDING_CONFIRMATION",
+        "timeout_after_possible_provider_submit": "PAYMENT_PENDING_CONFIRMATION"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_PAYMENT_SAFETY_RECONCILIATION",
+      "huella": "7d220bf5a6890930d882a4f02606b515"
+    },
+    {
+      "id": 524,
+      "codigo": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+      "categoria": "pago",
+      "titulo": "Acciones post-pago confirmado por deuda y modalidad",
+      "descripcion": "Solo PAYMENT_CONFIRMED habilita efectos post-pago. El backend procesa cada oferta/deuda incluida de forma independiente. Para PAGO_UNICO, si el pago confirmado satisface el monto total acordado de esa deuda, se marca la obligación del plan como totalmente cancelada y se habilita la solicitud/generación de Carta de No Adeudo al aliado emisor. Para CUOTAS, el pago inicial confirmado activa el plan y registra el pago de hoy, pero la Carta de No Adeudo permanece no elegible hasta que se confirme la cancelación total de esa deuda. En una selección múltiple, una deuda pagada al contado puede quedar elegible para carta aunque otra continúe en cuotas. El checkout no vuelve a modificar onboarding_completed, porque el cliente ya debe estar autenticado antes de pagar.",
+      "razon": "Reconciliar las reglas históricas que generaban carta inmediatamente con las reglas de cuotas que correctamente esperan la cancelación total, conservando atomicidad por deuda y evitando mezclar onboarding con pago.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "CUOTAS": {
+          "initial_payment_confirmed": "ACTIVATE_PLAN_AND_RECORD_INITIAL_PAYMENT",
+          "letter_on_initial_payment": "DENY",
+          "no_debt_letter_eligibility": "NOT_ELIGIBLE_UNTIL_CONFIRMED_FULL_SETTLEMENT"
+        },
+        "PAGO_UNICO": {
+          "plan_activation": "NOT_APPLICABLE_OR_COMPLETED",
+          "no_debt_letter_eligibility": "ELIGIBLE_AFTER_CONFIRMED_FULL_SETTLEMENT",
+          "when_confirmed_total_agreed_amount_paid": "DEBT_SETTLEMENT_CONFIRMED"
+        },
+        "MULTI_OFFER": "EVALUATE_EACH_DEBT_INDEPENDENTLY",
+        "letter_issuer": "B2B_PARTNER_OR_CANONICAL_CREDITOR_ENTITY",
+        "processing_scope": "PER_OFFER_DEBT",
+        "lf_role_for_letter": "HOST_AND_DELIVER_WHEN_AVAILABLE",
+        "legacy_rules_reconciled": [
+          "REG_CHK_005",
+          "REG_CHK_008",
+          "REG_CHK_017",
+          "REG_CHK_CUO_009",
+          "REG_SUC_004",
+          "REG_COPY_005",
+          "REG_B2B_005"
+        ],
+        "notification_rule_codes": [
+          "REG_NOT_002",
+          "REG_NOT_003"
+        ],
+        "letter_document_registry": "PENDING_CLIENT_DOCUMENT_REGISTRY",
+        "required_payment_outcome": "PAYMENT_CONFIRMED",
+        "success_visual_candidate": "CHECKOUT_PAGO_EXITOSO",
+        "debt_settlement_rule_code": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+        "demo_document_policy_rule": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+        "letter_generation_trigger": "ONLY_WHEN_DEBT_FULL_SETTLEMENT_CONFIRMED",
+        "no_debt_letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+        "payment_confirmation_notification": "OPERATIONAL_NOTIFICATION_ALLOWED",
+        "installment_plan_snapshot_rule_code": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+        "onboarding_completed_mutation_at_checkout": "DENY",
+        "marketing_consent_required_for_payment_confirmation": false
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_POST_PAYMENT_RECONCILIATION",
+      "huella": "ea84793c1ad0e4a00e5a5c2dd5840593"
+    },
+    {
+      "id": 525,
+      "codigo": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001",
+      "categoria": "flujo",
+      "titulo": "Contenido funcional mínimo de confirmación de pago Cliente",
+      "descripcion": "La pantalla de éxito solo se renderiza después de PAYMENT_CONFIRMED. Debe mostrar una referencia de operación no sensible, fecha/hora autoritativa y resumen de lo efectivamente confirmado. Para planes en cuotas muestra que el plan quedó activado y el estado real de la Carta de No Adeudo; no afirma que la deuda completa esté cancelada por el pago inicial. Para pago único totalmente liquidado puede indicar que la cancelación fue confirmada y que la carta será solicitada/generada conforme al flujo del aliado. Los documentos o links se muestran solo si su estado real los hace disponibles. No se muestran datos de tarjeta completos ni claims del proveedor no validados.",
+      "razon": "Alinear la pantalla CHECKOUT_PAGO_EXITOSO con los estados reales del pago y de cada deuda, evitando copy de éxito más fuerte que la evidencia disponible.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "exact_copy": "PENDING_VISUAL_COPY_REVIEW",
+        "entry_outcome": "PAYMENT_CONFIRMED",
+        "document_links": "ONLY_WHEN_REAL_STATUS_AVAILABLE",
+        "full_card_data": "DENY",
+        "pay_only_display": [
+          "FULL_SETTLEMENT_STATUS_IF_CONFIRMED",
+          "NO_DEBT_LETTER_REAL_STATUS"
+        ],
+        "required_display": [
+          "OPERATION_REFERENCE",
+          "CONFIRMED_AT",
+          "CONFIRMED_AMOUNT_OR_PER_DEBT_SUMMARY"
+        ],
+        "visual_candidate": "CHECKOUT_PAGO_EXITOSO",
+        "my_operations_route": "PENDING_CANONICAL_ROUTE",
+        "installments_display": [
+          "PLAN_ACTIVATED",
+          "INITIAL_PAYMENT_CONFIRMED",
+          "NEXT_STEPS_OR_SCHEDULE_IF_AVAILABLE",
+          "NO_DEBT_LETTER_REAL_STATUS"
+        ],
+        "document_demo_nonprod": "ALLOW_PER_REG_CLIENT_DOC_DEMO_VERSIONING_001",
+        "pay_only_visual_state": "PAY_ONLY_FULL_SETTLEMENT_CONFIRMED",
+        "provider_brand_claims": "ONLY_IF_CANONICALLY_AUTHORIZED",
+        "legacy_hardcoded_route": "DENY_UNREGISTERED_/mis-operaciones",
+        "post_actions_rule_code": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+        "my_operations_rule_code": "REG_CLIENT_MY_OPERATIONS_SCOPE_001",
+        "pay_only_visual_artifact_code": "CHECKOUT-PAGO-EXITOSO-PAY-ONLY-SETTLED-CONFIRMED-20260826",
+        "pay_only_visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+        "pay_only_canonical_drive_evidence_id": "1tmd1A5GC2kmEe_1CyKrAx-PyR4Ko4Yb5"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_POST_PAYMENT_RECONCILIATION",
+      "huella": "1829f27fb89c0ca7d4f161b1a556ed34"
+    },
+    {
+      "id": 528,
+      "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+      "categoria": "pago",
+      "titulo": "Snapshot contractual del plan de cuotas activado",
+      "descripcion": "Cuando un pago inicial confirmado activa un plan de cuotas, el backend debe consolidar un snapshot inmutable de las condiciones aceptadas para ese plan. Las cuotas futuras no se recalculan desde la oferta vigente, la selección temporal ni el pricing actual. El snapshot debe preservar como mínimo la referencia de deuda/oferta, versión aceptada, plan seleccionado, cronograma de cuotas, montos y fechas acordados, modalidad de cobro de cada cuota, condiciones/versiones aceptadas y referencia al pago inicial confirmado. Cualquier modificación posterior requiere un flujo gobernado de cambio y nueva evidencia; no puede sobrescribir silenciosamente el snapshot original.",
+      "razon": "Evitar que cambios posteriores en ofertas, pricing o configuración del aliado alteren obligaciones ya aceptadas por el cliente.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "storage": "PENDING_CANONICAL_PAYMENT_PLAN_LEDGER",
+        "trigger": "PAYMENT_CONFIRMED_ACTIVATES_INSTALLMENT_PLAN",
+        "ledger_debt": "PEND-CLIENT-PAYMENT-LEDGER-001",
+        "minimum_snapshot": [
+          "DEBT_OR_OFFER_REFERENCE",
+          "ACCEPTED_OFFER_VERSION",
+          "PLAN_ID",
+          "INSTALLMENT_SCHEDULE",
+          "AGREED_INSTALLMENT_AMOUNTS",
+          "AGREED_DUE_DATES",
+          "COLLECTION_MODE",
+          "ACCEPTED_TERMS_OR_SCHEDULE_VERSION",
+          "INITIAL_PAYMENT_REFERENCE"
+        ],
+        "snapshot_authority": "SERVER_ONLY",
+        "snapshot_immutable": true,
+        "future_installment_source": "ACTIVATED_PLAN_SNAPSHOT",
+        "proto_offer_as_plan_ledger": "DENY",
+        "selection_table_as_plan_ledger": "DENY",
+        "change_requires_new_governed_flow": true,
+        "live_offer_repricing_after_activation": "DENY",
+        "live_pricing_config_repricing_after_activation": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_POST_PAYMENT_FUNCTIONAL_REVIEW",
+      "huella": "535cd635f9e522966bdaec43a4c55bcf"
+    },
+    {
+      "id": 530,
+      "codigo": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+      "categoria": "pago",
+      "titulo": "Comportamiento de próxima cuota según modalidad de cobro",
+      "descripcion": "La acción sobre una cuota pendiente depende del collection_mode guardado en el snapshot del plan, no del nombre del medio de pago mostrado en UI. Para AUTOMATIC_RECURRING, la interfaz informa el próximo cobro programado y no crea un segundo intento manual paralelo mientras exista un intento automático pendiente o en confirmación; cualquier fallback manual debe ser habilitado explícitamente por backend. Para MANUAL_PAYMENT, la UI solo muestra una acción de pago cuando el backend marque la cuota como payable según la política del plan. En ambos casos el importe y la cuota objetivo provienen del snapshot contractual y todo intento reutiliza el contrato de outcomes de pago, incluida la prohibición de reintentar durante PAYMENT_PENDING_CONFIRMATION.",
+      "razon": "Evitar doble cobro, cobros sobre importes reconstruidos y CTAs manuales incompatibles con el modo contractual de la cuota.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "surface": "MY_OPERATIONS",
+        "mode_source": "ACTIVATED_PLAN_SNAPSHOT",
+        "amount_source": "ACTIVATED_PLAN_SNAPSHOT",
+        "MANUAL_PAYMENT": {
+          "payment_cta": "ALLOW_ONLY_IF_SERVER_PAYABLE_TRUE",
+          "payable_window": "PENDING_PLAN_POLICY",
+          "early_payment_assumption": "DENY"
+        },
+        "payment_ledger": "PENDING_CANONICAL_PAYMENT_PLAN_LEDGER",
+        "collection_modes": [
+          "AUTOMATIC_RECURRING",
+          "MANUAL_PAYMENT"
+        ],
+        "AUTOMATIC_RECURRING": {
+          "manual_fallback": "ALLOW_ONLY_IF_SERVER_EXPLICITLY_ENABLES",
+          "show_next_scheduled_collection": true,
+          "parallel_manual_payment_attempt": "DENY_BY_DEFAULT",
+          "pending_automatic_attempt_blocks_new_attempt": true
+        },
+        "notification_policy": "PENDING_CANONICAL_DUE_REMINDER_POLICY",
+        "payment_provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER",
+        "payment_outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "due_notification_rule_code": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+        "collection_failure_rule_code": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+        "pending_confirmation_new_attempt": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_MY_OPERATIONS_FUNCTIONAL_REVIEW",
+      "huella": "8a3af801895851d237713c9dd8449f0a"
+    },
+    {
+      "id": 533,
+      "codigo": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+      "categoria": "negocio",
+      "titulo": "Estado de cancelación total por deuda Cliente",
+      "descripcion": "El estado de una deuda dentro del Sistema Cliente se determina por el ledger financiero y las condiciones del acuerdo aceptado para esa deuda. Una deuda no se considera cancelada porque se haya pagado el monto inicial ni porque una fecha del cronograma haya pasado. Durante el último pago, un resultado PAYMENT_PENDING_CONFIRMATION mantiene la deuda sin liquidación confirmada. El estado SETTLED_CONFIRMED solo se alcanza cuando todos los importes exigibles para la cancelación según el acuerdo están confirmados y, cuando el contrato/aliado lo requiera, la confirmación de settlement correspondiente haya sido recibida. El frontend no puede promover este estado.",
+      "razon": "Establecer una única frontera para activar Carta de No Adeudo y evitar falsos estados de deuda cancelada.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "scope": "PER_DEBT",
+        "ledger": "PENDING_CANONICAL_PAYMENT_PLAN_LEDGER",
+        "states": [
+          "ACTIVE_BALANCE",
+          "FINAL_PAYMENT_PENDING_CONFIRMATION",
+          "SETTLED_CONFIRMED"
+        ],
+        "authority": "SERVER_LEDGER_PLUS_ACCEPTED_AGREEMENT",
+        "ACTIVE_BALANCE": "REQUIRED_PAYMENTS_REMAIN",
+        "SETTLED_CONFIRMED": "ALL_REQUIRED_SETTLEMENT_AMOUNTS_CONFIRMED_AND_PARTNER_CONFIRMATION_IF_REQUIRED",
+        "client_can_set_state": "DENY",
+        "payment_outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "due_date_passage_marks_settled": "DENY",
+        "installment_snapshot_rule_code": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+        "FINAL_PAYMENT_PENDING_CONFIRMATION": "LAST_OR_SETTLEMENT_PAYMENT_NOT_YET_AUTHORITATIVELY_CONFIRMED",
+        "initial_installment_payment_marks_settled": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_POST_PAYMENT_FUNCTIONAL_REVIEW",
+      "huella": "d9800f5b0ab4be42ed361662bffd5904"
+    },
+    {
+      "id": 534,
+      "codigo": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+      "categoria": "documento",
+      "titulo": "Estados normalizados de Carta de No Adeudo por deuda",
+      "descripcion": "La Carta de No Adeudo se gestiona por deuda y solo entra al flujo documental después de SETTLED_CONFIRMED. Para operaciones administradas por LF, el backend debe iniciar la solicitud/generación con el aliado sin exigir al cliente una segunda acción manual cuando la integración lo permita. Los estados del aliado se normalizan a NOT_ELIGIBLE, ELIGIBLE, REQUESTED, PROCESSING, AVAILABLE o FAILED_OR_DELAYED. Solo AVAILABLE habilita descarga de la versión oficial; un estado de pago confirmado que no liquide totalmente la deuda no habilita carta. La disponibilidad de la carta es distinta de la actualización posterior en SBS/centrales de riesgo. La explicación mostrada antes del pago es configurable por aliado/oferta dentro de límites de UX. La disponibilidad de firma electrónica y la política de liberación son independientes: una carta puede firmarse electrónicamente y aun requerir confirmación del aliado de que recibió el pago antes de solicitar/generar el documento. El frontend no infiere esta política. En HOME_002 no se muestra miniatura de la Carta porque duplica la acción. La única entrada al ejemplo es “Ver formato de carta”; el ejemplo debe estar marcado inequívocamente como EJEMPLO / COPIA NO VÁLIDA.",
+      "razon": "Separar elegibilidad, generación y disponibilidad documental, y permitir trazabilidad sin prometer una carta antes de que la deuda esté realmente cancelada.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "scope": "PER_DEBT",
+        "issuer": "B2B_PARTNER_OR_CANONICAL_CREDITOR_ENTITY",
+        "states": [
+          "NOT_ELIGIBLE",
+          "ELIGIBLE",
+          "REQUESTED",
+          "PROCESSING",
+          "AVAILABLE",
+          "FAILED_OR_DELAYED"
+        ],
+        "lf_role": "REQUEST_HOST_TRACK_AND_DELIVER",
+        "generation_sla": "PENDING_PARTNER_CONTRACT_POLICY",
+        "client_surfaces": {
+          "CLIENT_PAYMENTS": {
+            "role": "CONTEXTUAL_PER_DEBT",
+            "show_status": true,
+            "actions_when_available": [
+              "VIEW",
+              "DOWNLOAD"
+            ]
+          },
+          "CLIENT_DOCUMENTS": {
+            "role": "PERMANENT_REPOSITORY",
+            "actions_when_available": [
+              "VIEW",
+              "DOWNLOAD"
+            ],
+            "retain_after_available": true
+          }
+        },
+        "available_actions": [
+          "VIEW",
+          "DOWNLOAD"
+        ],
+        "document_registry": "PENDING_CLIENT_DOCUMENT_REGISTRY",
+        "hardcoded_48h_sla": "DENY_UNTIL_CONTRACT_VALIDATED",
+        "persistent_ui_label": "Documentos",
+        "on_settled_confirmed": "ELIGIBLE_THEN_AUTO_REQUEST_WHEN_INTEGRATION_AVAILABLE",
+        "settlement_rule_code": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+        "document_record_policy": "SINGLE_CANONICAL_DOCUMENT_REFERENCED_FROM_MULTIPLE_SURFACES",
+        "download_allowed_state": "AVAILABLE",
+        "source_decision_number": 118,
+        "document_demo_rule_code": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+        "home_explanation_policy": {
+          "source": "GOVERNED_PARTNER_OR_OFFER_CONFIG",
+          "example_action": {
+            "label": "Ver formato de carta",
+            "opens": "NONPROD_OR_GOVERNED_SAMPLE_DOCUMENT",
+            "watermark_text": "EJEMPLO / COPIA NO VÁLIDA",
+            "watermark_required": true,
+            "must_not_look_official": true
+          },
+          "release_policy": {
+            "allowed_values": [
+              "AUTO_AFTER_CONFIRMED_FULL_SETTLEMENT",
+              "AFTER_PARTNER_FUNDS_CONFIRMATION"
+            ],
+            "field_semantic": "NO_DEBT_LETTER_RELEASE_POLICY",
+            "frontend_can_infer": false
+          },
+          "home_surface_preview": "DENY",
+          "signature_capability": {
+            "field_semantic": "ELECTRONIC_SIGNATURE_AVAILABLE",
+            "display_signature_claim_only_when_true": true
+          },
+          "configuration_binding": "PENDING_CANONICAL_PARTNER_DOCUMENT_CONFIG_RECONCILIATION",
+          "default_copy_by_policy": {
+            "AFTER_PARTNER_FUNDS_CONFIRMATION": "Se emitirá cuando la empresa confirme que recibió tu pago.",
+            "AUTO_AFTER_CONFIRMED_FULL_SETTLEMENT": "Se genera después de confirmar tu pago."
+          },
+          "custom_explanation_copy": {
+            "allowed": true,
+            "max_characters": 100,
+            "mobile_max_lines": 3,
+            "desktop_max_lines": 2,
+            "overflow_behavior": "REJECT_CONFIG_DO_NOT_TRUNCATE",
+            "must_match_real_release_policy": true,
+            "must_not_promise_immediate_availability": true
+          },
+          "inline_document_preview": "DENY"
+        },
+        "legacy_rules_to_reconcile": [
+          "REG_CHK_008",
+          "REG_B2B_005",
+          "REG_CHK_017",
+          "REG_CHK_CUO_009",
+          "REG_SUC_004"
+        ],
+        "notification_on_available": "OPERATIONAL_NOTIFICATION",
+        "persistent_client_surface": "CLIENT_DOCUMENTS",
+        "required_settlement_state": "SETTLED_CONFIRMED",
+        "marketing_consent_required": false,
+        "partner_raw_status_to_client": "DENY",
+        "external_education_context_rule": "EDU-NODO-04-CIERRA",
+        "initial_state_before_settlement": "NOT_ELIGIBLE",
+        "navigation_source_decision_number": 117,
+        "retain_available_letter_after_completion": true,
+        "credit_bureau_update_same_as_letter_available": "DENY",
+        "client_manual_request_required_for_lf_managed_operation": false
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_POST_PAYMENT_DOCUMENT_RECONCILIATION",
+      "huella": "ce8cb260d5a4426738f08c0ea907f4a4"
+    },
+    {
+      "id": 539,
+      "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001",
+      "categoria": "pago",
+      "titulo": "CTA de QR consulta el estado; nunca confirma el pago por sí mismo",
+      "descripcion": "En CHECKOUT_ESTADO_YAPE_QR, la acción visible “Ya escaneé / Continuar” únicamente solicita al backend verificar o reconciliar el estado de la operación QR; el clic del usuario nunca establece PAYMENT_CONFIRMED. El backend conserva la misma referencia de operación y consulta el estado autoritativo del proveedor o sus callbacks. Si existe confirmación autoritativa, normaliza a PAYMENT_CONFIRMED. Si el resultado sigue pendiente, permanece en QR o pasa a CHECKOUT_ESTADO_CONFIRMANDO según el estado real, sin crear otra operación. Si el QR venció o el proveedor devuelve un resultado terminal distinto, se normaliza mediante REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001 y solo entonces se habilitan acciones seguras. El monto, la operación y la vigencia del QR no son autoridad del frontend.",
+      "razon": "Fortalecer REG_CHK_026 para evitar que un CTA manual se interprete como prueba de pago o genere intentos duplicados.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "screen": "CHECKOUT_ESTADO_YAPE_QR",
+        "amount_source": "CHECKOUT_SNAPSHOT",
+        "payment_method": "QR_WALLET",
+        "pending_result": "KEEP_EXISTING_OPERATION_AND_CONTINUE_RECONCILIATION",
+        "confirmed_result": "PAYMENT_CONFIRMED",
+        "expired_qr_reuse": "DENY",
+        "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER",
+        "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+        "manual_cta_semantic": "CHECK_AUTHORITATIVE_PAYMENT_STATUS",
+        "payment_ledger_debt": "PEND-CLIENT-PAYMENT-LEDGER-001",
+        "qr_expiry_authority": "SERVER_OR_CANONICAL_PROVIDER",
+        "existing_candidate_rule": "REG_CHK_026",
+        "visual_candidate_status": "OWNER_REVIEW_PENDING",
+        "operation_reference_reuse": "REQUIRED",
+        "visual_candidate_drive_id": "14fxYAfURFu1KAW3Y5ZOcFQ_HcrnDTlCa",
+        "confirming_state_rule_code": "REG_CLIENT_CHECKOUT_CONFIRMING_STATE_001",
+        "new_operation_on_manual_cta": "DENY",
+        "terminal_non_success_result": "NORMALIZE_VIA_REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "payment_confirmation_authority": "SERVER_PLUS_AUTHORIZED_PROVIDER_EVIDENCE",
+        "visual_candidate_artifact_code": "CHECKOUT-ESTADO-YAPE-QR-CONDITIONAL-CANDIDATE-20260826",
+        "manual_cta_sets_payment_confirmed": "DENY"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "REG_CHK_026_PLUS_CLIENT_PAYMENT_OUTCOME_NORMALIZATION",
+      "huella": "1eccb1c84f74240b73bccc0987f8bb9e"
+    },
+    {
+      "id": 540,
+      "codigo": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+      "categoria": "pago",
+      "titulo": "Preparación segura del handoff al proveedor de pago",
+      "descripcion": "CHECKOUT_ESTADO_ABRIENDO representa únicamente la preparación server-side de la sesión/handoff del proveedor después de que checkout, quote y medio de pago hayan sido validados. En este estado todavía no se considera enviado un intento de cobro ni existe PAYMENT_PENDING_CONFIRMATION. El backend crea u obtiene la referencia opaca necesaria para abrir hosted fields, iframe, SDK o redirección autorizada según el proveedor canónico. El cliente no construye URLs del proveedor, return_url ni callback_url arbitrarios. Si la preparación falla antes de que el proveedor acepte una sesión de pago, el resultado es PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT o PAYMENT_NOT_SUBMITTED según la causa y puede reintentarse de forma controlada; nunca se afirma que hubo un intento de cobro. La transición a un estado de pago enviado/confirmando ocurre solo cuando el backend/adaptador posee evidencia de que el intento entró al circuito de pago.",
+      "razon": "Separar la apertura de la interfaz del proveedor de la ejecución del cobro y evitar estados ambiguos, open redirects o dependencias del navegador.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "screen": "CHECKOUT_ESTADO_ABRIENDO",
+        "amount_source": "CHECKOUT_PRICING_QUOTE_OR_CHECKOUT_SNAPSHOT",
+        "requires_rules": [
+          "REG_CLIENT_CHECKOUT_ENTRY_001",
+          "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001"
+        ],
+        "state_semantic": "PROVIDER_HANDOFF_PREPARING",
+        "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER",
+        "handoff_authority": "SERVER_SIDE_PAYMENT_ADAPTER",
+        "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+        "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+        "arbitrary_return_url": "DENY",
+        "visual_artifact_code": "CHECKOUT-ESTADO-ABRIENDO-PROVIDER-HANDOFF-PREPARING-20260826",
+        "allowed_handoff_modes": [
+          "HOSTED_FIELDS_OR_IFRAME",
+          "AUTHORIZED_SDK",
+          "AUTHORIZED_REDIRECT"
+        ],
+        "provider_binding_debt": "PEND-CLIENT-PAYMENT-PROVIDER-BINDING-001",
+        "arbitrary_callback_url": "DENY",
+        "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+        "payment_attempt_submitted": false,
+        "operation_reference_source": "RESERVED_OPERATION_OR_CANONICAL_PAYMENT_LEDGER",
+        "canonical_drive_evidence_id": "1nFzL3_ty2SZ-d2MjBRURwqsjcEcibMKF",
+        "handoff_failure_claims_charge": "DENY",
+        "provider_origin_or_destination": "CANONICAL_PROVIDER_CONFIGURATION_ONLY",
+        "client_constructed_provider_url": "DENY",
+        "transition_to_submitted_requires": "SERVER_EVIDENCE_PROVIDER_PAYMENT_ATTEMPT_ACCEPTED_OR_EQUIVALENT",
+        "opaque_provider_session_reference": "ALLOW_IF_SERVER_GENERATED_OR_PROVIDER_ISSUED",
+        "browser_window_required_for_integrity": false,
+        "payment_pending_confirmation_at_entry": false,
+        "handoff_failure_before_provider_acceptance": [
+          "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT",
+          "PAYMENT_NOT_SUBMITTED"
+        ]
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_CHECKOUT_PROVIDER_HANDOFF_RECONCILIATION",
+      "huella": "ad800c503a8e5fec1c67de8218bcdee9"
+    },
+    {
+      "id": 543,
+      "codigo": "REG_CLIENT_CHECKOUT_INSTALLMENTS_VIEW_001",
+      "categoria": "flujo",
+      "titulo": "Contrato funcional de CHECKOUT_CUOTAS_MEDIO_PAGO",
+      "descripcion": "CHECKOUT_CUOTAS_MEDIO_PAGO es la variante de checkout para una selección en modalidad CUOTAS con plan vigente y revalidado. El backend entrega el monto inicial de hoy, resumen del plan y cronograma propuesto desde el quote/selección autoritativos. La UI muestra únicamente medios de pago elegibles resueltos server-side y no fija tarjeta, Yape ni una recomendación por defecto. Si el medio/plan requiere cobro recurrente automático, el consentimiento se presenta desmarcado y el CTA permanece bloqueado hasta opt-in explícito; si no requiere cobro automático, ese consentimiento no se exige. La Carta de No Adeudo se muestra con estado NOT_ELIGIBLE antes de la cancelación total. El CTA de pago solo se habilita si quote, selección, plan, medio, proveedor y consentimientos requeridos siguen válidos. El proveedor, logos, claims de seguridad, soporte y navegación del header se renderizan únicamente cuando están canónicamente habilitados.",
+      "razon": "Consolidar en una pantalla las reglas modernas de checkout sin permitir que los placeholders del mockup definan disponibilidad, consentimiento o seguridad.",
+      "valor_config": {
+        "front": "CLIENTE",
+        "screen": "CHECKOUT_CUOTAS_MEDIO_PAGO",
+        "context": "INSTALLMENTS_CHECKOUT",
+        "shell_module": {
+          "shell": "CLIENT_APP_SHELL",
+          "module": "CLIENT_PAYMENTS",
+          "module_id": 7
+        },
+        "pay_only_reuse": "DENY_SEPARATE_CANONICAL_PAY_ONLY_CHECKOUT_EXISTS",
+        "yape_visibility": "DENY_FOR_INSTALLMENTS",
+        "header_rule_code": "REG_CLIENT_AUTH_HEADER_CAPABILITY_GATING_001",
+        "schedule_context": "PREPAY_PROPOSED_SCHEDULE",
+        "single_method_ui": "NO_SELECTION_AFFORDANCE",
+        "spacing_contract": {
+          "consent": "client_checkout_consent_default",
+          "summary": "client_checkout_summary_default",
+          "base_scale": [
+            "space_4",
+            "space_8",
+            "space_12",
+            "space_16",
+            "space_24",
+            "space_32",
+            "space_48",
+            "space_64"
+          ],
+          "generic_card": "client_card_default",
+          "design_system": "LF_DS_V1",
+          "visual_decision": "VD_CLIENT_SPACING_COMPONENT_BINDINGS_20260825",
+          "payment_method_default": "client_payment_method_option_default",
+          "payment_method_selected": "client_payment_method_option_selected",
+          "raw_px_spacing_override": "DENY_WHEN_TOKEN_EXISTS",
+          "screen_specific_spacing_adjustment": "DENY_WITHOUT_NEW_COMPONENT_CONTRACT"
+        },
+        "visual_artifacts": {
+          "autodebit_consented": "CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-CONSENTED-20260826",
+          "autodebit_required_empty": "CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-REQUIRED-EMPTY-20260826"
+        },
+        "cancel_plan_claim": "DENY_UNTIL_PEND_CLIENT_PLAN_CANCELLATION_SEMANTICS_RESOLVED",
+        "cta_amount_source": "READY_CHECKOUT_QUOTE",
+        "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+        "autodebit_required": true,
+        "schedule_rule_code": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+        "amount_today_source": "READY_CHECKOUT_QUOTE",
+        "autodebit_rule_code": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+        "pay_cta_enable_when": [
+          "CHECKOUT_ENTRY_VALID",
+          "READY_QUOTE",
+          "PLAN_STILL_VALID",
+          "PAYMENT_METHOD_ELIGIBLE",
+          "PROVIDER_AVAILABLE",
+          "AUTODEBIT_CONSENT_TRUE",
+          "NO_DUPLICATE_OR_PENDING_OPERATION"
+        ],
+        "plan_summary_source": "SERVER_VALIDATED_SELECTION_AND_QUOTE",
+        "autodebit_prechecked": "DENY",
+        "autodebit_visibility": "ALWAYS_FOR_INSTALLMENTS_CHECKOUT",
+        "cta_state_transition": "ENABLE_ONLY_AFTER_EXPLICIT_AUTODEBIT_CONSENT",
+        "support_availability": "DYNAMIC_CANONICAL_CONFIG_ONLY",
+        "production_authorized": false,
+        "initial_checkout_state": "AUTODEBIT_REQUIRED_EMPTY_CTA_DISABLED",
+        "visual_contract_status": "CLOSED_OWNER_APPROVED_CARD_ONLY_20260826",
+        "allowed_payment_methods": [
+          "CARD"
+        ],
+        "letter_example_document": "NONPROD_DEMO_OR_VERSIONED_CONTENT_ONLY",
+        "letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+        "prepayment_letter_state": "NOT_ELIGIBLE",
+        "visual_discrepancy_debt": "RESOLVED_20260826",
+        "consented_checkout_state": "AUTODEBIT_CONSENTED_CTA_ENABLED",
+        "pay_only_checkout_screen": "CHECKOUT_PAGO_UNICO_MEDIO_PAGO",
+        "provider_security_claims": "ONLY_WITH_EVIDENCE_AND_AUTHORIZED_COPY",
+        "payment_methods_rule_code": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001",
+        "requires_ready_quote_rule": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+        "provider_handoff_rule_code": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+        "hardcoded_yape_availability": "DENY",
+        "requires_checkout_entry_rule": "REG_CLIENT_CHECKOUT_ENTRY_001",
+        "hardcoded_card_recommendation": "DENY",
+        "owner_policy_conformance_date": "2026-08-26",
+        "owner_visual_conformance_date": "2026-08-26",
+        "payment_method_recommendation": "SERVER_CONFIG_ONLY_IF_GOVERNED",
+        "canonical_payment_happy_path_method": "CARD"
+      },
+      "es_transversal": false,
+      "estado": "VIGENTE",
+      "origen": "CLIENT_CHECKOUT_INSTALLMENTS_RECONCILIATION",
+      "huella": "45ca846d731d4c4786d16d3fa8a11055"
+    }
+  ],
+  "entries": [
+    {
+      "paquete": {
+        "codigo": "REG_CHK_002",
+        "clave": "total_consolidado",
+        "titulo": "Total consolidado del checkout",
+        "descripcion": "El total consolidado es la suma del monto de la modalidad elegida en cada oferta seleccionada.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "DEFINICION",
+        "autoridad": "LEG-PRODUCTO",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "CALCULAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/156",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "suma",
+          "lista": {
+            "hecho": "checkout_items"
+          },
+          "campo": "monto_total"
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "checkout_items": [
+                {
+                  "monto_total": 1200.5
+                },
+                {
+                  "monto_total": 300
+                }
+              ]
+            },
+            "esperado": 1500.5
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "checkout_items": []
+            },
+            "esperado": 0
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "156: cálculo concreto sum(items[].monto_total), resultado observable."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "156 es transversal; CLIENTE hereda en onboarding, home y legal además de checkout; no se prueba aplicabilidad de checkout_items en esos nodos."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto identifica la suma de los importes elegidos."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "CALCULAR coincide con fórmula 156."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "suma de monto_total coincide con valor_config.formula; casos lista con dos montos y vacía."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "REG_CHK_001 es compatible con un resumen consolidado; queda sin demostrar aplicación fuera del checkout y no se validó el origen operativo de los items."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 1,
+            "observacion": "El equivalente 156 es la fuente migrada deliberadamente conservada; no hay otra candidata del núcleo con esa clave ni una fórmula distinta en las reglas de la familia revisadas."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CHK_004",
+        "clave": "cta_pago_reintento",
+        "titulo": "El botón de pago no se rehabilita salvo resultado seguro",
+        "descripcion": "Tras el primer clic el botón de pago queda bloqueado; solo un resultado normalizado de rechazo confirmado, no enviado o proveedor no disponible antes del envío permite un nuevo intento.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-TECNICO",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/208,523,228",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "!=",
+            "izq": {
+              "hecho": "estado_pago_normalizado"
+            },
+            "der": {
+              "lit": "PAYMENT_DECLINED_CONFIRMED"
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "!=",
+              "izq": {
+                "hecho": "estado_pago_normalizado"
+              },
+              "der": {
+                "lit": "PAYMENT_NOT_SUBMITTED"
+              }
+            },
+            "der": {
+              "op": "!=",
+              "izq": {
+                "hecho": "estado_pago_normalizado"
+              },
+              "der": {
+                "lit": "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION"
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_CONFIRMED"
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_DECLINED_CONFIRMED"
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_NOT_SUBMITTED"
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "208: bloquear CTA para impedir doble submit."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "208 abarca varias pantallas pero 523 está enlazada a HOME_FAQ; el texto es sobre un intento de checkout y no toda la experiencia CLIENTE."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto identifica bloqueo y resultados que habilitan reintento."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR coincide con bloqueo de CTA."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0,
+            "observacion": "Condición solo compara outcomes: no representa primer clic, intento enviado, autorización backend, reserva/quote vigente ni cambio de medio de 208/523. Un estado inicial desconocido queda bloqueado."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "523/REG_CHK_003/REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001 exigen backend y quote; el candidato no conserva toda esa protección."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "REG_CHK_003 y PROVIDER_HANDOFF también regulan bloqueo/reintento; la absorción de 523 y 228 no preserva normalización completa."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CHK_005",
+        "clave": "exito_post_pago",
+        "titulo": "Pantalla de éxito y efectos post-pago solo con pago confirmado",
+        "descripcion": "La pantalla de éxito y los efectos post-pago se ejecutan solo cuando el resultado normalizado es PAYMENT_CONFIRMED.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-PRODUCTO",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "PERMITIR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/209,524",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "estado_pago_normalizado"
+          },
+          "der": {
+            "lit": "PAYMENT_CONFIRMED"
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_CONFIRMED"
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION"
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_pago_normalizado": "PAYMENT_DECLINED_CONFIRMED"
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "209/524: permite acciones solo tras confirmación."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "524 es backend por deuda e incluye múltiples modalidades; CLIENTE/PANTALLA no representa todo el procesamiento."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "La puerta de éxito se entiende; pero efectos post-pago no están enumerados."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "PERMITIR condicionado a PAYMENT_CONFIRMED expresa el permiso inicial."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "La condición expresa la autorización inicial pero no per-deuda, activación de plan, origen ledger ni prohibición de modificar onboarding de 209/524."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001 exige snapshot inmutable; no se acredita preservar efectos específicos de 524."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0,
+            "observacion": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001 contiene la misma condición de éxito; no se declara consolidación o distinción de ese solapamiento."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CHK_006",
+        "clave": "comision_visible",
+        "titulo": "Toda comisión cobrada debe mostrarse antes de pagar",
+        "descripcion": "No se acepta una configuración de precios del aliado que cobre una comisión (de gestión o de Niubiz) y la oculte en el checkout. Los porcentajes vienen de la configuración del aliado, no de la regla.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-LEGAL_NORMA",
+        "dueno": "PRODUCTO",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/210,226",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "o",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "!=",
+              "izq": {
+                "hecho": "COL-public.lf_b2b_pricing_config.niubiz_fee_type"
+              },
+              "der": {
+                "lit": "NONE"
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "COL-public.lf_b2b_pricing_config.show_niubiz_fee"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "!=",
+              "izq": {
+                "hecho": "COL-public.lf_b2b_pricing_config.management_fee_type"
+              },
+              "der": {
+                "lit": "NONE"
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "COL-public.lf_b2b_pricing_config.show_management_fee"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "COL-public.lf_b2b_pricing_config.niubiz_fee_type": "PERCENTAGE",
+              "COL-public.lf_b2b_pricing_config.show_niubiz_fee": false,
+              "COL-public.lf_b2b_pricing_config.management_fee_type": "NONE",
+              "COL-public.lf_b2b_pricing_config.show_management_fee": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "COL-public.lf_b2b_pricing_config.niubiz_fee_type": "NONE",
+              "COL-public.lf_b2b_pricing_config.show_niubiz_fee": true,
+              "COL-public.lf_b2b_pricing_config.management_fee_type": "PERCENTAGE",
+              "COL-public.lf_b2b_pricing_config.show_management_fee": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "COL-public.lf_b2b_pricing_config.niubiz_fee_type": "PERCENTAGE",
+              "COL-public.lf_b2b_pricing_config.show_niubiz_fee": true,
+              "COL-public.lf_b2b_pricing_config.management_fee_type": "NONE",
+              "COL-public.lf_b2b_pricing_config.show_management_fee": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "210/226: impedir ocultamiento de comisión configurada."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "210 y 226 son visibilidad previa a confirmar en UI, mientras BACKEND valida configuración, no render efectivo."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "La prohibición de configurar comisión oculta es clara; no fija importes."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR configuración no visible es consistente con título."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Solo compara flags; no comprueba visibilidad efectiva antes de confirmar, tamaño legible ni inclusión de comisiones en total (226)."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "La regla de transparencia es compatible, pero 210/226 fijan comisión LF y la configuración actual no; EKB LF-LEGACY-CHECKOUT-COMMISSION-TEXT-VS-CONFIG-20261121-001. No se resuelve el importe."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "210 y 226 son fuentes del solapamiento; no se acredita consolidación íntegra del total y presentación."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CHK_007",
+        "clave": "seleccion_inmutable_confirmacion",
+        "titulo": "Selección inmutable en la confirmación",
+        "descripcion": "En la pantalla de confirmación el usuario no puede modificar su selección de ofertas.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-TECNICO",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/211",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "checkout_en_confirmacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "checkout_en_confirmacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "checkout_en_confirmacion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "PASS",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "211: bloquear la modificación de la selección y permitir ver resumen/continuar."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "La condición acota a confirmación aunque el nodo CLIENTE es amplio y la legada tiene cobertura parcial; no autoriza efecto fuera de ese contexto."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "La descripción especifica pantalla, acción y sujeto."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR modificación coincide con 211."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "checkout_en_confirmacion=true activa exactamente el bloqueo descrito; false no lo activa."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "No se observó contradicción en las 61 reglas de familia y comparadores revisados; snapshot y revalidación de plan son compatibles con inmutabilidad en confirmación."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 1,
+            "observacion": "211 es la fuente intencional de migración; no se detectó otro texto equivalente a prohibir modificar selección en confirmación fuera de ella en las fuentes revisadas."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CHK_008",
+        "clave": "carta_no_adeudo_liquidacion",
+        "titulo": "Carta de No Adeudo solo con la deuda liquidada",
+        "descripcion": "La Carta de No Adeudo solo puede solicitarse cuando la deuda llegó a SETTLED_CONFIRMED; un pago confirmado (incluido el inicial de un plan en cuotas) no basta.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-PRODUCTO",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "PERMITIR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/212,280,292,327",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "estado_liquidacion_deuda"
+          },
+          "der": {
+            "lit": "SETTLED_CONFIRMED"
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "SETTLED_CONFIRMED"
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "estado_liquidacion_deuda": "PLAN_ACTIVO"
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "212/280/292/327: diferir solicitud hasta liquidación total."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "La carta se gestiona por deuda en backend/documentos, no solo CLIENTE/PANTALLA; 327 es candidata visual."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El requisito de SETTLED_CONFIRMED es explícito."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "PERMITIR solicitud cuando la deuda está liquidada coincide con elegibilidad."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "No representa estados de emisión, AVAILABLE para descarga, ni seguimiento por deuda de 212/327."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001 y REG_CLIENT_NO_DEBT_LETTER_STATUS_001 exigen resolución autoritativa por deuda; no modela esas obligaciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0,
+            "observacion": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001 ya gobierna exactamente elegibilidad por SETTLED_CONFIRMED y ciclo documental; no se ha conciliado ese duplicado adicional."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CHK_013",
+        "clave": "autorizacion_debito_cuotas",
+        "titulo": "Pago en cuotas exige autorizar el débito automático",
+        "descripcion": "En un plan en cuotas el botón de pago queda deshabilitado mientras el usuario no marque la autorización de cobro automático.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-LEGAL_NORMA",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/276,288",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "modalidad_pago"
+            },
+            "der": {
+              "lit": "CUOTAS"
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "autoriza_debito_automatico"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "CUOTAS",
+              "autoriza_debito_automatico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "CUOTAS",
+              "autoriza_debito_automatico": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "modalidad_pago": "PAGO_UNICO",
+              "autoriza_debito_automatico": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "276/288: bloquear CTA sin consentimiento."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "El contexto es cobro recurrente automático en checkout de cuotas; CLIENTE y modalidad CUOTAS abarcan también manual."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El texto comunica el requisito, aunque lo generaliza."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR cuando falta autorización coincide con el texto histórico."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "La condición traduce la generalización histórica pero no consulta el indicador backend de si requiere débito recurrente automático."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0,
+            "observacion": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001 vigente: no exigir autorización en modalidad manual; el candidato bloquearía CUOTAS manual sin consentimiento. REG_CLIENT_CHECKOUT_INSTALLMENTS_VIEW_001 ratifica."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0,
+            "observacion": "La regla vigente AUTODEBIT_CONSENT_CONTEXT_001 ya gobierna el requisito; falta reconciliación en vez de crear una versión más amplia."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_TEC_007",
+        "clave": "pago_requiere_conexion",
+        "titulo": "Sin conexión no se paga",
+        "descripcion": "Si el usuario pierde la conexión, el checkout bloquea el botón de pago y avisa que necesita conexión.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-TECNICO",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/183",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "conexion_disponible"
+          },
+          "der": {
+            "lit": false
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "conexion_disponible": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "conexion_disponible": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "183: bloquear pago y avisar falta de conexión."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0,
+            "observacion": "183 también gobierna onboarding y guardado local; CLIENTE no distingue checkout de onboarding para la condición offline."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto identifica la pérdida de conexión y respuesta de checkout."
+          },
+          "COH_EFECTO": {
+            "puntaje": 0.5,
+            "observacion": "BLOQUEAR no expresa aviso y conservación de datos del original."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "conexion_disponible=false expresa pérdida/ausencia, no delimita checkout ni modela aviso."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "523: desconexión después de posible envío requiere reconciliación y no presupone ausencia de cargo. El candidato no distingue fases."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 1,
+            "observacion": "183 es la fuente declarada; no se detectó otro control idéntico de conectividad, aunque los deberes de reconciliación son complementarios."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_TEC_009",
+        "clave": "idempotencia_checkout",
+        "titulo": "Petición repetida dentro de la ventana no crea duplicados",
+        "descripcion": "Si el checkout se reenvía con la misma clave de idempotencia dentro de la ventana configurada, el servidor devuelve el resultado anterior sin crear otra operación.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-TECNICO",
+        "dueno": "PRODUCTO",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "RECHAZAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/185",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "clave_idempotencia_repetida"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "<",
+            "izq": {
+              "hecho": "edad_clave_idempotencia"
+            },
+            "der": {
+              "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "clave_idempotencia_repetida": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "clave_idempotencia_repetida": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "clave_idempotencia_repetida": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": 1
+              }
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "185: devolver resultado anterior sin duplicados."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "185 también cubre submit Paso 1; el candidato BACKEND solo describe checkout."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Describe reenvío con clave y ventana configurada."
+          },
+          "COH_EFECTO": {
+            "puntaje": 0,
+            "observacion": "RECHAZAR no equivale a reutilizar el resultado previo exitoso o pendiente de 185."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Usa parámetro real; < en el borde no está determinado expresamente en 185, y no representa misma operación/petición equivalente."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0,
+            "observacion": "185 y REG_ONB003_DNI_RESOLUTION_ATOMIC_001 requieren reutilización del resultado en reintento equivalente, no rechazo indiscriminado."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "B2B-RULE-IDEMP-001 y ONB003_DNI_RESOLUTION_ATOMIC ya cubren idempotencia en otros contextos; falta delimitar el contrato de checkout."
+          }
+        }
+      }
+    },
+    {
+      "paquete": {
+        "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001",
+        "clave": "qr_confirmacion_autoritativa",
+        "titulo": "El QR solo se confirma con evidencia del proveedor",
+        "descripcion": "El botón \"Ya escaneé / Continuar\" solo consulta el estado; sin evidencia autoritativa del proveedor no se marca PAYMENT_CONFIRMED ni se crea otra operación.",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "autoridad": "LEG-REVISION_FUNCIONAL",
+        "dueno": "PRODUCTO",
+        "alcance": "CLIENTE",
+        "modo": "HEREDA",
+        "clase": "PANTALLA",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/539,316",
+          "solicitante": "migracion-nucleo"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "evidencia_autoritativa_pago"
+          },
+          "der": {
+            "lit": false
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "evidencia_autoritativa_pago": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "evidencia_autoritativa_pago": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión del piloto",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "539/316: verificar mismo QR sin inventar confirmación."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0,
+            "observacion": "539 está en PANTALLA-28 QR; CLIENTE hereda en pantallas no QR sin predicado de contexto."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El texto distingue consulta y confirmación de pago."
+          },
+          "COH_EFECTO": {
+            "puntaje": 0.5,
+            "observacion": "BLOQUEAR sin evidencia evita confirmación pero no expresa consulta, reconciliación y reutilización de referencia."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Solo evidencia_autoritativa_pago=false; no identifica QR, clic, referencia, expiración ni nueva operación (539)."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "REG_CHK_003 y REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001 requieren estado real del proveedor. No se acredita protección de misma operación en estado pendiente."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "El origen 539/316 es intencional; REG_CHK_003 también cubre estados ambiguos; falta separar la operación QR especializada de la regla general."
+          }
+        }
+      }
+    }
+  ]
+}
