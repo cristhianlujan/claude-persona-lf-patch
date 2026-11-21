@@ -90,10 +90,12 @@ BEGIN
  VALUES('SALY','SALY_HOME_APP_EXPLORE_V03','APP_SCREEN')
  RETURNING id INTO v_standard_id;
 
+ -- manifest_sha256 is a PostgreSQL GENERATED ALWAYS column; it must
+ -- be derived by the database, never supplied by the caller.
  INSERT INTO visual.standard_versions
-   (standard_id,brand_code,kind,version,manifest_json,manifest_sha256,state)
+   (standard_id,brand_code,kind,version,manifest_json,state)
  VALUES(v_standard_id,'SALY','APP_SCREEN','0.3-candidate',
-        v_manifest,v_manifest_hash,'CANDIDATE')
+        v_manifest,'CANDIDATE')
  RETURNING id INTO v_version_id;
 
  IF (SELECT manifest_sha256
