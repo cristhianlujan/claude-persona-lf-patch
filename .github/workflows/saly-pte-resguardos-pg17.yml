@@ -8,6 +8,7 @@ on:
       - 'supabase/tests/saly_ventas_pte_crossrun_pg17_concurrency.py'
       - 'supabase/migrations/*_lf_saly_ventas_pte_writer_core_v1.sql'
       - 'supabase/migrations/*_lf_saly_ventas_pte_snapshot_unique_v1.sql'
+      - 'skills/ai_sales_discovery/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -86,5 +87,7 @@ jobs:
           echo PASS_PTE_PG17_REAL_TWO_SESSIONS_CLEANUP
       - name: Test scope adapter with alternatives and negative controls
         run: node docs/saly/ventas/candidate/pte/test_normalize_pte_csv.mjs
+      - name: Test read-only discovery skill with policy, source, retry, timeout, readback and terminal receipts
+        run: node skills/ai_sales_discovery/tests/pte_readonly_pipeline.test.mjs
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs
