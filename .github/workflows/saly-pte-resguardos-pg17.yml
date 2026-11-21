@@ -152,3 +152,15 @@ jobs:
         run: python3 skills/ai_sales_discovery/tests/sunat_join_probe.py --self-test
       - name: Download and join official sources by RUC, report aggregate evidence
         run: python3 skills/ai_sales_discovery/tests/sunat_join_probe.py
+
+  sunat-history-pilot:
+    name: SUNAT historical presence pilot
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT historia piloto 202310')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 skills/ai_sales_discovery/tests/test_sunat_history_v1.py
+      - run: python3 skills/ai_sales_discovery/tests/sunat_history_pilot.py
