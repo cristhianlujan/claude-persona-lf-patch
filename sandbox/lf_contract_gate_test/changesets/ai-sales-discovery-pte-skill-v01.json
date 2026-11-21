@@ -1,0 +1,11 @@
+{
+  "solution_ref": "ai-sales-discovery-pte-skill-v01",
+  "paths": {
+    "skills/ai_sales_discovery/core/pte_readonly_pipeline.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/pte_readonly_pipeline.test.mjs": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/queries/pte_exact_readback.sql": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-pte-skill-v01.json": "CHANGESET_MANIFEST"
+  }
+}
