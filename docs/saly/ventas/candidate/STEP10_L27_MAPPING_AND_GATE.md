@@ -92,3 +92,38 @@ una segunda tabla `ventas_hallazgos`, y añade a `ventas_discovery_ingestas`:
 **Siguiente checkpoint:** HEAD exacto → clasificación/PASE PASS → PG17 aislado
 positivo y negativo → operación gobernada → Merge Train → readback SELECT.
 Ningún merge ni carga automática deben adelantarse a esos controles.
+
+## L29 · Verificación real y bloqueo de RUN gobernado
+- Archivo: `supabase/tests/saly_ventas_l29_pg17_isolated_runner.sh`.
+  Solo acepta PostgreSQL **17** en `127.0.0.1:5432`,
+  `PGDATABASE=saly_sales_ci_l29`, `PGUSER=postgres` y base vacía.
+  Crea el esquema de prueba, prueba L27+L28 dentro de `BEGIN/ROLLBACK`,
+  luego aplica ambas migraciones solo a esa base de pruebas y ejecuta
+  los dos scripts PG17 y los dos SELECT readbacks; comprueba nueve tablas
+  con RLS y ningún registro ficticio persistido.
+- **NO ejecutado en este lote:** el entorno de la conversación no dispone
+  de binarios PostgreSQL, y el intento de instalar paquetes terminó por
+  timeout. Este script es reproducible, NO evidencia PG17 PASS.
+- La única ejecución real PostgreSQL confirmada es la anterior
+  [GitHub Actions 44832330360](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44832330360);
+  corresponde a L26 y no valida el HEAD L29.
+- Nuevo readback SELECT:
+  `supabase/tests/saly_ventas_l29_router_parent_readback.sql`.
+  Metadatos actuales observados: `public.lf_operation_execution.execution_id`
+  es PK; se encontraron únicamente dos RUN de
+  `EJECUCION_PERFIL_LF` con contexto `business=SALY`,
+  ambos `PERFIL-UI-ARCHITECT` en `IN_PROGRESS`. El registro de
+  operaciones no muestra una operación SALY/VENTAS/DISCOVERY explícita.
+- **NO vincular** `run_ref` ni dar permiso de escritura usando esos RUN de UI:
+  no acreditan ejecución del perfil comercial, selección por Router
+  ni autoridad de efectos. El FK a `public.lf_operation_execution` y
+  las verificaciones de business/canal/perfil/estado pertenecen a un
+  lote posterior con contrato de RUN autorizado. No se introdujo un
+  FK engañoso a una ejecución arbitraria.
+- Gate real pendiente: especificar y probar el perfil/operación
+  competente para SALY Ventas (sin reutilizar UI), emitir un RUN admitido
+  y ligar su `execution_id` de manera inmutable con el RUN de discovery.
+  Antes de eso, `run_ref` es solo trazabilidad local, no autorización.
+
+**Resultado L29**: preparación verificable, sin writer, sin merge,
+sin despliegue y sin contactos o empresas introducidos a la base.
