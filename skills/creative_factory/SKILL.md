@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.9 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.10 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -387,15 +387,35 @@ instrucciones redactadas. Un revisor independiente debe cotejar el literal
 original, la dirección, las fuentes, el copy, los límites de responsabilidades,
 las referencias, las reservas y la totalidad del pedido. Nunca presentar
 la cobertura estructural como aprobación. Si falla, aplicar el protocolo
-de incidencia; no enviar. Solo continuar automáticamente con el envío
-exacto, cuando exista compilación canónica, QA independiente, autoridad
-y canal habilitado. Este módulo no ejecuta ningún proveedor.
+de incidencia; no enviar. Solo continuar automáticamente conforme al protocolo de registro previo,
+QA y autorización aplicables. El wire canónico sigue siendo necesario para
+el flujo gobernado de producción; una prueba gráfica autorizada no acredita
+recepción literal ni habilita producción. Este módulo no ejecuta proveedores.
 
 Pruebas locales:
 ```bash
 cd sandbox/creative_factory
 python -m unittest -v test_graphical_handoff_candidate_v1.CandidateTests
 ```
+
+## Cierre de activos oficiales en el resultado
+
+Cuando el pedido requiere un logo oficial, resolver su archivo vigente y
+aprobado del negocio mediante el adaptador y materializarlo con el hash de
+la fuente. El plan lo asigna a COMPOSITOR como LOCK con operación ASSET;
+guardar sus bytes junto al handoff previo, separados de los adjuntos de
+Native. Una referencia previa con una marca aproximada no sustituye el
+activo oficial. Si no hay archivo aprobado o no coincide su SHA, bloquear.
+
+La imagen de Native es un insumo, nunca se entrega como arte final si
+todavía tiene logo inventado, omitido o aproximado. Ejecutar automáticamente
+la composición autorizada e inspeccionar la geometría, el resultado visible,
+la extracción de la región del logo y su correspondencia con el archivo
+oficial transformado y compuesto según el blueprint. El hash del archivo
+fuente por sí solo no acredita que aparezca en el resultado. Si no puede
+verificarse su presencia e integridad visual, rechazar la entrega. No requerir
+un logo para piezas cuyo contrato no lo solicita. No promover candidatos ni
+alterar activos oficiales sin autorización.
 
 ## Resultado y límites de QA
 
@@ -429,8 +449,16 @@ habilita proveedores ni convierte un resultado de revisión en producción.
 ### Antes del envío
 
 1. Resolver y congelar el payload y adjuntos exactos del contrato autorizado.
-   Para Native, reutilizar los bytes de `canonical_wire.wire_base64` y su
-   `wire_sha256` emitidos por `saly.creative_native_canonical_wire_v1`.
+   Para Native, si existe wire canónico, reutilizar sus bytes y SHA sin
+   reserializar. Para una prueba gráfica autorizada por separado, conservar
+   el payload candidato literal y distinguirlo del wire canónico.
+   **Guardar antes de invocar**, mediante `native_transport_capture_v1.archive_pre_dispatch`
+   o el almacén gobernado equivalente: bytes del payload, prompt íntegro,
+   archivos de referencia, activos protegidos del blueprint y sus pins de
+   fuente, hash y lectura posterior. Cada intento tiene un registro nuevo
+   e inmutable para el flujo; jamás sobrescribir el anterior. La evidencia
+   local de revisión no equivale a persistencia en Supabase: para producción
+   usar la ruta gobernada existente. Si falla el guardado, no invocar.
 2. **Mostrar al usuario el handoff completo y literal antes de invocar
    al receptor**, en una salida visible intermedia de la misma ejecución.
    Incluir emisor, receptor, negocio, pedido/item/variante, intento si existe,
@@ -443,10 +471,16 @@ habilita proveedores ni convierte un resultado de revisión en producción.
    reserializar ni añadir contexto operativo o QA a un payload que no lo
    incluye. Si cambian, volver a congelar y mostrar el handoff antes del
    envío. Una vista previa no sustituye la evidencia de transmisión.
-4. Si ya existe autorización y canal de envío exacto, invocar al receptor
-   inmediatamente en la misma ejecución. Si falta autoridad o capacidad
-   técnica, no enviar: informar `HANDOFF_NOT_SENT` y la causa. No saltar
-   controles existentes ni ampliar el alcance aprobado.
+4. Si ya existe autorización y canal de invocación aplicable, invocar al
+   receptor inmediatamente en la misma ejecución. La falta de un eco del
+   receptor no bloquea por sí sola una prueba gráfica autorizada de revisión.
+   Si el canal solo usa contexto y no acepta un campo literal de prompt,
+   guardar el texto funcional preparado y registrar la invocación real y
+   sus argumentos expuestos; declarar `HANDOFF_SENT_UNVERIFIED` después de
+   una invocación real, nunca afirmar envío byte a byte. No usar esta
+   excepción para autorizar producción, cambiar permisos o saltar el QA
+   requerido. Si falta autoridad o el canal no puede ejecutar el pedido,
+   informar `HANDOFF_NOT_SENT` y la causa.
 
 ### Después del envío
 
@@ -461,14 +495,16 @@ habilita proveedores ni convierte un resultado de revisión en producción.
    solicitar al receptor su handoff funcional exacto, recuperar el readback
    si existe, comparar y mostrar divergencias sin esperar otro turno.
    Si el canal no recupera el payload recibido, informar
-   `HANDOFF_RECEIVER_READBACK_UNAVAILABLE`; no inventar evidencia ni
-   reintentar sin resolver la causa y respetar la autorización vigente.
+   `HANDOFF_RECEIVER_READBACK_UNAVAILABLE` y recuperar automáticamente el
+   registro previo y evidencia de la invocación. Continuar con el QA técnico
+   y visual permitido sobre el resultado real; no inventar evidencia, ni
+   reintentar sin resolver las causas de rechazo y respetar la autorización.
 
 **Criterios de aceptación:** (a) vista literal visible antes de invocar,
 (b) envío automático sin confirmación intermedia cuando está autorizado,
 (c) evidencia de salida visible inmediatamente después, (d) readback
-automático ante rechazo, (e) bloqueo verificable si falta autoridad,
-capacidad de envío exacto o evidencia del receptor. Una imagen con recibos
+automático ante rechazo, (e) registro previo obligatorio, bloqueo verificable si falta autoridad
+   o capacidad, trazabilidad de recepción no verificable cuando corresponda. Una imagen con recibos
 o indicadores PASS no satisface estos controles.
 
 Este cambio define el comportamiento obligatorio de la skill; la integración
@@ -504,9 +540,11 @@ la misma ejecución; detener solo la entrega y el reintento no verificado.
    ni presentar el handoff de Supabase como si fuera el recibido.
 5. Si no hubo envío, informar HANDOFF_NOT_SENT y el último contrato
    disponible. Si no hay canal de consulta o no hay readback del mismo
-   intento, informar HANDOFF_RECEIVER_READBACK_UNAVAILABLE y mantener el
-   bloqueo. Mostrar por separado el handoff preparado y la evidencia real
-   disponible; nunca inventar un identificador o recibo.
+   intento, informar HANDOFF_RECEIVER_READBACK_UNAVAILABLE y recuperar
+   el registro previo. Mantener el rechazo visual/técnico que corresponda,
+   no bloquear el diagnóstico ni la revisión por ausencia de eco. Mostrar
+   por separado el handoff preparado y la evidencia real disponible;
+   nunca inventar un identificador o recibo.
 6. Localizar la primera divergencia, corregir solo la etapa responsable y
    conservar la evidencia del intento rechazado. Reintentar únicamente
    dentro de la autorización vigente cuando la causa esté resuelta. No
@@ -514,7 +552,7 @@ la misma ejecución; detener solo la entrega y el reintento no verificado.
    el handoff.
 
 **Aceptación del protocolo:** rechazo con ambos handoffs permite comparar;
-rechazo sin evidencia de recepción permanece bloqueado; error antes del
+rechazo sin evidencia de recepción usa el archivo previo y conserva el rechazo; error antes del
 envío identifica HANDOFF_NOT_SENT. Un eco local, una imagen con texto PASS
 o una respuesta reconstruida no prueba recepción. En todos los casos el
 usuario recibe el diagnóstico y handoff disponible sin tener que solicitarlo.
