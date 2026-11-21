@@ -39,6 +39,9 @@ def svg_image(data,color=None):
     return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=text.encode('utf-8')))).convert('RGBA')
 
 def compose(m,body):
+    if m.get('schema_version')=='CREATIVE_COMPOSITION_BLUEPRINT_REVIEW_V2':
+        from compositor_blueprint_layers_v2 import compose_blueprint
+        return compose_blueprint(m,body)
     if m.get('schema_version')!='CREATIVE_COMPOSITION_REVIEW_V1':raise CompositionError('MANIFEST_VERSION')
     if m.get('review_only') is not True or m.get('render_authorized') is not False:
         raise CompositionError('REVIEW_AUTHORITY')

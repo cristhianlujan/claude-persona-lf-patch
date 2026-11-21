@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.5 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.6 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -204,6 +204,64 @@ LF/futuro nunca reutiliza los datos de SALY como sustituto.
    bytes/píxeles y registrar hashes. La entrega contiene solo esos dos archivos.
 7. Cualquier error impide la publicación y devuelve código específico.
    No modificar artefactos previos.
+
+## Composición flexible por blueprint (v0.6, revisión local)
+
+No imponer el layout de Home B a una escena nueva. El mismo entrypoint
+`compositor_core_v1.compose(manifest, body)` admite el contrato histórico
+`CREATIVE_COMPOSITION_REVIEW_V1` y el contrato candidato
+`CREATIVE_COMPOSITION_BLUEPRINT_REVIEW_V2`. La extensión
+`compositor_blueprint_layers_v2.py` reutiliza primitives y preflight
+existentes; no es otra skill ni otro pipeline.
+
+Para preparar V2:
+- Partir del plan de dirección de arte y jerarquía, con la propuesta de
+  geometría aprobable por el flujo de QA. Incluir en el blueprint
+  `composition_layout` y en `design_lock.LOCK.composition_layout` la misma
+  estructura {canvas, backdrop, regions}. Congelar el hash de propuesta del
+  preflight. El manifest no puede sustituir esas posiciones.
+- Cada región respeta nombre, orden y propietario de los componentes del
+  plan; contiene name, owner, box (x,y,ancho,alto), coverage y ops. NATIVE
+  reserva zonas BOX sin operaciones fijas; REFERENCE_ONLY usa NONE, box null,
+  ops vacías. COMPOSITOR BOX reserva toda la caja, ALPHA reserva únicamente
+  los píxeles no transparentes de un único activo fijado (por ejemplo, marco).
+- Las operaciones compositor, ordenadas dentro de cada caja, son FILL
+  (box, color_source, radius), ASSET (box, source_id) o TEXT
+  (box, copy, size, weight, font_source, color_source). Sus fuentes deben
+  pertenecer al componente; los textos coinciden con el copy declarado.
+  FILL y TEXT pueden compartir la caja del CTA dentro de una tarjeta mayor.
+  Un activo con texto sigue necesitando verificación visual del copy.
+- El fondo es TRANSPARENT, COLOR vinculado al token, o ASSET con archivo
+  fijado por SHA y dimensiones exactas de salida. Cada fuente usada como
+  archivo incluye file_sha256 en su snapshot JSON, y las fuentes tipográficas
+  además weight; no inventar huellas de archivos oficiales. El registro
+  files mapea identificadores de fuente a las rutas materializadas.
+- El cuerpo RGBA sintético tiene exactamente las dimensiones canvas. Debe
+  dejar transparentes los píxeles fijos y no invadir zonas ajenas. No recortar
+  arbitrariamente un resultado Native para hacerlo pasar. El marco con
+  apertura transparente se compone mediante su silueta; cajas de activos
+  fijos BOX no pueden colisionar con otras máscaras fijas.
+- Manifest V2 contiene schema_version, review_only=true,
+  render_authorized=false, body_origin=SYNTHETIC_REVIEW, plan,
+  proposal_sha256, canvas, backdrop, regions y files. Realizar preflight
+  antes de componer, comprobar SHA de los activos, generar recibo y
+  aplicar el protocolo de incidencia ante fallo. No declarar un resultado
+  de Native desde un fixture ni usar el modo revisión para eludir autoridad.
+
+Ejecución técnica directa, sin Router, perfiles, proveedor ni generación:
+
+```bash
+python sandbox/creative_factory/compositor_core_v1.py manifest.json body.png preview.png --receipt receipt.json
+cd sandbox/creative_factory
+python -m unittest -v test_compositor_blueprint_layers_v2.py
+```
+
+El recibo V2 `LOCAL_BLUEPRINT_COMPOSITOR_PASS` acredita composición local
+reproducible, no QA semántico ni autenticidad de fuentes por sí solo.
+El adaptador L2C histórico conserva su contrato V1 y no se migra
+automáticamente a V2. El nuevo layout es un candidato local: todavía
+requiere materialización/compilación gobernada, revisión independiente y
+canal de recepción Native verificable antes de cualquier uso productivo.
 
 ## Resultado y límites de QA
 
