@@ -37,7 +37,7 @@ PYTHONPATH=sandbox/creative_factory python -m unittest -v \
   sandbox/creative_factory/test_compositor_core_v1.py
 ```
 
-The CI test uses synthetic, in-memory files and installed DejaVu fonts.
+The stand-alone local/isolated test uses synthetic, in-memory files and installed DejaVu fonts. It must run before requesting governed merge; the repository intentionally retains only its existing ordinary PR workflow.
 **No ZIP, font binary, SALY asset or brand logo is distributed in Git.**
 A separate sandbox pilot tested the real SALY Home B pinned SVGs and approved
 logo (6/6 source hashes) and a synthetic body; it is *not* a native render.
