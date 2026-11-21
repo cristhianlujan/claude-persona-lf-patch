@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """One-shot QA of official monthly/reduced sources. No output rows or persistence."""
+from collections import Counter
 import csv, hashlib, json, re, sys, tempfile, unicodedata, urllib.request, zipfile
 from pathlib import Path
 
@@ -34,7 +35,7 @@ def fetch(url,path):
             if not b: break
             n+=len(b); require(n<=MAX_ZIP,'DOWNLOAD_LIMIT'); h.update(b); out.write(b)
         require(n>0 and (expected is None or n==int(expected)),'DOWNLOAD_INCOMPLETE')
-    return {'bytes':n,'sha256':h.hexdigest()}
+    return {'bytes':n,'sha256':h.hexdigest(),'http_last_modified':r.headers.get('Last-Modified')}
 
 def member(z,ext):
     infos=z.infolist()
@@ -82,7 +83,14 @@ def monthly(path,header_sha):
 
 def reduced(path, data, monthly_dups):
     seen={}; dup=set(); counts={'rows':0,'legal_rows':0,'matching_rows':0,'missing_name_rows':0}
+    rejections = Counter()
+    malformed_keys = set()
+    geography = {level: Counter() for level in ('department', 'province', 'district')}
+    worker_forms = Counter()
+    numeric_workers = []
     with zipfile.ZipFile(path) as z, z.open(member(z,'.txt')) as raw:
+        info = member(z, '.txt')
+        counts.update(unpacked_bytes=info.file_size, crc32=format(info.CRC, '08x'))
         it=lines(raw); header=next(it)
         try: hs=header.decode('utf-8-sig')
         except UnicodeDecodeError: hs=header.decode('cp1252')
@@ -94,13 +102,27 @@ def reduced(path, data, monthly_dups):
         for a in aliases:
             match=[i for i,c in enumerate(normalized) if c in a]; require(len(match)==1,'REDUCED_HEADER_UNRECOGNIZED'); ix.append(match[0])
         require(len(cols)==len(set(normalized)) and len(cols)<=40,'REDUCED_HEADER_INVALID')
+        counts['header'] = cols
         for line in it:
             counts['rows']+=1
             fields=line.split(b'|')
+            candidate = fields[ix[0]].strip() if ix[0] < len(fields) else b''
             if trailing:
-                require(fields[-1]==b'','REDUCED_TRAILING_DELIMITER'); fields.pop()
-            require(len(fields)==len(cols),'REDUCED_WIDTH')
-            r=fields[ix[0]].strip(); require(re.fullmatch(rb'[0-9]{11}',r),'REDUCED_RUC_INVALID')
+                if fields[-1] != b'':
+                    rejections['trailing_delimiter'] += 1
+                    if candidate.isdigit() and candidate.decode('ascii') in data:
+                        malformed_keys.add(candidate.decode('ascii'))
+                    continue
+                fields.pop()
+            if len(fields) != len(cols):
+                rejections['width'] += 1
+                if candidate.isdigit() and candidate.decode('ascii') in data:
+                    malformed_keys.add(candidate.decode('ascii'))
+                continue
+            r = fields[ix[0]].strip()
+            if not re.fullmatch(rb'[0-9]{11}', r):
+                rejections['invalid_ruc'] += 1
+                continue
             if not r.startswith(b'20'): continue
             counts['legal_rows']+=1; key=r.decode('ascii')
             if key not in data or key in monthly_dups: continue
@@ -116,10 +138,26 @@ def reduced(path, data, monthly_dups):
     require(counts['rows']>0,'REDUCED_EMPTY')
     good=state_diff=cond_diff=ubigeo_diff=worker_num=ciiu_present=0
     for key,item in seen.items():
-        if key in dup or not item[0]: continue
+        if key in malformed_keys or key in dup or not item[0]: continue
         good+=1; m=data[key]
+        for level, width in [('department', 2), ('province', 4), ('district', 6)]:
+            geography[level][m[2][:width]] += 1
+        literal = m[4]
+        if re.fullmatch(r'[0-9]{1,9}', literal):
+            worker_forms['integer'] += 1
+            numeric_workers.append(int(literal))
+        elif re.fullmatch(r'[0-9]+\s*[-–]\s*[0-9]+', literal):
+            worker_forms['range'] += 1
+        elif literal in ('', '-', 'N/D', 'ND', 'S/I'):
+            worker_forms['unknown:' + literal] += 1
+        else:
+            worker_forms['other'] += 1
         state_diff+=m[0]!=item[2]; cond_diff+=m[1]!=item[3]; ubigeo_diff+=m[2]!=item[4]
         worker_num+=bool(re.fullmatch(r'[0-9]+',m[4])); ciiu_present+=bool(re.fullmatch(r'[0-9]{4}',m[3]))
+    counts.update(keys_with_malformed_rows=len(malformed_keys), rejected_by_reason=dict(rejections), geography=geography,
+                  worker_forms=dict(worker_forms), workers_min=min(numeric_workers, default=None),
+                  workers_max=max(numeric_workers, default=None))
+    require(all(sum(bucket.values()) == good for bucket in geography.values()), 'GEOGRAPHY_RECONCILIATION')
     counts.update(header_sha256=hashlib.sha256(header).hexdigest(),column_count=len(cols),trailing_delimiter=trailing,matched_unique_keys=len(seen),duplicate_matched_keys=len(dup),unmatched_monthly_unique_keys=len(data)-len(monthly_dups)-len(seen),matched_unambiguous_named=good,state_diff=state_diff,condition_diff=cond_diff,ubigeo_diff=ubigeo_diff,workers_numeric=worker_num,ciiu_four_digits=ciiu_present)
     return counts
 
@@ -139,10 +177,13 @@ def self_test():
         except ValueError as e: assert str(e)=='REDUCED_HEADER_UNRECOGNIZED'
         else: raise AssertionError('schema guard')
         write(r,'reduced.txt',red+b'20000000001|A|ACTIVO|HABIDO|150101|X\n')
-        try: reduced(r,data,dups)
-        except ValueError as e: assert str(e)=='REDUCED_TRAILING_DELIMITER'
-        else: raise AssertionError('width guard')
-    print('PASS_SUNAT_JOIN_QA 4')
+        x = reduced(r,data,dups)
+        assert x['rejected_by_reason'] == {'trailing_delimiter': 1} and x['matched_unique_keys'] == 0
+        write(r,'reduced.txt',red+b'INVALID|A|ACTIVO|HABIDO|150101|X|\n20000000001|A|ACTIVO|HABIDO|150101|X|\n')
+        x = reduced(r,data,dups)
+        assert x['rejected_by_reason'] == {'invalid_ruc':1} and x['matched_unambiguous_named'] == 1
+        assert x['geography']['district'] == {'150101':1} and x['worker_forms'] == {'integer':1}
+    print('PASS_SUNAT_JOIN_QA 5')
 
 def main():
     with tempfile.TemporaryDirectory() as d:
