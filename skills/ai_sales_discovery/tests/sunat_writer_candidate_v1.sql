@@ -25,7 +25,7 @@ DECLARE
 BEGIN
  SELECT config_value::jsonb INTO STRICT policy FROM public.lf_global_config
  WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_POLICY_V1' AND value_status='REAL'
- AND valid_from <= now() FOR SHARE;
+ AND valid_from <= now() ORDER BY valid_from DESC LIMIT 1 FOR SHARE;
  IF jsonb_typeof(policy) IS DISTINCT FROM 'object'
  OR (policy->'enabled') IS DISTINCT FROM 'true'::jsonb
  OR coalesce(policy->>'max_rows','') !~ '^[1-9][0-9]{0,8}$'
@@ -59,6 +59,20 @@ BEGIN
   OR x->>'capture_sha256' IS DISTINCT FROM encode(sha256(convert_to(saly.ventas_capture_canonical_v1(c),'UTF8')),'hex')
   OR NOT (coalesce(m->'raw','{}') ?& ARRAY['Tipo','NroTrab','Departamento','Provincia','Distrito','PERIODO_PUBLICACION','Estado','Condicion','UBIGEO','Actividad_Economica_CIIU_revision3_Principal','Actividad_Economica_CIIU_revision3_Secundaria','Actividad_Economica_CIIU_revision4_Principal'])
   OR NOT (coalesce(d->'raw','{}') ?& ARRAY['estado','condicion','ubigeo'])
+  OR (m->'raw') - ARRAY['RUC','Tipo','NroTrab','Departamento','Provincia','Distrito','PERIODO_PUBLICACION','Estado','Condicion','UBIGEO','Actividad_Economica_CIIU_revision3_Principal','Actividad_Economica_CIIU_revision3_Secundaria','Actividad_Economica_CIIU_revision4_Principal'] <> '{}'::jsonb
+  OR (d->'raw') - ARRAY['RUC','nombre','estado','condicion','ubigeo'] <> '{}'::jsonb
+  OR EXISTS(SELECT FROM jsonb_each((m->'raw')||(d->'raw')) f WHERE jsonb_typeof(f.value)<>'string')
+  OR (x - ARRAY['capture','capture_sha256']) <> '{}'::jsonb
+  OR (c - ARRAY['version','source','normalized','derived','observations']) <> '{}'::jsonb
+  OR ((c->'observations') - ARRAY['monthly','reduced']) <> '{}'::jsonb
+  OR ((c->'normalized') - ARRAY['ruc','razon_social','workers_integer_literal']) <> '{}'::jsonb
+  OR ((c->'derived') - ARRAY['identity','quality','discrepancies']) <> '{}'::jsonb
+  OR ((c#>'{derived,discrepancies}') - ARRAY['estado','condicion','ubigeo']) <> '{}'::jsonb
+  OR jsonb_typeof(c#>'{derived,discrepancies,estado}') IS DISTINCT FROM 'boolean'
+  OR jsonb_typeof(c#>'{derived,discrepancies,condicion}') IS DISTINCT FROM 'boolean'
+  OR jsonb_typeof(c#>'{derived,discrepancies,ubigeo}') IS DISTINCT FROM 'boolean'
+  OR c#>'{normalized,workers_integer_literal}' IS DISTINCT FROM
+     CASE WHEN btrim(m#>>'{raw,NroTrab}') ~ '^[0-9]{1,9}$' THEN to_jsonb(btrim(m#>>'{raw,NroTrab}')::int) ELSE 'null'::jsonb END
   OR c#>>'{derived,identity}' IS DISTINCT FROM 'CANDIDATE'
   OR coalesce(c#>>'{normalized,ruc}','') !~ '^20[0-9]{9}$'
   OR btrim(m#>>'{raw,RUC}') IS DISTINCT FROM c#>>'{normalized,ruc}'
@@ -68,7 +82,9 @@ BEGIN
   OR m#>>'{evidence,url}' IS DISTINCT FROM policy->>'monthly_url'
   OR d#>>'{evidence,url}' IS DISTINCT FROM policy->>'reduced_url'
   OR EXISTS (SELECT FROM (VALUES ('monthly',m),('reduced',d)) AS v(variant,obs)
-    WHERE coalesce(obs#>>'{evidence,ordinal}','') !~ '^[1-9][0-9]{0,8}$'
+    WHERE (obs - ARRAY['raw','evidence']) <> '{}'::jsonb
+    OR ((obs->'evidence') - ARRAY['url','ordinal','header_sha256','zip_sha256']) <> '{}'::jsonb
+    OR coalesce(obs#>>'{evidence,ordinal}','') !~ '^[1-9][0-9]{0,8}$'
     OR coalesce(obs#>>'{evidence,zip_sha256}','') !~ '^[0-9a-f]{64}$'
     OR coalesce(obs#>>'{evidence,header_sha256}','') !~ '^[0-9a-f]{64}$'
     OR ((obs->'evidence')-'ordinal') IS DISTINCT FROM ((first_obs->variant->'evidence')-'ordinal'))
@@ -76,7 +92,7 @@ BEGIN
  IF (SELECT count(DISTINCT x#>>'{capture,normalized,ruc}') FROM jsonb_array_elements(payload) x) <> n
  THEN RAISE EXCEPTION 'SUNAT_DUPLICATE_RUC'; END IF;
  snap := (first_obs#>>'{monthly,evidence,zip_sha256}')||'.'||(first_obs#>>'{reduced,evidence,zip_sha256}');
- PERFORM pg_advisory_xact_lock(hashtextextended(jsonb_build_array(q.source_id,snap,q.scope_key,q.batch_key)::text,0));
+ PERFORM pg_advisory_xact_lock(hashtextextended(jsonb_build_array(q.source_id,snap,q.scope_key)::text,0));
  SELECT id,archivo_sha256 INTO prior FROM saly.ventas_discovery_ingestas WHERE
  (source_id,source_version,scope_key,batch_key)=(q.source_id,snap,q.scope_key,q.batch_key);
  IF FOUND THEN
@@ -87,6 +103,10 @@ BEGIN
   THEN RAISE EXCEPTION 'SUNAT_REPLAY_DRIFT'; END IF;
   RETURN prior.id;
  END IF;
+ IF EXISTS(SELECT FROM jsonb_array_elements(payload) x JOIN saly.ventas_hallazgos h
+ ON h.ruc_candidato=x#>>'{capture,normalized,ruc}' JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id
+ WHERE (i.source_id,i.source_version,i.scope_key)=(q.source_id,snap,q.scope_key))
+ THEN RAISE EXCEPTION 'SUNAT_OVERLAPPING_BATCH'; END IF;
  INSERT INTO saly.ventas_discovery_ingestas(catalog_version,source_id,connector_id,substep_code,scope_key,
  batch_key,query_hash,consulta_evidencia_ref,source_version,recurso_url,licencia_codigo,atribucion,
  comprobacion_licencia_url,derechos_verificados,archivo_sha256,estado,filas_reportadas,run_ref,consulta_id)
@@ -104,5 +124,6 @@ BEGIN
  FROM jsonb_array_elements(payload) x;
  RETURN result;
 END $$;
-REVOKE ALL ON FUNCTION saly.ventas_sunat_ingesta_core_v1(uuid,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION saly.ventas_sunat_ingesta_core_v1(uuid,text) FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
+REVOKE ALL ON FUNCTION saly.ventas_capture_canonical_v1(jsonb) FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
 COMMIT;
