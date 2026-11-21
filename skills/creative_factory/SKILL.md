@@ -3,19 +3,86 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.1 (REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.2 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
-La skill puede invocarse directamente por CLI con un **paquete congelado** y archivos
-locales. NO ejecuta ni llama Router, perfiles, RUN de perfil, modelos, proveedores,
-Supabase ni aprobaciones. No se registra en el selector de perfiles durante este lote.
+La skill puede invocarse directamente en modo PLAN_ONLY mediante el adaptador
+SALY de lectura, o por CLI con un **paquete congelado** y archivos locales.
+NO ejecuta ni llama Router, perfiles, RUN de perfil, proveedores ni aprobaciones.
+PLAN_ONLY lee Supabase exclusivamente por la RPC autorizada descrita abajo;
+COMPOSE_REVIEW_ONLY permanece offline. No se registra en el selector de perfiles durante este lote.
 No reemplaza ni duplica `SALY_VISUAL_CONTEXT_INVENTORY`, `SALY_APP_VISUAL_PROBE`,
 `adapter_saly_review_v1`, `native_transport_capture_v1` o `compositor_core_v1`.
 
 **Estado actual:** demostrable con SALY usando un paquete L2C de revisión y un
 cuerpo gráfico **sintético**. No admite cuerpos declarados como resultados de GPT Native
 sin origen autenticado. Sin adaptador específico no se ejecutan LF ni negocios nuevos.
+
+## Preparación autónoma de un pedido (Macrolote A)
+
+**Entrada inicial:** texto literal del usuario + negocio + objetivo. La interpretación
+semántica pertenece a la skill, no al Router. Antes de compilar, separar el texto
+literal (no corregirlo ni resumirlo como si fuera original) de una propuesta con:
+- objetivo funcional y entregable solicitado;
+- pantalla/variante y qué debe conservarse;
+- contenido/copy/cifras con autoridad de origen;
+- áreas fijas y libertad creativa;
+- fuentes requeridas y criterios de aceptación técnicos y semánticos.
+
+No inventar valores ni declarar una interpretación propuesta como aprobada.
+Si todavía no existe pedido e interpretación sellados, devolver la propuesta
+`NEW_INTENT_REQUIRES_INTERPRETATION` y los datos pendientes, sin construir
+un prompt operativo usando otro pedido. La creación/persistencia de pedidos
+nuevos no se implementa en este lote.
+
+**Para un pedido existente:** una vez localizado el objetivo exacto por negocio,
+proyecto, código de pedido e item, invocar la RPC de solo lectura
+`saly.creative_skill_prepare_v1(p_request jsonb)` desde el cliente autorizado
+`service_role`. No usar credenciales del usuario como autoridad ni elevar el
+rol de solo lectura. El JSON tiene exactamente siete campos:
+
+```json
+{
+  "schema_version": "CREATIVE_SKILL_PREPARE_REQUEST_V1",
+  "mode": "PLAN_ONLY",
+  "business_code": "SALY",
+  "project_code": "SALY-001",
+  "order_code": "<código localizado>",
+  "item_code": "<código de variante localizada>",
+  "literal_request": "<texto original exacto del pedido>"
+}
+```
+
+La RPC reutiliza `creative_item_work_packet_l2c` para descubrir y verificar
+fuentes y contrato; `creative_native_canonical_wire_v1` para devolver los
+bytes exactos, no una reconstrucción por Python o por el modelo.
+El resultado `CREATIVE_SKILL_PLAN_V1` muestra en orden:
+
+1. **Interpretación**: negocio, objetivo y variante. Texto original y
+   estrategia separada en `work_packet.review_contract.contract.acceptance_criteria.semantic_qa`;
+   hashes del literal y mensajes originales.
+2. **Descubrimiento**: versión de plantilla, tokens y cadenas de resolución en
+   `work_packet.review_contract.contract.handoff.trace`, logo (proveedor,
+   archivo, versión, SHA), frame/iconos con sus bytes y referencias en
+   `work_packet.composition_svg_assets`. Valores CANDIDATE no se promueven.
+3. **Blueprint**: geometría, áreas fijas/creativas y prompt literal desde el
+   handoff; `canonical_wire.wire_base64` y `wire_sha256` son los bytes del
+   mensaje que debe usarse después, sin reenviar ni reserializar ahora.
+4. **QA preparado, no ejecutado**: criterios técnicos y semánticos de la
+   fuente. Exponer conteos y códigos; nunca afirmar el resultado visual.
+
+Mostrar al usuario los valores efectivamente leídos en cada etapa. Solo
+`PLAN_PREPARED_REVIEW_ONLY` permite pasar a revisión del plan. Ante
+`SKILL_PLAN_SOURCE_NOT_READY` mostrar el estado real y bloquear; ante
+`SKILL_NEW_INTENT_REQUIRES_INTERPRETATION` separar nueva intención del
+contrato anterior. Si negocio o proyecto carecen de adaptador, no buscar
+en fuentes de otro negocio. No invocar GPT Native ni producir imágenes.
+
+La prueba SQL de despliegue consume Home B canónico, compara ambos outputs
+directos de las funciones existentes, ejecuta 13 negativos y verifica que las
+cantidades de pedidos, items, RUNs, capturas y recibos QA no cambian.
+El cliente limitado de lectura puede cotejar filas/hashes pero no llamar esta RPC.
 
 ## Contrato de entrada
 
