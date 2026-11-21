@@ -131,6 +131,12 @@ def main():
                 raise RuntimeError("SALY_AM14_PG17_SOURCE_FIXTURE_MISSING")
             psql(name, saly_fixture.read_text())
             print("SALY_AM14_PG17_SOURCE_SEEDED 14/14", flush=True)
+        if any("_lf_nucleo_f0_vocab36_enums_v1.sql" in p.name for p in replay):
+            f0_fixture = HERE / "f0_vocab36_fixture_pg17.sql"
+            if not f0_fixture.is_file():
+                raise RuntimeError("F0_VOCAB36_PG17_FIXTURE_MISSING")
+            psql(name, f0_fixture.read_text())
+            print("F0_VOCAB36_PG17_SCHEMA_SEEDED", flush=True)
         for path in replay:
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
             replay = psql(name, path.read_text())
@@ -152,6 +158,11 @@ def main():
                 if sum("AM_V3_RESULT " in line for line in lines) != 6 or sum("AM_V3_PASS " in line for line in lines) != 1:
                     raise RuntimeError("AM_V3_INCOMPLETE_REPLAY_EVIDENCE")
                 print("\n".join(lines), flush=True)
+            if "_lf_nucleo_f0_vocab36_enums_v1.sql" in path.name:
+                lines = [line for line in replay.stderr.splitlines() if "F0_VOCAB_PASS " in line]
+                if len(lines) != 1 or "36/36 familias" not in lines[0] or "25 CHECK, 94 valores" not in lines[0]:
+                    raise RuntimeError("F0_VOCAB36_INCOMPLETE_REPLAY_EVIDENCE")
+                print(lines[0], flush=True)
             if "_lf_nucleo_saly_14_candidatas_v1.sql" in path.name:
                 lines = [line for line in replay.stderr.splitlines()
                          if "SALY_AM14_RESULT " in line or "SALY_AM14_PASS " in line]
