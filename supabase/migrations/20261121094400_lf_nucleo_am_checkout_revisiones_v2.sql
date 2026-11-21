@@ -11,7 +11,7 @@ BEGIN
  WHERE r.familia='PAYMENTS_CHECKOUT' AND (v.version<>1 OR v.estado<>'CANDIDATA'))
  OR NOT EXISTS(SELECT 1 FROM public.lf_error_knowledge
  WHERE codigo='LF-NUCLEO-INITIAL-CANDIDATE-REVISION-DEADEND-20261121-001' AND estado='RESUELTO')
- THEN RAISE EXCEPTION 'AM_V2_BASE_DRIFT'; END IF;
+ THEN RAISE EXCEPTION 'AM_V2_BASE_DRIFT candidates=% legacy=% bad_versions=% ekb_resuelta=%', n, (SELECT count(*) FROM lf_ops.reglas), (SELECT count(*) FROM lf_ops.nucleo_regla_versiones v JOIN lf_ops.nucleo_reglas r ON r.codigo=v.regla WHERE r.familia='PAYMENTS_CHECKOUT' AND (v.version<>1 OR v.estado<>'CANDIDATA')), (SELECT count(*) FROM public.lf_error_knowledge WHERE codigo='LF-NUCLEO-INITIAL-CANDIDATE-REVISION-DEADEND-20261121-001' AND estado='RESUELTO'); END IF;
  IF EXISTS(SELECT 1 FROM lf_ops.nucleo_hechos WHERE codigo IN('intento_pago_iniciado','reintento_autorizado_backend','datos_pago_backend_verificados','debito_automatico_requerido','peticion_idempotente_equivalente','operacion_es_checkout'))
  THEN RAISE EXCEPTION 'AM_V2_FACT_COLLISION'; END IF;
 END $pre$;
