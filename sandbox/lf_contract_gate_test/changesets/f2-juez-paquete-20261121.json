@@ -1,0 +1,17 @@
+{
+  "solution_ref": "f2-juez-paquete-20261121",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/HANDOFF_F2.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/extracto_focal_V2.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/suite_ciega.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/holdout_ciego.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/oraculo_LOCAL_NO_ENVIAR.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/pruebas_validador_f2.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/exportacion_f2.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/evidencia_pg17.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/manifiesto_exportacion_corpus.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/README_CICLO_EXPORTACION.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/f2_juez/SHA256SUMS.txt": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/f2-juez-paquete-20261121.json": "CHANGESET_MANIFEST"
+  }
+}

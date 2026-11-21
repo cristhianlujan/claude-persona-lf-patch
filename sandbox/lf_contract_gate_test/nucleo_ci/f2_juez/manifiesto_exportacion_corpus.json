@@ -1,0 +1,138 @@
+{
+  "schema": "LF_F2_EXPORT_RECEIPT_V1",
+  "estado": "EXPORTACION_EN_MEMORIA_VERIFICADA_NO_PERSISTIDA",
+  "source": "LF_SUPABASE_SANDBOX",
+  "pg": "17.6",
+  "transaction": "BEGIN READ ONLY / ROLLBACK",
+  "base": "96270183d9e839f576dd93e00395978ebf1e91c0",
+  "base_solicitada": "8dd4727f1fcfb047165c426cef7b6a7fe600e951",
+  "serialization": "PostgreSQL JSONB::text, UTF-8, sin newline adicional",
+  "method": "19 fragmentos del corpus en 5 SELECTs y 2 focales en otro SELECT, base64, hash SHA256 de cada fragmento en origen y cliente; cada SELECT exige coincidencia de las tres huellas congeladas; reconstrucción en orden de offsets y SHA256 completo recalculado en cliente",
+  "conteo": {
+    "versiones_nucleo": 9,
+    "reglas_legado": 381,
+    "nodos": 12,
+    "fragmentos_totales": 21
+  },
+  "corpus": {
+    "bytes": 1191065,
+    "sha256": "78adbe41eeccd9183f5ca48116a2a78883d1b5a95d00924ef512785433a7b2c0",
+    "fragmentos": [
+      {
+        "offset": 1,
+        "bytes": 65536,
+        "sha256": "2e55bfaf4743262c6505acd2a9597ceb739e7ca0f5a20665b52e86b18f001657"
+      },
+      {
+        "offset": 65537,
+        "bytes": 65536,
+        "sha256": "818fe3d53aae32e5470d9c5cf1ddf3d99d70f1dd6f466573df6e00359fa0ea35"
+      },
+      {
+        "offset": 131073,
+        "bytes": 65536,
+        "sha256": "5baaf75ef7428facca2a556876f20195fc29b50a9c76e899cb9be68f02235c26"
+      },
+      {
+        "offset": 196609,
+        "bytes": 65536,
+        "sha256": "4c283f4eac4731b083eab29d5e74c2a0011e84a46bebe6ca71338bc5fbc962fd"
+      },
+      {
+        "offset": 262145,
+        "bytes": 65536,
+        "sha256": "4babd658cc965438a733f74b1d460f701fbbc175a742098357bd1b7c690df046"
+      },
+      {
+        "offset": 327681,
+        "bytes": 65536,
+        "sha256": "dbfd7dfc09af6ef747b1ecfa744fb2482e139b7c8cc2a5b3a7fd62ea00fb01bb"
+      },
+      {
+        "offset": 393217,
+        "bytes": 65536,
+        "sha256": "61ea208532cb4540e1a28da921f83df96ded240de671f8a1dbfe0bc92f915d07"
+      },
+      {
+        "offset": 458753,
+        "bytes": 65536,
+        "sha256": "5c4bdaa2607eb30258bb21b6f0a284077827b296292724b3059b96e02c886dc3"
+      },
+      {
+        "offset": 524289,
+        "bytes": 65536,
+        "sha256": "6a1fa3cfed1bd83387bb38ca6bd1632b00dcd4820dc0833b83134234d3e5cc47"
+      },
+      {
+        "offset": 589825,
+        "bytes": 65536,
+        "sha256": "84c90ff4cc6a8c26ed1eef3450d79ab3a772822a580fe629ddb146c97b14d799"
+      },
+      {
+        "offset": 655361,
+        "bytes": 65536,
+        "sha256": "93caba577785ef9bdb7fbead4c72be5305f1c17dcd1615d8d9e9c27e9623cc35"
+      },
+      {
+        "offset": 720897,
+        "bytes": 65536,
+        "sha256": "c89f21bed85d8f1df20244c9274cae8b25aa32f3abb58d960ca8094eb97de1c5"
+      },
+      {
+        "offset": 786433,
+        "bytes": 65536,
+        "sha256": "3b1baa7b4e89e4614ebbaddd8ba96df641f95a25178ad9f094b9484bcfe96ca0"
+      },
+      {
+        "offset": 851969,
+        "bytes": 65536,
+        "sha256": "d610672087a7537dc9cdfd1a85083a821c346eee82fa3675396c4843b39e6226"
+      },
+      {
+        "offset": 917505,
+        "bytes": 65536,
+        "sha256": "7721002dd2db305667b68b01786a1a3a86a5a34847f1b2439c5c1d0bdbd1a1d3"
+      },
+      {
+        "offset": 983041,
+        "bytes": 65536,
+        "sha256": "d9ac9849d18b29bb1da28a275f2cadeb40c12362f6c6bbd254788b9d191ef9da"
+      },
+      {
+        "offset": 1048577,
+        "bytes": 65536,
+        "sha256": "8f4d7a12ac71d370dc14a3b3e4f65dd9ccf6e5c04336ddfcf5227235be3e981a"
+      },
+      {
+        "offset": 1114113,
+        "bytes": 65536,
+        "sha256": "91236b7b33162cd012dc78d941898406eb2812f15bfa81dcfa2de4b589a12e28"
+      },
+      {
+        "offset": 1179649,
+        "bytes": 11417,
+        "sha256": "33f9e4e45ecf09bda3c0bad46b328157de744c09f997c926dc51cfab8cb83043"
+      }
+    ]
+  },
+  "paquetes": [
+    {
+      "codigo": "REG_CHK_002",
+      "version": 2,
+      "bytes": 8699,
+      "sha256": "74d53e01b4fa40c4dbfd395fe37a27341135320dcc8199ee6aacd2baad8df5f0",
+      "hash_paquete_oficial": "7d796a48bd4576f53ace8cf27718cab2cf9bb5bdda0b9ebb716603c2f274cd67"
+    },
+    {
+      "codigo": "REG_TEC_007",
+      "version": 2,
+      "bytes": 10435,
+      "sha256": "3ec3cc0ff2b18fe00108629506e932ae0f4562843ed2631242c2447c47c59166",
+      "hash_paquete_oficial": "e07786dcea25d66456ff270fc9a6880fd2c0849a16884bd7773b2fa23e1be1a3"
+    }
+  ],
+  "cliente_sha256_coincide": true,
+  "raw_persistido": false,
+  "raw_publicado": false,
+  "limitacion": "Repositorio público: no se publican los bytes íntegros del corpus; recuperar con exportacion_f2.sql y verificar las huellas antes de evaluación. No prueba instancia independiente ni juicio."
+}

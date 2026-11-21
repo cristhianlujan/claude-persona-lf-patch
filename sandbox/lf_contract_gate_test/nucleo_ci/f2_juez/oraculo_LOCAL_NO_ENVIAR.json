@@ -1,0 +1,66 @@
+{
+  "estado": "ORACULO_FIXTURE_NO_JUICIO",
+  "nota": "C06 y C07 son controles del rechazo/aceptación de clasificación parcial, no dos obligaciones distintas. SQL valida vectores predefinidos, no ejecuta los AST ni analiza texto. No mostrar al juez, tampoco pruebas_validador_f2.sql. Las relaciones distintas pueden solaparse; se exige contraejemplo y no sustitución.",
+  "casos": [
+    {
+      "id": "C01",
+      "relacion_esperada": "EQUIVALENTE",
+      "fundamento": "suma de importes, sin comisión"
+    },
+    {
+      "id": "C02",
+      "relacion_esperada": "EQUIVALENTE",
+      "fundamento": "mismo alcance y guarda"
+    },
+    {
+      "id": "C03",
+      "relacion_esperada": "DISTINTA",
+      "fundamento": "offline fuera de confirmación"
+    },
+    {
+      "id": "C04",
+      "relacion_esperada": "DISTINTA",
+      "fundamento": "condición invertida, texto incoherente"
+    },
+    {
+      "id": "C05",
+      "relacion_esperada": "CONFLICTO",
+      "fundamento": "efecto opuesto, texto B incoherente"
+    },
+    {
+      "id": "C06",
+      "relacion_esperada": "PARCIAL",
+      "fundamento": "residual de onboarding"
+    },
+    {
+      "id": "C07",
+      "relacion_esperada": "PARCIAL",
+      "fundamento": "residual de onboarding"
+    },
+    {
+      "id": "C08",
+      "relacion_esperada": "DISTINTA",
+      "fundamento": "fórmula agrega cargo y contradice texto"
+    },
+    {
+      "id": "C09",
+      "relacion_esperada": "EQUIVALENTE",
+      "fundamento": "paráfrasis"
+    },
+    {
+      "id": "C10",
+      "relacion_esperada": "DISTINTA",
+      "fundamento": "umbral inclusivo vs exclusivo"
+    },
+    {
+      "id": "C11",
+      "relacion_esperada": "PARCIAL",
+      "fundamento": "advertencia fuera de fórmula como obligación textual"
+    },
+    {
+      "id": "C12",
+      "relacion_esperada": "CONFLICTO",
+      "fundamento": "efectos opuestos"
+    }
+  ]
+}

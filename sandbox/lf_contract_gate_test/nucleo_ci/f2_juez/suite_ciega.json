@@ -1,0 +1,543 @@
+{
+  "schema": "F2_BLIND_FIXTURE_V1",
+  "estado": "SINTETICO_NO_PRODUCTO",
+  "instruccion": "Evalúa por separado coherencia texto/condición/efecto de A y B y equivalencia funcional. Usa EQUIVALENTE, PARCIAL, DISTINTA, CONFLICTO o INCIERTA; si falta evidencia no certificar. Devuelve obligación residual y contraejemplo cuando aplique. No confundas ausencia de efecto con permitir. Las expresiones fixture son pseudocódigo de prueba. No generar decisiones de negocio. No tienes acceso al oráculo.",
+  "salida": [
+    "id",
+    "coherencia_A",
+    "coherencia_B",
+    "relacion_semantica",
+    "evidencias",
+    "contraejemplos",
+    "residuales",
+    "veredicto_PASS_o_DEVOLVER",
+    "puntajes_rubrica"
+  ],
+  "casos": [
+    {
+      "id": "C01",
+      "A": {
+        "texto": "Calcular el total de importes de las modalidades de las ofertas seleccionadas, excluyendo comisiones.",
+        "condicion_o_formula": {
+          "op": "suma",
+          "campo": "monto_total",
+          "lista": {
+            "hecho": "checkout_items"
+          }
+        },
+        "efecto": "CALCULAR",
+        "alcance": "CLIENT_PAYMENTS / resumen"
+      },
+      "B": {
+        "texto": "Sumar únicamente monto_total de cada oferta elegida, sin incorporar cargos.",
+        "condicion_o_formula": {
+          "op": "suma",
+          "campo": "monto_total",
+          "lista": {
+            "hecho": "checkout_items"
+          }
+        },
+        "efecto": "CALCULAR",
+        "alcance": "CLIENT_PAYMENTS / resumen"
+      },
+      "escenarios": [
+        {
+          "checkout_items": [
+            {
+              "monto_total": 2
+            }
+          ],
+          "cargo_adicional_fixture": 0
+        },
+        {
+          "checkout_items": [],
+          "cargo_adicional_fixture": 0
+        },
+        {
+          "checkout_items": [
+            {
+              "monto_total": 1
+            },
+            {
+              "monto_total": 4
+            }
+          ],
+          "cargo_adicional_fixture": 3
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "A": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "B": {
+        "texto": "Impedir un nuevo envío de pago cuando se confirma el checkout y el dispositivo está sin conexión.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "escenarios": [
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": false
+        }
+      ]
+    },
+    {
+      "id": "C03",
+      "A": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "B": {
+        "texto": "Siempre bloquear el pago cuando no hay conexión en el módulo de pagos.",
+        "condicion_o_formula": {
+          "fixture": "bloquear si no hay conexión, sin restringir fase",
+          "hecho": "conexion_disponible",
+          "igual": false
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / todas las fases"
+      },
+      "escenarios": [
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": false
+        }
+      ]
+    },
+    {
+      "id": "C04",
+      "A": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "B": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "fixture": "negación lógica",
+          "operando": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "checkout_en_confirmacion"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "conexion_disponible"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "escenarios": [
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": false
+        }
+      ]
+    },
+    {
+      "id": "C05",
+      "A": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "B": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "PERMITIR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "escenarios": [
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": true
+        }
+      ]
+    },
+    {
+      "id": "C06",
+      "A": {
+        "texto": "Bloquear el nuevo pago offline en confirmación y guardar datos de los pasos de onboarding, mostrando banner.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "checkout y onboarding"
+      },
+      "B": {
+        "texto": "Durante la confirmación de checkout, si falta conexión, bloquear el envío de un nuevo pago.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "escenarios": [
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "fase": "onboarding",
+          "conexion_disponible": false
+        }
+      ]
+    },
+    {
+      "id": "C07",
+      "A": {
+        "texto": "Bloquear el nuevo pago offline en confirmación y preservar el banner y guardado local de onboarding.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "checkout y onboarding"
+      },
+      "B": {
+        "texto": "En confirmación, impedir nuevo envío si no hay red.",
+        "condicion_o_formula": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "checkout_en_confirmacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "conexion_disponible"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "efecto": "BLOQUEAR",
+        "alcance": "CLIENT_PAYMENTS / confirmación"
+      },
+      "escenarios": [
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": true
+        },
+        {
+          "conexion_disponible": false,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "conexion_disponible": true,
+          "checkout_en_confirmacion": false
+        },
+        {
+          "fase": "onboarding",
+          "conexion_disponible": false
+        }
+      ]
+    },
+    {
+      "id": "C08",
+      "A": {
+        "texto": "Calcular el total de importes de las modalidades de las ofertas seleccionadas, excluyendo comisiones.",
+        "condicion_o_formula": {
+          "op": "suma",
+          "campo": "monto_total",
+          "lista": {
+            "hecho": "checkout_items"
+          }
+        },
+        "efecto": "CALCULAR",
+        "alcance": "CLIENT_PAYMENTS / resumen"
+      },
+      "B": {
+        "texto": "Calcular el total de importes de las modalidades de las ofertas seleccionadas, excluyendo comisiones.",
+        "condicion_o_formula": {
+          "fixture": "suma(monto_total) + cargo_adicional_fixture"
+        },
+        "efecto": "CALCULAR",
+        "alcance": "CLIENT_PAYMENTS / resumen"
+      },
+      "escenarios": [
+        {
+          "checkout_items": [
+            {
+              "monto_total": 2
+            }
+          ],
+          "cargo_adicional_fixture": 0
+        },
+        {
+          "checkout_items": [],
+          "cargo_adicional_fixture": 0
+        },
+        {
+          "checkout_items": [
+            {
+              "monto_total": 1
+            },
+            {
+              "monto_total": 4
+            }
+          ],
+          "cargo_adicional_fixture": 3
+        }
+      ]
+    }
+  ]
+}
