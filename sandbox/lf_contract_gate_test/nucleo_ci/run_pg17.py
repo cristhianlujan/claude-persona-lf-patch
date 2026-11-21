@@ -148,7 +148,38 @@ def main():
         replayed_names = [p.name for p in replay]
         for path in replay:
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
+            if "_lf_nucleo_piloto_publicacion_2_v1.sql" in path.name:
+                # Preserve original DP-IG-03 legacy-only cases on their original
+                # screen before publication; after replay run them on unaffected 43.
+                base_test = psql(name, (HERE / "dpig03_lectura_pg17.sql").read_text(), check=False)
+                print(base_test.stdout + base_test.stderr, flush=True)
+                if base_test.returncode or base_test.stderr.count("DPIG03_TEST_PASS ") != 14 or "DPIG03_ROLLBACK_PASS 14/14" not in base_test.stderr:
+                    raise RuntimeError("PILOT_PRE_PUBLICATION_DPIG03_FAILED")
+                # Exact migration under outer rollback before replaying its commit.
+                snapshot = """SELECT jsonb_build_object(
+                  'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                  'core',(SELECT jsonb_agg(to_jsonb(n) ORDER BY codigo) FROM lf_ops.nucleo_reglas n),
+                  'versions',(SELECT jsonb_agg(to_jsonb(v) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones v),
+                  'eval',(SELECT jsonb_agg(to_jsonb(e) ORDER BY id) FROM lf_ops.nucleo_evaluaciones e),
+                  'history',(SELECT jsonb_agg(to_jsonb(d) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones d));"""
+                prior = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("PILOT_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if (trial.returncode or trial.stderr.count("PILOT_PASS ") != 10
+                        or trial.stderr.count("PILOT_PUBLISHED ") != 2
+                        or trial.stderr.count("PILOT_DEPRECATED_TEST ") != 2
+                        or psql(name, snapshot).stdout != prior):
+                    raise RuntimeError("PILOT_OUTER_ROLLBACK_FAILED")
+                print("PILOT_OUTER_ROLLBACK_PASS exact baseline, 10/10", flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_piloto_publicacion_2_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr, flush=True)
+                if replay.stderr.count("PILOT_PASS ") != 10 or replay.stderr.count("PILOT_PUBLISHED ") != 2:
+                    raise RuntimeError("PILOT_REPLAY_EVIDENCE_MISSING")
+
             if "_lf_nucleo_am_checkout_piloto_v1.sql" in path.name:
                 lines = [line for line in replay.stderr.splitlines()
                          if "AM_CHECKOUT_RESULT " in line or "AM_CHECKOUT_NEGATIVE_" in line or "AM_CHECKOUT_PASS " in line]
@@ -216,7 +247,13 @@ def main():
             dpig03_test = HERE / "dpig03_lectura_pg17.sql"
             if not dpig03_test.is_file():
                 raise RuntimeError("DPIG03_TEST_MISSING")
-            dpig03 = psql(name, dpig03_test.read_text(), check=False)
+            dpig03_sql = dpig03_test.read_text()
+            if any("_lf_nucleo_piloto_publicacion_2_v1.sql" in n for n in replayed_names):
+                # The published checkout rules now resolve on screen 59; preserve
+                # legacy-only oracle on real node 43 outside CLIENT_PAYMENTS.
+                # Original exact screen-59 suite already ran before pilot.
+                dpig03_sql = re.sub(r"(?<![0-9])59(?![0-9])", "43", dpig03_sql)
+            dpig03 = psql(name, dpig03_sql, check=False)
             print(dpig03.stdout + dpig03.stderr, flush=True)
             if (dpig03.returncode or dpig03.stderr.count("DPIG03_TEST_PASS ") != 14
                     or "DPIG03_ROLLBACK_PASS 14/14" not in dpig03.stderr):
