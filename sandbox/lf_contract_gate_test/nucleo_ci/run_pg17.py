@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the actual LF/SALY migrations and 15 autopruebas in a disposable PG17 container."""
+"""Run the actual LF/SALY migrations and 17 autopruebas in a disposable PG17 container."""
 import argparse
 import pathlib
 import re
@@ -22,6 +22,7 @@ TESTS = {
         ("contrato", "CONTRATO 4/4 (12 casos)"),
         ("calculo", "CALCULO 36/36"),
         ("profundidad", "PROFUNDIDAD 13/13"),
+        ("alcance_inverso", "ALCANCE_INVERSO 10/10"),
     )
 }
 TESTS.update({
@@ -119,8 +120,14 @@ def main():
         psql(name, fixture.read_text())
         for path in replay_paths(relevant):
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
-            psql(name, path.read_text())
-        if len(TESTS) != 15:
+            replay = psql(name, path.read_text())
+            if "_lf_nucleo_am_checkout_piloto_v1.sql" in path.name:
+                lines = [line for line in replay.stderr.splitlines()
+                         if "AM_CHECKOUT_RESULT " in line or "AM_CHECKOUT_NEGATIVE_" in line or "AM_CHECKOUT_PASS " in line]
+                if sum("AM_CHECKOUT_RESULT " in line for line in lines) != 10 or sum("AM_CHECKOUT_NEGATIVE_HASH " in line for line in lines) != 10 or sum("AM_CHECKOUT_NEGATIVE_PUBLICATION " in line for line in lines) != 9 or sum("AM_CHECKOUT_PASS " in line for line in lines) != 1:
+                    raise RuntimeError("AM_CHECKOUT_INCOMPLETE_REPLAY_EVIDENCE")
+                print("\n".join(lines), flush=True)
+        if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
         print(result.stdout + result.stderr, flush=True)
@@ -136,7 +143,7 @@ def main():
         restored = psql(name, suite_sql(), check=False)
         if restored.returncode or restored.stderr.count("NUCLEO_CI_OK ") != len(TESTS):
             raise RuntimeError("NUCLEO_CI_ROLLBACK_OR_RETEST_FAILED")
-        print("NUCLEO_CI_PASS 15/15; negative detected; 15/15 after rollback", flush=True)
+        print("NUCLEO_CI_PASS 17/17; negative detected; 17/17 after rollback", flush=True)
     except subprocess.CalledProcessError as err:
         print(err.stdout or "", err.stderr or "", flush=True)
         raise
