@@ -1,0 +1,35 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "profile_pack_id": "PERFIL-RADAR-COMERCIAL-SALY",
+  "profile_slug": "saly_radar_comercial",
+  "operation": "CREACION_PERFIL_LF",
+  "document_status": "CANDIDATO",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "project_code": "SALY",
+  "identity_mode": "UNVERIFIED_CHAT_DECLARATION",
+  "identity_verified": false,
+  "production_authorized": false,
+  "owner_decision_literal": "Procese como debe ser",
+  "source_authority": [
+    "Plan AI_SALES_3_0 U07/U15",
+    "ACT-0001",
+    "CREACION_PERFIL_LF",
+    "PTE migration #4508",
+    "Adapter PR #4520"
+  ],
+  "required_files": [
+    "SKILL.md",
+    "README.md",
+    "contracts/main_contract.md",
+    "config/pte_pilot.v1.json",
+    "schemas/output.schema.json",
+    "judges/judge.mjs",
+    "judges/mini_judge.md",
+    "evals/eval_matrix.json",
+    "evals/test_judge.mjs",
+    "manifest.json"
+  ],
+  "native_profile_receipt_required": true
+}

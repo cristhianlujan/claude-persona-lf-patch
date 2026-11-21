@@ -1,0 +1,81 @@
+{
+  "status": "CANDIDATO",
+  "cases": [
+    {
+      "id": "P01",
+      "patch": {},
+      "expected": "VALID_OUTPUT"
+    },
+    {
+      "id": "N01",
+      "patch": {
+        "project_code": "LF"
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N02",
+      "patch": {
+        "identity_verified": true
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N03",
+      "patch": {
+        "production_authorized": true
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N04",
+      "patch": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF"
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N05",
+      "patch": {
+        "deliverable_created": {
+          "effect": "WRITE_GOVERNED"
+        }
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N06",
+      "patch": {
+        "deliverable_created": {
+          "capture_sha256": ""
+        }
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N07",
+      "patch": {
+        "evidence_map": []
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N08",
+      "patch": {
+        "deliverable_created": {
+          "source_id": "PE-OTHER"
+        }
+      },
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "id": "N09",
+      "patch": {
+        "deliverable_created": {
+          "unmatched_count": 520
+        }
+      },
+      "expected": "BLOCK_PIPELINE"
+    }
+  ]
+}
