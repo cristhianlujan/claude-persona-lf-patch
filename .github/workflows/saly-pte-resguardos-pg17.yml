@@ -91,5 +91,7 @@ jobs:
         run: node skills/ai_sales_discovery/tests/pte_readonly_pipeline.test.mjs
       - name: Test independent source admission policy, ZIP, privacy, and API gates
         run: node skills/ai_sales_discovery/tests/source_admission_v1.test.mjs
+      - name: Test synthetic ZIP security preflight for SUNAT archive candidate
+        run: node skills/ai_sales_discovery/tests/zip_archive_preflight.test.mjs
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs
