@@ -45,6 +45,8 @@ def compose_blueprint(m, body):
     w,h = dims
     need(isinstance(body,Image.Image) and body.mode=='RGBA' and body.size==(w,h), 'BODY_FORMAT')
     plan=m['plan']; sources={s['id']:s for s in plan['sources']}
+    layout={key:m[key] for key in ('canvas','backdrop','regions')}
+    need(plan['blueprint']['design_lock']['LOCK'].get('composition_layout')==layout, 'LAYER_BLUEPRINT_LAYOUT_DRIFT')
     parsed={}; used={}; files=m['files']
     need(type(files) is dict, 'LAYER_FILE_REGISTRY')
     def source(sid, allowed):
@@ -95,31 +97,19 @@ def compose_blueprint(m, body):
     need(type(regions) is list and len(regions)==len(comps), 'LAYER_COMPONENT_COVERAGE')
     native=Image.new('L',(w,h)); fixed=Image.new('L',(w,h)); rendered=[]; occupied=[]
     for c,r in zip(comps,regions):
-        fields(r,'name owner box ops')
+        fields(r,'name owner box ops coverage')
         need(r['name']==c['name'] and r['owner']==c['owner'], 'LAYER_COMPONENT_BINDING')
         need(type(r['ops']) is list, 'LAYER_OPS')
         if c['owner']=='REFERENCE_ONLY':
-            need(r['box'] is None and not r['ops'], 'LAYER_REFERENCE_DRAW'); continue
+            need(r['box'] is None and not r['ops'] and r['coverage']=='NONE', 'LAYER_REFERENCE_DRAW'); continue
         b=box(r['box'],c['name'],w,h)
         if c['owner']=='NATIVE':
-            need(not r['ops'], 'LAYER_NATIVE_FIXED_OP')
+            need(not r['ops'] and r['coverage']=='BOX', 'LAYER_NATIVE_FIXED_OP')
             ImageDraw.Draw(native).rectangle(rect(b),fill=255); continue
         need(bool(r['ops']), 'LAYER_FIXED_EMPTY')
-        current=Image.new('L',(w,h)); ImageDraw.Draw(current).rectangle(rect(b),fill=255)
-        need(not ImageChops.multiply(fixed,current).getbbox(),'LAYER_FIXED_OVERLAP')
-        fixed=ImageChops.lighter(fixed,current)
+        need(r['coverage'] in ('BOX','ALPHA'), 'LAYER_COVERAGE_MODE')
         occupied.append((c,r,b))
-    alpha=body.getchannel('A'); permitted=ImageChops.subtract(native,fixed)
-    need(not ImageChops.multiply(alpha,ImageChops.invert(permitted)).getbbox(),'BODY_OVERWRITES_FIXED')
-    need(not native.getbbox() or alpha.getbbox(),'BODY_EMPTY')
-    # The canvas is a deliberate backdrop, independent of any native body.
-    back=m['backdrop']; fields(back,'kind source_id')
-    if back['kind']=='TRANSPARENT':
-        need(back['source_id'] is None,'LAYER_BACKDROP_SOURCE'); out=Image.new('RGBA',(w,h))
-    else:
-        need(back['kind']=='COLOR','LAYER_BACKDROP_KIND')
-        out=Image.new('RGBA',(w,h),color(back['source_id'],list(sources)))
-    out.alpha_composite(body)
+    prepared=[]
     for c,r,b in occupied:
         x,y,a,d=b; allowed=c['source_ids']; copies=[]; has_asset=False
         # Render into a clipped local component surface, then place it in its box.
@@ -143,7 +133,34 @@ def compose_blueprint(m, body):
                 raise CompositionError('LAYER_OPERATION_UNSUPPORTED')
         need(copies==c['copy'] or (has_asset and not copies), 'LAYER_COPY_COVERAGE')
         need(bool(layer.getchannel('A').getbbox()),'LAYER_FIXED_EMPTY')
-        out.alpha_composite(layer,(x,y)); rendered.append(c['name'])
+        current=Image.new('L',(w,h))
+        if r['coverage']=='ALPHA':
+            # Only a pinned transparent asset may reserve a non-rectangular silhouette.
+            need(len(r['ops'])==1 and r['ops'][0]['kind']=='ASSET', 'LAYER_ALPHA_ASSET_ONLY')
+            mask=layer.getchannel('A').point(lambda a:255 if a else 0)
+            need(mask.getextrema()==(0,255),'LAYER_ALPHA_NOT_TRANSPARENT')
+            current.paste(mask,(x,y))
+        else:
+            ImageDraw.Draw(current).rectangle(rect(b),fill=255)
+        need(not ImageChops.multiply(fixed,current).getbbox(),'LAYER_FIXED_OVERLAP')
+        fixed=ImageChops.lighter(fixed,current)
+        prepared.append((layer,x,y,c['name']))
+    alpha=body.getchannel('A'); permitted=ImageChops.subtract(native,fixed)
+    need(not ImageChops.multiply(alpha,ImageChops.invert(permitted)).getbbox(),'BODY_OVERWRITES_FIXED')
+    need(not native.getbbox() or alpha.getbbox(),'BODY_EMPTY')
+    # Base layer may be a pinned background asset or a resolved color.
+    back=m['backdrop']; fields(back,'kind source_id')
+    if back['kind']=='TRANSPARENT':
+        need(back['source_id'] is None,'LAYER_BACKDROP_SOURCE'); out=Image.new('RGBA',(w,h))
+    elif back['kind']=='COLOR':
+        out=Image.new('RGBA',(w,h),color(back['source_id'],list(sources)))
+    else:
+        need(back['kind']=='ASSET','LAYER_BACKDROP_KIND')
+        out=asset(back['source_id'],list(sources),(w,h))
+        need(out.size==(w,h), 'LAYER_BACKDROP_DIMENSIONS')
+    out.alpha_composite(body)
+    for layer,x,y,name in prepared:
+        out.alpha_composite(layer,(x,y)); rendered.append(name)
     need(set(files)==set(used),'LAYER_UNUSED_FILE')
     return out,{'status':'LOCAL_BLUEPRINT_COMPOSITOR_PASS','schema_version':SCHEMA,
                 'business_code':plan['business_code'],'proposal_sha256':p['proposal_sha256'],
