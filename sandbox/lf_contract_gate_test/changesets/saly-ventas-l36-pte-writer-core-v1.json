@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-ventas-l36-pte-writer-core-v1",
+  "paths": {
+    "supabase/migrations/20261121030300_lf_saly_ventas_pte_writer_core_v1.sql": "MIGRATION",
+    "supabase/tests/saly_ventas_pte_writer_core_v1_readback.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-l36-pte-writer-core-v1.json": "CHANGESET_MANIFEST",
+    "supabase/tests/saly_ventas_pte_writer_core_v1_concurrency.py": "RUNTIME_TESTING"
+  }
+}
