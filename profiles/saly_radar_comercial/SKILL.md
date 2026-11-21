@@ -1,3 +1,5 @@
+> **HISTÓRICO / NO_PROMOVER — negocio específico sustituido.** Este paquete NO define un perfil nuevo admisible para SALY. Conservar para evidencia del piloto PTE. Arquitectura vigente de propuesta: `docs/ai_sales/candidate/AI_SALES_CROSS_BUSINESS_ADAPTER_BINDING_V1.md`. No dar de alta `PERFIL-RADAR-COMERCIAL-SALY`; la función debe usar un perfil estándar nativo seleccionado por ACT-0001, con política SALY/LF y adaptadores desacoplados. Este texto no autoriza runtime, escritura ni bypass.
+
 # PERFIL-RADAR-COMERCIAL-SALY — Radar comercial SALY
 Candidato de CREACION_PERFIL_LF; no habilitado, sin impacto automático.
 Misión: descubrir entidades elegibles para investigación comercial con procedencia, sin resolver identidad jurídica, scoring, enriquecimiento ni contacto.

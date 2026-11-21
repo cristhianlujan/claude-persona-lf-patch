@@ -31,5 +31,9 @@
     "evals/test_judge.mjs",
     "manifest.json"
   ],
-  "native_profile_receipt_required": true
+  "native_profile_receipt_required": true,
+  "promotion_blocked": true,
+  "candidate_disposition": "SUPERSEDED_BUSINESS_SPECIFIC_PROFILE_DO_NOT_REGISTER",
+  "replacement_contract": "docs/ai_sales/candidate/AI_SALES_CROSS_BUSINESS_ADAPTER_BINDING_V1.md",
+  "replacement_profile_code": null
 }
