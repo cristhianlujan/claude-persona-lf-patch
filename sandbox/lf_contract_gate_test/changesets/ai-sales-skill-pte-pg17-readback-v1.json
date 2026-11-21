@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ai-sales-skill-pte-pg17-readback-v1",
+  "paths": {
+    "supabase/tests/saly_ventas_pte_writer_core_v1_concurrency.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-skill-pte-pg17-readback-v1.json": "CHANGESET_MANIFEST"
+  }
+}
