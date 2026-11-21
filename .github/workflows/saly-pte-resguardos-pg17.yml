@@ -93,5 +93,7 @@ jobs:
         run: node skills/ai_sales_discovery/tests/source_admission_v1.test.mjs
       - name: Test synthetic ZIP security preflight for SUNAT archive candidate
         run: node skills/ai_sales_discovery/tests/zip_archive_preflight.test.mjs
+      - name: Test bounded ZIP content CRC, actual sizes and local headers
+        run: node skills/ai_sales_discovery/tests/zip_content_verify.test.mjs
       - name: Test Radar semantic judge and guard mutations
         run: node profiles/saly_radar_comercial/evals/test_judge.mjs

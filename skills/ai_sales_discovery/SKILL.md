@@ -48,3 +48,6 @@ La función genérica inspectDiscoveryReadOnly delega al registro explícito en 
 
 ## Lote v0.4 — ZIP del padrón SUNAT (preflight técnico)
 `adapters/zip_archive_preflight.mjs` inspecciona localmente metadatos ZIP con cuotas de bytes/entradas, rutas, symlinks, cifrado, ZIP64 y ratio. Lee un archivo temporal ya descargado; **no extrae, no descarga, no registra SUNAT como adaptador ni declara seguridad de descompresión**. Ver `contracts/ZIP_PREFLIGHT_V04.md` y tests con ZIP sintéticos. El siguiente lote deberá validar cabecera local, CRC y descompresión segura bajo política efectiva antes de admitir un conector real.
+
+## Lote v0.5 — procesador ZIP transversal
+`verifyZipContentCandidate` reutiliza el preflight y valida CRC y bytes reales mediante descompresión por stream. No extrae archivos ni analiza registros. Los límites vienen del consumidor; los 18 casos locales usan fixtures, no política real. Formatos no compatibles bloqueados. Contrato: `contracts/ZIP_CONTENT_V05.md`. Próximo módulo: verificar el recurso y esquema interior de SUNAT, no activar conectores ni perfiles.

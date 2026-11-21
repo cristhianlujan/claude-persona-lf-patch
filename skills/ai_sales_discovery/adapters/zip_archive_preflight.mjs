@@ -1,8 +1,8 @@
-// Metadata-only bounded inspection of a local ZIP file (SUNAT candidate).
-// No network, decompression, extraction, CRM, DB or production authority.
-// Does NOT prove archive CRC, inner CSV schema, licensing or actual decompression safety.
-import {open,stat} from 'node:fs/promises';
-import {createReadStream} from 'node:fs';
+// Bounded ZIP inspection, with optional in-memory streaming content verification.
+// No network, extraction to disk, CSV parsing, CRM, DB or production authority.
+import {open} from 'node:fs/promises';
+import {constants} from 'node:fs';
+import {verifyZipEntries} from './zip_content_verify.mjs';
 import {createHash} from 'node:crypto';
 import {TextDecoder} from 'node:util';
 
@@ -31,19 +31,24 @@ function safeName(name,seen) {
 }
 async function fileRead(handle,bytes,start){
  const buf=Buffer.alloc(bytes);
- const {bytesRead}=await handle.read(buf,0,bytes,start);
- if(bytesRead!==bytes)reject('ZIP_TRUNCATED_READ');
+ let at=0;
+ while(at<bytes){
+  const {bytesRead}=await handle.read(buf,at,bytes-at,start+at);
+  if(!bytesRead)reject('ZIP_TRUNCATED_READ');
+  at+=bytesRead;
+ }
  return buf;
 }
-export async function inspectZipCandidate(filePath,limits){
+async function inspectArchive(filePath,limits,verifyContent){
  validLimits(limits);
  if(typeof filePath!=='string'||!filePath)
    reject('ZIP_INPUT_INVALID');
- const details=await stat(filePath).catch(()=>reject('ZIP_INPUT_NOT_FOUND'));
- if(!details.isFile()||details.size<22||details.size>limits.max_download_bytes)
-   reject('ZIP_FILE_SIZE_OR_TYPE_BLOCK');
- const file=await open(filePath,'r');
+ // Use a single descriptor, reject symlinks/FIFOs, and never reopen by path.
+ const file=await open(filePath,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK).catch(()=>reject('ZIP_INPUT_NOT_FOUND'));
  try{
+  const details=await file.stat();
+  if(!details.isFile()||details.size<22||details.size>limits.max_download_bytes)
+    reject('ZIP_FILE_SIZE_OR_TYPE_BLOCK');
   const tailSize=Math.min(details.size,65557);
   const tail=await fileRead(file,tailSize,details.size-tailSize);
   let eocd=-1;
@@ -68,11 +73,12 @@ export async function inspectZipCandidate(filePath,limits){
     reject('ZIP_CENTRAL_DIRECTORY_BOUNDARY');
   const cd=await fileRead(file,cdSize,cdOffset);
   let cursor=0,totalUnpacked=0,totalCompressed=0;
-  const seen=new Set();
+  const seen=new Set(),descriptors=[];
   for(let n=0;n<entries;n++){
     if(cursor+46>cd.length||cd.readUInt32LE(cursor)!==SIG_CENTRAL)
       reject('ZIP_CENTRAL_DIRECTORY_CORRUPT');
     const flags=cd.readUInt16LE(cursor+8),method=cd.readUInt16LE(cursor+10);
+    const crc=cd.readUInt32LE(cursor+16);
     const comp=cd.readUInt32LE(cursor+20),uncomp=cd.readUInt32LE(cursor+24);
     const fileNameBytes=cd.readUInt16LE(cursor+28);
     const extraBytes=cd.readUInt16LE(cursor+30);
@@ -103,13 +109,22 @@ export async function inspectZipCandidate(filePath,limits){
     totalUnpacked+=uncomp;totalCompressed+=comp;
     if(totalUnpacked>limits.max_unpacked_bytes)
       reject('ZIP_TOTAL_UNPACKED_EXCEEDS_LIMIT');
+    if(verifyContent)descriptors.push({offset:localOffset,flags,method,crc,compressed:comp,
+      uncompressed:uncomp,nameBytes:cd.subarray(cursor+46,cursor+46+fileNameBytes)});
     cursor=end;
   }
   if(cursor!==cd.length)reject('ZIP_CENTRAL_DIRECTORY_EXTRA_DATA');
+  const actualBytes=verifyContent?await verifyZipEntries(file,descriptors,cdOffset,limits):null;
   const hash=createHash('sha256');
-  for await(const chunk of createReadStream(filePath,{highWaterMark:65536}))
-    hash.update(chunk);
-  return Object.freeze({state:'ZIP_METADATA_CANDIDATE',entry_count:entries,
+  for(let offset=0;offset<details.size;){
+    const chunk=await fileRead(file,Math.min(65536,details.size-offset),offset);
+    hash.update(chunk);offset+=chunk.length;
+  }
+  const after=await file.stat();
+  if(after.size!==details.size||after.mtimeMs!==details.mtimeMs||after.ctimeMs!==details.ctimeMs)
+    reject('ZIP_FILE_CHANGED_DURING_INSPECTION');
+  const verified=verifyContent?{content_crc_verified:true,actual_unpacked_bytes:actualBytes}:{};
+  return Object.freeze({state:verifyContent?'ZIP_CONTENT_VERIFIED_CANDIDATE':'ZIP_METADATA_CANDIDATE',...verified,entry_count:entries,
     compressed_bytes:details.size,declared_unpacked_bytes:totalUnpacked,
     declared_payload_compressed_bytes:totalCompressed,
     archive_sha256:hash.digest('hex'),
@@ -117,3 +132,6 @@ export async function inspectZipCandidate(filePath,limits){
     write_authorized:false,source_license_verified:false});
  }finally{await file.close();}
 }
+
+export const inspectZipCandidate=(filePath,limits)=>inspectArchive(filePath,limits,false);
+export const verifyZipContentCandidate=(filePath,limits)=>inspectArchive(filePath,limits,true);

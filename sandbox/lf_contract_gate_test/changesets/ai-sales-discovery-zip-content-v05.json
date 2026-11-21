@@ -1,0 +1,12 @@
+{
+  "solution_ref": "ai-sales-discovery-zip-content-v05",
+  "paths": {
+    "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/adapters/zip_content_verify.mjs": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/zip_content_verify.test.mjs": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/contracts/ZIP_CONTENT_V05.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-zip-content-v05.json": "CHANGESET_MANIFEST"
+  }
+}
