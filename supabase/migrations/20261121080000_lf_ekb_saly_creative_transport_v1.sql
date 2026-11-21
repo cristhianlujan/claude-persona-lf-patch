@@ -11,5 +11,15 @@ BEGIN
 (gen_random_uuid(),'LF-JS-REPLACE-DOLLAR-SUFFIX-SQL-20261121-001','DevOps/CI','Sustitución JavaScript interpretó dólar y apóstrofo en SQL','Una sustitución de expresión regular SQL mediante String.replace con cadena de reemplazo interpretó el marcador dólar-apóstrofo como sufijo del texto. Duplicó el resto del archivo y dejó la expresión sin comilla final; PASE falló por SQL dollar string sin terminar.','Se utilizó una cadena de reemplazo con metacaracteres en lugar de una función de reemplazo literal.','JS_REPLACEMENT_META_EXPANSION','Usar reemplazo por función para inyectar SQL literal, exigir una coincidencia del ancla, verificar archivo completo recuperado de GitHub y ejecutar PASE sobre el HEAD corregido.','Reproducción JS: reemplazo por cadena duplica TAIL y pierde cierre; reemplazo por función conserva expresión y TAIL único. PASE fallido 44877904062 y exitoso 44881183552; PR #4514 fusionado.','MEDIUM',1,now(),now(),'SALY_CREATIVE_TRANSPORT_20261121','#4514','RESUELTO','PR #4514, commit defectuoso efc27b68; corrección 610786dc; HEAD integrado 3285478a.','DESIGN',ARRAY['CLAUDE_NATIVE','PROGRAMADOR']::text[],'R2_NO_VE','LOUD_EARLY','SALY Fábrica Digital','https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44877904062',now(),now());
  IF (SELECT count(*) FROM public.lf_error_knowledge WHERE codigo IN ('SALY-NATIVE-HANDOFF-REWRITE-20261121-001','LF-JS-REPLACE-DOLLAR-SUFFIX-SQL-20261121-001'))<>2
  THEN RAISE EXCEPTION 'SALY_CREATIVE_EKB_READBACK_FAILED'; END IF;
+ -- Same incident family, new observed recurrence; no duplicate EKB code.
+ UPDATE public.lf_error_knowledge SET frecuencia=frecuencia+1,ultima_vez=now(),updated_at=now(),
+   source_ref=concat_ws(';',source_ref,'github://cristhianlujan/claude-persona-lf-patch/pull/4519#train-44881563302'),
+   evidencia=concat_ws(' | ',evidencia,'SALY #4519 PRE-APPLY STOP run 44881563302: 20261121074000 occupied by lf_nucleo_am_checkout_piloto_v1. Renamed to unused provisional version 20261121075843, exact blob c605c5c274b572cd652b88e574ab335953b5eedb; no SQL replay.')
+ WHERE codigo='IG-M96-MIGRATION-VERSION-COLLISION-001'
+ AND position('pull/4519#train-44881563302' in coalesce(source_ref,''))=0;
+ IF NOT FOUND THEN RAISE EXCEPTION 'SALY_CREATIVE_EKB_RECURRENCE_MISSING_OR_DUPLICATE'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.lf_error_knowledge WHERE codigo='IG-M96-MIGRATION-VERSION-COLLISION-001'
+ AND position('pull/4519#train-44881563302' in coalesce(source_ref,''))>0)
+ THEN RAISE EXCEPTION 'SALY_CREATIVE_EKB_RECURRENCE_READBACK_FAILED'; END IF;
 END $ekb$;
 COMMIT;
