@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the actual LF/SALY migrations and 15 autopruebas in a disposable PG17 container."""
+"""Run the actual LF/SALY migrations and 17 autopruebas in a disposable PG17 container."""
 import argparse
 import pathlib
 import re
@@ -22,6 +22,7 @@ TESTS = {
         ("contrato", "CONTRATO 4/4 (12 casos)"),
         ("calculo", "CALCULO 36/36"),
         ("profundidad", "PROFUNDIDAD 13/13"),
+        ("alcance_inverso", "ALCANCE_INVERSO 10/10"),
     )
 }
 TESTS.update({
@@ -120,7 +121,7 @@ def main():
         for path in replay_paths(relevant):
             print(f"NUCLEO_CI_REPLAY {path.name}", flush=True)
             psql(name, path.read_text())
-        if len(TESTS) != 15:
+        if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
         print(result.stdout + result.stderr, flush=True)
@@ -136,7 +137,7 @@ def main():
         restored = psql(name, suite_sql(), check=False)
         if restored.returncode or restored.stderr.count("NUCLEO_CI_OK ") != len(TESTS):
             raise RuntimeError("NUCLEO_CI_ROLLBACK_OR_RETEST_FAILED")
-        print("NUCLEO_CI_PASS 15/15; negative detected; 15/15 after rollback", flush=True)
+        print("NUCLEO_CI_PASS 17/17; negative detected; 17/17 after rollback", flush=True)
     except subprocess.CalledProcessError as err:
         print(err.stdout or "", err.stderr or "", flush=True)
         raise
