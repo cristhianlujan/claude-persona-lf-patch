@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-join-qa-v10",
+  "paths": {
+    "skills/ai_sales_discovery/tests/sunat_join_probe.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-join-qa-v10.json": "CHANGESET_MANIFEST"
+  }
+}
