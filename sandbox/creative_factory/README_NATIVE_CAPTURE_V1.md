@@ -11,15 +11,12 @@ acceptance, provider callback, image result, or an independent QA decision.
 
 1. Get the current item L2C work packet **through its authorized service-role
    route**. The read-only role cannot execute the private L2C function.
-2. Call the deployed, service-role-only
-   `saly.creative_assert_native_transport_v2(envelope)` immediately before
-   local capture. A test double can exercise local behavior but **cannot**
+2. Call the service-role-only `saly.creative_native_canonical_wire_v1(item_id)` immediately before local capture. It reuses the deployed V2 validator and returns the exact SQL-owned bytes, SHA-256 and compact Base64. A test double can exercise local behavior but **cannot**
    constitute evidence of this SQL check.
 3. Compare exact prompt UTF-8 bytes, prompt SHA-256, contract SHA-256,
    attachments and item identity. Reject unsolicited text or composition
    assets in the Native payload; these belong to the compositor.
-4. Serialize only the payload (prompt and attachments) with canonical UTF-8
-   JSON. The sink must return the **actual bytes** it read. Missing readback,
+4. Decode the SQL-issued wire bytes (prompt and attachments). Never reserialize in Python: PostgreSQL and Python can serialize equal JSON to different bytes. The sink must return the **actual bytes** it read. Missing readback,
    altered wire, malformed JSON and duplicate JSON keys are blocking failures.
 5. Optional persistence: the governed
    `saly.creative_capture_append_v1(item_id,request_id,wire_base64,readback_base64)`
@@ -58,7 +55,11 @@ missing/modified receiver echo, duplicate JSON keys, malformed UTF-8 and
 unverified provider ACK. Test fixtures do not send external requests.
 
 Database migration self-test runs on real sealed Home B item 9, writes
-synthetic local-capture evidence only in a subtransaction, proves three
+synthetic local-capture evidence only in a subtransaction, proves five
 specific rejections and rolls back the evidence before commit. Any DB change
 must be deployed via the governed one-at-a-time Merge Train. There is no ZIP,
 font binary or copied logo in this PR.
+
+## Canonical wire correction
+
+The append function now rejects even semantically equivalent but byte-different JSON (extra whitespace, duplicate keys). Its V2 payload hash must equal the captured wire SHA. PostgreSQL Base64 line wrapping is removed at the SQL producer, not silently repaired at the consumer. Local regression tests also reject invalid Base64, line breaks, false authority, missing provider receipt and malformed request identifiers. No new render permission; provider verification remains unavailable.
