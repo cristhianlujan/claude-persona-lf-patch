@@ -1,0 +1,2035 @@
+{
+  "schema": "SALY-AM-14-CANDIDATAS-V1",
+  "source": "SELECT saly.reglas 14 VALIDADAS",
+  "scope": "14 candidatas DEVUELTA, contexto actual no independiente, sin publicación y sin cambios legadas. 007/008 por sujeto mediante hecho ADELANTO; 014 anticipation_days=SQL NULL.",
+  "facts": [
+    {
+      "codigo": "curva_tipo",
+      "tipo_dato": "text",
+      "unidad": "ninguna",
+      "descripcion": "Tipo de curva LINEAR/STEPS/INSTANT; fuente 001; sin binding."
+    },
+    {
+      "codigo": "cap_antes_devengo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "assignment_cap limita base antes del devengo; fuente 002; sin binding."
+    },
+    {
+      "codigo": "supera_accrual_cap",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Devengado supera accrual_cap; fuente 003; sin binding."
+    },
+    {
+      "codigo": "retiro_limites_antes_disponible",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Límites se evalúan antes del saldo disponible; fuente 004; sin binding."
+    },
+    {
+      "codigo": "retiro_limites_modifican_generado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Límites alteran generado; fuente 004; sin binding."
+    },
+    {
+      "codigo": "ciclo_materializado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Ciclo real materializado; fuente 005; sin binding."
+    },
+    {
+      "codigo": "ventana_disposicion_cerrada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Ventana de disposición bloqueada; fuente 006; sin binding."
+    },
+    {
+      "codigo": "intento_retiro",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Intento de disposición; fuente 006; sin binding."
+    },
+    {
+      "codigo": "excepcion_empleado_vigente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Excepción temporal del colaborador específico; fuente 007; sin binding."
+    },
+    {
+      "codigo": "excepcion_autorizada_evidenciada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Excepción tiene permiso, motivo y vigencia verificables; fuente 007; sin binding."
+    },
+    {
+      "codigo": "extra_temporal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Saldo adicional temporal de colaborador; fuente 008; sin binding."
+    },
+    {
+      "codigo": "extra_fuera_vigencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Saldo extra utilizado tras vigencia sin excepción; fuente 008; sin binding."
+    },
+    {
+      "codigo": "extra_elude_gate",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Saldo extra elude gate de disposición; fuente 008; sin binding."
+    },
+    {
+      "codigo": "fuente_base_motor",
+      "tipo_dato": "text",
+      "unidad": "ninguna",
+      "descripcion": "Origen de la base de cálculo; fuente 009; sin binding."
+    },
+    {
+      "codigo": "usa_sueldo_con_variable_upload",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se utiliza sueldo/porcentaje para VARIABLE_UPLOAD; fuente 009; sin binding."
+    },
+    {
+      "codigo": "correccion_variable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se procesa una corrección de VARIABLE_UPLOAD; fuente 010; sin binding."
+    },
+    {
+      "codigo": "correccion_sobrescribe_historia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Corrección sobrescribe historia o consumos; fuente 010; sin binding."
+    },
+    {
+      "codigo": "uso_float_o_round_intermedio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Usa float o redondea antes del resultado final; fuente 011; sin binding."
+    },
+    {
+      "codigo": "falta_floor_final_clamp",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "No se aplica floor final o clamp de cero; fuente 011; sin binding."
+    },
+    {
+      "codigo": "traza_incompleta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Faltan campos exigidos en traza del cálculo; fuente 012; sin binding."
+    },
+    {
+      "codigo": "creacion_excepcion_extra",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Intento de crear excepción o saldo extraordinario; fuente 013; sin binding."
+    },
+    {
+      "codigo": "permission_code_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "No existe permiso explícito para crear excepción; fuente 013; sin binding."
+    },
+    {
+      "codigo": "autorizacion_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Falta actor/alcance/motivo/evidencia; fuente 013; sin binding."
+    },
+    {
+      "codigo": "saly_plus_activo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Saly Plus activo; fuente 014; sin binding."
+    },
+    {
+      "codigo": "plus_aumenta_topes",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Beneficio excede cap o máximo de período; fuente 014; sin binding."
+    },
+    {
+      "codigo": "plus_omite_gates",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Beneficio salta límites/gates; fuente 014; sin binding."
+    },
+    {
+      "codigo": "plus_omite_dias_config",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Anticipo no respeta anticipation_days configurado; fuente 014; valor nulo en legada."
+    }
+  ],
+  "config_from_sources": [
+    {
+      "scope": "MOTOR_DISPONIBLE",
+      "config_key": "CURVE_TYPES",
+      "config_value": "[\"LINEAR\",\"STEPS\",\"INSTANT\"]",
+      "value_type": "JSON",
+      "source": 1
+    },
+    {
+      "scope": "CALENDARIO",
+      "config_key": "ON_MISSING_DAY",
+      "config_value": "LAST_DAY",
+      "value_type": "TEXT",
+      "source": 5
+    },
+    {
+      "scope": "CALENDARIO",
+      "config_key": "CONFIG_CHANGE_DEFAULT",
+      "config_value": "NEXT_CYCLE",
+      "value_type": "TEXT",
+      "source": 5
+    },
+    {
+      "scope": "MOTOR_DISPONIBLE",
+      "config_key": "ASSIGNMENT_CAP_PCT_DEFAULT",
+      "config_value": "1",
+      "value_type": "DECIMAL",
+      "source": 2
+    }
+  ],
+  "excluded": [
+    "SALY_PLUS.ANTICIPATION_DAYS: fuente NULL, sin parametría inventada"
+  ],
+  "entries": [
+    {
+      "source": {
+        "id": 1,
+        "codigo": "SALY-RGL-001",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Curvas core del motor",
+        "regla": "El motor admite LINEAR, STEPS e INSTANT. INSTANT equivale a STEPS con liberación 100%.",
+        "razon": "Evita motores específicos por empresa o periodicidad.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "curve_types": [
+            "LINEAR",
+            "STEPS",
+            "INSTANT"
+          ]
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 51,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-001",
+        "clave": "saly_motor_1",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "DEFINICION",
+        "titulo": "Curvas core del motor",
+        "descripcion": "Curvas LINEAR/STEPS/INSTANT admitidas por el motor; la equivalencia INSTANT con liberación completa requiere verificar cálculo real.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-51",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "CLASIFICAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/1",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "curva_tipo"
+            },
+            "der": {
+              "lit": "LINEAR"
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "curva_tipo"
+              },
+              "der": {
+                "lit": "STEPS"
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "curva_tipo"
+              },
+              "der": {
+                "lit": "INSTANT"
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "curva_tipo": "INSTANT"
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "curva_tipo": "INVALID"
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 2,
+        "codigo": "SALY-RGL-002",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Assignment cap",
+        "regla": "assignment_cap limita la base antes del devengo y puede expresarse como porcentaje y/o monto.",
+        "razon": "Distingue la elegibilidad inicial del límite de acumulación o retiro.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "pct_default": 1,
+          "amount_default": null
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 53,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-002",
+        "clave": "saly_motor_2",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Assignment cap",
+        "descripcion": "Bloquear cálculo si assignment_cap no limita la base antes del devengo; porcentaje/monto son configuración de fuente, sin valores incrustados.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-53",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/2",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cap_antes_devengo"
+          },
+          "der": {
+            "lit": false
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cap_antes_devengo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cap_antes_devengo": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 3,
+        "codigo": "SALY-RGL-003",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Accrual cap",
+        "regla": "accrual_cap limita el monto máximo que puede alcanzar el devengado sin alterar la base.",
+        "razon": "Representa casos de acumulación diaria hasta un máximo.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {},
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 53,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-003",
+        "clave": "saly_motor_3",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Accrual cap",
+        "descripcion": "Bloquear resultado cuyo devengado supera accrual_cap, sin modificar la base de devengo; falta integración de importes.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-53",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/3",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "supera_accrual_cap"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "supera_accrual_cap": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "supera_accrual_cap": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 4,
+        "codigo": "SALY-RGL-004",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Withdrawal limits",
+        "regla": "Los límites de retiro se aplican después del saldo disponible y no modifican el saldo generado.",
+        "razon": "Permite max por operación, ciclo, número de operaciones y mínimo.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "max_per_cycle": null,
+          "max_operations": null,
+          "max_per_operation": null,
+          "min_per_operation": null
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 53,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-004",
+        "clave": "saly_motor_4",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Withdrawal limits",
+        "descripcion": "Rechazar límites de retiro aplicados antes de saldo disponible o que cambien el saldo generado. Incluye topes por operación, ciclo y mínimos definidos fuera de esta regla.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-53",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "RECHAZAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/4",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "retiro_limites_antes_disponible"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "retiro_limites_modifican_generado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "retiro_limites_antes_disponible": true,
+              "retiro_limites_modifican_generado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "retiro_limites_antes_disponible": false,
+              "retiro_limites_modifican_generado": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 5,
+        "codigo": "SALY-RGL-005",
+        "categoria": "CALENDARIO",
+        "titulo": "Ciclo materializado",
+        "regla": "El cálculo debe referenciar un ciclo materializado; semanal, quincenal y mensual no son fórmulas del motor.",
+        "razon": "Evita ambigüedad en fechas, meses y múltiples cortes.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "on_missing_day": "LAST_DAY",
+          "config_change_default": "NEXT_CYCLE"
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 54,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-005",
+        "clave": "saly_motor_5",
+        "familia": "CALENDARIO",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Ciclo materializado",
+        "descripcion": "Bloquear cálculo sin ciclo materializado: semanal, quincenal y mensual no son fórmulas separadas del motor.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-54",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/5",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "ciclo_materializado"
+          },
+          "der": {
+            "lit": false
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "ciclo_materializado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "ciclo_materializado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Representa el núcleo de la conducta y casos positivo/negativo."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 6,
+        "codigo": "SALY-RGL-006",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Gate de disposición",
+        "regla": "Una ventana puede bloquear disposición sin detener la acumulación.",
+        "razon": "Representa cierres/bloqueos operativos sin perder saldo generado.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "blocks_accrual": false,
+          "blocks_disposal": true
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 55,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-006",
+        "clave": "saly_motor_6",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Gate de disposición",
+        "descripcion": "Bloquear disposición en ventana cerrada sin interrumpir devengo; ninguna modificación de saldo acumulado.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-55",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/6",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "ventana_disposicion_cerrada"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "intento_retiro"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "ventana_disposicion_cerrada": true,
+              "intento_retiro": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "ventana_disposicion_cerrada": true,
+              "intento_retiro": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 7,
+        "codigo": "SALY-RGL-007",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Excepción temporal de bloqueo",
+        "regla": "Un colaborador puede recibir permiso temporal para retirar durante un bloqueo de disposición; la excepción no altera la fórmula ni la configuración general.",
+        "razon": "Cubre excepciones solicitadas por empresa u operación sin crear fórmulas especiales.",
+        "alcance": "EMPLEADO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "type": "TEMPORARY_DISPOSAL_ALLOW",
+          "auditable": true,
+          "requires_reason": true,
+          "requires_validity": true
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 55,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-007",
+        "clave": "saly_motor_7",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Excepción temporal de bloqueo",
+        "descripcion": "Permitir retiro bajo bloqueo exclusivamente al empleado identificado con excepción temporal vigente y autorizada; no alterar fórmula ni política general. Sujetos por condición, sin nuevo nodo.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-55",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "PERMITIR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/7",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "ventana_disposicion_cerrada"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "excepcion_empleado_vigente"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "excepcion_autorizada_evidenciada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "ventana_disposicion_cerrada": true,
+              "excepcion_empleado_vigente": true,
+              "excepcion_autorizada_evidenciada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "ventana_disposicion_cerrada": true,
+              "excepcion_empleado_vigente": true,
+              "excepcion_autorizada_evidenciada": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "Sujeto EMPLEADO en fuente; nodo sólo ADELANTO; condición individual requiere evidencia de aislamiento."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": true,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 8,
+        "codigo": "SALY-RGL-008",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Saldo adicional temporal",
+        "regla": "El saldo adicional extraordinario se otorga a un colaborador por ciclo o vigencia; no modifica la configuración normal, el remanente vence por defecto y por defecto sigue el gate de disposición general.",
+        "razon": "Permite autorizaciones puntuales sin contaminar la base recurrente.",
+        "alcance": "EMPLEADO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "scope": "EMPLOYEE",
+          "temporary": true,
+          "carry_over_default": false,
+          "follows_disposal_gate": true,
+          "consumption_priority_default": "EXTRA_FIRST_BY_EXPIRY"
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 56,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-008",
+        "clave": "saly_motor_8",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Saldo adicional temporal",
+        "descripcion": "Bloquear uso de saldo adicional temporal fuera de vigencia o que eluda el gate normal; no modificar base recurrente del empleado.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-56",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/8",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "extra_temporal"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "extra_fuera_vigencia"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "extra_elude_gate"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "extra_temporal": true,
+              "extra_fuera_vigencia": true,
+              "extra_elude_gate": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "extra_temporal": true,
+              "extra_fuera_vigencia": false,
+              "extra_elude_gate": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "Sujeto EMPLEADO en fuente; nodo sólo ADELANTO; condición individual requiere evidencia de aislamiento."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": true,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 9,
+        "codigo": "SALY-RGL-009",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Fuente VARIABLE_UPLOAD",
+        "regla": "VARIABLE_UPLOAD es una fuente normal de base por empleado y ciclo para comisiones, bonos u otros variables. Cuando aplica, sueldo y porcentaje salarial no intervienen.",
+        "razon": "Elimina el workaround histórico de porcentaje cero + excepción.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "concepts": [
+            "COMMISSION",
+            "BONUS",
+            "VARIABLE_PAY",
+            "OTHER"
+          ],
+          "correction_mode": "ADJUSTMENT_EVENT",
+          "carry_over_default": false,
+          "idempotency_required": true,
+          "batch_scoped_to_cycle": true,
+          "missing_employee_default_amount": 0
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 57,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-009",
+        "clave": "saly_motor_9",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Fuente VARIABLE_UPLOAD",
+        "descripcion": "Rechazar cálculo que use salario o porcentaje cuando la base proviene de VARIABLE_UPLOAD por empleado/ciclo; correcciones mediante ajuste.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-57",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "RECHAZAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/9",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "fuente_base_motor"
+            },
+            "der": {
+              "lit": "VARIABLE_UPLOAD"
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "usa_sueldo_con_variable_upload"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "fuente_base_motor": "VARIABLE_UPLOAD",
+              "usa_sueldo_con_variable_upload": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "fuente_base_motor": "VARIABLE_UPLOAD",
+              "usa_sueldo_con_variable_upload": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 10,
+        "codigo": "SALY-RGL-010",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Corrección de carga variable",
+        "regla": "Las correcciones de VARIABLE_UPLOAD no sobrescriben historia; deben registrarse como versión/movimiento correctivo y preservar consumos ya ocurridos.",
+        "razon": "Evita que una corrección retroactiva cambie artificialmente el pasado.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "correction_mode": "ADJUSTMENT_EVENT",
+          "overwrite_history": false
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 57,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-010",
+        "clave": "saly_motor_10",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Corrección de carga variable",
+        "descripcion": "Bloquear corrección de VARIABLE_UPLOAD que sobrescriba historia, versiones o consumos; exige movimiento correctivo.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-57",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/10",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "correccion_variable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "correccion_sobrescribe_historia"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "correccion_variable": true,
+              "correccion_sobrescribe_historia": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "correccion_variable": true,
+              "correccion_sobrescribe_historia": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Representa el núcleo de la conducta y casos positivo/negativo."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 11,
+        "codigo": "SALY-RGL-011",
+        "categoria": "GOBERNANZA",
+        "titulo": "Redondeo monetario",
+        "regla": "No usar float ni redondeos intermedios; redondear con floor solo al resultado final y aplicar clamp mayor o igual a cero.",
+        "razon": "Evita errores acumulados en ciclos de distinta longitud.",
+        "alcance": "TRANSVERSAL",
+        "producto_codigo": null,
+        "valor_config": {
+          "rounding": "FLOOR_FINAL_ONLY",
+          "clamp_min": 0
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 58,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": true
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-011",
+        "clave": "saly_motor_11",
+        "familia": "GOBERNANZA",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Redondeo monetario",
+        "descripcion": "Rechazar cálculo monetario con float, redondeo intermedio o sin floor final y clamp no negativo. Precisión numérica pendiente de prueba runtime.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-58",
+        "alcance": "GLOBAL",
+        "modo": "HEREDA",
+        "clase": "TRANSVERSAL",
+        "efecto": "RECHAZAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/11",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "uso_float_o_round_intermedio"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "falta_floor_final_clamp"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "uso_float_o_round_intermedio": true,
+              "falta_floor_final_clamp": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "uso_float_o_round_intermedio": false,
+              "falta_floor_final_clamp": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 12,
+        "codigo": "SALY-RGL-012",
+        "categoria": "GOBERNANZA",
+        "titulo": "Traza de cálculo",
+        "regla": "Cada cálculo de disponible debe poder reconstruirse con as_of, employee, cycle, config_version, config_hash, engine_version, base, caps, gates, consumos, reservas, resultado y trace.",
+        "razon": "Garantiza auditoría, soporte y explicabilidad.",
+        "alcance": "TRANSVERSAL",
+        "producto_codigo": null,
+        "valor_config": {},
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 58,
+        "fuente": "Motor Disponible V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": true
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-012",
+        "clave": "saly_motor_12",
+        "familia": "GOBERNANZA",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Traza de cálculo",
+        "descripcion": "Bloquear resultado sin traza reconstruible: as_of, employee, cycle, config_version, config_hash, engine_version, base, caps, gates, consumos, reservas, resultado y trace.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-58",
+        "alcance": "GLOBAL",
+        "modo": "HEREDA",
+        "clase": "TRANSVERSAL",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/12",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "traza_incompleta"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "traza_incompleta": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "traza_incompleta": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 13,
+        "codigo": "SALY-RGL-013",
+        "categoria": "GOBERNANZA",
+        "titulo": "Autorización de excepciones y saldos extraordinarios",
+        "regla": "Excepciones de bloqueo y saldos extraordinarios pueden ser creados por operador de plataforma o empresa únicamente cuando exista permission_code explícito; se debe persistir actor, alcance, motivo y evidencia de autorización.",
+        "razon": "Evitar que la capacidad de alterar temporalmente el disponible se derive de nombres de rol o de acceso implícito.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "creator_scopes": [
+            "PLATFORM",
+            "COMPANY"
+          ],
+          "requires_audit": true,
+          "requires_reason": true,
+          "requires_permission": true
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 56,
+        "fuente": "chat V2.3",
+        "metadata": {
+          "version": "V2.3"
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-013",
+        "clave": "saly_motor_13",
+        "familia": "GOBERNANZA",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Autorización de excepciones y saldos extraordinarios",
+        "descripcion": "Bloquear creación de excepción o saldo extraordinario sin permission_code específico, identidad, motivo, alcance y evidencia; no inferir permisos por rol.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-56",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/13",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "creacion_excepcion_extra"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "permission_code_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "autorizacion_sin_evidencia"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "creacion_excepcion_extra": true,
+              "permission_code_invalido": true,
+              "autorizacion_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "creacion_excepcion_extra": true,
+              "permission_code_invalido": false,
+              "autorizacion_sin_evidencia": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 1,
+            "observacion": "Representa el núcleo de la conducta y casos positivo/negativo."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": false
+      }
+    },
+    {
+      "source": {
+        "id": 14,
+        "codigo": "SALY-RGL-014",
+        "categoria": "MOTOR_DISPONIBLE",
+        "titulo": "Saly Plus — adelanto temporal de disponibilidad",
+        "regla": "Si el beneficio Saly Plus está activo, anticipation_days=N adelanta temporalmente la disponibilidad correspondiente sin aumentar assignment_cap, accrual_cap ni el máximo total del período. Conceptualmente: disponible_base_plus(t)=min(disponible_base_estandar(t+N días), maximo_asignado_del_periodo). Después se aplican retiros, reservas, withdrawal_limits, gates, bloqueos y excepciones vigentes.",
+        "razon": "El beneficio comercial debe mejorar acceso temporal sin deteriorar el control de exposición ni crear saldo adicional.",
+        "alcance": "PRODUCTO",
+        "producto_codigo": "ADELANTO",
+        "valor_config": {
+          "active": null,
+          "valid_to": null,
+          "plan_code": null,
+          "anchor_ref": null,
+          "exceptions": [],
+          "valid_from": null,
+          "anchor_type": null,
+          "curve_types": [
+            "LINEAR",
+            "STEPS",
+            "INSTANT"
+          ],
+          "product_code": "ADELANTO",
+          "company_scope": [],
+          "day_count_type": null,
+          "conflict_policy": "MOST_RESTRICTIVE_WINS",
+          "membership_code": null,
+          "time_shift_only": true,
+          "anticipation_days": null,
+          "increases_period_cap": false,
+          "block_override_policy": "NO_OVERRIDE"
+        },
+        "estado": "VALIDADO",
+        "vigente": true,
+        "decision_id": 60,
+        "fuente": "SALY_PLUS_ACCESO_ANTICIPADO_V1.0 / aprobación en chat",
+        "metadata": {
+          "version": "V1.0",
+          "benefit_code": "SALY_PLUS_EARLY_ACCESS",
+          "drive_file_id": "1XJevht7bZXMGSDGq-0dYkXEwRMUNWAl7FxwGy2JrU2M",
+          "commercial_examples_days": [
+            3,
+            5
+          ]
+        },
+        "es_transversal": false
+      },
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-RGL-014",
+        "clave": "saly_motor_14",
+        "familia": "MOTOR_DISPONIBLE",
+        "naturaleza": "CONDUCTA",
+        "titulo": "Saly Plus — adelanto temporal de disponibilidad",
+        "descripcion": "Bloquear Saly Plus que eleve topes, eluda límites o no respete anticipation_days configurado. El valor anticipation_days de la fuente es NULL: no se inventa; fórmula requiere prueba real.",
+        "dueno": "PRODUCTO",
+        "autoridad": "SALY-DEC-60",
+        "alcance": "ADELANTO",
+        "modo": "HEREDA",
+        "clase": "BACKEND",
+        "efecto": "BLOQUEAR",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "saly.reglas/14",
+          "solicitante": "migracion-nucleo-saly"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "saly_plus_activo"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "plus_aumenta_topes"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "plus_omite_gates"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "plus_omite_dias_config"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "saly_plus_activo": true,
+              "plus_aumenta_topes": true,
+              "plus_omite_gates": false,
+              "plus_omite_dias_config": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "saly_plus_activo": true,
+              "plus_aumenta_topes": false,
+              "plus_omite_gates": false,
+              "plus_omite_dias_config": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 juicio contexto actual; no independiente",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "La condición representa una verificación observable propuesta, no ejecución existente."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "Producto y globales declarados según la fuente vigente."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Define el caso y reserva las dependencias sin binding como brechas verificables."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "Efecto coherente con bloqueo, permiso o clasificación de la condición acotada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Sólo un guard lógico de cláusulas de la fuente; requiere pruebas de runtime o fórmula."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Comparación de fuentes SALY sin evidencia de motor implementado; no se certifican interacciones."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "No existen candidatas SALY previas; equivalencia semántica completa entre reglas no juzgada independientemente."
+          }
+        }
+      },
+      "brechas": {
+        "binding": "SIN_BINDING_RUNTIME",
+        "sujeto_empleado": false,
+        "anticipation_days_null": true
+      }
+    }
+  ]
+}
