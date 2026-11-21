@@ -52,7 +52,134 @@
       "joined_batch_ref": "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py",
       "aggregate_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_202610_join_20261121.json",
       "reduced_url": "https://www2.sunat.gob.pe/padron_reducido_ruc.zip",
-      "reduced_rights_status": "PENDIENTE_VERIFICAR"
+      "reduced_rights_status": "PENDIENTE_VERIFICAR",
+      "download_ref": "skills/ai_sales_discovery/adapters/sunat_download_v1.py",
+      "history_ref": "skills/ai_sales_discovery/adapters/sunat_history_v1.py",
+      "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
+      "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
+      "sequence": {
+        "version": "1.1",
+        "state": "CANDIDATE_CONTRACT_NOT_RUNTIME",
+        "steps": [
+          {
+            "code": "12.01.1",
+            "name": "Admisión y transporte",
+            "requires": [],
+            "references": [
+              "skills/ai_sales_discovery/adapters/source_admission_v1.mjs",
+              "skills/ai_sales_discovery/adapters/sunat_download_v1.py"
+            ],
+            "status": "COMPONENTS_TESTED_RUNTIME_PENDING",
+            "gate": "Política efectiva, derechos, URL y hash; cuotas y reintentos."
+          },
+          {
+            "code": "12.01.2",
+            "name": "Integridad ZIP y esquema",
+            "requires": [
+              "12.01.1"
+            ],
+            "references": [
+              "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs",
+              "skills/ai_sales_discovery/adapters/sunat_zip_candidate.mjs"
+            ],
+            "status": "COMPONENTS_TESTED_DUAL_SOURCE_WIRING_PENDING",
+            "gate": "Cuotas, cabecera exacta y CRC hasta EOF; esquemas distintos."
+          },
+          {
+            "code": "12.01.3",
+            "name": "Lectura y selección",
+            "requires": [
+              "12.01.2"
+            ],
+            "references": [
+              "skills/ai_sales_discovery/adapters/sunat_records_candidate.mjs",
+              "skills/ai_sales_discovery/tests/sunat_join_probe.py"
+            ],
+            "status": "QA_REAL_DATA_STREAMS_PENDING",
+            "gate": "RUC 20, territorio por política, ordinal; excluir inválidos y ambiguos."
+          },
+          {
+            "code": "12.01.4",
+            "name": "Cruce por RUC",
+            "requires": [
+              "12.01.3"
+            ],
+            "references": [
+              "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py"
+            ],
+            "status": "JOIN_COMPONENT_TESTED_REAL_SAMPLE_ONLY",
+            "gate": "Ambos streams completos, unicidad, nombre no vacío, spool y lotes acotados."
+          },
+          {
+            "code": "12.01.5",
+            "name": "Proyección empresarial y lotes",
+            "requires": [
+              "12.01.4"
+            ],
+            "references": [
+              "skills/ai_sales_discovery/adapters/sunat_company_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_company_v1.py"
+            ],
+            "status": "IMPLEMENTED_WITHIN_JOIN",
+            "gate": "13 campos mensual, 5 reducido: RUC compartido, nombre y 3 contrastes; conservar discrepancias y hash."
+          },
+          {
+            "code": "12.01.6",
+            "name": "Antigüedad mínima observada",
+            "requires": [
+              "12.01.5"
+            ],
+            "references": [
+              "skills/ai_sales_discovery/adapters/sunat_history_v1.py",
+              "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
+              "skills/ai_sales_discovery/tests/test_sunat_history_v1.py"
+            ],
+            "status": "OPTIONAL_COMPONENT_NOT_WIRED",
+            "gate": "Cohorte y manifiesto nacional; resultado separado, sin inferir inicio ni activar regla.",
+            "optional": true
+          },
+          {
+            "code": "12.01.7",
+            "name": "Persistencia gobernada",
+            "requires": [
+              "12.01.5"
+            ],
+            "references": [
+              "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
+              "skills/ai_sales_discovery/tests/sunat_writer_pg17.py"
+            ],
+            "status": "WRITER_DEPLOYED_DISABLED",
+            "gate": "Externa a READ_ONLY; derechos, autorización, consulta válida y readback. No modificar captura v1.",
+            "external": true
+          },
+          {
+            "code": "12.01.8",
+            "name": "Reconciliación y cierre",
+            "requires": [
+              "12.01.5"
+            ],
+            "references": [
+              "skills/ai_sales_discovery/tests/evidence/sunat_202610_join_20261121.json",
+              "skills/ai_sales_discovery/tests/sunat_writer_pg17.py"
+            ],
+            "status": "END_TO_END_PENDING",
+            "gate": "Cierre candidato: hashes y conteos. Cierre de ingesta: requiere además 12.01.7 y readback independiente. Registrar decisión sobre 12.01.6.",
+            "conditional_dependencies": {
+              "history_requested": [
+                "12.01.6"
+              ],
+              "authorized_ingestion": [
+                "12.01.7"
+              ]
+            }
+          }
+        ],
+        "closure_modes": [
+          "READ_ONLY_CANDIDATE",
+          "GOVERNED_INGESTION"
+        ]
+      }
     },
     {
       "source_id": "SUNARP",
