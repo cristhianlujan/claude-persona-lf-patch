@@ -19,23 +19,40 @@
       "source_id": "GOOGLE_PLACES_API_NEW",
       "provider": "Google Places API (New)",
       "adapter": null,
-      "state": "PLAN_CANDIDATE_LICENSE_AND_BILLING_PENDING",
-      "no_api_calls": true
+      "state": "PREFLIGHT_BLOCKED_BILLING_TERMS_AND_REUSE",
+      "no_api_calls": true,
+      "source_variant": "GOOGLE_PLACES_API_NEW",
+      "format": "API_JSON",
+      "runtime_enabled": false
     },
     {
       "source_id": "SUNAT",
       "adapter": null,
-      "state": "NO_ADAPTER_OR_RIGHTS_VERIFIED"
+      "state": "PREFLIGHT_REQUIRED_ZIP_STREAMING_PRIVACY_AND_SIZE",
+      "source_variant": "SUNAT-RUC",
+      "official_catalog_url": "https://www.datosabiertos.gob.pe/dataset/padr%C3%B3n-ruc-superintendencia-nacional-de-aduanas-y-de-administraci%C3%B3n-tributaria-sunat",
+      "observed_resource": "PadronRUC_202610.zip",
+      "format": "ZIP",
+      "runtime_enabled": false
     },
     {
       "source_id": "SUNARP",
       "adapter": null,
-      "state": "NO_ADAPTER_OR_RIGHTS_VERIFIED"
+      "state": "PREFLIGHT_REQUIRED_SCHEMA_AND_STABLE_RESOURCE",
+      "source_variant": "SUNARP-PJ",
+      "official_catalog_url": "https://www.datosabiertos.gob.pe/dataset/personas-jur%C3%ADdicas-inscritas-en-el-registro-de-personas-jur%C3%ADdicas-%E2%80%93-sunarp",
+      "format": "HTML",
+      "runtime_enabled": false
     },
     {
       "source_id": "OSCE",
       "adapter": null,
-      "state": "NO_ADAPTER_OR_RIGHTS_VERIFIED"
+      "state": "PREFLIGHT_BLOCKED_LICENSE_UNRESOLVED",
+      "source_variant": "OECE-PROVEEDORES",
+      "official_catalog_url": "https://www.datosabiertos.gob.pe/dataset/proveedores-y-consorcios-organismo-especializado-para-las-contrataciones-p%C3%BAblicas-eficientes",
+      "format": "HTML",
+      "license_status": "NOT_SPECIFIED",
+      "runtime_enabled": false
     },
     {
       "source_id": "GOOGLE_MAPS",
@@ -43,5 +60,7 @@
       "state": "NOT_AVAILABLE_SCRAPING_DISALLOWED"
     }
   ],
-  "adapter_registry": "skills/ai_sales_discovery/adapters/registry.mjs"
+  "adapter_registry": "skills/ai_sales_discovery/adapters/registry.mjs",
+  "source_admission_gate": "skills/ai_sales_discovery/adapters/source_admission_v1.mjs",
+  "source_review_ref": "skills/ai_sales_discovery/contracts/SOURCE_REVIEW_20261121.md"
 }
