@@ -25,13 +25,15 @@ def main():
         current.unlink()
         archive = Path(directory) / "202310.zip"
         receipt = acquire(HISTORICAL, archive, allowed_urls={HISTORICAL}, max_bytes=MAX_ZIP,
-                          attempts=3, socket_timeout=30, deadline_seconds=240, backoff_seconds=1)
+                          attempts=3, socket_timeout=30, deadline_seconds=240, backoff_seconds=1,
+                          expected_sha="1c96388fda3d03967a843b8530a327ef076aa772e476a4de69f47dd53a4ba1eb")
         with zipfile.ZipFile(archive) as reader:
             info = member(reader, ".csv")
             with reader.open(info) as stream:
                 header = stream.readline(MAX_LINE + 1)
                 require(len(header) <= MAX_LINE, "HEADER_LIMIT")
                 header_hash = hashlib.sha256(header.rstrip(b'\r\n')).hexdigest()
+        require(header_hash == HEADER_SHA, "HISTORICAL_HEADER_DRIFT")
         source = dict(period=PERIOD, path=str(archive), url=HISTORICAL,
                       sha256=receipt["sha256"], header_sha256=header_hash)
         print("HISTORY_RESOURCE", json.dumps(dict(zip=receipt, header_sha256=header_hash,
