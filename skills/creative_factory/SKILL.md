@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.3 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.4 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -131,11 +131,75 @@ No elevar a `QA_PASS`, `NATIVE_DELIVERED` ni `RENDER_AUTHORIZED`.
 Un juicio visual/semántico independiente y la recepción del proveedor requieren
 contratos y evidencias separados, fuera del alcance autónomo actual.
 
+## Control automático antes y después de cada envío — handoff visible
+
+**Disparadores obligatorios, sin intervención del usuario:**
+- Al preparar cualquier handoff operativo entre componentes de la skill:
+  mostrarlo y, si el envío ya está autorizado y es técnicamente posible,
+  transmitirlo inmediatamente en la misma ejecución, sin esperar respuesta,
+  confirmación, mensaje nuevo ni microaprobación del usuario.
+- Al detectar cualquier error, rechazo o incumplimiento: solicitar al
+  receptor el handoff del mismo intento, comparar y mostrar el diagnóstico
+  automáticamente según el protocolo siguiente, sin esperar una instrucción.
+
+La visualización no es una pausa de aprobación. No agrega permisos, no
+habilita proveedores ni convierte un resultado de revisión en producción.
+
+### Antes del envío
+
+1. Resolver y congelar el payload y adjuntos exactos del contrato autorizado.
+   Para Native, reutilizar los bytes de `canonical_wire.wire_base64` y su
+   `wire_sha256` emitidos por `saly.creative_native_canonical_wire_v1`.
+2. **Mostrar al usuario el handoff completo y literal antes de invocar
+   al receptor**, en una salida visible intermedia de la misma ejecución.
+   Incluir emisor, receptor, negocio, pedido/item/variante, intento si existe,
+   prompt íntegro, adjuntos y referencias exactos, SHA del payload y estado
+   `HANDOFF_PREPARED_NOT_SENT`. Indicar explícitamente si no hay adjuntos.
+   Excluir credenciales, secretos e instrucciones internas del sistema.
+   La cabecera del diagnóstico no forma parte del mensaje al receptor.
+3. Sin esperar al usuario, comprobar que el contenido a emitir y los
+   adjuntos son los mismos que se acaban de mostrar. No regenerar, resumir,
+   reserializar ni añadir contexto operativo o QA a un payload que no lo
+   incluye. Si cambian, volver a congelar y mostrar el handoff antes del
+   envío. Una vista previa no sustituye la evidencia de transmisión.
+4. Si ya existe autorización y canal de envío exacto, invocar al receptor
+   inmediatamente en la misma ejecución. Si falta autoridad o capacidad
+   técnica, no enviar: informar `HANDOFF_NOT_SENT` y la causa. No saltar
+   controles existentes ni ampliar el alcance aprobado.
+
+### Después del envío
+
+5. Mostrar automáticamente el resultado de la invocación y su evidencia
+   real: referencia del intento, recibo disponible, huella de bytes emitidos
+   cuando el canal la exponga, adjuntos enviados y cotejo con lo mostrado.
+   Si hubo una invocación real sin evidencia exacta suficiente, informar
+   `HANDOFF_SENT_UNVERIFIED`. Si no hubo invocación, `HANDOFF_NOT_SENT`.
+   Nunca presentar el hash preparado como prueba de envío o recepción.
+6. Continuar automáticamente con recepción y QA autorizados. Ante fallo
+   aplicar el protocolo de readback de abajo en esa misma ejecución:
+   solicitar al receptor su handoff funcional exacto, recuperar el readback
+   si existe, comparar y mostrar divergencias sin esperar otro turno.
+   Si el canal no recupera el payload recibido, informar
+   `HANDOFF_RECEIVER_READBACK_UNAVAILABLE`; no inventar evidencia ni
+   reintentar sin resolver la causa y respetar la autorización vigente.
+
+**Criterios de aceptación:** (a) vista literal visible antes de invocar,
+(b) envío automático sin confirmación intermedia cuando está autorizado,
+(c) evidencia de salida visible inmediatamente después, (d) readback
+automático ante rechazo, (e) bloqueo verificable si falta autoridad,
+capacidad de envío exacto o evidencia del receptor. Una imagen con recibos
+o indicadores PASS no satisface estos controles.
+
+Este cambio define el comportamiento obligatorio de la skill; la integración
+real con un proveedor sigue condicionada a un canal disponible y autorizado.
+No se crea ni invoca Router, perfiles o RUNs de perfil.
+
 ## Protocolo obligatorio ante rechazo o incidencia — readback del handoff
 
 **Disparador:** cualquier ERROR, BLOCKED, FAIL, REJECTED o incumplimiento observado
 durante la preparación, transporte, generación, composición o QA. No esperar
-a que el usuario pida el handoff. Detener la entrega y el reintento automático.
+a que el usuario pida el handoff. Disparar el diagnóstico automáticamente en
+la misma ejecución; detener solo la entrega y el reintento no verificado.
 
 1. Identificar etapa, componente emisor y receptor, pedido/item/variante y
    referencia real de la ejecución o intento, si existe.
