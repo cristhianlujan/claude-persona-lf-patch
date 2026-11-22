@@ -1,0 +1,25 @@
+name: SALY Native V07 source preflight unit candidate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'sandbox/creative_factory/queue_v07/**'
+      - '.github/workflows/saly-creative-v07-source-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-source-contract:
+    name: Native GPT/Claude source bytes contract tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pure Python Native source checks (synthetic images)
+        working-directory: sandbox/creative_factory/queue_v07
+        run: python -m unittest -v test_native_source_preflight_v1.py
