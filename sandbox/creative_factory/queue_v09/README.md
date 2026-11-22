@@ -15,7 +15,8 @@ La admisión V04 comprueba el lease y la política **antes** del archivado V08. 
 **Límite importante:** V09 es una validación local, no un bloqueo SQL atómico. Entre su lectura final y el efecto Native puede haber una carrera. El futuro despachador debe cerrar esa brecha usando fencing atómico en la ruta gobernada, además de contar con host real y atestación verificable. Un puerto inyectado desde JSON del pedido no es confiable. Ni `READY` ni `HANDOFF_ARCHIVED_NOT_SENT` constituyen autorización productiva.
 
 ## Pruebas y evidencia
-- `test_dispatch_fence_v1.py`: 18 casos locales sintéticos PASS, incluido un caso con activo protegido; validación V04 simulada con mock. Evidencia en `unit_results.txt`.
+- `test_dispatch_fence_v1.py`: 18 casos sintéticos PASS, incluido activo protegido; la respuesta V04 del test V09 se simula con mock. Evidencia en `unit_results.txt`.
+- **CI real** [#45073378089](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45073378089), SHA `55cff2deecaada87a1168dfd71b1a30ca94e94a1`: 43/43 V08+V09 PASS (25+18), 2/2 mutantes V08 muertos por aserción. El archivo temporal de workflow debe retirarse; PASE del HEAD final se comprueba por separado.
 - Se contrastó el blob SHA de cada fuente creada con el `git hash-object` del archivo local antes de declarar paridad de persistencia.
 - El nuevo control de privacidad de V08 (modo 0700 incluso con umask 022) tiene test agregado, pero requiere ejecutar esa regresión con el módulo V08 real.
 
