@@ -3,6 +3,7 @@ name: LF migration name classification
 on:
   pull_request:
     paths:
+      - "sandbox/creative_factory/knowledge_depth_v02/**"
       - "supabase/migrations/**/*.sql"
       - ".github/workflows/lf-migration-merge-train.yml"
       - ".github/workflows/lf-migration-name-classification.yml"
@@ -24,6 +25,48 @@ permissions:
   contents: read
 
 jobs:
+  # Draft-only isolated PG17 experiment; no credentials or live access.
+  saly-knowledge-depth-v02:
+    name: SALY creative knowledge v0.2 isolated PG17
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'codex/saly-knowledge-depth-v02-pg17' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ephemeral_depth_only
+          POSTGRES_DB: saly_knowledge_test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_knowledge_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Exact source isolated PG17 rollback and independent readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          cd sandbox/creative_factory/knowledge_depth_v02
+          container="${{ job.services.postgres.id }}"
+          test -n "$container"
+          docker exec "$container" mkdir -p /tmp/saly-depth
+          for f in repositorio_selector_candidato.sql depth_candidate.sql test_depth_pg17.sql; do
+            docker cp "$f" "$container:/tmp/saly-depth/"
+          done
+          pg=(docker exec -e PGPASSWORD=ephemeral_depth_only "$container" psql -X -h 127.0.0.1 -U postgres -d saly_knowledge_test -v ON_ERROR_STOP=1)
+          "${pg[@]}" -c 'SHOW server_version_num; SELECT inet_server_addr();'
+          "${pg[@]}" -f /tmp/saly-depth/test_depth_pg17.sql | tee /tmp/saly-depth.log
+          grep -Fx PASS_KNOWLEDGE_DEPTH_V02_PG17_ROLLBACK /tmp/saly-depth.log
+          test "$("${pg[@]}" -qAt -c "SELECT count(*) FROM pg_namespace WHERE nspname IN ('saly','visual','extensions');")" = 0
+          echo PASS_KNOWLEDGE_DEPTH_INDEPENDENT_CLEANUP
+
   # Exact-HEAD source fixture; no remote Supabase credentials.
   ig-chat8-auth-window30-pg17:
     name: IG Chat8 PG17 BEGIN/ROLLBACK auth window 30m
