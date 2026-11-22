@@ -144,6 +144,17 @@ def archive_render_candidate_v1(
         except CaptureRejected as exc:
             raise NativeArchiveRejected(exc.code) from exc
 
+    # The existing archivador creates directories using the process umask.
+    # Parent is already private 0700. Pin the final directories explicitly,
+    # including when the process umask is permissive (e.g. 022).
+    for directory in (out, out / "references", out / "protected"):
+        if directory.is_dir():
+            _need(not directory.is_symlink(),
+                  "SALY_NATIVE_ARCHIVE_DIRECTORY_UNSAFE")
+            os.chmod(directory, 0o700)
+            _need(stat.S_IMODE(directory.stat().st_mode) == 0o700,
+                  "SALY_NATIVE_ARCHIVE_PRIVATE_MODE_FAILED")
+
     _need(receipt.get("status") == "HANDOFF_PREPARED_NOT_SENT"
           and receipt.get("provider_receipt") is None
           and receipt.get("invocation_recorded") is False
