@@ -62,8 +62,8 @@ WHERE d.run_ref='RUN-SUNAT-A';""")
     uuid.UUID(result)
     assert psql("SELECT count(*) FROM saly.ventas_discovery_ingestas WHERE source_id='TEST-SUNAT'")=='2'
     assert psql("SELECT count(*) FROM saly.ventas_hallazgos WHERE captura_empresarial IS NOT NULL")=='3'
-    raw_name=psql("SELECT captura_empresarial#>>'{capture,observations,reduced,raw,nombre}' FROM saly.ventas_hallazgos WHERE ruc_candidato='20000000003'")
-    assert raw_name==name,'RAW_NAME_NOT_PRESERVED'
+    raw_name_json=psql("SELECT to_json(captura_empresarial#>>'{capture,observations,reduced,raw,nombre}')::text FROM saly.ventas_hallazgos WHERE ruc_candidato='20000000003'")
+    assert json.loads(raw_name_json)==name,'RAW_NAME_NOT_PRESERVED'
     assert psql("SELECT captura_empresarial#>>'{capture,normalized,razon_social}' FROM saly.ventas_hallazgos WHERE ruc_candidato='20000000003'")=='Empresa Ejemplo'
     print('PASS_SUNAT_UNICODE_NAME_PG17_NEGATIVE_BEFORE_POSITIVE_AFTER_EXACT_RAW_PRESERVED')
 
