@@ -3,6 +3,10 @@
   "paths": {
     "supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql": "MIGRATION",
     "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-commercial-filter-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-commercial-filter-v1.json": "CHANGESET_MANIFEST",
+    "skills/ai_sales_discovery/adapters/sunat_commercial_gate_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py": "RUNTIME_TESTING"
   }
 }
