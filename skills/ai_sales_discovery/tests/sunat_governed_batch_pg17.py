@@ -52,8 +52,8 @@ CREATE UNIQUE INDEX fixture_operation_idempotency ON public.lf_operation_executi
     snapshots=['d'*64,'e'*64]
     captures=[]
     for i in (1,2):
-        m=dict.fromkeys(MONTHLY_FIELDS,''); m.update(RUC=str(20000002000+i),Estado='ACTIVO',UBIGEO='110101',NroTrab='3')
-        d=dict(RUC=m['RUC'],nombre='Fixture jurídica '+str(i),estado='ACTIVO',condicion='',ubigeo='110101')
+        m=dict.fromkeys(MONTHLY_FIELDS,''); m.update(RUC=str(20000002000+i),Estado='ACTIVO',Condicion=('HABIDO' if i==1 else 'NO HABIDO'),UBIGEO='110101',NroTrab='3')
+        d=dict(RUC=m['RUC'],nombre='Fixture jurídica '+str(i),estado='ACTIVO',condicion=('HABIDO' if i==1 else 'NO HABIDO'),ubigeo='110101')
         ev=dict(url=monthly,ordinal=i,zip_sha256=snapshots[0],header_sha256='c'*64)
         captures.append(company(m,d,ev,dict(ev,url=reduced,zip_sha256=snapshots[1])))
     payloads=list(batches(captures,1,10000))
@@ -116,6 +116,38 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     assert psql("SELECT count(*) FROM saly.ventas_hallazgos h JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id WHERE i.source_id='PE-SUNAT-RUC'")=='2'
     assert psql("SELECT count(*) FROM public.lf_operation_effect_guard WHERE execution_id='EXEC-SUNAT-FIXTURE' AND state='SUCCEEDED'")=='2'
     assert psql("SELECT count(*) FROM saly.ventas_discovery_plan_batches WHERE run_id="+lit(run)+"::uuid AND estado='FOUND'")=='2'
+    # PG17 positive + negative against the exact commercial-view DDL carried by this PR.
+    # The SUNAT writer and signed payloads are unchanged; the view filters at ingestion-read time.
+    matches=list((ROOT/'supabase/migrations').glob('*_lf_saly_sunat_commercial_filter_v1.sql'))
+    assert len(matches)==1
+    migration=matches[0].read_text()
+    ddl=migration[migration.index('CREATE VIEW saly.ventas_sunat_elegibilidad_v1'):
+                  migration.index('DO $post
+    fail(execute(f=fence+1),'SUNAT_STALE_LEASE')
+    psql("UPDATE saly.ventas_hallazgos SET captura_empresarial='{}'::jsonb WHERE ingesta_id="+lit(json.loads(first)['ingesta_id'])+"::uuid")
+    fail(execute(),'SUNAT_BATCH_READBACK')
+    assert counts()=='2:2:2'
+    # No public client execution paths.
+    assert psql("SELECT has_function_privilege('service_role','saly.ventas_sunat_batch_execute_v1(text,text,bigint,text,text)','EXECUTE')")=='f'
+    print('PASS_SUNAT_NATIVE_PLAN_BATCH_ATOMIC_ROLLBACK_READBACK_REPLAY_LEASE_2_BATCHES_2_COMPANIES')
+if __name__=='__main__': main()
+,migration.index('CREATE VIEW saly.ventas_sunat_elegibilidad_v1'))]
+    psql(ddl)
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1")=='2'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='1'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE clasificacion_comercial='EXCLUIDA_CONDICION'")=='1'
+    assert psql("SELECT count(*) FROM saly.ventas_hallazgos h JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id WHERE i.source_id='PE-SUNAT-RUC'")=='2'
+    assert psql("SELECT has_table_privilege('authenticated','saly.ventas_sunat_comercial_v1','SELECT')")=='f'
+    # Contradictory BAJA in reduced while monthly remains ACTIVO: fail closed.
+    ruc='20000002001'
+    original=psql("SELECT captura_empresarial::text FROM saly.ventas_hallazgos WHERE ruc_candidato="+lit(ruc))
+    psql("UPDATE saly.ventas_hallazgos SET captura_empresarial=jsonb_set(captura_empresarial,"+
+         "'{capture,observations,reduced,raw,estado}',"+lit(json.dumps('BAJA DE OFICIO'))+"::jsonb) WHERE ruc_candidato="+lit(ruc))
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='0'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE clasificacion_comercial='EXCLUIDA_ESTADO'")=='1'
+    psql("UPDATE saly.ventas_hallazgos SET captura_empresarial="+lit(original)+"::jsonb WHERE ruc_candidato="+lit(ruc))
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='1'
+    print('PASS_SALY_SUNAT_COMMERCIAL_PG17_1_ELIGIBLE_1_NO_HABIDO_CONTRADICTION_RESTORED_RAW_PRESERVED')
     # A stale worker cannot continue. A mutated persisted row cannot be reported as replay success.
     fail(execute(f=fence+1),'SUNAT_STALE_LEASE')
     psql("UPDATE saly.ventas_hallazgos SET captura_empresarial='{}'::jsonb WHERE ingesta_id="+lit(json.loads(first)['ingesta_id'])+"::uuid")
