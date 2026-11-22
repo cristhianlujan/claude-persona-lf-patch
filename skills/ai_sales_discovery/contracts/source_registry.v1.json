@@ -58,8 +58,8 @@
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "1.1",
-        "state": "CANDIDATE_CONTRACT_NOT_RUNTIME",
+        "version": "1.2",
+        "state": "LOCAL_ARCHIVE_CANDIDATE_TESTED_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -80,9 +80,11 @@
             ],
             "references": [
               "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs",
-              "skills/ai_sales_discovery/adapters/sunat_zip_candidate.mjs"
+              "skills/ai_sales_discovery/adapters/sunat_zip_candidate.mjs",
+              "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
             ],
-            "status": "COMPONENTS_TESTED_DUAL_SOURCE_WIRING_PENDING",
+            "status": "DUAL_ZIP_LOCAL_FIXTURES_PASS",
             "gate": "Cuotas, cabecera exacta y CRC hasta EOF; esquemas distintos."
           },
           {
@@ -93,9 +95,11 @@
             ],
             "references": [
               "skills/ai_sales_discovery/adapters/sunat_records_candidate.mjs",
-              "skills/ai_sales_discovery/tests/sunat_join_probe.py"
+              "skills/ai_sales_discovery/tests/sunat_join_probe.py",
+              "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
             ],
-            "status": "QA_REAL_DATA_STREAMS_PENDING",
+            "status": "DUAL_PROJECTION_LOCAL_FIXTURES_PASS",
             "gate": "RUC 20, territorio por política, ordinal; excluir inválidos y ambiguos."
           },
           {
@@ -106,9 +110,11 @@
             ],
             "references": [
               "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py",
+              "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
             ],
-            "status": "JOIN_COMPONENT_TESTED_REAL_SAMPLE_ONLY",
+            "status": "DUAL_JOIN_LOCAL_FIXTURES_PASS",
             "gate": "Ambos streams completos, unicidad, nombre no vacío, spool y lotes acotados."
           },
           {
@@ -119,9 +125,11 @@
             ],
             "references": [
               "skills/ai_sales_discovery/adapters/sunat_company_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_company_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_company_v1.py",
+              "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
             ],
-            "status": "IMPLEMENTED_WITHIN_JOIN",
+            "status": "DUAL_BATCH_HASH_LOCAL_FIXTURES_PASS",
             "gate": "13 campos mensual, 5 reducido: RUC compartido, nombre y 3 contrastes; conservar discrepancias y hash."
           },
           {
@@ -161,9 +169,11 @@
             ],
             "references": [
               "skills/ai_sales_discovery/tests/evidence/sunat_202610_join_20261121.json",
-              "skills/ai_sales_discovery/tests/sunat_writer_pg17.py"
+              "skills/ai_sales_discovery/tests/sunat_writer_pg17.py",
+              "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
             ],
-            "status": "END_TO_END_PENDING",
+            "status": "CANDIDATE_RECEIPT_LOCAL_PASS_REAL_READBACK_PENDING",
             "gate": "Cierre candidato: hashes y conteos. Cierre de ingesta: requiere además 12.01.7 y readback independiente. Registrar decisión sobre 12.01.6.",
             "conditional_dependencies": {
               "history_requested": [
@@ -179,7 +189,9 @@
           "READ_ONLY_CANDIDATE",
           "GOVERNED_INGESTION"
         ]
-      }
+      },
+      "dual_stream_ref": "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
+      "dual_stream_test_ref": "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
     },
     {
       "source_id": "SUNARP",
