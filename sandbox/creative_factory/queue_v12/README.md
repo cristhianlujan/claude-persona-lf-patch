@@ -15,7 +15,7 @@
 
 El schema vigente utiliza `PENDIENTE`, `LISTO`, `PRODUCIENDO`, `EN_QA`, `APROBADO`; `TERMINADO` es la etiqueta de salida, no un nuevo estado SQL. `APROBADO` es terminal e inmutable por `creative_item_guard_l1`; `COMPLETADO` es terminal para el pedido.
 
-El candidato SQL V12 puede probarse en **PostgreSQL 17 aislado**. Aún faltan el puerto real de inicio, el adaptador de persistencia de QA y cierre vinculado al resultado image_gen, la autoridad de activación de la skill, los cuatro valores `CREATIVE_FACTORY` y la migración gobernada. Los dos últimos no pueden inventarse. Las restricciones V02/V06 existentes permanecen: no se permite forjar un recibo para declarar DONE.
+El candidato SQL V12 se probó en **PostgreSQL 17 aislado**: `001_pending_only_begin_candidate.sql` cambia estados mediante la cola V02 y `002_qa_comment_completion_candidate.sql` guarda el comentario en `creative_order_items.qa_receipt`, valida QA independiente y solo permite el cierre `TERMINADO` después de la puerta V06. Aún faltan los puertos **reales** de inicio, respuesta image_gen, fuente de QA y cierre verificable en este chat, la autoridad de activación de la skill, los cuatro valores `CREATIVE_FACTORY` y la migración gobernada. Los dos últimos no pueden inventarse. Las restricciones V02/V06 existentes permanecen: no se permite forjar un recibo para declarar DONE.
 
 El algoritmo Python también es **candidato**: sus puertos deben ser conectores con identidad confiable y no JSON del pedido. Los tests unitarios usan dobles y no prueban entrega real en el chat. El test SQL con fixture verifica la transición real y dos procesos; no reemplaza un test integral en Supabase.
 
@@ -28,3 +28,8 @@ El algoritmo Python también es **candidato**: sus puertos deben ser conectores 
 - Mantener `PR → PASE → ready-to-merge → Merge Train → readback` para todo cambio en Supabase. Ninguna migración o permiso se aplicó por esta carpeta.
 
 **Estado:** implementación candidata parcialmente conectada. NO MERGE / NO DEPLOY / NO RENDER / NO FALSE DONE.
+
+
+### CI comprobada (22/11/2026)
+
+[CI V12 #45085405572](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45085405572), SHA probado `1f0a69f82fd3f6016cb317619ce0b4981b2e53d6`: 33/33 pruebas Python PASS, 2/2 mutaciones detectadas, 2 conexiones PG17 con una sola transición, QA positivo/negativo, comentario persistido, V06 denegando DONE sin VERIFIED y cierre positivo **solo simulado**, readback y fixture restaurado. CI anterior #45085342253 falló por variable SQL ambigua en test, corregida y reprobada. Registro `ci_results_20261122.txt`.
