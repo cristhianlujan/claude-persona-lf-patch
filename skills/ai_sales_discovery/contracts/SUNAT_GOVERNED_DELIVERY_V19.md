@@ -16,3 +16,5 @@ Consulta de public.lf_operation_registry: no existe operación registrada para i
 5. Fixture positivo y negativos (op inexistente/no autorizada, hash/cantidad, estado, replay, conflicto y readback), PG17 aislado y rollback. Configuración de límites a partir de mediciones específicas; nunca aceptar cuotas QA como política automáticamente.
 
 Pruebas de entrega nuevas: 7 fixtures preparados, ejecución pendiente. El código conecta staging con el run QA existente; todavía no conecta a un escritor DB ni habilita runtime.
+
+Evidencia local de unidad: blob exacto `7e6e8e1a1e93cc03ee6eabf0437ee56d2bb840b0` de sunat_verified_delivery_v1.py, cotejado con git hash-object, ejecutado con dobles de transporte y utilidades hash/canonical equivalentes: 9/9 PASS (delivery, wrong_manifest, tamper, consumer_failure, quota_before_fetch, preseal, prior_mismatch, receipt_mutation, transport_exception). No es prueba del lector integrado ni del escritor DB. Siete fixtures integrados del repositorio siguen pendientes; no declarar PASS integrado.
