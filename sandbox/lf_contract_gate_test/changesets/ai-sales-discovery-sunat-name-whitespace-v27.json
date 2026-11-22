@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-name-whitespace-v27",
+  "paths": {
+    "supabase/migrations/20261122180000_lf_saly_sunat_name_whitespace_v1.sql": "MIGRATION",
+    "skills/ai_sales_discovery/tests/sunat_name_whitespace_pg17.py": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-name-whitespace-v27.json": "CHANGESET_MANIFEST"
+  }
+}
