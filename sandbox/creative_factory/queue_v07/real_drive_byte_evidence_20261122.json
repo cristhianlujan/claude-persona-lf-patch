@@ -1,0 +1,69 @@
+{
+  "schema_version": "SALY_AUTHENTICATED_SOURCE_BYTE_EVIDENCE_V1",
+  "date_utc": "2026-11-22",
+  "business_code": "SALY",
+  "scope": "READ_ONLY_VERIFICATION_OF_FROZEN_REFERENCE_FILES",
+  "status": "THREE_REAL_RAW_DRIVE_PNGS_SHA256_MATCH_DB",
+  "verification": {
+    "drive": "Google_Drive authenticated get_file_metadata plus fetch(download_raw_file=true)",
+    "integrity": "SHA-256 independently calculated in JS from returned raw Base64 and Python hashlib on mounted original bytes",
+    "type": "PNG header, Pillow image decode/dimensions on original bytes",
+    "database": "Supabase read-only JOIN saly.creative_item_sources -> visual.source_assets",
+    "source_kind": "AUTHENTICATED_REAL_BYTES_NOT_SYNTHETIC",
+    "native_tool_invoked": false,
+    "native_image_generated": false,
+    "native_image_delivered": false,
+    "provider_attested": false,
+    "db_done_allowed": false
+  },
+  "references": [
+    {
+      "item_id": 5,
+      "asset_id": 1,
+      "asset_code": "SALY_HOME_IPHONE16PRO",
+      "file_ref": "1YXWAS8McVi0Y91FEtMbCW6M57-6D9em9",
+      "filename": "SALY_HOME_IPHONE16PRO_v1.1.png",
+      "sha256": "3d80592dc94938ea6e4d34727a99a0aec242b43838e2815820b72e87d649d33e",
+      "bytes": 1343036,
+      "width_px": 1086,
+      "height_px": 1448,
+      "mime_type": "image/png",
+      "db_approval_status": "CANDIDATE",
+      "byte_hash_matched": true
+    },
+    {
+      "item_id": 6,
+      "asset_id": 2,
+      "asset_code": "SALY_SOLICITAR_ADELANTO",
+      "file_ref": "1n9nNgKow7jcMJuX1tI6JXXAeye5rXJhJ",
+      "filename": "SALY_SOLICITAR_ADELANTO_INTELIGENTE_v1.0.png",
+      "sha256": "65d537d740b9dd19fbf953cbc0574ad55206c00a67f0a10c2035d5e1d21842fc",
+      "bytes": 1639029,
+      "width_px": 1024,
+      "height_px": 1536,
+      "mime_type": "image/png",
+      "db_approval_status": "CANDIDATE",
+      "byte_hash_matched": true
+    },
+    {
+      "item_id": 7,
+      "asset_id": 6,
+      "asset_code": "SALY_REWARDS_HOME_SORTEOS",
+      "file_ref": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+      "filename": "SALY_HOME_IPHONE16PRO_REWARDS_SORTEOS_V3_APROBADA.png",
+      "sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+      "bytes": 1623170,
+      "width_px": 1086,
+      "height_px": 1448,
+      "mime_type": "image/png",
+      "db_approval_status": "CANDIDATE",
+      "byte_hash_matched": true
+    }
+  ],
+  "limitations": [
+    "Source approval in Supabase remains CANDIDATE; file naming does not override DB",
+    "No authentic host message readback for ChatGPT Native or Claude Native",
+    "No producer SQL deployed or creative RUN admitted; verified assets alone cannot authorize render",
+    "Real image binaries intentionally not committed to GitHub; fetch by original registered file_ref"
+  ]
+}
