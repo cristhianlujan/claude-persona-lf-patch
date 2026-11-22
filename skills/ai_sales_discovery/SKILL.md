@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.9
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v2.0
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -70,7 +70,7 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | VERIFIED_PAYLOAD_DELIVERY_CANDIDATE_TEST_PENDING_GOVERNED_CALLER_PENDING |
+| 12.01.7 | Persistencia gobernada | VERIFIED_DELIVERY_PASS_NATIVE_PLAN_BATCH_CANDIDATE_PG17_PENDING |
 | 12.01.8 | Reconciliación y cierre | PINNED_REAL_MANIFEST_QA_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
@@ -117,3 +117,7 @@ Prueba real https://github.com/cristhianlujan/claude-persona-lf-patch/actions/ru
 
 PR #4609, main 9f49e17eb104a802524e5c4d8f10503fd1edf918, Train 44984450761 success. Readback: rights_status=PERSISTENCIA_PERMITIDA; habilitada=false, persist_business_data=false, SUNAT_POLICY_V1.enabled=false, ledger=1, ingestas=0; decision execution EXEC-DB-TRAIN-PR4609-20261122041500-R44984450761. Implementación candidata en `skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py`: staged stream exacto, límites, barrera digest de manifiesto, lectura revalidada, limpieza; pruebas nuevas preparadas sin declarar PASS. Contrato `skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md`; la autoridad comercial de ingesta no aparece registrada, no reusar maintenance DB, read-only skill ni KB. Integrar con motor de operaciones existente, tablas SALY ya instaladas y único writer invoker. Sin nuevas escrituras comerciales ni habilitación.
 Evidencia local de unidad: blob exacto `7e6e8e1a1e93cc03ee6eabf0437ee56d2bb840b0` de sunat_verified_delivery_v1.py, cotejado con git hash-object, ejecutado con dobles de transporte y utilidades hash/canonical equivalentes: 9/9 PASS (delivery, wrong_manifest, tamper, consumer_failure, quota_before_fetch, preseal, prior_mismatch, receipt_mutation, transport_exception). No es prueba del lector integrado ni del escritor DB. Siete fixtures integrados del repositorio siguen pendientes; no declarar PASS integrado.
+
+
+## Lote v2.0 — candidato de operación nativa de ingesta
+PR #4610 main 2d90558428417c29e2edf6f88c3eb625ea728247; Train 44985368938 success; exact integration tests 7/7, regression 9/9 and 10/10, PG17 writer PASS, job https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44985425965/job/137094824082. El código candidato `skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql` implementa contexto de operación y lease, plan aprobado por digest fijado en política, preparación idempotente de RUN/plan/ejecución, consulta FOUND y reserva de efecto, escritor existente y readback dentro de una transacción. Sin instalación en BD real ni nuevos grants; registro/autoridad de INGESTA_EMPRESARIAL_SALY aún pendiente, fixtures PG17 preparados. No se afirma cierre de run ni carga real. `skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md`.
