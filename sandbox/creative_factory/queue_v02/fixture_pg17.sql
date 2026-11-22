@@ -1,7 +1,8 @@
 -- Disposable PostgreSQL 17 compatibility harness.
--- Includes byte-for-byte function bodies (captured 2026-11-22 from Supabase)
+-- Includes function bodies transcribed from Supabase readback (2026-11-22)
 -- for creative_run_guard_l1, creative_item_guard_l1, creative_order_close_guard_l1,
--- and creative_execution_policy_v1. Not a Supabase production migration.
+-- and creative_execution_policy_v1. Not byte-for-byte authoritative, and not a
+-- full Supabase schema clone. Never use this fixture as a production migration.
 \set ON_ERROR_STOP on
 DROP SCHEMA IF EXISTS saly CASCADE;
 CREATE SCHEMA saly;
