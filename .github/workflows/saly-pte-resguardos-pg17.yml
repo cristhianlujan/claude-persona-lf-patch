@@ -120,6 +120,8 @@ jobs:
         run: python3 skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py
       - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
         run: python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
+      - name: Test exact Unicode source-name guard before and after patch in disposable PG17
+        run: python3 skills/ai_sales_discovery/tests/sunat_name_whitespace_pg17.py
       - name: Qualify native SUNAT plan and batch transaction candidate in disposable PG17
         run: python3 skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py
 
@@ -246,7 +248,7 @@ jobs:
 
   sunat-all-sequential-v25:
     name: SUNAT registered plan — batches 2 through 479 STRICTLY sequential
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT secuencial diagnostico v2.6')
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT normalizar nombre v2.7')
     environment: lf-merge-train
     runs-on: ubuntu-latest
     timeout-minutes: 360
