@@ -1,0 +1,49 @@
+name: SALY Native V12 pending chat TEMPORARY CI
+on:
+  push:
+    branches:
+      - saly-creative-queue-pg17-pilot-20261122
+jobs:
+  v12_python:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pending-only chat and QA contract tests
+        run: python -m unittest -v sandbox.creative_factory.queue_v12.test_chat_generation_flow_v1
+      - name: B11 B25 B28 mutation proof
+        env:
+          SALY_MUTATION_SANDBOX: '1'
+        run: python sandbox/creative_factory/queue_v12/test_mutations_v1.py
+  v12_pg17_scoped_atomic:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: saly_queue_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_queue_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: 127.0.0.1
+      PGUSER: postgres
+      PGDATABASE: saly_queue_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL client
+        run: command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+      - name: Real PostgreSQL 17 two-connection scoped pending transition
+        run: bash sandbox/creative_factory/queue_v12/test_pg17.sh
