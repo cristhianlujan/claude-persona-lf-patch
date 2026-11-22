@@ -58,8 +58,8 @@
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "1.6",
-        "state": "QA_REAL_PASS_BATCH_PLAN_FIXTURES_PASS_NOT_RUNTIME",
+        "version": "1.7",
+        "state": "PINNED_PLAN_INTEGRATED_NOT_VERIFIED_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -169,9 +169,10 @@
               "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md",
               "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql",
               "skills/ai_sales_discovery/adapters/sunat_batch_plan_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py",
+              "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py"
             ],
-            "status": "BATCH_PLAN_JOIN_FIXTURES_PASS_GOVERNED_CALLER_PENDING",
+            "status": "PINNED_PLAN_INTEGRATED_FIXTURES_AND_REAL_QA_PENDING",
             "gate": "Externa a READ_ONLY; derechos, autorización, consulta válida y readback. No modificar captura v1.",
             "external": true
           },
@@ -189,9 +190,10 @@
               "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
               "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
               "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
-              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json",
+              "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py"
             ],
-            "status": "QA_AGGREGATE_RECONCILIATION_PASS_DB_READBACK_PENDING",
+            "status": "QA_AGGREGATE_PASS_MANIFEST_VERIFICATION_PENDING",
             "gate": "Cierre candidato: hashes y conteos. Cierre de ingesta: requiere además 12.01.7 y readback independiente. Registrar decisión sobre 12.01.6.",
             "conditional_dependencies": {
               "history_requested": [
@@ -217,7 +219,8 @@
       "persistence_preflight_ref": "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql",
       "rights_review_ref": "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md",
       "batch_plan_ref": "skills/ai_sales_discovery/adapters/sunat_batch_plan_v1.py",
-      "batch_plan_test_ref": "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py"
+      "batch_plan_test_ref": "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py",
+      "pinned_plan_probe_ref": "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py"
     },
     {
       "source_id": "SUNARP",
