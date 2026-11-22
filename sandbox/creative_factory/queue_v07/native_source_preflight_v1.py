@@ -67,7 +67,7 @@ def verify_native_source_bytes(
          and wire.get("db_done_allowed") is False,
          "SALY_NATIVE_SOURCE_WIRE_NOT_READY")
     mode = wire.get("executor_mode")
-    need(mode in PROVIDERS and wire.get("executor_provider") == PROVIDERS.get(mode),
+    need(type(mode) is str and mode in PROVIDERS and wire.get("executor_provider") == PROVIDERS.get(mode),
          "SALY_NATIVE_SOURCE_EXECUTOR_MISMATCH")
     for key in ("order_id", "item_id", "run_id", "claim_id",
                 "wire_sha256", "prompt_sha256", "input_snapshot_sha256",
@@ -97,9 +97,13 @@ def verify_native_source_bytes(
          and isinstance(body["attachments"], list)
          and len(body["attachments"]) > 0,
          "SALY_NATIVE_SOURCE_PAYLOAD_SHAPE")
+    try:
+        prompt_data = body["prompt"].encode("utf-8")
+    except UnicodeError as exc:
+        raise NativeSourceRejected("SALY_NATIVE_SOURCE_PROMPT_UTF8_INVALID") from exc
     need(isinstance(wire.get("prompt_sha256"), str)
          and SHA64.fullmatch(wire["prompt_sha256"]) is not None
-         and digest(body["prompt"].encode("utf-8")) == wire["prompt_sha256"],
+         and digest(prompt_data) == wire["prompt_sha256"],
          "SALY_NATIVE_SOURCE_PROMPT_DRIFT")
 
     seen_names: set[str] = set()
