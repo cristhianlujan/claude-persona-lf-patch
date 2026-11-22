@@ -14,6 +14,7 @@
     "sandbox/creative_factory/queue_v03/test_delivery_completion_guard_v1.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v03/completion_unit_results.txt": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v03/native_session_bridge_v1.py": "SERVICE_RUNTIME",
-    "sandbox/creative_factory/queue_v03/test_native_session_bridge_v1.py": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v03/test_native_session_bridge_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v03/native_session_unit_results.txt": "RUNTIME_TESTING"
   }
 }
