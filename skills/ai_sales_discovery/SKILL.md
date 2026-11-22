@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.1
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.2
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -65,16 +65,22 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 | Subpaso | Función | Estado técnico |
 |---|---|---|
 | 12.01.1 | Admisión y transporte | COMPONENTS_TESTED_RUNTIME_PENDING |
-| 12.01.2 | Integridad ZIP y esquema | COMPONENTS_TESTED_DUAL_SOURCE_WIRING_PENDING |
-| 12.01.3 | Lectura y selección | QA_REAL_DATA_STREAMS_PENDING |
-| 12.01.4 | Cruce por RUC | JOIN_COMPONENT_TESTED_REAL_SAMPLE_ONLY |
-| 12.01.5 | Proyección empresarial y lotes | IMPLEMENTED_WITHIN_JOIN |
+| 12.01.2 | Integridad ZIP y esquema | DUAL_ZIP_LOCAL_FIXTURES_PASS |
+| 12.01.3 | Lectura y selección | DUAL_PROJECTION_LOCAL_FIXTURES_PASS |
+| 12.01.4 | Cruce por RUC | DUAL_JOIN_LOCAL_FIXTURES_PASS |
+| 12.01.5 | Proyección empresarial y lotes | DUAL_BATCH_HASH_LOCAL_FIXTURES_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
 | 12.01.7 | Persistencia gobernada | WRITER_DEPLOYED_DISABLED |
-| 12.01.8 | Reconciliación y cierre | END_TO_END_PENDING |
+| 12.01.8 | Reconciliación y cierre | CANDIDATE_RECEIPT_LOCAL_PASS_REAL_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
 
 Evidencia: PR #4583, 478657 coincidencias únicas con nombre, 32 filas de piloto en seco y cero publicadas (`tests/evidence/sunat_202610_join_20261121.json`). #4586 incorporó antigüedad y #4588/#4589 su piloto y corrección de codificación; no afirmar resultado del piloto sin log. #4582 instaló escritor invoker deshabilitado; captura empresarial v1 no admite antigüedad. Mensual aporta 13 campos, reducido 5 observaciones (RUC compartido, razón social, estado, condición, UBIGEO). No activar runtime, persistencia ni regla comercial en este lote.
 
 Criterio de avance: actualizar secuencia, componente, prueba y estado en el mismo PR cada vez que cambie un subpaso. Mantener separado registro operativo de candidatos. No declarar integración hasta probar la secuencia completa con casos positivos y negativos y evidencia de cierre correspondiente.
+
+## Lote v1.2 — lectura dual y cruce candidato desde ZIP locales
+
+`adapters/sunat_dual_stream_v1.py#candidate_receipt` enlaza las fuentes locales fijadas por URL, SHA-256 ZIP y SHA-256 de cabecera con `joined_batches`, que conserva `company` y `batches` sin modificación. No descarga ni autentica derechos: requiere archivos revisados entregados por el caller. Límites inyectados para ZIP, bytes descomprimidos, ratio, filas, línea, cohorte, spool, lotes y tiempo; lectura hasta EOF/CRC antes de emitir cualquier lote. Procesa RUC 20, departamentos parametrizados según UBIGEO mensual; duplicados del mensual se controlan dentro del ámbito seleccionado, y los del reducido en toda la fuente para la cohorte seleccionada. Excluye claves identificables con filas reducidas malformadas, descarta domicilios y conserva discrepancias y evidencia de origen. No afirma unicidad nacional del mensual. El recibo contiene solo métricas y hash encadenado de lotes (SHA-256 de hashes binarios concatenados en orden); no incluye RUC, nombres ni payloads. No tiene salida de persistencia ni habilita runtime. Fecha de antigüedad no solicitada en esta secuencia.
+
+Prueba local exacta: `python3 skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py` (4/4 métodos unittest: selección, duplicados, cuarentena, codificación y huella de captura exacta; hash y cabecera; CRC; cuotas y URL). Blobs probados del lector `e65511eada8be8bd3a1bd069fcee6dc855b58910`, prueba `8cf25a126a8c235a69bb7bc080e205c4b6070bf8`, proyector `caba5f2cd9266feb9e7e585e662de50a6ce672a4`, join `7d3d5f9e0bc774707506355f41abd930c5dfdf8e`. No confundir con resultado real del nuevo lector. Pendiente: caller de admisión/descarga, política y derechos efectivos, prueba con archivos reales, readback independiente, rama histórica opcional y escritor externo. El registro ejecutable PTE no cambia.
