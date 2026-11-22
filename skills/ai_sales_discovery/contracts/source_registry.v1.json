@@ -58,8 +58,8 @@
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "2.0",
-        "state": "RIGHTS_REGISTERED_DELIVERY_PASS_NATIVE_INGESTION_CANDIDATE_NOT_RUNTIME",
+        "version": "2.2",
+        "state": "NATIVE_DB_INSTALLED_FIRST_REAL_BATCH_AUTHORIZED_NOT_CONFIRMED",
         "steps": [
           {
             "code": "12.01.1",
@@ -179,9 +179,13 @@
               "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py",
               "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql",
               "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py",
-              "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md"
+              "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md",
+              "supabase/migrations/20261122145500_lf_saly_sunat_first_batch_activation_v1.sql",
+              "skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py",
+              "skills/ai_sales_discovery/tests/test_sunat_first_governed_batch_v22.py",
+              ".github/workflows/saly-pte-resguardos-pg17.yml"
             ],
-            "status": "VERIFIED_DELIVERY_PASS_NATIVE_PLAN_BATCH_CANDIDATE_PG17_PENDING",
+            "status": "FIRST_REAL_BATCH_APPROVED_TRUSTED_PUSH_PENDING_DB_READBACK",
             "gate": "Externa a READ_ONLY; derechos, autorización, consulta válida y readback. No modificar captura v1.",
             "external": true
           },
@@ -240,7 +244,12 @@
       "governed_delivery_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md",
       "native_ingestion_candidate_ref": "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql",
       "native_ingestion_test_ref": "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py",
-      "native_ingestion_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md"
+      "native_ingestion_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md",
+      "native_ingestion_install_verified": true,
+      "first_batch_candidate_runner_ref": "skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py",
+      "first_batch_approved": true,
+      "first_batch_confirmed": false,
+      "first_batch_pilot": "ONE_GOVERNED_BATCH_ORDINAL_1"
     },
     {
       "source_id": "SUNARP",
