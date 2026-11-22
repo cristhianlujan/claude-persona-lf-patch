@@ -8,14 +8,6 @@ on:
       - 'supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql'
       - 'supabase/migrations/20261122222000_lf_saly_sunat_bulk_delete_v1.sql'
       - 'supabase/tests/saly_sunat_bulk_delete_v1_pg17_rollback.sql'
-  pull_request:
-    branches:
-      - saly/sunat-elegibilidad-comercial-v1-20261122
-    paths:
-      - '.github/workflows/saly-sunat-bulk-delete-pg17.yml'
-      - 'supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql'
-      - 'supabase/migrations/20261122222000_lf_saly_sunat_bulk_delete_v1.sql'
-      - 'supabase/tests/saly_sunat_bulk_delete_v1_pg17_rollback.sql'
   workflow_dispatch:
 permissions:
   contents: read
