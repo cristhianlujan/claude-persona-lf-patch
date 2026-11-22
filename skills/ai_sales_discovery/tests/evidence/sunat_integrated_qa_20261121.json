@@ -1,0 +1,64 @@
+{
+  "source": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44967399123/job/137039421071",
+  "merge_sha": "678d21ed253ec7212050321f2dda71866abdbd0c",
+  "observed_at_utc": "2026-11-22T00:40:18.4062640Z",
+  "receipt": {
+    "batch_digest_sha256": "b18e50b01672327a2225f88246e9580e4a50b11af5b3ec92fc05f5b217b67652",
+    "batches": 479,
+    "db_write_confirmed": false,
+    "downloads": {
+      "monthly": {
+        "attempts": 1,
+        "bytes": 262346323,
+        "http_last_modified": "Fri, 30 Oct 2026 22:10:23 GMT",
+        "sha256": "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7"
+      },
+      "reduced": {
+        "attempts": 1,
+        "bytes": 395441772,
+        "http_last_modified": "Sat, 21 Nov 2026 07:56:28 GMT",
+        "sha256": "eaaa9000eff4ca2a8b64e8a782280360314ed3349fdd4f2957329313f4c29221"
+      }
+    },
+    "history_requested": false,
+    "qa_baseline": {
+      "monthly_rows": 13519921,
+      "monthly_selected": 478659,
+      "reduced_rows": 18542615,
+      "rows": 478657
+    },
+    "qa_baseline_match": true,
+    "qa_evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44957217395/job/137007876622",
+    "qa_mode": "PINNED_QA_ONLY",
+    "rights_verified": false,
+    "rows": 478657,
+    "runtime_authorized": false,
+    "scope": [
+      "11",
+      "15"
+    ],
+    "source_id": "PE-SUNAT-RUC",
+    "source_sha256": [
+      "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7",
+      "eaaa9000eff4ca2a8b64e8a782280360314ed3349fdd4f2957329313f4c29221"
+    ],
+    "state": "CANDIDATE_READ_ONLY",
+    "stats": {
+      "monthly_rows": 13519921,
+      "monthly_selected": 478659,
+      "reduced_quarantined": 2,
+      "reduced_rows": 18542615,
+      "reduced_selected": 478659
+    }
+  },
+  "verification": {
+    "match": true,
+    "counts": true,
+    "hashes": true,
+    "boundary": true,
+    "quarantine": true,
+    "receipt_hash": true,
+    "mode": "aggregate_reference_reconciliation",
+    "not_independent_row_readback": true
+  }
+}
