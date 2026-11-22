@@ -4,6 +4,9 @@
 CREATE SCHEMA IF NOT EXISTS extensions;
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 CREATE SCHEMA IF NOT EXISTS visual;
+-- The V02 reset drops saly only; explicitly discard this DISPOSABLE fixture
+-- across mutation iterations to prevent false failures on duplicate tables.
+DROP TABLE IF EXISTS visual.source_assets CASCADE;
 CREATE TABLE visual.source_assets (
   id bigint PRIMARY KEY, brand_code text NOT NULL, asset_code text NOT NULL,
   source_kind text NOT NULL,provider text NOT NULL,file_ref text NOT NULL,
