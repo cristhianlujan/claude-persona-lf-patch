@@ -25,6 +25,10 @@
     "sandbox/creative_factory/queue_v05/test_pg17_candidate.sql": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v05/test_pg17.sh": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v05/README.md": "SERVICE_RUNTIME",
-    "sandbox/creative_factory/queue_v05/pg17_results.txt": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v05/pg17_results.txt": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v06/001_saly_delivery_attestation_guard_candidate.sql": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v06/test_attestation_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v06/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v06/test_mutations_pg17.py": "RUNTIME_TESTING"
   }
 }
