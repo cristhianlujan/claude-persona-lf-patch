@@ -1,0 +1,7 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-native-install-v21",
+  "paths": {
+    "supabase/migrations/20261122143000_lf_saly_ventas_sunat_native_install_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-native-install-v21.json": "CHANGESET_MANIFEST"
+  }
+}
