@@ -116,6 +116,8 @@ jobs:
           python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
       - name: Test SUNAT candidate deterministic batch manifest
         run: python3 skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py
+      - name: Test SUNAT verified delivery staging and cleanup
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py
       - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
         run: python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
 
