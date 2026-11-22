@@ -1,0 +1,136 @@
+{
+  "source_sha256": "fccdc4e41e1db03b687289e85692271bca075cb89fdc6c34fc8537192a4cce4c",
+  "status": "CANDIDATE_LOCAL_NOT_APPLIED",
+  "modules": [
+    {
+      "title": "Dirección artística e intención comunicativa",
+      "sha256": "5c39a7648f17d01dc9364299ad65d4bb9d47d06f916da5351faa121ff72693ba",
+      "refs": [
+        "E03",
+        "E08",
+        "E09"
+      ],
+      "module_code": "K01",
+      "version": "0.1"
+    },
+    {
+      "title": "Creatividad divergente y antifijación",
+      "sha256": "2d2c7f267776439da5c96fd338cccaf380cb8c6ee6a2edfdf4b40a42b58203e3",
+      "refs": [
+        "E01",
+        "E02"
+      ],
+      "module_code": "K02",
+      "version": "0.1"
+    },
+    {
+      "title": "Jerarquía y composición perceptual",
+      "sha256": "8c66cb7f1b8d8e60b2de3350f9c95ed71a5bc3efb13d9646eebf5ada54996684",
+      "refs": [
+        "E03",
+        "E04",
+        "E08",
+        "E09"
+      ],
+      "module_code": "K03",
+      "version": "0.1"
+    },
+    {
+      "title": "Optimización espacial y legibilidad",
+      "sha256": "629f9da342066cf34c02b3eb2368e51a208daccdefb68dfa9e2a2c1acc2c6ae0",
+      "refs": [
+        "E03",
+        "E04",
+        "E07",
+        "E09"
+      ],
+      "module_code": "K04",
+      "version": "0.1"
+    },
+    {
+      "title": "Ingeniería semántica del handoff gráfico",
+      "sha256": "582e82f173b0e5f1d43f5906f84ce74b82c8d88b1775d9b18c22b78195a1d1b2",
+      "refs": [
+        "E05",
+        "E06",
+        "E07",
+        "E10"
+      ],
+      "module_code": "K05",
+      "version": "0.1"
+    },
+    {
+      "title": "Crítica visual especializada y calibración",
+      "sha256": "4d851e536d52ea135df19959bc0b09f19124cf6a8f314d480600b48a012430aa",
+      "refs": [
+        "E04",
+        "E08",
+        "E10"
+      ],
+      "module_code": "K06",
+      "version": "0.1"
+    }
+  ],
+  "evidence": {
+    "E01": {
+      "source": "Wadinambiarachchi et al., CHI 2024, [DOI](https://doi.org/10.1145/3613904.3642919)",
+      "url": "https://doi.org/10.1145/3613904.3642919",
+      "finding": "Experimento entre participantes, N=60, tres condiciones de inspiración. Mayor fijación al ejemplo con estímulos generados por IA; el análisis de ideación muestra riesgos para variedad y originalidad.",
+      "limitation": "Tarea breve de avatares con participantes principalmente no profesionales; los efectos de fluidez dependen del tiempo. No prueba una intervención sobre agentes autónomos."
+    },
+    "E02": {
+      "source": "The Double-Edged Roles of Generative AI in the Creative Process: Experiments on Design Work, Information Systems Research, 2025, [DOI](https://doi.org/10.1287/isre.2024.0937)",
+      "url": "https://doi.org/10.1287/isre.2024.0937",
+      "finding": "Experimentos de laboratorio y campo: ventajas en ideación; expertos que usaron IA tardaron 57% más en implementación en el laboratorio con creatividad comparable.",
+      "limitation": "Colaboración humano–IA; no extrapolar la cifra a una skill."
+    },
+    "E03": {
+      "source": "Patnaik et al., AesthetiQ, CVPR 2025, [actas](https://openaccess.thecvf.com/content/CVPR2025/html/Patnaik_AesthetiQ_Enhancing_Graphic_Layout_Design_via_Aesthetic-Aware_Preference_Alignment_of_CVPR_2025_paper.html)",
+      "url": "https://openaccess.thecvf.com/content/CVPR2025/html/Patnaik_AesthetiQ_Enhancing_Graphic_Layout_Design_via_Aesthetic-Aware_Preference_Alignment_of_CVPR_2025_paper.html",
+      "finding": "Aprendizaje de preferencias para layouts con mejoras reportadas de 17% y 16% en Crello y Webui.",
+      "limitation": "Entrenamiento DPO; parte de la evaluación estética utiliza un modelo multimodal. No demuestra que instrucciones nuevas reproduzcan esa mejora."
+    },
+    "E04": {
+      "source": "Mao et al., UXBench, CVPR Findings 2026, [actas](https://openaccess.thecvf.com/content/CVPR2026F/html/Mao_Reasoning_for_Mobile_User_Experience_with_Multimodal_LLMs_Task_Benchmark_CVPRF_2026_paper.html)",
+      "url": "https://openaccess.thecvf.com/content/CVPR2026F/html/Mao_Reasoning_for_Mobile_User_Experience_with_Multimodal_LLMs_Task_Benchmark_CVPRF_2026_paper.html",
+      "finding": "2.000 ejemplos de diagnóstico UX en capturas, ocho tareas; UI-UX entrenado obtiene 79,63% frente a 65,50% de Claude 4.5 Sonnet en su evaluación.",
+      "limitation": "Diagnóstico de capturas, no puntuación general de diseño; usa aprendizaje por refuerzo, no solo instrucciones."
+    },
+    "E05": {
+      "source": "Wang et al., PromptEnhancer, CVPR 2026, [actas](https://openaccess.thecvf.com/content/CVPR2026/html/Wang_PromptEnhancer_Taming_Your_Rewriter_for_Text-to-Image_Generation_via_Fine-Grained_Reward_CVPR_2026_paper.html)",
+      "url": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_PromptEnhancer_Taming_Your_Rewriter_for_Text-to-Image_Generation_via_Fine-Grained_Reward_CVPR_2026_paper.html",
+      "finding": "Reescritor entrenado con evaluación granular y aprendizaje por refuerzo; mejora alineamiento imagen–texto en los modelos evaluados.",
+      "limitation": "Método entrenado, no garantiza beneficio de reescritura manual ni soporte de un proveedor particular."
+    },
+    "E06": {
+      "source": "Jiao et al., DetailMaster, ICML 2026, [actas](https://proceedings.mlr.press/v306/jiao26b.html)",
+      "url": "https://proceedings.mlr.press/v306/jiao26b.html",
+      "finding": "Benchmark de prompts largos (media 284,89 tokens); fallos en dependencias sintácticas, atributos y relaciones.",
+      "limitation": "La media no es un límite óptimo; la dificultad y el modelo importan."
+    },
+    "E07": {
+      "source": "Wang et al., SpatialGenEval, ICLR 2026, [actas](https://proceedings.iclr.cc/paper_files/paper/2026/hash/4a5c76c63f83ea45fb136d62db6c7104-Abstract-Conference.html)",
+      "url": "https://proceedings.iclr.cc/paper_files/paper/2026/hash/4a5c76c63f83ea45fb136d62db6c7104-Abstract-Conference.html",
+      "finding": "1.230 prompts, 25 escenas, 23 modelos evaluados; persisten fallos espaciales de orden superior.",
+      "limitation": "Escenas generales, no exclusivamente UI; no acredita medidas exactas en una imagen."
+    },
+    "E08": {
+      "source": "Zhu et al., TASTE, mayo 2026, [preprint](https://arxiv.org/abs/2605.20731)",
+      "url": "https://arxiv.org/abs/2605.20731",
+      "finding": "Diez diseñadores, nueve criterios; máximo acuerdo macro de evaluadores preentrenados no superior a 0,55; evaluador entrenado 0,611; referencia individual humana 0,741.",
+      "limitation": "Preprint; concordancia específica de sus cohortes, no exactitud universal ni sustituto del experto."
+    },
+    "E09": {
+      "source": "Deganutti et al., Graphic-Design-Bench, abril 2026, [preprint](https://arxiv.org/abs/2604.04192)",
+      "url": "https://arxiv.org/abs/2604.04192",
+      "finding": "50 tareas en cinco ejes de diseño; identifica dificultades en estructura, tipografía y razonamiento espacial.",
+      "limitation": "Preprint; tareas heterogéneas; no demuestra una intervención de skill."
+    },
+    "E10": {
+      "source": "Li et al., BizGenEval, marzo 2026, [Microsoft Research](https://www.microsoft.com/en-us/research/publication/bizgeneval-a-systematic-benchmark-for-commercial-visual-content-generation/)",
+      "url": "https://www.microsoft.com/en-us/research/publication/bizgeneval-a-systematic-benchmark-for-commercial-visual-content-generation/",
+      "finding": "400 prompts, 8.000 preguntas verificadas por humanos, 26 sistemas; brechas en diseño comercial bajo restricciones.",
+      "limitation": "Preprint; no incluye necesariamente los escenarios específicos de SALY."
+    }
+  }
+}
