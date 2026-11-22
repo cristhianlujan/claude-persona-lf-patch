@@ -29,7 +29,7 @@ Entre el archivo V08 y el último preflight V09 puede vencer el lease, variar la
 - B25/B28: dos mutaciones comportamentales fallan por la aserción esperada, no por sintaxis.
 - Al terminar, restablece la BD de pruebas y verifica que la tabla candidata ya no exista.
 
-**No considerar PASS hasta obtener salida CI real vinculada a SHA.** PASE sobre HEAD final sin workflow temporal; manténgase PR en Draft.
+**CI PG17.6 verificado:** [run #45075908122](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45075908122) sobre SHA exacto `2f1fc2202eb3f317cfb10327e3c0fc5f9690db8b`: positivo/idempotencia sintéticos, 12 rechazos por error exacto, 2 procesos psql concurrentes con una reserva, 2/2 mutaciones muertas por aserción y restauración del fixture. Detalle en `pg17_results.txt`. Primeros dos intentos de CI fallaron y están trazados. Sigue pendiente PASE del HEAD final, retiro de workflow temporal y clon fiel de esquema antes de despliegue.
 
 ## Evidencia host
 
