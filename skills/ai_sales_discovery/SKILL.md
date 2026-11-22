@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v2.0
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v2.2
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -70,7 +70,7 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | VERIFIED_DELIVERY_PASS_NATIVE_PLAN_BATCH_CANDIDATE_PG17_PENDING |
+| 12.01.7 | Persistencia gobernada | FIRST_REAL_BATCH_APPROVED_TRUSTED_PUSH_PENDING_DB_READBACK |
 | 12.01.8 | Reconciliación y cierre | PINNED_REAL_MANIFEST_QA_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
@@ -121,3 +121,7 @@ Evidencia local de unidad: blob exacto `7e6e8e1a1e93cc03ee6eabf0437ee56d2bb840b0
 
 ## Lote v2.0 — candidato de operación nativa de ingesta
 PR #4610 main 2d90558428417c29e2edf6f88c3eb625ea728247; Train 44985368938 success; exact integration tests 7/7, regression 9/9 and 10/10, PG17 writer PASS, job https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44985425965/job/137094824082. El código candidato `skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql` implementa contexto de operación y lease, plan aprobado por digest fijado en política, preparación idempotente de RUN/plan/ejecución, consulta FOUND y reserva de efecto, escritor existente y readback dentro de una transacción. Sin instalación en BD real ni nuevos grants; registro/autoridad de INGESTA_EMPRESARIAL_SALY aún pendiente, fixtures PG17 preparados. No se afirma cierre de run ni carga real. `skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md`.
+## Lote v2.2 — primer lote real autorizado (ejecución pendiente)
+
+El usuario autorizó continuar con la primera ingesta. PR #4612 fusionado y readback en SALY: operación INGESTA_EMPRESARIAL_SALY, contrato y tres funciones instaladas; config y catálogo aún OFF, 0 ingestas. PG17 caso sintético 2/2 + adversariales PASS (run 45027720784, job 137224300891). El Train aplica la migración `supabase/migrations/20261122145500_lf_saly_sunat_first_batch_activation_v1.sql` activando únicamente el piloto con política y manifiesto SHA exacto; no contiene datos personales ni empresas. Tras merge main, el trabajo one-shot del workflow existente `.github/workflows/saly-pte-resguardos-pg17.yml` ejecuta `skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py` sobre la misma base SALY, conectado por el secreto de Train, invocando reserva de operación + lease + plan + único writer y readback dentro de una transacción. Un lote, no los 479. Sin nuevas tablas, sin GRANT a clientes, sin envíos ni campañas. Suite local unitaria: `skills/ai_sales_discovery/tests/test_sunat_first_governed_batch_v22.py`. Si el padrón reducido mutable cambió, falla SNAPSHOT_CHANGED y no persiste nada. No marcar como ejecutado ni empresas en DB hasta evidencia del job y readback Supabase; este lote no autoriza una carga masiva ni cierra RUN CERRADO.
+
