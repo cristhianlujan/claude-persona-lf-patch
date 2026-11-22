@@ -1,0 +1,16 @@
+# SALY — Ingesta empresarial nativa v2.0 (candidato)
+
+PR #4610 main 2d90558428417c29e2edf6f88c3eb625ea728247; Train 44985368938 success; exact integration tests 7/7, regression 9/9 and 10/10, PG17 writer PASS, job https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44985425965/job/137094824082.
+
+## Alcance construido
+- Código SQL candidato, tres funciones invoker: contexto, preparación del plan y ejecución por lote. No migración ni autoridad operativa creada aún.
+- Reutiliza public.lf_operation_execution, lf_operation_registry, lf_operation_contracts, fn_lf_operation_reserve_effect_v1 y fn_lf_operation_mark_effect_succeeded_v1; RUN, plan/consultas/ejecuciones SALY preexistentes y único writer ventas_sunat_ingesta_core_v1. No nuevas tablas operativas ni bypass.
+- Identidad propuesta de especialización en motor existente: INGESTA_EMPRESARIAL_SALY (DISCOVERY_SOURCE/PE-SUNAT-RUC, contrato SALY_BUSINESS_INGESTION_V1). Es un identificador candidato, no registrado. Exigir ejecución persistida en estado IN_PROGRESS, lease vigente, binding exacto al digest de manifiesto y snapshots en configuración DB controlada. No convertir por sí solo un lease o manifest aportado por cliente en autoridad. El rol autorizado y mecanismo de admisión/registro nativo deben completarse antes de habilitar. No añadir permisos service_role/authenticated.
+- Política de activación futura requiere snapshot_sha256, expected_rows, expected_batches, max_rows, max_bytes y max_total_bytes medidos/revisados; no activa ni cambia config real. Solo admite ámbito SALY/LIMA_ICA, RUC20 (writer), hashes aprobados, URLs y derechos registrados. Plan prepare coteja digest completo y cada entrada, key, ordinal, conteos y cuotas. En ejecución coteja plan entero, hash, bytes, canonicalización y snapshot del payload.
+- Transacción por lote: reservar efecto → consulta FOUND → writer exacto (sin duplicar DML de hallazgos) → readback fila/hash/conteo → marcar plan FOUND y reservar receipt SUCCEEDED. Todo junto o rollback; replay coteja receipt y datos existentes. Dispatch key fija y reserva native única. No marcar RUN global CERRADO (restricción L28 actual), ni declarar reconciliación terminal aún. Pendiente cierre de ejecución/fuente/run, lease recovery, autoridad server-bound real y carga controlada. Los casos de test son sintéticos (sin credenciales de producción).
+
+## Prueba preparada
+`skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py` sobre workflow PG17 existente: usa DDL SALY y writer previamente calificado, funciones LR nativas extraídas de las migraciones exactas (reserva, lease, efecto y validación de autoridad) con registro/contrato de operación y política sintéticos en BD desechable. Cubre inexistente, lease obsoleto, política deshabilitada, plan alterado, hash alterado, rollback completo, error de writer después de reserva, catálogo deshabilitado, dos lotes reales de fixture, replay, readback alterado y permisos. No certifica autorización operativa real. Ejecución pendiente; no PASS aún.
+
+## Próximo paso
+Validar PG17 candidato; registrar especialización y contratos en motor de operaciones con alcance limitado y sin habilitar fuente hasta prueba de efecto. Implementar admisión real y terminalización, adaptar llamada al transporte v1.9, verificar carga piloto en la misma base SALY, no migración recurrente de payload.
