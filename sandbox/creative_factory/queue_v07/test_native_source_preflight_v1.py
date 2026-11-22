@@ -104,8 +104,6 @@ class NativeSourceTests(unittest.TestCase):
         self.fail("SALY_NATIVE_SOURCE_BYTES_DRIFT",
                   lambda c:setattr(c,"content",c.content+b"x"))
     def test_wrong_actual_file_type(self):
-        def mutate(c):
-            c.content=b"fake not png"+"a"*30 .encode()
         # No synthetic non-PNG may pass the SHA or MIME gate.
         self.fail("SALY_NATIVE_SOURCE_BYTES_DRIFT",
                   lambda c:setattr(c,"content",b"not a png"+b"x"*35))
