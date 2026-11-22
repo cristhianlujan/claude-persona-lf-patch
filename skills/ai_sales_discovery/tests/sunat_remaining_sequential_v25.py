@@ -135,6 +135,36 @@ SELECT jsonb_build_object('ordinal',{ordinal},'ingestas',
 COMMIT;"""
 
 
+
+def safe_capture_diagnostic(payload):
+    """Only aggregate counts. Never log RUC, names or full rows."""
+    data=json.loads(payload)
+    counts=dict(rows=len(data),name_trim=0,monthly_ruc_trim=0,reduced_ruc_trim=0,
+                workers_trim=0,evidence_variation=0,source_name_blank=0,capture_hash=0)
+    first=data[0]['capture']['observations']
+    for item in data:
+        c=item['capture']; m=c['observations']['monthly']; d=c['observations']['reduced']
+        if d['raw']['nombre'].strip(' ')!=c['normalized']['razon_social']:
+            counts['name_trim']+=1
+        if m['raw']['RUC'].strip(' ')!=c['normalized']['ruc']:
+            counts['monthly_ruc_trim']+=1
+        if d['raw']['RUC'].strip(' ')!=c['normalized']['ruc']:
+            counts['reduced_ruc_trim']+=1
+        w=m['raw']['NroTrab'].strip(' ')
+        db_worker=int(w) if re.fullmatch('[0-9]{1,9}',w) else None
+        if db_worker!=c['normalized']['workers_integer_literal']:
+            counts['workers_trim']+=1
+        for kind,obs in (('monthly',m),('reduced',d)):
+            if {k:v for k,v in obs['evidence'].items() if k!='ordinal'}!={
+                    k:v for k,v in first[kind]['evidence'].items() if k!='ordinal'}:
+                counts['evidence_variation']+=1
+        if not d['raw']['nombre'].strip(' '):
+            counts['source_name_blank']+=1
+        if sha(canonical(c))!=item['capture_sha256']:
+            counts['capture_hash']+=1
+    return counts
+
+
 def run():
     exact, prior = expected()
     completed, total=database_prefix(exact)
@@ -159,7 +189,13 @@ def run():
             if ordinal!=completed+1:
                 raise ValueError('SEQUENTIAL_SKIP_OR_REORDER')
             planned=total+item['rows']
-            receipt=psql(build_one_batch_sql(item,payload,ordinal,planned),timeout=300)
+            try:
+                receipt=psql(build_one_batch_sql(item,payload,ordinal,planned),timeout=300)
+            except ValueError as err:
+                if str(err)=='GOVERNED_DB_CALL_REJECTED':
+                    print('SUNAT_SEQUENCE_CAPTURE_DIAGNOSTIC '+json.dumps(
+                        dict(ordinal=ordinal,counts=safe_capture_diagnostic(payload)),sort_keys=True),flush=True)
+                raise
             if (receipt.get('ordinal'),receipt.get('ingestas'),receipt.get('rows')) != (ordinal,ordinal,planned):
                 raise ValueError('SEQUENTIAL_READBACK_MISMATCH')
             completed,total=ordinal,planned

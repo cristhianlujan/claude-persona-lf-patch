@@ -59,5 +59,20 @@ class SequentialBatchTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'SEQUENTIAL_PREFLIGHT_REJECTED'):
                 s.database_prefix(exact)
 
+
+    def test_diagnostic_counts_only(self):
+        from sunat_batch_plan_v1 import canonical
+        c=dict(normalized=dict(ruc='20000000001',razon_social='Firma',workers_integer_literal=5),
+               observations=dict(
+                 monthly=dict(raw=dict(RUC='20000000001',NroTrab='5'),
+                              evidence=dict(ordinal=1,zip_sha256='a')),
+                 reduced=dict(raw=dict(RUC='20000000001',nombre='\u00a0Firma'),
+                              evidence=dict(ordinal=1,zip_sha256='b'))))
+        data=[dict(capture=c,capture_sha256=sha(canonical(c)))]
+        result=s.safe_capture_diagnostic(canonical(data))
+        self.assertEqual(result['name_trim'],1)
+        self.assertEqual(result['capture_hash'],0)
+        self.assertNotIn('Firma',str(result))
+
 if __name__=='__main__':
     unittest.main()

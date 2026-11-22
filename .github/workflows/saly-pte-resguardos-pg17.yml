@@ -246,7 +246,7 @@ jobs:
 
   sunat-all-sequential-v25:
     name: SUNAT registered plan — batches 2 through 479 STRICTLY sequential
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT secuencial v2.5')
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT secuencial diagnostico v2.6')
     environment: lf-merge-train
     runs-on: ubuntu-latest
     timeout-minutes: 360
