@@ -47,85 +47,21 @@ class TestRun(unittest.TestCase):
         self.assertEqual(result,self.run_qa())
     def test_plan_changed_digest_and_cleanup(self):
         self.enable_plan(); self.request['batch_plan']['expected']['batch_digest_sha256']='f'*64
-        with self.assertRaisesRegex(ValueError,'^TERMINAL_RECONCILIATION
-        r=self.request['sources']['reduced']; self.data[r['url']]+=b'x'
-        with self.assertRaisesRegex(ValueError,'^SNAPSHOT_CHANGED$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_baseline_mismatch(self):
-        self.request['expected']['rows']=3
-        with self.assertRaisesRegex(ValueError,'^BASELINE_MISMATCH$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_preflight_blocks_before_http(self):
-        self.request['mode']='PRODUCTION'
-        with self.assertRaisesRegex(ValueError,'^QA_MODE$'): self.run_qa()
-        self.request['mode']='PINNED_QA_ONLY'; self.request['sources']['reduced']['url']='https://invalid.example/file.zip'
-        with self.assertRaisesRegex(ValueError,'^SOURCE_URL$'): self.run_qa()
-        self.opener.open.assert_not_called()
-
-if __name__=='__main__': unittest.main()
-): self.run_qa()
+        with self.assertRaisesRegex(ValueError,'^TERMINAL_RECONCILIATION$'): self.run_qa()
         self.assertEqual(list(Path(self.dir.name).iterdir()),[])
     def test_plan_wrong_snapshot_before_http(self):
         prior=self.enable_plan(); prior['source_sha256'][0]='f'*64
         self.opener.open.reset_mock()
-        with self.assertRaisesRegex(ValueError,'^PLAN_SCOPE_SNAPSHOT
-        r=self.request['sources']['reduced']; self.data[r['url']]+=b'x'
-        with self.assertRaisesRegex(ValueError,'^SNAPSHOT_CHANGED$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_baseline_mismatch(self):
-        self.request['expected']['rows']=3
-        with self.assertRaisesRegex(ValueError,'^BASELINE_MISMATCH$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_preflight_blocks_before_http(self):
-        self.request['mode']='PRODUCTION'
-        with self.assertRaisesRegex(ValueError,'^QA_MODE$'): self.run_qa()
-        self.request['mode']='PINNED_QA_ONLY'; self.request['sources']['reduced']['url']='https://invalid.example/file.zip'
-        with self.assertRaisesRegex(ValueError,'^SOURCE_URL$'): self.run_qa()
-        self.opener.open.assert_not_called()
-
-if __name__=='__main__': unittest.main()
-): self.run_qa()
+        with self.assertRaisesRegex(ValueError,'^PLAN_SCOPE_SNAPSHOT$'): self.run_qa()
         self.opener.open.assert_not_called()
     def test_plan_wrong_stats_and_cleanup(self):
         prior=self.enable_plan(); prior['stats']['reduced_quarantined']+=1
-        with self.assertRaisesRegex(ValueError,'^PLAN_STATS_MISMATCH
-        r=self.request['sources']['reduced']; self.data[r['url']]+=b'x'
-        with self.assertRaisesRegex(ValueError,'^SNAPSHOT_CHANGED$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_baseline_mismatch(self):
-        self.request['expected']['rows']=3
-        with self.assertRaisesRegex(ValueError,'^BASELINE_MISMATCH$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_preflight_blocks_before_http(self):
-        self.request['mode']='PRODUCTION'
-        with self.assertRaisesRegex(ValueError,'^QA_MODE$'): self.run_qa()
-        self.request['mode']='PINNED_QA_ONLY'; self.request['sources']['reduced']['url']='https://invalid.example/file.zip'
-        with self.assertRaisesRegex(ValueError,'^SOURCE_URL$'): self.run_qa()
-        self.opener.open.assert_not_called()
-
-if __name__=='__main__': unittest.main()
-): self.run_qa()
+        with self.assertRaisesRegex(ValueError,'^PLAN_STATS_MISMATCH$'): self.run_qa()
         self.assertEqual(list(Path(self.dir.name).iterdir()),[])
     def test_plan_quota_before_http(self):
         self.enable_plan(); self.request['batch_plan']['limits']['max_rows']+=1
         self.opener.open.reset_mock()
-        with self.assertRaisesRegex(ValueError,'^PLAN_QUOTAS
-        r=self.request['sources']['reduced']; self.data[r['url']]+=b'x'
-        with self.assertRaisesRegex(ValueError,'^SNAPSHOT_CHANGED$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_baseline_mismatch(self):
-        self.request['expected']['rows']=3
-        with self.assertRaisesRegex(ValueError,'^BASELINE_MISMATCH$'): self.run_qa()
-        self.assertEqual(list(Path(self.dir.name).iterdir()),[])
-    def test_preflight_blocks_before_http(self):
-        self.request['mode']='PRODUCTION'
-        with self.assertRaisesRegex(ValueError,'^QA_MODE$'): self.run_qa()
-        self.request['mode']='PINNED_QA_ONLY'; self.request['sources']['reduced']['url']='https://invalid.example/file.zip'
-        with self.assertRaisesRegex(ValueError,'^SOURCE_URL$'): self.run_qa()
-        self.opener.open.assert_not_called()
-
-if __name__=='__main__': unittest.main()
-): self.run_qa()
+        with self.assertRaisesRegex(ValueError,'^PLAN_QUOTAS$'): self.run_qa()
         self.opener.open.assert_not_called()
     def test_changed_snapshot_blocks_and_cleans(self):
         r=self.request['sources']['reduced']; self.data[r['url']]+=b'x'
