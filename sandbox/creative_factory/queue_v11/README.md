@@ -22,6 +22,6 @@
 
 SQL V10 ofrece unicidad de **reserva**, no exactly-once de un servicio Native fuera de PostgreSQL. Si el efecto externo queda indeterminado, NO reintentar por la sola presencia de una reserva: hace falta reconciliación autenticada del host, sin fabricar un callback.
 
-Test sintético V11: 26 casos sobre funciones y puertos dobles de prueba. La CI temporal ejecuta además regresión de V08/V09 con sus propias pruebas del repositorio. Todos los PASS deben provenir del log de CI del SHA probado. Un test positivo simulado nunca demuestra host real.
+Test sintético V11: 26 casos sobre funciones y puertos dobles de prueba. El test test_real_v10_ports_pg17.py conecta el puente con la función SQL V10 y hace SELECT auténtico de la reserva en un PG17 desechable; únicamente V09 está simulado en ese test y sigue sin host real. B25/B28 añade dos mutaciones comprobables con aserción precisa. La CI temporal ejecuta además regresión de V08/V09 con sus propias pruebas del repositorio. Todos los PASS deben provenir del log de CI del SHA probado. Un test positivo simulado nunca demuestra host real.
 
 NO MERGE / NO DEPLOY / NO GRANT / NO RENDER / NO FALSE DONE.
