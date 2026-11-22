@@ -3,6 +3,7 @@ name: LF migration name classification
 on:
   pull_request:
     paths:
+      - "sandbox/creative_factory/knowledge_candidate_v1/**"
       - "supabase/migrations/**/*.sql"
       - ".github/workflows/lf-migration-merge-train.yml"
       - ".github/workflows/lf-migration-name-classification.yml"
@@ -24,6 +25,57 @@ permissions:
   contents: read
 
 jobs:
+  # Draft candidate only: exact HEAD, temporary local PG17, no live database or secrets.
+  saly-creative-knowledge-pg17:
+    name: SALY creative knowledge isolated PG17 rollback (candidate only)
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'codex/saly-knowledge-review-pg17-v1' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: saly_knowledge_ephemeral_only
+          POSTGRES_DB: saly_knowledge_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_knowledge_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: saly_knowledge_test
+      PGPASSWORD: saly_knowledge_ephemeral_only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify candidate bytes and execute PG17 BEGIN ROLLBACK
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          cd sandbox/creative_factory/knowledge_candidate_v1
+          sha256sum -c <<'EOF'
+          1cce50901b94fa14c8c4f16c30b1e3000b518b3aea3c627f14c695269d36afe3  repositorio_selector_candidato.sql
+          cadbd84ff446f495e0f6d30be344a87abe49b0d35593427c8efe1b5c3040f831  pruebas_pg17.sql
+          f2b7a854a5c25df2b228e8754684985fec775d45b4a74c8556030251ea13da35  manifest_candidato.json
+          EOF
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          fi
+          psql -X -h 127.0.0.1 -d saly_knowledge_test -c 'SHOW server_version_num;'
+          psql -X -h 127.0.0.1 -d saly_knowledge_test -f pruebas_pg17.sql | tee /tmp/saly-knowledge-pg17.log
+          grep -Fx PASS_PG17_KNOWLEDGE_CANDIDATE_ROLLBACK /tmp/saly-knowledge-pg17.log
+          test "$(psql -X -h 127.0.0.1 -d saly_knowledge_test -qAt -c "SELECT count(*) FROM pg_namespace WHERE nspname IN ('saly','visual','extensions');")" = 0
+          echo SALY_KNOWLEDGE_PG17_INDEPENDENT_CLEANUP_PASS
+
   # Exact-HEAD source fixture; no remote Supabase credentials.
   ig-chat8-auth-window30-pg17:
     name: IG Chat8 PG17 BEGIN/ROLLBACK auth window 30m
