@@ -228,3 +228,18 @@ jobs:
           PGSSLMODE: require
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: python3 skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py
+  
+  sunat-current-snapshot-rebaseline:
+    name: SUNAT current snapshot hashes and bounded aggregate reconciliation
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT recalcular snapshot v2.3')
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Measure official SUNAT current archive and complete deterministic metadata
+        run: python3 skills/ai_sales_discovery/tests/sunat_current_snapshot_measure_v23.py

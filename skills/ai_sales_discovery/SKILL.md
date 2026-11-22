@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v2.2
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v2.3
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -70,7 +70,7 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | FIRST_REAL_BATCH_APPROVED_TRUSTED_PUSH_PENDING_DB_READBACK |
+| 12.01.7 | Persistencia gobernada | FIRST_REAL_BATCH_BLOCKED_SNAPSHOT_CHANGED_REBASELINE_REQUIRED |
 | 12.01.8 | Reconciliación y cierre | PINNED_REAL_MANIFEST_QA_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
@@ -125,3 +125,6 @@ PR #4610 main 2d90558428417c29e2edf6f88c3eb625ea728247; Train 44985368938 succes
 
 El usuario autorizó continuar con la primera ingesta. PR #4612 fusionado y readback en SALY: operación INGESTA_EMPRESARIAL_SALY, contrato y tres funciones instaladas; config y catálogo aún OFF, 0 ingestas. PG17 caso sintético 2/2 + adversariales PASS (run 45027720784, job 137224300891). El Train aplica la migración `supabase/migrations/20261122145500_lf_saly_sunat_first_batch_activation_v1.sql` activando únicamente el piloto con política y manifiesto SHA exacto; no contiene datos personales ni empresas. Tras merge main, el trabajo one-shot del workflow existente `.github/workflows/saly-pte-resguardos-pg17.yml` ejecuta `skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py` sobre la misma base SALY, conectado por el secreto de Train, invocando reserva de operación + lease + plan + único writer y readback dentro de una transacción. Un lote, no los 479. Sin nuevas tablas, sin GRANT a clientes, sin envíos ni campañas. Suite local unitaria: `skills/ai_sales_discovery/tests/test_sunat_first_governed_batch_v22.py`. Si el padrón reducido mutable cambió, falla SNAPSHOT_CHANGED y no persiste nada. No marcar como ejecutado ni empresas en DB hasta evidencia del job y readback Supabase; este lote no autoriza una carga masiva ni cierra RUN CERRADO.
 
+
+## Lote v2.3 — snapshot SUNAT mutable, interrupción sin escritura
+GitHub Action real run [45032432469 job 137238734060](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45032432469/job/137238734060): prueba unitaria 5/5 PASS; captura BLOQUEADA con SNAPSHOT_CHANGED 2026-11-22 14:22:39 UTC; readback Supabase inmediato 0 ingestas, 0 empresas. No modificar el hash esperado arbitrariamente ni declarar carga terminada. Fuente SUNAT reducida mutable; verificación del ZIP cambiado debe separarse del diagnóstico hasta medición. El PR de pausa `supabase/migrations/20261122151000_lf_saly_sunat_pilot_pause_snapshot_changed_v1.sql` devuelve flags a false por Train, preserva derechos e historial. El mismo PR incorpora medición efímera `skills/ai_sales_discovery/tests/sunat_current_snapshot_measure_v23.py` bajo el workflow ya existente `.github/workflows/saly-pte-resguardos-pg17.yml`: se descargan fuentes oficiales actuales sin suplantar el hash anterior, se calcula SHA/size y se reconstruye el manifiesto con los parsers existentes; resultados agregados solamente, ninguna ingesta. Tras QA, actualizar en el siguiente lote la referencia oficial y hacer primer intento con la misma operación y escritor. No nuevas tablas, grants, campañas ni arquitectura.
