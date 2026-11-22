@@ -6,7 +6,9 @@ test "$PGHOST" = 127.0.0.1 && test "$PGUSER" = postgres && test "$PGDATABASE" = 
 test -z "$(printenv PGPASSWORD || true)" && test -z "$(printenv LF_SUPABASE_DB_PASSWORD || true)" || { echo BLOCK_LIVE_CREDENTIAL_ENV; exit 2; }
 psql -XAt -v ON_ERROR_STOP=1 -c "show server_version_num" | grep -qE '^17[0-9]{4}$' || { echo BLOCK_NON_PG17; exit 2; }
 psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v02/fixture_pg17.sql >/dev/null
+psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v06/001_saly_delivery_attestation_guard_candidate.sql >/dev/null
 psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v12/001_pending_only_begin_candidate.sql >/dev/null
+psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v12/002_qa_comment_completion_candidate.sql >/dev/null
 psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v12/setup_pg17.sql >/dev/null
 db(){ psql -XAt -v ON_ERROR_STOP=1 -c "$1"; }
 eq(){ if test "$1" != "$2"; then echo "FAIL $3 expected=$2 got=$1"; exit 1; fi; echo "PASS_V12_$3"; }
@@ -78,6 +80,7 @@ eq "$(db "select status from saly.creative_orders where code='V12_CHAT'")" EN_PR
 eq "$(db "select saly.creative_chat_begin_pending_v1('V12_CHAT',ARRAY['HOME'],'CHAT-WORKER','V12-REPEAT','$snapshot'::jsonb)->>'status'")" NO_PENDING_IN_SCOPE NO_RECLAIM_HOME
 eq "$(db "select count(*) from saly.creative_queue_delivery_receipts_v1")" 0 NO_FAKE_DELIVERY
 echo PASS_V12_CONCURRENT_PHYSICAL_CONNECTIONS
+psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v12/test_qa_pg17.sql
 psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v02/fixture_pg17.sql >/dev/null
 eq "$(db "select coalesce(to_regprocedure('saly.creative_chat_begin_pending_v1(text,text[],text,text,jsonb)')::text,'NONE')")" NONE RESTORED_FIXTURE
 echo PASS_V12_COMPLETE
