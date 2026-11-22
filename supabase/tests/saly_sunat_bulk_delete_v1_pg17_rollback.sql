@@ -52,7 +52,7 @@ VALUES
   'PE-SUNAT-RUC','IN_PROGRESS',NULL);
 INSERT INTO public.lf_global_config
 (scope,config_key,config_value,value_status,valid_from)
-VALUES ('SALY_DISCOVERY','SUNAT_POLICY_V1','{"enabled":true}','REAL',now());
+VALUES ('SALY_DISCOVERY','SUNAT_POLICY_V1','{"enabled":true,"max_rows":1000}','REAL',now());
 INSERT INTO saly.ventas_discovery_catalogo VALUES ('PE-SUNAT-RUC');
 INSERT INTO saly.ventas_discovery_runs VALUES
  ('EXEC-SALY-SUNAT-PILOT-20261122-001','EN_EJECUCION');
@@ -130,7 +130,7 @@ BEGIN;
  SELECT public.test_expect_purge_error(
   $$SELECT saly.ventas_sunat_purge_prepare_v1('EXEC-SALY-SUNAT-PILOT-20261122-001')$$,
   'SUNAT_PURGE_SOURCE_NOT_DISABLED');
- UPDATE public.lf_global_config SET config_value='{"enabled":false}'
+ UPDATE public.lf_global_config SET config_value='{"enabled":false,"max_rows":1000}'
  WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_POLICY_V1';
 
  INSERT INTO saly.ventas_unidades_operativas
