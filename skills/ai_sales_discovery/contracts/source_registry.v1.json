@@ -58,8 +58,8 @@
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "1.9",
-        "state": "RIGHTS_REGISTERED_VERIFIED_DELIVERY_CANDIDATE_NOT_RUNTIME",
+        "version": "2.0",
+        "state": "RIGHTS_REGISTERED_DELIVERY_PASS_NATIVE_INGESTION_CANDIDATE_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -176,9 +176,12 @@
               "skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json",
               "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md",
               "skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py",
+              "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql",
+              "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py",
+              "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md"
             ],
-            "status": "VERIFIED_PAYLOAD_DELIVERY_CANDIDATE_TEST_PENDING_GOVERNED_CALLER_PENDING",
+            "status": "VERIFIED_DELIVERY_PASS_NATIVE_PLAN_BATCH_CANDIDATE_PG17_PENDING",
             "gate": "Externa a READ_ONLY; derechos, autorización, consulta válida y readback. No modificar captura v1.",
             "external": true
           },
@@ -234,7 +237,10 @@
       "real_manifest_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json",
       "verified_delivery_ref": "skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py",
       "verified_delivery_test_ref": "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py",
-      "governed_delivery_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md"
+      "governed_delivery_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md",
+      "native_ingestion_candidate_ref": "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql",
+      "native_ingestion_test_ref": "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py",
+      "native_ingestion_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md"
     },
     {
       "source_id": "SUNARP",
