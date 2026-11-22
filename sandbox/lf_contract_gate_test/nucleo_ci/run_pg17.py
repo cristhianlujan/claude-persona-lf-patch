@@ -272,6 +272,20 @@ def main():
                     if residue != "0":
                         raise RuntimeError("DEP_ROLLBACK_FAILED " + schema + "." + table)
                 print("DEP_ROLLBACK_PASS " + schema + " 10/10", flush=True)
+        if any(n.startswith("sandbox/lf_contract_gate_test/nucleo_ci/procesos_saly/") for n in relevant):
+            # Candidato Procesos SALY: PG17 aislado, base saly_test_*, TCP 127.0.0.1 dentro del contenedor.
+            psql(name, "CREATE DATABASE saly_test_procesos;")
+            run_cmd(["docker", "cp", str(HERE / "procesos_saly"), name + ":/tmp/procesos_saly"])
+            for sql_name, marks in (("pruebas_evolucion_v2.sql", ("QA_453: PASS", "Rollback: PASS")),
+                                    ("pruebas_adicionales.sql", ("PROCESOS_EXTRA_PASS", "EXTRA_ROLLBACK_PASS"))):
+                res = run_cmd(["docker", "exec", "-w", "/tmp/procesos_saly", name, "psql", "-X", "-h", "127.0.0.1",
+                               "-U", "postgres", "-d", "saly_test_procesos", "-v", "ON_ERROR_STOP=1", "-f", sql_name], check=False)
+                print(res.stdout + res.stderr, flush=True)
+                if res.returncode or any(m not in res.stderr for m in marks):
+                    raise RuntimeError("PROCESOS_SALY_TEST_FAILED " + sql_name)
+            if psql(name, "SELECT to_regclass('saly.procesos') IS NULL;").stdout.strip() != "t":
+                raise RuntimeError("PROCESOS_SALY_ROLLBACK_RESIDUE")
+            print("PROCESOS_SALY_PG17_PASS", flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")
         result = psql(name, suite_sql(args.force_fail), check=False)
