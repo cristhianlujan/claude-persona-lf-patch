@@ -2,10 +2,10 @@
 # PG17 disposable DB only. Does NOT connect to Supabase or use credentials.
 set -Eeuo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-: "\${PGHOST:?}" "\${PGUSER:?}" "\${PGDATABASE:?}"
+: "${PGHOST:?}" "${PGUSER:?}" "${PGDATABASE:?}"
 [[ "$PGDATABASE" == "saly_queue_test" ]] || { echo BLOCK_NON_DISPOSABLE_DB; exit 2; }
 [[ "$PGHOST" == "127.0.0.1" || "$PGHOST" == "localhost" ]] || { echo BLOCK_REMOTE_DB; exit 2; }
-[[ -z "\${PGPASSWORD:-}" && -z "\${LF_SUPABASE_DB_PASSWORD:-}" ]] || { echo BLOCK_DB_SECRET_ENV; exit 2; }
+[[ -z "${PGPASSWORD:-}" && -z "${LF_SUPABASE_DB_PASSWORD:-}" ]] || { echo BLOCK_DB_SECRET_ENV; exit 2; }
 psql -XAt -v ON_ERROR_STOP=1 -c "show server_version_num" | grep -qE '^17[0-9]{4}$' || {
   echo BLOCK_PG17_REQUIRED; exit 2;
 }
