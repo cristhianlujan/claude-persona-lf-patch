@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.7
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.8
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -64,14 +64,14 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 
 | Subpaso | Función | Estado técnico |
 |---|---|---|
-| 12.01.1 | Admisión y transporte | PINNED_QA_PASS_PUBLIC_REUSE_BASIS_REVIEW_PENDING |
+| 12.01.1 | Admisión y transporte | PUBLIC_REUSE_DECISION_APPROVED_REGISTRATION_PENDING |
 | 12.01.2 | Integridad ZIP y esquema | PINNED_DUAL_ARCHIVE_QA_PASS |
 | 12.01.3 | Lectura y selección | PINNED_DUAL_PROJECTION_QA_PASS |
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | PINNED_PLAN_INTEGRATED_FIXTURES_PASS_REAL_QA_PENDING |
-| 12.01.8 | Reconciliación y cierre | QA_AGGREGATE_PASS_MANIFEST_VERIFICATION_PENDING |
+| 12.01.7 | Persistencia gobernada | PINNED_REAL_MANIFEST_QA_PASS_GOVERNED_CALLER_PENDING |
+| 12.01.8 | Reconciliación y cierre | PINNED_REAL_MANIFEST_QA_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
 
@@ -108,3 +108,7 @@ Frente jurídico: Resolución 003820-2023-JUS/TTAIP-PRIMERA SALA, p. 2, recoge r
 ## Lote v1.7 — integración de manifiesto en flujo fijado
 
 `run_candidate_qa` admite opcionalmente `batch_plan={expected,limits}` con recibo anterior, coteja fuente/snapshot/ámbito/baseline y cuotas antes de descargar. `candidate_receipt` entrega el stream acotado al planificador existente, conserva la barrera EOF/CRC, el orden, los hashes y la conciliación de todas las estadísticas; devuelve solo manifiestos con metadatos al concluir y elimina temporales. No hay entrega al escritor ni permiso operativo. Nuevos casos: flujo completo reproducible, digest divergente, snapshot distinto, estadísticas discrepantes y cuotas incompatibles. Pruebas ejecutadas en GitHub Actions, job 137079287411, head 1dc2d61372e82ba23f59729200fa007dd623bfeb: lector 4/4, runner 9/9, planificador 10/10, escritor PG17 positivo/negativo/rollback/concurrencia PASS. Link: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44980351563/job/137079287411 . Código de adapters y pruebas sin cambios después de este run. El workflow retorna a push/main y workflow_dispatch: se retira el trigger pull_request agregado porque PASE exige entrada ordinaria única (job 137079287570). No se modifica PASE ni las pruebas. Los probes reales siguen siendo push a main y título exacto. `tests/sunat_pinned_plan_real_probe.py` usa el recibo v1.4 fijado; emite únicamente 478657/479 esperados, hash de manifiesto agregado, métricas y frontera sin escritura si todos los controles pasan. Si cambia el ZIP reducido, bloquea por hash; no reemplazar por versión no revisada. Derechos y caller gobernado pendientes.
+
+## Lote v1.8 — decisión de uso interno y evidencia real
+
+Prueba real https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44982843282/job/137086915653 PASS, 478657 observaciones, 479 lotes únicos, 765896698 bytes; digest de manifiesto 3e12083fc487a4d1281e69b0868676fa66f0be42ad3d41966662a610545bd77e. Recibo: `skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json`. Propietario aprobó uso B2B interno de hechos empresariales públicos, sin reventa, datos personales innecesarios ni contacto automático. Fundamento, límites y riesgo residual: `skills/ai_sales_discovery/contracts/SUNAT_INTERNAL_REUSE_DECISION_V18.md`. Migración candidata registra decisión y nueva versión de SUNAT_POLICY_V1 sin activar fuente ni escritor. Catálogo real hasta merge conserva PENDIENTE_VERIFICAR. No repetir descarga QA salvo cambio de snapshot; siguiente trabajo caller gobernado y entrega de bytes, límites operativos y prueba de carga.
