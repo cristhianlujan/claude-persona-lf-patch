@@ -60,7 +60,7 @@ jobs:
           psql -X -q -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v10/001_saly_native_dispatch_reservation_candidate.sql
           psql -X -q -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v10/setup_pg17.sql
       - name: Python V11 through actual V10 PG17 SQL RPC and readback
-        run: python sandbox/creative_factory/queue_v11/test_real_v10_ports_pg17.py
+        run: python -m sandbox.creative_factory.queue_v11.test_real_v10_ports_pg17
       - name: Restore local test DB and verify V11 never delivered
         run: |
           test "$(psql -XAt -v ON_ERROR_STOP=1 -c "select count(*) from saly.creative_queue_native_delivery_evidence_v1")" = 0
