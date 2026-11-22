@@ -172,6 +172,7 @@ BEGIN
     v_name:=v_asset.metadata->>'source_filename';
     IF v_name IS NULL OR v_name !~ '^[A-Za-z0-9][A-Za-z0-9_. -]{0,127}$'
        OR v_name IN ('.','..') OR v_name=ANY(v_names)
+       OR v_asset.metadata->>'mime_type' IS NULL
        OR v_asset.metadata->>'mime_type' NOT IN ('image/png','image/jpeg','image/svg+xml')
     THEN RAISE EXCEPTION 'CREATIVE_RENDER_WIRE_ATTACHMENT_INVALID'; END IF;
     v_names:=array_append(v_names,v_name);
