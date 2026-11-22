@@ -1,0 +1,12 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-integrated-qa-v13",
+  "paths": {
+    "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-integrated-qa-v13.json": "CHANGESET_MANIFEST"
+  }
+}

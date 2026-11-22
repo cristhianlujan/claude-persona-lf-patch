@@ -58,8 +58,8 @@
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "1.2",
-        "state": "LOCAL_ARCHIVE_CANDIDATE_TESTED_NOT_RUNTIME",
+        "version": "1.3",
+        "state": "PINNED_QA_LOCAL_PASS_REAL_RUN_PENDING_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -67,9 +67,12 @@
             "requires": [],
             "references": [
               "skills/ai_sales_discovery/adapters/source_admission_v1.mjs",
-              "skills/ai_sales_discovery/adapters/sunat_download_v1.py"
+              "skills/ai_sales_discovery/adapters/sunat_download_v1.py",
+              "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
+              "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py"
             ],
-            "status": "COMPONENTS_TESTED_RUNTIME_PENDING",
+            "status": "PINNED_QA_TRANSPORT_LOCAL_PASS_RIGHTS_PENDING",
             "gate": "Política efectiva, derechos, URL y hash; cuotas y reintentos."
           },
           {
@@ -171,9 +174,12 @@
               "skills/ai_sales_discovery/tests/evidence/sunat_202610_join_20261121.json",
               "skills/ai_sales_discovery/tests/sunat_writer_pg17.py",
               "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
+              "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py"
             ],
-            "status": "CANDIDATE_RECEIPT_LOCAL_PASS_REAL_READBACK_PENDING",
+            "status": "QA_BASELINE_COMPARATOR_LOCAL_PASS_REAL_RUN_PENDING",
             "gate": "Cierre candidato: hashes y conteos. Cierre de ingesta: requiere además 12.01.7 y readback independiente. Registrar decisión sobre 12.01.6.",
             "conditional_dependencies": {
               "history_requested": [
@@ -191,7 +197,10 @@
         ]
       },
       "dual_stream_ref": "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
-      "dual_stream_test_ref": "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
+      "dual_stream_test_ref": "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
+      "candidate_qa_ref": "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
+      "candidate_qa_test_ref": "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
+      "real_qa_probe_ref": "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py"
     },
     {
       "source_id": "SUNARP",
