@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 cd "$(dirname "$0")/../../.."
 test "$PGHOST" = 127.0.0.1 && test "$PGUSER" = postgres && test "$PGDATABASE" = saly_queue_test || { echo BLOCK_NON_DISPOSABLE_DB; exit 2; }
-test -z "$PGPASSWORD" && test -z "$LF_SUPABASE_DB_PASSWORD" || { echo BLOCK_LIVE_CREDENTIAL_ENV; exit 2; }
+test -z "$(printenv PGPASSWORD || true)" && test -z "$(printenv LF_SUPABASE_DB_PASSWORD || true)" || { echo BLOCK_LIVE_CREDENTIAL_ENV; exit 2; }
 psql -XAt -v ON_ERROR_STOP=1 -c "show server_version_num" | grep -qE '^17[0-9]{4}$' || { echo BLOCK_NON_PG17; exit 2; }
 psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v02/fixture_pg17.sql >/dev/null
 psql -Xq -v ON_ERROR_STOP=1 -f sandbox/creative_factory/queue_v12/001_pending_only_begin_candidate.sql >/dev/null
