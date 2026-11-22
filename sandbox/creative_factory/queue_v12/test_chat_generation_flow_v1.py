@@ -20,15 +20,15 @@ class Ports:
         self.calls = []
         self.entries = [
             {"order_code":"SALY_HOME_BATCH_001","order_state":"PLANIFICADO",
-             "item_id":5,"item_code":"HOME","item_state":"PENDIENTE","ordinal":1},
+             "item_id":5,"item_code":"HOME","item_state":"PENDIENTE","existing_artifact_linked":False,"ordinal":1},
             {"order_code":"SALY_HOME_BATCH_001","order_state":"PLANIFICADO",
-             "item_id":6,"item_code":"ADELANTO","item_state":"PENDIENTE","ordinal":2},
+             "item_id":6,"item_code":"ADELANTO","item_state":"PENDIENTE","existing_artifact_linked":False,"ordinal":2},
             {"order_code":"SALY_HOME_BATCH_001","order_state":"PLANIFICADO",
-             "item_id":7,"item_code":"REWARDS","item_state":"PENDIENTE","ordinal":3},
+             "item_id":7,"item_code":"REWARDS","item_state":"PENDIENTE","existing_artifact_linked":False,"ordinal":3},
             {"order_code":"SALY_HOME_TEMPLATE_AB_001","order_state":"PLANIFICADO",
-             "item_id":8,"item_code":"HOME_A","item_state":"PENDIENTE","ordinal":1},
+             "item_id":8,"item_code":"HOME_A","item_state":"PENDIENTE","existing_artifact_linked":False,"ordinal":1},
             {"order_code":"SALY_HOME_TEMPLATE_AB_001","order_state":"PLANIFICADO",
-             "item_id":9,"item_code":"HOME_B","item_state":"PENDIENTE","ordinal":2},
+             "item_id":9,"item_code":"HOME_B","item_state":"PENDIENTE","existing_artifact_linked":False,"ordinal":2},
         ]
         self.run={
             "run_id":31,"order_code":"SALY_HOME_BATCH_001","order_title":"Tres pantallas SALY",
@@ -137,6 +137,11 @@ class TestChatGenerationV12(unittest.TestCase):
     def test_duplicate_db_item_rejected(self):
         self.p.entries.insert(0,dict(self.p.entries[0]))
         self.expect("SALY_CHAT_SELECTION_DUPLICATED_OR_INVALID",lambda:self.p.prepare())
+        self.assertNotIn("begin",self.p.calls)
+
+    def test_missing_artifact_inventory_is_not_clearance(self):
+        self.p.entries[0].pop("existing_artifact_linked")
+        self.expect("SALY_CHAT_ARTIFACT_INVENTORY_READBACK_REQUIRED",lambda:self.p.prepare())
         self.assertNotIn("begin",self.p.calls)
 
     def test_stale_pending_artifact_blocks_before_generation(self):
