@@ -5,7 +5,6 @@
     "docs/saly/ventas/candidate/SUNAT_DELETE_MASIVO_HOJADERUTA_20261122.md": "DOCUMENTATION",
     "skills/ai_sales_discovery/tests/test_sunat_bulk_delete_source_v1.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/saly-sunat-bulk-delete-20261122.json": "CHANGESET_MANIFEST",
-    "supabase/tests/saly_sunat_bulk_delete_v1_pg17_rollback.sql": "RUNTIME_TESTING",
-    ".github/workflows/saly-sunat-bulk-delete-pg17.yml": "WORKFLOW"
+    "supabase/tests/saly_sunat_bulk_delete_v1_pg17_rollback.sql": "RUNTIME_TESTING"
   }
 }
