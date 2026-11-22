@@ -1,0 +1,36 @@
+name: TEMP SALY queue policy PG17 isolated test
+on:
+  pull_request:
+    paths:
+      - 'sandbox/creative_factory/queue_v02/**'
+      - '.github/workflows/saly-creative-queue-policy-pg17.yml'
+permissions:
+  contents: read
+jobs:
+  queue-pg17:
+    runs-on: ubuntu-latest
+    container:
+      image: postgres:17
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_queue_test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_queue_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_queue_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: PG17 server
+        run: psql -X -v ON_ERROR_STOP=1 -At -c "show server_version" | grep '^17'
+      - name: Test source-bound lease and real triggers
+        run: bash sandbox/creative_factory/queue_v02/test_pg17.sh
