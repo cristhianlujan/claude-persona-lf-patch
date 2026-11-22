@@ -62,6 +62,8 @@ def archive_render_candidate_v1(
     """
     _need(type(wire) is dict and type(binding) is dict,
           "SALY_NATIVE_ARCHIVE_BINDING_INVALID")
+    _need(callable(read_registered_file),
+          "SALY_NATIVE_SOURCE_READER_MISSING")
     _need(isinstance(protected_assets, Mapping)
           and type(required_protected_components) is frozenset
           and all(type(n) is str and bool(n.strip())
