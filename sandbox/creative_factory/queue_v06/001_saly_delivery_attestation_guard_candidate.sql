@@ -235,7 +235,7 @@ DECLARE f text;
 BEGIN
  f:=pg_get_functiondef('saly.creative_queue_release_v1(uuid,text,text)'::regprocedure);
  IF strpos(f,'creative_queue_native_delivery_evidence_v1')=0
- OR strpos(f,'delivery.state = ''VERIFIED''')=0
+ OR strpos(f,'delivery.state=''VERIFIED''')=0
  OR strpos(f,'creative_queue_delivery_receipts_v1')<>0
  THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_RELEASE_POSTCHECK'; END IF;
  f:=pg_get_functiondef('saly.creative_queue_record_delivery_v1(uuid,bigint,text,text)'::regprocedure);
