@@ -114,8 +114,14 @@ jobs:
         run: |
           python3 skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py
           python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
+      - name: Test SUNAT candidate deterministic batch manifest
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py
+      - name: Test SUNAT verified delivery staging and cleanup
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py
       - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
         run: python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
+      - name: Qualify native SUNAT plan and batch transaction candidate in disposable PG17
+        run: python3 skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py
 
   sunat-source-schema-one-shot:
     name: SUNAT official ZIP schema evidence (bounded read only)
@@ -180,3 +186,15 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
       - run: python3 skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py
+
+  sunat-pinned-plan-one-shot:
+    name: SUNAT pinned batch manifest QA (aggregate only)
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT manifiestos integrados v1.7')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
+      - run: python3 skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py

@@ -1,0 +1,14 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-pinned-plan-v17",
+  "paths": {
+    "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-pinned-plan-v17.json": "CHANGESET_MANIFEST"
+  }
+}

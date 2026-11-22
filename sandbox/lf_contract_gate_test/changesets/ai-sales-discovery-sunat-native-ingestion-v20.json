@@ -1,0 +1,13 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-native-ingestion-v20",
+  "paths": {
+    "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md": "RUNTIME_CODE",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-native-ingestion-v20.json": "CHANGESET_MANIFEST"
+  }
+}

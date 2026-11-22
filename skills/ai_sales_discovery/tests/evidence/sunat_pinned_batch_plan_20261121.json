@@ -1,0 +1,36 @@
+{
+  "source": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44982843282/job/137086915653",
+  "merge_sha": "fd8283085b210d4fc381ed21a0032d17c1d388f4",
+  "observed_at_utc": "2026-11-22T04:00:37.4069995Z",
+  "receipt": {
+    "batch_digest_sha256": "b18e50b01672327a2225f88246e9580e4a50b11af5b3ec92fc05f5b217b67652",
+    "batches": 479,
+    "db_write_confirmed": false,
+    "manifest_digest_sha256": "3e12083fc487a4d1281e69b0868676fa66f0be42ad3d41966662a610545bd77e",
+    "qa_baseline_match": true,
+    "rights_verified": false,
+    "rows": 478657,
+    "runtime_authorized": false,
+    "source_sha256": [
+      "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7",
+      "eaaa9000eff4ca2a8b64e8a782280360314ed3349fdd4f2957329313f4c29221"
+    ],
+    "state": "CANDIDATE_PLAN_ONLY",
+    "stats": {
+      "monthly_rows": 13519921,
+      "monthly_selected": 478659,
+      "reduced_quarantined": 2,
+      "reduced_rows": 18542615,
+      "reduced_selected": 478659
+    },
+    "total_bytes": 765896698,
+    "unique_batch_keys": 479
+  },
+  "verification": {
+    "rows": true,
+    "batches": true,
+    "unique": true,
+    "baseline": true,
+    "not_persisted": true
+  }
+}

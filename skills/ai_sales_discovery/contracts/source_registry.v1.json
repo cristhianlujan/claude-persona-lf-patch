@@ -28,7 +28,7 @@
     {
       "source_id": "SUNAT",
       "adapter": null,
-      "state": "DUAL_SOURCE_JOIN_MEASURED_RIGHTS_PENDING",
+      "state": "DUAL_SOURCE_MANIFEST_MEASURED_REUSE_REGISTERED_NOT_RUNTIME",
       "source_variant": "SUNAT-RUC",
       "official_catalog_url": "https://www.datosabiertos.gob.pe/dataset/padr%C3%B3n-ruc-superintendencia-nacional-de-aduanas-y-de-administraci%C3%B3n-tributaria-sunat",
       "observed_resource": "PadronRUC_202610.zip",
@@ -52,14 +52,14 @@
       "joined_batch_ref": "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py",
       "aggregate_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_202610_join_20261121.json",
       "reduced_url": "https://www2.sunat.gob.pe/padron_reducido_ruc.zip",
-      "reduced_rights_status": "PENDIENTE_VERIFICAR",
+      "reduced_rights_status": "PERSISTENCIA_PERMITIDA",
       "download_ref": "skills/ai_sales_discovery/adapters/sunat_download_v1.py",
       "history_ref": "skills/ai_sales_discovery/adapters/sunat_history_v1.py",
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "1.5",
-        "state": "PINNED_QA_PASS_RIGHTS_AND_WRITE_READINESS_REVIEW",
+        "version": "2.0",
+        "state": "RIGHTS_REGISTERED_DELIVERY_PASS_NATIVE_INGESTION_CANDIDATE_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -73,9 +73,11 @@
               "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
               "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json",
               "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md",
-              "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql"
+              "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql",
+              "skills/ai_sales_discovery/contracts/SUNAT_INTERNAL_REUSE_DECISION_V18.md",
+              "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md"
             ],
-            "status": "PINNED_QA_PASS_REDUCED_LEGAL_BASIS_REVIEW_PENDING",
+            "status": "PUBLIC_REUSE_DECISION_REGISTERED_RUNTIME_DISABLED",
             "gate": "Política efectiva, derechos, URL y hash; cuotas y reintentos."
           },
           {
@@ -167,9 +169,19 @@
               "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
               "skills/ai_sales_discovery/tests/sunat_writer_pg17.py",
               "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md",
-              "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql"
+              "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql",
+              "skills/ai_sales_discovery/adapters/sunat_batch_plan_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py",
+              "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json",
+              "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md",
+              "skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py",
+              "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py",
+              "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql",
+              "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py",
+              "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md"
             ],
-            "status": "WRITER_PG17_PASS_LIVE_PREFLIGHT_BLOCKED",
+            "status": "VERIFIED_DELIVERY_PASS_NATIVE_PLAN_BATCH_CANDIDATE_PG17_PENDING",
             "gate": "Externa a READ_ONLY; derechos, autorización, consulta válida y readback. No modificar captura v1.",
             "external": true
           },
@@ -187,9 +199,11 @@
               "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
               "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
               "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
-              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json",
+              "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json"
             ],
-            "status": "QA_AGGREGATE_RECONCILIATION_PASS_DB_READBACK_PENDING",
+            "status": "PINNED_REAL_MANIFEST_QA_PASS_DB_READBACK_PENDING",
             "gate": "Cierre candidato: hashes y conteos. Cierre de ingesta: requiere además 12.01.7 y readback independiente. Registrar decisión sobre 12.01.6.",
             "conditional_dependencies": {
               "history_requested": [
@@ -213,7 +227,20 @@
       "real_qa_probe_ref": "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
       "integrated_qa_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json",
       "persistence_preflight_ref": "skills/ai_sales_discovery/queries/sunat_persistence_preflight_v1.sql",
-      "rights_review_ref": "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md"
+      "rights_review_ref": "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md",
+      "batch_plan_ref": "skills/ai_sales_discovery/adapters/sunat_batch_plan_v1.py",
+      "batch_plan_test_ref": "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py",
+      "pinned_plan_probe_ref": "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py",
+      "pinned_plan_fixture_evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44980351563/job/137079287411",
+      "internal_reuse_decision_ref": "skills/ai_sales_discovery/contracts/SUNAT_INTERNAL_REUSE_DECISION_V18.md",
+      "internal_reuse_registration_status": "REGISTERED_VERIFIED_PR4609",
+      "real_manifest_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json",
+      "verified_delivery_ref": "skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py",
+      "verified_delivery_test_ref": "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py",
+      "governed_delivery_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md",
+      "native_ingestion_candidate_ref": "skills/ai_sales_discovery/tests/sunat_governed_batch_candidate_v1.sql",
+      "native_ingestion_test_ref": "skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py",
+      "native_ingestion_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_NATIVE_INGESTION_V20.md"
     },
     {
       "source_id": "SUNARP",
