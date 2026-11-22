@@ -1,8 +1,10 @@
--- BORRADOR NO DESPLEGABLE. SALY exclusivamente. Ejecutar únicamente en PG17 aislado.
+-- BORRADOR NO DESPLEGABLE (v2). SALY exclusivamente. Ejecutar únicamente en PG17 aislado.
+-- v2: el proceso se ubica en un nodo MODULO existente de saly.nucleo_nodos (no se duplica jerarquía).
 -- No modifica el núcleo de reglas, sus nodos, ni otros negocios.
 CREATE TABLE saly.procesos (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   codigo text NOT NULL UNIQUE CHECK (btrim(codigo) <> ''),
+  nodo_codigo text NOT NULL REFERENCES saly.nucleo_nodos(codigo),
   creado_en timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE saly.procesos_versiones (
@@ -61,6 +63,15 @@ BEGIN RAISE EXCEPTION 'SALY_PROCESO_INMUTABLE' USING ERRCODE='55000'; END; $$;
 CREATE TRIGGER procesos_identidad_inmutable BEFORE UPDATE OR DELETE ON saly.procesos FOR EACH ROW EXECUTE FUNCTION saly.procesos_inmutable_v1();
 CREATE TRIGGER procesos_paso_identidad_inmutable BEFORE UPDATE OR DELETE ON saly.procesos_pasos FOR EACH ROW EXECUTE FUNCTION saly.procesos_inmutable_v1();
 CREATE TRIGGER procesos_paso_version_inmutable BEFORE UPDATE OR DELETE ON saly.procesos_pasos_versiones FOR EACH ROW EXECUTE FUNCTION saly.procesos_inmutable_v1();
+-- El proceso solo puede ubicarse en un nodo de nivel MODULO del núcleo (la identidad es inmutable tras insertar).
+CREATE FUNCTION saly.procesos_nodo_guard_v1() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM saly.nucleo_nodos WHERE codigo=NEW.nodo_codigo AND nivel='MODULO') THEN
+    RAISE EXCEPTION 'SALY_PROCESO_NODO_NO_MODULO' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+END; $$;
+CREATE TRIGGER procesos_nodo_guard BEFORE INSERT ON saly.procesos FOR EACH ROW EXECUTE FUNCTION saly.procesos_nodo_guard_v1();
 -- Serializa cambios de composición contra sellado y bloquea traslado entre versiones.
 CREATE FUNCTION saly.procesos_composicion_guard_v1() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $$
 DECLARE p bigint; v integer; e text;
@@ -112,4 +123,4 @@ DO $$ DECLARE t text; BEGIN
     EXECUTE format('REVOKE ALL ON TABLE saly.%I FROM PUBLIC, anon, authenticated, service_role',t);
   END LOOP;
 END $$;
-REVOKE ALL ON FUNCTION saly.procesos_inmutable_v1(), saly.procesos_composicion_guard_v1(), saly.procesos_version_guard_v1() FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION saly.procesos_inmutable_v1(), saly.procesos_composicion_guard_v1(), saly.procesos_version_guard_v1(), saly.procesos_nodo_guard_v1() FROM PUBLIC, anon, authenticated, service_role;

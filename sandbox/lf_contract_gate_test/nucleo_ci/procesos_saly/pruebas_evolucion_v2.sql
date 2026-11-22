@@ -11,11 +11,12 @@ IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon 
 IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
 IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
 END $$;
+\ir stub_nucleo_nodos.sql
 \ir base_candidata.sql
 DO $$ DECLARE p bigint; q bigint; a bigint; b bigint; c bigint; o bigint; n integer;
 BEGIN
-INSERT INTO saly.procesos(codigo) VALUES ('TEST-P') RETURNING id INTO p;
-INSERT INTO saly.procesos(codigo) VALUES ('TEST-Q') RETURNING id INTO q;
+INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('TEST-P','MOD-TEST') RETURNING id INTO p;
+INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('TEST-Q','MOD-TEST') RETURNING id INTO q;
 INSERT INTO saly.procesos_versiones(proceso_id,version,titulo,motivo,origen_ref,creado_por) VALUES (p,1,'Prueba','Inicial','TEST','QA'),(p,2,'Prueba','Agregar paso','TEST','QA'),(p,3,'Prueba','Retirar paso','TEST','QA');
 INSERT INTO saly.procesos_pasos(proceso_id,codigo) VALUES (p,'A') RETURNING paso_id INTO a;
 INSERT INTO saly.procesos_pasos(proceso_id,codigo) VALUES (p,'B') RETURNING paso_id INTO b;
@@ -43,7 +44,7 @@ END $$;
 DO $$
 DECLARE p bigint; a bigint; b bigint; c bigint; d bigint; e bigint; actual bigint[];
 BEGIN
-INSERT INTO saly.procesos(codigo) VALUES ('TEST-EVOLUCION-453') RETURNING id INTO p;
+INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('TEST-EVOLUCION-453','MOD-TEST') RETURNING id INTO p;
 INSERT INTO saly.procesos_versiones(proceso_id,version,titulo,motivo,origen_ref,creado_por)
 VALUES (p,1,'Evolucion','Inicial','QA-453','QA'),(p,2,'Evolucion','Agregar y reordenar','QA-453','QA'),(p,3,'Evolucion','Retirar pasos','QA-453','QA');
 INSERT INTO saly.procesos_pasos(proceso_id,codigo) VALUES(p,'A') RETURNING paso_id INTO a;
