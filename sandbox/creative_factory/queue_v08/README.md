@@ -34,7 +34,7 @@ HANDOFF_ARCHIVED_NOT_SENT
 
 **Compatibilidad limitada:** V07 permite PNG; V05 acepta también JPEG/SVG, que V08 rechazará **fail-closed** hasta que el validador tenga comprobaciones seguras por MIME, sin convertir silenciosamente los archivos.
 
-**Endurecimiento V08 (lote 22/11):** el archivador existente usa el `umask` del proceso; bajo `022`, un `mkdir()` queda `0755`, aunque el padre sea privado. El bridge ahora fuerza `0700` y relee el modo de la carpeta final y de sus subcarpetas existentes; el directorio `protected/` puede no existir cuando hay 0 componentes. Prueba negativa `test_final_archive_dirs_private_under_umask_022` agregada. Este parche aún necesita ejecutar el test real del repositorio en CI y leer PASE sobre su HEAD exacto; no confundirlo con render ni entrega.
+**Endurecimiento V08 (lote 22/11):** el archivador existente usa el `umask` del proceso; bajo `022`, un `mkdir()` queda `0755`, aunque el padre sea privado. El bridge ahora fuerza `0700` y relee el modo de la carpeta final y de sus subcarpetas existentes; el directorio `protected/` puede no existir cuando hay 0 componentes. Prueba negativa `test_final_archive_dirs_private_under_umask_022` agregada. **Validado en CI real**: workflow temporal #45073378089, SHA probado `55cff2deecaada87a1168dfd71b1a30ca94e94a1`, 43/43 tests V08+V09 PASS y 2/2 mutaciones V08 muertas por aserción. El workflow temporal se retira y PASE del HEAD posterior se verifica aparte. Esto no equivale a render ni entrega.
 
 **Salida efectiva:** `HANDOFF_ARCHIVED_NOT_SENT`, `native_transmitted=false`, `provider_attested=false`, `host_delivery_verified=false`, `db_done_allowed=false`. El resultado no tiene recepción de GPT Native ni Claude Native, y no abre el siguiente paso por sí solo.
 
