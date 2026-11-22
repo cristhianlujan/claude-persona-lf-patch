@@ -58,8 +58,8 @@
       "history_contract_ref": "skills/ai_sales_discovery/contracts/SUNAT_HISTORY_V1.md",
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
-        "version": "1.3",
-        "state": "PINNED_QA_LOCAL_PASS_REAL_RUN_PENDING_NOT_RUNTIME",
+        "version": "1.4",
+        "state": "PINNED_QA_REAL_PASS_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -70,9 +70,10 @@
               "skills/ai_sales_discovery/adapters/sunat_download_v1.py",
               "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
               "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
-              "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py"
+              "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
             ],
-            "status": "PINNED_QA_TRANSPORT_LOCAL_PASS_RIGHTS_PENDING",
+            "status": "PINNED_QA_REAL_DOWNLOAD_PASS_RIGHTS_PENDING",
             "gate": "Política efectiva, derechos, URL y hash; cuotas y reintentos."
           },
           {
@@ -85,9 +86,10 @@
               "skills/ai_sales_discovery/adapters/zip_archive_preflight.mjs",
               "skills/ai_sales_discovery/adapters/sunat_zip_candidate.mjs",
               "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
             ],
-            "status": "DUAL_ZIP_LOCAL_FIXTURES_PASS",
+            "status": "PINNED_DUAL_ARCHIVE_QA_PASS",
             "gate": "Cuotas, cabecera exacta y CRC hasta EOF; esquemas distintos."
           },
           {
@@ -100,9 +102,10 @@
               "skills/ai_sales_discovery/adapters/sunat_records_candidate.mjs",
               "skills/ai_sales_discovery/tests/sunat_join_probe.py",
               "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
             ],
-            "status": "DUAL_PROJECTION_LOCAL_FIXTURES_PASS",
+            "status": "PINNED_DUAL_PROJECTION_QA_PASS",
             "gate": "RUC 20, territorio por política, ordinal; excluir inválidos y ambiguos."
           },
           {
@@ -115,9 +118,10 @@
               "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py",
               "skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py",
               "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
             ],
-            "status": "DUAL_JOIN_LOCAL_FIXTURES_PASS",
+            "status": "PINNED_DUAL_JOIN_QA_PASS",
             "gate": "Ambos streams completos, unicidad, nombre no vacío, spool y lotes acotados."
           },
           {
@@ -130,9 +134,10 @@
               "skills/ai_sales_discovery/adapters/sunat_company_v1.py",
               "skills/ai_sales_discovery/tests/test_sunat_company_v1.py",
               "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py",
-              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py"
+              "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
             ],
-            "status": "DUAL_BATCH_HASH_LOCAL_FIXTURES_PASS",
+            "status": "PINNED_BATCH_RECEIPT_QA_PASS",
             "gate": "13 campos mensual, 5 reducido: RUC compartido, nombre y 3 contrastes; conservar discrepancias y hash."
           },
           {
@@ -177,9 +182,10 @@
               "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
               "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
               "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
-              "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py"
+              "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
+              "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
             ],
-            "status": "QA_BASELINE_COMPARATOR_LOCAL_PASS_REAL_RUN_PENDING",
+            "status": "QA_AGGREGATE_RECONCILIATION_PASS_DB_READBACK_PENDING",
             "gate": "Cierre candidato: hashes y conteos. Cierre de ingesta: requiere además 12.01.7 y readback independiente. Registrar decisión sobre 12.01.6.",
             "conditional_dependencies": {
               "history_requested": [
@@ -200,7 +206,8 @@
       "dual_stream_test_ref": "skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py",
       "candidate_qa_ref": "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py",
       "candidate_qa_test_ref": "skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py",
-      "real_qa_probe_ref": "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py"
+      "real_qa_probe_ref": "skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py",
+      "integrated_qa_evidence_ref": "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json"
     },
     {
       "source_id": "SUNARP",
