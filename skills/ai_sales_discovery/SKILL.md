@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.5
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.6
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -64,13 +64,13 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 
 | Subpaso | Función | Estado técnico |
 |---|---|---|
-| 12.01.1 | Admisión y transporte | PINNED_QA_PASS_REDUCED_LEGAL_BASIS_REVIEW_PENDING |
+| 12.01.1 | Admisión y transporte | PINNED_QA_PASS_PUBLIC_REUSE_BASIS_REVIEW_PENDING |
 | 12.01.2 | Integridad ZIP y esquema | PINNED_DUAL_ARCHIVE_QA_PASS |
 | 12.01.3 | Lectura y selección | PINNED_DUAL_PROJECTION_QA_PASS |
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | WRITER_PG17_PASS_LIVE_PREFLIGHT_BLOCKED |
+| 12.01.7 | Persistencia gobernada | BATCH_PLAN_JOIN_FIXTURES_PASS_GOVERNED_CALLER_PENDING |
 | 12.01.8 | Reconciliación y cierre | QA_AGGREGATE_RECONCILIATION_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
@@ -98,3 +98,9 @@ La corrida de #4594 (merge `678d21ed253ec7212050321f2dda71866abdbd0c`, Actions 4
 ## Lote v1.5 — derechos y preparación de persistencia en paralelo
 
 La evaluación documental y la preparación del escritor avanzan juntas; solo la escritura efectiva depende de ambas. Ver `contracts/SUNAT_INGEST_PREPARATION_V11.md` (adenda v1.5) y `queries/sunat_persistence_preflight_v1.sql`, ejecutada en Supabase SALY real solo lectura el 2026-11-21. Mensual ODC-BY confirmado en catálogo oficial; reducido publicado por SUNAT sin licencia específica localizada, con fundamento favorable de datos públicos y hechos no protegidos pero alcance de reutilización comercial masiva pendiente de validación jurídica documentada. No aplicar licencia mensual al reducido por analogía. Escritor invoker desplegado, PG17 candidato positivo/negativo, rollback, concurrencia y replay PASS (job 137039421367); no es prueba de la operación gobernada real. Preflight real: catálogo y política deshabilitados, sin evidencia de derechos, límites max_rows/max_bytes ausentes, campos de atribución/derechos requeridos ausentes, service_role/authenticated sin EXECUTE, cero ingestas y hallazgos SUNAT. Preparar contrato de entrega de bytes canónicos por lote y operación gobernada existente, no otro escritor ni GRANT a clientes. No activar ni cargar. En cada corrida avanzar controles independientes y conservar el gate final de autorización.
+
+## Lote v1.6 — manifiesto candidato por lote y fundamento público
+
+`adapters/sunat_batch_plan_v1.py#plan_verified_batches` consume los bytes canónicos del `joined_batches` existente y un recibo QA previo confiable. Revalida proyección con `company`, RUC 20 ordenado sin duplicados, territorio Lima/Ica, fuentes exactas, cuotas inyectadas, conteos y hash terminal; devuelve solo metadatos por lote, sin RUC ni nombres, clave determinista por fuente/par de ZIP/alcance/ordinal, cantidad, bytes, SHA256 y referencia de consulta. Prueba de 10/10 métodos locales incluyendo integración directa con join real sobre fixtures y captura alterada con hash recalculado. Blobs exactos: planner `2edd032f98c156c85ba90600dffcc544967c3cc1`, test `ec21da31f9e48dd677b8ee48ebc18682e77225d3`, proyector `caba5f2cd9266feb9e7e585e662de50a6ce672a4`, join `7d3d5f9e0bc774707506355f41abd930c5dfdf8e`. No hay caller integrado desde descarga ZIP ni entrega de bytes al escritor todavía; no declarar 479 manifiestos generados con archivos reales. No autentica recibos ni autoriza escrituras. Regresión añadida al workflow existente.
+
+Frente jurídico: Resolución 003820-2023-JUS/TTAIP-PRIMERA SALA, p. 2, recoge respuesta oficial SUNAT que orienta a descargar y procesar el reducido con un manejador de BD, en aplicación de transparencia. Art. 71 y glosario DS 029-2021-PCM, marco general de reutilización; DS 098-2025-PCM art. 3 no modifica art. 71. Portal PNDA de PCM incluye análisis de oportunidades comerciales. Ver adenda del contrato. Publicidad y procesamiento confirmados; no equiparar a licencia específica. Se mantiene bloqueo por derechos pendientes. No enviar consulta externa ni activar la fuente.
