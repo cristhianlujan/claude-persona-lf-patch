@@ -67,13 +67,16 @@ jobs:
           cadbd84ff446f495e0f6d30be344a87abe49b0d35593427c8efe1b5c3040f831  pruebas_pg17.sql
           f2b7a854a5c25df2b228e8754684985fec775d45b4a74c8556030251ea13da35  manifest_candidato.json
           EOF
-          if ! command -v psql >/dev/null 2>&1; then
-            sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
-          fi
-          psql -X -h 127.0.0.1 -d saly_knowledge_test -c 'SHOW server_version_num;'
-          psql -X -h 127.0.0.1 -d saly_knowledge_test -f pruebas_pg17.sql | tee /tmp/saly-knowledge-pg17.log
+          container="${{ job.services.postgres.id }}"
+          test -n "$container"
+          docker exec "$container" mkdir -p /tmp/saly-knowledge-candidate
+          docker cp repositorio_selector_candidato.sql "$container:/tmp/saly-knowledge-candidate/"
+          docker cp pruebas_pg17.sql "$container:/tmp/saly-knowledge-candidate/"
+          pg=(docker exec -e PGPASSWORD=saly_knowledge_ephemeral_only "$container" psql -X -h 127.0.0.1 -U postgres -d saly_knowledge_test -v ON_ERROR_STOP=1)
+          "${pg[@]}" -c 'SHOW server_version_num; SELECT inet_server_addr();'
+          "${pg[@]}" -f /tmp/saly-knowledge-candidate/pruebas_pg17.sql | tee /tmp/saly-knowledge-pg17.log
           grep -Fx PASS_PG17_KNOWLEDGE_CANDIDATE_ROLLBACK /tmp/saly-knowledge-pg17.log
-          test "$(psql -X -h 127.0.0.1 -d saly_knowledge_test -qAt -c "SELECT count(*) FROM pg_namespace WHERE nspname IN ('saly','visual','extensions');")" = 0
+          test "$("${pg[@]}" -qAt -c "SELECT count(*) FROM pg_namespace WHERE nspname IN ('saly','visual','extensions');")" = 0
           echo SALY_KNOWLEDGE_PG17_INDEPENDENT_CLEANUP_PASS
 
   # Exact-HEAD source fixture; no remote Supabase credentials.
