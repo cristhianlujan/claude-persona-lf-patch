@@ -102,8 +102,10 @@ def archive_render_candidate_v1(
         _need(callable(read_registered_file),
               "SALY_NATIVE_ARCHIVE_SOURCE_READER_MISSING")
         data = read_registered_file(ref)
-        _need(type(data) is bytes, "SALY_NATIVE_ARCHIVE_SOURCE_BYTES_INVALID")
-        byte_cache[ref] = data
+        # V07 owns the exact BYTES_MISSING diagnostic; invalid types are
+        # rejected before any reference staging or archive write.
+        if type(data) is bytes:
+            byte_cache[ref] = data
         return data
 
     try:
