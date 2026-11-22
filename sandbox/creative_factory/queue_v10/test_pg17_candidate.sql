@@ -129,10 +129,20 @@ BEGIN
   IF SQLERRM IS DISTINCT FROM 'CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED' THEN RAISE; END IF;
  END; n:=n+1;
 
- IF has_function_privilege('PUBLIC','saly.creative_queue_native_reserve_dispatch_v1(uuid,bigint,text,text,text,text)','EXECUTE') THEN
-  RAISE EXCEPTION 'V10_TEST_PUBLIC_EXECUTE_GRANT'; END IF;
- IF has_table_privilege('PUBLIC','saly.creative_queue_native_dispatch_reservations_v1','INSERT') THEN
-  RAISE EXCEPTION 'V10_TEST_PUBLIC_INSERT_GRANT'; END IF;
+ -- PUBLIC is a pseudo-role; PG17 has_*_privilege('PUBLIC',...) is invalid.
+ -- Check PUBLIC grantee=0 using the authoritative ACLs instead (B1).
+ IF EXISTS (
+   SELECT 1 FROM pg_proc p,
+      LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) acl
+   WHERE p.oid='saly.creative_queue_native_reserve_dispatch_v1(uuid,bigint,text,text,text,text)'::regprocedure
+     AND acl.grantee=0 AND acl.privilege_type='EXECUTE'
+ ) THEN RAISE EXCEPTION 'V10_TEST_PUBLIC_EXECUTE_GRANT'; END IF;
+ IF EXISTS (
+   SELECT 1 FROM pg_class cl,
+      LATERAL aclexplode(coalesce(cl.relacl,acldefault('r',cl.relowner))) acl
+   WHERE cl.oid='saly.creative_queue_native_dispatch_reservations_v1'::regclass
+     AND acl.grantee=0 AND acl.privilege_type='INSERT'
+ ) THEN RAISE EXCEPTION 'V10_TEST_PUBLIC_INSERT_GRANT'; END IF;
  RAISE NOTICE 'PASS V10 12 exact-code negatives, ACL, and V06 DONE remains blocked';
 END $verify$;
 ROLLBACK;
