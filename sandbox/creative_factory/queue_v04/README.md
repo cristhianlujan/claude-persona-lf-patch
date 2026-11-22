@@ -14,6 +14,8 @@
 
 `information_schema.columns` y `pg_constraint` releídos: `saly.creative_orders`, `saly.creative_order_items`, `saly.creative_runs`, `saly.config_global`. Dos pedidos `SALY_HOME_BATCH_001` y `SALY_HOME_TEMPLATE_AB_001`, **5 ítems PENDIENTE**, **0 RUN**, **0 filas CREATIVE_FACTORY**, `to_regclass('saly.creative_queue_claims_v1')=NULL`, `to_regclass('saly.creative_queue_delivery_receipts_v1')=NULL`. En ambos pedidos, `scope_json` deniega generación: `rendering_authority=false` o `render_authorized=false/review_only=true`. No se los mutó.
 
+**ACL verificada:** la invocación en solo lectura de `SELECT saly.creative_execution_policy_v1(now())` devolvió `42501 permission denied for function creative_execution_policy_v1`. No se reintentó por credenciales ajenas ni se eludió la protección. El lector oficial futuro debe ejecutarla desde un contexto autorizado; las 0 filas de config se verificaron mediante `SELECT` directo a `saly.config_global`.
+
 ## Lo que hace `render_ready_gate_v1.py`
 
 Contrasta **lecturas autorizadas del runtime**; la función no sabe conectarse a Supabase por sí misma y sus callbacks **no pueden venir del pedido**. Es una puerta de validación, no el emisor de permisos:
