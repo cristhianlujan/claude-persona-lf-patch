@@ -148,6 +148,16 @@ class ArchiveBridgeTests(unittest.TestCase):
         self.assertEqual(x["source_count"], 1)
         self.assertFalse(x["db_done_allowed"])
 
+    def test_final_archive_dirs_private_under_umask_022(self):
+        previous = os.umask(0o022)
+        try:
+            self.case.call()
+        finally:
+            os.umask(previous)
+        for folder in (self.case.out, self.case.out / "references"):
+            self.assertEqual(folder.stat().st_mode & 0o777, 0o700)
+        self.assertFalse((self.case.out / "protected").exists())
+
     def test_replay_same_archive_path_denied(self):
         self.case.call()
         with self.assertRaises(NativeArchiveRejected) as ctx:
