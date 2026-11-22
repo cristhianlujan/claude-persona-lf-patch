@@ -152,34 +152,7 @@ BEGIN
             AND nullif(btrim(delivery.verifier_ref),'') IS NOT NULL
             AND lower(btrim(delivery.verifier_ref))<>lower(btrim(v_claim.worker_ref))
             AND nullif(btrim(delivery.host_evidence_ref),'') IS NOT NULL
-            AND delivery.host_evidence_sha256 ~ '^[0-9a-f]{64}
-    ) THEN RAISE EXCEPTION 'CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED'; END IF;
-  ELSE
-    IF v_item_status<>'BLOQUEADO'
-    THEN RAISE EXCEPTION 'CREATIVE_QUEUE_FAILURE_NOT_BLOCKED'; END IF;
-  END IF;
-
-  UPDATE saly.creative_queue_claims_v1
-  SET state=p_outcome, finished_at=v_now, note=left(p_note,1000)
-  WHERE id=v_claim.id;
-
-  IF p_outcome='DONE' AND NOT EXISTS (
-    SELECT 1 FROM saly.creative_order_items i
-    WHERE i.order_id=v_claim.order_id
-      AND (i.status<>'APROBADO' AND (i.required OR i.status<>'OMITIDO'))
-  ) AND EXISTS (
-    SELECT 1 FROM saly.creative_order_items i
-    WHERE i.order_id=v_claim.order_id AND i.required
-  ) THEN
-    UPDATE saly.creative_orders
-      SET status='COMPLETADO',completed_at=v_now
-      WHERE id=v_claim.order_id AND status IN ('PLANIFICADO','EN_PROCESO','EN_QA');
-    v_closed := FOUND;
-  END IF;
-  RETURN jsonb_build_object('status','RELEASED','result',p_outcome,
-    'claim_id',v_claim.id,'order_closed',v_closed);
-END $f$;
-
+            AND delivery.host_evidence_sha256 ~ '^[0-9a-f]{64}$'
             AND nullif(btrim(delivery.message_id),'') IS NOT NULL
         )
     ) THEN RAISE EXCEPTION 'CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED'; END IF;
