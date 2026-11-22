@@ -186,7 +186,7 @@ CREATE UNIQUE INDEX creative_runs_one_active_globally_v1
   ON saly.creative_runs ((1)) WHERE state IN ('EN_COLA','EJECUTANDO');
 
 CREATE OR REPLACE FUNCTION saly.creative_queue_claim_next_v1(
-  p_worker_ref text, p_lease_seconds integer DEFAULT 900)
+  p_worker_ref text, p_lease_seconds integer DEFAULT NULL)
 RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, saly, pg_temp
@@ -196,14 +196,21 @@ DECLARE
   v_active record;
   v_claim record;
   v_now timestamptz;
+  v_policy jsonb;
+  v_lease_seconds integer;
 BEGIN
   IF length(btrim(coalesce(p_worker_ref,''))) NOT BETWEEN 1 AND 128
-     OR p_lease_seconds IS NULL OR p_lease_seconds NOT BETWEEN 60 AND 3600
   THEN RAISE EXCEPTION 'CREATIVE_QUEUE_BAD_INPUT'; END IF;
 
   -- Protect selection + expired reclamation as one transaction, across workers.
   PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));
   v_now := clock_timestamp();
+  -- Fail before claiming if an operational policy has not been published.
+  -- The existing creative run admission reads the same source of truth.
+  v_policy:=saly.creative_execution_policy_v1(v_now);
+  v_lease_seconds:=(v_policy->>'LEASE_SECONDS')::integer;
+  IF p_lease_seconds IS NOT NULL AND p_lease_seconds IS DISTINCT FROM v_lease_seconds
+  THEN RAISE EXCEPTION 'CREATIVE_QUEUE_LEASE_POLICY_MISMATCH'; END IF;
   SELECT id,lease_until,item_id INTO v_active
   FROM saly.creative_queue_claims_v1 WHERE state='ACTIVE' FOR UPDATE;
   IF FOUND THEN
@@ -250,7 +257,7 @@ BEGIN
   INSERT INTO saly.creative_queue_claims_v1
     (order_id,item_id,worker_ref,state,claimed_at,lease_until)
   VALUES (v_item.order_id,v_item.item_id,p_worker_ref,'ACTIVE',v_now,
-          v_now+make_interval(secs=>p_lease_seconds))
+          v_now+make_interval(secs=>v_lease_seconds))
   RETURNING * INTO v_claim;
 
   RETURN jsonb_build_object('status','CLAIMED','claim_id',v_claim.id,
@@ -260,23 +267,26 @@ BEGIN
 END $f$;
 
 CREATE OR REPLACE FUNCTION saly.creative_queue_heartbeat_v1(
-  p_token uuid, p_extend_seconds integer DEFAULT 900)
+  p_token uuid, p_extend_seconds integer DEFAULT NULL)
 RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, saly, pg_temp
 AS $f$
-DECLARE v_claim record; v_now timestamptz;
+DECLARE v_claim record; v_now timestamptz; v_policy jsonb; v_lease_seconds integer;
 BEGIN
-  IF p_token IS NULL OR p_extend_seconds IS NULL OR p_extend_seconds NOT BETWEEN 60 AND 3600
-  THEN RAISE EXCEPTION 'CREATIVE_QUEUE_BAD_INPUT'; END IF;
+  IF p_token IS NULL THEN RAISE EXCEPTION 'CREATIVE_QUEUE_BAD_INPUT'; END IF;
   PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));
   v_now := clock_timestamp();
+  v_policy:=saly.creative_execution_policy_v1(v_now);
+  v_lease_seconds:=(v_policy->>'LEASE_SECONDS')::integer;
+  IF p_extend_seconds IS NOT NULL AND p_extend_seconds IS DISTINCT FROM v_lease_seconds
+  THEN RAISE EXCEPTION 'CREATIVE_QUEUE_LEASE_POLICY_MISMATCH'; END IF;
   SELECT * INTO v_claim FROM saly.creative_queue_claims_v1
   WHERE claim_token=p_token FOR UPDATE;
   IF NOT FOUND OR v_claim.state<>'ACTIVE' OR v_claim.lease_until<=v_now
   THEN RAISE EXCEPTION 'CREATIVE_QUEUE_STALE_TOKEN'; END IF;
   UPDATE saly.creative_queue_claims_v1
-  SET lease_until=v_now+make_interval(secs=>p_extend_seconds)
+  SET lease_until=v_now+make_interval(secs=>v_lease_seconds)
   WHERE id=v_claim.id;
   RETURN jsonb_build_object('status','EXTENDED','claim_id',v_claim.id);
 END $f$;
