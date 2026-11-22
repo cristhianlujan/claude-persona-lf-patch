@@ -15,6 +15,11 @@
     "sandbox/creative_factory/queue_v03/completion_unit_results.txt": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v03/native_session_bridge_v1.py": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v03/test_native_session_bridge_v1.py": "RUNTIME_TESTING",
-    "sandbox/creative_factory/queue_v03/native_session_unit_results.txt": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v03/native_session_unit_results.txt": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v04/render_ready_gate_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v04/test_render_ready_gate_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v04/test_mutations_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v04/README.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v04/unit_results.txt": "RUNTIME_TESTING"
   }
 }
