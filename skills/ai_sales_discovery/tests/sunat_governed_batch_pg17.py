@@ -104,7 +104,9 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     assert counts()=='0:0:0'
     # Positive exact full transaction, prove no mutation survives rollback.
     psql('BEGIN;'+execute()+'ROLLBACK;'); assert counts()=='0:0:0'
-    # Real writer failure rolls back both consultation and reservation, no orphan.
+    # Real writer failure after reservation and consultation rolls back both, no orphan.
+    set_policy(dict(policy,license='')); fail(execute(),'SUNAT_POLICY_INVALID'); assert counts()=='0:0:0'; set_policy(policy)
+    # Catalog permission failure must also leave zero effects.
     psql("UPDATE saly.ventas_discovery_catalogo SET habilitada=false,persist_business_data=false WHERE source_id='PE-SUNAT-RUC'")
     fail(execute(),'SUNAT_CALL_CATALOG')
     psql("UPDATE saly.ventas_discovery_catalogo SET habilitada=true,persist_business_data=true WHERE source_id='PE-SUNAT-RUC'")
