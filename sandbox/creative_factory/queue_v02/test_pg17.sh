@@ -17,27 +17,27 @@ pass "$(get 'select count(*) from saly.creative_queue_claims_v1')" 0 'fresh queu
 BEGIN;
 DELETE FROM saly.config_global
  WHERE scope='CREATIVE_FACTORY' AND config_key='LEASE_SECONDS';
-DO $BEGIN
+DO $$BEGIN
   BEGIN
     PERFORM saly.creative_queue_claim_next_v1('NO-CONFIG');
     RAISE EXCEPTION 'MISSING_CONFIG_ADMITTED';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM IS DISTINCT FROM 'CREATIVE_CONFIG_MISSING:LEASE_SECONDS' THEN RAISE; END IF;
   END;
-END$;
+END$$;
 ROLLBACK;
 SQL
 echo 'PASS missing source policy rejected without reserve'
 # Runtime cannot override the published lease length.
 "${PSQL[@]}" <<'SQL'
-DO $BEGIN
+DO $$BEGIN
   BEGIN
     PERFORM saly.creative_queue_claim_next_v1('BAD-LEASE',120);
     RAISE EXCEPTION 'UNAPPROVED_LEASE_ACCEPTED';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM IS DISTINCT FROM 'CREATIVE_QUEUE_LEASE_POLICY_MISMATCH' THEN RAISE; END IF;
   END;
-END$;
+END$$;
 SQL
 echo 'PASS claim lease override rejected'
 
