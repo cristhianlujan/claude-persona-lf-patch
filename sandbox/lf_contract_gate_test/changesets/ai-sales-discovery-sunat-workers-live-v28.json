@@ -1,7 +1,7 @@
 {
   "solution_ref": "ai-sales-discovery-sunat-workers-live-v28",
   "paths": {
-    ".github/workflows/saly-sunat-workers-live-v28.yml": "WORKFLOW",
-    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-workers-live-v28.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-workers-live-v28.json": "CHANGESET_MANIFEST",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW"
   }
 }
