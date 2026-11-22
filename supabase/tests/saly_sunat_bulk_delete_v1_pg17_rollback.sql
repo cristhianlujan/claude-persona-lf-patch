@@ -104,6 +104,24 @@ BEGIN
  RAISE NOTICE 'PASS_INSTALL_AND_VIEW_5_ROWS_1_ELIGIBLE_4_REJECTED';
 END $verify_install$;
 
+-- Dynamic policy boundary test: raising minimum from 50 to 51 must exclude
+-- the currently eligible fixture, and reverting must restore it.
+UPDATE public.lf_global_config SET config_value='51'
+WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1';
+DO $test_dynamic_threshold$
+BEGIN
+ IF (SELECT count(*) FROM saly.ventas_sunat_comercial_v1)<>0
+ THEN RAISE EXCEPTION 'TEST_DYNAMIC_THRESHOLD_51_FAILED'; END IF;
+END $test_dynamic_threshold$;
+UPDATE public.lf_global_config SET config_value='50'
+WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1';
+DO $test_dynamic_threshold_revert$
+BEGIN
+ IF (SELECT count(*) FROM saly.ventas_sunat_comercial_v1)<>1
+ THEN RAISE EXCEPTION 'TEST_DYNAMIC_THRESHOLD_REVERT_FAILED'; END IF;
+ RAISE NOTICE 'PASS_DYNAMIC_COMMERCIAL_THRESHOLD_50_TO_51_TO_50';
+END $test_dynamic_threshold_revert$;
+
 -- Helpers exist only in this disposable database, never in the migration.
 CREATE FUNCTION public.test_expect_purge_error(p_call text,p_expected text)
 RETURNS void LANGUAGE plpgsql AS $test$
