@@ -58,7 +58,7 @@ BEGIN
   OR item->'ordinal' IS DISTINCT FROM to_jsonb(idx)
   OR coalesce(item->>'rows','') !~ '^[1-9][0-9]{0,8}$' OR coalesce(item->>'bytes','') !~ '^[1-9][0-9]{0,8}$'
   OR coalesce(item->>'capture_sha256','') !~ '^[0-9a-f]{64}$'
-  OR item->>'consulta_evidencia_ref' IS DISTINCT FROM pol->>'monthly_url'||'#captura-json-sha256='||(item->>'capture_sha256')
+  OR item->>'consulta_evidencia_ref' IS DISTINCT FROM ((pol->>'monthly_url')||'#captura-json-sha256='||(item->>'capture_sha256'))
   OR item->>'batch_key' IS DISTINCT FROM encode(sha256(convert_to(saly.ventas_capture_canonical_v1(
   jsonb_build_array('PE-SUNAT-RUC',pol->'snapshot_sha256','LIMA_ICA',idx)),'UTF8')),'hex')
   THEN RAISE EXCEPTION 'SUNAT_PLAN_ENTRY'; END IF;
