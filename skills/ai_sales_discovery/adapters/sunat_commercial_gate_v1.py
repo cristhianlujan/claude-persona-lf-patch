@@ -5,7 +5,6 @@ Raw joined company data is unchanged, and the historical manifest is NOT modifie
 A new commercial manifest must be built/approved from the filtered batches
 before any governed writer receives their exact bytes.
 """
-import re
 
 def commercially_admissible(record, *, min_workers):
     if type(min_workers) is not int or min_workers < 1:
