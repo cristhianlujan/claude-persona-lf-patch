@@ -45,6 +45,12 @@
     "sandbox/creative_factory/queue_v09/dispatch_fence_v1.py": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v09/test_dispatch_fence_v1.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v09/unit_results.txt": "RUNTIME_TESTING",
-    "sandbox/creative_factory/queue_v09/README.md": "SERVICE_RUNTIME"
+    "sandbox/creative_factory/queue_v09/README.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v10/001_saly_native_dispatch_reservation_candidate.sql": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v10/setup_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v10/test_pg17_candidate.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v10/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v10/test_mutations_pg17.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v10/README.md": "SERVICE_RUNTIME"
   }
 }
