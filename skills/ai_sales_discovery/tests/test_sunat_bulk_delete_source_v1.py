@@ -29,6 +29,11 @@ class TestBulkDeleteSource(unittest.TestCase):
     def test_disabled_writer_required(self):
         self.assertIn("v_config->'enabled' IS DISTINCT FROM 'false'::jsonb",self.sql)
 
+    def test_min_workers_governed_config(self):
+        self.assertIn("config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'",self.sql)
+        self.assertIn("SUNAT_PURGE_COMMERCIAL_POLICY_INVALID",self.sql)
+        self.assertNotIn("workers_integer_literal}')::integer>=50",self.sql)
+
     def test_guard_dependent_units(self):
         self.assertIn("IF EXISTS(SELECT 1 FROM saly.ventas_unidades_operativas)",self.sql)
 
