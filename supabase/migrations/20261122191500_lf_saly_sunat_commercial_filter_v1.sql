@@ -54,7 +54,10 @@ SELECT h.id AS hallazgo_id,
 FROM saly.ventas_hallazgos h
 JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id
 CROSS JOIN LATERAL (
-  SELECT CASE WHEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}') ~ '^[0-9]{1,9}
+  SELECT CASE WHEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}') ~ '^[0-9]{1,9}$'
+              THEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}')::integer
+              ELSE NULL END AS nrotrab,
+         h.captura_empresarial #>> '{capture,observations,monthly,raw,Estado}' AS estado_mensual,
          h.captura_empresarial #>> '{capture,observations,reduced,raw,estado}' AS estado_reducido,
          h.captura_empresarial #>> '{capture,observations,monthly,raw,Condicion}' AS condicion_mensual,
          h.captura_empresarial #>> '{capture,observations,reduced,raw,condicion}' AS condicion_reducida
@@ -96,58 +99,6 @@ BEGIN
  EXISTS (SELECT 1 FROM saly.ventas_sunat_comercial_v1
          WHERE nrotrab IS NULL OR nrotrab < 50
             OR upper(btrim(coalesce(estado_mensual,'')))<>'ACTIVO'
-            OR upper(btrim(coalesce(estado_reducido,'')))<>'ACTIVO'
-            OR upper(btrim(coalesce(condicion_mensual,'')))<>'HABIDO'
-            OR upper(btrim(coalesce(condicion_reducida,'')))<>'HABIDO')
- THEN RAISE EXCEPTION 'SALY_SUNAT_FILTER_READBACK_DRIFT'; END IF;
- RAISE NOTICE 'SALY_SUNAT_FILTER_READBACK raw=%,eligible=%,excluded=%',
-   v_raw,v_eligible,v_raw-v_eligible;
-END $post$;
-COMMIT;
-
-              THEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}')::integer
-              ELSE NULL END AS nrotrab,
-         h.captura_empresarial #>> '{capture,observations,monthly,raw,Estado}' AS estado_mensual,
-         h.captura_empresarial #>> '{capture,observations,reduced,raw,estado}' AS estado_reducido,
-         h.captura_empresarial #>> '{capture,observations,monthly,raw,Condicion}' AS condicion_mensual,
-         h.captura_empresarial #>> '{capture,observations,reduced,raw,condicion}' AS condicion_reducida
-) s
-WHERE i.source_id='PE-SUNAT-RUC';
-
--- Only this projection is the SALY commercial entry point.
-CREATE VIEW saly.ventas_sunat_comercial_v1
-WITH (security_invoker = true, security_barrier = true) AS
-SELECT hallazgo_id,ingesta_id,run_ref,batch_key,ruc,razon_social,nrotrab_literal,
-       estado_mensual,estado_reducido,condicion_mensual,condicion_reducida
-FROM saly.ventas_sunat_elegibilidad_v1
-WHERE clasificacion_comercial='ELEGIBLE';
-
-REVOKE ALL ON saly.ventas_sunat_elegibilidad_v1,saly.ventas_sunat_comercial_v1
-FROM PUBLIC,anon,authenticated,service_role;
-COMMENT ON VIEW saly.ventas_sunat_elegibilidad_v1 IS
-'Internal SUNAT provenance-backed eligibility classification; no raw deletion or reclassification of identity. Both official sources must say ACTIVO and HABIDO.';
-COMMENT ON VIEW saly.ventas_sunat_comercial_v1 IS
-'Internal derived commercial-only SUNAT selection; applies automatically to all persisted batches. New business consumers must use this view, not raw hallazgos. No public grants.';
-
-DO $post$
-DECLARE v_raw bigint; v_class bigint; v_eligible bigint; v_comercial bigint;
-BEGIN
- IF (SELECT count(*) FROM pg_views
-     WHERE schemaname='saly' AND viewname IN
-        ('ventas_sunat_elegibilidad_v1','ventas_sunat_comercial_v1'))<>2
- OR has_table_privilege('anon','saly.ventas_sunat_comercial_v1','SELECT')
- OR has_table_privilege('authenticated','saly.ventas_sunat_comercial_v1','SELECT')
- OR has_table_privilege('service_role','saly.ventas_sunat_comercial_v1','SELECT')
- THEN RAISE EXCEPTION 'SALY_SUNAT_FILTER_ACL_DRIFT'; END IF;
- SELECT count(*) INTO v_raw FROM saly.ventas_hallazgos h
- JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id
- WHERE i.source_id='PE-SUNAT-RUC';
- SELECT count(*),count(*) FILTER(WHERE clasificacion_comercial='ELEGIBLE')
- INTO v_class,v_eligible FROM saly.ventas_sunat_elegibilidad_v1;
- SELECT count(*) INTO v_comercial FROM saly.ventas_sunat_comercial_v1;
- IF v_raw<>v_class OR v_eligible<>v_comercial OR
- EXISTS (SELECT 1 FROM saly.ventas_sunat_comercial_v1
-         WHERE upper(btrim(coalesce(estado_mensual,'')))<>'ACTIVO'
             OR upper(btrim(coalesce(estado_reducido,'')))<>'ACTIVO'
             OR upper(btrim(coalesce(condicion_mensual,'')))<>'HABIDO'
             OR upper(btrim(coalesce(condicion_reducida,'')))<>'HABIDO')
