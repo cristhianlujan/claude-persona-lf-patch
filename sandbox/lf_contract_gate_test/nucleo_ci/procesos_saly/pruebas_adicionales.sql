@@ -11,10 +11,11 @@ IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon 
 IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
 IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
 END $$;
+\ir stub_nucleo_nodos.sql
 \ir base_candidata.sql
 DO $$ DECLARE p bigint; a bigint; b bigint; c bigint; f bigint;
 BEGIN
-INSERT INTO saly.procesos(codigo) VALUES ('X') RETURNING id INTO p;
+INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('X','MOD-TEST') RETURNING id INTO p;
 INSERT INTO saly.procesos_pasos(proceso_id,codigo) VALUES(p,'A') RETURNING paso_id INTO a;
 INSERT INTO saly.procesos_pasos(proceso_id,codigo) VALUES(p,'B') RETURNING paso_id INTO b;
 INSERT INTO saly.procesos_pasos(proceso_id,codigo) VALUES(p,'C') RETURNING paso_id INTO c;
@@ -34,6 +35,10 @@ INSERT INTO saly.procesos_version_pasos VALUES(p,3,a,1,1,true,false);
 BEGIN INSERT INTO saly.procesos_version_pasos VALUES(p,3,b,1,2,true,false); RAISE EXCEPTION 'EXTRA_DOS_INICIOS'; EXCEPTION WHEN unique_violation THEN NULL; END;
 -- autotransicion permitida dentro de la misma version
 INSERT INTO saly.procesos_version_transiciones VALUES(p,3,a,a,'LOOP');
+-- nodo: inexistente, de nivel no MODULO e inmutabilidad
+BEGIN INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('N1','NO-EXISTE'); RAISE EXCEPTION 'EXTRA_NODO_INEXISTENTE'; EXCEPTION WHEN check_violation THEN NULL; END;
+BEGIN INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('N2','PANTALLA-7'); RAISE EXCEPTION 'EXTRA_NODO_NO_MODULO'; EXCEPTION WHEN check_violation THEN NULL; END;
+BEGIN UPDATE saly.procesos SET nodo_codigo='G' WHERE id=p; RAISE EXCEPTION 'EXTRA_NODO_MUTABLE'; EXCEPTION WHEN SQLSTATE '55000' THEN NULL; END;
 -- ACL
 IF has_table_privilege('authenticated','saly.procesos','TRUNCATE') OR has_sequence_privilege('authenticated','saly.procesos_pasos_paso_id_seq','USAGE') THEN RAISE EXCEPTION 'EXTRA_ACL'; END IF;
 RAISE NOTICE 'PROCESOS_EXTRA_PASS';
