@@ -2,9 +2,13 @@
   "solution_ref": "saly-creative-queue-v02",
   "paths": {
     "sandbox/creative_factory/queue_v02/001_saly_queue_serial_candidate.sql": "SERVICE_RUNTIME",
-    "sandbox/creative_factory/queue_v02/README.md": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v02/fixture_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v02/README.md": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v02/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v03/ACTIVATION_AND_DELIVERY_CONTRACT_V1.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v03/activation_preflight_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v03/test_activation_preflight_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v03/unit_results.txt": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/saly-creative-queue-v02.json": "CHANGESET_MANIFEST"
   }
 }
