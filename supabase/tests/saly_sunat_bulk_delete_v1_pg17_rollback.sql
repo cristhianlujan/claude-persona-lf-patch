@@ -140,6 +140,22 @@ BEGIN;
   'SUNAT_PURGE_DEPENDENT_UNITS');
  DELETE FROM saly.ventas_unidades_operativas;
 
+ -- Lease, missing/invalid policy thresholds, and altered source data fail closed.
+ UPDATE public.lf_operation_execution SET lease_expires_at=now()+interval '5 minutes'
+ WHERE execution_id='EXEC-SALY-SUNAT-PILOT-20261122-001';
+ SELECT public.test_expect_purge_error(
+  $$SELECT saly.ventas_sunat_purge_prepare_v1('EXEC-SALY-SUNAT-PILOT-20261122-001')$$,
+  'SUNAT_PURGE_RUN_NOT_SAFELY_STOPPED');
+ UPDATE public.lf_operation_execution SET lease_expires_at=NULL
+ WHERE execution_id='EXEC-SALY-SUNAT-PILOT-20261122-001';
+ UPDATE public.lf_global_config SET config_value='{"enabled":false,"max_rows":"INVALID"}'
+ WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_POLICY_V1';
+ SELECT public.test_expect_purge_error(
+  $$SELECT saly.ventas_sunat_purge_prepare_v1('EXEC-SALY-SUNAT-PILOT-20261122-001')$$,
+  'SUNAT_PURGE_POLICY_BATCH_LIMIT');
+ UPDATE public.lf_global_config SET config_value='{"enabled":false,"max_rows":1000}'
+ WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_POLICY_V1';
+
  DO $test_prepared$
  DECLARE r jsonb;
  BEGIN
@@ -156,6 +172,19 @@ BEGIN;
  SELECT public.test_expect_purge_error(
   $$SELECT saly.ventas_sunat_purge_step_v1('EXEC-SALY-SUNAT-PILOT-20261122-001',1001)$$,
   'SUNAT_PURGE_BATCH_LIMIT');
+ -- If an already-staged row becomes eligible, the batch must ROLLBACK,
+ -- never silently mark it as removed.
+ UPDATE saly.ventas_hallazgos
+ SET captura_empresarial=jsonb_set(captura_empresarial,
+      '{capture,normalized,workers_integer_literal}','50'::jsonb)
+ WHERE ruc_candidato='20000000003';
+ SELECT public.test_expect_purge_error(
+  $$SELECT saly.ventas_sunat_purge_step_v1('EXEC-SALY-SUNAT-PILOT-20261122-001',1000)$$,
+  'SUNAT_PURGE_TARGET_COUNT_DRIFT');
+ UPDATE saly.ventas_hallazgos
+ SET captura_empresarial=jsonb_set(captura_empresarial,
+      '{capture,normalized,workers_integer_literal}','null'::jsonb)
+ WHERE ruc_candidato='20000000003';
  DO $first_batch$
  DECLARE r jsonb;
  BEGIN
