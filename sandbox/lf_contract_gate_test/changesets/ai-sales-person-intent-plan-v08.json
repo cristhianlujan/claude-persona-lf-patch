@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ai-sales-person-intent-plan-v08",
+  "paths": {
+    "docs/ai_sales/AI_SALES_3_0_PLAN_V0_8_PERSON_INTENT_20261121.json": "RUNTIME_CODE",
+    "docs/ai_sales/AI_SALES_3_0_PERSON_INTENT_V0_8_20261121.md": "RUNTIME_CODE",
+    "supabase/migrations/20261122015500_lf_ai_sales_3_0_person_intent_plan_v0_8.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-person-intent-plan-v08.json": "CHANGESET_MANIFEST"
+  }
+}
