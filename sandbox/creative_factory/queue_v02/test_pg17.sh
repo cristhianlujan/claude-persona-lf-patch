@@ -128,7 +128,7 @@ get "select saly.creative_queue_advance_run_v1('$token_b'::uuid,$run_b,'EXITOSO'
 get "update saly.creative_order_items set status='EN_QA' where id=(select item_id from saly.creative_runs where id=$run_b)" >/dev/null
 get "update saly.creative_order_items set status='APROBADO',approved_at=clock_timestamp(),approved_by='QA-5',qa_receipt=jsonb_build_object('run_id','$run_b','verdict','PASS','reviewer_ref','QA-5') where id=(select item_id from saly.creative_runs where id=$run_b)" >/dev/null
 get "select saly.creative_queue_record_delivery_v1('$token_b'::uuid,$run_b,'test-adapter','test-message-id-002')" >/dev/null
-pass "$(get "select saly.creative_queue_release_v1('$token_b'::uuid,'DONE')->>'order_closed'")" t 'auto-close without user approval'
+pass "$(get "select saly.creative_queue_release_v1('$token_b'::uuid,'DONE')->>'order_closed'")" true 'auto-close without user approval'
 pass "$(get "select status from saly.creative_orders where code='ACTIVE_B'")" COMPLETADO 'real close guard allows terminal order'
 # A completed order cannot reopen, ensured by real trigger.
 "${PSQL[@]}" <<'SQL'
