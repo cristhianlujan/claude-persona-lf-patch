@@ -1,0 +1,50 @@
+name: SALY Creative Native Render Wire PG17 Candidate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'sandbox/creative_factory/queue_v02/**'
+      - 'sandbox/creative_factory/queue_v05/**'
+      - '.github/workflows/saly-creative-native-render-wire-pg17-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-pg17-rollback:
+    name: SQL candidate isolated PG17
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install local PostgreSQL client (no secret)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+      - name: Create disposable saly_queue_test
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGDATABASE: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE saly_queue_test"
+      - name: SQL candidate and negative/rollback tests
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGDATABASE: saly_queue_test
+        run: bash sandbox/creative_factory/queue_v05/test_pg17.sh
