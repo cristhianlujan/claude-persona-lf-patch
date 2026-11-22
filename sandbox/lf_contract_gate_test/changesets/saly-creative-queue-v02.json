@@ -41,6 +41,10 @@
     "sandbox/creative_factory/queue_v08/test_native_archive_bridge_v1.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v08/test_mutations_v1.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v08/README.md": "SERVICE_RUNTIME",
-    "sandbox/creative_factory/queue_v08/unit_results.txt": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v08/unit_results.txt": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v09/dispatch_fence_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v09/test_dispatch_fence_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v09/unit_results.txt": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v09/README.md": "SERVICE_RUNTIME"
   }
 }
