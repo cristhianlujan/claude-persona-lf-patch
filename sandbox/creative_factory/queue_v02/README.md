@@ -9,7 +9,7 @@ Objetivo: implementar exclusión de un solo worker creativo de SALY a la vez, cu
 - `001_saly_queue_serial_candidate.sql`: DDL de registro global de claims, índice de máximo un RUN activo, funciones de claim/heartbeat/release. Solo candidata, NO ejecutar en producción.
 - `fixture_pg17.sql`: esquema sintético PG17 desechable y fixtures que simulan campos relevantes. **No es una copia íntegra de Supabase**.
 - `test_pg17.sh`: pruebas SQL y 2 conexiones simultáneas de `psql`, incluidas prueba de rollback, reclamación de lease, token viejo, dependencias, RUN único, QA interno y cierre sin aprobación de usuario.
-- `saly-creative-queue-pg17.yml`: job CI aislado PG17 sobre PR. No enlaza a Supabase.
+- `saly-creative-queue-pg17.yml`: job aislado PG17, activable con `workflow_dispatch` (PASE restringe nuevos disparadores `pull_request`). No enlaza a Supabase.
 
 ## Comando de prueba real PG17 (solo BD desechable)
 
