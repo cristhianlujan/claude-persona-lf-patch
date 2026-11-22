@@ -1,0 +1,100 @@
+{
+  "source": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45033011414/job/137240543627",
+  "source_job_id": 137240543627,
+  "measured_at_utc": "2026-11-22T14:39:50Z",
+  "receipt": {
+    "state": "CANDIDATE_PLAN_ONLY",
+    "rows": 478657,
+    "batches": 479,
+    "source_sha256": [
+      "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7",
+      "2cea288655227dda03d3aaab30c7e63776f3cfb6cc68f75efd56e858865a17d7"
+    ],
+    "batch_digest_sha256": "3b4ad11de747a52a513dfcc895d713d63ae20b79bbbecd477e2b0df38774f310",
+    "manifest_digest_sha256": "23350466e89c654e7736de01f1f0d630fec7874713d7ba101a907da08fb27d00",
+    "total_bytes": 765898043,
+    "stats": {
+      "monthly_rows": 13519921,
+      "monthly_selected": 478659,
+      "reduced_quarantined": 2,
+      "reduced_rows": 18544070,
+      "reduced_selected": 478659
+    },
+    "unique_batch_keys": 479,
+    "qa_baseline_match": true,
+    "runtime_authorized": false,
+    "db_write_confirmed": false,
+    "rights_verified": false
+  },
+  "prior": {
+    "batch_digest_sha256": "3b4ad11de747a52a513dfcc895d713d63ae20b79bbbecd477e2b0df38774f310",
+    "batches": 479,
+    "db_write_confirmed": false,
+    "downloads": {
+      "monthly": {
+        "attempts": 1,
+        "bytes": 262346323,
+        "http_last_modified": "Fri, 30 Oct 2026 22:10:23 GMT",
+        "sha256": "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7"
+      },
+      "reduced": {
+        "attempts": 1,
+        "bytes": 395476808,
+        "http_last_modified": "Sun, 22 Nov 2026 09:38:39 GMT",
+        "sha256": "2cea288655227dda03d3aaab30c7e63776f3cfb6cc68f75efd56e858865a17d7"
+      }
+    },
+    "history_requested": false,
+    "qa_baseline": {
+      "monthly_rows": 13519921,
+      "monthly_selected": 478659,
+      "reduced_rows": 18544070,
+      "rows": 478657
+    },
+    "qa_baseline_match": true,
+    "qa_evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45033011414/job/137240543627",
+    "qa_mode": "PINNED_QA_ONLY",
+    "rights_verified": false,
+    "rows": 478657,
+    "runtime_authorized": false,
+    "scope": [
+      "11",
+      "15"
+    ],
+    "source_id": "PE-SUNAT-RUC",
+    "source_sha256": [
+      "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7",
+      "2cea288655227dda03d3aaab30c7e63776f3cfb6cc68f75efd56e858865a17d7"
+    ],
+    "state": "CANDIDATE_READ_ONLY",
+    "stats": {
+      "monthly_rows": 13519921,
+      "monthly_selected": 478659,
+      "reduced_quarantined": 2,
+      "reduced_rows": 18544070,
+      "reduced_selected": 478659
+    }
+  },
+  "verification": {
+    "official_urls": true,
+    "sha_pinned": true,
+    "rows": true,
+    "batches": true,
+    "source_changed": true,
+    "read_only_job": true
+  },
+  "official_snapshot": {
+    "monthly": {
+      "bytes": 262346323,
+      "changed_from_reviewed": false,
+      "last_modified": "Fri, 30 Oct 2026 22:10:23 GMT",
+      "sha256": "bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7"
+    },
+    "reduced": {
+      "bytes": 395476808,
+      "changed_from_reviewed": true,
+      "last_modified": "Sun, 22 Nov 2026 09:38:39 GMT",
+      "sha256": "2cea288655227dda03d3aaab30c7e63776f3cfb6cc68f75efd56e858865a17d7"
+    }
+  }
+}
