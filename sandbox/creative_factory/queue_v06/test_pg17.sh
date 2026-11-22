@@ -15,6 +15,11 @@ echo 'TEST_NATIVE_DELIVERY_GUARD_ON_FRESH_DISPOSABLE_PG17'
 psql -X -v ON_ERROR_STOP=1 -q -f "$ROOT/queue_v02/fixture_pg17.sql" >/dev/null
 psql -X -v ON_ERROR_STOP=1 -q -f "$ROOT/queue_v06/001_saly_delivery_attestation_guard_candidate.sql" >/dev/null
 psql -X -v ON_ERROR_STOP=1 -q -f "$ROOT/queue_v06/test_attestation_pg17.sql"
+python3 "$ROOT/queue_v06/test_mutations_pg17.py"
+echo 'RESTORE_CANDIDATE_AFTER_MUTANTS'
+psql -X -v ON_ERROR_STOP=1 -q -f "$ROOT/queue_v02/fixture_pg17.sql" >/dev/null
+psql -X -v ON_ERROR_STOP=1 -q -f "$ROOT/queue_v06/001_saly_delivery_attestation_guard_candidate.sql" >/dev/null
+psql -X -v ON_ERROR_STOP=1 -q -f "$ROOT/queue_v06/test_attestation_pg17.sql"
 count="$(psql -XAt -v ON_ERROR_STOP=1 -c "select count(*) from saly.creative_queue_native_delivery_evidence_v1")"
 [[ "$count" == "0" ]] || { echo BLOCK_TEST_ROLLBACK_LEAK; exit 1; }
 echo 'PASS_NATIVE_DELIVERY_PG17_BASELINE_AND_ATTESTATION_ROLLBACK'
