@@ -1,0 +1,29 @@
+SALY V10 Native Dispatch Reservation · PostgreSQL 17.6 disposable CI
+Date UTC: 2026-11-22
+Repository: cristhianlujan/claude-persona-lf-patch
+CI success: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45075908122
+SHA actually tested: 2f1fc2202eb3f317cfb10327e3c0fc5f9690db8b
+PGHOST: 127.0.0.1; PGDATABASE: saly_queue_test; no password or Supabase database credentials
+Fixture: V02 partial schema, V05 real SQL render wire, V06 real guarded DONE, V10 SQL reservation
+
+Observed assertions:
+- PASS V10 positive synthetic + idem: exactly one RESERVED_NOT_DISPATCHED, zero delivery
+- PASS V10 12 exact-code negatives, ACL, and V06 DONE remains blocked
+- PASS_B7_TWO_REAL_WORKERS_ONE_RESERVATION_ZERO_DISPATCH
+- MUTANT_KILLED_BY_EXPECTED_ASSERTION:WIRE_HASH_GUARD
+- MUTANT_KILLED_BY_EXPECTED_ASSERTION:REPLAY_CONFLICT_GUARD
+- PASS_V10_2_OF_2_PG17_BEHAVIORAL_MUTANTS
+- PASS_V10_PG17_NEGATIVE_ROLLBACK_CONCURRENCY_MUTATIONS_RESTORE
+
+Failures preserved, not hidden:
+- Initial CI 45075700868 FAIL: test incorrectly treated PostgreSQL PUBLIC pseudo-role as a role. Fixed by pg catalog ACL grantee=0.
+- CI 45075782665 FAIL after positive/negative/concurrency: visual.source_assets synthetic test table survived fixture reset. Fixed isolated fixture DROP prior to recreate.
+- Mutation harness redesigned to isolate WIRE_DRIFT from REPLAY_CONFLICT, so mutants count only when the tested behavior's own assertion fails.
+
+Limits:
+- This tests a partial, disposable PG17 fixture, not a faithful production-schema clone.
+- 12 negative controls execute; the initial positive uses a synthetic source and mock-like fixtures, not actual Native image generation.
+- The rollback and fixture reset are on the CI disposable DB only, not on Supabase.
+- The reservation cannot provide atomic external provider dispatch nor independent host delivery attestation.
+- No provider callback, no real delivered image, no authenticated host receipt, no operational CREATIVE_FACTORY parameters.
+- No merge, no deployment, no GRANT, no change to official review-only creative skill.
