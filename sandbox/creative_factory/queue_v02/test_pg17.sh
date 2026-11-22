@@ -44,7 +44,7 @@ SQL
 echo 'PASS direct RUN denied even with claim id'
 run_id="$(get "select saly.creative_queue_admit_run_v1('$token'::uuid,1,'W1-1','$snapshot'::jsonb)->>'run_id'")"
 pass "$(get "select queue_claim_id from saly.creative_runs where id=$run_id")" "$claim_id" 'RUN bound to claim'
-pass "$(get "select (input_snapshot ? 'queue_claim_token')::text from saly.creative_runs where id=$run_id")" f 'token not injected into canonical snapshot'
+pass "$(get "select (input_snapshot ? 'queue_claim_token')::text from saly.creative_runs where id=$run_id")" false 'token not injected into canonical snapshot'
 # Direct status transition without token must fail before old trigger is bypassed.
 "${PSQL[@]}" <<SQL
 DO \$\$BEGIN
