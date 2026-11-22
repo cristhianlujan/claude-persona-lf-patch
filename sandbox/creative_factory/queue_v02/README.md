@@ -1,45 +1,45 @@
-# SALY · Cola global serial v0.2 — candidato
+# SALY · Cola global serial v0.2 / vínculo RUN–claim–entrega (candidato)
 
-Estado: **NO DESPLEGADO / NO MERGEADO / NO AUTORIZADO PARA RENDER**.
+**NO DESPLEGADO · PR DRAFT #4616 · NO RENDER**. El esquema SQL todavía está en `sandbox/creative_factory/queue_v02`, no en `supabase/migrations`.
 
-Objetivo: implementar exclusión de un solo worker creativo de SALY a la vez, cubrir toda la vida de procesamiento (claim → brief → diseño → producción → QA interno → release) y cierre automático `COMPLETADO` sin esperar aprobación creativa del dueño.
+## Evidencia verificada
 
-## Archivos
+- **34/34 PASS**, PostgreSQL **17.12**, dos conexiones simultáneas, CI `45048664731`, job `137288738687`, SHA probado `9539bc25f73c3fc5f60936c7f34f46e1eae5b2fe`.
+- Se utilizaron **transcripciones** de `creative_run_guard_l1`, `creative_item_guard_l1`, `creative_order_close_guard_l1` y `creative_execution_policy_v1` extraídas de lectura de Supabase el 22/11/2026. **No es una restauración íntegra ni una copia byte a byte del esquema**.
+- Los 34 PASS incluyen rechazo de RUN directo sin token, asociación inmutable `queue_claim_id`, estado `EJECUTANDO`/EXITOSO` por RPC controlada, QA independiente, comprobación de recibo, rollback, leases, dependencia, PENDIENTE excluido, cierre automático y concurrencia real entre procesos.
+- El workflow temporal que ejecutó PG17 se retira del PR para respetar la gobernanza PASE. El registro de CI persiste en GitHub.
 
-- `001_saly_queue_serial_candidate.sql`: DDL de registro global de claims, índice de máximo un RUN activo, funciones de claim/heartbeat/release. Solo candidata, NO ejecutar en producción.
-- `fixture_pg17.sql`: esquema sintético PG17 desechable y fixtures que simulan campos relevantes. **No es una copia íntegra de Supabase**.
-- `test_pg17.sh`: pruebas SQL y 2 conexiones simultáneas de `psql`, incluidas prueba de rollback, reclamación de lease, token viejo, dependencias, RUN único, QA interno y cierre sin aprobación de usuario.
-- Evidencia del PG17 real: GitHub Actions run `45044538433`, SHA `51948060437126c5e55bb6f158ede1ef6be242bf`, 23 PASS. El workflow temporal fue retirado del PR porque la gobernanza PASE prohíbe nuevas rutas de workflows sin autorización. No se modificó el SQL probado.
+## Esquema propuesto
 
-## Comando de prueba real PG17 (solo BD desechable)
+- `saly.creative_queue_claims_v1`: una reserva global activa, dueño `worker_ref`, token único, vencimiento y estado.
+- `saly.creative_runs.queue_claim_id`: FK única al claim. No modifica `input_snapshot`, que el contrato L2C exige inmutable.
+- `saly.creative_queue_delivery_receipts_v1`: vínculo `claim_id + run_id`, referencia, hash y recibo de entrega.
+- `saly.creative_queue_claim_next_v1`: admite solo ítems `LISTO` de pedidos autorizados con `queue_mode='SERIAL_V1'`.
+- `saly.creative_queue_admit_run_v1`: requiere token activo y crea el RUN vinculado, sujeto a los triggers de Supabase.
+- `saly.creative_queue_advance_run_v1`: transiciones de RUN verificando token y trabajador.
+- `saly.creative_queue_record_delivery_v1`: registra un recibo vinculado exactamente al RUN EXITOSO.
+- `saly.creative_queue_release_v1(DONE)`: requiere RUN EXITOSO asociado, ítem APROBADO por QA interno y recibo de entrega con referencia/hash coincidentes. Si todos los ítems obligatorios están listos, marca pedido `COMPLETADO` sin aprobación creativa humana.
+
+## Comando aislado
 
 ```bash
 export PGHOST=localhost PGPORT=5432 PGUSER=postgres PGPASSWORD=postgres PGDATABASE=saly_queue_test
-bash test_pg17.sh
+bash sandbox/creative_factory/queue_v02/test_pg17.sh
 ```
 
-El script bloquea ejecución si PGDATABASE no es exactamente `saly_queue_test`. No usar contra producción.
+`test_pg17.sh` impide ejecutarse con otro nombre de BD, y la fixture ejecuta DDL destructivo **solo sobre la BD desechable**.
 
-## Puertas pendientes antes de merge o despliegue
+## Límites y condiciones antes de migración productiva
 
-1. PASS de PostgreSQL 17 real, con dos sesiones simultáneas. Los PASS de Python v0.1 no sustituyen la prueba.
-2. Verificar compatibilidad con los triggers reales `creative_run_guard_l1`, `creative_item_guard_l1`, `creative_order_close_guard_l1` sobre una copia aislada de esquema (positivos + negativos + ROLLBACK).
-3. Integrar **token de claim/fencing en el ejecutor y en la admisión de RUN**. El índice global bloquea dos RUN activos pero no evita por sí solo una llamada externa no autorizada fuera de la cola.
-4. Definir renovación/caducidad de lease y despacho idempotente al proveedor; nunca liberar y volver a enviar si no se conoce el resultado de un proveedor anterior.
-5. Integrar el proceso P01 de generación autónoma de brief, aún candidato; el SKILL oficial v0.12 sigue `PLAN_ONLY/REVIEW_ONLY`.
-6. Aprobar migración y PR mediante PASE + Merge Train (un PR a la vez), readback de tablas/RPC al terminar.
-7. No alterar pedidos reales `SALY_HOME_BATCH_001` o `SALY_HOME_TEMPLATE_AB_001` en este lote.
+1. La skill oficial continúa `PLAN_ONLY/REVIEW_ONLY`: ninguna llamada real a proveedor de generación fue probada.
+2. El **recibo de entrega es sintético en los tests**. Supabase solo valida referencia y hash; la verificación real de entrega debe venir de un adaptador confiable externo, que **aún no está conectado**. No declarar delivery real.
+3. No conceder `GRANT EXECUTE` a runtime/app hasta revisar la identidad de los operadores y el código del transportador. Las RPC están revocadas a `PUBLIC`.
+4. El productor debe comprobar token de fencing antes y después de hablar con proveedores externos; leases vencidos requieren reconciliación idempotente y bloqueo de entregas duplicadas.
+5. Probar el **esquema completo** real PG17/ROLLBACK antes de convertir la candidata en migración `supabase/migrations`.
+6. Sin aprobación del usuario posterior a la generación. `APROBADO` de ítem es **QA técnico interno**, no visto bueno del dueño.
+7. No tocar ni cerrar pedidos previos en este lote. Refinamiento = nuevo pedido enlazado en un lote distinto.
+8. La versión candidata no debe ir al Merge Train antes de resolver estas brechas. **PASE PASS no equivale a autorización de producción**.
 
-## Semántica
+## Estado
 
-- `saly.creative_orders.COMPLETADO`: salida entregada y evidenciada para todos los ítems obligatorios; NO aprobación creativa del usuario.
-- `saly.creative_order_items.APROBADO`: QA independiente interno; mantiene trigger real de QA.
-- Falla de diseño/producción sin artefacto: `BLOQUEADO`, no `COMPLETADO`.
-- Refinamiento: otro pedido ligado al original, fuera de la ejecución de esta migración.
-- Máximo un claim `ACTIVE`, índice único global de RUN `EN_COLA/EJECUTANDO`.
-
-## Riesgos conocidos
-
-- Los leases son renovables y un worker aislado puede seguir ejecutando una solicitud externa aunque pierda el lease: integración del token de fencing antes de llamar/procesar proveedor es obligatoria.
-- Las pruebas de fixture no demuestran por sí mismas la compatibilidad de todos los triggers y tablas de Supabase.
-- Se requieren observabilidad, manejo de stale provider receipt e idempotencia antes del despliegue.
+Código SQL+tests preparado y probado con fixtures. Falta integración del runtime/entrega real y ruta gobernada de migración, merge y readback.
