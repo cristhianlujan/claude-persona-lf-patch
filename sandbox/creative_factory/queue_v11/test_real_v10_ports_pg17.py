@@ -101,7 +101,7 @@ with tempfile.TemporaryDirectory(prefix="saly-v11-pg17-local-") as td:
           "status":"FRESHNESS_AND_ARCHIVE_VERIFIED_NOT_SENT",
           "order_id":data["order_id"],"item_id":data["item_id"],
           "run_id":data["run_id"],"claim_id":data["claim_id"],
-          "wire_sha256":data["wire_sha256"],
+          "wire_sha256":kw["archived"]["wire_sha256"],
           "native_transmitted":False,"provider_attested":False,
           "host_delivery_verified":False,"db_done_allowed":False,
         }
