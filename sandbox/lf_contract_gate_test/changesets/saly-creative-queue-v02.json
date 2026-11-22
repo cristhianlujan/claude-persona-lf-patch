@@ -57,6 +57,7 @@
     "sandbox/creative_factory/queue_v11/test_native_handoff_reservation_bridge_v1.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v11/README.md": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v11/test_real_v10_ports_pg17.py": "RUNTIME_TESTING",
-    "sandbox/creative_factory/queue_v11/test_mutations_v1.py": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v11/test_mutations_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v11/ci_results_20261122.txt": "RUNTIME_TESTING"
   }
 }
