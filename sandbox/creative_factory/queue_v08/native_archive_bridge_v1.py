@@ -14,13 +14,14 @@ import base64
 import hashlib
 import json
 import os
+import stat
 import tempfile
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
-from native_source_preflight_v1 import NativeSourceRejected, verify_native_source_bytes
-from native_transport_capture_v1 import CaptureRejected, archive_pre_dispatch
+from sandbox.creative_factory.queue_v07.native_source_preflight_v1 import NativeSourceRejected, verify_native_source_bytes
+from sandbox.creative_factory.native_transport_capture_v1 import CaptureRejected, archive_pre_dispatch
 
 _SHA64 = set("0123456789abcdef")
 
@@ -89,7 +90,8 @@ def archive_render_candidate_v1(
     except (TypeError, ValueError) as exc:
         raise NativeArchiveRejected("SALY_NATIVE_ARCHIVE_DESTINATION_INVALID") from exc
     _need(out.is_absolute() and out.parent.is_dir()
-          and not out.parent.is_symlink() and not out.exists(),
+          and not out.parent.is_symlink() and not out.exists()
+          and (stat.S_IMODE(out.parent.stat().st_mode) & 0o077) == 0,
           "SALY_NATIVE_ARCHIVE_DESTINATION_INVALID")
 
     # Single live read per reference. The same bytes are checked by V07, staged,
