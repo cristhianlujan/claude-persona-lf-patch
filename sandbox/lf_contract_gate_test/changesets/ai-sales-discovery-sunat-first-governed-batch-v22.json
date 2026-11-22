@@ -1,0 +1,13 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-first-governed-batch-v22",
+  "paths": {
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_first_governed_batch_v22.py": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "supabase/migrations/20261122145500_lf_saly_sunat_first_batch_activation_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-first-governed-batch-v22.json": "CHANGESET_MANIFEST"
+  }
+}

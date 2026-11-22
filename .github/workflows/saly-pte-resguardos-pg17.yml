@@ -198,3 +198,33 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
       - run: python3 skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py
+
+  sunat-first-real-batch:
+    name: SUNAT first real batch — governed native writer and independent readback
+    # The Train must first apply the activation migration and merge this PR to main.
+    # Workflow-dispatch opt-in is a recovery path; no timer or recurring run.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT primer lote real v2.2')
+    environment: lf-merge-train
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit test first-batch dispatch and tamper/redaction handling
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_first_governed_batch_v22.py
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Execute exactly one pinned SUNAT batch against SALY governed writer
+        timeout-minutes: 32
+        env:
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: python3 skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py
