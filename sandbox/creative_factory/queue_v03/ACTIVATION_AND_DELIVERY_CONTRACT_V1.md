@@ -68,3 +68,36 @@ Las cuatro claves siguen sin valor operativo acreditado; cifras en fixtures y mi
 4. Solo entonces: Router → PR no Draft → PASE → Merge Train → readback.
 
 **Resultado del lote:** contrato de secuenciación añadido y 18/18 PASS sintéticos; integración externa y operativa NO verificada.
+
+## Corrección de arquitectura: GPT_NATIVE y CLAUDE_NATIVE (22/11/2026)
+
+### Fuentes reales empleadas
+
+- `CLAUDE.md` y `AGENTS.md` de `main`: owner nativo actúa en la **conversación vigente**; GitHub Actions no llama por sí solo un modelo Native. Una continuación no es un RUN nuevo.
+- `supabase/migrations/20261029140000_lf_profile_native_executor_claude_parity_v1.sql`: los pares canónicos son `GPT_NATIVE/OPENAI_CHATGPT_NATIVE` y `CLAUDE_NATIVE/ANTHROPIC_CLAUDE_NATIVE`. **Este contrato es para perfiles LF**, no es por sí solo una activación creativa.
+- `skills/creative_factory/SKILL.md` v0.12: `PLAN_ONLY/REVIEW_ONLY`; no invoca modelos, Router, perfiles ni genera imágenes.
+- `supabase/migrations/20261121154917_lf_saly_native_canonical_wire_v1.sql`: canon `SALY_CANONICAL_NATIVE_WIRE_V1`, `CANONICAL_WIRE_REVIEW_ONLY`, bytes, hash, y `native_transmitted=false`.
+- `sandbox/creative_factory/native_transport_capture_v1.py`: `archive_pre_dispatch` conserva prompt y recursos **antes** del envío, sin declarar recepción ni proveedor.
+- `docs/programming-agent/ANALYSIS_C2C3_GPT_NATIVE_APPROVED_EQUIVALENT_V1.md`: una captura en chat puede ser evidencia local equivalente acotada, `provider_attested=false`, **no** `REAL_EXECUTION_RECEIPT`. Es otro alcance, no transferir la autorización a SALY.
+- `LF_resguardos_construccion.md`: B1, B6, B11, B13, B19, B25, B30 y B32.
+
+### Solución candidata entregada
+
+`native_session_bridge_v1.py` reconoce explícitamente ambos modos Native, rechaza una pareja modo/proveedor incorrecta y los falsos transportes (API, nueva sesión, fallback remoto). Consume bytes de `creative_native_canonical_wire_v1`, el hash del prompt y el recibo estructural de `archive_pre_dispatch`; conserva `order_id + item_id`. En **PLAN_ONLY** exige que `run_id` y `claim_id` sean nulos: no crear una cola operativa para revisar un plan. Devuelve un cursor hacia el **chat dueño actual**, no dispara imagen.
+
+`classify_native_chat_artifact` solo verifica hash de bytes locales y separación de identidades. Su nivel es `NATIVE_CHAT_LOCAL_EQUIVALENT_NOT_PROVIDER_ATTESTED` y **jamás habilita `DONE`**. Un reporte del modelo no es un comprobante del proveedor ni del host.
+
+`test_native_session_bridge_v1.py`: **21/21 PASS en Python local** para GPT/Claude, hash correcto, mezcla de proveedores, wire alterado, Base64, JSON duplicado, fake RUN, falsos receipts, entre otros. Los blobs del repositorio se releyeron y cotejaron exactamente con `git hash-object` local:
+- `native_session_bridge_v1.py`: `7b9206529ebc4dcf0c674bc014a4d19860c2dc65`.
+- `test_native_session_bridge_v1.py`: `c97a8af7d6c27eed8ef8c85d94a4e865529ac4d2`.
+
+### Integración que **aún debe implementarse** (sin APIs ficticias)
+
+1. Preparación Native `PLAN_ONLY` con `saly.creative_skill_prepare_v1` (lectura autorizada) → prompt canónico → `archive_pre_dispatch` → cursor del mismo chat. **Sin RUN** en esta fase.
+2. Crear contrato aparte `RENDER_READY` para la operación creativa solo con autoridad vigente, parámetros `CREATIVE_FACTORY`, claims, RUN e ítems, una vez que las fuentes sean verificadas. No transformar la salida `REVIEW_ONLY` existente en un permiso de generación.
+3. Ejecución en la sesión nativa propietaria con el modelo disponible. **No suponer** que el GitHub workflow o Python invocan `GPT_NATIVE` o `CLAUDE_NATIVE` en segundo plano, ni que los dos tienen el mismo proveedor gráfico.
+4. Recibir evidencia de artefacto/entrega desde un transporte realmente existente; distinguir `LOCAL_NATIVE_CHAT_EQUIVALENT` de `PROVIDER_ATTESTED` y del `DELIVERED` del host. No elevar la evidencia local a atestación.
+5. Asegurar una puerta SQL única con identidad autenticada, QA interno, hash de bytes y fencing token antes de `creative_queue_release_v1(DONE)`. Las RPC de texto de `queue_v02` siguen siendo inseguras para apertura de permisos.
+6. Pruebas fieles PG17/ROLLBACK, PASE, autorización de cambio oficial, Train y readback tras integrar. No modificar ni cerrar los 2 pedidos anteriores.
+
+**Estado:** desarrollo estructural Native **candidato**, no implementación operativa; **NO MERGE / NO DEPLOY / NO GRANT / NO RENDER**. La lectura Supabase RO en esta sesión sigue fallando por timeout: el recuento previo de configuración no es un readback actual.
