@@ -1,6 +1,6 @@
 -- SALY SUNAT physical bulk delete, *armed but not run on migration*.
 -- Parent: commercial eligibility PR #4621 must be merged first.
--- Runtime requires governed cancellation, discovery RUN HOLD, and SUNAT source policy disabled.
+-- Runtime requires governed cancellation, discovery RUN HOLD, disabled SUNAT writer, and commercial threshold.
 -- Each authorized call deletes at most 1000 records inside one transaction.
 -- Ingest receipts, hashes, and original reported row counts remain immutable.
 BEGIN;
@@ -47,6 +47,7 @@ CREATE FUNCTION saly.ventas_sunat_purge_guard_v1(p_run_ref text)
 RETURNS integer LANGUAGE plpgsql SECURITY INVOKER
 SET search_path=pg_catalog,saly,public AS $guard$
 DECLARE v_run_status text; v_op_status text; v_lease timestamptz; v_config jsonb;
+        v_min_workers text;
 BEGIN
  IF p_run_ref IS DISTINCT FROM 'EXEC-SALY-SUNAT-PILOT-20261122-001'
  THEN RAISE EXCEPTION 'SUNAT_PURGE_RUN_SCOPE'; END IF;
@@ -70,6 +71,13 @@ BEGIN
  THEN RAISE EXCEPTION 'SUNAT_PURGE_SOURCE_NOT_DISABLED'; END IF;
  IF coalesce(v_config->>'max_rows','') !~ '^[1-9][0-9]{0,6}$'
  THEN RAISE EXCEPTION 'SUNAT_PURGE_POLICY_BATCH_LIMIT'; END IF;
+ SELECT config_value INTO v_min_workers FROM public.lf_global_config
+ WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'
+   AND value_type='INTEGER' AND value_status='REAL'
+   AND valid_from<=now()
+ ORDER BY valid_from DESC LIMIT 1;
+ IF NOT FOUND OR coalesce(v_min_workers,'') !~ '^[1-9][0-9]{0,7}$'
+ THEN RAISE EXCEPTION 'SUNAT_PURGE_COMMERCIAL_POLICY_INVALID'; END IF;
  IF EXISTS(SELECT 1 FROM saly.ventas_unidades_operativas)
  THEN RAISE EXCEPTION 'SUNAT_PURGE_DEPENDENT_UNITS'; END IF;
  RETURN (v_config->>'max_rows')::integer;
@@ -132,7 +140,11 @@ BEGIN
       AND NOT (
          CASE WHEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}')
                       ~ '^[0-9]{1,9}$'
-              THEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}')::integer>=50
+              THEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}')::integer>=
+                   (SELECT config_value::integer FROM public.lf_global_config
+                    WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'
+                    AND value_type='INTEGER' AND value_status='REAL' AND valid_from<=now()
+                    ORDER BY valid_from DESC LIMIT 1)
               ELSE false END
          AND upper(btrim(coalesce(h.captura_empresarial #>> '{capture,observations,monthly,raw,Estado}','')))='ACTIVO'
          AND upper(btrim(coalesce(h.captura_empresarial #>> '{capture,observations,reduced,raw,estado}','')))='ACTIVO'
