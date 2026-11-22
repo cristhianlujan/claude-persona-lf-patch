@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.8
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.9
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -64,13 +64,13 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 
 | Subpaso | Función | Estado técnico |
 |---|---|---|
-| 12.01.1 | Admisión y transporte | PUBLIC_REUSE_DECISION_APPROVED_REGISTRATION_PENDING |
+| 12.01.1 | Admisión y transporte | PUBLIC_REUSE_DECISION_REGISTERED_RUNTIME_DISABLED |
 | 12.01.2 | Integridad ZIP y esquema | PINNED_DUAL_ARCHIVE_QA_PASS |
 | 12.01.3 | Lectura y selección | PINNED_DUAL_PROJECTION_QA_PASS |
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | PINNED_REAL_MANIFEST_QA_PASS_GOVERNED_CALLER_PENDING |
+| 12.01.7 | Persistencia gobernada | VERIFIED_PAYLOAD_DELIVERY_CANDIDATE_TEST_PENDING_GOVERNED_CALLER_PENDING |
 | 12.01.8 | Reconciliación y cierre | PINNED_REAL_MANIFEST_QA_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
@@ -112,3 +112,7 @@ Frente jurídico: Resolución 003820-2023-JUS/TTAIP-PRIMERA SALA, p. 2, recoge r
 ## Lote v1.8 — decisión de uso interno y evidencia real
 
 Prueba real https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44982843282/job/137086915653 PASS, 478657 observaciones, 479 lotes únicos, 765896698 bytes; digest de manifiesto 3e12083fc487a4d1281e69b0868676fa66f0be42ad3d41966662a610545bd77e. Recibo: `skills/ai_sales_discovery/tests/evidence/sunat_pinned_batch_plan_20261121.json`. Propietario aprobó uso B2B interno de hechos empresariales públicos, sin reventa, datos personales innecesarios ni contacto automático. Fundamento, límites y riesgo residual: `skills/ai_sales_discovery/contracts/SUNAT_INTERNAL_REUSE_DECISION_V18.md`. Migración candidata registra decisión y nueva versión de SUNAT_POLICY_V1 sin activar fuente ni escritor. Catálogo real hasta merge conserva PENDIENTE_VERIFICAR. No repetir descarga QA salvo cambio de snapshot; siguiente trabajo caller gobernado y entrega de bytes, límites operativos y prueba de carga.
+
+## Lote v1.9 — entrega efímera de bytes verificados
+
+PR #4609, main 9f49e17eb104a802524e5c4d8f10503fd1edf918, Train 44984450761 success. Readback: rights_status=PERSISTENCIA_PERMITIDA; habilitada=false, persist_business_data=false, SUNAT_POLICY_V1.enabled=false, ledger=1, ingestas=0; decision execution EXEC-DB-TRAIN-PR4609-20261122041500-R44984450761. Implementación candidata en `skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py`: staged stream exacto, límites, barrera digest de manifiesto, lectura revalidada, limpieza; pruebas nuevas preparadas sin declarar PASS. Contrato `skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md`; la autoridad comercial de ingesta no aparece registrada, no reusar maintenance DB, read-only skill ni KB. Integrar con motor de operaciones existente, tablas SALY ya instaladas y único writer invoker. Sin nuevas escrituras comerciales ni habilitación.
