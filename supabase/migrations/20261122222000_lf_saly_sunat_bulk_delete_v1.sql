@@ -57,6 +57,7 @@ BEGIN
  WHERE r.run_ref=p_run_ref
  FOR SHARE OF r,o;
  IF NOT FOUND OR v_run_status IS DISTINCT FROM 'HOLD'
+    OR v_op_status IS NULL
     OR v_op_status NOT IN ('CANCELLED','ABANDONED','SUPERSEDED')
     OR (v_lease IS NOT NULL AND v_lease>now())
  THEN RAISE EXCEPTION 'SUNAT_PURGE_RUN_NOT_SAFELY_STOPPED'; END IF;
