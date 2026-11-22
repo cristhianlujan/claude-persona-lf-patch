@@ -222,7 +222,7 @@ class ArchiveBridgeTests(unittest.TestCase):
         self.assertEqual(self.case.calls, 1)
 
     def test_ref_reader_returns_invalid_type(self):
-        self.rejected("SALY_NATIVE_ARCHIVE_SOURCE_BYTES_INVALID",
+        self.rejected("SALY_NATIVE_SOURCE_BYTES_MISSING",
                       lambda c: setattr(c, "cached_bytes", "not-bytes"))
 
     def test_ref_reader_unavailable(self):
@@ -258,8 +258,10 @@ class ArchiveBridgeTests(unittest.TestCase):
                       lambda c: c.wire.update(wire_base64=base64.b64encode(b"oops").decode()))
 
     def test_tampered_prompt_denied(self):
-        self.rejected("SALY_NATIVE_SOURCE_PROMPT_DRIFT",
-                      lambda c: c.wire.update(prompt_sha256="a"*64))
+        def mutation(c):
+            c.wire["prompt_sha256"] = "a"*64
+            c.binding["prompt_sha256"] = "a"*64
+        self.rejected("SALY_NATIVE_SOURCE_PROMPT_DRIFT", mutation)
 
     def test_filename_path_denied(self):
         def mutation(c):
