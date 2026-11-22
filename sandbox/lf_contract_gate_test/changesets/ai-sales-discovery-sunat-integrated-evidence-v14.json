@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-integrated-evidence-v14",
+  "paths": {
+    "skills/ai_sales_discovery/tests/evidence/sunat_integrated_qa_20261121.json": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-integrated-evidence-v14.json": "CHANGESET_MANIFEST"
+  }
+}
