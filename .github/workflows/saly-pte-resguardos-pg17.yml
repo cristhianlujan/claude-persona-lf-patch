@@ -273,3 +273,77 @@ jobs:
           PGSSLMODE: require
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: python3 skills/ai_sales_discovery/tests/sunat_remaining_sequential_v25.py
+
+  sunat-workers-one-read:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT empleados v2.8')
+    name: Distribución NroTrab — solo lectura
+    runs-on: ubuntu-latest
+    environment: lf-merge-train
+    timeout-minutes: 10
+    env:
+      PGHOST: aws-1-us-east-1.pooler.supabase.com
+      PGPORT: '5432'
+      PGUSER: postgres.mhwmirqcgxxukpctffuv
+      PGDATABASE: postgres
+      PGSSLMODE: require
+      PGCONNECT_TIMEOUT: '20'
+      PGOPTIONS: '-c default_transaction_read_only=on -c statement_timeout=120000'
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Count real SALY SUNAT firms by workers — no writes or personal data in logs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if psql -X -qAt -v ON_ERROR_STOP=1 <<'SQL'
+          BEGIN TRANSACTION READ ONLY;
+          WITH labels(ord,rango) AS (
+            VALUES (0,'0'),(1,'1-5'),(2,'6-10'),(3,'11-20'),
+                   (4,'21-50'),(5,'51-100'),(6,'101-250'),(7,'251-500'),
+                   (8,'Más de 500'),(9,'Sin dato')
+          ), typed AS (
+            SELECT CASE WHEN h.captura_empresarial #>>
+                            '{capture,normalized,workers_integer_literal}' ~ '^[0-9]{1,9}$'
+                    THEN (h.captura_empresarial #>>
+                          '{capture,normalized,workers_integer_literal}')::bigint
+                    ELSE NULL END AS workers
+            FROM saly.ventas_hallazgos h
+            JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id
+            WHERE i.source_id='PE-SUNAT-RUC'
+          ), by_range AS (
+            SELECT CASE
+             WHEN workers IS NULL THEN 9
+             WHEN workers=0 THEN 0
+             WHEN workers BETWEEN 1 AND 5 THEN 1
+             WHEN workers BETWEEN 6 AND 10 THEN 2
+             WHEN workers BETWEEN 11 AND 20 THEN 3
+             WHEN workers BETWEEN 21 AND 50 THEN 4
+             WHEN workers BETWEEN 51 AND 100 THEN 5
+             WHEN workers BETWEEN 101 AND 250 THEN 6
+             WHEN workers BETWEEN 251 AND 500 THEN 7
+             ELSE 8 END AS ord, count(*) AS n
+            FROM typed GROUP BY 1
+          )
+          SELECT 'SALY_SUNAT_WORKERS_RESULT '||jsonb_build_object(
+            'as_of',now(),
+            'total_companies',coalesce((SELECT sum(n) FROM by_range),0),
+            'total_batches',(SELECT count(*) FROM saly.ventas_discovery_ingestas
+                             WHERE source_id='PE-SUNAT-RUC'),
+            'target_companies',478657,
+            'target_batches',479,
+            'ranges',(SELECT jsonb_agg(jsonb_build_object(
+                      'rango',l.rango,'empresas',coalesce(b.n,0)) ORDER BY l.ord)
+                      FROM labels l LEFT JOIN by_range b ON b.ord=l.ord))::text;
+          COMMIT;
+          SQL
+            then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo 'SALY_SUNAT_WORKERS_BLOCKED_DB_CONNECT_OR_TIMEOUT'
+              exit 1
+            fi
+            sleep 8
+          done
