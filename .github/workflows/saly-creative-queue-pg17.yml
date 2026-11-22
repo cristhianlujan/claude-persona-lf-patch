@@ -31,5 +31,5 @@ jobs:
       PGDATABASE: saly_queue_test
     steps:
       - uses: actions/checkout@v4
-      - run: psql -X -v ON_ERROR_STOP=1 -At -c "show server_version" | grep '^17\\.'
+      - run: psql -X -v ON_ERROR_STOP=1 -At -c "show server_version" | grep '^17'
       - run: bash sandbox/creative_factory/queue_v02/test_pg17.sh
