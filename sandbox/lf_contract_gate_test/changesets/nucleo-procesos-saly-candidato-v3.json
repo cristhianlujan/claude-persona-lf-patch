@@ -1,0 +1,10 @@
+{
+  "solution_ref": "nucleo-procesos-saly-candidato-v3",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/procesos_saly/base_candidata.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/procesos_saly/pruebas_adicionales.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/procesos_saly/concurrencia_pg17.sh": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/nucleo-procesos-saly-candidato-v3.json": "CHANGESET_MANIFEST"
+  }
+}

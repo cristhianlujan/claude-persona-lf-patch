@@ -39,6 +39,12 @@ INSERT INTO saly.procesos_version_transiciones VALUES(p,3,a,a,'LOOP');
 BEGIN INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('N1','NO-EXISTE'); RAISE EXCEPTION 'EXTRA_NODO_INEXISTENTE'; EXCEPTION WHEN check_violation THEN NULL; END;
 BEGIN INSERT INTO saly.procesos(codigo,nodo_codigo) VALUES ('N2','PANTALLA-7'); RAISE EXCEPTION 'EXTRA_NODO_NO_MODULO'; EXCEPTION WHEN check_violation THEN NULL; END;
 BEGIN UPDATE saly.procesos SET nodo_codigo='G' WHERE id=p; RAISE EXCEPTION 'EXTRA_NODO_MUTABLE'; EXCEPTION WHEN SQLSTATE '55000' THEN NULL; END;
+-- TRUNCATE (incluso CASCADE) bloqueado para el dueño en las seis tablas
+BEGIN TRUNCATE saly.procesos CASCADE; RAISE EXCEPTION 'EXTRA_TRUNCATE_PERMITIDO'; EXCEPTION WHEN SQLSTATE '55000' THEN NULL; END;
+BEGIN TRUNCATE saly.procesos_version_transiciones; RAISE EXCEPTION 'EXTRA_TRUNCATE_COMPOSICION'; EXCEPTION WHEN SQLSTATE '55000' THEN NULL; END;
+-- versión automática: siguiente número, y sin acceso para clientes
+IF saly.procesos_version_crear_v1(p,'t','m','o','c') <> 4 THEN RAISE EXCEPTION 'EXTRA_VERSION_AUTO'; END IF;
+IF has_function_privilege('authenticated','saly.procesos_version_crear_v1(bigint,text,text,text,text)','EXECUTE') THEN RAISE EXCEPTION 'EXTRA_VERSION_ACL'; END IF;
 -- ACL
 IF has_table_privilege('authenticated','saly.procesos','TRUNCATE') OR has_sequence_privilege('authenticated','saly.procesos_pasos_paso_id_seq','USAGE') THEN RAISE EXCEPTION 'EXTRA_ACL'; END IF;
 RAISE NOTICE 'PROCESOS_EXTRA_PASS';
