@@ -11,7 +11,7 @@ EXPECTED_KEYS = ('rows','monthly_rows','monthly_selected','reduced_rows')
 TRANSPORT_KEYS = ('attempts','socket_timeout','deadline_seconds','backoff_seconds','total_seconds')
 
 
-def run_candidate_qa(request, *, opener=None, directory=None):
+def run_candidate_qa(request, *, opener=None, directory=None, _staging=None):
     require(isinstance(request,dict) and request.get('mode') == 'PINNED_QA_ONLY', 'QA_MODE')
     require(isinstance(request.get('evidence_ref'),str) and request['evidence_ref'].strip(), 'QA_EVIDENCE_REF')
     sources = request.get('sources')
@@ -29,6 +29,7 @@ def run_candidate_qa(request, *, opener=None, directory=None):
     require(isinstance(departments,list) and departments and all(isinstance(d,str) and re.fullmatch('[0-9]{2}',d) for d in departments)
             and len(departments)==len(set(departments)), 'SCOPE')
     batch_plan = request.get('batch_plan')
+    require(_staging is None or batch_plan is not None, 'STAGE_PLAN_REQUIRED')
     if batch_plan is not None:
         require(isinstance(batch_plan,dict) and set(batch_plan)=={'expected','limits'}, 'PLAN_CONTRACT')
         prior, quotas = batch_plan['expected'], batch_plan['limits']
@@ -62,7 +63,7 @@ def run_candidate_qa(request, *, opener=None, directory=None):
                 expected_sha=src['zip_sha256'],opener=opener)
             local[kind]=dict(src,path=str(path))
         receipt=candidate_receipt(local['monthly'],local['reduced'],departments=departments,
-            limits=dict(limits,seconds=min(remaining(),limits['seconds'])),directory=work,batch_plan=batch_plan)
+            limits=dict(limits,seconds=min(remaining(),limits['seconds'])),directory=work,batch_plan=batch_plan,_staging=_staging)
         observed=dict(rows=receipt['rows'],**{k:receipt['stats'][k] for k in EXPECTED_KEYS if k!='rows'})
         require(all(observed[k]==baseline[k] for k in EXPECTED_KEYS),'BASELINE_MISMATCH')
         remaining()
