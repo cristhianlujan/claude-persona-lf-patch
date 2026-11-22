@@ -19,8 +19,8 @@ from sunat_batch_plan_v1 import canonical, sha
 from sunat_integrated_real_probe import build_request
 from sunat_verified_delivery_v1 import verified_candidate_payloads
 
-EVIDENCE = HERE / "evidence" / "sunat_pinned_batch_plan_20261121.json"
-PRIOR = HERE / "evidence" / "sunat_integrated_qa_20261121.json"
+EVIDENCE = HERE / "evidence" / "sunat_current_20261122.json"
+PRIOR = EVIDENCE
 EXEC = "EXEC-SALY-SUNAT-PILOT-20261122-001"
 OWNER = "SALY-SUNAT-FIRST-BATCH-V22"
 SCOPE = "LIMA_ICA"
@@ -58,9 +58,9 @@ def psql(query, *, timeout=120):
 
 def expected():
     exact = json.loads(EVIDENCE.read_text(encoding="utf-8"))["receipt"]
-    prior = json.loads(PRIOR.read_text(encoding="utf-8"))["receipt"]
+    prior = json.loads(PRIOR.read_text(encoding="utf-8"))["prior"]
     if (exact["rows"], exact["batches"], exact["manifest_digest_sha256"]) != (
-        478657, 479, "3e12083fc487a4d1281e69b0868676fa66f0be42ad3d41966662a610545bd77e"):
+        478657, 479, "23350466e89c654e7736de01f1f0d630fec7874713d7ba101a907da08fb27d00"):
         raise ValueError("PINNED_MANIFEST_CHANGED")
     if any(exact[k] != prior[k] for k in ("rows", "batches", "stats",
                                          "source_sha256", "batch_digest_sha256")):
@@ -69,6 +69,9 @@ def expected():
 
 def request_for(prior):
     request = build_request()
+    request["sources"]["reduced"]["zip_sha256"] = prior["source_sha256"][1]
+    request["expected"] = prior["qa_baseline"]
+    request["evidence_ref"] = prior["qa_evidence_ref"]
     request["batch_plan"] = {
         "expected": prior,
         "limits": {

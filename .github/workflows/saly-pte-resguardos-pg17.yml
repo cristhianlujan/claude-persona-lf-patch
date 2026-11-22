@@ -203,7 +203,7 @@ jobs:
     name: SUNAT first real batch — governed native writer and independent readback
     # The Train must first apply the activation migration and merge this PR to main.
     # Workflow-dispatch opt-in is a recovery path; no timer or recurring run.
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT primer lote real v2.2')
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT insert real v2.4')
     environment: lf-merge-train
     runs-on: ubuntu-latest
     timeout-minutes: 40
