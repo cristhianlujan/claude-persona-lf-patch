@@ -19,7 +19,9 @@ CREATE TABLE public.lf_global_config (
  scope text NOT NULL,
  config_key text NOT NULL,
  config_value text NOT NULL,
+ value_type text NOT NULL DEFAULT 'JSON',
  value_status text NOT NULL,
+ description text,
  valid_from timestamptz NOT NULL
 );
 CREATE TABLE saly.ventas_discovery_catalogo (source_id text PRIMARY KEY);
