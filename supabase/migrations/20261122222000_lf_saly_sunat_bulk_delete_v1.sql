@@ -44,9 +44,9 @@ FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
 -- This is not a run-control API: an independent governed operation must
 -- transition the historical RUN and disable its writer BEFORE purging.
 CREATE FUNCTION saly.ventas_sunat_purge_guard_v1(p_run_ref text)
-RETURNS void LANGUAGE plpgsql SECURITY INVOKER
+RETURNS integer LANGUAGE plpgsql SECURITY INVOKER
 SET search_path=pg_catalog,saly,public AS $guard$
-DECLARE v_run_status text; v_op_status text; v_lease timestamptz; v_enabled jsonb;
+DECLARE v_run_status text; v_op_status text; v_lease timestamptz; v_config jsonb;
 BEGIN
  IF p_run_ref IS DISTINCT FROM 'EXEC-SALY-SUNAT-PILOT-20261122-001'
  THEN RAISE EXCEPTION 'SUNAT_PURGE_RUN_SCOPE'; END IF;
@@ -62,14 +62,17 @@ BEGIN
     OR (v_lease IS NOT NULL AND v_lease>now())
  THEN RAISE EXCEPTION 'SUNAT_PURGE_RUN_NOT_SAFELY_STOPPED'; END IF;
 
- SELECT config_value::jsonb->'enabled' INTO v_enabled
+ SELECT config_value::jsonb INTO v_config
  FROM public.lf_global_config WHERE scope='SALY_DISCOVERY'
  AND config_key='SUNAT_POLICY_V1' AND value_status='REAL'
  ORDER BY valid_from DESC LIMIT 1;
- IF NOT FOUND OR v_enabled IS DISTINCT FROM 'false'::jsonb
+ IF NOT FOUND OR v_config->'enabled' IS DISTINCT FROM 'false'::jsonb
  THEN RAISE EXCEPTION 'SUNAT_PURGE_SOURCE_NOT_DISABLED'; END IF;
+ IF coalesce(v_config->>'max_rows','') !~ '^[1-9][0-9]{0,6}$'
+ THEN RAISE EXCEPTION 'SUNAT_PURGE_POLICY_BATCH_LIMIT'; END IF;
  IF EXISTS(SELECT 1 FROM saly.ventas_unidades_operativas)
  THEN RAISE EXCEPTION 'SUNAT_PURGE_DEPENDENT_UNITS'; END IF;
+ RETURN (v_config->>'max_rows')::integer;
 END $guard$;
 
 -- One-time snapshot of candidate ids (one JSON scan). Do not recalculate
@@ -77,10 +80,10 @@ END $guard$;
 CREATE FUNCTION saly.ventas_sunat_purge_prepare_v1(p_run_ref text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER
 SET search_path=pg_catalog,saly,public AS $prepare$
-DECLARE v_inserted integer; v_pending bigint; v_total bigint;
+DECLARE v_inserted integer; v_pending bigint; v_total bigint; v_limit integer;
 BEGIN
  PERFORM pg_advisory_xact_lock(hashtextextended('SALY:PE-SUNAT-RUC:SEQUENTIAL',0));
- PERFORM saly.ventas_sunat_purge_guard_v1(p_run_ref);
+ v_limit:=saly.ventas_sunat_purge_guard_v1(p_run_ref);
  IF EXISTS(SELECT 1 FROM saly.ventas_sunat_purge_queue_v1
            WHERE run_ref=p_run_ref)
  THEN
@@ -97,7 +100,7 @@ BEGIN
  GET DIAGNOSTICS v_inserted=ROW_COUNT;
  -- The historical manifest and source hashes are unchanged intentionally.
  RETURN jsonb_build_object('result','PREPARED','candidates',v_inserted,
-   'limit_per_call',1000,'run_ref',p_run_ref);
+   'limit_per_call',v_limit,'run_ref',p_run_ref);
 END $prepare$;
 
 -- Each call is one bounded physical DELETE + atomic provenance update.
@@ -107,12 +110,13 @@ CREATE FUNCTION saly.ventas_sunat_purge_step_v1(
 RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER
 SET search_path=pg_catalog,saly,public AS $step$
 DECLARE v_target integer; v_deleted integer; v_marked integer;
-        v_remaining bigint; v_staged bigint;
+        v_remaining bigint; v_staged bigint; v_limit integer;
 BEGIN
- IF p_max_rows IS NULL OR p_max_rows<1 OR p_max_rows>1000
+ IF p_max_rows IS NULL OR p_max_rows<1
  THEN RAISE EXCEPTION 'SUNAT_PURGE_BATCH_LIMIT'; END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('SALY:PE-SUNAT-RUC:SEQUENTIAL',0));
- PERFORM saly.ventas_sunat_purge_guard_v1(p_run_ref);
+ v_limit:=saly.ventas_sunat_purge_guard_v1(p_run_ref);
+ IF p_max_rows>v_limit THEN RAISE EXCEPTION 'SUNAT_PURGE_BATCH_LIMIT'; END IF;
  IF NOT EXISTS(SELECT 1 FROM saly.ventas_sunat_purge_queue_v1
                WHERE run_ref=p_run_ref)
  THEN RAISE EXCEPTION 'SUNAT_PURGE_NOT_PREPARED'; END IF;
@@ -160,5 +164,5 @@ FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
 COMMENT ON TABLE saly.ventas_sunat_purge_queue_v1 IS
 'Physical-delete reconciliation ledger for the specific historical SUNAT run; no original JSON. Never repurpose as the commercial lead table.';
 COMMENT ON FUNCTION saly.ventas_sunat_purge_step_v1(text,integer) IS
-'Privileged governed operator only. 1000 UUIDs max per transaction. Requires RUN HOLD, terminal operation, disabled SUNAT source, no dependent units. Always read back before another chunk.';
+'Privileged governed operator only. At most SUNAT_POLICY_V1.max_rows UUIDs per transaction. Requires RUN HOLD, terminal operation, disabled SUNAT source, no dependent units. Always read back before another chunk.';
 COMMIT;
