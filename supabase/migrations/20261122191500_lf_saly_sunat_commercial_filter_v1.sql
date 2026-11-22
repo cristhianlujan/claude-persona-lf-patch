@@ -21,8 +21,16 @@ BEGIN
  OR to_regclass('saly.ventas_discovery_ingestas') IS NULL
  OR NOT EXISTS (SELECT 1 FROM saly.ventas_discovery_catalogo
                 WHERE source_id='PE-SUNAT-RUC')
+ OR EXISTS (SELECT 1 FROM public.lf_global_config
+            WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1')
  THEN RAISE EXCEPTION 'SALY_SUNAT_FILTER_PRESTATE_DRIFT'; END IF;
 END $pre$;
+
+-- Owner-approved commercial threshold. Exactly one source-of-truth value.
+INSERT INTO public.lf_global_config
+(scope,config_key,config_value,value_type,value_status,description,valid_from)
+VALUES ('SALY_DISCOVERY','SUNAT_COMMERCIAL_MIN_WORKERS_V1','50','INTEGER','REAL',
+        'Minimum SUNAT employee count for SALY B2B admission; 2026-11-22 Cristhian approval',now());
 
 -- The raw ingestion remains exact, audit-safe and replay-safe.
 -- Fail closed on nulls, unknown statuses, disagreement or non-HABIDO condition.
@@ -42,7 +50,7 @@ SELECT h.id AS hallazgo_id,
        s.condicion_reducida,
        CASE
          WHEN s.nrotrab IS NULL THEN 'EXCLUIDA_SIN_DATO_EMPLEADOS'
-         WHEN s.nrotrab < 50 THEN 'EXCLUIDA_MENOS_50_EMPLEADOS'
+         WHEN s.nrotrab < threshold.min_workers THEN 'EXCLUIDA_MENOS_50_EMPLEADOS'
          WHEN upper(btrim(coalesce(s.estado_mensual,''))) IS DISTINCT FROM 'ACTIVO'
            OR upper(btrim(coalesce(s.estado_reducido,''))) IS DISTINCT FROM 'ACTIVO'
            THEN 'EXCLUIDA_ESTADO'
@@ -62,6 +70,14 @@ CROSS JOIN LATERAL (
          h.captura_empresarial #>> '{capture,observations,monthly,raw,Condicion}' AS condicion_mensual,
          h.captura_empresarial #>> '{capture,observations,reduced,raw,condicion}' AS condicion_reducida
 ) s
+CROSS JOIN (
+ SELECT config_value::integer AS min_workers
+ FROM public.lf_global_config
+ WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'
+   AND value_type='INTEGER' AND value_status='REAL'
+   AND config_value ~ '^[1-9][0-9]{0,7}$' AND valid_from<=now()
+ ORDER BY valid_from DESC LIMIT 1
+) threshold
 WHERE i.source_id='PE-SUNAT-RUC';
 
 -- Only this projection is the SALY commercial entry point.
@@ -75,13 +91,18 @@ WHERE clasificacion_comercial='ELEGIBLE';
 REVOKE ALL ON saly.ventas_sunat_elegibilidad_v1,saly.ventas_sunat_comercial_v1
 FROM PUBLIC,anon,authenticated,service_role;
 COMMENT ON VIEW saly.ventas_sunat_elegibilidad_v1 IS
-'Internal SUNAT provenance-backed eligibility classification. NroTrab >= 50 required; null, invalid or less than 50 fail closed. Both official sources must say ACTIVO and HABIDO. Raw unchanged.';
+'Internal SUNAT provenance-backed eligibility classification. NroTrab must meet SALY_DISCOVERY/SUNAT_COMMERCIAL_MIN_WORKERS_V1; null and invalid fail closed. Both sources ACTIVO and HABIDO; raw unchanged.';
 COMMENT ON VIEW saly.ventas_sunat_comercial_v1 IS
-'Internal derived commercial-only SUNAT selection: at least 50 workers and ACTIVO + HABIDO in both sources. Dynamic over loaded/future raw batches; requires explicit consumer binding. No public grants.';
+'Internal commercial-only SUNAT selection using governed minimum workers config and ACTIVO/HABIDO dual-source. Explicit consumer binding required; no public grants.';
 
 DO $post$
-DECLARE v_raw bigint; v_class bigint; v_eligible bigint; v_comercial bigint;
+DECLARE v_raw bigint; v_class bigint; v_eligible bigint; v_comercial bigint; v_threshold integer;
 BEGIN
+ SELECT config_value::integer INTO STRICT v_threshold FROM public.lf_global_config
+ WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'
+   AND value_type='INTEGER' AND value_status='REAL'
+ ORDER BY valid_from DESC LIMIT 1;
+ IF v_threshold<1 THEN RAISE EXCEPTION 'SALY_SUNAT_THRESHOLD_INVALID'; END IF;
  IF (SELECT count(*) FROM pg_views
      WHERE schemaname='saly' AND viewname IN
         ('ventas_sunat_elegibilidad_v1','ventas_sunat_comercial_v1'))<>2
@@ -97,7 +118,7 @@ BEGIN
  SELECT count(*) INTO v_comercial FROM saly.ventas_sunat_comercial_v1;
  IF v_raw<>v_class OR v_eligible<>v_comercial OR
  EXISTS (SELECT 1 FROM saly.ventas_sunat_comercial_v1
-         WHERE nrotrab IS NULL OR nrotrab < 50
+         WHERE nrotrab IS NULL OR nrotrab < v_threshold
             OR upper(btrim(coalesce(estado_mensual,'')))<>'ACTIVO'
             OR upper(btrim(coalesce(estado_reducido,'')))<>'ACTIVO'
             OR upper(btrim(coalesce(condicion_mensual,'')))<>'HABIDO'
