@@ -59,7 +59,7 @@
       "writer_ref": "supabase/migrations/20261121224500_lf_saly_ventas_sunat_writer_core_v1.sql",
       "sequence": {
         "version": "1.7",
-        "state": "PINNED_PLAN_INTEGRATED_NOT_VERIFIED_NOT_RUNTIME",
+        "state": "PINNED_PLAN_FIXTURES_PASS_REAL_QA_PENDING_NOT_RUNTIME",
         "steps": [
           {
             "code": "12.01.1",
@@ -172,7 +172,7 @@
               "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py",
               "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py"
             ],
-            "status": "PINNED_PLAN_INTEGRATED_FIXTURES_AND_REAL_QA_PENDING",
+            "status": "PINNED_PLAN_INTEGRATED_FIXTURES_PASS_REAL_QA_PENDING",
             "gate": "Externa a READ_ONLY; derechos, autorización, consulta válida y readback. No modificar captura v1.",
             "external": true
           },
@@ -220,7 +220,8 @@
       "rights_review_ref": "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md",
       "batch_plan_ref": "skills/ai_sales_discovery/adapters/sunat_batch_plan_v1.py",
       "batch_plan_test_ref": "skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py",
-      "pinned_plan_probe_ref": "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py"
+      "pinned_plan_probe_ref": "skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py",
+      "pinned_plan_fixture_evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44980351563/job/137079287411"
     },
     {
       "source_id": "SUNARP",
