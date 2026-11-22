@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.3
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.4
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -64,14 +64,14 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 
 | Subpaso | Función | Estado técnico |
 |---|---|---|
-| 12.01.1 | Admisión y transporte | PINNED_QA_TRANSPORT_LOCAL_PASS_RIGHTS_PENDING |
-| 12.01.2 | Integridad ZIP y esquema | DUAL_ZIP_LOCAL_FIXTURES_PASS |
-| 12.01.3 | Lectura y selección | DUAL_PROJECTION_LOCAL_FIXTURES_PASS |
-| 12.01.4 | Cruce por RUC | DUAL_JOIN_LOCAL_FIXTURES_PASS |
-| 12.01.5 | Proyección empresarial y lotes | DUAL_BATCH_HASH_LOCAL_FIXTURES_PASS |
+| 12.01.1 | Admisión y transporte | PINNED_QA_REAL_DOWNLOAD_PASS_RIGHTS_PENDING |
+| 12.01.2 | Integridad ZIP y esquema | PINNED_DUAL_ARCHIVE_QA_PASS |
+| 12.01.3 | Lectura y selección | PINNED_DUAL_PROJECTION_QA_PASS |
+| 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
+| 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
 | 12.01.7 | Persistencia gobernada | WRITER_DEPLOYED_DISABLED |
-| 12.01.8 | Reconciliación y cierre | QA_BASELINE_COMPARATOR_LOCAL_PASS_REAL_RUN_PENDING |
+| 12.01.8 | Reconciliación y cierre | QA_AGGREGATE_RECONCILIATION_PASS_DB_READBACK_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
 
@@ -90,3 +90,7 @@ Prueba local exacta: `python3 skills/ai_sales_discovery/tests/test_sunat_dual_st
 `adapters/sunat_candidate_run_v1.py#run_candidate_qa` conecta `acquire` al lector/cruce v1.2. Solo acepta `PINNED_QA_ONLY`, manifiesto con ambas URL oficiales y hashes de ZIP/cabecera, referencia de evidencia, ámbito y cuotas explícitas. Acota tiempo global y por etapa, limpia temporales incluso al fallar y bloquea ante mutación de archivos o discrepancia de cuatro conteos frente a evidencia precedente. El solicitante debe aportar manifiesto revisado; este QA no autentica derechos ni reemplaza `source_admission_v1` o política efectiva de negocio. No permite persistencia, runtime, scoring ni contacto. La prueba real usa la evidencia agregada de #4583: 478657 coincidencias, 13519921 filas mensual, 478659 seleccionadas y 18542615 filas reducido; si el reducido cambia, se bloquea por SHA, no se relaja el control. Comparación agregada, no readback fila a fila ni de BD.
 
 Pruebas locales: 4/4 `test_sunat_candidate_run_v1.py` con transporte HTTP simulado y ZIP sintéticos, 4/4 regresión `test_sunat_dual_stream_v1.py`. Blobs probados: runner `78b1baffaf60b749578ce428ca705aa46ea584df`, test `995c163ac1dc7cecbdab7e160a458a5373d506fc`. El workflow existente incorpora regresión y un job QA real de una sola corrida, activado por el título del merge `SUNAT flujo integrado v1.3`; no implica éxito hasta leer su log. Pendientes: resultado real, derechos y admisión efectiva, rama histórica y persistencia gobernada. Sin alta de fuente ni cambios a Supabase.
+
+## Lote v1.4 — evidencia real del QA integral
+
+La corrida de #4594 (merge `678d21ed253ec7212050321f2dda71866abdbd0c`, Actions 44967399123/job 137039421071) terminó exitosa. El recibo real se conserva sin filas empresariales en `tests/evidence/sunat_integrated_qa_20261121.json`. Ambos hashes coinciden con la evidencia previa; los cuatro conteos coinciden: 13519921 filas mensual, 478659 seleccionadas, 18542615 filas reducido y 478657 cruces válidos. Dos claves reducidas en cuarentena, 479 lotes, hash agregado `b18e50b01672327a2225f88246e9580e4a50b11af5b3ec92fc05f5b217b67652`. Cada descarga requirió un intento. Cierre de QA candidato por conciliación agregada; no confundir con una relectura independiente por RUC ni una ingesta en BD. Antigüedad no solicitada en la corrida. Derechos pendientes de verificar, fuente deshabilitada, escritor externo sin permiso de persistencia. Sin activación, scoring ni contacto. El siguiente lote es resolver admisión y derechos efectivos sin omitir el gate de autorización.
