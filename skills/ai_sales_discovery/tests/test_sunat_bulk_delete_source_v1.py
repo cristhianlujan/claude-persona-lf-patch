@@ -27,7 +27,7 @@ class TestBulkDeleteSource(unittest.TestCase):
         self.assertIn("v_op_status IS NULL",self.sql)
 
     def test_disabled_writer_required(self):
-        self.assertIn("v_enabled IS DISTINCT FROM 'false'::jsonb",self.sql)
+        self.assertIn("v_config->'enabled' IS DISTINCT FROM 'false'::jsonb",self.sql)
 
     def test_guard_dependent_units(self):
         self.assertIn("IF EXISTS(SELECT 1 FROM saly.ventas_unidades_operativas)",self.sql)
@@ -37,7 +37,8 @@ class TestBulkDeleteSource(unittest.TestCase):
         self.assertNotIn("DELETE FROM saly.ventas_hallazgos",before)
 
     def test_limit_before_delete(self):
-        self.assertIn("p_max_rows>1000",self.sql)
+        self.assertIn("p_max_rows>v_limit",self.sql)
+        self.assertIn("v_config->>'max_rows'",self.sql)
         self.assertIn("ORDER BY hallazgo_id LIMIT p_max_rows FOR UPDATE",self.sql)
 
     def test_physical_delete_limited_to_hallazgos(self):
