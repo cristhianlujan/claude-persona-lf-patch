@@ -1,4 +1,4 @@
-# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.6
+# SKILL_AI_SALES_DISCOVERY — candidato técnico aislado v1.7
 
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO. Dominio de descubrimiento comercial (U07), independiente de perfiles y Router. No crea un RUN comercial. No registra ni activa esta skill en runtime. No duplica ni modifica ACT-0052, la skill canónica de captura de artículos web LF.
 
@@ -70,8 +70,8 @@ La fuente de catálogo es `PE-SUNAT-RUC` (`SALY-U07-S12-C01`, paso 12.01). `cont
 | 12.01.4 | Cruce por RUC | PINNED_DUAL_JOIN_QA_PASS |
 | 12.01.5 | Proyección empresarial y lotes | PINNED_BATCH_RECEIPT_QA_PASS |
 | 12.01.6 | Antigüedad mínima observada | OPTIONAL_COMPONENT_NOT_WIRED |
-| 12.01.7 | Persistencia gobernada | BATCH_PLAN_JOIN_FIXTURES_PASS_GOVERNED_CALLER_PENDING |
-| 12.01.8 | Reconciliación y cierre | QA_AGGREGATE_RECONCILIATION_PASS_DB_READBACK_PENDING |
+| 12.01.7 | Persistencia gobernada | PINNED_PLAN_INTEGRATED_FIXTURES_PASS_REAL_QA_PENDING |
+| 12.01.8 | Reconciliación y cierre | QA_AGGREGATE_PASS_MANIFEST_VERIFICATION_PENDING |
 
 Flujo candidato: admisión/descarga → integridad/esquema → lectura/proyección de origen → cruce y proyección empresarial (`joined_batches` llama internamente a `company` y `batches`) → antigüedad separada si se solicita → cierre READ_ONLY. La persistencia es una rama externa gobernada desde 12.01.5, independiente de antigüedad. No se promete orquestación automática: faltan los lectores dual-source de streams con política, el caller integrado y readback. El cierre de ingesta exige reconciliar filas, lotes y hashes con una lectura independiente.
 
@@ -104,3 +104,7 @@ La evaluación documental y la preparación del escritor avanzan juntas; solo la
 `adapters/sunat_batch_plan_v1.py#plan_verified_batches` consume los bytes canónicos del `joined_batches` existente y un recibo QA previo confiable. Revalida proyección con `company`, RUC 20 ordenado sin duplicados, territorio Lima/Ica, fuentes exactas, cuotas inyectadas, conteos y hash terminal; devuelve solo metadatos por lote, sin RUC ni nombres, clave determinista por fuente/par de ZIP/alcance/ordinal, cantidad, bytes, SHA256 y referencia de consulta. Prueba de 10/10 métodos locales incluyendo integración directa con join real sobre fixtures y captura alterada con hash recalculado. Blobs exactos: planner `2edd032f98c156c85ba90600dffcc544967c3cc1`, test `ec21da31f9e48dd677b8ee48ebc18682e77225d3`, proyector `caba5f2cd9266feb9e7e585e662de50a6ce672a4`, join `7d3d5f9e0bc774707506355f41abd930c5dfdf8e`. No hay caller integrado desde descarga ZIP ni entrega de bytes al escritor todavía; no declarar 479 manifiestos generados con archivos reales. No autentica recibos ni autoriza escrituras. Regresión añadida al workflow existente.
 
 Frente jurídico: Resolución 003820-2023-JUS/TTAIP-PRIMERA SALA, p. 2, recoge respuesta oficial SUNAT que orienta a descargar y procesar el reducido con un manejador de BD, en aplicación de transparencia. Art. 71 y glosario DS 029-2021-PCM, marco general de reutilización; DS 098-2025-PCM art. 3 no modifica art. 71. Portal PNDA de PCM incluye análisis de oportunidades comerciales. Ver adenda del contrato. Publicidad y procesamiento confirmados; no equiparar a licencia específica. Se mantiene bloqueo por derechos pendientes. No enviar consulta externa ni activar la fuente.
+
+## Lote v1.7 — integración de manifiesto en flujo fijado
+
+`run_candidate_qa` admite opcionalmente `batch_plan={expected,limits}` con recibo anterior, coteja fuente/snapshot/ámbito/baseline y cuotas antes de descargar. `candidate_receipt` entrega el stream acotado al planificador existente, conserva la barrera EOF/CRC, el orden, los hashes y la conciliación de todas las estadísticas; devuelve solo manifiestos con metadatos al concluir y elimina temporales. No hay entrega al escritor ni permiso operativo. Nuevos casos: flujo completo reproducible, digest divergente, snapshot distinto, estadísticas discrepantes y cuotas incompatibles. Pruebas ejecutadas en GitHub Actions, job 137079287411, head 1dc2d61372e82ba23f59729200fa007dd623bfeb: lector 4/4, runner 9/9, planificador 10/10, escritor PG17 positivo/negativo/rollback/concurrencia PASS. Link: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/44980351563/job/137079287411 . Código de adapters y pruebas sin cambios después de este run. El workflow retorna a push/main y workflow_dispatch: se retira el trigger pull_request agregado porque PASE exige entrada ordinaria única (job 137079287570). No se modifica PASE ni las pruebas. Los probes reales siguen siendo push a main y título exacto. `tests/sunat_pinned_plan_real_probe.py` usa el recibo v1.4 fijado; emite únicamente 478657/479 esperados, hash de manifiesto agregado, métricas y frontera sin escritura si todos los controles pasan. Si cambia el ZIP reducido, bloquea por hash; no reemplazar por versión no revisada. Derechos y caller gobernado pendientes.
