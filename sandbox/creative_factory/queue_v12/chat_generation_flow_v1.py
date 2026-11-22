@@ -68,9 +68,14 @@ def select_pending_v1(*, order_code: str, allowed_item_codes: Sequence[str],
         require(type(item_id) is int and item_id > 0 and item_id not in seen,
                 "SALY_CHAT_SELECTION_DUPLICATED_OR_INVALID")
         seen.add(item_id)
-        # Persisted image may exist while item says PENDIENTE: reconcile, don't regenerate.
-        if r.get("item_state") == "PENDIENTE" and r.get("existing_artifact_linked") is True:
-            raise ChatFlowRejected("SALY_CHAT_STALE_PENDING_WITH_ARTIFACT")
+        # Pending SQL is not enough: the chat may already contain the image.
+        # The trusted inventory adapter MUST check previous chat-file evidence
+        # before selecting; an unknown result is NOT equivalent to "no artifact".
+        if r.get("item_state") == "PENDIENTE":
+            require(type(r.get("existing_artifact_linked")) is bool,
+                    "SALY_CHAT_ARTIFACT_INVENTORY_READBACK_REQUIRED")
+            if r["existing_artifact_linked"]:
+                raise ChatFlowRejected("SALY_CHAT_STALE_PENDING_WITH_ARTIFACT")
         if r.get("item_state") != "PENDIENTE":
             continue
         require(r.get("order_state") in ("PLANIFICADO", "EN_PROCESO"),
