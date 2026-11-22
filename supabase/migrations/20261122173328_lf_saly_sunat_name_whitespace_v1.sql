@@ -150,8 +150,7 @@ BEGIN
  CASE WHEN x#>'{capture,derived,discrepancies}' @> '{"ubigeo":true}' THEN 'DISCREPANCIA' ELSE 'PENDIENTE' END,x
  FROM jsonb_array_elements(payload) x;
  RETURN result;
-END $function$
-
+END $function$;
 
 DO $post$
 BEGIN
