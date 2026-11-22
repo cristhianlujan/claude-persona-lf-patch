@@ -9,12 +9,6 @@ on:
       - 'supabase/migrations/*_lf_saly_ventas_pte_writer_core_v1.sql'
       - 'supabase/migrations/*_lf_saly_ventas_pte_snapshot_unique_v1.sql'
       - 'skills/ai_sales_discovery/**'
-  pull_request:
-    paths:
-      - 'skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py'
-      - 'skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py'
-      - 'skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py'
-      - '.github/workflows/saly-pte-resguardos-pg17.yml'
   workflow_dispatch:
 permissions:
   contents: read
