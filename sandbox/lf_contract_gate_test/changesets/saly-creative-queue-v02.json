@@ -23,6 +23,8 @@
     "sandbox/creative_factory/queue_v04/unit_results.txt": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v05/001_saly_native_render_wire_candidate.sql": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v05/test_pg17_candidate.sql": "RUNTIME_TESTING",
-    "sandbox/creative_factory/queue_v05/test_pg17.sh": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v05/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v05/README.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v05/pg17_results.txt": "RUNTIME_TESTING"
   }
 }
