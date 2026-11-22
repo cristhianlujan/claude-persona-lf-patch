@@ -174,7 +174,29 @@ def main():
                         or psql(name, snapshot).stdout != prior):
                     raise RuntimeError("PILOT_OUTER_ROLLBACK_FAILED")
                 print("PILOT_OUTER_ROLLBACK_PASS exact baseline, 10/10", flush=True)
+            if "_lf_nucleo_m1_candidatas_v1.sql" in path.name:
+                psql(name, (HERE / "m1_source_fixture_pg17.sql").read_text())
+                snapshot = """SELECT jsonb_build_object(
+                  'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.v_reglas_compat_v1 r),
+                  'core',(SELECT jsonb_agg(to_jsonb(n) ORDER BY codigo) FROM lf_ops.nucleo_reglas n),
+                  'versions',(SELECT jsonb_agg(to_jsonb(v) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones v),
+                  'facts',(SELECT jsonb_agg(to_jsonb(h) ORDER BY codigo) FROM lf_ops.nucleo_hechos h),
+                  'vocab',(SELECT jsonb_agg(to_jsonb(v) ORDER BY familia,hecho) FROM lf_ops.nucleo_familia_vocabulario v),
+                  'eval',(SELECT jsonb_agg(to_jsonb(e) ORDER BY id) FROM lf_ops.nucleo_evaluaciones e));"""
+                prior = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("M1_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if trial.returncode or trial.stderr.count("M1_PROPOSE ") != 6 or trial.stderr.count("M1_EVALUATE ") != 6 or "M1_NEGATIVE_FIXED_COMMISSION" not in trial.stderr or "M1_PASS 6/6" not in trial.stderr or psql(name, snapshot).stdout != prior:
+                    raise RuntimeError("M1_OUTER_ROLLBACK_FAILED")
+                print("M1_OUTER_ROLLBACK_PASS exact baseline", flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_m1_candidatas_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr, flush=True)
+                if "M1_PASS 6/6" not in replay.stderr:
+                    raise RuntimeError("M1_REPLAY_FAILED")
             if "_lf_nucleo_piloto_publicacion_2_v1.sql" in path.name:
                 print(replay.stdout + replay.stderr, flush=True)
                 if replay.stderr.count("PILOT_PASS ") != 10 or replay.stderr.count("PILOT_PUBLISHED ") != 2:
