@@ -1,0 +1,10 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-sequential-v25",
+  "paths": {
+    "supabase/migrations/20261122173000_lf_saly_sunat_sequential_authorization_v1.sql": "MIGRATION",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "skills/ai_sales_discovery/tests/sunat_remaining_sequential_v25.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_remaining_sequential_v25.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-sequential-v25.json": "CHANGESET_MANIFEST"
+  }
+}
