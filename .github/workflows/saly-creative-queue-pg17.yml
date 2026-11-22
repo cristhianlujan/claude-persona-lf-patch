@@ -1,10 +1,6 @@
 name: SALY creative queue - PostgreSQL 17 isolated
 
 on:
-  pull_request:
-    paths:
-      - 'sandbox/creative_factory/queue_v02/**'
-      - '.github/workflows/saly-creative-queue-pg17.yml'
   workflow_dispatch:
 
 permissions:
