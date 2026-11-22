@@ -251,7 +251,7 @@ VALUES
  ('REVIEW','PLANIFICADO','{"rendering_authority":true,"review_only":true,"queue_mode":"SERIAL_V1"}'::jsonb,'2026-11-01'),
  ('CANCELLED','CANCELADO','{"rendering_authority":true,"queue_mode":"SERIAL_V1"}'::jsonb,'2026-10-01');
 INSERT INTO saly.creative_order_items (order_id,code,ordinal,status)
-SELECT id,'HOME',1,'LISTO' FROM saly.creative_orders;
+SELECT id,'HOME',1,'LISTO' FROM saly.creative_orders WHERE status<>'CANCELADO';
 INSERT INTO saly.creative_order_items (order_id,code,ordinal,status)
 SELECT id,'ADELANTO',2,'LISTO' FROM saly.creative_orders WHERE code='ACTIVE_A';
 INSERT INTO saly.creative_item_dependencies(order_id,item_id,depends_on_item_id)
