@@ -29,7 +29,7 @@ INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES
 ('IDEMPOTENCY_CONCURRENCY','peticion_idempotente_equivalente','CURADO'),
 ('IDEMPOTENCY_CONCURRENCY','edad_clave_idempotencia','CURADO') ON CONFLICT DO NOTHING;
 DO $m1$
-DECLARE p jsonb; g jsonb; e jsonb; before_legacy jsonb; before_other jsonb; before_versions jsonb; before_history jsonb; before_effective jsonb; n int := 0; bad jsonb;
+DECLARE p jsonb; g jsonb; v_eval jsonb; before_legacy jsonb; before_other jsonb; before_versions jsonb; before_history jsonb; before_effective jsonb; n int := 0; bad jsonb;
 BEGIN
  SELECT jsonb_agg(to_jsonb(r) ORDER BY id) INTO before_legacy FROM lf_ops.v_reglas_compat_v1 r;
  SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) INTO before_other FROM lf_ops.nucleo_reglas r;
@@ -40,10 +40,10 @@ BEGIN
    g:=lf_ops.nucleo_regla_proponer_v1(p,true);
    RAISE NOTICE 'M1_PROPOSE % %',p->>'codigo',g;
    IF g->>'resultado' IS DISTINCT FROM 'CANDIDATA' THEN RAISE EXCEPTION 'M1_PROPOSAL_REJECTED % %',p->>'codigo',g; END IF;
-   e:=lf_ops.nucleo_regla_evaluar_v1(p->>'codigo',true);
-   RAISE NOTICE 'M1_EVALUATE % %',p->>'codigo',e;
-   IF e->'componentes'->>'profundidad' IS DISTINCT FROM '1.000' AND (e->'componentes'->>'profundidad')::numeric IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'M1_DEPTH % %',p->>'codigo',e; END IF;
-   IF e->>'decision' IS DISTINCT FROM 'BLOQUEADA' OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(e->'motivos') t WHERE t->>'dimension'='JUICIO') THEN RAISE EXCEPTION 'M1_EXPECTED_UNJUDGED % %',p->>'codigo',e; END IF;
+   v_eval:=lf_ops.nucleo_regla_evaluar_v1(p->>'codigo',true);
+   RAISE NOTICE 'M1_EVALUATE % %',p->>'codigo',v_eval;
+   IF v_eval->'componentes'->>'profundidad' IS DISTINCT FROM '1.000' AND (v_eval->'componentes'->>'profundidad')::numeric IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'M1_DEPTH % %',p->>'codigo',v_eval; END IF;
+   IF v_eval->>'decision' IS DISTINCT FROM 'BLOQUEADA' OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(v_eval->'motivos') t WHERE t->>'dimension'='JUICIO') THEN RAISE EXCEPTION 'M1_EXPECTED_UNJUDGED % %',p->>'codigo',v_eval; END IF;
    IF NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_reglas r JOIN lf_ops.nucleo_regla_versiones v ON v.regla=r.codigo WHERE r.codigo=p->>'codigo' AND r.estado='CANDIDATA' AND r.regla_legacy_id IS NULL AND v.estado='CANDIDATA' AND v.publicada_desde IS NULL AND v.exigible_desde IS NULL) THEN RAISE EXCEPTION 'M1_STATE %',p->>'codigo'; END IF;
    n:=n+1;
  END LOOP;
