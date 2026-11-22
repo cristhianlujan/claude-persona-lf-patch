@@ -1,0 +1,9 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-capture-diagnostic-v26",
+  "paths": {
+    "skills/ai_sales_discovery/tests/sunat_remaining_sequential_v25.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_remaining_sequential_v25.py": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-capture-diagnostic-v26.json": "CHANGESET_MANIFEST"
+  }
+}
