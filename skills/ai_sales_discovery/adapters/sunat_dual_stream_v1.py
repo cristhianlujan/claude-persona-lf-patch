@@ -129,7 +129,7 @@ def reduced_rows(source, limits, deadline, cohort, stats):
         it.close()
 
 
-def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, batch_plan=None):
+def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, batch_plan=None, _staging=None):
     """No publication or external I/O. Caller supplies reviewed, pinned local archives."""
     require(isinstance(limits,dict) and all(type(limits.get(k)) is int and limits[k]>0 for k in LIMITS), 'LIMITS')
     require(isinstance(departments,(list,tuple)) and departments and
@@ -139,6 +139,7 @@ def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, 
             ('url','path','zip_sha256','header_sha256')), 'SOURCE')
     require(re.fullmatch(r'https://www\.datosabiertos\.gob\.pe/sites/default/files/PadronRUC_[0-9]{6}\.zip',monthly['url'])
             and reduced['url']=='https://www2.sunat.gob.pe/padron_reducido_ruc.zip', 'SOURCE_URL')
+    require(_staging is None or batch_plan is not None, 'STAGE_PLAN_REQUIRED')
     deadline = time.monotonic()+limits['seconds']
     cohort = set()
     stats = dict(monthly_rows=0,monthly_selected=0,reduced_rows=0,reduced_selected=0,reduced_quarantined=0)
@@ -160,6 +161,8 @@ def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, 
             def bounded_stream():
                 for payload in stream:
                     require(time.monotonic() < deadline, 'DEADLINE')
+                    if _staging is not None:
+                        _staging.append(payload)
                     yield payload
             plan = plan_verified_batches(bounded_stream(), expected=batch_plan['expected'],
                     monthly_url=monthly['url'], scope_key='LIMA_ICA', limits=batch_plan['limits'])
