@@ -1,0 +1,27 @@
+name: SALY Native V08 archive bridge isolated candidate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'sandbox/creative_factory/queue_v08/**'
+      - '.github/workflows/saly-creative-v08-archive-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  archive-candidate-tests:
+    name: Native archive V08 exact-byte tests and behavior mutants
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen wire source and real archiver on synthetic PNG
+        run: |
+          python -m unittest -v \
+            sandbox.creative_factory.queue_v08.test_native_archive_bridge_v1 \
+            sandbox.creative_factory.queue_v08.test_mutations_v1
