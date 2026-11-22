@@ -3,7 +3,7 @@
 -- Raw monthly/reduced observations, hashes, manifest, counts and PTE are preserved.
 BEGIN;
 SET LOCAL lock_timeout = '4s';
-SET LOCAL statement_timeout = '50s';
+-- Statement timeout is owned by the canonical Train/session policy.
 
 DO $pre$
 DECLARE v_train int;
