@@ -9,6 +9,7 @@ import zipfile
 from pathlib import Path
 from sunat_company_v1 import MONTHLY_FIELDS, REDUCED_FIELDS, require
 from sunat_join_batches_v1 import joined_batches
+from sunat_batch_plan_v1 import plan_verified_batches
 
 LIMITS = ('zip_bytes','unpacked_bytes','line_bytes','archive_rows','ratio','cohort_keys',
           'spool_pages','max_source_rows','max_batch_rows','max_batch_bytes','seconds')
@@ -128,7 +129,7 @@ def reduced_rows(source, limits, deadline, cohort, stats):
         it.close()
 
 
-def candidate_receipt(monthly, reduced, *, departments, limits, directory=None):
+def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, batch_plan=None):
     """No publication or external I/O. Caller supplies reviewed, pinned local archives."""
     require(isinstance(limits,dict) and all(type(limits.get(k)) is int and limits[k]>0 for k in LIMITS), 'LIMITS')
     require(isinstance(departments,(list,tuple)) and departments and
@@ -146,19 +147,33 @@ def candidate_receipt(monthly, reduced, *, departments, limits, directory=None):
     stream = joined_batches(ms,rs,**{k:limits[k] for k in ('spool_pages','max_source_rows','max_batch_rows','max_batch_bytes')},directory=directory)
     count = batches = 0
     digest = hashlib.sha256()
+    plan = None
     try:
         import json
-        for payload in stream:
-            require(time.monotonic() < deadline, 'DEADLINE')
-            count += len(json.loads(payload))
-            batches += 1
-            digest.update(hashlib.sha256(payload).digest())
+        if batch_plan is None:
+            for payload in stream:
+                require(time.monotonic() < deadline, 'DEADLINE')
+                count += len(json.loads(payload))
+                batches += 1
+                digest.update(hashlib.sha256(payload).digest())
+        else:
+            def bounded_stream():
+                for payload in stream:
+                    require(time.monotonic() < deadline, 'DEADLINE')
+                    yield payload
+            plan = plan_verified_batches(bounded_stream(), expected=batch_plan['expected'],
+                    monthly_url=monthly['url'], scope_key='LIMA_ICA', limits=batch_plan['limits'])
+            count, batches = plan['rows'], plan['batches']
         require(time.monotonic() < deadline, 'DEADLINE')
     finally:
         stream.close()
         ms.close()
         rs.close()
-    return dict(state='CANDIDATE_READ_ONLY', source_id='PE-SUNAT-RUC', rows=count, batches=batches,
-                batch_digest_sha256=digest.hexdigest(), source_sha256=[monthly['zip_sha256'],reduced['zip_sha256']],
+    receipt = dict(state='CANDIDATE_READ_ONLY', source_id='PE-SUNAT-RUC', rows=count, batches=batches,
+                batch_digest_sha256=plan['batch_digest_sha256'] if plan is not None else digest.hexdigest(), source_sha256=[monthly['zip_sha256'],reduced['zip_sha256']],
                 stats=stats, scope=list(departments), history_requested=False, db_write_confirmed=False,
                 runtime_authorized=False, rights_verified=False)
+    if plan is not None:
+        require(stats == batch_plan['expected']['stats'], 'PLAN_STATS_MISMATCH')
+        receipt['batch_plan'] = plan
+    return receipt
