@@ -1,0 +1,19 @@
+name: SALY Native V09 candidate unit tests TEMPORARY
+on:
+  push:
+    branches:
+      - saly-creative-queue-pg17-pilot-20261122
+jobs:
+  v08_v09_python:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: V08 native archive + V09 dispatch fence
+        run: python -m unittest -v sandbox.creative_factory.queue_v08.test_native_archive_bridge_v1 sandbox.creative_factory.queue_v09.test_dispatch_fence_v1
+      - name: V08 mutation controls
+        run: python sandbox/creative_factory/queue_v08/test_mutations_v1.py
