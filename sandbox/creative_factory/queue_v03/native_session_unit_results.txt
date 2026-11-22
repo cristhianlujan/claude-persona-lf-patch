@@ -1,0 +1,19 @@
+SALY · Native current-session candidate tests (local; 2026-11-22)
+Command: cd sandbox/creative_factory/queue_v03 && python3 -m unittest -v test_native_session_bridge_v1.py
+Result: 21/21 PASS, Ran 21 tests in 0.001s (local Python).
+
+Positive contract cases (synthetic): GPT_NATIVE, CLAUDE_NATIVE, chat-local binary hash.
+Negative contract cases: unknown executor mode, provider mismatch, remote/API fallback,
+new session, forged provider attestation, review authority promotion, fabricated RUN
+at PLAN_ONLY, incorrect wire hash, malformed Base64, item drift, duplicate JSON keys,
+wrong plan scope, missing predispatch archive, false sent archive, prompt-hash drift,
+review-only render activation, local image hash drift and cross-RUN false binding.
+
+B25: each negative asserts its dedicated exact error code.
+B30: returning a PLAN cursor never calls model API, never writes DB, never grants
+render authorization or DONE. The image bytes in the test are synthetic.
+
+Limit: Results use test doubles/fixtures. They DO NOT prove any native model was
+invoked, any image was generated, any host message was delivered, or any SQL
+migration is available in production. Full live-readback failed with Supabase
+RO connection timeouts in this lot.
