@@ -1,0 +1,13 @@
+{
+  "solution_ref": "saly-creative-chat-terminal-home7-item10-20261123",
+  "paths": {
+    "supabase/migrations/20261123230000_lf_saly_creative_chat_terminal_home7_item10_v1.sql": "MIGRATION",
+    "sandbox/creative_factory/order7_terminal_20261123/source_manifest_v1.json": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/judge_receipt_v1.json": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/prestate_negative_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/poststate_negative_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/test_pg17.sh": "RUNTIME_TESTING",
+    ".github/workflows/saly-home7-terminal-pg17.yml": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-chat-terminal-home7-item10-20261123.json": "CHANGESET_MANIFEST"
+  }
+}
