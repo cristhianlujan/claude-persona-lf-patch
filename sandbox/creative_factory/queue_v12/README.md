@@ -13,7 +13,7 @@
 
 ## ¿Por qué no hay cambio en Supabase?
 
-El schema vigente utiliza `PENDIENTE`, `LISTO`, `PRODUCIENDO`, `EN_QA`, `APROBADO`; `TERMINADO` es la etiqueta de salida, no un nuevo estado SQL. `APROBADO` es terminal e inmutable por `creative_item_guard_l1`; `COMPLETADO` es terminal para el pedido.
+**Compatibilidad actualizada con main/PR #4629:** el esquema productivo ahora SÍ contiene `TERMINADO` para ítems y pedidos históricos, sin equipararlo a `APROBADO`. El candidato V12 usa `APROBADO`/`COMPLETADO` internamente y etiqueta `TERMINADO` en el chat: esa equivalencia conversacional **NO prueba un estado SQL TERMINADO**. No habilitar el runtime V12 ni afirmar equivalencia de estados hasta implementar/verificar la transición posterior con evidencia Native real. Los cinco ítems históricos 5–9 permanecen inmutables.
 
 El candidato SQL V12 se probó en **PostgreSQL 17 aislado**: `001_pending_only_begin_candidate.sql` cambia estados mediante la cola V02 y `002_qa_comment_completion_candidate.sql` guarda el comentario en `creative_order_items.qa_receipt`, valida QA independiente y solo permite el cierre `TERMINADO` después de la puerta V06. Aún faltan los puertos **reales** de inicio, respuesta image_gen, fuente de QA y cierre verificable en este chat, la autoridad de activación de la skill, los cuatro valores `CREATIVE_FACTORY` y la migración gobernada. Los dos últimos no pueden inventarse. Las restricciones V02/V06 existentes permanecen: no se permite forjar un recibo para declarar DONE.
 
