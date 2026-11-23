@@ -47,7 +47,7 @@ INSERT INTO public.lf_operation_execution
 (execution_id,operation_code,target_type,target_code,status,lease_expires_at)
 VALUES
  ('TEST-TRAIN-FILTER','ACTUALIZACION_DB_LF','MIGRATION',
-  'supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1','IN_PROGRESS',NULL),
+  'supabase/migrations/20261123000336_lf_saly_sunat_commercial_filter_v1','IN_PROGRESS',NULL),
  ('TEST-TRAIN-PURGE','ACTUALIZACION_DB_LF','MIGRATION',
   'supabase/migrations/20261122222000_lf_saly_sunat_bulk_delete_v1','IN_PROGRESS',NULL),
  ('EXEC-SALY-SUNAT-PILOT-20261122-001','INGESTA_EMPRESARIAL_SALY','DISCOVERY_SOURCE',
