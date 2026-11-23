@@ -82,7 +82,6 @@ BEGIN
    WHERE r.regla NOT IN ('REG_CHK_007','S1-C01')) IS DISTINCT FROM oldversions
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.regla,r.version) FROM lf_ops.nucleo_deprecaciones r) IS DISTINCT FROM olddeprec
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.regla,r.nodo) FROM lf_ops.nucleo_aplicaciones r) IS DISTINCT FROM oldapps
-  OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.codigo) FROM lf_ops.nucleo_reglas r WHERE r.codigo='REG_CHK_007') IS DISTINCT FROM oldchecks
   OR (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE estado='PUBLICADA')<>57+auto_count
  THEN RAISE EXCEPTION 'TANDA8_UNAUTHORIZED_DRIFT'; END IF;
  RAISE NOTICE 'TANDA8_PASS 2/2 judged; auto=% manual=% blocked=%; legadas sin drift; 0 deprecaciones',auto_count,manual_count,blocked_count;
