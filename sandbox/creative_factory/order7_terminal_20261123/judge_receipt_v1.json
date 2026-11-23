@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": "099ceff11450f1a3aa78df8ddfbf98473395e14e687185b0918b73877d7ccc42",
+  "judge_kind": "DETERMINISTIC_TECHNICAL_SEPARATE_PROCESS",
+  "judge_receipt_sha256": "4e9aa593ad1df3423ff9d876c67e654a859abe7fe5d50d9b5f7c07667fd208dd",
+  "observations": ["CTA_COLOR_NOT_MATCHING_APPROVED_TOKEN","SALY_PLUS_COPY_CHANGED","BENEFICIOS_COPY_CHANGED","PRODUCTION_QA_NOT_VERIFIED"],
+  "production_approved": false,
+  "qa_comment": "La imagen HOME fue generada y mostrada en chat. PNG íntegro 1024x1536; logo oficial compuesto. CTA difiere de #008200; textos Saly Plus y Beneficios no coinciden. TERMINADO solo significa imagen entregada, no QA semántico aprobado ni producción autorizada.",
+  "run_verified": false,
+  "semantic_independence_proven": false,
+  "semantic_verdict": "NOT_INDEPENDENTLY_EVALUATED",
+  "source_manifest_input_sha256": "8bf66605590cb127e41bf5da6fc45c120adf62867aa926530335ea249fcdc8c6",
+  "technical_verdict": "PASS_TECHNICAL_WITH_OBSERVATIONS",
+  "terminal_semantics": "IMAGE_DELIVERED_AND_QA_COMMENTED_NOT_APPROVED"
+}
