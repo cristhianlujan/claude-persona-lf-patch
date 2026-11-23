@@ -1,0 +1,52 @@
+name: SALY SUNAT purge exact PG17 temporary
+on:
+  push:
+    branches: [saly/sunat-purge-clean-20261123]
+    paths:
+      - '.github/workflows/saly-sunat-purge-pg17-temp.yml'
+      - 'supabase/tests/saly_sunat_bulk_delete_v1_pg17_rollback.sql'
+      - 'supabase/migrations/20261122222000_lf_saly_sunat_bulk_delete_v1.sql'
+permissions:
+  contents: read
+jobs:
+  pg17-exact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_sunat_delete_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_sunat_delete_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_sunat_delete_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup local PG17 and static tests
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = saly_sunat_delete_test
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SHOW server_version_num;' | cut -c1-2)" = 17
+          python3 -m py_compile skills/ai_sales_discovery/tests/test_sunat_bulk_delete_source_v1.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_bulk_delete_source_v1.py
+      - name: Test exact deployed commercial view + bounded physical DELETE + ROLLBACK
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_sunat_bulk_delete_v1_pg17_rollback.sql 2>&1 | tee /tmp/saly_delete_v1.log
+          grep -q PASS_INSTALL_AND_VIEW_5_ROWS_1_ELIGIBLE_4_REJECTED /tmp/saly_delete_v1.log
+          grep -q PASS_DYNAMIC_COMMERCIAL_THRESHOLD_50_TO_51_TO_50 /tmp/saly_delete_v1.log
+          grep -q PASS_PREPARE_ONCE_4_REJECTED /tmp/saly_delete_v1.log
+          grep -q PASS_BULK_DELETE_4_REJECTED_1_ELIGIBLE_MANIFEST_INTACT /tmp/saly_delete_v1.log
+          grep -q PASS_PG17_DISPOSABLE_ROLLBACK_5_ORIGINAL_ROWS /tmp/saly_delete_v1.log
+          echo PASS_REAL_POST_FREEZE_SOURCE_PURGE_PG17
