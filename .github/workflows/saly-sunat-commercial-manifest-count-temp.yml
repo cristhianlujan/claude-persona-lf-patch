@@ -38,7 +38,8 @@ jobs:
                   snapshot_sha256=exact['source_sha256'],
                   original_batches=exact['batches'],
                   historical_found_batches=136,
-                  existing_rucs=set(), # count-only; final writer needs DB-verified roster
+                  existing_rucs=set(), # read-only manifest QA; no RUC literals
+                  existing_ruc_hashes=set(["d712517527cc9237","51ec372b6056c267","09df4e58faae0fe6","25a793f8f0c0c4e9","b472aa4f25250dfe","baf310fe812e570a","513dc0c15887b109","999ab41e58c1e60f","cb74170c0fd9eb6d","0b6b9915fe9f1df5","479e3650dc813c72","9a7973e375fe9a47","7fe348e7f0482347","003311e74ec5aa3e","2164d464fd745f33","fe24c9fca6d661ad","66f2068f2fba917e","3e75935f762659e6","bf34669ba3e1299e","15b2d90801c3bd11","df697c25fd7a5d6b","9018e969447726a4","1da639bfdccbe9af","6ea49754aedcc10d","806b1124cf53b631","8d0b2640ee38c298","f1191e9ab919e6aa","107ed4e615193d13"]),
                   min_workers=50,
                   max_rows=1000,max_bytes=4*1024*1024,max_batches=479,
                   max_total_bytes=479*4*1024*1024,
