@@ -1,0 +1,26 @@
+test_cross_claim (test_activation_preflight_v1.ContractTests.test_cross_claim) ... ok
+test_cross_run (test_activation_preflight_v1.ContractTests.test_cross_run) ... ok
+test_cross_surface (test_activation_preflight_v1.ContractTests.test_cross_surface) ... ok
+test_fictitious_value (test_activation_preflight_v1.ContractTests.test_fictitious_value) ... ok
+test_future_value_ignored (test_activation_preflight_v1.ContractTests.test_future_value_ignored) ... ok
+test_host_readback_failure (test_activation_preflight_v1.ContractTests.test_host_readback_failure) ... ok
+test_invalid_hash (test_activation_preflight_v1.ContractTests.test_invalid_hash) ... ok
+test_latest_invalid_overrides_old (test_activation_preflight_v1.ContractTests.test_latest_invalid_overrides_old) ... ok
+test_missing_all_live_configs (test_activation_preflight_v1.ContractTests.test_missing_all_live_configs) ... ok
+test_missing_host_adapter (test_activation_preflight_v1.ContractTests.test_missing_host_adapter) ... ok
+test_missing_native_provider (test_activation_preflight_v1.ContractTests.test_missing_native_provider) ... ok
+test_missing_value (test_activation_preflight_v1.ContractTests.test_missing_value) ... ok
+test_non_positive (test_activation_preflight_v1.ContractTests.test_non_positive) ... ok
+test_not_delivered (test_activation_preflight_v1.ContractTests.test_not_delivered) ... ok
+test_positive_synthetic_only (test_activation_preflight_v1.ContractTests.test_positive_synthetic_only) ... ok
+test_provider_cross_run (test_activation_preflight_v1.ContractTests.test_provider_cross_run) ... ok
+test_unverified_provider (test_activation_preflight_v1.ContractTests.test_unverified_provider) ... ok
+test_valid_fixture_not_runtime_authority (test_activation_preflight_v1.ContractTests.test_valid_fixture_not_runtime_authority) ... ok
+test_wrong_image_bytes (test_activation_preflight_v1.ContractTests.test_wrong_image_bytes) ... ok
+test_wrong_message (test_activation_preflight_v1.ContractTests.test_wrong_message) ... ok
+test_wrong_type (test_activation_preflight_v1.ContractTests.test_wrong_type) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.001s
+
+OK

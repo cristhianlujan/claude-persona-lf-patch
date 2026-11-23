@@ -1,0 +1,48 @@
+SALY V06 native delivery security — isolated PG17.6 evidence
+Date: 2026-11-22; PR #4616; source tested SHA:
+  ba32558887c04266a5405d96319916758493536d
+Workflow/CI: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45069397026
+Job: 137352751192, "SQL V06 isolated PG17 and behavior mutations"
+Observed job result: completed SUCCESS
+Infrastructure: disposable postgres:17.6, database saly_queue_test, localhost
+and no production credentials. Functional tests use BEGIN/ROLLBACK.
+
+Observed log readback:
+  39 lines "PASS " from legacy V02 script
+  PG17 BINDING AND REAL TRIGGERS TESTS PASS
+  PASS V06: 8 exact negative guards, positive SIMULATED owner verification,
+    order not prematurely closed
+  PASS B6/B12/B25/B30: old textual receipt cannot DONE, STAGED not VERIFIED
+  MUTANT_KILLED_BY_EXPECTED_ASSERTION:release_verified_gate:OLD_TEXT_LEDGER_ENABLED_DONE
+  MUTANT_KILLED_BY_EXPECTED_ASSERTION:text_receipt_gate:UNATTESTED_TEXT_ACCEPTED
+  RESTORE_CANDIDATE_AFTER_MUTANTS
+  PASS_NATIVE_DELIVERY_PG17_BASELINE_AND_ATTESTATION_ROLLBACK
+
+Negative rejection codes (8):
+  1 CREATIVE_QUEUE_UNATTESTED_TEXT_RECEIPT_FORBIDDEN
+  2 CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED (legacy text table)
+  3 CREATIVE_NATIVE_DELIVERY_BINDING_NOT_READY (cross claim)
+  4 CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED (staged evidence)
+  5 CREATIVE_NATIVE_DELIVERY_SELF_VERIFICATION
+  6 CREATIVE_NATIVE_DELIVERY_PROMOTION_INVALID
+  7 CREATIVE_NATIVE_DELIVERY_IMMUTABLE (UPDATE)
+  8 CREATIVE_NATIVE_DELIVERY_IMMUTABLE (DELETE)
+
+B25/B28 mutants fail with targeted assertion, NOT SQL parser/postcheck:
+  release_verified_gate: deletion of entire native evidence EXISTS predicate
+  text_receipt_gate: removal of unconditional legacy text rejection
+  Original SQL restored and negative test rerun after mutating.
+
+Initial CI failure (HEAD 10562db...): V06 SQL duplicated partial release
+source due JS string replacement interpreting "$'" as post-match reference.
+Code corrected using a replacement callback and exact V02 source at HEAD
+ba325588...; follow-up PG17 V06 success. Failure is not concealed.
+
+Limitations:
+  - Fixture V02 is an isolated, selectively transcribed approximation of the
+    current Supabase schema, not full production schema.
+  - Verified status is simulated by test database OWNER with fabricated
+    host_evidence_ref; authentic GPT Native/Claude Native host proof NOT tested.
+  - No image generation, recipient display, actual bytes download, production
+    RUN, worker access, QA visualization, grant or DB deployment.
+  - Temporary CI workflow must be removed and PASE rechecked before final.

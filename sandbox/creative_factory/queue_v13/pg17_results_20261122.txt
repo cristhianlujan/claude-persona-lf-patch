@@ -1,0 +1,28 @@
+SALY CREATIVE_FACTORY initial policy seed — isolated PostgreSQL 17.6
+Run: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45092603714
+Tested branch HEAD SHA: 9826fa2c7424321be0434a5c53139b9420e99b12
+Job: 137425313421
+Conclusion: SUCCESS (2026-11-23T01:06:42Z)
+Target: disposable PostgreSQL service database saly_policy_test, HOST=127.0.0.1.
+No Supabase credential, no SQL write to SALY.
+
+PASS_POLICY_4_4_SQL_READBACK: QUEUE_MAX=1, MAX_ATTEMPTS=2,
+  QUEUE_TIMEOUT_SECONDS=900, LEASE_SECONDS=600.
+PASS_NEGATIVE:SALY_CREATIVE_POLICY_ALREADY_DEFINED (replay).
+PASS_NEGATIVE:SALY_CREATIVE_POLICY_READBACK_MISMATCH (mutation 600 -> 601).
+PASS_MUTATION_ROLLBACK (zero policy rows after failed migration).
+PASS_NEGATIVE:SALY_CREATIVE_POLICY_ACTIVE_RUN_BLOCK.
+PASS_NEGATIVE:SALY_CREATIVE_POLICY_SCHEMA_REQUIRED.
+PASS_CONCURRENT_SINGLE_WRITER: two real psql sessions, exactly one committed.
+PASS_SALY_CREATIVE_FACTORY_SEED_PG17.
+
+Script: sandbox/creative_factory/queue_v13/test_policy_pg17.sh
+Fixture: sandbox/creative_factory/queue_v13/fixture_policy_pg17.sql
+Migration: supabase/migrations/20261123020000_lf_saly_creative_factory_policy_seed_v1.sql
+Workflow for ephemeral CI: .github/workflows/zz_saly_creative_policy_pg17_temp.yml,
+to be removed from candidate branch after this evidence is committed.
+
+Scope of evidence: policy seed with a minimal isolated fixture reproducing
+real config schema and creative_execution_policy_v1 logic; NOT a full SALY
+database clone; NOT a Native generation, provider/host attestation, QA,
+runtime integration, Merge Train, or production deployment.
