@@ -1,0 +1,1003 @@
+{
+  "schema": "LF-M1-FIVE-REVISIONES-V2",
+  "fecha": "2026-11-23 10:50 America/Lima",
+  "fuentes": [
+    "LF_resguardos_construccion.md Drive",
+    "INPUT GOVERNANCE LF V1.4 Drive",
+    "docs/nucleo/LF_M1_JUEZ_SEMANTICO_V1_20261122.md",
+    "Supabase V1 hashes+EKB"
+  ],
+  "independencia": "juez V2 independiente no ejecutado",
+  "entries": [
+    {
+      "codigo": "M1-C01",
+      "hash_v1": "22770091e74a044db408f3ae19c2e56df9c4ea4140c2663d3fbe65e52a969a2c",
+      "motivo_revision": "Verificar unicidad y detalle real; selección sola era insuficiente",
+      "patch": {
+        "titulo": "Bloquear resumen incompleto o no único",
+        "descripcion": "En presentación del resumen checkout, BLOQUEAR su aceptación si falta UNA consolidación, faltan detalles por oferta/modalidad o la selección no coincide. Indicadores lógicos sin binding real de Paulo; no calcula comisiones ni precio final (M1-D01).",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m1_resumen_checkout_en_presentacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "m1_resumen_checkout_corresponde_seleccion"
+                },
+                "der": {
+                  "lit": false
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "m1_resumen_checkout_unico_verificado"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_resumen_checkout_detalle_por_oferta_modalidad_completo"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_resumen_checkout_en_presentacion": true,
+              "m1_resumen_checkout_corresponde_seleccion": true,
+              "m1_resumen_checkout_unico_verificado": false,
+              "m1_resumen_checkout_detalle_por_oferta_modalidad_completo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_resumen_checkout_en_presentacion": true,
+              "m1_resumen_checkout_corresponde_seleccion": true,
+              "m1_resumen_checkout_unico_verificado": true,
+              "m1_resumen_checkout_detalle_por_oferta_modalidad_completo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_resumen_checkout_en_presentacion": true,
+              "m1_resumen_checkout_corresponde_seleccion": false,
+              "m1_resumen_checkout_unico_verificado": true,
+              "m1_resumen_checkout_detalle_por_oferta_modalidad_completo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_resumen_checkout_en_presentacion": true,
+              "m1_resumen_checkout_corresponde_seleccion": true,
+              "m1_resumen_checkout_unico_verificado": true,
+              "m1_resumen_checkout_detalle_por_oferta_modalidad_completo": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_resumen_checkout_en_presentacion": false,
+              "m1_resumen_checkout_corresponde_seleccion": true,
+              "m1_resumen_checkout_unico_verificado": false,
+              "m1_resumen_checkout_detalle_por_oferta_modalidad_completo": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "nuevo_hechos": [
+        {
+          "codigo": "m1_resumen_checkout_unico_verificado",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C01; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_resumen_checkout_detalle_por_oferta_modalidad_completo",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C01; binding runtime Paulo pendiente."
+        }
+      ],
+      "mutante": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_resumen_checkout_en_presentacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_resumen_checkout_corresponde_seleccion"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      },
+      "caso_mutante": 0
+    },
+    {
+      "codigo": "M1-C02",
+      "hash_v1": "aaba453d9b1162695936026f05566e2f8e47c81ba5666440587674386574f203",
+      "motivo_revision": "La V1 no verificaba canal Mis operaciones, penalidad ni rechazo real; aviso/UI permanece residual",
+      "patch": {
+        "titulo": "Bloquear penalidad o rechazo de cancelación de recurrencia",
+        "descripcion": "Al cancelar recurrencia desde Mis operaciones, BLOQUEAR un resultado que aplique penalidad, rechace por anticipación o impida cancelación sin penalidad. Cancelar no liquida deuda ni genera carta. Aviso visible en checkout sigue residual UI (REG_CHK_CUO_006). Datos de origen, penalidad y resultado son hechos lógicos sin binding de Paulo; Yape cuotas sin decisión (M1-D02).",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_solicitud_cancelacion_recurrencia"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_cancelacion_desde_mis_operaciones"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "m1_cancelacion_recurrencia_permitida_sin_penalidad"
+                },
+                "der": {
+                  "lit": false
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "m1_cancelacion_penalidad_aplicada"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_cancelacion_rechazada_por_anticipacion"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_solicitud_cancelacion_recurrencia": true,
+              "m1_cancelacion_desde_mis_operaciones": true,
+              "m1_cancelacion_recurrencia_permitida_sin_penalidad": false,
+              "m1_cancelacion_penalidad_aplicada": false,
+              "m1_cancelacion_rechazada_por_anticipacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_solicitud_cancelacion_recurrencia": true,
+              "m1_cancelacion_desde_mis_operaciones": true,
+              "m1_cancelacion_recurrencia_permitida_sin_penalidad": true,
+              "m1_cancelacion_penalidad_aplicada": true,
+              "m1_cancelacion_rechazada_por_anticipacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_solicitud_cancelacion_recurrencia": true,
+              "m1_cancelacion_desde_mis_operaciones": true,
+              "m1_cancelacion_recurrencia_permitida_sin_penalidad": true,
+              "m1_cancelacion_penalidad_aplicada": false,
+              "m1_cancelacion_rechazada_por_anticipacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_solicitud_cancelacion_recurrencia": true,
+              "m1_cancelacion_desde_mis_operaciones": true,
+              "m1_cancelacion_recurrencia_permitida_sin_penalidad": true,
+              "m1_cancelacion_penalidad_aplicada": false,
+              "m1_cancelacion_rechazada_por_anticipacion": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_solicitud_cancelacion_recurrencia": false,
+              "m1_cancelacion_desde_mis_operaciones": true,
+              "m1_cancelacion_recurrencia_permitida_sin_penalidad": true,
+              "m1_cancelacion_penalidad_aplicada": true,
+              "m1_cancelacion_rechazada_por_anticipacion": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_solicitud_cancelacion_recurrencia": true,
+              "m1_cancelacion_desde_mis_operaciones": false,
+              "m1_cancelacion_recurrencia_permitida_sin_penalidad": true,
+              "m1_cancelacion_penalidad_aplicada": true,
+              "m1_cancelacion_rechazada_por_anticipacion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "nuevo_hechos": [
+        {
+          "codigo": "m1_cancelacion_desde_mis_operaciones",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C02; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_cancelacion_penalidad_aplicada",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C02; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_cancelacion_rechazada_por_anticipacion",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C02; binding runtime Paulo pendiente."
+        }
+      ],
+      "mutante": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_solicitud_cancelacion_recurrencia"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_cancelacion_recurrencia_permitida_sin_penalidad"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      },
+      "caso_mutante": 1
+    },
+    {
+      "codigo": "M1-C04",
+      "hash_v1": "77ba1d5f21d391798210fd3be4fc77c8dbc51945990bd99a602a53cb9233fe6a",
+      "motivo_revision": "Agregar evidencia de certificación y segregación como hechos, sin afirmar pruebas reales de proveedor",
+      "patch": {
+        "titulo": "Bloquear habilitación sin certificación sandbox y segregación acreditadas",
+        "descripcion": "Solo ante habilitación productiva checkout, BLOQUEAR si falta certificación sandbox Niubiz, evidencia verificable de pruebas, segregación de credenciales o evidencia verificable de separación. Los hechos son lógicos; no prueban proveedor real ni permiten producción. Evidencia sandbox, credenciales y binding de Paulo pendientes.",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m1_habilitacion_produccion_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "m1_sandbox_checkout_certificado"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "m1_evidencia_sandbox_niubiz_verificable"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "m1_credenciales_ambientes_separadas"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_separacion_credenciales_verificable"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_habilitacion_produccion_pago": true,
+              "m1_sandbox_checkout_certificado": false,
+              "m1_evidencia_sandbox_niubiz_verificable": true,
+              "m1_credenciales_ambientes_separadas": true,
+              "m1_separacion_credenciales_verificable": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_habilitacion_produccion_pago": true,
+              "m1_sandbox_checkout_certificado": true,
+              "m1_evidencia_sandbox_niubiz_verificable": false,
+              "m1_credenciales_ambientes_separadas": true,
+              "m1_separacion_credenciales_verificable": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_habilitacion_produccion_pago": true,
+              "m1_sandbox_checkout_certificado": true,
+              "m1_evidencia_sandbox_niubiz_verificable": true,
+              "m1_credenciales_ambientes_separadas": false,
+              "m1_separacion_credenciales_verificable": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_habilitacion_produccion_pago": true,
+              "m1_sandbox_checkout_certificado": true,
+              "m1_evidencia_sandbox_niubiz_verificable": true,
+              "m1_credenciales_ambientes_separadas": true,
+              "m1_separacion_credenciales_verificable": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_habilitacion_produccion_pago": true,
+              "m1_sandbox_checkout_certificado": true,
+              "m1_evidencia_sandbox_niubiz_verificable": true,
+              "m1_credenciales_ambientes_separadas": true,
+              "m1_separacion_credenciales_verificable": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_habilitacion_produccion_pago": false,
+              "m1_sandbox_checkout_certificado": false,
+              "m1_evidencia_sandbox_niubiz_verificable": true,
+              "m1_credenciales_ambientes_separadas": true,
+              "m1_separacion_credenciales_verificable": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "nuevo_hechos": [
+        {
+          "codigo": "m1_evidencia_sandbox_niubiz_verificable",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C04; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_separacion_credenciales_verificable",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C04; binding runtime Paulo pendiente."
+        }
+      ],
+      "mutante": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_habilitacion_produccion_pago"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m1_sandbox_checkout_certificado"
+            },
+            "der": {
+              "lit": false
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "m1_credenciales_ambientes_separadas"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        }
+      },
+      "caso_mutante": 1
+    },
+    {
+      "codigo": "M1-C05",
+      "hash_v1": "1888ea4bd0668fccb53883d8a1b30dbb45e51c488c0a8cb7e0307b3b736477d2",
+      "motivo_revision": "Detectar solo offline no era suficiente: deben comprobarse guardado y banner literal",
+      "patch": {
+        "titulo": "Exigir conservación verificada y banner offline literal",
+        "descripcion": "En captura inicial PANTALLA-1 y PANTALLA-2 sin conexión, EXIGIR datos guardados localmente con evidencia y el banner literal «Sin conexión. Tus datos están guardados.». Si falta guardado o aviso la obligación continúa incumplida; no afirmar guardado sin prueba. Hechos lógicos sin binding runtime Paulo. Offline checkout permanece bajo REG_TEC_007 V2.",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_onboarding_paso_captura_inicial"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "conexion_disponible"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_offline_guardado_local_verificado"
+              },
+              "der": {
+                "lit": false
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_offline_banner_literal_mostrado"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_onboarding_paso_captura_inicial": true,
+              "conexion_disponible": false,
+              "m1_offline_guardado_local_verificado": false,
+              "m1_offline_banner_literal_mostrado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_onboarding_paso_captura_inicial": true,
+              "conexion_disponible": false,
+              "m1_offline_guardado_local_verificado": true,
+              "m1_offline_banner_literal_mostrado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m1_onboarding_paso_captura_inicial": true,
+              "conexion_disponible": false,
+              "m1_offline_guardado_local_verificado": false,
+              "m1_offline_banner_literal_mostrado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_onboarding_paso_captura_inicial": true,
+              "conexion_disponible": false,
+              "m1_offline_guardado_local_verificado": true,
+              "m1_offline_banner_literal_mostrado": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_onboarding_paso_captura_inicial": true,
+              "conexion_disponible": true,
+              "m1_offline_guardado_local_verificado": false,
+              "m1_offline_banner_literal_mostrado": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_onboarding_paso_captura_inicial": false,
+              "conexion_disponible": false,
+              "m1_offline_guardado_local_verificado": false,
+              "m1_offline_banner_literal_mostrado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "nuevo_hechos": [
+        {
+          "codigo": "m1_offline_guardado_local_verificado",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C05; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_offline_banner_literal_mostrado",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C05; binding runtime Paulo pendiente."
+        }
+      ],
+      "mutante": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_onboarding_paso_captura_inicial"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "conexion_disponible"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      },
+      "caso_mutante": 3
+    },
+    {
+      "codigo": "M1-C06",
+      "hash_v1": "605040bce09aeb1875b5a1f23840ff75e11c22976c754906ea6dc3f75c90012d",
+      "motivo_revision": "Exigir match usuario/key/request_sha256/reserva y respuesta anterior; límite configurado no autoriza duplicado",
+      "patch": {
+        "titulo": "Reutilizar resultado idempotente solo si coinciden reserva y respuesta",
+        "descripcion": "Solo en submit inicial onboarding reintentado y equivalente, PERMITIR devolver respuesta previa dentro de AUTH/IDEMPOTENCY_KEY_VALIDITY_MINUTES cuando coinciden usuario, idempotency_key, request_sha256, operación reservada y resultado anterior recuperable. En límite exacto o superior no habilitar duplicado, reconciliar. UUID v4 y X-Idempotency-Key siguen exigidos pero su binding de Paulo está pendiente. No cambiar idempotencia checkout.",
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "y",
+              "izq": {
+                "op": "y",
+                "izq": {
+                  "op": "y",
+                  "izq": {
+                    "op": "y",
+                    "izq": {
+                      "op": "y",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "m1_operacion_submit_onboarding_inicial"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "clave_idempotencia_repetida"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "peticion_idempotente_equivalente"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "m1_onboarding_usuario_reserva_coincide"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "m1_onboarding_key_request_hash_coinciden"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "m1_onboarding_operacion_reservada_coincide"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_onboarding_respuesta_previa_recuperable"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "<",
+            "izq": {
+              "hecho": "edad_clave_idempotencia"
+            },
+            "der": {
+              "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": 0
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": 1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": false,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": false,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": false,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": true,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": false,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m1_operacion_submit_onboarding_inicial": false,
+              "clave_idempotencia_repetida": true,
+              "peticion_idempotente_equivalente": true,
+              "m1_onboarding_usuario_reserva_coincide": true,
+              "m1_onboarding_key_request_hash_coinciden": true,
+              "m1_onboarding_operacion_reservada_coincide": true,
+              "m1_onboarding_respuesta_previa_recuperable": true,
+              "edad_clave_idempotencia": {
+                "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "nuevo_hechos": [
+        {
+          "codigo": "m1_onboarding_usuario_reserva_coincide",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C06; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_onboarding_key_request_hash_coinciden",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C06; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_onboarding_operacion_reservada_coincide",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C06; binding runtime Paulo pendiente."
+        },
+        {
+          "codigo": "m1_onboarding_respuesta_previa_recuperable",
+          "tipo_dato": "boolean",
+          "unidad": "ninguna",
+          "tabla_ref": null,
+          "columna_ref": null,
+          "descripcion": "Hecho lógico M1-C06; binding runtime Paulo pendiente."
+        }
+      ],
+      "mutante": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m1_operacion_submit_onboarding_inicial"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "clave_idempotencia_repetida"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "peticion_idempotente_equivalente"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "<",
+          "izq": {
+            "hecho": "edad_clave_idempotencia"
+          },
+          "der": {
+            "param": "AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES"
+          }
+        }
+      },
+      "caso_mutante": 3
+    }
+  ]
+}

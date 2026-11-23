@@ -1,0 +1,640 @@
+{
+  "schema": "LF-M3-FIVE-CANDIDATES-V1",
+  "source_inventory": "sandbox/lf_contract_gate_test/nucleo_ci/m3_inventory_16_15groups.json",
+  "review": "No judge independent and no runtime bindings",
+  "facts": [
+    {
+      "codigo": "m3_intento_mostrar_referencia_operacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_referencia_reservada_o_emitida_backend",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_intento_marcar_deuda_settled_confirmed",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_importes_exigibles_acuerdo_confirmados",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_settlement_externo_contractualmente_requerido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_settlement_externo_confirmado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_intento_afirmar_carta_disponible",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_deuda_settled_confirmed_verificada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_carta_elegible_segun_estado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_intento_exponer_o_liquidar_pago_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_pago_atribuido_a_deuda_empresa_verificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_intento_declarar_conciliado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_evidencia_financiera_externa_verificada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_contraste_interno_externo_coincide",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_diferencia_financiera_detectada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    },
+    {
+      "codigo": "m3_diferencia_con_excepcion_trazable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo"
+    }
+  ],
+  "entries": [
+    {
+      "code": "M3-C01",
+      "group": "M3-G04",
+      "legacy": [
+        317
+      ],
+      "scope": "CLIENT_PAYMENTS",
+      "title": "Impedir referencias de operación no canónicas",
+      "desc": "Cuando se intenta mostrar una referencia de operación en checkout, confirmación o documento, BLOQUEAR la exposición de identificadores no emitidos ni reservados por backend/ledger canónico. Si aún no se intenta mostrar referencia en estado transitorio, no bloquear pantalla ni inventar otra referencia. La comprobación de procedencia es hecho lógico sin binding de Paulo.",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m3_intento_mostrar_referencia_operacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m3_referencia_reservada_o_emitida_backend"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      },
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_mostrar_referencia_operacion": true,
+            "m3_referencia_reservada_o_emitida_backend": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_mostrar_referencia_operacion": true,
+            "m3_referencia_reservada_o_emitida_backend": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_mostrar_referencia_operacion": false,
+            "m3_referencia_reservada_o_emitida_backend": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/317",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M3-C02",
+      "group": "M3-G05",
+      "legacy": [
+        533
+      ],
+      "scope": "BACKEND",
+      "title": "No declarar deuda liquidada sin confirmación financiera completa",
+      "desc": "Solo al intentar transicionar una deuda al estado SETTLED_CONFIRMED, BLOQUEAR si el pago que pretende justificarlo sigue PAYMENT_PENDING_CONFIRMATION o no está PAYMENT_CONFIRMED, si no constan todos los importes exigibles confirmados en el ledger del acuerdo aceptado, o si falta el settlement externo cuando sea contractual. El pago inicial y el paso de tiempo no acreditan liquidación; frontend nunca puede promover el estado. Hechos lógicos de ledger y contrato sin binding de Paulo.",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m3_intento_marcar_deuda_settled_confirmed"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "o",
+            "izq": {
+              "op": "!=",
+              "izq": {
+                "hecho": "estado_pago_normalizado"
+              },
+              "der": {
+                "lit": "PAYMENT_CONFIRMED"
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_importes_exigibles_acuerdo_confirmados"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_settlement_externo_contractualmente_requerido"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_settlement_externo_confirmado"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_marcar_deuda_settled_confirmed": true,
+            "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+            "m3_importes_exigibles_acuerdo_confirmados": true,
+            "m3_settlement_externo_contractualmente_requerido": false,
+            "m3_settlement_externo_confirmado": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_marcar_deuda_settled_confirmed": true,
+            "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+            "m3_importes_exigibles_acuerdo_confirmados": false,
+            "m3_settlement_externo_contractualmente_requerido": false,
+            "m3_settlement_externo_confirmado": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_marcar_deuda_settled_confirmed": true,
+            "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+            "m3_importes_exigibles_acuerdo_confirmados": true,
+            "m3_settlement_externo_contractualmente_requerido": true,
+            "m3_settlement_externo_confirmado": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_marcar_deuda_settled_confirmed": true,
+            "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+            "m3_importes_exigibles_acuerdo_confirmados": true,
+            "m3_settlement_externo_contractualmente_requerido": true,
+            "m3_settlement_externo_confirmado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_marcar_deuda_settled_confirmed": true,
+            "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+            "m3_importes_exigibles_acuerdo_confirmados": true,
+            "m3_settlement_externo_contractualmente_requerido": false,
+            "m3_settlement_externo_confirmado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_marcar_deuda_settled_confirmed": false,
+            "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+            "m3_importes_exigibles_acuerdo_confirmados": false,
+            "m3_settlement_externo_contractualmente_requerido": true,
+            "m3_settlement_externo_confirmado": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/533",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M3-C03",
+      "group": "M3-G06",
+      "legacy": [
+        548
+      ],
+      "scope": "CLIENT_HOME",
+      "title": "No presentar Carta de No Adeudo como disponible antes de liquidación",
+      "desc": "En HOME_001 o comunicación de una oferta, BLOQUEAR un intento de afirmar disponibilidad inmediata de Carta de No Adeudo sin deuda en SETTLED_CONFIRMED o sin gestión de carta elegible. El título visual «Carta de No Adeudo incluida» no autoriza promesa universal de emisión; su reconciliación de copy sigue pendiente de aprobación. Estos hechos lógicos no implementan emisión ni validan estado real sin Paulo.",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m3_intento_afirmar_carta_disponible"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m3_deuda_settled_confirmed_verificada"
+            },
+            "der": {
+              "lit": false
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "m3_carta_elegible_segun_estado"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_afirmar_carta_disponible": true,
+            "m3_deuda_settled_confirmed_verificada": false,
+            "m3_carta_elegible_segun_estado": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_afirmar_carta_disponible": true,
+            "m3_deuda_settled_confirmed_verificada": true,
+            "m3_carta_elegible_segun_estado": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_afirmar_carta_disponible": true,
+            "m3_deuda_settled_confirmed_verificada": true,
+            "m3_carta_elegible_segun_estado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_afirmar_carta_disponible": false,
+            "m3_deuda_settled_confirmed_verificada": false,
+            "m3_carta_elegible_segun_estado": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/548",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M3-C04",
+      "group": "M3-G10",
+      "legacy": [
+        604
+      ],
+      "scope": "B2B",
+      "title": "Solo presentar pago confirmado y atribuible por deuda/empresa",
+      "desc": "En Portal Empresa, BLOQUEAR presentar como pago confirmado o habilitar su asignación/liquidación cuando el outcome normalizado no sea PAYMENT_CONFIRMED o la atribución por oferta/deuda/empresa no esté validada server-side. PAYMENT_PENDING_CONFIRMATION no es terminal, nunca apto para liquidación. El frontend B2B no promueve estados ni calcula netos. Binding proveedor/empresa pendiente de Paulo, sin inventar ledger físico.",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m3_intento_exponer_o_liquidar_pago_b2b"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "!=",
+            "izq": {
+              "hecho": "estado_pago_normalizado"
+            },
+            "der": {
+              "lit": "PAYMENT_CONFIRMED"
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "m3_pago_atribuido_a_deuda_empresa_verificado"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_exponer_o_liquidar_pago_b2b": true,
+            "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+            "m3_pago_atribuido_a_deuda_empresa_verificado": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_exponer_o_liquidar_pago_b2b": true,
+            "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+            "m3_pago_atribuido_a_deuda_empresa_verificado": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_exponer_o_liquidar_pago_b2b": true,
+            "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+            "m3_pago_atribuido_a_deuda_empresa_verificado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_exponer_o_liquidar_pago_b2b": false,
+            "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+            "m3_pago_atribuido_a_deuda_empresa_verificado": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/604",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M3-C05",
+      "group": "M3-G13",
+      "legacy": [
+        607
+      ],
+      "scope": "BACKEND",
+      "title": "Conciliación exige contraste financiero independiente y diferencias trazables",
+      "desc": "Únicamente ante intento de declarar CONCILIADO un pago o liquidación, BLOQUEAR si no existe contraste verificable entre la fuente financiera interna y evidencia independiente del proveedor/banco/canal, si no coinciden los importes/operación verificados, o si una diferencia carece de excepción trazable. Una marca interna aislada no autoriza conciliación; outcomes ambiguos permanecen PAYMENT_PENDING_CONFIRMATION. Los hechos son lógicos y el adaptador de evidencia de Paulo sigue pendiente.",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m3_intento_declarar_conciliado"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_evidencia_financiera_externa_verificada"
+              },
+              "der": {
+                "lit": false
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_contraste_interno_externo_coincide"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_diferencia_financiera_detectada"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m3_diferencia_con_excepcion_trazable"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_declarar_conciliado": true,
+            "m3_evidencia_financiera_externa_verificada": false,
+            "m3_contraste_interno_externo_coincide": true,
+            "m3_diferencia_financiera_detectada": false,
+            "m3_diferencia_con_excepcion_trazable": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_declarar_conciliado": true,
+            "m3_evidencia_financiera_externa_verificada": true,
+            "m3_contraste_interno_externo_coincide": false,
+            "m3_diferencia_financiera_detectada": true,
+            "m3_diferencia_con_excepcion_trazable": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m3_intento_declarar_conciliado": true,
+            "m3_evidencia_financiera_externa_verificada": true,
+            "m3_contraste_interno_externo_coincide": true,
+            "m3_diferencia_financiera_detectada": true,
+            "m3_diferencia_con_excepcion_trazable": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_declarar_conciliado": true,
+            "m3_evidencia_financiera_externa_verificada": true,
+            "m3_contraste_interno_externo_coincide": true,
+            "m3_diferencia_financiera_detectada": false,
+            "m3_diferencia_con_excepcion_trazable": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m3_intento_declarar_conciliado": false,
+            "m3_evidencia_financiera_externa_verificada": false,
+            "m3_contraste_interno_externo_coincide": false,
+            "m3_diferencia_financiera_detectada": true,
+            "m3_diferencia_con_excepcion_trazable": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/607",
+        "solicitante": "migracion-nucleo"
+      }
+    }
+  ]
+}

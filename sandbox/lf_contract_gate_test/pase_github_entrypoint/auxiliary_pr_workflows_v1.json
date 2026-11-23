@@ -60,6 +60,11 @@
       "name": "profile-gpt-native-capture-regression.yml",
       "owner": "Profile GPT Native Capture",
       "reason": "Runs native-capture regression coverage for profile changes."
+    },
+    {
+      "name": "saly-ventas-vinculos-pg17.yml",
+      "owner": "SALY Ventas — Agrupación empresarial",
+      "reason": "Runs PostgreSQL 17 disposable positive/negative RLS tests for the SALY corporate-links candidate schema only."
     }
   ]
 }

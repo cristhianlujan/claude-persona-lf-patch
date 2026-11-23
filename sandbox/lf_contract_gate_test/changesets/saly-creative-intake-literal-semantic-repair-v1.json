@@ -1,0 +1,12 @@
+{
+  "solution_ref": "saly-creative-intake-literal-semantic-repair-v1",
+  "paths": {
+    "supabase/migrations/20261123105500_lf_saly_creative_intake_literal_semantic_repair_v1.sql": "MIGRATION",
+    "skills/creative_factory/SKILL.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/intake_repair_v01/fixture_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/intake_repair_v01/test_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/intake_repair_v01/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/intake_repair_v01/README.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-intake-literal-semantic-repair-v1.json": "CHANGESET_MANIFEST"
+  }
+}

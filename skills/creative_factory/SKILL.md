@@ -33,6 +33,34 @@ sin origen autenticado. Sin adaptador específico no se ejecutan LF ni negocios 
 
 **Entrada inicial:** texto literal del usuario + negocio + objetivo. La interpretación
 semántica pertenece a la skill, no al Router. Antes de compilar, separar el texto
+
+**Resguardo de ingreso SALY · corrección de PR #4648 (23/11/2026):**
+La instrucción sobre *cómo operar* (por ejemplo, «un solo pedido por
+pantalla; esperar a HOME TERMINADO») NO es el pedido gráfico. Guardarla solo
+en `operational_instruction`. `literal_request` debe contener únicamente la
+solicitud visual literal y verificable del usuario, asociada a su mensaje
+original; `compiled_prompt` es una elaboración de la skill y jamás equivale
+al mensaje literal. Un hash coincidente del prompt no valida su procedencia.
+
+Antes de registrar un pedido `APP_SCREEN_SINGLE` como `PLANIFICADO`, ejecutar
+QA semántico de origen **independiente de la interpretación**: identificar
+intención de imagen, mensaje fuente del usuario, pantalla objetivo, contenido
+y restricciones visuales. El veredicto queda unido a SHA-256 del literal y del
+prompt; si no existe mensaje fuente verificable o el texto es solo una regla
+operativa, mantenerlo como BORRADOR o en cuarentena de revisión, sin habilitar
+render. No fabricar un `source_message_ref`, no elevar revisión sintética a
+QA real, no reemplazar el original por una paráfrasis.
+
+Para los pedidos históricos `SALY_HOME_V015_SINGLE_20261123` y
+`SALY_ADELANTO_V015_SINGLE_20261123`, el seed anterior guardó literalmente
+una instrucción de secuencia en ambos. El saneamiento gobernado conserva
+esa instrucción en `operational_instruction` y marca
+`MISSING_VERIFIED_USER_VISUAL_REQUEST`; el compilado v0.15 permanece en
+revisión, sin atribución al usuario. La puerta de BD
+`creative_intake_semantic_gate_v1` rechaza su promoción hasta reconstruir
+la fuente literal con evidencia independiente. No modificar otros pedidos.
+
+Antes de compilar, separar el texto
 literal (no corregirlo ni resumirlo como si fuera original) de una propuesta con:
 - objetivo funcional y entregable solicitado;
 - pantalla/variante y qué debe conservarse;

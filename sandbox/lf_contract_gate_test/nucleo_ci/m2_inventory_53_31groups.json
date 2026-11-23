@@ -1,0 +1,347 @@
+{
+  "schema": "LF-M2-INVENTARIO-31-GRUPOS-53-LEGADAS-V1",
+  "cut": "2026-11-23 11:18 America/Lima",
+  "source": "lf_ops.nucleo_regla_familia JOIN lf_ops.v_reglas_compat_v1, 53, mezcla CATEGORIA/PALABRA_CLAVE, con pendiente_validacion; no presume membresía semántica definitiva",
+  "status_names": [
+    "MIGRAR",
+    "FALTA_MIGRAR",
+    "CUBIERTO_PARCIAL",
+    "DEPENDE_PAULO",
+    "REQUIERE_DECISION"
+  ],
+  "coverage_exact": 53,
+  "groups": [
+    {
+      "id": "M2-G01",
+      "obligacion": "Resolución de variante HOME sin oferta",
+      "legadas_ids": [
+        13,
+        141
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Cruce autoritativo de oferta y estado home; 13 CANDIDATO",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G02",
+      "obligacion": "Autoselección cuando solo hay modalidad",
+      "legadas_ids": [
+        142,
+        143,
+        149
+      ],
+      "estado": "MIGRAR",
+      "motivo": "Una sola modalidad disponible, sin confundir con una sola oferta",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G03",
+      "obligacion": "No autoselección cuando hay dos modalidades",
+      "legadas_ids": [
+        144,
+        150
+      ],
+      "estado": "MIGRAR",
+      "motivo": "La elección corresponde al usuario",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G04",
+      "obligacion": "Selección multi oferta independiente",
+      "legadas_ids": [
+        145,
+        153,
+        154
+      ],
+      "estado": "MIGRAR",
+      "motivo": "La selección puede ser parcial; modalidad por oferta no se arrastra",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G05",
+      "obligacion": "Identidad deuda, oferta y modalidad",
+      "legadas_ids": [
+        146,
+        147
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Definición semántica de entidades; requiere modelado específico sin condicional ficticio",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G06",
+      "obligacion": "No exhibir modalidades ausentes",
+      "legadas_ids": [
+        148
+      ],
+      "estado": "MIGRAR",
+      "motivo": "La disponibilidad es autoritativa de la oferta; vínculo runtime pendiente",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G07",
+      "obligacion": "Bloqueo checkout sin modalidad elegida",
+      "legadas_ids": [
+        152
+      ],
+      "estado": "MIGRAR",
+      "motivo": "Control acotado a intento de continuar checkout",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G08",
+      "obligacion": "Importe cuotas puede superar pago único",
+      "legadas_ids": [
+        151
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "No imponer orden de montos ni precio sin modelo de plan",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G09",
+      "obligacion": "Mostrar más planes solo si existen",
+      "legadas_ids": [
+        157
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "UI de opciones adicionales, requiere hechos de cantidad de planes disponibles",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G10",
+      "obligacion": "Ahorro y visualización no negativa",
+      "legadas_ids": [
+        162,
+        241,
+        248
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Cálculos y copy dependen de precios validados por backend; 162 tiene ejemplo con números en duro",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G11",
+      "obligacion": "Total a pagar hoy multi oferta",
+      "legadas_ids": [
+        165
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Componentes y primera cuota aprobados, sin fórmulas numéricas literales",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G12",
+      "obligacion": "Urgencia y ranking de ofertas",
+      "legadas_ids": [
+        170,
+        176
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "Método de prioridad, umbrales y fuente score no coherentes plenamente (176 CANDIDATO)",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G13",
+      "obligacion": "Estados visuales de cards",
+      "legadas_ids": [
+        171
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Estado vencido, seleccionado, sin selección; requiere vínculo de UI",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G14",
+      "obligacion": "Copy de ofertas no seleccionadas",
+      "legadas_ids": [
+        172
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Texto literal visible y disparador por selección incompleta",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G15",
+      "obligacion": "Caché de ofertas y expiración",
+      "legadas_ids": [
+        181
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "TTL y invalidación por expires_at; límites requieren configuración",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G16",
+      "obligacion": "Modal de planes conserva estado",
+      "legadas_ids": [
+        238
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Overlay sin navegación y recuperación exacta de selección",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G17",
+      "obligacion": "Plan Recomendado por ahorro y desempate",
+      "legadas_ids": [
+        240
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Orden y ahorro autoritativos, tie break primera cuota",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G18",
+      "obligacion": "Primera cuota destacada",
+      "legadas_ids": [
+        244
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Jerarquía visual y backend primera cuota",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G19",
+      "obligacion": "Precio final y quote autorizado",
+      "legadas_ids": [
+        246,
+        247,
+        253,
+        522
+      ],
+      "estado": "CUBIERTO_PARCIAL",
+      "motivo": "REG_CHK_002 núcleo VIGENTE para suma; quote VIGENTE legada 522 no migrada; pricing de Paulo",
+      "regla_nucleo": "REG_CHK_002 VIGENTE (parcial)"
+    },
+    {
+      "id": "M2-G20",
+      "obligacion": "Modal y desglose de precio",
+      "legadas_ids": [
+        250,
+        252,
+        254,
+        558
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "D01 fuente de comisiones y conflicto de tasas hardcodeadas; 250 CANDIDATO y 558 VIGENTE",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G21",
+      "obligacion": "CTA de pago del modal",
+      "legadas_ids": [
+        256
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Reentrada checkout seguro, no cobro directo; fuente de precio y quote",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G22",
+      "obligacion": "Fecha de débito antes de elegir plan",
+      "legadas_ids": [
+        259
+      ],
+      "estado": "MIGRAR",
+      "motivo": "Guard explícito de intentar continuar sin fecha elegida",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G23",
+      "obligacion": "Overlay transición checkout dinámico",
+      "legadas_ids": [
+        313
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Snapshot/quote y referencia canónica de operación; no inventar",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G24",
+      "obligacion": "Educación y contenido externo ajenos a oferta operativa",
+      "legadas_ids": [
+        359,
+        373,
+        375,
+        376,
+        550
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "Clasificación PALABRA_CLAVE pendiente; no trasladar a M2 sin revisión de familia",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G25",
+      "obligacion": "Texto Home no simula ofertas inexistentes",
+      "legadas_ids": [
+        382
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Copy aprobado y fuente matched, sin duplicar verdad en M2",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G26",
+      "obligacion": "Gestión recurrente y carta no automática",
+      "legadas_ids": [
+        527
+      ],
+      "estado": "CUBIERTO_PARCIAL",
+      "motivo": "M1-C02 V2 cubre parte de cancelación; terminación contractual pendiente Negocio/Legal",
+      "regla_nucleo": "M1-C02 V2 CANDIDATA (parcial)"
+    },
+    {
+      "id": "M2-G27",
+      "obligacion": "Beneficios en oferta Home",
+      "legadas_ids": [
+        598
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Backend configuración de campañas y stacking; no inferir oferta base",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G28",
+      "obligacion": "Identidad de plan, cuota cero y cronograma",
+      "legadas_ids": [
+        617
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "Regla CANDIDATO con detalles de negocio; vínculo plan/oferta y pagos pendientes Paulo",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G29",
+      "obligacion": "Simula Plus y modelos predictivos",
+      "legadas_ids": [
+        644,
+        645,
+        651
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "Candidatas fuera del flujo transaccional M2; atribución de familia pendiente",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G30",
+      "obligacion": "Negociación por bandas",
+      "legadas_ids": [
+        650
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "CANDIDATO: aceptación B2B y versión oferta requieren aprobación/autoridad y estados",
+      "regla_nucleo": null
+    },
+    {
+      "id": "M2-G31",
+      "obligacion": "Decisión comercial por segmento",
+      "legadas_ids": [
+        684
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "CANDIDATO: CON_OFERTA, SIN_OFERTA, PENDIENTE; fuente comercial y decisión dueño",
+      "regla_nucleo": null
+    }
+  ]
+}
