@@ -59,7 +59,7 @@ jobs:
                   print('COMMERCIAL_CANDIDATE_HASH64_LIST '+','.join(hashed_rucs),flush=True)
                   print('COMMERCIAL_CANDIDATE_PLAN_METADATA '+json.dumps(receipt['plan'],
                         sort_keys=True,separators=(',',':')),flush=True)
-                  assert receipt['scanned_remaining_rows']==receipt['excluded_by_commercial_policy']+receipt['rows']
+                  assert receipt['scanned_remaining_rows']==(receipt['excluded_by_commercial_policy']+receipt['skipped_already_registered']+receipt['rows'])
                   safe={k:receipt[k] for k in ('rows','batches','total_bytes','manifest_digest_sha256',
                     'scanned_remaining_rows','excluded_by_commercial_policy','skipped_historical_rows',
                     'original_batches','historical_found_batches')}
