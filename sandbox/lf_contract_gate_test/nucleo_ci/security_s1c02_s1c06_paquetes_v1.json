@@ -1,0 +1,583 @@
+{
+  "schema": "LF-SECURITY-S1C02-C06-CANDIDATAS-V1",
+  "origen": "lf_ops.reglas",
+  "estado": "CANDIDATA",
+  "juicio_independiente": "PENDIENTE_CLAUDE",
+  "reglas": [
+    {
+      "codigo": "S1-C02",
+      "legacy_id": 25,
+      "codigo_legado": "REG_SEG_007",
+      "legadas_propuesta": 1,
+      "legadas_cobertura_certificada": 0,
+      "descripcion": "BLOQUEAR solo el intento de consulta de datos del backend en contexto de validación cuando el formato del dato no fue validado. La condición exige los tres hechos lógicos agregados y no certifica protección contra inyección ni binding.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c02_intento_consulta"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c02_validacion_servidor"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s1c02_formato_no_validado"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": false,
+            "s1c02_validacion_servidor": false,
+            "s1c02_formato_no_validado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": false,
+            "s1c02_validacion_servidor": false,
+            "s1c02_formato_no_validado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": false,
+            "s1c02_validacion_servidor": true,
+            "s1c02_formato_no_validado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": false,
+            "s1c02_validacion_servidor": true,
+            "s1c02_formato_no_validado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": true,
+            "s1c02_validacion_servidor": false,
+            "s1c02_formato_no_validado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": true,
+            "s1c02_validacion_servidor": false,
+            "s1c02_formato_no_validado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": true,
+            "s1c02_validacion_servidor": true,
+            "s1c02_formato_no_validado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s1c02_intento_consulta": true,
+            "s1c02_validacion_servidor": true,
+            "s1c02_formato_no_validado": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "codigo": "S1-C03",
+      "legacy_id": 124,
+      "codigo_legado": "REG_ATQ_004",
+      "legadas_propuesta": 1,
+      "legadas_cobertura_certificada": 0,
+      "descripcion": "BLOQUEAR solo el intento de despachar OTP mediante el webhook n8n si la autenticación interna no es válida. Los tres hechos de la condición se verifican antes del despacho; no se acredita código HTTP ni binding.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c03_intento_despachar_otp"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c03_webhook_n8n_otp"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s1c03_autenticacion_interna_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": false,
+            "s1c03_webhook_n8n_otp": false,
+            "s1c03_autenticacion_interna_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": false,
+            "s1c03_webhook_n8n_otp": false,
+            "s1c03_autenticacion_interna_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": false,
+            "s1c03_webhook_n8n_otp": true,
+            "s1c03_autenticacion_interna_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": false,
+            "s1c03_webhook_n8n_otp": true,
+            "s1c03_autenticacion_interna_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": true,
+            "s1c03_webhook_n8n_otp": false,
+            "s1c03_autenticacion_interna_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": true,
+            "s1c03_webhook_n8n_otp": false,
+            "s1c03_autenticacion_interna_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": true,
+            "s1c03_webhook_n8n_otp": true,
+            "s1c03_autenticacion_interna_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s1c03_intento_despachar_otp": true,
+            "s1c03_webhook_n8n_otp": true,
+            "s1c03_autenticacion_interna_invalida": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "codigo": "S1-C04",
+      "legacy_id": 125,
+      "codigo_legado": "REG_ATQ_005",
+      "legadas_propuesta": 1,
+      "legadas_cobertura_certificada": 0,
+      "descripcion": "BLOQUEAR solo el intento de aceptar petición del webhook OTP cuando el resultado agregado de verificación de firma HMAC-SHA256 o su tiempo es inválido. El límite temporal se obtiene desde public.lf_global_config, AUTH/OTP_HMAC_TIMESTAMP_WINDOW_SECONDS. La condición requiere intento, contexto y violación; sin binding físico acreditado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c04_intento_aceptar_solicitud"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c04_webhook_otp_firmado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s1c04_verificacion_firma_o_tiempo_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": false,
+            "s1c04_webhook_otp_firmado": false,
+            "s1c04_verificacion_firma_o_tiempo_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": false,
+            "s1c04_webhook_otp_firmado": false,
+            "s1c04_verificacion_firma_o_tiempo_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": false,
+            "s1c04_webhook_otp_firmado": true,
+            "s1c04_verificacion_firma_o_tiempo_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": false,
+            "s1c04_webhook_otp_firmado": true,
+            "s1c04_verificacion_firma_o_tiempo_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": true,
+            "s1c04_webhook_otp_firmado": false,
+            "s1c04_verificacion_firma_o_tiempo_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": true,
+            "s1c04_webhook_otp_firmado": false,
+            "s1c04_verificacion_firma_o_tiempo_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": true,
+            "s1c04_webhook_otp_firmado": true,
+            "s1c04_verificacion_firma_o_tiempo_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s1c04_intento_aceptar_solicitud": true,
+            "s1c04_webhook_otp_firmado": true,
+            "s1c04_verificacion_firma_o_tiempo_invalida": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "codigo": "S1-C05",
+      "legacy_id": 126,
+      "codigo_legado": "REG_ATQ_006",
+      "legadas_propuesta": 1,
+      "legadas_cobertura_certificada": 0,
+      "descripcion": "BLOQUEAR solo el intento de despachar OTP en contexto de sesión OTP cuando el backend comunica que la sesión no es elegible. La inelegibilidad agrupa sesión inexistente, OTP verificado, reenvíos agotados o cooldown activo; condición usa hecho agregado, no verifica esos campos individualmente ni acredita binding.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c05_intento_despachar_otp"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c05_contexto_sesion_otp"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s1c05_sesion_inelegible"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": false,
+            "s1c05_contexto_sesion_otp": false,
+            "s1c05_sesion_inelegible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": false,
+            "s1c05_contexto_sesion_otp": false,
+            "s1c05_sesion_inelegible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": false,
+            "s1c05_contexto_sesion_otp": true,
+            "s1c05_sesion_inelegible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": false,
+            "s1c05_contexto_sesion_otp": true,
+            "s1c05_sesion_inelegible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": true,
+            "s1c05_contexto_sesion_otp": false,
+            "s1c05_sesion_inelegible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": true,
+            "s1c05_contexto_sesion_otp": false,
+            "s1c05_sesion_inelegible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": true,
+            "s1c05_contexto_sesion_otp": true,
+            "s1c05_sesion_inelegible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s1c05_intento_despachar_otp": true,
+            "s1c05_contexto_sesion_otp": true,
+            "s1c05_sesion_inelegible": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "codigo": "S1-C06",
+      "legacy_id": 130,
+      "codigo_legado": "REG_ATQ_010",
+      "legadas_propuesta": 1,
+      "legadas_cobertura_certificada": 0,
+      "descripcion": "BLOQUEAR solo el intento de emitir una respuesta de error de validación de DNI, celular u OTP cuando su duración sea inferior al mínimo de public.lf_global_config, AUTH/ERROR_RESPONSE_MINIMUM_MS. La condición usa tres hechos lógicos sin umbral fijo ni binding del reloj acreditado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c06_intento_responder_error"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s1c06_validacion_dni_celular_otp"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s1c06_duracion_inferior_minimo"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": false,
+            "s1c06_validacion_dni_celular_otp": false,
+            "s1c06_duracion_inferior_minimo": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": false,
+            "s1c06_validacion_dni_celular_otp": false,
+            "s1c06_duracion_inferior_minimo": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": false,
+            "s1c06_validacion_dni_celular_otp": true,
+            "s1c06_duracion_inferior_minimo": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": false,
+            "s1c06_validacion_dni_celular_otp": true,
+            "s1c06_duracion_inferior_minimo": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": true,
+            "s1c06_validacion_dni_celular_otp": false,
+            "s1c06_duracion_inferior_minimo": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": true,
+            "s1c06_validacion_dni_celular_otp": false,
+            "s1c06_duracion_inferior_minimo": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": true,
+            "s1c06_validacion_dni_celular_otp": true,
+            "s1c06_duracion_inferior_minimo": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s1c06_intento_responder_error": true,
+            "s1c06_validacion_dni_celular_otp": true,
+            "s1c06_duracion_inferior_minimo": true
+          },
+          "esperado": true
+        }
+      ]
+    }
+  ]
+}
