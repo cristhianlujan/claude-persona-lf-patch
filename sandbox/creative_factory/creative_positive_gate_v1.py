@@ -129,8 +129,10 @@ def prepare_positive_review(plan: dict[str, Any],
                    "conservar los píxeles de todos los textos",
                    "sin adornos ni elementos nuevos")
         blueprint = frozen_plan["blueprint"]
-        inherited = [blueprint.get("intent", ""),
-                     *blueprint.get("restrictions", [])]
+        restrictions = blueprint.get("restrictions", [])
+        check(type(restrictions) is list and all(type(v) is str for v in restrictions),
+              "CREATIVE_RESTRICTIONS_SHAPE")
+        inherited = [blueprint.get("intent", ""), *restrictions]
         check(not any(t in str(row).casefold() for row in inherited
                       for t in phrases),
               "CREATIVE_EXPLORE_CONTRADICTORY_LOCK")
