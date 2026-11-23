@@ -255,7 +255,8 @@
         },
         "COH_TEXTO_CONDICION": {
           "puntaje": 0.95,
-          "observacion": "Igual."
+          "observacion": "Igual que CAL_ALCANCE: pegado, autocomplete y desmontaje del input durante la divulgación progresiva van en un solo hecho de incompatibilidad.",
+          "observacion_original": "Igual."
         },
         "COH_EFECTO": {
           "puntaje": 1
@@ -298,6 +299,15 @@
           "puntaje": 1
         }
       }
+    }
+  ],
+  "normalizaciones": [
+    {
+      "regla": "M4C-C07",
+      "criterio": "COH_TEXTO_CONDICION",
+      "texto_literal": "Igual.",
+      "texto_para_contrato": "Igual que CAL_ALCANCE: pegado, autocomplete y desmontaje del input durante la divulgación progresiva van en un solo hecho de incompatibilidad.",
+      "justificacion": "Expansión explícita de referencia al criterio CAL_ALCANCE inmediatamente anterior, sin variar puntaje ni dictamen; contrato de función rechaza observación demasiado breve."
     }
   ]
 }
