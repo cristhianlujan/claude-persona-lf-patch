@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-sunat-bulk-physical-delete-real-v1",
+  "paths": {
+    "supabase/migrations/20261123003500_lf_saly_sunat_bulk_physical_delete_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-sunat-bulk-physical-delete-real-v1.json": "CHANGESET_MANIFEST",
+    "supabase/tests/saly_sunat_bulk_physical_delete_pg17.sql": "RUNTIME_TESTING"
+  }
+}
