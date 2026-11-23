@@ -89,14 +89,40 @@ BEGIN
  INSERT INTO public.lf_error_knowledge(codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,
  validacion,severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia)
  VALUES('LF-NUCLEO-M3-FINANCIAL-FAMILY-KEYWORD-BLEED-20261123-001','NUCLEO_REGLAS',
- 'FINANCIAL_INTEGRITY_RECONCILIATION agrupa educación, Simula y marketing por palabra clave',
+ 'FINANCIAL_INTEGRITY_RECONCILIATION agrupa contenido UI ajeno por palabra clave',
  'Inventario M3 detectó cuatro fuentes UI educativas y de navegación ajenas a la obligación financiera entre 16 legadas.',
  'Clasificación lexical sin verificación semántica de pertinencia de familia','FAMILY_KEYWORD_BLEED',
  'Conservar asociación original, marcar pendiente_validacion y clasificar por obligación antes de crear candidatas; no migrar contenido lateral por palabra clave.',
  'Inventario de 16 fuentes en 15 grupos; cinco grupos migrables; otros requieren definición, migración posterior o Paulo.',
  'HIGH',1,now(),now(),'M3-FINANCIAL-INTEGRITY-20261123','ACTIVO',
- 'docs/nucleo/LF_M3_INVENTARIO_53_31_GRUPOS_20261123.md');
- IF n<>5 OR total_tests<>22 OR (SELECT count(*) FROM public.lf_error_knowledge)<>oldekb+1
+ 'docs/nucleo/LF_M3_INVENTARIO_16_15_GRUPOS_20261123.md');
+ -- EKB: distinct CI defects observed on M3 and protected before merge.
+ INSERT INTO public.lf_error_knowledge(codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,
+   validacion,severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia)
+ VALUES
+ ('LF-NUCLEO-M3-CI-LEGACY-FIXTURE-ID-COLLISION-20261123-001','NUCLEO_REGLAS',
+  'PG17 fixture de familia nueva colisiona con legadas sintéticas ya sembradas',
+  'El primer CI M3 falló por duplicate key en lf_ops.reglas(id) 533, compartida con semillas de regresión anteriores.',
+  'Fixture sucesivo que inserta IDs legacy ya presentes en la misma BD aislada.',
+  'PG17_FIXTURE_LEGACY_ID_COLLISION',
+  'Reusar legadas ya sembradas mediante ON CONFLICT DO NOTHING; validar los 16 enlaces de familia sin escribir datos reales.',
+  'PG17 16 IDs, BEGIN/ROLLBACK, readback de fuentes y regresión 17/17 en CI.',
+  'HIGH',1,now(),now(),'M3-FINANCIAL-INTEGRITY-20261123','ACTIVO',
+  'sandbox/lf_contract_gate_test/nucleo_ci/m3_16_fixture_pg17.sql'),
+ ('LF-NUCLEO-M3-CROSS-FAMILY-VOCAB-MISSING-20261123-001','NUCLEO_REGLAS',
+  'Hecho tipado global requiere membresía de vocabulario de familia M3',
+  'El segundo CI M3 falló en control 4 Datos dentro del vocabulario: estado_pago_normalizado no pertenecía a FINANCIAL_INTEGRITY_RECONCILIATION.',
+  'Reutilización de hecho global tipado sin registrar asociación por familia nueva.',
+  'NUCLEO_CROSS_FAMILY_VOCAB_MISSING',
+  'Antes de proponer regla reusando un hecho global, comprobar tipo y registrar membresía de la familia por la ruta gobernada, sin inventar binding físico.',
+  'CI de la misma propuesta en PG17 supera control 4, 22/22 casos y rollback.',
+  'HIGH',1,now(),now(),'M3-FINANCIAL-INTEGRITY-20261123','ACTIVO',
+  'supabase/migrations/20261123174500_lf_nucleo_m3_financial_candidatas_v1.sql');
+ IF (SELECT count(*) FROM public.lf_error_knowledge
+     WHERE codigo IN ('LF-NUCLEO-M3-CI-LEGACY-FIXTURE-ID-COLLISION-20261123-001',
+       'LF-NUCLEO-M3-CROSS-FAMILY-VOCAB-MISSING-20261123-001'))<>2
+ THEN RAISE EXCEPTION 'M3_EKB_INCIDENTS_NOT_RECORDED'; END IF;
+ IF n<>5 OR total_tests<>22 OR (SELECT count(*) FROM public.lf_error_knowledge)<>oldekb+3
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r) IS DISTINCT FROM oldlegacy
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r WHERE codigo NOT LIKE 'M3-C0%') IS DISTINCT FROM oldrules
   OR (SELECT jsonb_agg(to_jsonb(v) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones v WHERE regla NOT LIKE 'M3-C0%') IS DISTINCT FROM oldversions
