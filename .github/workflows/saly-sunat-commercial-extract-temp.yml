@@ -1,0 +1,28 @@
+name: SALY SUNAT extraction commercial source tests temporary
+on:
+  push:
+    branches: [saly/sunat-commercial-filter-extraction-20261123]
+    paths:
+      - '.github/workflows/saly-sunat-commercial-extract-temp.yml'
+      - 'skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py'
+      - 'skills/ai_sales_discovery/adapters/sunat_commercial_delivery_v1.py'
+      - 'skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py'
+      - 'skills/ai_sales_discovery/tests/test_sunat_commercial_delivery_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-sunat-extract-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Python source syntax and real extraction filters
+        run: |
+          set -euo pipefail
+          python3 -m py_compile skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py skills/ai_sales_discovery/adapters/sunat_commercial_delivery_v1.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_commercial_delivery_v1.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_dual_stream_v1.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py
+          echo PASS_SALY_SUNAT_COMMERCIAL_EXTRACTION_EARLY_FILTER_MANIFEST_NO_DUPLICATE
