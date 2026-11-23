@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-nucleo-tanda4-8-juicios-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_juicios_independientes_tanda4_v1.json": "PASE_SUPPORT",
+    "docs/nucleo/LF_TANDA4_JUICIOS_INDEPENDIENTES_8_20261123.md": "PASE_SUPPORT",
+    "supabase/migrations/20261123212000_lf_nucleo_tanda4_ocho_juicios_publicacion_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-tanda4-8-juicios-v1.json": "CHANGESET_MANIFEST"
+  }
+}
