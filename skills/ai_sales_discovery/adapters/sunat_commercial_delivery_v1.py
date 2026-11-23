@@ -32,6 +32,7 @@ ENTRY_KEYS = frozenset(
 def commercial_payloads_from_verified(
     verified_raw_pairs, *, original_manifest_sha256, snapshot_sha256,
     original_batches, historical_found_batches, existing_rucs, min_workers,
+    existing_ruc_hashes=None,
     max_rows, max_bytes, max_batches, max_total_bytes, monthly_url,
     directory=None
 ):
@@ -58,6 +59,10 @@ def commercial_payloads_from_verified(
     require(type(existing_rucs) in (set,frozenset) and
             all(type(r) is str and RUC.fullmatch(r) for r in existing_rucs),
             "COMMERCIAL_EXISTING_ROSTER")
+    if existing_ruc_hashes is not None:
+        require(type(existing_ruc_hashes) in (set,frozenset)
+                and all(type(h) is str and re.fullmatch(r"[0-9a-f]{16}",h)
+                        for h in existing_ruc_hashes),"COMMERCIAL_EXISTING_HASHES")
     require(type(min_workers) is int and min_workers>0,"COMMERCIAL_MIN_WORKERS")
     require(all(type(v) is int and v>0 for v in
                 (max_rows,max_bytes,max_batches,max_total_bytes)),
@@ -123,7 +128,10 @@ def commercial_payloads_from_verified(
                     if not commercially_admissible(item,min_workers=min_workers):
                         excluded+=1
                         continue
-                    if ruc in existing_rucs:
+                    if ruc in existing_rucs or (
+                        existing_ruc_hashes is not None and
+                        hashlib.sha256(ruc.encode("ascii")).hexdigest()[:16] in existing_ruc_hashes
+                    ):
                         skipped_present+=1
                         continue
                     require(ruc not in selected_rucs,"COMMERCIAL_REPEATED_SELECTED_RUC")
