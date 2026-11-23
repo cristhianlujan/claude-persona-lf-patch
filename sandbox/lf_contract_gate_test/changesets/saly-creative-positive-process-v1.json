@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-creative-positive-process-v1",
+  "paths": {
+    "skills/creative_factory/SKILL.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/creative_positive_gate_v1.py": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/test_creative_positive_gate_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-positive-process-v1.json": "CHANGESET_MANIFEST"
+  }
+}
