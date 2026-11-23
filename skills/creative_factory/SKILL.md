@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.12 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.13 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Alcance y activación
 
@@ -421,6 +421,103 @@ negativos incluyen fuentes cruzadas, hash alterado, omisiones de componentes,
 copy no sustentado, falta de dirección y conflicto de responsables.
 No declara QA semántico independiente, render real ni persistencia de
 nuevos pedidos. El flujo L2C anterior permanece intacto.
+
+## Decisión creativa positiva y transporte v0.13
+
+**Origen:** instrucción expresa del dueño (23/11/2026): mejorar la
+especificación, privilegiar objetivos positivos y dejar espacio creativo
+para una evaluación posterior. No modifica pedidos anteriores y no autoriza
+generación de imágenes.
+
+**Integrado en la skill vigente, no en otra skill ni pipeline:**
+
+Solicitud literal + fuentes versionadas → interpretación del objetivo →
+modo y áreas LOCK/GUIDED/FREE → dirección de arte positiva →
+dos composiciones diferentes cuando se explora → selección motivada →
+preflight estructural vigente → control creativo positivo →
+QA semántico independiente → compilador y wire canónico existentes
+(solo con autoridad real) → QA de arte obtenido.
+
+### Modo y libertad real
+
+- EXPLORE_CREATIVE: cuando el usuario quiere proponer, explorar, mejorar la
+  creatividad o comparar diseños. La referencia previa orienta identidad
+  y objetivo, no bloquea automáticamente su composición.
+- CORRECTION_STRICT: únicamente si el usuario pide correcciones localizadas.
+  Aquí se preserva lo que no fue incluido en el cambio.
+- Registrar el texto literal y la cita de la que se deriva el modo,
+  separando solicitud e interpretación. Una coincidencia de texto
+  no acredita interpretación semántica; esa revisión sigue independiente.
+- Para EXPLORE_CREATIVE, design_lock.FREE debe permitir al menos una
+  región propiedad de NATIVE. No aceptar FREE vacío o bloqueo de todos
+  los componentes. GUIDED orienta el resultado; no inmoviliza su geometría.
+- LOCK se reserva para identidad, activos oficiales, contenido/cifras
+  respaldadas, obligaciones funcionales, seguridad o geometría de
+  compositor verdaderamente fija. Cada restricción debe tener origen
+  (resguardo B19). No convertir una preferencia heredada en prohibición
+  global. Mantener protegidas las fuentes y evitar funciones inventadas.
+
+### Decisión positiva antes del handoff
+
+Para cada componente expresar propósito, efecto deseado e instrucciones
+observables: foco visual, agrupación, relación de tamaños, contraste,
+alineación, lectura, ritmo, profundidad, iconografía y legibilidad.
+No reemplazar instrucciones concretas por "premium", "wow", "moderno".
+En EXPLORE_CREATIVE construir al menos dos alternativas con composición
+realmente diferente; registrar su beneficio, compromiso y elección.
+La exploración cambia el tratamiento visual, nunca inventa contenido
+financiero, funciones, cifras, logos ni autoridad de fuente.
+
+Antes del compilador existente ejecutar
+sandbox/creative_factory/creative_positive_gate_v1.py:
+prepare_positive_review(plan, decision), que reutiliza el preflight v1.
+El complemento SALY_CREATIVE_POSITIVE_PROCESS_V1 recibe:
+mode, mode_evidence, positive_outcomes, creative_zones, alternatives,
+selected_alternative y transport. Valida origen de las citas, libertad
+coherente con los componentes, alternativas distintas, instrucciones
+positivas renderizables y referencias de fuente; no altera el plan.
+Devuelve CREATIVE_REVIEW_PREPARED_SEMANTIC_QA_PENDING y hashes del plan,
+decisión y prompt propuesto. Para CORRECTION_STRICT se permite FREE vacío
+si se desprende de la solicitud. La ausencia de libertad en
+EXPLORE_CREATIVE devuelve CREATIVE_EXPLORE_FREEDOM_EMPTY y no avanza.
+
+**Transporte:** convertir solo la dirección elegida en instrucciones
+gráficas para el receptor. Mantener deliberación, hashes, puntuaciones,
+estados y diagnósticos en el sobre de trazabilidad, no en el prompt Native.
+El resultado del gate es un **borrador verificable**, no un nuevo canal
+de envío ni autorización. El compilador y la captura Native vigentes
+vuelven a comprobar prompt, attachment, item, contrato y hash.
+El integrador debe releer bytes/versión/estado de logo, frame e iconos
+antes de enviar; un identificador o texto no prueba entrega de un
+activo real. Si falta un activo obligatorio, bloquear ese handoff sin
+dibujar un sustituto no oficial. Nunca inferir que transmitted=false
+significa enviado.
+
+**QA en dos capas:**
+1. Antes de generar, revisor independiente coteja pedido literal,
+   fuentes, alternativas, dirección y proyección final; evidencia
+   vinculada al hash del plan. El preflight local no sustituye esa
+   evaluación ni puede autootorgar PASS.
+2. Después de generar, evaluar la imagen real y su composición,
+   jerarquía, originalidad funcional, espacios, legibilidad,
+   identidad y copy. Registrar lo observable, el elemento afectado
+   y la corrección específica. La rúbrica sin PNG real queda
+   NO_EVALUADO y jamás se transforma en aprobación. Separar
+   cierre técnico TERMINADO de aprobación creativa.
+
+No abrir otra solicitud, modificar estados, producir imágenes, crear RUN
+ni activar transporte Native con este cambio. La prueba visual comparativa
+queda para un lote posterior autorizado por el dueño.
+
+**Pruebas de proceso (sin generación):**
+cd sandbox/creative_factory &&
+python -m unittest -v test_creative_positive_gate_v1.py
+test_art_direction_preflight_v1.py
+
+El resultado PASS de esas pruebas acredita solo forma y guardas de
+proceso, no superioridad estética ni ejecución Native real.
+
+---
 
 ## Contrato de entrada
 
