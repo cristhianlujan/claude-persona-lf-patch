@@ -48,7 +48,7 @@ FOR p IN SELECT value FROM jsonb_array_elements('[{"tipo":"NUEVA","codigo":"S1-C
  IF (SELECT count(*) FROM lf_ops.nucleo_regla_pruebas WHERE regla=cd AND version=1)<>8 OR
  (SELECT count(DISTINCT entrada::text) FROM lf_ops.nucleo_regla_pruebas WHERE regla=cd AND version=1)<>8 THEN RAISE EXCEPTION 'SECURITY_TESTS_NOT_8_UNIQUE %',cd; END IF;
  IF lf_ops.nucleo_eval_v1((SELECT condicion FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=1),
- (SELECT entrada FROM lf_ops.nucleo_regla_pruebas WHERE regla=cd AND version=1 AND esperado=false ORDER BY n LIMIT 1))
+ (SELECT entrada FROM lf_ops.nucleo_regla_pruebas WHERE regla=cd AND version=1 AND esperado='false'::jsonb ORDER BY n LIMIT 1))
  IS DISTINCT FROM 'false'::jsonb THEN RAISE EXCEPTION 'SECURITY_INTENT_NEGATIVE %',cd; END IF;
  ev:=lf_ops.nucleo_regla_evaluar_v1(cd,true);
  IF ev->>'decision'='AUTO' THEN RAISE EXCEPTION 'SECURITY_NO_JUDGE_AUTO %',cd; END IF;
