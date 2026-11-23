@@ -1,0 +1,58 @@
+name: SALY SUNAT commercial eligibility read-only full source probe
+on:
+  push:
+    branches: [saly/sunat-commercial-count-probe-20261123]
+    paths: ['.github/workflows/saly-sunat-commercial-manifest-count-temp.yml']
+permissions:
+  contents: read
+jobs:
+  verified-commercial-count:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - name: Full pinned original QA then commercial-only rebatch, no SALY credentials
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          d=Path('skills/ai_sales_discovery')
+          sys.path.insert(0,str(d/'adapters'))
+          sys.path.insert(0,str(d/'tests'))
+          from sunat_first_governed_batch_v22 import expected,request_for
+          from sunat_verified_delivery_v1 import verified_candidate_payloads
+          from sunat_commercial_delivery_v1 import commercial_payloads_from_verified
+          exact,prior=expected()
+          request=request_for(prior)
+          print('SUNAT_COMMERCIAL_PROBE_START '+json.dumps(dict(original_batches=exact['batches'],
+                 old_found=136,remaining_raw_batches=exact['batches']-136,
+                 upstream_manifest=exact['manifest_digest_sha256'],
+                 source_sha256=exact['source_sha256']),sort_keys=True),flush=True)
+          with verified_candidate_payloads(request,expected_manifest=exact) as (qa,stream):
+              with commercial_payloads_from_verified(
+                  stream,
+                  original_manifest_sha256=exact['manifest_digest_sha256'],
+                  snapshot_sha256=exact['source_sha256'],
+                  original_batches=exact['batches'],
+                  historical_found_batches=136,
+                  existing_rucs=set(), # count-only; final writer needs DB-verified roster
+                  min_workers=50,
+                  max_rows=1000,max_bytes=4*1024*1024,max_batches=479,
+                  max_total_bytes=479*4*1024*1024,
+                  monthly_url='https://www.datosabiertos.gob.pe/sites/default/files/PadronRUC_202610.zip'
+              ) as (receipt,verified):
+                  rows=0
+                  for entry,payload in verified:
+                      rows+=entry['rows']
+                  assert rows==receipt['rows']
+                  assert receipt['scanned_remaining_rows']==receipt['excluded_by_commercial_policy']+receipt['rows']
+                  safe={k:receipt[k] for k in ('rows','batches','total_bytes','manifest_digest_sha256',
+                    'scanned_remaining_rows','excluded_by_commercial_policy','skipped_historical_rows',
+                    'original_batches','historical_found_batches')}
+                  safe['db_write_confirmed']=False
+                  safe['requires_existing_roster_reconciliation']=True
+                  print('PASS_SUNAT_COMMERCIAL_ELIGIBLE_CANDIDATE_COUNT '+json.dumps(safe,sort_keys=True),flush=True)
+          PY
