@@ -18,16 +18,16 @@ Autoridad para la **selección técnica**: pedido explícito del usuario de comp
 2. Migración propuesta: `supabase/migrations/20261123020000_lf_saly_creative_factory_policy_seed_v1.sql`. Una sola transacción; no sobrescribe versiones, bloquea si hay políticas preexistentes o RUN activos, revalida las 4 claves e incorpora bloqueo de concurrencia. No contiene GRANT ni modifica pedidos/ítems/RUN.
 3. `QUEUE_MAX=1` no asegura por sí mismo atestación, ni sustituye el lock global/fencing del candidato V02-V12; no es autorización para render, QA o cierre.
 4. `LEASE_SECONDS=600` y `QUEUE_TIMEOUT_SECONDS=900` no son promesas de servicio. El runtime debe manejar vencimiento, retry y resultado ya entregado idempotentemente. No ampliar tiempos para ocultar errores sin métricas.
-5. El PR #4629 ya implantó `TERMINADO` para cinco imágenes históricas; V12 en este PR sigue usando la semántica anterior `APROBADO` / alias `TERMINADO`. **No fusionar #4616** hasta reconciliar explícitamente ambas puertas y validar entorno real sin regenerar los cinco PNG.
+5. El PR #4629 ya implantó `TERMINADO` para cinco imágenes históricas. V12, todavía candidato sin migración productiva ni GRANT, usa `APROBADO` / alias conversacional `TERMINADO`; **no habilitar ese runtime** hasta reconciliar las puertas. La migración de este PR solo carga configuración y no cambia esos estados ni regenera las imágenes.
 6. Persisten las brechas de autoridad Native real, readback host/bytes y escritor confiable de atestación VERIFIED. Una migración de valores no resuelve estas brechas.
 
 ## Pruebas
 `PGHOST=127.0.0.1 PGDATABASE=saly_policy_test bash sandbox/creative_factory/queue_v13/test_policy_pg17.sh`
 
-La prueba usa PostgreSQL 17 desechable; incluye aplicación positiva 4/4, replay exacto, alteración de valor con rollback, RUN activo, función ausente, y dos clientes concurrentes con un único ganador. **No afirmar PASS hasta ejecutar CI real y conservar el run/SHA.**
+La prueba usa PostgreSQL 17 desechable; incluye aplicación positiva 4/4, replay exacto, alteración de valor con rollback, RUN activo, función ausente, y dos clientes concurrentes con un único ganador. **CI real completado SUCCESS:** run [45092603714](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45092603714), SHA probado `9826fa2c7424321be0434a5c53139b9420e99b12`; evidencia en `queue_v13/pg17_results_20261122.txt`.
 
 ## Pendientes de activación
-- Router ACT-0001 para la operación concreta, PASE y Merge Train; la lectura actual del Router devolvió un bloqueo semántico de objeto, por lo que **sin etiqueta de merge**.
+- Fusión del PR **únicamente por `ready-to-merge` → Merge Train** después de PASE/CI PASS y base vigente; no ejecutar SQL directamente, no se requiere un paso de Router separado para el Train.
 - PG17 con esquema real fiel + prueba de compatibilidad con guard L1 y estado `TERMINADO`.
 - Integración confiable del modelo y mensaje de entrega al usuario, junto con evidencia de bytes e identidad.
-- Sin pruebas end-to-end reales y reconciliación de TERMINADO, mantener DRAFT.
+- Sin pruebas end-to-end reales y reconciliación de `TERMINADO`, mantener **runtime V02–V12 no desplegado, no autorizado y sin GRANT**. Esto no bloquea fusionar las fuentes candidatas ni desplegar exclusivamente la migración de configuración, cuyo alcance está probado y aislado. No presentar el funcionamiento integral como terminado.
