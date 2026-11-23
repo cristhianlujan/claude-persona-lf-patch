@@ -1,0 +1,61 @@
+{
+  "evidence_state": "CANDIDATE_RESEARCH_ONLY_NOT_PERSISTENCE_AUTHORIZATION",
+  "business": {
+    "business_key": "20534471808",
+    "legal_name": "GARDEN KIDS E.I.R.L.",
+    "commercial_name": "San Francisco College",
+    "official_domain": "www.sanfranciscocollege.edu.pe",
+    "identity_evidence": [
+      "https://www.sanfranciscocollege.edu.pe/intranet/reclamos/registro-libro-reclamaciones.php",
+      "https://www.sanfranciscocollege.edu.pe/"
+    ]
+  },
+  "window": {
+    "timezone": "America/Lima",
+    "start_inclusive": "2026-09-22T00:00:00-05:00",
+    "end_exclusive": "2026-11-23T00:00:00-05:00"
+  },
+  "source": {
+    "kind": "CORPORATE_WEB_WORDPRESS_REST",
+    "endpoint": "https://www.sanfranciscocollege.edu.pe/wp-json/wp/v2/posts",
+    "ordering": "date DESC",
+    "page_size": 100,
+    "fields": ["id", "date_gmt", "link", "type", "status"]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "http_status": 200,
+      "seen": 15,
+      "first_date_gmt": "2024-04-15T20:22:12",
+      "last_date_gmt": "2019-10-04T00:13:29",
+      "ids": [2043, 2003, 1992, 1972, 1900, 1872, 1854, 1592, 1099, 1010, 1004, 997, 991, 986, 936]
+    },
+    {
+      "page": 2,
+      "http_status": 400,
+      "error_code": "rest_post_invalid_page_number",
+      "message": "El número de página solicitada es mayor que el número de páginas disponibles.",
+      "source_end": true,
+      "automation_run": "https://agent.tinyfish.ai/runs/b6837eea-86cf-4bd9-9833-c6dface9d6ab"
+    }
+  ],
+  "window_query": {
+    "page": 1,
+    "seen": 0,
+    "page_2_seen": 0,
+    "result": "SIN_DATOS_CANDIDATE",
+    "scope_note": "Only the official WordPress posts collection; no claim about social networks, media library, pages, or other site sections."
+  },
+  "coverage": {
+    "pages_processed": 2,
+    "posts_seen": 15,
+    "inside_window": 0,
+    "outside_window": 15,
+    "undated": 0,
+    "duplicates": 0,
+    "persisted": 0,
+    "source_end_confirmed": true,
+    "status": "SIN_DATOS_CANDIDATE_NOT_DB_PERSISTED"
+  }
+}

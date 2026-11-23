@@ -15,6 +15,8 @@ KNOWN = {
     'FACEBOOK': {'facebook.com','www.facebook.com','m.facebook.com'},
     'INSTAGRAM': {'instagram.com','www.instagram.com'},
     'LINKEDIN': {'www.linkedin.com','linkedin.com'},
+    'TIKTOK': {'www.tiktok.com','tiktok.com'},
+    'YOUTUBE': {'www.youtube.com','youtube.com','youtu.be'},
     'WEB': None,
     'NOTICIA': None,
     'REVISTA': None,
@@ -75,6 +77,7 @@ class CandidateEngine:
     logs: list=field(default_factory=list)
     _source_identity: dict=field(default_factory=dict)
     _event_claim: dict=field(default_factory=dict)
+    _claim_sources: dict=field(default_factory=dict)
     _event_origins: dict=field(default_factory=dict)
     _lock: Lock=field(default_factory=Lock, repr=False)
 
@@ -111,12 +114,13 @@ class CandidateEngine:
         previous=self._event_claim.get(key,[])
         if previous:
             original=self.records[previous[0]]
-            if x['source']==original['source'] or any(self.records[i]['source']==x['source'] for i in previous):
+            if x['source'] in self._claim_sources[key]:
                 self._source_identity[srcid]=x['sha256']
-                self.logs.append({'source':x['source'],'external_ref':x['external_ref'],'status':'DUPLICATE_WITHIN_CHANNEL','original_source_ref':original['external_ref']})
+                self.logs.append({'source':x['source'],'external_ref':x['external_ref'],'status':'DUPLICATE_WITHIN_CHANNEL','original_source_ref':self._claim_sources[key][x['source']]})
                 return 'DUPLICATE_WITHIN_CHANNEL'
             # cross channel => record only minimal concurrence pointer. No repeated evidence.
             other=original['source']; original_ref=original['external_ref']
+            self._claim_sources[key][x['source']]=x['external_ref']
             self._source_identity[srcid]=x['sha256']
             self.concurrency.append({'business_key':x['business_key'],'event_key':x['event_key'],
                 'claim_key':x['claim_key'],'source':x['source'],'source_ref':x['external_ref'],
@@ -129,6 +133,7 @@ class CandidateEngine:
         original_ref=self._event_origins.get(ev)
         self._source_identity[srcid]=x['sha256']
         self._event_claim.setdefault(key,[]).append(len(self.records))
+        self._claim_sources[key]={x['source']:x['external_ref']}
         if not event_seen:
             self._event_origins[ev]={'source':x['source'],'external_ref':x['external_ref']}
         self.records.append(x)
