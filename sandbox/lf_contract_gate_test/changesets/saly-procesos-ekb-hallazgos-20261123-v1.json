@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-procesos-ekb-hallazgos-20261123-v1",
+  "paths": {
+    "supabase/migrations/20261123095500_lf_saly_procesos_ekb_hallazgos_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-procesos-ekb-hallazgos-20261123-v1.json": "CHANGESET_MANIFEST"
+  }
+}
