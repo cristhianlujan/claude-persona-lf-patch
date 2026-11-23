@@ -331,6 +331,11 @@ def main():
                     raise RuntimeError("PROCESOS_SALY_TEST_FAILED " + sql_name)
             if psql(name, "SELECT to_regclass('saly.procesos') IS NULL;").stdout.strip() != "t":
                 raise RuntimeError("PROCESOS_SALY_ROLLBACK_RESIDUE")
+            psql(name, "CREATE DATABASE saly_test_conc;")
+            conc = run_cmd(["docker", "exec", "-w", "/tmp/procesos_saly", name, "bash", "concurrencia_pg17.sh"], check=False)
+            print(conc.stdout + conc.stderr, flush=True)
+            if conc.returncode or "PROCESOS_CONC_PASS" not in conc.stdout:
+                raise RuntimeError("PROCESOS_SALY_CONCURRENCY_FAILED")
             print("PROCESOS_SALY_PG17_PASS", flush=True)
         if len(TESTS) != 17:
             raise RuntimeError("NUCLEO_CI_TEST_INVENTORY_DRIFT")

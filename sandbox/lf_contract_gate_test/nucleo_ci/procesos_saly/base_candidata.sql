@@ -1,4 +1,4 @@
--- BORRADOR NO DESPLEGABLE (v2). SALY exclusivamente. Ejecutar únicamente en PG17 aislado.
+-- BORRADOR NO DESPLEGABLE (v3). SALY exclusivamente. Ejecutar únicamente en PG17 aislado.
 -- v2: el proceso se ubica en un nodo MODULO existente de saly.nucleo_nodos (no se duplica jerarquía).
 -- No modifica el núcleo de reglas, sus nodos, ni otros negocios.
 CREATE TABLE saly.procesos (
@@ -116,6 +116,23 @@ BEGIN
   RETURN NEW;
 END; $$;
 CREATE TRIGGER procesos_version_guard BEFORE INSERT OR UPDATE OR DELETE ON saly.procesos_versiones FOR EACH ROW EXECUTE FUNCTION saly.procesos_version_guard_v1();
+-- Ni siquiera el dueño puede vaciar tablas de identidad/historia (los triggers de fila no se disparan con TRUNCATE).
+DO $$ DECLARE t text; BEGIN
+FOREACH t IN ARRAY ARRAY['procesos','procesos_versiones','procesos_pasos','procesos_pasos_versiones','procesos_version_pasos','procesos_version_transiciones'] LOOP
+EXECUTE format('CREATE TRIGGER procesos_truncate_bloqueado BEFORE TRUNCATE ON saly.%I FOR EACH STATEMENT EXECUTE FUNCTION saly.procesos_inmutable_v1()',t);
+END LOOP;
+END $$;
+-- Crea la siguiente versión BORRADOR con número automático y sin choques entre sesiones concurrentes.
+CREATE FUNCTION saly.procesos_version_crear_v1(p_proceso bigint, p_titulo text, p_motivo text, p_origen text, p_por text) RETURNS integer
+LANGUAGE plpgsql SET search_path=pg_catalog AS $$
+DECLARE v integer;
+BEGIN
+  PERFORM 1 FROM saly.procesos WHERE id=p_proceso FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'SALY_PROCESO_NO_EXISTE' USING ERRCODE='23503'; END IF;
+  SELECT coalesce(max(version),0)+1 INTO v FROM saly.procesos_versiones WHERE proceso_id=p_proceso;
+  INSERT INTO saly.procesos_versiones(proceso_id,version,titulo,motivo,origen_ref,creado_por) VALUES (p_proceso,v,p_titulo,p_motivo,p_origen,p_por);
+  RETURN v;
+END; $$;
 -- Cerrado por defecto: sin grants de escritura para clientes; no conceder nuevas puertas aquí.
 DO $$ DECLARE t text; BEGIN
   FOREACH t IN ARRAY ARRAY['procesos','procesos_versiones','procesos_pasos','procesos_pasos_versiones','procesos_version_pasos','procesos_version_transiciones'] LOOP
@@ -123,4 +140,4 @@ DO $$ DECLARE t text; BEGIN
     EXECUTE format('REVOKE ALL ON TABLE saly.%I FROM PUBLIC, anon, authenticated, service_role',t);
   END LOOP;
 END $$;
-REVOKE ALL ON FUNCTION saly.procesos_inmutable_v1(), saly.procesos_composicion_guard_v1(), saly.procesos_version_guard_v1(), saly.procesos_nodo_guard_v1() FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION saly.procesos_inmutable_v1(), saly.procesos_composicion_guard_v1(), saly.procesos_version_guard_v1(), saly.procesos_nodo_guard_v1(), saly.procesos_version_crear_v1(bigint,text,text,text,text) FROM PUBLIC, anon, authenticated, service_role;
