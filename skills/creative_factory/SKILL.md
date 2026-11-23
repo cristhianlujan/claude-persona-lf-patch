@@ -15,6 +15,17 @@ description: Orquesta la composición gráfica de revisión reutilizando el comp
 - **QA objetivo, no prueba de usuario:** el QA previo verifica que existe una comparación espacial y que el handoff no pide decoración prohibida; el QA de imagen señala rayos/palitos decorativos, huecos evitables y desbordes cuando son visibles. La efectividad, satisfacción y aprobación estética la evalúa exclusivamente el dueño mediante sus iteraciones; no exigir ni simular pruebas de usuarios.
 - **Estado:** tras entregar la imagen solicitada con evidencia técnica real, el pedido puede quedar `TERMINADO`, sin esperar aceptación subjetiva. `TERMINADO` no significa `APROBADO`; los ajustes posteriores son nuevas instrucciones acotadas. Un fallo real de entrega sigue impidiendo marcarlo terminado.
 
+## Identidad visual: dirección exacta del activo en el handoff
+Cuando un pedido exige logo oficial, **no basta** con escribir «usar el logo SALY» ni con el código del catálogo. Antes de generar, el handoff debe suministrar: `asset_code`, versión aprobada, nombre de archivo exacto, proveedor, identificador y dirección real del archivo, SHA-256 del PNG y el propio archivo como adjunto legible por el receptor (o descriptor resuelto de bytes). Si Google Drive es privado, la URL es una referencia de trazabilidad, no prueba de acceso del generador. No sustituir la imagen por una reinterpretación tipográfica. Cuando el generador no pueda fijar un logo sin modificarlo, reservar su espacio y componer después el PNG oficial original; cotejar visualmente el resultado.
+
+**Fuente verificada para prueba SALY HOME (2026-11-23):**
+- Catálogo: `saly.brand_assets`, `id=9`, `code=logo.primary.transparent`, `version_number=1`, `approval_status=APPROVED`.
+- Archivo: `01_SALY_PRINCIPAL_TRANSPARENTE.png`.
+- Proveedor/identificador: `GOOGLE_DRIVE / 1xQyhrhrqgjHvkPVSg1vYCgDjlFV7ox78`.
+- Dirección completa: `https://drive.google.com/file/d/1xQyhrhrqgjHvkPVSg1vYCgDjlFV7ox78/view`.
+- SHA-256 del archivo verificado leyendo bytes: `5573f0503ddb3dd1029221a9ee336d0e28155c392598286628dbf294da146995`.
+- Uso durante la ejecución local de prueba: `/mnt/data/01_SALY_PRINCIPAL_TRANSPARENTE.png`. Esta ruta es **solo del contenedor de esta prueba**, no persistente ni accesible al proveedor por defecto.
+
 ## Actualización de estado y cierre: ruta gobernada obligatoria
 La generación visible de una imagen no cierra por sí sola un pedido. Después del retorno de Native, ejecutar QA, reconciliar evidencia y actualizar los estados de RUN, ítem y pedido **solo por la ruta gobernada vigente: PR con migración/cambio probado → PASE → Merge Train → readback en Supabase**. No usar UPDATE SQL directo, el conector de solo lectura como escritor, ni declarar `TERMINADO` antes del readback de estado y evidencia. Para pedidos históricos #7/#9, conciliar los artefactos existentes sin inventar RUN ni entregar otra imagen por un pendiente contable. La espera/verificación de 30 segundos es observación, no mecanismo de escritura. Seguir `docs/saly/creative_factory_continuidad_readback_tramos_v1.md`; conservar `PLAN_ONLY/REVIEW_ONLY` y los controles de autorización ya existentes.
 
