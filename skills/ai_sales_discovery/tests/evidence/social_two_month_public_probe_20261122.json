@@ -1,0 +1,52 @@
+{
+  "probe_date": "2026-11-22",
+  "business_key": "GARDEN_KIDS_EIRL_SFC_ICA_CANDIDATE",
+  "window": {
+    "start_local": "2026-09-22T00:00:00-05:00",
+    "end_local": "2026-11-22T23:59:59-05:00"
+  },
+  "status": "INCOMPLETE_NO_CONTINUOUS_PAGINATION_NO_RIGHTS_ADMISSION",
+  "measurement": "per_url_latency_ms_from_public_reader_not_total_capture_time",
+  "observations": [
+    {
+      "channel": "INSTAGRAM",
+      "url": "https://www.instagram.com/p/Dc2QaA3IHTb/",
+      "published_at_utc": "2026-09-04T01:56:07Z",
+      "first_ms": 4342.76,
+      "repeat_ms": 4012.46,
+      "status": "DIRECT_LINK_RECOVERABLE_OUTSIDE_WINDOW"
+    },
+    {
+      "channel": "INSTAGRAM",
+      "url": "https://www.instagram.com/p/DdZ66MRoDLD/",
+      "published_at_utc": "2026-09-17T22:20:57Z",
+      "first_ms": 5859.76,
+      "repeat_ms": 4975.74,
+      "status": "DIRECT_LINK_RECOVERABLE_OUTSIDE_WINDOW"
+    },
+    {
+      "channel": "FACEBOOK",
+      "url": "https://www.facebook.com/sanfranciscocollege/videos/-que-comience-la-fiesta-deportiva-este-s%C3%A1bado-12-de-setiembre-desde-las-830-am-n/1731691128103725/",
+      "published_at_utc": null,
+      "first_ms": 1626.41,
+      "repeat_ms": 2511.49,
+      "status": "BODY_OG_MISMATCH_DATE_UNKNOWN"
+    },
+    {
+      "channel": "NEWS",
+      "url": "https://diariocorreo.pe/edicion/ica/ica-san-francisco-college-logro-medalla-en-basquet-masculino-de-los-juegos-escolares-nacionales-2026-noticia",
+      "published_at_utc": "2026-11-01T16:04:35.23Z",
+      "first_ms": 5710.57,
+      "repeat_ms": null,
+      "status": "DATED_ARTICLE_CANDIDATE"
+    }
+  ],
+  "gap": {
+    "instagram_profile_pagination": "LOGIN_WALL_IN_SEPARATE_BROWSER",
+    "facebook_publication_dates": "MISSING",
+    "all_2_months_covered": false,
+    "12_months_covered": false,
+    "rights_verified": false,
+    "db_write_verified": false
+  }
+}
