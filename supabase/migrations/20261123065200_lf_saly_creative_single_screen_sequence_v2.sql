@@ -13,7 +13,7 @@ BEGIN
     to_regprocedure('saly.creative_order_context_guard_l2a()') IS NULL OR
     to_regprocedure('saly.creative_context_set_guard_l2a()') IS NULL OR
     to_regprocedure('saly.creative_context_token_guard_l2a()') IS NULL OR
-    IF to_regclass('saly.creative_orders') IS NULL OR
+    to_regclass('saly.creative_orders') IS NULL OR
     to_regclass('saly.creative_order_items') IS NULL OR
     to_regclass('saly.creative_runs') IS NULL OR
     to_regclass('saly.creative_order_sequence_v1') IS NOT NULL
