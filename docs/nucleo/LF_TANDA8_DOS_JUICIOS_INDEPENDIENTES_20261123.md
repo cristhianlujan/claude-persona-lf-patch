@@ -12,3 +12,5 @@ Hash de versión y hash canónico dentro de transacción, registro de juicio por
 ## Bloqueo PG17 de convivencia IG (evidencia real)
 
 La primera prueba de promoción simultánea devolvió `DPIG03_LEGACY_ONLY_ORACLE_DRIFT_SCREEN36 1`: S1-C01, aplicada en `BACKEND/HEREDA`, aparece como nativa en pantalla legal 36. El juicio externo sigue PASS, la evaluación dio AUTO, pero **S1-C01 queda CANDIDATA sin promover** por preservación del contrato de lectores IG. `REG_CHK_007` sí se promueve si el mismo PG17 completo pasa. Para S1-C01 se necesita nueva versión con alcance no global y juicio independiente nuevo; no modificar IG ni lectores.
+
+**Actualización PG17:** el segundo ensayo identificó también `REG_CHK_007 v3` como nativa en pantalla legal 36. El contrato de lectura IG no permite ninguna. Ambas quedan CANDIDATAS con juicios PASS/AUTO registrados, pero con promoción bloqueada transaccionalmente; se requiere revisión de alcance y nuevo juicio antes de publicar. Esta decisión prioriza el resguardo B y evita cambios a IG o sus lectores.
