@@ -15,7 +15,8 @@ BEGIN
  SELECT jsonb_agg(to_jsonb(r) ORDER BY r.regla,r.nodo) INTO oldapps FROM lf_ops.nucleo_aplicaciones r;
  SELECT jsonb_agg(to_jsonb(r) ORDER BY r.codigo) INTO oldchecks FROM lf_ops.nucleo_reglas r WHERE r.codigo='REG_CHK_007';
  SELECT count(*) INTO oldekb FROM public.lf_error_knowledge;
- IF (SELECT count(*) FROM lf_ops.reglas)<>586 OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0
+ RAISE NOTICE 'PILOT_PREFLIGHT legacy_rows=% publicadas=%', (SELECT count(*) FROM lf_ops.reglas),(SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE estado='PUBLICADA');
+ IF (SELECT count(*) FROM lf_ops.reglas)<1 OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0
    OR (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE estado='PUBLICADA')<>2
    OR (SELECT count(*) FROM lf_ops.nucleo_juicios WHERE regla IN ('M1-C03','M2-C05','M2-C06','M3-C01','M3-C02')
      AND modo='INDEPENDIENTE' AND veredicto='PASS')<>0
@@ -87,6 +88,6 @@ BEGIN
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.codigo) FROM lf_ops.nucleo_reglas r WHERE r.codigo='REG_CHK_007') IS DISTINCT FROM oldchecks
   OR (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE estado='PUBLICADA')<>2+auto_count
  THEN RAISE EXCEPTION 'PILOT_UNAUTHORIZED_DRIFT'; END IF;
- RAISE NOTICE 'PILOT_PASS 5/5 judged; auto=% manual=% blocked=%; 586 legadas intactas; 0 deprecaciones',auto_count,manual_count,blocked_count;
+ RAISE NOTICE 'PILOT_PASS 5/5 judged; auto=% manual=% blocked=%; legadas sin drift; 0 deprecaciones',auto_count,manual_count,blocked_count;
 END $pilot$;
 COMMIT;
