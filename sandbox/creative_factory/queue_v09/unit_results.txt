@@ -1,0 +1,32 @@
+SALY V09 · Candidate contract tests · 2026-11-22
+Command: python3 -m unittest -v sandbox.creative_factory.queue_v09.test_dispatch_fence_v1
+Environment: Python local isolated fixture; V04 dependency stubbed and validate_render_ready mocked
+Result: 18 tests in 0.029 s -- OK
+Tests:
+test_archive_receipt_claims_sent_rejected
+test_archive_world_readable_rejected
+test_duplicate_receipt_json_key_rejected
+test_expired_lease_from_real_gate_is_propagated
+test_fake_done_archive_rejected
+test_missing_archive_source_rejected
+test_missing_sql_port_rejected
+test_naive_clock_rejected
+test_new_claim_binding_rejected
+test_positive_is_never_dispatch_or_done
+test_prompt_modified_rejected
+test_protected_count_tamper_rejected
+test_source_bytes_modified_rejected_before_sql
+test_source_symlink_rejected
+test_sql_clock_unavailable_rejected
+test_unexpected_file_in_archive_rejected
+test_valid_protected_asset
+test_wire_hash_replaced_in_db_rejected
+PASS 18/18
+GitHub Actions isolated real code check: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45073378089
+HEAD under test: 55cff2deecaada87a1168dfd71b1a30ca94e94a1
+V08+V09 unittest real repository code: 43/43 PASS (25 V08 + 18 V09)
+V08 behavioral mutation controls: 2/2 PASS expected assertion
+Workflow was temporary and will be removed after evidence capture.
+Limit: no real V04 SQL, no PostgreSQL or Native provider invocation, no real host receipt or delivery.
+Local source blob: 6871847f2514e201d4aa2170ca191329f7c3746f
+Local test blob: 6c9b274be454b7e70bb8e71e7332412d509fb774

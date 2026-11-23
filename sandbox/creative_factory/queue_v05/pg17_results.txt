@@ -1,0 +1,33 @@
+SALY Creative Native SQL wire — PG17.6 isolated real execution evidence
+Date: 2026-11-22
+Pull request: #4616
+Tested SHA: ce7f6afaa41ddebebdd93d573a15e5f795c967eb
+GitHub Actions: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45060478716
+Workflow status: completed / success
+Job: SQL candidate isolated PG17
+Job ID: 137325031606
+Infrastructure: ephemeral postgres:17.6 service, localhost, saly_queue_test,
+POSTGRES_HOST_AUTH_METHOD=trust; zero production credentials.
+Command: bash sandbox/creative_factory/queue_v05/test_pg17.sh
+Log proof:
+  psql:test_pg17_candidate.sql:151: NOTICE: PASS GPT_NATIVE, CLAUDE_NATIVE, hash and source attachments; synthetic only
+  psql:test_pg17_candidate.sql:151: NOTICE: PASS 6 exact-code negatives and no delivery or DONE; synthetic only
+  PASS_SALY_NATIVE_RENDER_WIRE_PG17_DISPOSABLE_ROLLBACK
+
+Positives: dual native mode, byte-equal Base64, SHA of wire/prompt/snapshot,
+attachment name and file_ref bound to synthetic source.
+Exact negative codes:
+  CREATIVE_RENDER_WIRE_EXECUTOR_MODE_INVALID
+  CREATIVE_RENDER_WIRE_RUN_CLAIM_NOT_BOUND
+  CREATIVE_RENDER_WIRE_ORDER_AUTHORITY_MISSING
+  CREATIVE_RENDER_WIRE_REFERENCE_DRIFT
+  CREATIVE_RENDER_WIRE_ATTACHMENT_INVALID
+  CREATIVE_CONFIG_MISSING:LEASE_SECONDS
+Mutation tests for SQL: NOT EXECUTED.
+No full Supabase clone, no actual file download, no provider callback,
+no generated image, no host delivery, no production execution or SQL writes.
+The temporary PG17 workflow ran successfully but is RETIRED from PR because
+PASE ordinary-workflow allowlist rejected it. Do not change the allowlist.
+An earlier PASE failure at SHA ce7f6afaa... was specifically:
+  ordinary pull_request workflows differ: unlisted=['saly-creative-native-render-wire-pg17-candidate.yml'].
+PASE on final HEAD must be rechecked after cleanup.
