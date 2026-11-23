@@ -224,7 +224,7 @@ def main():
                 trial = psql(name, "BEGIN;\n" + candidate + "\n" + query + "\nROLLBACK;\n", check=False)
                 if trial.returncode or "2|1|1" not in trial.stdout.splitlines() or "SALY_EKB_HALLAZGOS_2_2_PASS" not in trial.stderr:
                     raise RuntimeError("SALY_EKB_PG17_INSERT_OR_ROLLBACK_FAILED " + trial.stderr)
-                if psql(name, query).stdout.strip() != "0||":
+                if psql(name, "SELECT count(*) FROM transversal.error_knowledge;").stdout.strip() != "0":
                     raise RuntimeError("SALY_EKB_PG17_FIRST_ROLLBACK_RESIDUE")
                 # Recurrencia exacta: H1 preexistente aumenta 2->3; H2 entra nueva.
                 seed = ("INSERT INTO transversal.error_knowledge"
@@ -236,7 +236,7 @@ def main():
                              "ROLLBACK;\n", check=False)
                 if again.returncode or again.stdout.splitlines().count("3") != 1 or again.stdout.splitlines().count("1") != 1:
                     raise RuntimeError("SALY_EKB_PG17_RECURRENCE_FAILED " + again.stderr)
-                if psql(name, query).stdout.strip() != "0||":
+                if psql(name, "SELECT count(*) FROM transversal.error_knowledge;").stdout.strip() != "0":
                     raise RuntimeError("SALY_EKB_PG17_SECOND_ROLLBACK_RESIDUE")
                 print("SALY_EKB_PG17_INSERT_RECURRENCE_ROLLBACK_PASS 2/2", flush=True)
             replay = psql(name, path.read_text())
