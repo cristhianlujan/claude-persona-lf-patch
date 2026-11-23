@@ -18,3 +18,11 @@ Conclusion: SUCCESS on disposable PostgreSQL 17.6
 
 No QA independent, no RUN, no host receipt. The migration DOES NOT mark APROBADO/COMPLETADO.
 No production write until governed PR Merge Train and readback.
+
+Canonical governed lf_saly_ migration rename:
+- Actual SQL bytes unchanged; only pathname changed.
+- Full isolated PG17 rerun: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45086856901
+- Rerun code SHA f5f191f9d294934c9ad7d14e0744df3c2c983b58, SUCCESS.
+- Classification gate SUCCESS at run 45086862986.
+- PASE on this SHA failed solely from temporary CI workflow path not classified;
+  workflow removed from PR candidate after retaining these test receipts.
