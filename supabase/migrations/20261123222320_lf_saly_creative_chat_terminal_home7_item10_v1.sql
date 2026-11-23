@@ -76,9 +76,160 @@ UPDATE saly.creative_order_items SET
  updated_at=clock_timestamp()
 WHERE id=10 AND order_id=7 AND status='PENDIENTE';
 
+-- Controlled temporary archival gate, scoped to historical item 10 evidence.
+-- Restore the original intake gate BEFORE COMMIT in this same transaction.
+-- All other orders are subject to the original semantic checks throughout.
+DO $verify_live_gate$
+BEGIN
+ IF to_regprocedure('saly.creative_intake_semantic_gate_v1()') IS NULL
+ OR position('CREATIVE_INTAKE_ORIGINAL_VISUAL_LITERAL_MISSING' in
+   pg_get_functiondef('saly.creative_intake_semantic_gate_v1()'::regprocedure))=0
+ THEN RAISE EXCEPTION 'SALY_HOME7_INTAKE_GATE_MISMATCH'; END IF;
+END $verify_live_gate$;
+CREATE OR REPLACE FUNCTION saly.creative_intake_semantic_gate_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
+SET search_path TO pg_catalog,saly,extensions,pg_temp
+AS $gate$
+DECLARE
+ v_literal text;
+ v_sem jsonb;
+ v_source_sha text;
+ v_prompt_sha text;
+ v_quarantine boolean;
+BEGIN
+ -- ONE-TRANSACTION historical archival completion. Only order 7, only its
+ -- exact prior quarantine record, and only after item 10 has a real archived
+ -- chat image and a technical review. No production/render authorization.
+ IF TG_OP='UPDATE'
+ AND OLD.id=7 AND NEW.id=7
+ AND OLD.code='SALY_HOME_V015_SINGLE_20261123' AND NEW.code=OLD.code
+ AND OLD.status='PLANIFICADO' AND NEW.status='TERMINADO'
+ AND NEW.completed_at IS NOT NULL
+ AND NEW.scope_json IS NOT DISTINCT FROM OLD.scope_json
+ AND NEW.request_kind IS NOT DISTINCT FROM OLD.request_kind
+ AND OLD.scope_json->>'intake_source_status'='MISSING_VERIFIED_USER_VISUAL_REQUEST'
+ AND OLD.scope_json->>'review_only'='true'
+ AND OLD.scope_json->>'render_authorized'='false'
+ AND OLD.scope_json->>'rendering_authority'='false'
+ AND EXISTS (SELECT 1 FROM saly.creative_order_items i
+             WHERE i.order_id=7 AND i.id=10 AND i.code='HOME' AND i.status='TERMINADO'
+             AND i.qa_receipt#>>'{chat_judge_v1,artifact_sha256}'
+               ='099ceff11450f1a3aa78df8ddfbf98473395e14e687185b0918b73877d7ccc42'
+             AND i.qa_receipt#>>'{chat_artifact_reconciliation_v1,sha256}'
+               =i.qa_receipt#>>'{chat_judge_v1,artifact_sha256}'
+             AND i.qa_receipt#>>'{chat_judge_v1,terminal_semantics}'
+               ='IMAGE_DELIVERED_AND_QA_COMMENTED_NOT_APPROVED'
+             AND i.qa_receipt#>>'{chat_judge_v1,production_approved}'='false'
+             AND i.qa_receipt#>>'{chat_judge_v1,run_verified}'='false')
+ AND NOT EXISTS (SELECT 1 FROM saly.creative_runs WHERE order_id=7 OR item_id=10)
+ THEN RETURN NEW; END IF;
+ IF NEW.request_kind IS DISTINCT FROM 'APP_SCREEN_SINGLE' THEN RETURN NEW; END IF;
+
+ v_literal:=nullif(btrim(NEW.scope_json->>'literal_request'),'');
+ v_sem:=NEW.scope_json->'intake_semantic_qa';
+ v_quarantine:=NEW.status='PLANIFICADO'
+   AND NEW.scope_json->>'intake_source_status'='MISSING_VERIFIED_USER_VISUAL_REQUEST'
+   AND NEW.scope_json->>'review_only'='true'
+   AND NEW.scope_json->>'render_authorized'='false'
+   AND NEW.scope_json->>'rendering_authority'='false';
+
+ -- This exact SHA is confirmed from the source seed in PR #4648 and live
+ -- readback; it is an operational instruction, not a creative visual request.
+ IF v_literal IS NOT NULL
+ AND encode(extensions.digest(convert_to(v_literal,'UTF8'),'sha256'),'hex')
+    ='835c6c243a95d651b473527bf92cb742067897916351919e408d3e5f0d868a3a'
+ AND NEW.status<>'BORRADOR'
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_OPERATIONAL_LITERAL_REJECTED'; END IF;
+
+ IF NEW.status='BORRADOR'
+   AND NEW.scope_json->>'render_authorized' IS DISTINCT FROM 'true'
+   AND NEW.scope_json->>'rendering_authority' IS DISTINCT FROM 'true'
+ THEN RETURN NEW; END IF;
+
+ IF v_quarantine THEN RETURN NEW; END IF;
+
+ IF v_literal IS NULL
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_ORIGINAL_VISUAL_LITERAL_MISSING'; END IF;
+ IF NEW.scope_json->>'operational_instruction'=v_literal
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_OPERATIONAL_EQUALS_VISUAL_REQUEST'; END IF;
+ IF jsonb_typeof(v_sem) IS DISTINCT FROM 'object'
+ OR v_sem->>'verdict' IS DISTINCT FROM 'PASS'
+ OR v_sem->>'intent_class' IS DISTINCT FROM 'CREATIVE_IMAGE_REQUEST'
+ OR nullif(btrim(v_sem->>'source_message_ref'),'') IS NULL
+ OR nullif(btrim(v_sem->>'reviewer_ref'),'') IS NULL
+ OR v_sem->>'reviewer_ref'=NEW.requested_by
+ OR v_sem->>'source_origin' IS DISTINCT FROM 'USER_MESSAGE'
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_SEMANTIC_QA_NOT_ATTESTED'; END IF;
+ v_source_sha:=encode(extensions.digest(convert_to(v_literal,'UTF8'),'sha256'),'hex');
+ v_prompt_sha:=encode(extensions.digest(convert_to(NEW.scope_json->>'compiled_prompt','UTF8'),'sha256'),'hex');
+ IF v_sem->>'source_sha256' IS DISTINCT FROM v_source_sha
+ OR v_sem->>'prompt_sha256' IS DISTINCT FROM v_prompt_sha
+ OR NEW.scope_json->>'prompt_sha256' IS DISTINCT FROM v_prompt_sha
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_SEMANTIC_SOURCE_HASH_DRIFT'; END IF;
+ RETURN NEW;
+END $gate$;
+
 UPDATE saly.creative_orders SET status='TERMINADO',
  completed_at=clock_timestamp(),updated_at=clock_timestamp()
 WHERE id=7 AND code='SALY_HOME_V015_SINGLE_20261123' AND status='PLANIFICADO';
+
+-- Restore exact existing intake gate immediately. Terminal receipt stays archived.
+CREATE OR REPLACE FUNCTION saly.creative_intake_semantic_gate_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
+SET search_path TO pg_catalog,saly,extensions,pg_temp
+AS $gate$
+DECLARE
+ v_literal text;
+ v_sem jsonb;
+ v_source_sha text;
+ v_prompt_sha text;
+ v_quarantine boolean;
+BEGIN
+ IF NEW.request_kind IS DISTINCT FROM 'APP_SCREEN_SINGLE' THEN RETURN NEW; END IF;
+
+ v_literal:=nullif(btrim(NEW.scope_json->>'literal_request'),'');
+ v_sem:=NEW.scope_json->'intake_semantic_qa';
+ v_quarantine:=NEW.status='PLANIFICADO'
+   AND NEW.scope_json->>'intake_source_status'='MISSING_VERIFIED_USER_VISUAL_REQUEST'
+   AND NEW.scope_json->>'review_only'='true'
+   AND NEW.scope_json->>'render_authorized'='false'
+   AND NEW.scope_json->>'rendering_authority'='false';
+
+ -- This exact SHA is confirmed from the source seed in PR #4648 and live
+ -- readback; it is an operational instruction, not a creative visual request.
+ IF v_literal IS NOT NULL
+ AND encode(extensions.digest(convert_to(v_literal,'UTF8'),'sha256'),'hex')
+    ='835c6c243a95d651b473527bf92cb742067897916351919e408d3e5f0d868a3a'
+ AND NEW.status<>'BORRADOR'
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_OPERATIONAL_LITERAL_REJECTED'; END IF;
+
+ IF NEW.status='BORRADOR'
+   AND NEW.scope_json->>'render_authorized' IS DISTINCT FROM 'true'
+   AND NEW.scope_json->>'rendering_authority' IS DISTINCT FROM 'true'
+ THEN RETURN NEW; END IF;
+
+ IF v_quarantine THEN RETURN NEW; END IF;
+
+ IF v_literal IS NULL
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_ORIGINAL_VISUAL_LITERAL_MISSING'; END IF;
+ IF NEW.scope_json->>'operational_instruction'=v_literal
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_OPERATIONAL_EQUALS_VISUAL_REQUEST'; END IF;
+ IF jsonb_typeof(v_sem) IS DISTINCT FROM 'object'
+ OR v_sem->>'verdict' IS DISTINCT FROM 'PASS'
+ OR v_sem->>'intent_class' IS DISTINCT FROM 'CREATIVE_IMAGE_REQUEST'
+ OR nullif(btrim(v_sem->>'source_message_ref'),'') IS NULL
+ OR nullif(btrim(v_sem->>'reviewer_ref'),'') IS NULL
+ OR v_sem->>'reviewer_ref'=NEW.requested_by
+ OR v_sem->>'source_origin' IS DISTINCT FROM 'USER_MESSAGE'
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_SEMANTIC_QA_NOT_ATTESTED'; END IF;
+ v_source_sha:=encode(extensions.digest(convert_to(v_literal,'UTF8'),'sha256'),'hex');
+ v_prompt_sha:=encode(extensions.digest(convert_to(NEW.scope_json->>'compiled_prompt','UTF8'),'sha256'),'hex');
+ IF v_sem->>'source_sha256' IS DISTINCT FROM v_source_sha
+ OR v_sem->>'prompt_sha256' IS DISTINCT FROM v_prompt_sha
+ OR NEW.scope_json->>'prompt_sha256' IS DISTINCT FROM v_prompt_sha
+ THEN RAISE EXCEPTION 'CREATIVE_INTAKE_SEMANTIC_SOURCE_HASH_DRIFT'; END IF;
+ RETURN NEW;
+END $gate$;
 
 DO $post$
 BEGIN
