@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-reg-chk-007-v3-inventario-operativo",
+  "paths": {
+    "docs/nucleo/LF_AGRUPACION_586_OPERATIVAS_V2_20261123.md": "PASE_SUPPORT",
+    "docs/nucleo/LF_INVENTARIO_586_OPERATIVAS_V2_20261123.csv": "PASE_SUPPORT",
+    "docs/nucleo/LF_REG_CHK_007_V3_CASOS_20261123.md": "PASE_SUPPORT",
+    "supabase/migrations/20261123233000_lf_nucleo_reg_chk_007_revision_v3_operativa_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-reg-chk-007-v3-inventario-operativo.json": "CHANGESET_MANIFEST"
+  }
+}
