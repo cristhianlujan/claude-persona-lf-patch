@@ -1,0 +1,49 @@
+# M2 OFFERS_INSTALLMENTS — inventario de 53 legadas, 31 obligaciones
+Corte de fuente 23/11/2026, 11:18 Lima. READBACK real: `lf_ops.nucleo_regla_familia` (familia `OFFERS_INSTALLMENTS`) JOIN `lf_ops.v_reglas_compat_v1` por `regla_id=id`; 53 filas fuente, mapeo una sola vez cada ID en 31 grupos. Lista completa versionada en `sandbox/lf_contract_gate_test/nucleo_ci/m2_inventory_53_31groups.json`. Es asociación inicial: `PALABRA_CLAVE` puede ser falso positivo y `naturaleza_pendiente` requiere revisión antes de considerarlo ámbito definitivo.
+**Fuentes y resguardos:** Drive INPUT GOVERNANCE V1.4 y LF_resguardos_construccion.md leídos antes de la propuesta; EKB focal leída (preflight IG-EKB, LEGACY-RULES, MIGRATION-COEXISTENCE, C03 backend guard, PROFILE CREATOR). Reglas fuente conservan estado/ID, incluso CANDIDATO.
+## Obligaciones, cobertura y evidencia
+| Grupo | Obligación | Fuentes legadas exactas | Estado | Justificación/residual |
+|---|---|---|---|---|
+| M2-G01 | Resolución de variante HOME sin oferta | REG_HOME_001 (13; CANDIDATO), REG_HMV_001 (141; VIGENTE) | DEPENDE_PAULO | Cruce autoritativo de oferta y estado home; 13 CANDIDATO |
+| M2-G02 | Autoselección cuando solo hay modalidad | REG_HMV_002 (142; VIGENTE), REG_HMV_003 (143; VIGENTE), REG_OFR_004 (149; VIGENTE) | MIGRAR | Una sola modalidad disponible, sin confundir con una sola oferta |
+| M2-G03 | No autoselección cuando hay dos modalidades | REG_HMV_004 (144; VIGENTE), REG_OFR_005 (150; VIGENTE) | MIGRAR | La elección corresponde al usuario |
+| M2-G04 | Selección multi oferta independiente | REG_HMV_005 (145; VIGENTE), REG_OFR_008 (153; VIGENTE), REG_OFR_009 (154; VIGENTE) | MIGRAR | La selección puede ser parcial; modalidad por oferta no se arrastra |
+| M2-G05 | Identidad deuda, oferta y modalidad | REG_OFR_001 (146; VIGENTE), REG_OFR_002 (147; VIGENTE) | FALTA_MIGRAR | Definición semántica de entidades; requiere modelado específico sin condicional ficticio |
+| M2-G06 | No exhibir modalidades ausentes | REG_OFR_003 (148; VIGENTE) | MIGRAR | La disponibilidad es autoritativa de la oferta; vínculo runtime pendiente |
+| M2-G07 | Bloqueo checkout sin modalidad elegida | REG_OFR_007 (152; VIGENTE) | MIGRAR | Control acotado a intento de continuar checkout |
+| M2-G08 | Importe cuotas puede superar pago único | REG_OFR_006 (151; VIGENTE) | DEPENDE_PAULO | No imponer orden de montos ni precio sin modelo de plan |
+| M2-G09 | Mostrar más planes solo si existen | REG_CUO_001 (157; VIGENTE) | FALTA_MIGRAR | UI de opciones adicionales, requiere hechos de cantidad de planes disponibles |
+| M2-G10 | Ahorro y visualización no negativa | REG_DAT_001 (162; VIGENTE), REG_CUO_007 (241; VIGENTE), REG_PRI_003 (248; VIGENTE) | DEPENDE_PAULO | Cálculos y copy dependen de precios validados por backend; 162 tiene ejemplo con números en duro |
+| M2-G11 | Total a pagar hoy multi oferta | REG_DAT_004 (165; VIGENTE) | DEPENDE_PAULO | Componentes y primera cuota aprobados, sin fórmulas numéricas literales |
+| M2-G12 | Urgencia y ranking de ofertas | REG_UX_001 (170; VIGENTE), REG_OFR_010 (176; CANDIDATO) | REQUIERE_DECISION | Método de prioridad, umbrales y fuente score no coherentes plenamente (176 CANDIDATO) |
+| M2-G13 | Estados visuales de cards | REG_UX_002 (171; VIGENTE) | FALTA_MIGRAR | Estado vencido, seleccionado, sin selección; requiere vínculo de UI |
+| M2-G14 | Copy de ofertas no seleccionadas | REG_UX_003 (172; VIGENTE) | FALTA_MIGRAR | Texto literal visible y disparador por selección incompleta |
+| M2-G15 | Caché de ofertas y expiración | REG_TEC_005 (181; VIGENTE) | DEPENDE_PAULO | TTL y invalidación por expires_at; límites requieren configuración |
+| M2-G16 | Modal de planes conserva estado | REG_MOD_001 (238; VIGENTE) | FALTA_MIGRAR | Overlay sin navegación y recuperación exacta de selección |
+| M2-G17 | Plan Recomendado por ahorro y desempate | REG_CUO_006 (240; VIGENTE) | DEPENDE_PAULO | Orden y ahorro autoritativos, tie break primera cuota |
+| M2-G18 | Primera cuota destacada | REG_MOD_005 (244; VIGENTE) | FALTA_MIGRAR | Jerarquía visual y backend primera cuota |
+| M2-G19 | Precio final y quote autorizado | REG_PRI_001 (246; VIGENTE), REG_PRI_002 (247; VIGENTE), REG_PRI_007 (253; VIGENTE), REG_CLIENT_CHECKOUT_PRICING_QUOTE_001 (522; VIGENTE) | CUBIERTO_PARCIAL | REG_CHK_002 núcleo VIGENTE para suma; quote VIGENTE legada 522 no migrada; pricing de Paulo |
+| M2-G20 | Modal y desglose de precio | REG_PRI_005 (250; CANDIDATO), REG_PRI_005_V2 (252; VIGENTE), REG_PRI_008 (254; VIGENTE), REG_CLIENT_HOME_PRICE_DETAIL_MODAL_001 (558; VIGENTE) | REQUIERE_DECISION | D01 fuente de comisiones y conflicto de tasas hardcodeadas; 250 CANDIDATO y 558 VIGENTE |
+| M2-G21 | CTA de pago del modal | REG_PRI_010 (256; VIGENTE) | DEPENDE_PAULO | Reentrada checkout seguro, no cobro directo; fuente de precio y quote |
+| M2-G22 | Fecha de débito antes de elegir plan | REG_CUO_009 (259; VIGENTE) | MIGRAR | Guard explícito de intentar continuar sin fecha elegida |
+| M2-G23 | Overlay transición checkout dinámico | REG_CHK_023 (313; VIGENTE) | DEPENDE_PAULO | Snapshot/quote y referencia canónica de operación; no inventar |
+| M2-G24 | Educación y contenido externo ajenos a oferta operativa | UX-GAMIF-TERMOMETRO-01 (359; CANDIDATO), UX-RUTA-MODELO-2CAPAS-01 (373; VIGENTE), EDU-NODO-02-EXPLORA (375; CANDIDATO), EDU-NODO-03-ELIGE (376; VIGENTE), REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001 (550; VIGENTE) | REQUIERE_DECISION | Clasificación PALABRA_CLAVE pendiente; no trasladar a M2 sin revisión de familia |
+| M2-G25 | Texto Home no simula ofertas inexistentes | UX-HOME-CAPABILITY-04 (382; VIGENTE) | FALTA_MIGRAR | Copy aprobado y fuente matched, sin duplicar verdad en M2 |
+| M2-G26 | Gestión recurrente y carta no automática | REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001 (527; VIGENTE) | CUBIERTO_PARCIAL | M1-C02 V2 cubre parte de cancelación; terminación contractual pendiente Negocio/Legal |
+| M2-G27 | Beneficios en oferta Home | REG_CLIENT_HOME_BENEFIT_OFFER_PRESENTATION_001 (598; VIGENTE) | DEPENDE_PAULO | Backend configuración de campañas y stacking; no inferir oferta base |
+| M2-G28 | Identidad de plan, cuota cero y cronograma | B2B-RULE-INSTALLMENT-PLAN-001 (617; CANDIDATO) | REQUIERE_DECISION | Regla CANDIDATO con detalles de negocio; vínculo plan/oferta y pagos pendientes Paulo |
+| M2-G29 | Simula Plus y modelos predictivos | B2B-RULE-SIMULA-REVENUE-OBJECTIVE-001 (644; CANDIDATO), B2B-RULE-SIMULA-PLUS-MOTORS-001 (645; CANDIDATO), B2B-RULE-SIMULA-PLUS-NEGOTIATION-001 (651; CANDIDATO) | REQUIERE_DECISION | Candidatas fuera del flujo transaccional M2; atribución de familia pendiente |
+| M2-G30 | Negociación por bandas | B2B-RULE-NEGOTIATION-BANDS-001 (650; CANDIDATO) | REQUIERE_DECISION | CANDIDATO: aceptación B2B y versión oferta requieren aprobación/autoridad y estados |
+| M2-G31 | Decisión comercial por segmento | B2B-RULE-OFFER-SEGMENT-DECISION-001 (684; CANDIDATO) | REQUIERE_DECISION | CANDIDATO: CON_OFERTA, SIN_OFERTA, PENDIENTE; fuente comercial y decisión dueño |
+**Balance de grupos:** DEPENDE_PAULO=9; MIGRAR=6; FALTA_MIGRAR=7; REQUIERE_DECISION=7; CUBIERTO_PARCIAL=2. `CUBIERTO_PARCIAL` no equivale a absorción ni autoriza deprecación: REG_CHK_002 VIGENTE cubre solo componente de suma de G19; M1-C02 V2 CANDIDATA cubre parcialmente G26. Ninguna otra obligación se declara cubierta sin equivalencia probada.
+**Migrables sin nuevas decisiones de producto:** seis obligaciones G02,G03,G04,G06,G07,G22. Pueden expresarse con hechos lógicos tipados y guards de presentación/continuación, pero dependen de Paulo para runtime. No son funcionalidad publicada. Las demás quedan inventariadas, no migradas.
+## Decisiones del propietario (máximo cinco)
+1. **Prioridad entre ofertas:** ¿urgencia crítica siempre primero o ranking de probabilidad de pago? Fuentes REG_UX_001/170 y REG_OFR_010/176 (CANDIDATO, pesos/umbral fijos). **Recomendación:** no fijar ranking ni pesos hasta definir criterio de prioridad gobernado en configuración.
+2. **Economía del precio:** resolver fuente de comisiones, desglose y visibilidad de cargos pagados por LF/B2B; REG_PRI_001/002/005 y 558 difieren en cifras. **Recomendación:** aplicar decisión M1-D01, parametrizar fuente autorizada por Paulo y evitar tarifas numéricas en reglas.
+3. **Cuota cero y cronograma B2B:** confirmar interpretación contractual de cuota inicial, pertenencia al plan y validación de fechas de deuda/empresa (B2B-RULE-INSTALLMENT-PLAN-001, CANDIDATO). **Recomendación:** respetar plan específico, separar cuota inicial del cronograma regular, sin resolver estructuras físicas antes de Paulo.
+4. **Negociación por bandas:** ¿habilitar propuesta del cliente con autorización B2B gobernada y aceptación final del cliente? (650, CANDIDATO). **Recomendación:** mantener como CANDIDATO sin autoaceptación hasta contrato formal.
+5. **Clasificación de M2:** confirmar excluir contenido educativo, Simula y promociones detectado solo por PALABRA_CLAVE (359,373,375,376,550,644,645,651). **Recomendación:** reclasificar en familias reales después de revisión semántica, sin borrado ni movimiento ahora.
+Otros grupos con decisión comercial pendiente (ej. 684) permanecen como decisión abierta documentada; estas cinco preguntas concentran los ejes sin autorizar implícitamente nada.
+## Implementación gobernada
+Archivo `sandbox/lf_contract_gate_test/nucleo_ci/m2_6_candidatas_v1.json`: seis fichas nuevas CANDIDATA con origen MIGRACION que referencia cada legada; `lf_ops.nucleo_regla_proponer_v1`; fecha/no-selección sin guard de contexto no bloquean. Pruebas 23 casos sintéticos y seis mutantes sin guard, PG17 BEGIN/ROLLBACK, revalidación 17/17. Sin modelo de datos o binding físico inventado. Juicio semántico independiente aún no ejecutado; ninguna promoción.
+**No tocar:** REG_CHK_007, legadas 586, M1 V2, lectores e instancia SALY. No confundir inventario de 53 con cobertura completa de producto.
