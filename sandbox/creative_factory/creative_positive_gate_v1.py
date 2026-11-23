@@ -123,6 +123,17 @@ def prepare_positive_review(plan: dict[str, Any],
     check(seen_zones == set(components), "CREATIVE_ZONE_COVERAGE")
 
     if mode == "EXPLORE_CREATIVE":
+        # Reject the concrete inherited lock that produced the poor SALY results.
+        # A broader semantic conflict still requires the independent reviewer.
+        phrases = ("no rediseñar", "corregir las dos pantallas anteriores",
+                   "conservar los píxeles de todos los textos",
+                   "sin adornos ni elementos nuevos")
+        blueprint = frozen_plan["blueprint"]
+        inherited = [blueprint.get("intent", ""),
+                     *blueprint.get("restrictions", [])]
+        check(not any(t in str(row).casefold() for row in inherited
+                      for t in phrases),
+              "CREATIVE_EXPLORE_CONTRADICTORY_LOCK")
         check(type(frozen_plan["blueprint"].get("free")) is list
               and len(frozen_plan["blueprint"]["free"]) > 0 and free_native > 0,
               "CREATIVE_EXPLORE_FREEDOM_EMPTY")
