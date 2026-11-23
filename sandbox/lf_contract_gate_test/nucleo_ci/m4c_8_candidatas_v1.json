@@ -1,0 +1,759 @@
+{
+  "schema": "LF-M4C-8-V1",
+  "facts": [
+    {
+      "codigo": "m4c_intento_accion_operativa_b2b",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_autorizacion_operativa_server_side_incompleta",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_recurso_empresa_b2b",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_empresa_fuera_scope_autorizado",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_procesar_carga_b2b",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_validacion_seguridad_carga_incompleta",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_responder_credencial_invalida",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_respuesta_login_revela_cuenta",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_persistir_credencial_b2b",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_password_en_almacenamiento_prohibido",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_toggle_password_login",
+      "familia": "MFA_OTP_SSO",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_toggle_altera_password_o_telemetria",
+      "familia": "MFA_OTP_SSO",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_render_formulario_login",
+      "familia": "MFA_OTP_SSO",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_autofill_pegado_o_input_incompatible",
+      "familia": "MFA_OTP_SSO",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_intento_avance_progresivo_login",
+      "familia": "MFA_OTP_SSO",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4c_auth_prematura_o_duplicada",
+      "familia": "MFA_OTP_SSO",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    }
+  ],
+  "entries": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C01",
+      "clave": "m4c_396",
+      "titulo": "Denegación B2B por defecto hasta autorización operativa",
+      "descripcion": "Solo ante intento de acción operativa B2B posterior a autenticación, BLOQUEAR si falta autorización server-side de usuario activo, recurso, empresa, permiso o transición aplicable. Los pasos pre-auth de Login/MFA/recuperación no conceden permiso operativo por sí solos; no se bloquea una mera presentación de Login.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_accion_operativa_b2b"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_autorizacion_operativa_server_side_incompleta"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/396",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_accion_operativa_b2b": true,
+            "m4c_autorizacion_operativa_server_side_incompleta": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_accion_operativa_b2b": true,
+            "m4c_autorizacion_operativa_server_side_incompleta": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_accion_operativa_b2b": false,
+            "m4c_autorizacion_operativa_server_side_incompleta": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_accion_operativa_b2b": false,
+            "m4c_autorizacion_operativa_server_side_incompleta": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C02",
+      "clave": "m4c_397",
+      "titulo": "Aislamiento de empresa B2B en consulta o mutación",
+      "descripcion": "Ante intento de consulta o mutación operativa sobre una empresa, BLOQUEAR si la empresa objetivo no pertenece al conjunto explícito autorizado por servidor para el usuario activo, incluso si el navegador envía company_id. Para recursos sin contrato de tenant autorizado se exige mantener server-only; no concede permiso por misma IP o por grupo declarado.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_recurso_empresa_b2b"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_empresa_fuera_scope_autorizado"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/397",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_recurso_empresa_b2b": true,
+            "m4c_empresa_fuera_scope_autorizado": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_recurso_empresa_b2b": true,
+            "m4c_empresa_fuera_scope_autorizado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_recurso_empresa_b2b": false,
+            "m4c_empresa_fuera_scope_autorizado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_recurso_empresa_b2b": false,
+            "m4c_empresa_fuera_scope_autorizado": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C03",
+      "clave": "m4c_402",
+      "titulo": "Carga B2B se procesa solo tras validación íntegra",
+      "descripcion": "Ante intento de procesar una carga B2B, BLOQUEAR si no fueron validados extensión, MIME, tamaño según política gobernada, checksum, plantilla y malware. La fuente autorizada de límites y verificador runtime queda pendiente de Paulo; no fijar tamaño ni inferir estado válido del archivo.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_procesar_carga_b2b"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_validacion_seguridad_carga_incompleta"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/402",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_procesar_carga_b2b": true,
+            "m4c_validacion_seguridad_carga_incompleta": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_procesar_carga_b2b": true,
+            "m4c_validacion_seguridad_carga_incompleta": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_procesar_carga_b2b": false,
+            "m4c_validacion_seguridad_carga_incompleta": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_procesar_carga_b2b": false,
+            "m4c_validacion_seguridad_carga_incompleta": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C04",
+      "clave": "m4c_425",
+      "titulo": "No enumerar cuentas ante credenciales inválidas",
+      "descripcion": "Solo al preparar respuesta por fallo de credenciales de Login B2B, BLOQUEAR mensajes o comportamiento observable que revelen existencia, estado o factor fallido de la cuenta. MFA requerido, rate limit e indisponibilidad real conservan sus respuestas diferenciadas, fuera de este guard. Mitigación temporal runtime pendiente de Paulo.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_responder_credencial_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_respuesta_login_revela_cuenta"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/425",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_responder_credencial_invalida": true,
+            "m4c_respuesta_login_revela_cuenta": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_responder_credencial_invalida": true,
+            "m4c_respuesta_login_revela_cuenta": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_responder_credencial_invalida": false,
+            "m4c_respuesta_login_revela_cuenta": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_responder_credencial_invalida": false,
+            "m4c_respuesta_login_revela_cuenta": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C05",
+      "clave": "m4c_426",
+      "titulo": "Contraseña B2B exclusivamente en runtime de autenticación",
+      "descripcion": "Solo ante intento de persistir o transmitir contraseña fuera del proveedor/canal autorizado de autenticación, BLOQUEAR exposición en tablas funcionales, logs, analytics, session replay o payload de diseño. No impide el envío seguro transitorio necesario para autenticar; binding real pendiente.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_persistir_credencial_b2b"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_password_en_almacenamiento_prohibido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/426",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_persistir_credencial_b2b": true,
+            "m4c_password_en_almacenamiento_prohibido": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_persistir_credencial_b2b": true,
+            "m4c_password_en_almacenamiento_prohibido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_persistir_credencial_b2b": false,
+            "m4c_password_en_almacenamiento_prohibido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_persistir_credencial_b2b": false,
+            "m4c_password_en_almacenamiento_prohibido": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C06",
+      "clave": "m4c_428",
+      "titulo": "Visibilidad de contraseña no altera secreto",
+      "descripcion": "Solo al alternar mostrar/ocultar contraseña en Login B2B, BLOQUEAR si el control altera valor, pierde contenido o emite secreto a telemetría. No afecta otros controles ni captura nuevos datos.",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "B2B_AUTENTICACION",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_toggle_password_login"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_toggle_altera_password_o_telemetria"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/428",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_toggle_password_login": true,
+            "m4c_toggle_altera_password_o_telemetria": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_toggle_password_login": true,
+            "m4c_toggle_altera_password_o_telemetria": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_toggle_password_login": false,
+            "m4c_toggle_altera_password_o_telemetria": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_toggle_password_login": false,
+            "m4c_toggle_altera_password_o_telemetria": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C07",
+      "clave": "m4c_430",
+      "titulo": "Login compatible con gestores y pegado de credenciales",
+      "descripcion": "Al presentar formulario Login B2B, BLOQUEAR diseño que impida pegado/autocomplete estándar username/current-password, o desmonte el input de contraseña durante divulgación progresiva rompiendo autofill. No exige exponer credencial ni disparar autenticación por presentación.",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "B2B_AUTENTICACION",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_render_formulario_login"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_autofill_pegado_o_input_incompatible"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/430",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_render_formulario_login": true,
+            "m4c_autofill_pegado_o_input_incompatible": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_render_formulario_login": true,
+            "m4c_autofill_pegado_o_input_incompatible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_render_formulario_login": false,
+            "m4c_autofill_pegado_o_input_incompatible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_render_formulario_login": false,
+            "m4c_autofill_pegado_o_input_incompatible": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4C-C08",
+      "clave": "m4c_580",
+      "titulo": "Login progresivo no anticipa ni duplica autenticación",
+      "descripcion": "Solo al avanzar etapas de divulgación progresiva del Login B2B, BLOQUEAR autenticación anticipada por avanzar correo o envío duplicado por viewport; autenticar una sola vez con correo y contraseña. Validación local, foco, correo lectura y aria-live conservados como obligaciones residuales de UI por verificar; el layout no concede permisos.",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "B2B_AUTENTICACION",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_intento_avance_progresivo_login"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4c_auth_prematura_o_duplicada"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/580",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_avance_progresivo_login": true,
+            "m4c_auth_prematura_o_duplicada": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_avance_progresivo_login": true,
+            "m4c_auth_prematura_o_duplicada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_avance_progresivo_login": false,
+            "m4c_auth_prematura_o_duplicada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4c_intento_avance_progresivo_login": false,
+            "m4c_auth_prematura_o_duplicada": false
+          },
+          "esperado": false
+        }
+      ]
+    }
+  ]
+}
