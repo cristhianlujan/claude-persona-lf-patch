@@ -77,7 +77,7 @@ CREATE TRIGGER procesos_nodo_guard BEFORE INSERT ON saly.procesos FOR EACH ROW E
 -- Referencia opcional de un paso a un modulo compartido (no canal).
 -- La FK valida existencia; el guard exige MODULO si la referencia no es NULL.
 -- Una version de paso conserva la inmutabilidad del trigger previo.
-CREATE FUNCTION saly.procesos_paso_nodo_guard_v1() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $
+CREATE FUNCTION saly.procesos_paso_nodo_guard_v1() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $paso_nodo$
 DECLARE v_nivel text;
 BEGIN
   IF NEW.nodo_codigo IS NOT NULL THEN
@@ -87,7 +87,7 @@ BEGIN
     END IF;
   END IF;
   RETURN NEW;
-END; $;
+END; $paso_nodo$;
 CREATE TRIGGER procesos_paso_nodo_guard BEFORE INSERT ON saly.procesos_pasos_versiones FOR EACH ROW EXECUTE FUNCTION saly.procesos_paso_nodo_guard_v1();
 
 -- Serializa cambios de composición contra sellado y bloquea traslado entre versiones.
