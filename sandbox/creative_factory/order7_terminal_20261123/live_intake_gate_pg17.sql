@@ -58,5 +58,5 @@ END $gate$;
 CREATE TRIGGER trg_creative_00_intake_semantic_gate_v1
 BEFORE INSERT OR UPDATE OF status,scope_json ON saly.creative_orders
 FOR EACH ROW EXECUTE FUNCTION saly.creative_intake_semantic_gate_v1();
-CREATE TEMP TABLE intake_guard_baseline AS
+CREATE TABLE saly.test_intake_guard_baseline AS
 SELECT md5(pg_get_functiondef('saly.creative_intake_semantic_gate_v1()'::regprocedure)) AS hash;
