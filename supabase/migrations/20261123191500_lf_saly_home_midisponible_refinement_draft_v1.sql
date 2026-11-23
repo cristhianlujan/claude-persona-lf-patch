@@ -87,7 +87,8 @@ BEGIN
       'rendering_authority',false,
       'render_authorized',false,
       'review_only',true,
-      'blocking_reason','NOT_COMPILED_NOT_QA_ATTESTED_NOT_RENDER_AUTHORIZED'
+      'dependency_policy_state','UNRESOLVED_IMMUTABLE_SUCCESSOR_CHAIN',
+      'blocking_reason','NOT_COMPILED_NOT_QA_ATTESTED_NOT_RENDER_AUTHORIZED_NO_QUEUE_SLOT'
     ),v_snapshot,v_context_id,'BORRADOR')
   RETURNING id INTO v_new_id;
   INSERT INTO saly.creative_order_items(
@@ -108,15 +109,23 @@ BEGIN
        'parent_order_id',v_home_id,'parent_item_id',v_home_item_id,
        'target_component','HOME.SUMMARY.MI_DISPONIBLE'
      ),'PENDIENTE');
-  -- New draft cannot be executed until its original HOME order is truly done.
-  INSERT INTO saly.creative_order_sequence_v1(project_id,order_id,depends_on_order_id)
-  VALUES (v_project,v_new_id,v_home_id);
+  -- The immutable sequence uses UNIQUE(depends_on_order_id): HOME #7
+  -- already has Adelanto #8 as its sole successor. Creating another successor
+  -- is prohibited. Preserve source lineage only in scope_json, as a BORRADOR.
+  -- No queue dependency or claim is registered in this review-only migration.
+  IF NOT EXISTS (SELECT 1 FROM saly.creative_order_sequence_v1 seq
+       JOIN saly.creative_orders follow ON follow.id=seq.order_id
+       WHERE seq.depends_on_order_id=v_home_id
+         AND follow.code='SALY_ADELANTO_V015_SINGLE_20261123')
+  THEN RAISE EXCEPTION 'SALY_MIDISPONIBLE_ORIGINAL_SUCCESSOR_DRIFT'; END IF;
 
   IF (SELECT count(*) FROM saly.creative_order_items i
       WHERE i.order_id=v_new_id AND i.code='HOME_MIDISPONIBLE'
         AND i.kind='SCREEN' AND i.ordinal=1 AND i.status='PENDIENTE')<>1
    OR (SELECT count(*) FROM saly.creative_order_sequence_v1 s
-      WHERE s.order_id=v_new_id AND s.depends_on_order_id=v_home_id)<>1
+      WHERE s.order_id=v_new_id)<>0
+   OR (SELECT scope_json->>'refinement_of_order_id'
+       FROM saly.creative_orders WHERE id=v_new_id) IS DISTINCT FROM v_home_id::text
    OR (SELECT scope_json->>'render_authorized' FROM saly.creative_orders
       WHERE id=v_new_id) IS DISTINCT FROM 'false'
    OR (SELECT status FROM saly.creative_orders WHERE id=v_new_id)<>'BORRADOR'
