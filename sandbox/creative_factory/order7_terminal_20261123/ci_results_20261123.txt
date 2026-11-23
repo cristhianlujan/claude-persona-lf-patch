@@ -12,3 +12,16 @@ Replay migration rejected by prestate guard (expected).
 Scope: disposable PG17 fixture, not the actual Supabase database.
 The temporary CI workflow was removed before PASE so that the repository ordinary-PR entrypoint remains single.
 NO PROD DEPLOY CLAIM, NO DB TERMINADO CLAIM until Merge Train and Supabase readback.
+
+---
+Follow-up correction: scoped historical intake terminal transition.
+PG17 isolated run: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45284187711
+Tested commit: 24d4b24fba398dc1867ccf319c46bd9155643d9a
+PostgreSQL 17: SUCCESS.
+PASS_PRE_MIGRATION_FALSE_TERMINAL_REJECTED
+PASS_ORIGINAL_INTAKE_REJECTS_UNPROVEN_TERMINAL
+PASS_POST_MIGRATION_TERMINAL_AND_IMMUTABLE_NO_FAKE_RUN
+PASS_INTAKE_GATE_RESTORED_AND_OTHER_ORDER_BLOCKED
+PASS_PG17_GOVERNED_HISTORICAL_HOME7_ITEM10_TERMINAL_NEGATIVES_AND_READBACK
+Expected replay failure; no fabricated RUN; semantics retained = delivered in chat / not approved for production.
+Temporary test workflow removed after SUCCESS; do not conflate PG17 fixture with live Supabase.
