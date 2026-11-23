@@ -1,0 +1,76 @@
+name: SALY SUNAT physical DELETE isolated PG17 136k
+on:
+  push:
+    branches: [saly/sunat-delete-physical-real-20261123]
+    paths:
+      - '.github/workflows/saly-sunat-physical-delete-pg17-temp.yml'
+      - 'supabase/migrations/20261123003500_lf_saly_sunat_bulk_physical_delete_v1.sql'
+      - 'supabase/tests/saly_sunat_bulk_physical_delete_pg17.sql'
+permissions:
+  contents: read
+jobs:
+  disposable-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_sunat_delete_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_sunat_delete_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_sunat_delete_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare isolated PG17 and source views
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = saly_sunat_delete_test
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SHOW server_version_num;' | cut -c1-2)" = 17
+          python3 - <<'PY'
+          from pathlib import Path
+          matches=list(Path('supabase/migrations').glob('*_lf_saly_sunat_commercial_filter_v1.sql'))
+          assert len(matches)==1,matches
+          s=matches[0].read_text()
+          start=s.index('CREATE VIEW saly.ventas_sunat_elegibilidad_v1')
+          end=s.index('REVOKE ALL ON saly.ventas_sunat_elegibilidad_v1',start)
+          Path('/tmp/saly-sunat-commercial-views.sql').write_text(s[start:end])
+          print('PASS_SOURCE_EXACT_COMMERCIAL_DDL',matches[0])
+          PY
+      - name: Synthetic 136k captures, exact SUNAT eligibility and negative run state
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_sunat_bulk_physical_delete_pg17.sql 2>&1 | tee /tmp/saly_fixture.log
+          grep -q PASS_SYNTHETIC_136000_5275_130725_CLASSIFICATION /tmp/saly_fixture.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          s=Path('supabase/migrations/20261123003500_lf_saly_sunat_bulk_physical_delete_v1.sql').read_text()
+          pre=s[s.index('DO $preflight$'):s.index('END $preflight$;')+len('END $preflight$;')]
+          subprocess.run(['psql','-X','-v','ON_ERROR_STOP=1','-c',"UPDATE saly.ventas_discovery_runs SET estado='EN_EJECUCION'"],check=True)
+          p=subprocess.run(['psql','-X','-v','ON_ERROR_STOP=1','-c',pre],text=True,capture_output=True)
+          assert p.returncode!=0 and 'SUNAT_DELETE_RUN_NOT_FROZEN' in p.stderr,(p.returncode,p.stderr)
+          subprocess.run(['psql','-X','-v','ON_ERROR_STOP=1','-c',"UPDATE saly.ventas_discovery_runs SET estado='HOLD'"],check=True)
+          print('PASS_NEGATIVE_RUN_NOT_FROZEN')
+          PY
+      - name: Execute exact massive DELETE and verify committed data
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261123003500_lf_saly_sunat_bulk_physical_delete_v1.sql 2>&1 | tee /tmp/saly_delete.log
+          grep -q PASS_SALY_SUNAT_PHYSICAL_DELETE_RETAINED_5275_DELETED_130725_INGESTS_136 /tmp/saly_delete.log
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_hallazgos')" = 5275
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_sunat_bulk_delete_ledger_v1')" = 130725
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_discovery_ingestas')" = 136
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE clasificacion_comercial != '\''ELEGIBLE'\''')" = 0
+          echo PASS_PG17_136K_SYNTHETIC_BULK_PHYSICAL_DELETE_COMMIT
