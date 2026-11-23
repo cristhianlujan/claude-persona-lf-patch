@@ -6,13 +6,19 @@
 \set ON_ERROR_STOP on
 DROP SCHEMA IF EXISTS saly CASCADE;
 CREATE SCHEMA saly;
+DO $roles$ BEGIN
+ IF to_regrole('anon') IS NULL THEN CREATE ROLE anon; END IF;
+ IF to_regrole('authenticated') IS NULL THEN CREATE ROLE authenticated; END IF;
+ IF to_regrole('service_role') IS NULL THEN CREATE ROLE service_role; END IF;
+ IF to_regrole('supabase_read_only_user') IS NULL THEN CREATE ROLE supabase_read_only_user; END IF;
+END $roles$;
 CREATE SEQUENCE saly.creative_runs_id_seq;
 CREATE TABLE saly.config_global (
  scope text NOT NULL, config_key text NOT NULL, config_value text NOT NULL,
  value_type text NOT NULL,value_status text NOT NULL,valid_from timestamptz NOT NULL,
  PRIMARY KEY(scope,config_key,valid_from));
 INSERT INTO saly.config_global VALUES
- ('CREATIVE_FACTORY','QUEUE_MAX','5','INTEGER','REAL','2025-01-01'),
+ ('CREATIVE_FACTORY','QUEUE_MAX','1','INTEGER','REAL','2025-01-01'),
  ('CREATIVE_FACTORY','MAX_ATTEMPTS','3','INTEGER','REAL','2025-01-01'),
  ('CREATIVE_FACTORY','QUEUE_TIMEOUT_SECONDS','300','INTEGER','REAL','2025-01-01'),
  ('CREATIVE_FACTORY','LEASE_SECONDS','600','INTEGER','REAL','2025-01-01');
