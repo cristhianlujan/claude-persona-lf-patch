@@ -10,7 +10,7 @@
 
 ## Nueva solicitud
 - Nuevo código: `SALY_HOME_MIDISPONIBLE_REFINEMENT_20261123`.
-- Un solo ítem `HOME_MIDISPONIBLE`, estado `BORRADOR/PENDIENTE`, vinculado mediante dependencia a HOME #7.
+- Un solo ítem `HOME_MIDISPONIBLE`, estado `BORRADOR/PENDIENTE`, vinculado por metadatos de procedencia a HOME #7. **No se inserta secuencia de cola:** `creative_order_sequence_v1` impone `UNIQUE(depends_on_order_id)` y HOME #7 ya tiene como sucesor a Adelanto #8. La secuencia existente es inmutable y queda intacta; el borrador queda bloqueado hasta decisión gobernada sobre la futura ejecución.
 - `literal_request`: excerpt exacto del mensaje actual del usuario (se conservan errores ortográficos; NO para render).
 - `interpretation`: solo reemplazar un supuesto dato monetario por texto de acceso «Cómo se calcula» con chevron. Mantener el resto íntegro. No crear otra pantalla ni afectar #7/#8.
 - Contexto: mismo SEALED context de HOME #7 y su identity snapshot; no aprobación de CANDIDATE.
@@ -37,6 +37,6 @@ Readback real Supabase:
 La imagen directa muestra predominantemente acentos verdes en las tres tarjetas, lo que no evidencia diferenciación de tonos. **No hay evidencia de compilación usando el trace de tokens del skill al invocar ImageGen**, así que no atribuir el incumplimiento a una función interna del skill. Próxima prueba reproducible: producir handoff congelado con `trace` de tokens por componente, contrastarlo con mensaje real y comprobar imagen resultante. Esto es observación, no cambio de alcance del nuevo pedido.
 
 ## Controles
-- PG17 aislado: aplicar fuentes aprobadas de seed/guard PR #4648 y corrección #4660 sobre fixture, aplicar nuevo seed; verificar un nuevo BORRADOR, un ítem pendiente, dependencia a #7, QA y autorización bloqueados, 0 RUN.
+- PG17 aislado: aplicar fuentes aprobadas de seed/guard PR #4648 y corrección #4660 sobre fixture, aplicar nuevo seed; verificar un nuevo BORRADOR, un ítem pendiente, **referencia al padre en metadatos y ningún enlace en secuencia**, QA y autorización bloqueados, 0 RUN, preservando HOME #7 → Adelanto #8.
 - Negativos: segundo ítem rechazado, render sin QA rechazado, ejecución anticipada rechazada.
 - PASE → Train → readback, sin SQL directo, sin IDs supuestos, no tocar #7 ni #8.
