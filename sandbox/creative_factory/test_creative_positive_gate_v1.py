@@ -98,6 +98,38 @@ def fixture():
 
 
 class PositiveGateTests(unittest.TestCase):
+    def test_universal_decoration_ban_goes_to_graphic_handoff(self):
+        plan, decision = fixture()
+        got = prepare_positive_review(plan, decision)
+        self.assertIn("No agregar rayos de explosión", got["prompt_review"])
+        self.assertIn("palitos de énfasis", got["prompt_review"])
+        self.assertIn("trazos funcionales", got["prompt_review"])
+
+    def test_explicit_positive_decorative_bursts_are_rejected(self):
+        plan, decision = fixture()
+        decision["alternatives"][1]["design_move"] = (
+            "Añade rayos de explosión alrededor del monto para destacarlo"
+        )
+        with self.assertRaisesRegex(
+                CreativeProcessBlocked, "CREATIVE_DECORATIVE_STROKES_FORBIDDEN"):
+            prepare_positive_review(plan, decision)
+
+    def test_no_decorative_bursts_instruction_is_not_false_positive(self):
+        plan, decision = fixture()
+        decision["alternatives"][1]["design_move"] = (
+            "No agregar rayos de explosión; agrupa icono y etiqueta en horizontal"
+        )
+        got = prepare_positive_review(plan, decision)
+        self.assertEqual(got["selected_alternative"], "B")
+
+    def test_brand_independent_decorative_ban(self):
+        plan, decision = fixture()
+        plan["business_code"] = "OTRO"
+        plan["blueprint"]["brand"] = "OTRO"
+        plan["sources"][0]["business_code"] = "OTRO"
+        got = prepare_positive_review(plan, decision)
+        self.assertIn("No agregar rayos de explosión", got["prompt_review"])
+
     def test_explore_positive(self):
         plan, dec = fixture()
         original = copy.deepcopy((plan, dec))
