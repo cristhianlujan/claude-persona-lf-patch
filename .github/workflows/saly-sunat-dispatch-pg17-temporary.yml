@@ -56,5 +56,8 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f /tmp/pte_index_exact.sql
       - name: Reproduce GLOBAL historical dispatch-key constraint, prove RUN-scoped correction
         run: |
+          # Historical PG17 fixture expects an old migration filename; use the exact
+          # current commercial-view migration bytes only in this disposable runner.
+          cp supabase/migrations/20261123000336_lf_saly_sunat_commercial_filter_v1.sql supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql
           python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
           python3 skills/ai_sales_discovery/tests/sunat_commercial_dispatch_pg17.py
