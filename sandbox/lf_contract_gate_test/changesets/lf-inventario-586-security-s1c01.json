@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-inventario-586-security-s1c01",
+  "paths": {
+    "docs/nucleo/LF_AGRUPACION_586_LEGADAS_20261123.md": "PASE_SUPPORT",
+    "docs/nucleo/LF_INVENTARIO_586_LEGADAS_20261123.csv": "PASE_SUPPORT",
+    "docs/nucleo/LF_SECURITY_S1C01_CASOS_20261123.md": "PASE_SUPPORT",
+    "supabase/migrations/20261123231500_lf_nucleo_security_s1c01_candidata_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-inventario-586-security-s1c01.json": "CHANGESET_MANIFEST"
+  }
+}
