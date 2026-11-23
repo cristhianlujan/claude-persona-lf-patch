@@ -11,7 +11,7 @@ DECLARE
   cat saly.ventas_discovery_catalogo%ROWTYPE;
   rr saly.ventas_social_runs_v1%ROWTYPE;
   ev_id uuid; original_claim uuid; original_source text;
-  pub_id uuid; old_hash text; claim_id uuid;
+  pub_id uuid; old_hash text; old_event_id uuid; claim_id uuid;
   v_source_id text; v_business_key text; v_external_ref text;
   v_event_key text; v_claim_key text; v_claim_state text; v_source_hash text;
   effect_key text; rec_hash text; reserv jsonb; receipt jsonb;
@@ -110,11 +110,11 @@ BEGIN
     WHERE ventas_social_eventos_v1.business_key=v_business_key
       AND ventas_social_eventos_v1.event_key=v_event_key FOR UPDATE;
 
-  SELECT id,source_sha256 INTO pub_id,old_hash FROM saly.ventas_social_publicaciones_v1
+  SELECT id,source_sha256,event_id INTO pub_id,old_hash,old_event_id FROM saly.ventas_social_publicaciones_v1
    WHERE ventas_social_publicaciones_v1.business_key=v_business_key
      AND ventas_social_publicaciones_v1.source_id=v_source_id
      AND ventas_social_publicaciones_v1.external_ref=v_external_ref FOR UPDATE;
-  IF FOUND AND old_hash IS DISTINCT FROM v_source_hash THEN
+  IF FOUND AND (old_hash IS DISTINCT FROM v_source_hash OR old_event_id IS DISTINCT FROM ev_id) THEN
     RAISE EXCEPTION 'SOCIAL_INGESTA_SOURCE_VERSION_CONFLICT'; END IF;
 
   SELECT a.id,a.source_id INTO original_claim,original_source
@@ -151,6 +151,23 @@ BEGIN
       RETURNING id INTO claim_id;
     IF claim_id IS NULL THEN
       RAISE EXCEPTION 'SOCIAL_INGESTA_CLAIM_CONFLICT'; END IF;
+    -- A different channel may add a NEW phase to the same canonical event.
+    SELECT a.id,a.source_id INTO original_claim,original_source
+      FROM saly.ventas_social_afirmaciones_v1 a
+      WHERE a.event_id=ev_id AND a.id<>claim_id AND a.source_id<>v_source_id
+      ORDER BY a.created_at,a.id LIMIT 1;
+    IF original_claim IS NOT NULL THEN
+      INSERT INTO saly.ventas_social_concurrencias_v1 (
+        event_id,original_claim_id,confirming_source_id,confirming_external_ref,
+        confirming_url,relation,match_evidence_sha256,reviewed)
+      VALUES(ev_id,original_claim,v_source_id,v_external_ref,p_record->>'url',
+        'COMPLEMENTA',rec_hash,true)
+      ON CONFLICT (original_claim_id,confirming_source_id,confirming_external_ref,relation)
+        DO NOTHING;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM saly.ventas_social_afirmaciones_v1
+        WHERE id=claim_id AND event_id=ev_id AND publicacion_id=pub_id)
+      THEN RAISE EXCEPTION 'SOCIAL_INGESTA_READBACK'; END IF;
     receipt:=jsonb_build_object('result','INSERTADO','run_ref',p_execution,
                                 'source_id',v_source_id,'event_id',ev_id,
                                 'claim_id',claim_id,'inserted_claims',1);
