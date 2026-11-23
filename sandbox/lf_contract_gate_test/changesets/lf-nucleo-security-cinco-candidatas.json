@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-nucleo-security-cinco-candidatas",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/security_s1c02_s1c06_paquetes_v1.json": "PASE_SUPPORT",
+    "docs/nucleo/LF_SECURITY_S1C02_S1C06_CASOS_20261123.md": "PASE_SUPPORT",
+    "supabase/migrations/20261123235500_lf_nucleo_security_cinco_candidatas_s1c02_s1c06_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-security-cinco-candidatas.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT"
+  }
+}

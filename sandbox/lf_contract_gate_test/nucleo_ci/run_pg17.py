@@ -671,7 +671,35 @@ def main():
                     psql(name,snapshot).stdout!=before):
                     raise RuntimeError("TANDA8_ROLLBACK_FAILED")
                 print("TANDA8_OUTER_ROLLBACK_PASS exact baseline",flush=True)
+            if "_lf_nucleo_security_cinco_candidatas_s1c02_s1c06_v1.sql" in path.name:
+                snapshot = """SELECT jsonb_build_object(
+                    'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                    'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
+                    'versions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones r),
+                    'proofs',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version,n) FROM lf_ops.nucleo_regla_pruebas r),
+                    'facts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_hechos r),
+                    'vocab',(SELECT jsonb_agg(to_jsonb(r) ORDER BY familia,hecho) FROM lf_ops.nucleo_familia_vocabulario r),
+                    'judges',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_juicios r),
+                    'evaluations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_evaluaciones r),
+                    'deprec',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r),
+                    'ekb',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM public.lf_error_knowledge r));"""
+                before = psql(name,snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("SECURITY_NEW_BOUNDARY")
+                trial = psql(name,source[:-len("COMMIT;")]+"ROLLBACK;\n",check=False)
+                print(trial.stdout+trial.stderr,flush=True)
+                if (trial.returncode or trial.stderr.count("SECURITY_NEW_RESULT ")!=5 or
+                    "SECURITY_NEW_PASS 5/5" not in trial.stderr or
+                    psql(name,snapshot).stdout!=before):
+                    raise RuntimeError("SECURITY_NEW_ROLLBACK_FAILED")
+                print("SECURITY_NEW_OUTER_ROLLBACK_PASS exact baseline",flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_security_cinco_candidatas_s1c02_s1c06_v1.sql" in path.name:
+                print(replay.stdout+replay.stderr,flush=True)
+                if replay.stderr.count("SECURITY_NEW_RESULT ")!=5 or "SECURITY_NEW_PASS 5/5" not in replay.stderr:
+                    raise RuntimeError("SECURITY_NEW_REPLAY_FAILED")
+
             if "_lf_nucleo_tanda8_dos_juicios_publicacion_v1.sql" in path.name:
                 print(replay.stdout+replay.stderr,flush=True)
                 if replay.stderr.count("TANDA8_RESULT ")!=2 or "TANDA8_PASS 2/2 judged" not in replay.stderr:
