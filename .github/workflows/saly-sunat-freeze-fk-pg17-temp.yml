@@ -1,0 +1,55 @@
+name: SALY SUNAT freeze L28 FK PG17 disposable
+on:
+  push:
+    branches: [saly/sunat-freeze-clean-20261123]
+    paths:
+      - '.github/workflows/saly-sunat-freeze-fk-pg17-temp.yml'
+      - 'supabase/migrations/20261123001500_lf_saly_sunat_ingest_freeze_for_purge_v1.sql'
+      - 'supabase/tests/saly_sunat_freeze_for_purge_pg17.sql'
+permissions:
+  contents: read
+jobs:
+  pg17-l28:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_sunat_freeze_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_sunat_freeze_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_sunat_freeze_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare disposable PG17
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = saly_sunat_freeze_test
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SHOW server_version_num;' | cut -c1-2)" = 17
+      - name: Check actual L28 FK negative, policy freeze, replay negative
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_sunat_freeze_for_purge_pg17.sql 2>&1 | tee /tmp/saly_freeze_pg17.log
+          grep -q PASS_HISTORICAL_CATALOG_FK_BLOCKS_FLAG_MUTATION /tmp/saly_freeze_pg17.log
+          grep -q PASS_SUNAT_FREEZE_POLICY_FALSE_RUN_HOLD_CATALOG_RIGHTS_PRESERVED_OPERATION_UNTOUCHED /tmp/saly_freeze_pg17.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import os,subprocess
+          sql=Path('supabase/migrations/20261123001500_lf_saly_sunat_ingest_freeze_for_purge_v1.sql').read_text()
+          part=sql[sql.index('DO $freeze$'):sql.index('END $freeze$;')+len('END $freeze$;')]
+          p=subprocess.run(['psql','-X','-v','ON_ERROR_STOP=1','-c',part],env=os.environ,text=True,capture_output=True)
+          assert p.returncode!=0 and 'SUNAT_FREEZE_POLICY_DRIFT' in p.stderr,(p.returncode,p.stderr)
+          print('PASS_FK_SAFE_FREEZE_REPLAY_NEGATIVE')
+          PY
