@@ -21,7 +21,7 @@ BEGIN
     OR (SELECT estado FROM lf_ops.nucleo_reglas WHERE codigo=code)<>'CANDIDATA'
     OR (SELECT regla_legacy_id FROM lf_ops.nucleo_reglas WHERE codigo=code) IS NOT NULL
   THEN RAISE EXCEPTION 'M1_FIVE_BASE_HASH_OR_STATE_DRIFT %',code; END IF;
-  SELECT jsonb_agg(to_jsonb(t) ORDER BY n) INTO oldtests FROM lf_ops.nucleo_regla_pruebas t WHERE t.regla=code AND version=1;
+  SELECT jsonb_agg(to_jsonb(t) ORDER BY t.n) INTO oldtests FROM lf_ops.nucleo_regla_pruebas t WHERE t.regla=code AND version=1;
   SELECT jsonb_agg(to_jsonb(t) ORDER BY id) INTO oldjudges FROM lf_ops.nucleo_juicios t WHERE t.regla=code AND version=1;
   FOR fact IN SELECT value FROM jsonb_array_elements(item->'nuevo_hechos') LOOP
    IF EXISTS (SELECT 1 FROM lf_ops.nucleo_hechos WHERE codigo=fact->>'codigo')
@@ -57,7 +57,7 @@ BEGIN
   wr:=lf_ops.nucleo_regla_proponer_v1(p,true);
   IF wr->>'resultado'<>'CANDIDATA' OR wr->>'version'<>'2'
   THEN RAISE EXCEPTION 'M1_FIVE_REVISION_REJECTED % %',code,wr; END IF;
-  SELECT jsonb_agg(jsonb_build_object('casuistica',casuistica,'entrada',entrada,'esperado',esperado) ORDER BY n)
+  SELECT jsonb_agg(jsonb_build_object('casuistica',casuistica,'entrada',entrada,'esperado',esperado) ORDER BY t.n)
    INTO newtests FROM lf_ops.nucleo_regla_pruebas WHERE regla=code AND version=2;
   IF newtests IS DISTINCT FROM p->'pruebas'
     OR (SELECT estado FROM lf_ops.nucleo_regla_versiones WHERE regla=code AND version=1)<>'DESCARTADA'
@@ -66,7 +66,7 @@ BEGIN
     OR (SELECT exigible_desde FROM lf_ops.nucleo_regla_versiones WHERE regla=code AND version=2) IS NOT NULL
     OR (SELECT to_jsonb(t)-'estado' FROM lf_ops.nucleo_regla_versiones t WHERE t.regla=code AND t.version=1)
        IS DISTINCT FROM to_jsonb(v1)-'estado'
-    OR (SELECT jsonb_agg(to_jsonb(t) ORDER BY n) FROM lf_ops.nucleo_regla_pruebas t WHERE t.regla=code AND version=1) IS DISTINCT FROM oldtests
+    OR (SELECT jsonb_agg(to_jsonb(t) ORDER BY t.n) FROM lf_ops.nucleo_regla_pruebas t WHERE t.regla=code AND version=1) IS DISTINCT FROM oldtests
     OR (SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM lf_ops.nucleo_juicios t WHERE t.regla=code AND version=1) IS DISTINCT FROM oldjudges
   THEN RAISE EXCEPTION 'M1_FIVE_HISTORY_OR_TESTS_DRIFT %',code; END IF;
   h2:=lf_ops.nucleo_hash_paquete_v1(code,2);
