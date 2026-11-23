@@ -3,6 +3,7 @@
   "paths": {
     "supabase/migrations/20261122235500_saly_creative_chat_artifact_reconciliation_v1.sql": "MIGRATION",
     "sandbox/creative_factory/reconciliation_v01/test_pg17.sh": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/saly-chat-artifact-reconciliation-v01.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/saly-chat-artifact-reconciliation-v01.json": "CHANGESET_MANIFEST",
+    "sandbox/creative_factory/reconciliation_v01/ci_results_20261122.txt": "RUNTIME_TESTING"
   }
 }
