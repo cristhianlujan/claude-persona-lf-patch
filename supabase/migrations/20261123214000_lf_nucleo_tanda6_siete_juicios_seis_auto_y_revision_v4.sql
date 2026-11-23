@@ -108,7 +108,7 @@ BEGIN
   IF outcome4->>'decision'='AUTO' THEN RAISE EXCEPTION 'TANDA6_V4_AUTO_UNJUDGED'; END IF;
   RAISE NOTICE 'TANDA6_V4_RESULT %',jsonb_build_object('regla','REG_CHK_004','version',4,'hash_version',old_v.hash,
     'hash_paquete',v4_package,'nota',outcome4->'nota','decision',outcome4->'decision',
-    'motivos',outcome4->'motivos','condicion_y_pruebas_sin_cambios',true,'promocion','NO_PROMOVIDA'));
+    'motivos',outcome4->'motivos','condicion_y_pruebas_sin_cambios',true,'promocion','NO_PROMOVIDA');
  END;
 
  IF EXISTS(SELECT 1 FROM public.lf_error_knowledge WHERE codigo='LF-NUCLEO-TANDA6-7-JUICIOS-Y-REINTENTO-V4-20261123-001') THEN RAISE EXCEPTION 'TANDA6_EKB_DUPLICATE'; END IF;
