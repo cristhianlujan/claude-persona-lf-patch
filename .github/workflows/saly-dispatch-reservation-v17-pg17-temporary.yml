@@ -1,0 +1,40 @@
+name: SALY Native Dispatch Reservation V17 PG17 Temporary
+on:
+  push:
+    branches:
+      - feat/saly-creative-native-dispatch-reservation-v17-20261123
+    paths:
+      - 'supabase/migrations/20261123091700_lf_saly_creative_native_dispatch_reservation_v1.sql'
+      - 'sandbox/creative_factory/queue_v17/**'
+      - '.github/workflows/saly-dispatch-reservation-v17-pg17-temporary.yml'
+permissions:
+  contents: read
+jobs:
+  pg17-v17:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_reserve_v17_test
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_reserve_v17_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PG17 queue entry, native wire and idempotent reservation
+        run: |
+          docker run --rm --network host \
+            -v "$PWD:/repo:ro" -w /repo \
+            -e PGHOST=127.0.0.1 -e PGPORT=5432 \
+            -e PGDATABASE=saly_reserve_v17_test \
+            -e PGUSER=postgres -e PGPASSWORD=postgres \
+            postgres:17 bash sandbox/creative_factory/queue_v17/test_pg17.sh
