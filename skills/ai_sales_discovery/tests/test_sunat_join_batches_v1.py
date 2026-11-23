@@ -75,6 +75,64 @@ class TestJoin(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"^SUNAT_COMMERCIAL_POLICY_REQUIRED$"):
             run(0)
 
+    def test_rejected_duplicate_still_poisoned_at_extraction(self):
+        # Rejected duplicate is NOT removed from evidence of repeated RUC.
+        # Otherwise the valid duplicate could be accepted accidentally.
+        proof=dict(ordinal=1,zip_sha256="1"*64,header_sha256="2"*64,url="https://example.org/input")
+        ruc="20000000999"
+        def monthly():
+            for workers in ("50","49"):
+                row=dict.fromkeys(MONTHLY_FIELDS,"")
+                row.update(RUC=ruc,NroTrab=workers,Estado="ACTIVO",
+                           Condicion="HABIDO",UBIGEO="150101")
+                yield row,proof
+        def reduced():
+            yield dict(RUC=ruc,nombre="Fixture",estado="ACTIVO",
+                       condicion="HABIDO",ubigeo="150101"),proof
+        self.assertEqual(list(joined_batches(monthly(),reduced(),**self.policy,
+                                            commercial_min_workers=50)),[])
+        # Same protection for a duplicate from the reduced feed.
+        good=dict(RUC=ruc,nombre="Fixture",estado="ACTIVO",condicion="HABIDO",ubigeo="150101")
+        def reduced_dup():
+            yield dict(good),proof
+            yield dict(good,estado="BAJA DE OFICIO"),proof
+        def monthly_one():
+            row=dict.fromkeys(MONTHLY_FIELDS,"")
+            row.update(RUC=ruc,NroTrab="50",Estado="ACTIVO",
+                       Condicion="HABIDO",UBIGEO="150101")
+            yield row,proof
+        self.assertEqual(list(joined_batches(monthly_one(),reduced_dup(),**self.policy,
+                                            commercial_min_workers=50)),[])
+        self.assertEqual(list(Path(self.temp.name).iterdir()),[])
+
+    def test_existing_ruc_excluded_before_payload_and_invalid_inputs_fail_closed(self):
+        def stream(monthly):
+            for k in (1,2):
+                ruc=str(20000000000+k)
+                proof=dict(ordinal=k,zip_sha256="1"*64,header_sha256="2"*64,url="https://example.org/input")
+                if monthly:
+                    row=dict.fromkeys(MONTHLY_FIELDS,"")
+                    row.update(RUC=ruc,NroTrab="50",Estado="ACTIVO",
+                               Condicion="HABIDO",UBIGEO="150101")
+                else:
+                    row=dict(RUC=ruc,nombre="Fixture",estado="ACTIVO",
+                             condicion="HABIDO",ubigeo="150101")
+                yield row,proof
+        def run(skip=None,threshold=50):
+            return list(joined_batches(stream(True),stream(False),**self.policy,
+                                       commercial_min_workers=threshold,existing_rucs=skip))
+        self.assertEqual(len(run()),2)
+        payloads=run({"20000000001"})
+        self.assertEqual(len(payloads),1)
+        self.assertEqual(json.loads(payloads[0])[0]["capture"]["normalized"]["ruc"],"20000000002")
+        with self.assertRaisesRegex(ValueError,"^SUNAT_EXISTING_RUCS_CONTRACT$"):
+            run(["20000000001"])
+        with self.assertRaisesRegex(ValueError,"^SUNAT_EXISTING_RUCS_CONTRACT$"):
+            run(set(),None)
+        with self.assertRaisesRegex(ValueError,"^SUNAT_EXISTING_RUCS_CONTRACT$"):
+            run({"INVALID"})
+        self.assertEqual(list(Path(self.temp.name).iterdir()),[])
+
     def test_terminal_crc_and_cleanup(self):
         def fails_at_eof():
             yield from self.stream([1],False)
