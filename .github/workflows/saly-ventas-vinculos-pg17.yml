@@ -41,7 +41,13 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -c 'CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN;'
           psql -X -v ON_ERROR_STOP=1 -c 'CREATE SCHEMA saly; CREATE TABLE saly.ventas_hallazgos(id uuid PRIMARY KEY DEFAULT gen_random_uuid());'
       - name: Apply one candidate migration to disposable PostgreSQL 17
-        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261123164500_lf_saly_ventas_vinculos_societarios_v1.sql
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_ventas_vinculos_societarios_v1.sql)
+          test "${#files[@]}" -eq 1
+          psql -X -v ON_ERROR_STOP=1 -f "${files[0]}"
       - name: Test positive and negative inserts, RLS and rollback
         run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_ventas_vinculos_societarios_v1_pg17_rollback.sql
       - name: Verify both tables stayed empty
