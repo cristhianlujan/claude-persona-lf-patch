@@ -1,0 +1,48 @@
+SALY V12 · pending-only in-chat generation / QA comments
+Date 2026-11-22
+PR #4616 (DRAFT)
+Code/CI SHA tested: 1f0a69f82fd3f6016cb317619ce0b4981b2e53d6
+CI URL https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45085405572
+CI result SUCCESS (v12_python SUCCESS; v12_pg17_scoped_atomic SUCCESS)
+
+Python contract:
+- 33/33 unittest PASS
+- 2/2 behavioral mutations detected by the targeted assertion:
+  PENDING_ONLY_FILTER; QA_COMMENT_READBACK.
+- Missing previous-image inventory blocks dispatch.
+- Only explicit order + item list PENDIENTE admitted; no duplicate regeneration.
+- The chat message is available only after begin/readback PRODUCIENDO.
+- No image/result -> no QA/TERMINADO.
+- Independent QA with comment and final receipt required.
+
+PostgreSQL 17.6 isolated:
+- Real V02 existing queue + V06 delivery gate + V12 001/002 candidate SQL.
+- 2 independent psql processes: exactly 1 RUN EJECUTANDO, 1 active claim,
+  HOME PRODUCIENDO, ADELANTO and REWARDS remain PENDIENTE,
+  foreign order untouched; parent order EN_PROCESO.
+- Invalid inputs, unauthorized REVIEW_ONLY and missing CREATIVE_FACTORY
+  policy rejected with exact codes.
+- QA negatives rejected by exact SQL codes: empty comment, same worker,
+  source/artifact hash drift.
+- QA PASS: actual JSON comment stored in creative_order_items.qa_receipt,
+  item APROBADO, RUN EXITOSO.
+- V06 guard blocks release DONE without VERIFIED evidence or with STAGED.
+- Worker self-verification blocked. SIMULATED independent VERIFIED evidence
+  permits DONE; order remains EN_PROCESO while other required items pending.
+- QA FAIL: comment stored; item BLOQUEADO, claim BLOCKED, not TERMINADO.
+- PG17 fixture restored. No write to Supabase.
+
+Initial CI 45085342253 failed on ambiguous variable in test_qa_pg17.sql.
+Fixed test alias and reran full successful CI at SHA above. Not a product
+SQL rule failure; first failure preserved.
+
+Limitations:
+- The verified delivery in PG17 is an isolated synthetic test fixture,
+  NOT an authenticated ChatGPT image-gen callback in production.
+- Runtime-owned ports for ChatGPT response, image bytes, independent QA,
+  database begin/save/finalize and readback are not connected in this PR.
+- image_gen is synchronous in this chat; there is no real polling API every
+  10/20/30 seconds during generation. QA must trigger when the tool returns.
+- CREATIVE_FACTORY 4/4 approved policy keys are absent in live Supabase.
+- Previous five chat images need reconciliation before any new processing.
+- No GRANT, no migration deployed, no merge, no actual new image generated.

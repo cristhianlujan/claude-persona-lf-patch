@@ -1,0 +1,29 @@
+SALY V08 Native Archive Bridge — evidence recorded 2026-11-22
+
+Tested source SHA: f42a4ea5df4b9596814ed9f8788a1c9a3f1a3f9d
+GitHub Actions: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45071762106
+Job ID: 137360055424
+Runtime: GitHub Actions ubuntu-latest, Python 3.11
+Command:
+  python -m unittest -v \
+    sandbox.creative_factory.queue_v08.test_native_archive_bridge_v1 \
+    sandbox.creative_factory.queue_v08.test_mutations_v1
+Observed: Ran 26 tests in 0.203s; OK.
+  24 archive bridge test methods on 1x1 synthetic PNG
+  +2 B25/B28 behavioral mutants:
+    MUTANT_KILLED_BY_EXPECTED_ASSERTION:private_archive_parent
+    MUTANT_KILLED_BY_EXPECTED_ASSERTION:protected_assets_required
+  Mutants fail expected unittest assertion, not syntax/import error.
+
+First attempt SHA 5d7dbcdaa1ef2af1472abf511190bb6b06c5af96:
+  run https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45071708122
+  25/26 pass, 1 fail: expected SALY_NATIVE_SOURCE_READER_MISSING but
+  observed SALY_NATIVE_SOURCE_READ_FAILED, due to missing reader invoked in
+  the callback wrapper. Fixed at SHA f42a4ea5... and reran successfully.
+
+No Native execution or transmission; no actual new graphic; no provider/host
+receipt; no Supabase writes; no production config; no RUN or QUEUE LIVE.
+Archives are temporary synthetic test outputs; no SALY protected binaries
+or real customer data were added to GitHub.
+
+The temporary GitHub workflow must be retired before final PASE.
