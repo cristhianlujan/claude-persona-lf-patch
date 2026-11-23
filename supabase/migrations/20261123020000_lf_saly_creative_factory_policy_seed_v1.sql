@@ -41,7 +41,7 @@ BEGIN
      OR v_policy->>'MAX_ATTEMPTS' IS DISTINCT FROM '2'
      OR v_policy->>'QUEUE_TIMEOUT_SECONDS' IS DISTINCT FROM '900'
      OR v_policy->>'LEASE_SECONDS' IS DISTINCT FROM '600'
-     OR jsonb_object_length(coalesce(v_policy->'versions','{}'::jsonb)) <> 4
+     OR (SELECT count(*) FROM jsonb_object_keys(coalesce(v_policy->'versions','{}'::jsonb))) <> 4
      OR (SELECT count(*) FROM saly.config_global
          WHERE scope='CREATIVE_FACTORY' AND value_type='INTEGER'
            AND value_status='REAL' AND valid_from=now()) <> 4
