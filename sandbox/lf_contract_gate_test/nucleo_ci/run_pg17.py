@@ -633,10 +633,15 @@ def main():
                 raise RuntimeError("DPIG03_TEST_MISSING")
             dpig03_sql = dpig03_test.read_text()
             if any("_lf_nucleo_piloto_publicacion_2_v1.sql" in n for n in replayed_names):
-                # The published checkout rules now resolve on screen 59; preserve
-                # legacy-only oracle on real node 43 outside CLIENT_PAYMENTS.
-                # Original exact screen-59 suite already ran before pilot.
-                dpig03_sql = re.sub(r"(?<![0-9])59(?![0-9])", "43", dpig03_sql)
+                # The published checkout rules resolve on screen 59 and M3-C04
+                # now resolves on B2B screen 43. Preserve the fixture's required
+                # legacy-only oracle on legal screen 36, verified as native-empty.
+                native_count = psql(name, """SELECT COALESCE(jsonb_array_length(
+                    (lf_ops.lf_nucleo_lectura_transicion_v1(
+                    36,'INPUT_GOVERNANCE','DIRECTAS'))->'nativas'),0);""").stdout.strip()
+                if native_count != "0":
+                    raise RuntimeError("DPIG03_LEGACY_ONLY_ORACLE_DRIFT_SCREEN36 " + native_count)
+                dpig03_sql = re.sub(r"(?<![0-9])59(?![0-9])", "36", dpig03_sql)
             dpig03 = psql(name, dpig03_sql, check=False)
             print(dpig03.stdout + dpig03.stderr, flush=True)
             if (dpig03.returncode or dpig03.stderr.count("DPIG03_TEST_PASS ") != 14
