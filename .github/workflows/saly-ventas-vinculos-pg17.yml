@@ -1,0 +1,53 @@
+name: SALY Vinculos PG17 (isolated)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/saly-ventas-vinculos-pg17.yml'
+      - 'supabase/migrations/*_lf_saly_ventas_vinculos_societarios_v1.sql'
+      - 'supabase/tests/saly_ventas_vinculos_societarios_v1_pg17_rollback.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pg17-disposable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: saly_vinculos_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd 'pg_isready -U postgres -d saly_vinculos_ci'
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: saly_vinculos_ci
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard disposable database and build empty source substrate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGDATABASE" = 'saly_vinculos_ci'
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SHOW server_version_num;' | cut -c1-2)" = '17'
+          psql -X -v ON_ERROR_STOP=1 -c 'CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN;'
+          psql -X -v ON_ERROR_STOP=1 -c 'CREATE SCHEMA saly; CREATE TABLE saly.ventas_hallazgos(id uuid PRIMARY KEY DEFAULT gen_random_uuid());'
+      - name: Apply one candidate migration to disposable PostgreSQL 17
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261123164500_lf_saly_ventas_vinculos_societarios_v1.sql
+      - name: Test positive and negative inserts, RLS and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_ventas_vinculos_societarios_v1_pg17_rollback.sql
+      - name: Verify both tables stayed empty
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_vinculos_empresariales_v1')" = '0'
+          test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_vinculos_evidencias_v1')" = '0'
+          echo PASS_SALY_VINCULOS_PG17_DISPOSABLE
