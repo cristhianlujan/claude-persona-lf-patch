@@ -121,6 +121,7 @@ class PositiveGateTests(unittest.TestCase):
         d["mode"] = "CORRECTION_STRICT"
         d["creative_zones"][0]["freedom"] = "LOCK"
         d["alternatives"] = [d["alternatives"][0]]
+        d["selected_alternative"]["id"] = "A"
         got = prepare_positive_review(p, d)
         self.assertEqual(got["mode"], "CORRECTION_STRICT")
 
