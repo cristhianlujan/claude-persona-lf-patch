@@ -1,0 +1,13 @@
+{
+  "solution_ref": "saly-creative-chat-gate-v16",
+  "paths": {
+    "supabase/migrations/20261123084800_lf_saly_creative_chat_entry_qa_gate_v1.sql": "MIGRATION",
+    "sandbox/creative_factory/queue_v16/fixture_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v16/live_terminal_guards_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v16/wire_dependencies_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v16/test_single_screen_sequence_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v16/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v16/README.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-chat-gate-v16.json": "CHANGESET_MANIFEST"
+  }
+}
