@@ -180,6 +180,40 @@ class PositiveGateTests(unittest.TestCase):
                     lambda p, d: d["positive_outcomes"][0].update(
                         visual_instruction="más premium"))
 
+    def test_inherited_lock_rejected(self):
+        self.reject("CREATIVE_EXPLORE_CONTRADICTORY_LOCK",
+                    lambda p, d: p["blueprint"].update(
+                        restrictions=["Sin adornos ni elementos nuevos."]))
+
+    def test_inherited_intent_rejected(self):
+        self.reject("CREATIVE_EXPLORE_CONTRADICTORY_LOCK",
+                    lambda p, d: p["blueprint"].update(
+                        intent="Corregir las dos pantallas anteriores, no rediseñar"))
+
+    def test_malformed_restrictions_rejected(self):
+        self.reject("CREATIVE_RESTRICTIONS_SHAPE",
+                    lambda p, d: p["blueprint"].update(restrictions="No tocar"))
+
+    def test_unhashable_source_rejected_with_named_control(self):
+        self.reject("CREATIVE_TRANSPORT_SOURCE_UNGROUNDED",
+                    lambda p, d: d["transport"].update(source_ids=[["BRAND"]]))
+
+    def test_duplicate_transport_ref_rejected(self):
+        self.reject("CREATIVE_TRANSPORT_SOURCE_DUPLICATE",
+                    lambda p, d: d["transport"].update(source_ids=["REQUEST", "REQUEST"]))
+
+    def test_strict_single_positive_outcome(self):
+        p, d = fixture()
+        p["blueprint"]["free"] = []
+        p["blueprint"]["design_lock"]["FREE"] = []
+        p["components"][0]["freedom"] = "LOCK"
+        d["mode"] = "CORRECTION_STRICT"
+        d["creative_zones"][0]["freedom"] = "LOCK"
+        d["positive_outcomes"] = d["positive_outcomes"][:1]
+        d["alternatives"] = d["alternatives"][:1]
+        d["selected_alternative"]["id"] = "A"
+        self.assertEqual(prepare_positive_review(p, d)["mode"], "CORRECTION_STRICT")
+
     def test_missing_zone_rejected(self):
         self.reject("CREATIVE_ZONE_COVERAGE",
                     lambda p, d: d.update(creative_zones=d["creative_zones"][:1]))
