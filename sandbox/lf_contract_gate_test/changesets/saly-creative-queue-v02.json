@@ -71,6 +71,7 @@
     "sandbox/creative_factory/queue_v12/ci_results_20261122.txt": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v13/fixture_policy_pg17.sql": "RUNTIME_TESTING",
     "sandbox/creative_factory/queue_v13/test_policy_pg17.sh": "RUNTIME_TESTING",
-    "sandbox/creative_factory/queue_v13/README.md": "SERVICE_RUNTIME"
+    "sandbox/creative_factory/queue_v13/README.md": "SERVICE_RUNTIME",
+    "sandbox/creative_factory/queue_v13/pg17_results_20261122.txt": "RUNTIME_TESTING"
   }
 }
