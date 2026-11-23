@@ -1,0 +1,82 @@
+{
+  "schema": "LF-NUCLEO-TANDA8-INDEPENDIENTE-V1",
+  "fecha": "2026-11-23",
+  "fuente": "Claude Sonnet 5.5 modo independiente, atestación remitida por Claude",
+  "juicios": [
+    {
+      "codigo": "REG_CHK_007",
+      "version": 3,
+      "hash_version_atestado": "a17cae5db3a2661695bc1f74541ae8893065cb1bd4aca51c57daca2d4ef88e4b",
+      "hash_paquete_atestado": "3f173fcf905cff20835c73d83fb5b22a4c9aaed2cd3ee6d7930e1a98e1b44ea2",
+      "pruebas_atestadas": 11,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.9,
+          "observacion": "La descripción es larga y mezcla el bloqueo, el uso de Volver y la definición operativa del pago pendiente."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.95,
+          "observacion": "Se relaciona con REG_CHK_004 publicada (reintento de pago) y con M2-C05 publicada, que ya excluye expresamente a REG_CHK_007; esta regla gobierna modificar la selección y no el reintento ni la modalidad."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Volver sin intento de modificar no es un hecho propio y queda cubierto por intento=false, las pruebas 1 y 3 lo muestran."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "S1-C01",
+      "version": 1,
+      "hash_version_atestado": "ffc5f8e911c6e29a3ca6e49432885eece4ebb8d5cd5273bf83f3faa61c552f65",
+      "hash_paquete_atestado": "9c8d1b36dab6d3b8f5d24afca4a5b8f7b760e22f56e6a811a3902b1643cb8b87",
+      "pruebas_atestadas": 8,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.95,
+          "observacion": "Se relaciona con M4-C03 publicada, que gobierna que la respuesta API no devuelva el OTP, mientras esta gobierna persistir el OTP sin hash."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El hash del OTP se comprueba en backend antes de emitir el hecho y la condición lo recibe agregado; hay dos pares de pruebas duplicadas (1=5, 2=7) y faltan producción=true,intento=false,sin_hash=false y las tres false; deduplicar en próximas candidatas."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    }
+  ]
+}
