@@ -630,7 +630,34 @@ def main():
                 if trial.returncode or trial.stderr.count("S1_RESULT ")!=1 or "S1_PASS 8/8 candidate only" not in trial.stderr or psql(name,snapshot).stdout!=before:
                     raise RuntimeError("S1_ROLLBACK_FAILED")
                 print("S1_OUTER_ROLLBACK_PASS exact baseline",flush=True)
+            if "_lf_nucleo_reg_chk_007_revision_v3_operativa_v1.sql" in path.name:
+                snapshot = """SELECT jsonb_build_object(
+                    'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                    'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
+                    'versions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones r),
+                    'proofs',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version,n) FROM lf_ops.nucleo_regla_pruebas r),
+                    'judges',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_juicios r),
+                    'evaluations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_evaluaciones r),
+                    'deprec',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r),
+                    'ekb',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM public.lf_error_knowledge r));"""
+                before = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("CHK007_V3_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if trial.returncode or trial.stderr.count("CHK007_V3_RESULT ")!=1 or
+                    "CHK007_V3_HASH_NEGATIVE_PASS" not in trial.stderr or
+                    "CHK007_V3_PASS 11/11" not in trial.stderr or
+                    psql(name,snapshot).stdout != before:
+                    raise RuntimeError("CHK007_V3_ROLLBACK_FAILED")
+                print("CHK007_V3_OUTER_ROLLBACK_PASS exact baseline",flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_reg_chk_007_revision_v3_operativa_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr,flush=True)
+                if replay.stderr.count("CHK007_V3_RESULT ")!=1 or "CHK007_V3_PASS 11/11" not in replay.stderr:
+                    raise RuntimeError("CHK007_V3_REPLAY_FAILED")
+
             if "_lf_nucleo_security_s1c01_candidata_v1.sql" in path.name:
                 print(replay.stdout + replay.stderr,flush=True)
                 if replay.stderr.count("S1_RESULT ")!=1 or "S1_PASS 8/8 candidate only" not in replay.stderr:
