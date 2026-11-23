@@ -21,11 +21,15 @@ CREATE TABLE public.lf_global_config(
  UNIQUE(scope,config_key,valid_from)
 );
 CREATE TABLE saly.ventas_discovery_catalogo(
- source_id text PRIMARY KEY,
+ catalog_version text NOT NULL,
+ source_id text NOT NULL,
+ connector_id text NOT NULL,
+ substep_code text NOT NULL,
  habilitada boolean NOT NULL,
  persist_business_data boolean NOT NULL,
  runtime_status text NOT NULL,
- rights_status text NOT NULL
+ rights_status text NOT NULL,
+ UNIQUE(catalog_version,source_id,connector_id,substep_code,persist_business_data,habilitada)
 );
 CREATE TABLE saly.ventas_discovery_runs(
  id uuid PRIMARY KEY,
@@ -34,7 +38,16 @@ CREATE TABLE saly.ventas_discovery_runs(
 );
 CREATE TABLE saly.ventas_discovery_ingestas (
  id uuid PRIMARY KEY,
- source_id text NOT NULL
+ catalog_version text NOT NULL,
+ source_id text NOT NULL,
+ connector_id text NOT NULL,
+ substep_code text NOT NULL,
+ derechos_verificados boolean NOT NULL,
+ fuente_habilitada boolean NOT NULL,
+ CONSTRAINT saly_l28_ingesta_catalog_rights_fk
+ FOREIGN KEY (catalog_version,source_id,connector_id,substep_code,derechos_verificados,fuente_habilitada)
+ REFERENCES saly.ventas_discovery_catalogo(catalog_version,source_id,connector_id,substep_code,persist_business_data,habilitada)
+ ON DELETE RESTRICT
 );
 INSERT INTO public.lf_operation_execution
 (execution_id,operation_code,target_type,target_code,status,lease_expires_at)
@@ -48,11 +61,26 @@ INSERT INTO public.lf_global_config VALUES(
  '{"enabled":true,"pilot_execution_id":"EXEC-SALY-SUNAT-PILOT-20261122-001","source_id":"PE-SUNAT-RUC","max_rows":1000}',
  'JSON','REAL','synthetic policy',now()-interval '1 hour');
 INSERT INTO saly.ventas_discovery_catalogo VALUES
- ('PE-SUNAT-RUC',true,true,'CONTROLLED_SEQUENTIAL_INGESTION','PERSISTENCIA_PERMITIDA');
+ ('PE-SALY-DISCOVERY-2026-11-V0.2','PE-SUNAT-RUC','SALY-U07-S12-C01','12.01',
+ true,true,'CONTROLLED_SEQUENTIAL_INGESTION','PERSISTENCIA_PERMITIDA');
 INSERT INTO saly.ventas_discovery_runs VALUES
  ('00000000-0000-4000-8000-000000000001','EXEC-SALY-SUNAT-PILOT-20261122-001','EN_EJECUCION');
 INSERT INTO saly.ventas_discovery_ingestas VALUES
- ('00000000-0000-4000-8000-000000000002','PE-SUNAT-RUC');
+ ('00000000-0000-4000-8000-000000000002','PE-SALY-DISCOVERY-2026-11-V0.2',
+  'PE-SUNAT-RUC','SALY-U07-S12-C01','12.01',true,true);
+
+-- Reproduce the ORIGINAL real FK failure: historical flags cannot be switched.
+DO $historical_fk$
+BEGIN
+ BEGIN
+  UPDATE saly.ventas_discovery_catalogo
+  SET habilitada=false,persist_business_data=false
+  WHERE source_id='PE-SUNAT-RUC';
+  RAISE EXCEPTION 'SYNTHETIC_FK_WAS_NOT_PROTECTED';
+ EXCEPTION WHEN foreign_key_violation THEN
+  RAISE NOTICE 'PASS_HISTORICAL_CATALOG_FK_BLOCKS_FLAG_MUTATION';
+ END;
+END $historical_fk$;
 
 -- Run the EXACT repo migration. Guarded one-transaction freeze, no delete.
 \i supabase/migrations/20261123001500_lf_saly_sunat_ingest_freeze_for_purge_v1.sql
@@ -68,12 +96,12 @@ BEGIN
      WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_POLICY_V1'
      ORDER BY valid_from DESC LIMIT 1)<>'false'
     OR (SELECT count(*) FROM saly.ventas_discovery_catalogo
-     WHERE source_id='PE-SUNAT-RUC' AND NOT habilitada AND NOT persist_business_data
-       AND runtime_status='PURGE_FREEZE_OLD_MANIFEST')<>1
+     WHERE source_id='PE-SUNAT-RUC' AND habilitada AND persist_business_data
+       AND runtime_status='CONTROLLED_SEQUENTIAL_INGESTION')<>1
     OR (SELECT count(*) FROM saly.ventas_discovery_ingestas
      WHERE source_id='PE-SUNAT-RUC')<>1
     OR (SELECT status FROM public.lf_operation_execution
       WHERE execution_id='EXEC-SALY-SUNAT-PILOT-20261122-001')<>'IN_PROGRESS'
  THEN RAISE EXCEPTION 'SYNTHETIC_FREEZE_READBACK_FAILED'; END IF;
- RAISE NOTICE 'PASS_SUNAT_FREEZE_POLICY_FALSE_RUN_HOLD_CATALOG_DISABLED_ORIGINAL_OPERATION_UNTOUCHED';
+ RAISE NOTICE 'PASS_SUNAT_FREEZE_POLICY_FALSE_RUN_HOLD_CATALOG_RIGHTS_PRESERVED_OPERATION_UNTOUCHED';
 END $assert$;
