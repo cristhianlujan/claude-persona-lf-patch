@@ -50,7 +50,7 @@ class TestSocialSchemaCandidate(unittest.TestCase):
             self.assertIn(f"SOC-{n:02d}",self.doc)
 
     def test_no_false_coverage(self):
-        self.assertIn("no se ha probado paginación continua",self.doc.lower())
+        self.assertIn("no se acreditan meses completos",self.doc.lower())
 
 if __name__=="__main__":
     unittest.main()
