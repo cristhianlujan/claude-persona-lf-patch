@@ -164,6 +164,23 @@ BEGIN
   jsonb_build_object('screen','HOME','ordinal',1,'literal_request',literal,
    'queue_mode','SERIAL_V1','rendering_authority',false,
    'render_authorized',false,'review_only',true,
+   'compiled_prompt','Destino visual: Un iPhone 16 Pro con pantalla home SALY
+Una pantalla SALY sin cifras inventadas.
+Home SALY en iPhone 16 Pro frontal, estudio gris casi blanco; cabecera blanca reservada al logo oficial del compositor, sin recrearlo.
+Fintech sobria, verde #008200 solo para CTA y menta #EAF9EE, crema #FFF9E9, lavanda #F4E7FD como acentos suaves de categorías.
+Fondo de aplicación blanco con secciones suaves y sin contenedores redundantes.
+Monto dominante y etiquetas legibles sin saltos incómodos.
+Disponible y Solicitar adelanto primero; resumen en dos columnas, con Mi disponible / Cómo se calcula abajo.
+Sin ilustración junto al saldo ni filas de iconos aislados.
+Concepto compositivo seleccionado: Dos datos en grupos equilibrados, iconos laterales y acceso a cálculo en franja inferior
+Disponible para adelanto con el monto protagonista y CTA Solicitar adelanto, sin valores inventados
+Saly Plus: hasta 3 días antes y sorteos para ganar efectivo; Saly Rewards: Tus buenos hábitos te hacen ganar dinero; Beneficios: Descubre más.
+Próximo descuento e Importe estimado en dos grupos; Mi disponible / Cómo se calcula integrado debajo.
+Disponible y acción: Mostrar monto libre de adornos y un CTA primario.
+Resumen financiero: Fecha e importe con icono lateral; explicación abajo, sin fila de iconos.
+Descubre más en Saly: Tres categorías con textos breves en superficies tonales distintas.
+Navegación: Barra inferior Inicio, Historial, Explorar, Perfil; Inicio activo discreto.
+No agregar rayos de explosión, palitos de énfasis, destellos radiales ni líneas cinéticas decorativas alrededor de iconos, montos, botones o ilustraciones. Mantener solamente trazos funcionales de iconografía y separadores estructurales justificados.',
    'prompt_sha256','13aac045a189b4f2dd085bf43e94f395666a20e7cc5ce87e596499c4a9100fd6',
    'prompt_source','SALY_V015_GATE_REAL_REVIEW_ONLY',
    'block_reason','NATIVE_DISPATCH_NOT_DEPLOYED'),identity_ref,'PLANIFICADO')
@@ -182,6 +199,24 @@ BEGIN
   jsonb_build_object('screen','SOLICITAR_ADELANTO','ordinal',2,
    'literal_request',literal,'queue_mode','SERIAL_V1',
    'rendering_authority',false,'render_authorized',false,'review_only',true,
+   'compiled_prompt','Destino visual: Un iPhone 16 Pro con pantalla solicitar SALY
+Una pantalla SALY sin cifras inventadas.
+Solicitar adelanto SALY, iPhone 16 Pro frontal en modo claro.
+CTA verde #008200, montos navy #081631, resto neutro; evitar verde omnipresente.
+Disponible sobre franja menta #EAF9EE integrada al fondo, sin tarjeta adicional.
+Diferenciar monto elegido y monto a recibir por tamaño, etiqueta y posición.
+Jerarquía: disponible, selección, resumen y CTA Continuar.
+Selección con borde y marcador funcional; no insinuar recomendación económica.
+Concepto compositivo seleccionado: Franja tonal de disponible, selección agrupada, resumen abierto y CTA final
+Tres opciones de monto y entrada manual bajo Cuánto necesitas, sin números ficticios.
+Monto solicitado, Cargos aplicables, Monto a recibir y Fecha de descuento sólo si hay valores respaldados.
+Continuar en CTA verde #008200 con texto blanco; no etiquetar Recomendado sin regla autorizada.
+Cabecera: Volver, título Solicitar adelanto y ayuda sobre blanco.
+Disponible: Franja menta integrada, sin contenedor redundante.
+Monto: Tres opciones seleccionables, borde e indicador; entrada manual.
+Resumen: Monto a recibir destacado sin tarifas imaginarias.
+Continuar: Un CTA primario Continuar al final.
+No agregar rayos de explosión, palitos de énfasis, destellos radiales ni líneas cinéticas decorativas alrededor de iconos, montos, botones o ilustraciones. Mantener solamente trazos funcionales de iconografía y separadores estructurales justificados.',
    'prompt_sha256','c77ce1be1a09aa64b7ab833c1207cc116b22cbe45682e5a7fe611abb5eb54f50',
    'prompt_source','SALY_V015_GATE_REAL_REVIEW_ONLY',
    'block_reason','NATIVE_DISPATCH_NOT_DEPLOYED'),identity_ref,'PLANIFICADO')
@@ -199,6 +234,11 @@ BEGIN
  OR saly.creative_order_sequence_dependency_met_v1(adelanto_id)
  OR (SELECT count(*) FROM saly.creative_order_items
   WHERE order_id IN(home_id,adelanto_id))<>2
+ OR EXISTS(SELECT 1 FROM saly.creative_orders o
+  WHERE o.id IN(home_id,adelanto_id)
+  AND (o.scope_json->>'prompt_sha256') IS DISTINCT FROM
+   encode(extensions.digest(convert_to(o.scope_json->>'compiled_prompt','UTF8'),
+    'sha256'),'hex'))
  THEN RAISE EXCEPTION 'CREATIVE_SINGLE_SCREEN_POSTSTATE_INVALID'; END IF;
 
  -- Real negative tests with exact cause (B11, B25); test writes roll back.
