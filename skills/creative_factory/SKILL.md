@@ -3,7 +3,7 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.14 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.15 (PLAN_ONLY / REVIEW_ONLY)
 
 ## Política transversal de eficiencia espacial y decoración v0.14 (22/11/2026)
 
@@ -431,6 +431,27 @@ negativos incluyen fuentes cruzadas, hash alterado, omisiones de componentes,
 copy no sustentado, falta de dirección y conflicto de responsables.
 No declara QA semántico independiente, render real ni persistencia de
 nuevos pedidos. El flujo L2C anterior permanece intacto.
+
+## Razonamiento espacial, cromático y handoff compacto v0.15
+
+**Fuente de diseño:** investigación previa de Fábrica Creativa SALY/LF (prompts demostrativos compactos de 134 y 128 palabras), habilidad espacial v0.11, decisiones v0.12–v0.14 y observaciones del dueño. Los ejemplos no son una cuota universal de palabras ni prueban efectividad. No crear un segundo motor, nuevos campos de contrato, aprobaciones ni estilos oficiales.
+
+### Razonamiento interno, previo al handoff
+1. **Espacio y agrupación:** identificar por componente su función, prioridad, contenido literal y longitud. Diagnosticar filas de iconos aislados, blancos ociosos, rotura de etiquetas, columnas con alturas desiguales, contenedores redundantes y geometría LOCK. Comparar al menos dos distribuciones viables cuando exista libertad; justificar ganancia y coste con el contenido real. Prohibido solucionar un hueco ocultando contenido, inventando cifras o comprimiendo letra hasta la ilegibilidad. No asumir que todos los componentes deben compartir tarjeta ni imponer posiciones fijas a negocios diferentes.
+2. **Color y superficies:** identificar qué quiere comunicar cada elemento (acción, selección, información, resultado, categoría o alerta) y su prioridad; resolver tokens por negocio/versión/estado APPROVED o CANDIDATE. Comparar neutro, tono de la misma familia o acento secundario **solo si aporta distinción**; elegir conscientemente fondo general, franja/sección, tarjeta o elemento libre. Verificar contraste, competencia visual y si el color parece recomendar un monto o prometer un resultado sin respaldo. Ningún token CANDIDATE es aprobado por su uso en una imagen; sin fuente suficiente no declarar un hex como oficial.
+3. **Elección y evidencia:** registrar alternativas, tradeoff y razón en `alternatives`, `selected_alternative.reason` y `direction.*.rationale` existentes, sin agregar claves. Conservar la decisión espacial seleccionada en `direction.hierarchy.instruction` / componentes, la cromática en `style.instruction` y `background.instruction`, y el tratamiento de superficies en la instrucción pertinente. La descripción debe indicar posiciones y relaciones visibles, no adjetivos genéricos. Un QA semántico independiente revisa que la selección esté realmente reflejada y sustentada; el Python no inventa ni juzga estas decisiones.
+
+### Compilación: transmitir lo mínimo suficiente
+- El generador **no recibe** investigación, alternativas descartadas, justificaciones, puntuaciones, QA, hashes, identificadores de transporte ni catálogos completos de tokens.
+- Conservar: destino, identidad/copy autorizado y activos que le correspondan al receptor, tesis visual elegida, jerarquía/distribución precisa, colores/superficies elegidos, instrucciones de componentes NATIVE y restricciones visuales indispensables. No pedirle que vuelva a decidir estrategia ni que implemente activos propiedad de COMPOSITOR.
+- Reutilizar `creative_positive_gate_v1.py` para proyectar `prompt_review`. Su compactador elimina únicamente **instrucciones idénticas tras normalizar espacios y mayúsculas**, nunca borra decisiones distintas por similitud semántica, ni aplica un límite arbitrario de palabras. Las repeticiones semánticas o contradicciones requieren corrección del autor y QA independiente, no supresión automática a ciegas.
+- Antes del wire canónico cotejar uno a uno los componentes/LOCK y las decisiones seleccionadas con el prompt compilado. Si falta una decisión importante, corregir la fuente y recompilar; no agregar un apéndice de metadatos al prompt sellado. No reescribir el wire sin su ruta ni su hash.
+- La prohibición transversal de palitos, rayos de explosión y destellos decorativos v0.14 permanece como único LOCK compacto común. La longitud del prompt crece solo si la pieza lo exige; los ejemplos de 128/134 palabras no son límites de producción.
+
+### Pruebas y límites de evidencia
+- Casos positivos: instrucciones repetidas se emiten una sola vez; decisión espacial seleccionada, token/superficie específica y cada instrucción única sobreviven; alternativas descartadas y racionales no se transportan.
+- Negativos: ornamentación explícita prohibida; falta de fuente, LOCK o dato no validado; payload que omite un componente o altera contenido; compresión que intenta eliminar instrucciones distintas. La inspección del PNG real comprueba composición y color, pero **no es una prueba de efectividad de usuarios**.
+- El gate sigue devolviendo `CREATIVE_REVIEW_PREPARED_SEMANTIC_QA_PENDING`; el resultado no equivale a QA independiente, generación, entrega o aprobación. El dueño evalúa la utilidad y efectividad de las imágenes entregadas, sin condicionar el estado técnico `TERMINADO` a esa evaluación.
 
 ## Decisión creativa positiva y transporte v0.13
 

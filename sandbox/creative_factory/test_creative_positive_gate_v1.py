@@ -98,6 +98,58 @@ def fixture():
 
 
 class PositiveGateTests(unittest.TestCase):
+    def test_compact_identical_directions_without_losing_unique_details(self):
+        plan, dec = fixture()
+        got = prepare_positive_review(plan, dec)
+        self.assertEqual(
+            got["prompt_review"].count(
+                "Presenta una relación clara entre cifra, acción y contexto"), 1)
+        self.assertIn("Agrupa los datos de descuento", got["prompt_review"])
+        self.assertIn("Da al botón de adelanto", got["prompt_review"])
+        self.assertIn("Presenta el monto como titular separado", got["prompt_review"])
+
+    def test_selected_spatial_option_only_without_rejected_tradeoffs(self):
+        plan, dec = fixture()
+        dec["alternatives"][0]["design_move"] = (
+            "Tres columnas verticales con iconos independientes")
+        dec["alternatives"][1]["design_move"] = (
+            "Dos columnas equilibradas con iconos laterales y enlace inferior")
+        dec["direction"]["hierarchy"]["instruction"] = (
+            "Alinea iconos junto a etiqueta y monto sin desperdiciar una fila")
+        result = prepare_positive_review(plan, dec)
+        self.assertIn("Dos columnas equilibradas", result["prompt_review"])
+        self.assertIn("Alinea iconos junto a etiqueta", result["prompt_review"])
+        self.assertNotIn("Tres columnas verticales", result["prompt_review"])
+        self.assertNotIn(dec["selected_alternative"]["reason"], result["prompt_review"])
+
+    def test_color_roles_and_surfaces_preserved_no_palette_dump(self):
+        plan, dec = fixture()
+        plan["direction"]["style"]["instruction"] = (
+            "Usa verde CTA #008200 solo en la acción principal")
+        plan["direction"]["background"]["instruction"] = (
+            "Sección de saldo en menta #EAF9EE sobre fondo blanco")
+        result = prepare_positive_review(plan, dec)
+        self.assertIn("verde CTA #008200 solo", result["prompt_review"])
+        self.assertIn("menta #EAF9EE sobre fondo blanco", result["prompt_review"])
+        self.assertNotIn("source://brand", result["prompt_review"])
+        self.assertNotIn("La cifra disponible es la primera lectura",
+                         result["prompt_review"])
+
+    def test_unique_render_direction_survives_no_arbitrary_word_limit(self):
+        plan, dec = fixture()
+        long_unique = "Mantén " + "una separación editorial legible " * 90
+        plan["direction"]["hierarchy"]["instruction"] = long_unique
+        result = prepare_positive_review(plan, dec)
+        self.assertIn(" ".join(long_unique.split()), result["prompt_review"])
+
+    def test_explicit_burst_in_blueprint_art_must_be_rejected(self):
+        plan, dec = fixture()
+        plan["blueprint"]["art"] = (
+            "Agrega rayos de explosión alrededor del saldo principal")
+        with self.assertRaisesRegex(CreativeProcessBlocked,
+                                    "CREATIVE_DECORATIVE_STROKES_FORBIDDEN"):
+            prepare_positive_review(plan, dec)
+
     def test_universal_decoration_ban_goes_to_graphic_handoff(self):
         plan, decision = fixture()
         got = prepare_positive_review(plan, decision)

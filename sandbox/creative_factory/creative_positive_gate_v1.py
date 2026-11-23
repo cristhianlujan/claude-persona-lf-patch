@@ -77,6 +77,25 @@ def meaningful_direction(text: Any) -> bool:
     return clean not in GENERIC
 
 
+def compact_render_lines(lines: list[str]) -> str:
+    """Deduplica solo directivas literalmente equivalentes tras normalizar formato.
+
+    Nunca resume por parecido semántico ni recorta por presupuesto de palabras:
+    una instrucción distinta (token, LOCK, dato, relación espacial) sobrevive.
+    """
+    selected: list[str] = []
+    seen: set[str] = set()
+    for value in lines:
+        check(type(value) is str and filled(value), "CREATIVE_RENDER_LINE_EMPTY")
+        clean = " ".join(value.split())
+        key = clean.casefold().rstrip(" .")
+        if key not in seen:
+            seen.add(key)
+            selected.append(clean)
+    check(bool(selected), "CREATIVE_RENDER_EMPTY")
+    return "\n".join(selected)
+
+
 def prepare_positive_review(plan: dict[str, Any],
                             decision: dict[str, Any]) -> dict[str, Any]:
     """Produce una proyección de revisión sin autoridad Native ni mutaciones."""
@@ -222,9 +241,14 @@ def prepare_positive_review(plan: dict[str, Any],
         *[row["positive_direction"] for row in zones
           if components[row["component"]]["owner"] == "NATIVE"],
     ]
-    check(not any(demands_decorative_bursts(v) for v in graphic_instructions),
+    check(not any(demands_decorative_bursts(v) for v in
+                  [frozen_plan["blueprint"]["art"], *graphic_instructions]),
           "CREATIVE_DECORATIVE_STROKES_FORBIDDEN")
-    prompt = "\n".join([
+    # Una instrucción única se conserva incluso si el handoff crece. No se
+    # pasa al generador el análisis, alternativas descartadas ni QA interno.
+    # La compactación solo evita duplicados literales: no tiene permiso para
+    # eliminar una decisión gráfica distinta por similitud de vocabulario.
+    prompt = compact_render_lines([
         "Destino visual: " + frozen_plan["presentation"]["destination"],
         frozen_plan["blueprint"]["art"],
         *[frozen_plan["direction"][key]["instruction"] for key in
