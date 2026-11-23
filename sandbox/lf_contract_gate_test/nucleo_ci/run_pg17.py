@@ -646,10 +646,10 @@ def main():
                     raise RuntimeError("CHK007_V3_TRANSACTION_BOUNDARY")
                 trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
                 print(trial.stdout + trial.stderr, flush=True)
-                if trial.returncode or trial.stderr.count("CHK007_V3_RESULT ")!=1 or
+                if (trial.returncode or trial.stderr.count("CHK007_V3_RESULT ")!=1 or
                     "CHK007_V3_HASH_NEGATIVE_PASS" not in trial.stderr or
                     "CHK007_V3_PASS 11/11" not in trial.stderr or
-                    psql(name,snapshot).stdout != before:
+                    psql(name,snapshot).stdout != before):
                     raise RuntimeError("CHK007_V3_ROLLBACK_FAILED")
                 print("CHK007_V3_OUTER_ROLLBACK_PASS exact baseline",flush=True)
             replay = psql(name, path.read_text())
