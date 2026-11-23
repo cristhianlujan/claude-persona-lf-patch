@@ -25,7 +25,11 @@ BEGIN
     WHERE order_id=v_new AND id=v_item AND ordinal=1 AND kind='SCREEN'
      AND status='PENDIENTE')<>1
  OR (SELECT count(*) FROM saly.creative_order_sequence_v1
-    WHERE order_id=v_new AND depends_on_order_id=v_old)<>1
+    WHERE order_id=v_new)<>0
+ OR (SELECT count(*) FROM saly.creative_order_sequence_v1
+    WHERE order_id=v_next AND depends_on_order_id=v_old)<>1
+ OR (SELECT scope_json->>'dependency_policy_state' FROM saly.creative_orders
+    WHERE id=v_new) IS DISTINCT FROM 'UNRESOLVED_IMMUTABLE_SUCCESSOR_CHAIN'
  OR (SELECT count(*) FROM saly.creative_orders
     WHERE id IN(v_old,v_next) AND status='PLANIFICADO'
       AND scope_json->>'render_authorized'='false')<>2
