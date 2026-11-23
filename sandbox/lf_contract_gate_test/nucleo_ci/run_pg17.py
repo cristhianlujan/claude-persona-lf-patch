@@ -212,6 +212,33 @@ def main():
                         or psql(name, snapshot).stdout != prior):
                     raise RuntimeError("M1_JUDGE_OUTER_ROLLBACK_FAILED")
                 print("M1_JUDGE_OUTER_ROLLBACK_PASS exact baseline, six honest DEVOLVER", flush=True)
+            if "_lf_saly_procesos_ekb_hallazgos_v1.sql" in path.name:
+                # Fixture EKB solo para esta migracion, sin red ni datos productivos.
+                psql(name, (HERE / "saly_ekb_hallazgos_fixture_pg17.sql").read_text())
+                candidate = path.read_text()
+                h1 = "SALY-PROCESOS-PANTALLA-CANAL-PENDIENTE-20261123-001"
+                h2 = "SALY-PROCESOS-MODULO-NODOS-AUSENTES-20261123-001"
+                query = ("SELECT count(*)||'|'||min(frecuencia)||'|'||max(frecuencia) "
+                         "FROM transversal.error_knowledge WHERE codigo IN ('" + h1 + "','" + h2 + "');")
+                # Positivo: ambas altas; ROLLBACK real elimina ambas.
+                trial = psql(name, "BEGIN;\n" + candidate + "\n" + query + "\nROLLBACK;\n", check=False)
+                if trial.returncode or "2|1|1" not in trial.stdout.splitlines() or "SALY_EKB_HALLAZGOS_2_2_PASS" not in trial.stderr:
+                    raise RuntimeError("SALY_EKB_PG17_INSERT_OR_ROLLBACK_FAILED " + trial.stderr)
+                if psql(name, query).stdout.strip() != "0||":
+                    raise RuntimeError("SALY_EKB_PG17_FIRST_ROLLBACK_RESIDUE")
+                # Recurrencia exacta: H1 preexistente aumenta 2->3; H2 entra nueva.
+                seed = ("INSERT INTO transversal.error_knowledge"
+                        "(codigo,categoria,titulo,frecuencia,estado) VALUES ('" + h1 + "',"
+                        "'QA','QA existente',2,'ACTIVO');\n")
+                again = psql(name, "BEGIN;\n" + seed + candidate + "\n" +
+                             "SELECT frecuencia FROM transversal.error_knowledge WHERE codigo='" + h1 + "';\n" +
+                             "SELECT frecuencia FROM transversal.error_knowledge WHERE codigo='" + h2 + "';\n" +
+                             "ROLLBACK;\n", check=False)
+                if again.returncode or again.stdout.splitlines().count("3") != 1 or again.stdout.splitlines().count("1") != 1:
+                    raise RuntimeError("SALY_EKB_PG17_RECURRENCE_FAILED " + again.stderr)
+                if psql(name, query).stdout.strip() != "0||":
+                    raise RuntimeError("SALY_EKB_PG17_SECOND_ROLLBACK_RESIDUE")
+                print("SALY_EKB_PG17_INSERT_RECURRENCE_ROLLBACK_PASS 2/2", flush=True)
             replay = psql(name, path.read_text())
             if "_lf_nucleo_m1_juicios_v1.sql" in path.name:
                 print(replay.stdout + replay.stderr, flush=True)
