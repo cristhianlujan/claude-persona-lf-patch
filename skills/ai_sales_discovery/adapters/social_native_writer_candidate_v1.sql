@@ -12,8 +12,8 @@ DECLARE
   rr saly.ventas_social_runs_v1%ROWTYPE;
   ev_id uuid; original_claim uuid; original_source text;
   pub_id uuid; old_hash text; claim_id uuid;
-  source_id text; business_key text; external_ref text;
-  event_key text; claim_key text; claim_state text; source_hash text;
+  v_source_id text; v_business_key text; v_external_ref text;
+  v_event_key text; v_claim_key text; v_claim_state text; v_source_hash text;
   effect_key text; rec_hash text; reserv jsonb; receipt jsonb;
   v_start timestamptz; v_end timestamptz; v_date timestamptz;
   row_count integer;
@@ -21,20 +21,20 @@ BEGIN
   IF nullif(btrim(p_execution),'') IS NULL OR nullif(btrim(p_owner),'') IS NULL
      OR coalesce(p_fence,0)<=0 OR jsonb_typeof(p_record) IS DISTINCT FROM 'object'
      THEN RAISE EXCEPTION 'SOCIAL_INGESTA_CALL_CONTRACT'; END IF;
-  source_id := p_record->>'source_id';
-  business_key := p_record->>'business_key';
-  external_ref := p_record->>'external_ref';
-  event_key := p_record->>'event_key';
-  claim_key := p_record->>'claim_key';
-  claim_state := p_record->>'claim_state';
-  source_hash := p_record->>'source_sha256';
-  IF source_id IS NULL OR business_key IS NULL OR external_ref IS NULL
-     OR event_key IS NULL OR claim_key IS NULL
-     OR coalesce(length(btrim(business_key)),0)=0
-     OR coalesce(length(btrim(event_key)),0)=0
-     OR coalesce(length(btrim(external_ref)),0)=0
-     OR claim_state NOT IN ('ANUNCIADO','REALIZADO','IMPLEMENTADO','NO_DETERMINADO')
-     OR source_hash IS NULL OR source_hash !~ '^[0-9a-f]{64}$'
+  v_source_id := p_record->>'source_id';
+  v_business_key := p_record->>'business_key';
+  v_external_ref := p_record->>'external_ref';
+  v_event_key := p_record->>'event_key';
+  v_claim_key := p_record->>'claim_key';
+  v_claim_state := p_record->>'claim_state';
+  v_source_hash := p_record->>'source_sha256';
+  IF v_source_id IS NULL OR v_business_key IS NULL OR v_external_ref IS NULL
+     OR v_event_key IS NULL OR v_claim_key IS NULL
+     OR coalesce(length(btrim(v_business_key)),0)=0
+     OR coalesce(length(btrim(v_event_key)),0)=0
+     OR coalesce(length(btrim(v_external_ref)),0)=0
+     OR v_claim_state NOT IN ('ANUNCIADO','REALIZADO','IMPLEMENTADO','NO_DETERMINADO')
+     OR v_source_hash IS NULL OR v_source_hash !~ '^[0-9a-f]{64}$'
      OR nullif(btrim(p_record->>'summary_non_personal'),'') IS NULL
      OR nullif(btrim(p_record->>'event_title'),'') IS NULL
      OR (p_record->>'url') !~ '^https://[^ ]+$'
@@ -52,7 +52,7 @@ BEGIN
    WHERE execution_id=p_execution FOR UPDATE;
   IF NOT FOUND OR op.operation_code IS DISTINCT FROM 'INGESTA_EMPRESARIAL_SALY'
     OR op.target_type IS DISTINCT FROM 'DISCOVERY_SOURCE'
-    OR op.target_code IS DISTINCT FROM source_id
+    OR op.target_code IS DISTINCT FROM v_source_id
     OR op.status IS DISTINCT FROM 'IN_PROGRESS'
     OR op.lease_owner IS DISTINCT FROM p_owner
     OR op.lease_fence IS DISTINCT FROM p_fence
@@ -65,19 +65,19 @@ BEGIN
       AND status='ACTIVE_ENFORCEMENT') THEN
       RAISE EXCEPTION 'SOCIAL_INGESTA_CONTRACT_NOT_ENABLED'; END IF;
   IF op.manifest->'social_scope' IS DISTINCT FROM jsonb_build_object(
-       'source_id',source_id,'business_key',business_key,
+       'source_id',v_source_id,'business_key',v_business_key,
        'window_start',p_record->>'window_start',
        'window_end',p_record->>'window_end')
       THEN RAISE EXCEPTION 'SOCIAL_INGESTA_OPERATION_SCOPE'; END IF;
   SELECT * INTO cat FROM saly.ventas_discovery_catalogo
-   WHERE source_id=source_id AND rights_status='PERSISTENCIA_PERMITIDA'
+   WHERE saly.ventas_discovery_catalogo.source_id=v_source_id AND rights_status='PERSISTENCIA_PERMITIDA'
      AND rights_checked_at IS NOT NULL AND habilitada AND persist_business_data
      AND rights_evidence_ref=p_record->>'rights_evidence_ref' FOR SHARE;
   IF NOT FOUND THEN RAISE EXCEPTION 'SOCIAL_INGESTA_SOURCE_RIGHTS'; END IF;
 
   rec_hash:=encode(sha256(convert_to(p_record::text,'UTF8')),'hex');
   effect_key:='SOCIAL:'||encode(sha256(convert_to(
-      source_id||':'||business_key||':'||external_ref||':'||claim_key||':'||claim_state,'UTF8')),'hex');
+      v_source_id||':'||v_business_key||':'||v_external_ref||':'||v_claim_key||':'||v_claim_state,'UTF8')),'hex');
   reserv:=public.fn_lf_operation_reserve_effect_v1(
       p_execution,p_owner,p_fence,effect_key,rec_hash,effect_key,p_execution);
   IF reserv->>'result'='REPLAY_SUCCEEDED_EFFECT' THEN
@@ -90,69 +90,69 @@ BEGIN
   INSERT INTO saly.ventas_social_runs_v1 (
       run_ref,catalog_version,source_id,business_key,window_start,window_end,
       status,rights_evidence_ref)
-    VALUES(p_execution,cat.catalog_version,source_id,business_key,
+    VALUES(p_execution,cat.catalog_version,v_source_id,v_business_key,
       v_start,v_end,'EN_EJECUCION',cat.rights_evidence_ref)
     ON CONFLICT (run_ref) DO NOTHING;
   SELECT * INTO STRICT rr FROM saly.ventas_social_runs_v1
     WHERE run_ref=p_execution FOR UPDATE;
   IF rr.catalog_version IS DISTINCT FROM cat.catalog_version
-    OR rr.source_id IS DISTINCT FROM source_id
-    OR rr.business_key IS DISTINCT FROM business_key
+    OR rr.source_id IS DISTINCT FROM v_source_id
+    OR rr.business_key IS DISTINCT FROM v_business_key
     OR rr.window_start IS DISTINCT FROM v_start OR rr.window_end IS DISTINCT FROM v_end
     OR rr.rights_evidence_ref IS DISTINCT FROM cat.rights_evidence_ref
     THEN RAISE EXCEPTION 'SOCIAL_INGESTA_RUN_REPLAY_DRIFT'; END IF;
 
   INSERT INTO saly.ventas_social_eventos_v1
       (business_key,event_key,event_title,identity_state,match_state)
-  VALUES (business_key,event_key,p_record->>'event_title','VALIDADA','REVISADO')
+  VALUES (v_business_key,v_event_key,p_record->>'event_title','VALIDADA','REVISADO')
   ON CONFLICT (business_key,event_key) DO NOTHING;
   SELECT id INTO STRICT ev_id FROM saly.ventas_social_eventos_v1
-    WHERE ventas_social_eventos_v1.business_key=business_key
-      AND ventas_social_eventos_v1.event_key=event_key FOR UPDATE;
+    WHERE ventas_social_eventos_v1.business_key=v_business_key
+      AND ventas_social_eventos_v1.event_key=v_event_key FOR UPDATE;
 
   SELECT id,source_sha256 INTO pub_id,old_hash FROM saly.ventas_social_publicaciones_v1
-   WHERE ventas_social_publicaciones_v1.business_key=business_key
-     AND ventas_social_publicaciones_v1.source_id=source_id
-     AND ventas_social_publicaciones_v1.external_ref=external_ref FOR UPDATE;
-  IF FOUND AND old_hash IS DISTINCT FROM source_hash THEN
+   WHERE ventas_social_publicaciones_v1.business_key=v_business_key
+     AND ventas_social_publicaciones_v1.source_id=v_source_id
+     AND ventas_social_publicaciones_v1.external_ref=v_external_ref FOR UPDATE;
+  IF FOUND AND old_hash IS DISTINCT FROM v_source_hash THEN
     RAISE EXCEPTION 'SOCIAL_INGESTA_SOURCE_VERSION_CONFLICT'; END IF;
 
   SELECT a.id,a.source_id INTO original_claim,original_source
     FROM saly.ventas_social_afirmaciones_v1 a
-   WHERE a.event_id=ev_id AND a.claim_key=claim_key AND a.claim_state=claim_state
+   WHERE a.event_id=ev_id AND a.claim_key=v_claim_key AND a.claim_state=v_claim_state
    ORDER BY a.created_at,a.id LIMIT 1;
-  IF original_claim IS NOT NULL AND original_source=source_id THEN
+  IF original_claim IS NOT NULL AND original_source=v_source_id THEN
     receipt:=jsonb_build_object('result','DUPLICADO_INTRACANAL','run_ref',p_execution,
-                                'source_id',source_id,'event_id',ev_id,'inserted_claims',0);
+                                'source_id',v_source_id,'event_id',ev_id,'inserted_claims',0);
   ELSIF original_claim IS NOT NULL THEN
     INSERT INTO saly.ventas_social_concurrencias_v1(
       event_id,original_claim_id,confirming_source_id,confirming_external_ref,
       confirming_url,relation,match_evidence_sha256,reviewed)
-    VALUES(ev_id,original_claim,source_id,external_ref,p_record->>'url',
+    VALUES(ev_id,original_claim,v_source_id,v_external_ref,p_record->>'url',
       'MISMO_HECHO',rec_hash,true)
     ON CONFLICT (original_claim_id,confirming_source_id,confirming_external_ref,relation)
       DO NOTHING;
     receipt:=jsonb_build_object('result','CONCURRENCIA_INTERCANAL','run_ref',p_execution,
-                                'source_id',source_id,'event_id',ev_id,'inserted_claims',0);
+                                'source_id',v_source_id,'event_id',ev_id,'inserted_claims',0);
   ELSE
     IF pub_id IS NULL THEN
       INSERT INTO saly.ventas_social_publicaciones_v1(
         run_id,event_id,business_key,source_id,external_ref,url,published_at,
         source_sha256,summary_non_personal)
-      VALUES(rr.id,ev_id,business_key,source_id,external_ref,
-        p_record->>'url',v_date,source_hash,p_record->>'summary_non_personal')
+      VALUES(rr.id,ev_id,v_business_key,v_source_id,v_external_ref,
+        p_record->>'url',v_date,v_source_hash,p_record->>'summary_non_personal')
       RETURNING id INTO pub_id;
     END IF;
     INSERT INTO saly.ventas_social_afirmaciones_v1(
        event_id,publicacion_id,source_id,claim_key,claim_state,polarity)
-      VALUES(ev_id,pub_id,source_id,claim_key,claim_state,
+      VALUES(ev_id,pub_id,v_source_id,v_claim_key,v_claim_state,
         coalesce(p_record->>'polarity','NEUTRA'))
       ON CONFLICT(event_id,source_id,claim_key,claim_state) DO NOTHING
       RETURNING id INTO claim_id;
     IF claim_id IS NULL THEN
       RAISE EXCEPTION 'SOCIAL_INGESTA_CLAIM_CONFLICT'; END IF;
     receipt:=jsonb_build_object('result','INSERTADO','run_ref',p_execution,
-                                'source_id',source_id,'event_id',ev_id,
+                                'source_id',v_source_id,'event_id',ev_id,
                                 'claim_id',claim_id,'inserted_claims',1);
   END IF;
   PERFORM public.fn_lf_operation_mark_effect_succeeded_v1(
