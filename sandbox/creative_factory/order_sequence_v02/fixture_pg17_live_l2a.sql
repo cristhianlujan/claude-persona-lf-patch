@@ -66,6 +66,7 @@ CREATE TABLE saly.creative_orders(
  project_id bigint NOT NULL REFERENCES saly.proyecto(id),
  code text NOT NULL UNIQUE,request_key text NOT NULL UNIQUE,
  title text NOT NULL, request_kind text NOT NULL DEFAULT 'APP_SCREEN_BATCH',
+ design_mode text NOT NULL DEFAULT 'EXPLORE',
  requested_by text NOT NULL,scope_json jsonb NOT NULL DEFAULT '{}'::jsonb,
  identity_snapshot jsonb NOT NULL DEFAULT '{}'::jsonb,
  context_set_id bigint REFERENCES saly.creative_context_sets(id),
