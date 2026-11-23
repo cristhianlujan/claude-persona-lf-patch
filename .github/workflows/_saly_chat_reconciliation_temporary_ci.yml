@@ -1,0 +1,34 @@
+name: SALY Chat Artifact Reconciliation TEMPORARY PG17
+on:
+  push:
+    branches:
+      - saly/chat-artifact-reconciliation-20261122
+jobs:
+  archive_pg17:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: saly_queue_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_queue_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: 127.0.0.1
+      PGUSER: postgres
+      PGDATABASE: saly_queue_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify disposable PostgreSQL client
+        run: command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+      - name: Test actual reconciliation migration and its atomic negative cases
+        run: bash sandbox/creative_factory/reconciliation_v01/test_pg17.sh
