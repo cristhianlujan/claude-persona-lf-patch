@@ -52,11 +52,33 @@ BEGIN
   ev:=lf_ops.nucleo_regla_evaluar_v1(code,true);
   res:=ev->>'decision'; promoted:=NULL;
   IF res='AUTO' THEN
-   promoted:=lf_ops.nucleo_regla_promover_v1(code);
-   IF promoted->>'resultado'<>'PROMOVIDA_AUTO' THEN
+   IF code='S1-C01' THEN
+    -- La publicación en BACKEND / HEREDA hace nativa la pantalla legal 36.
+    -- El contrato DPIG03 exige que esa pantalla continúe con 0 nativas.
+    -- Subtransacción: solo revierte la promoción incompatible; conserva el juicio PASS.
+    BEGIN
+     promoted:=lf_ops.nucleo_regla_promover_v1(code);
+     IF promoted->>'resultado'<>'PROMOVIDA_AUTO' THEN
+      RAISE EXCEPTION 'TANDA8_AUTO_PROMOTION_FAILED % %',code,promoted;
+     END IF;
+     IF COALESCE(jsonb_array_length((lf_ops.lf_nucleo_lectura_transicion_v1(
+          36,'INPUT_GOVERNANCE','DIRECTAS'))->'nativas'),0)<>0 THEN
+      RAISE EXCEPTION 'TANDA8_DPiG03_BLOCK_S1_SECURITY_BACKEND_GLOBAL';
+     END IF;
+     auto_count:=auto_count+1;
+    EXCEPTION WHEN raise_exception THEN
+     IF SQLERRM<>'TANDA8_DPiG03_BLOCK_S1_SECURITY_BACKEND_GLOBAL' THEN RAISE; END IF;
+     promoted:=jsonb_build_object('resultado','NO_PROMOVIDA_POR_DPiG03_SCREEN36');
+     blocked_count:=blocked_count+1;
+     RAISE NOTICE 'TANDA8_SCOPE_BLOCK S1-C01 PASS/AUTO juicio conservado; pantalla 36 nativas debe seguir 0';
+    END;
+   ELSE
+    promoted:=lf_ops.nucleo_regla_promover_v1(code);
+    IF promoted->>'resultado'<>'PROMOVIDA_AUTO' THEN
      RAISE EXCEPTION 'TANDA8_AUTO_PROMOTION_FAILED % %',code,promoted;
+    END IF;
+    auto_count:=auto_count+1;
    END IF;
-   auto_count:=auto_count+1;
   ELSIF res='MANUAL' THEN manual_count:=manual_count+1;
   ELSE blocked_count:=blocked_count+1; END IF;
   RAISE NOTICE 'TANDA8_RESULT %',jsonb_build_object('regla',code,'version',ver,
@@ -70,11 +92,11 @@ BEGIN
  INSERT INTO public.lf_error_knowledge(codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia)
  VALUES('LF-NUCLEO-TANDA8-2-INDEPENDIENTES-20261123-001','NUCLEO_REGLAS','Tanda 8 dos juicios independientes',
  'REG_CHK_007 v3 y S1-C01 v1 con juicio PASS externo de Claude Sonnet 5.5; promoción solo AUTO. Conservar legadas e IG.',
- 'Un juicio externo PASS no acredita bindings físicos; S1-C01 conserva dos pares de pruebas duplicadas sin alterar hash de paquete.',
- 'NUCLEO_JUICIOS_TANDA8','Para próximas candidatas S1 deduplicar casos, incluir las dos combinaciones ausentes. Validar runtime con Paulo.',
+ 'S1-C01: el juicio PASS/AUTO es válido pero su aplicación BACKEND/HEREDA tras promoción rompe DPIG03 en pantalla legal 36. Se retiene CANDIDATA hasta nueva versión acotada y juicio; 2 pares de pruebas duplicados sin alterar hash.',
+ 'NUCLEO_JUICIOS_TANDA8','S1-C01 no promocionar con BACKEND/HEREDA: 1 nativa inesperada en pantalla 36. Revisar alcance y reversionar para nuevo juicio. No modificar IG. En siguientes candidatas deduplicar casos y completar tabla.',
  'PG17 hash positivo/alterado, BEGIN ROLLBACK, regresiones 17/17, lector IG 14/14, readback.',
  'MEDIUM',1,now(),now(),'TANDA8-20261123','ACTIVO','sandbox/lf_contract_gate_test/nucleo_ci/nucleo_juicios_independientes_tanda8_v1.json; docs/nucleo/LF_TANDA8_DOS_JUICIOS_INDEPENDIENTES_20261123.md');
- IF n<>2 OR (SELECT count(*) FROM public.lf_error_knowledge)<>oldekb+1
+ IF auto_count<>1 OR blocked_count<>1 OR n<>2 OR (SELECT count(*) FROM public.lf_error_knowledge)<>oldekb+1
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.id) FROM lf_ops.reglas r) IS DISTINCT FROM oldlegacy
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.codigo) FROM lf_ops.nucleo_reglas r
    WHERE r.codigo NOT IN ('REG_CHK_007','S1-C01')) IS DISTINCT FROM oldcore
