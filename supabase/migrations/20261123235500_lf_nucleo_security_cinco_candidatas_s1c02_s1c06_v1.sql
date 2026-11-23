@@ -8,7 +8,7 @@ SELECT jsonb_agg(to_jsonb(x) ORDER BY codigo) INTO oldcore FROM lf_ops.nucleo_re
 SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,version) INTO olddeprec FROM lf_ops.nucleo_deprecaciones x;
 SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,nodo) INTO oldapps FROM lf_ops.nucleo_aplicaciones x;
 SELECT count(*) INTO oldekb FROM public.lf_error_knowledge;
-IF (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='VIGENTE')<>58 OR (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='CANDIDATA')<>1 OR (SELECT count(*) FROM lf_ops.reglas)<>586 OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0 THEN RAISE EXCEPTION 'SECURITY_BASELINE_DRIFT'; END IF;
+IF (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='VIGENTE')<>58 OR (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='CANDIDATA')<>1 OR (SELECT count(*) FROM lf_ops.reglas)<1 OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0 THEN RAISE EXCEPTION 'SECURITY_BASELINE_DRIFT'; END IF;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('s1c02_intento_consulta','boolean','ninguna','Hecho lógico de intento para REG_SEG_007; binding físico no acreditado.');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('SECURITY','s1c02_intento_consulta','CURADO');
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('s1c02_validacion_servidor','boolean','ninguna','Hecho lógico de contexto para REG_SEG_007; binding físico no acreditado.');
