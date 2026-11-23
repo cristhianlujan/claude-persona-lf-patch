@@ -1,0 +1,287 @@
+{
+  "schema": "LF-NUCLEO-TANDA6-7-JUICIOS-INDEPENDIENTES-V1",
+  "fecha": "2026-11-23",
+  "fuente": "Claude Sonnet 5.5, juicio declarado independiente por Claude",
+  "metodo": "Cotejo read-only de version.hash, conteo de pruebas y hash_paquete de única evaluación de cada versión. Puntajes y notas según declaración de Claude. REG_CHK_004 v3 DEVOLVER sin promoción.",
+  "juicios": [
+    {
+      "codigo": "REG_CHK_005",
+      "version": 3,
+      "hash_version_atestado": "1ea603883cbb61b508970e9c666cd76e7aca388074a702679b05f92183452485",
+      "hash_paquete_atestado": "2ebe570ccd338b6c692ab01ba3776c75d43bb76e7d0921fd1166435181c1f158",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "La condición no lleva un hecho de pantalla CHECKOUT_PAGO_EXITOSO y depende del binding de pantalla."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Se propone integrarla con REG_CLIENT_PAYMENT_SUCCESS_VIEW_001 y no la sustituye."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Que no genera acciones post-pago no lo evalúa la condición."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "REG_CHK_006",
+      "version": 1,
+      "hash_version_atestado": "6dc916352b9b47be786492c7207f4085a911465912c6ea426f373e008a40b4f3",
+      "hash_paquete_atestado": "881bef4a5ee9d5c172a52373f0515eb660c79b5e7b95a59f366c80ba7655e33f",
+      "pruebas_atestadas": 3,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.95,
+          "observacion": "Faltan pruebas con ambas comisiones ocultas a la vez y con ambos tipos NONE; los hechos usan nombres físicos de columnas, que existen."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "REG_CHK_008",
+      "version": 3,
+      "hash_version_atestado": "ca9efd53f6fff4ba015fe38fa10691534119f16e826f5d868b7c6fe1839bd9fe",
+      "hash_paquete_atestado": "5eb6a59911377f64c10eecb606b68233e79c6355feacc7b798717201970556fa",
+      "pruebas_atestadas": 5,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.95,
+          "observacion": "En BACKEND y para cada deuda figura en el texto y no en la condición."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Consolidación pendiente con REG_CLIENT_NO_DEBT_LETTER_STATUS_001 y relación con M3-C03 publicada, distinto efecto (PERMITIR vs BLOQUEAR)."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Que el frontend no exige solicitud manual no lo evalúa la condición."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "REG_CHK_013",
+      "version": 3,
+      "hash_version_atestado": "76a22f4a1bff6b9ef7e9e71b694d452aa860c3a2b58d8c986b90d74031067baa",
+      "hash_paquete_atestado": "d9f0ed3dea6f3c93670927ee7420699b89bad012a230465ac169d1645a7af0bf",
+      "pruebas_atestadas": 5,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Consolidación pendiente con REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Timestamp, contexto del medio y versión del cronograma colapsan en un hecho de evidencia vinculada."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "REG_TEC_009",
+      "version": 3,
+      "hash_version_atestado": "1a3521d15598ce9b280be5ce195231a98ae9cd239de9c4920a0aae7ebc1ddee3",
+      "hash_paquete_atestado": "de3112dfc263c403c4a711a9473487799430497d0b19f73dc8aa2224cc7cc0ab",
+      "pruebas_atestadas": 6,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.9,
+          "observacion": "Descripción larga con cautelas de runtime."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.85,
+          "observacion": "Coincidencia de usuario, idempotency_key y request_sha256 y operation_number asociado se agrupan en hechos; el binding real no está acreditado."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.85,
+          "observacion": "En el borde exacto la condición da false pero la reconciliación aparte no la evalúa; el texto declara que ese criterio conservador no está validado contra runtime, y así debe quedar registrado en la EKB como pendiente de Paulo."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001",
+      "version": 3,
+      "hash_version_atestado": "9b29a98281a346f5dae334d9e68b770c0efd18cc82e9cccd56f410b6d7011dd0",
+      "hash_paquete_atestado": "be6efba5af2d9bdfc6f10200225b7e9f6a25f7c9b1a79502e3875360b21feb17",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.95,
+          "observacion": "Sin hecho de pantalla CHECKOUT_ESTADO_YAPE_QR."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa con REG_CHK_005 en evidencia autoritativa de pago."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El CTA Ya escaneé y la expiración no los evalúa la condición."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "REG_CHK_004",
+      "version": 3,
+      "hash_version_atestado": "78f6bc40616d4d26b81f25a0144e26f84cad3530d673cc380e1ae9236a4ddee5",
+      "hash_paquete_atestado": "8249771509939cf055b58cd0a99d2ac61d5ffd853a152eb2df2247ce2eef735f",
+      "pruebas_atestadas": 8,
+      "veredicto": "DEVOLVER",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.9,
+          "observacion": "La redacción de la descripción es ambigua acerca de las condiciones concurrentes de desbloqueo de reintento."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 0.7,
+          "observacion": "La descripción presenta outcome seguro, permiso explícito y reserva/quote vigente como alternativas, mientras título, condición y pruebas exigen las tres concurrentemente. Prueba 4 bloquea PAYMENT_NOT_SUBMITTED sin permiso pese a quote vigente; prueba 3 bloquea DECLINED_CONFIRMED con permiso si quote no vigente."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.6,
+          "observacion": "La condición bloquea si falta cualquiera de las tres validaciones, pero la descripción usa 'o' e induce a interpretar cualquiera de las tres como suficiente; requiere un 'y' expreso y coocurrencia."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    }
+  ],
+  "correccion_reg_chk_004_v4": {
+    "solo_descripcion": true,
+    "descripcion_nueva": "Un intento de checkout ya iniciado mantiene BLOQUEADO el reintento hasta que coexistan obligatoriamente las tres condiciones: (1) un outcome normalizado seguro del intento previo (PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT), (2) permiso explícito del backend para reintentar la misma operación, y (3) reserva original de operación y quote vigente y válida. Ninguna de estas tres condiciones por sí sola ni en combinación parcial desbloquea el reintento. El backend debe comprobar user_id, quote_status=VALID, expires_at y referencia reservada antes de emitir los hechos. Un timeout ambiguo nunca autoriza segundo cobro. Antes del primer envío esta regla no bloquea el inicio.",
+    "conservar": [
+      "condicion",
+      "efecto",
+      "titulo",
+      "autoridad",
+      "pruebas",
+      "alcance",
+      "familia"
+    ],
+    "estado": "CANDIDATA",
+    "juicio_independiente_v4": "PENDIENTE_CLAUDE",
+    "motivo": "Aclarar que tres requisitos concurren, no son alternativas."
+  }
+}
