@@ -21,7 +21,29 @@ IF lf_ops.nucleo_eval_v1(after3.condicion,'{"chk007_intento_modificar_seleccion"
 ev:=lf_ops.nucleo_regla_evaluar_v1('REG_CHK_007',true);
 IF ev->>'decision'='AUTO' OR after3.estado<>'CANDIDATA' THEN RAISE EXCEPTION 'CHK007_V3_UNJUDGED_AUTO'; END IF;
 hp:=lf_ops.nucleo_hash_paquete_v1('REG_CHK_007',3);
--- Hash adversario alterado: comparación canónica rechaza el reemplazo de un dígito del hash real, sin registrar un juicio falso.
+-- Negativo real: llamar al contrato oficial de juicio con hash alterado; el contrato debe rechazarlo antes de cualquier registro.
+BEGIN
+ PERFORM lf_ops.nucleo_juicio_registrar_v1(jsonb_build_object(
+   'regla','REG_CHK_007','hash_evaluado',repeat('0',64),
+   'veredicto','PASS',
+   'puntajes',jsonb_build_object(
+    'CAL_CLARIDAD',jsonb_build_object('puntaje',1),
+    'CAL_ACCIONABLE',jsonb_build_object('puntaje',1),
+    'CAL_ALCANCE',jsonb_build_object('puntaje',1),
+    'SEM_NO_DUPLICA',jsonb_build_object('puntaje',1),
+    'SEM_NO_CONTRADICE',jsonb_build_object('puntaje',1),
+    'COH_TEXTO_CONDICION',jsonb_build_object('puntaje',1),
+    'COH_EFECTO',jsonb_build_object('puntaje',1)),
+   'juez','PG17_NEGATIVO_SIN_JUICIO_REAL','modo','INDEPENDIENTE',
+   'revisor_es_productor',false,'llamadas_modelo',1,
+   'evidencia_ref','PR4685_PG17_HASH_NEGATIVE_ONLY'));
+ RAISE EXCEPTION 'CHK007_V3_BAD_HASH_ACCEPTED';
+EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE 'NUCLEO_JUICIO_HASH_DISTINTO:%' THEN RAISE; END IF;
+END;
+IF EXISTS(SELECT 1 FROM lf_ops.nucleo_juicios WHERE regla='REG_CHK_007' AND version=3)
+ THEN RAISE EXCEPTION 'CHK007_V3_NEGATIVE_JUDGMENT_PERSISTED'; END IF;
+
 IF hp=repeat('0',64) OR length(hp)<>64 OR hp IS NULL THEN RAISE EXCEPTION 'CHK007_V3_HASH_NEGATIVE_NOT_REJECTED'; END IF;
 RAISE NOTICE 'CHK007_V3_HASH_NEGATIVE_PASS true_hash=% altered_hash=%',hp,repeat('0',64);
 RAISE NOTICE 'CHK007_V3_RESULT %',jsonb_build_object('codigo','REG_CHK_007','version',3,'nota',ev->'nota','decision',ev->>'decision','hash_version',after3.hash,'hash_paquete',hp,'pruebas',11,'promocion','NO_PROMOVIDA');
