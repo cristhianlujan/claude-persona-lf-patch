@@ -1,0 +1,14 @@
+SALY Home #7 / item #10 · governed historical TERMINADO test evidence
+Date (UTC): 2026-11-23
+Repo: cristhianlujan/claude-persona-lf-patch
+PG17 isolated test run: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45278783824
+SHA tested: 4d9102fb07c21754cc89b32d320d20c4eb851718
+PG server: PostgreSQL 17.12 (Debian 17.12-1.pgdg13+1)
+Conclusion: SUCCESS
+PASS_PRE_MIGRATION_FALSE_TERMINAL_REJECTED
+PASS_POST_MIGRATION_TERMINAL_AND_IMMUTABLE_NO_FAKE_RUN
+PASS_PG17_GOVERNED_HISTORICAL_HOME7_ITEM10_TERMINAL_NEGATIVES_AND_READBACK
+Replay migration rejected by prestate guard (expected).
+Scope: disposable PG17 fixture, not the actual Supabase database.
+The temporary CI workflow was removed before PASE so that the repository ordinary-PR entrypoint remains single.
+NO PROD DEPLOY CLAIM, NO DB TERMINADO CLAIM until Merge Train and Supabase readback.
