@@ -1,0 +1,191 @@
+{
+  "schema": "LF-NUCLEO-CINCO-JUICIOS-INDEPENDIENTES-PILOTO-V1",
+  "estado": "EVIDENCIA_RECIBIDA_NO_REGISTRADA",
+  "fuente": "Claude Sonnet 5.5 Anthropic — veredicto comunicado por usuario, llamada externa no acreditada con RAW o call_id",
+  "guard": "Verificar hash_evaluado contra nucleo_hash_paquete_v1 real; detener si difiere del hash suministrado",
+  "juicios": [
+    {
+      "codigo": "M1-C03",
+      "version": 2,
+      "hash_suministrado": "abcd1de4e4d9d98a7e977832d742665432465ef37b1badc8a911a3af50cfc28d",
+      "hash_version_observado": "abcd1de4e4d9d98a7e977832d742665432465ef37b1badc8a911a3af50cfc28d",
+      "hash_paquete_ultima_evaluacion": "88037d12c84e63878831844bf176ed595db947ab4215b20af316abd54ca0f141",
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 (Anthropic) — según Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.9,
+          "observacion": "Descripción larga que mezcla la regla con pendientes de Paulo."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Cercana a REG_CHK_005 pero distinta (emisión de recibo vs pantalla de éxito)."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.85,
+          "observacion": "La descripción añade el registro de incidencia, pendiente de Paulo, que la condición no aplica."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M2-C05",
+      "version": 1,
+      "hash_suministrado": "9dbb758a6d6076b3f45b87e72e2c0d1e31bbb76e8e18f131a495781b32c121cd",
+      "hash_version_observado": "9dbb758a6d6076b3f45b87e72e2c0d1e31bbb76e8e18f131a495781b32c121cd",
+      "hash_paquete_ultima_evaluacion": "831eb9cc95a03ea8a6910e3f910b011317cd038c1b4d53b46fc85c34bae475a3",
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 (Anthropic) — según Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Relacionada con M2-C02 y REG_CHK_007 pero de alcance distinto."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.85,
+          "observacion": "Que no bloqueen las ofertas no seleccionadas depende de la definición del hecho m2_oferta_seleccionada_sin_modalidad y las 3 pruebas no cubren una oferta no seleccionada sin modalidad."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M2-C06",
+      "version": 1,
+      "hash_suministrado": "55705ea6f841c64cdccca0018e678e34ea8e6387dea4f887f541a90894ba7256",
+      "hash_version_observado": "55705ea6f841c64cdccca0018e678e34ea8e6387dea4f887f541a90894ba7256",
+      "hash_paquete_ultima_evaluacion": "35f1c4da34ff1c7a13ae3cf5ee8d429b854910ceaa496c491ac004c74f0af714",
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 (Anthropic) — según Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "El texto nombra PASO3_CUOTAS_DESGLOSE_V2 pero la condición solo usa el hecho de intento, sin verificar la pantalla."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M3-C01",
+      "version": 1,
+      "hash_suministrado": "664a8302b33256e3597c535609c51e39ca4b6c876ebc545d12639401eb73aa69",
+      "hash_version_observado": "664a8302b33256e3597c535609c51e39ca4b6c876ebc545d12639401eb73aa69",
+      "hash_paquete_ultima_evaluacion": "13bfde2b3e30b853dd3a31fe290ba69a4e2acd38112148a88ab743af01386071",
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 (Anthropic) — según Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "'checkout, confirmación o documento' es amplio y se resuelve solo por el hecho de intento, con binding pendiente de Paulo."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M3-C02",
+      "version": 1,
+      "hash_suministrado": "262b5c0b559015c3a9013fb304a9648becbdb879dbb87181e50682a8475878e5",
+      "hash_version_observado": "262b5c0b559015c3a9013fb304a9648becbdb879dbb87181e50682a8475878e5",
+      "hash_paquete_ultima_evaluacion": "17d78c7a41191d75d627292fa15f825682112c570223e434e620c95c33942e21",
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 (Anthropic) — según Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El texto expresa el pago no confirmado de dos formas y la condición lo unifica."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    }
+  ]
+}
