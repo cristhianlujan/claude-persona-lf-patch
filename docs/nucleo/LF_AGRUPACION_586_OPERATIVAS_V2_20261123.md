@@ -1,16 +1,16 @@
 # LF — 586 legadas: clasificación V2 de definiciones operativas y decisiones de negocio
 
-**Corte:** 23/11/2026 Lima; **586/586** identificadas, 46 familias. Se preservan las fuentes legadas. Se reinterpretan conservadoramente 123 indicadores históricos `pendiente_decision`: 34 requieren evaluación de elección de negocio y 89 se encaminan como dependencia/definición técnica, operativa, legal, visual o de fuente, sin convertirlas en nueva decisión de Cristhian.
+**Corte:** 23/11/2026 Lima; **586/586** identificadas, 46 familias. Se preservan las fuentes legadas. Se reinterpretan conservadoramente 123 indicadores históricos `pendiente_decision`: 21 tienen decisiones de producto o política de riesgo pendientes y 102 se encaminan como dependencia/definición técnica, operativa, legal, visual o de fuente, sin convertirlas en nueva decisión de Cristhian.
 
 ## Totales mutuamente excluyentes
 
 | Categoría | Legadas |
 |---|---:|
 | CUBIERTA formalmente verificada | **0** |
-| MIGRAR (clasificable para trabajo) | **402** |
+| MIGRAR (clasificable para trabajo) | **415** |
 | FALTA_MIGRAR (familia aún por validar) | **134** |
 | PAULO (binding/runtime textual) | **16** |
-| DECISION (elección de negocio pendiente) | **34** |
+| DECISION (elección de negocio pendiente) | **21** |
 | **Total** | **586** |
 
 **Cobertura formal real: 0 / 586 = 0,00%.** Hay 71 legadas citadas como procedencia por 57 reglas PUBLICADAS, pero ninguna relación N:M certificada; procedencia no equivale a cobertura funcional. La columna `nucleo_reglas.regla_legacy_id` está NULL en las 58 reglas núcleo del corte inicial y no permite múltiples legadas por regla. Se propone, sin crearla, `lf_ops.nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,tipo_cobertura,estado,evidencia_ref,hash_paquete,revisado_por,revisado_en)`, FK bidireccionales y clave (legacy_id,nucleo_codigo,version_nucleo), estado VERIFICADA solo tras cotejo funcional.
@@ -25,11 +25,11 @@ La etiqueta original `pendiente_decision=true` **no es necesariamente una decisi
 
 | Familia | Total | MIGRAR | FALTA | PAULO | DECISIÓN |
 |---|---:|---:|---:|---:|---:|
-| SECURITY | 82 | 73 | 0 | 2 | 7 |
-| PAYMENTS_CHECKOUT | 61 | 54 | 4 | 2 | 1 |
+| SECURITY | 82 | 77 | 0 | 2 | 3 |
+| PAYMENTS_CHECKOUT | 61 | 55 | 4 | 2 | 0 |
 | TRANSITIONS | 55 | 46 | 1 | 6 | 2 |
 | OFFERS_INSTALLMENTS | 53 | 17 | 31 | 1 | 4 |
-| B2B_PORTFOLIO_LOADS | 27 | 5 | 15 | 0 | 7 |
+| B2B_PORTFOLIO_LOADS | 27 | 8 | 15 | 0 | 4 |
 | LEGAL_CONSENT | 26 | 25 | 0 | 1 | 0 |
 | LOADING_EMPTY_ERROR_STATES | 21 | 16 | 5 | 0 | 0 |
 | STATES | 20 | 9 | 10 | 1 | 0 |
@@ -43,7 +43,7 @@ La etiqueta original `pendiente_decision=true` **no es necesariamente una decisi
 | ACCESSIBILITY | 10 | 10 | 0 | 0 | 0 |
 | RATE_LIMIT | 8 | 8 | 0 | 0 | 0 |
 | NOTIFICATIONS_DELIVERY | 8 | 8 | 0 | 0 | 0 |
-| DOMAIN_LIFECYCLE | 8 | 0 | 5 | 0 | 3 |
+| DOMAIN_LIFECYCLE | 8 | 3 | 5 | 0 | 0 |
 | ROUTING_NAVIGATION | 8 | 8 | 0 | 0 | 0 |
 | SESSION | 7 | 7 | 0 | 0 | 0 |
 | AUDIT | 7 | 7 | 0 | 0 | 0 |
@@ -52,10 +52,10 @@ La etiqueta original `pendiente_decision=true` **no es necesariamente una decisi
 | EXPERIMENTS_AB | 5 | 5 | 0 | 0 | 0 |
 | FIELDS | 5 | 0 | 5 | 0 | 0 |
 | DASHBOARD_REPORTING | 5 | 0 | 4 | 0 | 1 |
-| COMMERCIAL_CAMPAIGNS | 5 | 0 | 3 | 1 | 1 |
+| COMMERCIAL_CAMPAIGNS | 5 | 1 | 3 | 1 | 0 |
 | HEATMAP_SESSION_RECORDING | 4 | 4 | 0 | 0 | 0 |
 | ERRORS | 4 | 4 | 0 | 0 | 0 |
-| THEME_LIGHT_DARK_SYSTEM | 3 | 2 | 0 | 0 | 1 |
+| THEME_LIGHT_DARK_SYSTEM | 3 | 3 | 0 | 0 | 0 |
 | RESPONSIVE | 3 | 3 | 0 | 0 | 0 |
 | PERMISSIONS | 3 | 3 | 0 | 0 | 0 |
 | DOCUMENTS_CERTIFICATES | 3 | 0 | 2 | 1 | 0 |
@@ -165,4 +165,8 @@ La etiqueta original `pendiente_decision=true` **no es necesariamente una decisi
 
 ## Orden de lotes siguientes
 
-SECURITY primero por 73 MIGRAR de 82; después PAYMENTS_CHECKOUT (54), TRANSITIONS (46) y siguientes según volumen MIGRAR y riesgo. Piloto SECURITY S1-C01 quedó candidata, sin juicio. Cada lote exige identificar cobertura existente, crear casos completos de intento/violación, PG17, cero promoción hasta juicio independiente. **No se abre otra familia ni se aprueba tabla puente en este trabajo.**
+SECURITY primero por 77 MIGRAR de 82; después PAYMENTS_CHECKOUT (55), TRANSITIONS (46) y siguientes según volumen MIGRAR y riesgo. Piloto SECURITY S1-C01 quedó candidata, sin juicio. Cada lote exige identificar cobertura existente, crear casos completos de intento/violación, PG17, cero promoción hasta juicio independiente. **No se abre otra familia ni se aprueba tabla puente en este trabajo.**
+
+## Regla de decisión genuina
+
+DECISION concentra solo 21 elecciones abiertas de negocio/producto o política de riesgo propuestas para decisión del dueño, excluyendo la configuración física, texto/legal, implementación, UI y procedimientos operativos. El indicador legado `pendiente_decision` conserva su valor en BD. La triage no es aprobación de un contrato ni prueba de cobertura.
