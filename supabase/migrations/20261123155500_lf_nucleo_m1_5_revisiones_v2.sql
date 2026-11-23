@@ -58,7 +58,7 @@ BEGIN
   IF wr->>'resultado'<>'CANDIDATA' OR wr->>'version'<>'2'
   THEN RAISE EXCEPTION 'M1_FIVE_REVISION_REJECTED % %',code,wr; END IF;
   SELECT jsonb_agg(jsonb_build_object('casuistica',casuistica,'entrada',entrada,'esperado',esperado) ORDER BY t.n)
-   INTO newtests FROM lf_ops.nucleo_regla_pruebas WHERE regla=code AND version=2;
+   INTO newtests FROM lf_ops.nucleo_regla_pruebas t WHERE t.regla=code AND t.version=2;
   IF newtests IS DISTINCT FROM p->'pruebas'
     OR (SELECT estado FROM lf_ops.nucleo_regla_versiones WHERE regla=code AND version=1)<>'DESCARTADA'
     OR (SELECT estado FROM lf_ops.nucleo_regla_versiones WHERE regla=code AND version=2)<>'CANDIDATA'
