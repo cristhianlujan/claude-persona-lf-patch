@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-motor-abonos-nodo-modulo-20261123-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/changesets/saly-motor-abonos-nodo-modulo-20261123-v1.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261123175500_lf_saly_motor_abonos_nodo_modulo_v1.sql": "MIGRATION"
+  }
+}
