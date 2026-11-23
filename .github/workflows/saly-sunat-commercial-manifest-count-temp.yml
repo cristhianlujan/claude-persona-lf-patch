@@ -17,7 +17,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json,sys
+          import json,sys,hashlib
           from pathlib import Path
           d=Path('skills/ai_sales_discovery')
           sys.path.insert(0,str(d/'adapters'))
@@ -45,9 +45,19 @@ jobs:
                   monthly_url='https://www.datosabiertos.gob.pe/sites/default/files/PadronRUC_202610.zip'
               ) as (receipt,verified):
                   rows=0
+                  hashed_rucs=[]
                   for entry,payload in verified:
                       rows+=entry['rows']
+                      hashed_rucs.extend(hashlib.sha256(
+                          item['capture']['normalized']['ruc'].encode('ascii')).hexdigest()[:16]
+                          for item in json.loads(payload))
                   assert rows==receipt['rows']
+                  assert len(hashed_rucs)==len(set(hashed_rucs))
+                  # Publish only non-reversible bounded digests and manifest metadata.
+                  # The names, RUC literals, source payloads never enter Github logs.
+                  print('COMMERCIAL_CANDIDATE_HASH64_LIST '+','.join(hashed_rucs),flush=True)
+                  print('COMMERCIAL_CANDIDATE_PLAN_METADATA '+json.dumps(receipt['plan'],
+                        sort_keys=True,separators=(',',':')),flush=True)
                   assert receipt['scanned_remaining_rows']==receipt['excluded_by_commercial_policy']+receipt['rows']
                   safe={k:receipt[k] for k in ('rows','batches','total_bytes','manifest_digest_sha256',
                     'scanned_remaining_rows','excluded_by_commercial_policy','skipped_historical_rows',
