@@ -1,0 +1,16 @@
+{
+  "solution_ref": "saly-creative-chat-terminal-home7-item10-20261123",
+  "paths": {
+    "supabase/migrations/20261123230000_lf_saly_creative_chat_terminal_home7_item10_v1.sql": "MIGRATION",
+    "sandbox/creative_factory/order7_terminal_20261123/source_manifest_v1.json": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/judge_receipt_v1.json": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/prestate_negative_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/poststate_negative_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-chat-terminal-home7-item10-20261123.json": "CHANGESET_MANIFEST",
+    "sandbox/creative_factory/order7_terminal_20261123/ci_results_20261123.txt": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/live_intake_gate_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/negative_intake_gate_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/order7_terminal_20261123/restored_intake_gate_pg17.sql": "RUNTIME_TESTING"
+  }
+}
