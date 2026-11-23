@@ -31,6 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client-17
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Positive and negative SQL tests
         run: bash sandbox/creative_factory/order7_terminal_20261123/test_pg17.sh
