@@ -376,7 +376,32 @@ def main():
                         or psql(name, snapshot).stdout != before):
                     raise RuntimeError("M4_ROLLBACK_OR_NEGATIVE_FAILED")
                 print("M4_OUTER_ROLLBACK_PASS exact baseline", flush=True)
+            if "_lf_nucleo_m4b_otp_session_rate_candidatas_v1.sql" in path.name:
+                snapshot = """SELECT jsonb_build_object(
+                    'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                    'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
+                    'versions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones r),
+                    'facts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_hechos r),
+                    'vocab',(SELECT jsonb_agg(to_jsonb(r) ORDER BY familia,hecho) FROM lf_ops.nucleo_familia_vocabulario r),
+                    'tests',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version,n) FROM lf_ops.nucleo_regla_pruebas r),
+                    'eval',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_evaluaciones r),
+                    'deprec',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r),
+                    'ekb',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM public.lf_error_knowledge r));"""
+                before = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("M4B_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if trial.returncode or trial.stderr.count("M4B_CASES ") != 8 or trial.stderr.count("M4B_CANDIDATE ") != 8 or "M4B_PASS 8/8 candidate-only" not in trial.stderr or psql(name, snapshot).stdout != before:
+                    raise RuntimeError("M4B_ROLLBACK_OR_CASES_FAILED")
+                print("M4B_OUTER_ROLLBACK_PASS exact baseline", flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_m4b_otp_session_rate_candidatas_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr, flush=True)
+                if replay.stderr.count("M4B_CASES ") != 8 or replay.stderr.count("M4B_CANDIDATE ") != 8 or "M4B_PASS 8/8 candidate-only" not in replay.stderr:
+                    raise RuntimeError("M4B_REPLAY_FAILED")
+
             if "_lf_nucleo_m4_security_candidatas_v1.sql" in path.name:
                 print(replay.stdout + replay.stderr, flush=True)
                 if (replay.stderr.count("M4_CASES ") != 8

@@ -1,0 +1,759 @@
+{
+  "schema": "LF-M4B-8-V1",
+  "facts": [
+    {
+      "codigo": "m4b_intento_reanudar_otp_pendiente",
+      "familia": "SESSION",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_otp_pendiente_sesion_expirada",
+      "familia": "SESSION",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_retomar_onboarding",
+      "familia": "SESSION",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_sesion_expirada_con_precarga",
+      "familia": "SESSION",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_mutacion_sesion",
+      "familia": "SESSION",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_onboarding_completado",
+      "familia": "SESSION",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_reenvio_backend",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_cooldown_backend_otp_activo",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_habilitar_reenvio_ui",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_timer_otp_ordinario_no_vencido",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_reenvio_tras_agotamiento",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_cooldown_agotamiento_reenvios_activo",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_cambiar_numero_inline",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_limite_cambio_inline_excedido",
+      "familia": "RATE_LIMIT",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_intento_captcha_paso_otp",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m4b_captcha_adicional_otp_presentado",
+      "familia": "SECURITY",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    }
+  ],
+  "entries": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B01",
+      "clave": "m4b_14",
+      "titulo": "Expiración de sesión OTP no completada",
+      "descripcion": "En intento de reanudar sesión incompleta sin OTP verificado, BLOQUEAR si venció la ventana AUTH/ONBOARDING_UNVERIFIED_SESSION_EXPIRATION_MINUTES de public.lf_global_config; exigir ABANDONED. No bloquear nueva sesión ni sesión verificada. El cálculo y persistencia se acreditan con Paulo.",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_reanudar_otp_pendiente"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_otp_pendiente_sesion_expirada"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/14",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reanudar_otp_pendiente": true,
+            "m4b_otp_pendiente_sesion_expirada": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reanudar_otp_pendiente": true,
+            "m4b_otp_pendiente_sesion_expirada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reanudar_otp_pendiente": false,
+            "m4b_otp_pendiente_sesion_expirada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reanudar_otp_pendiente": false,
+            "m4b_otp_pendiente_sesion_expirada": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B02",
+      "clave": "m4b_15",
+      "titulo": "Sesión expirada no recupera datos del intento previo",
+      "descripcion": "Al intentar recuperar una sesión expirada, BLOQUEAR continuar o precargar datos y exigir inicio desde Paso 1. No afecta sesión todavía activa ni flujos de nueva autenticación.",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_retomar_onboarding"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_sesion_expirada_con_precarga"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/15",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_retomar_onboarding": true,
+            "m4b_sesion_expirada_con_precarga": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_retomar_onboarding": true,
+            "m4b_sesion_expirada_con_precarga": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_retomar_onboarding": false,
+            "m4b_sesion_expirada_con_precarga": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_retomar_onboarding": false,
+            "m4b_sesion_expirada_con_precarga": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B03",
+      "clave": "m4b_18",
+      "titulo": "No mutar la sesión de onboarding completada",
+      "descripcion": "Cuando se intenta modificar la misma sesión de onboarding ya finalizada, BLOQUEAR la modificación; posteriores cambios usan un flujo autenticado separado de Mi Cuenta. No bloquear lectura autorizada.",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_mutacion_sesion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_onboarding_completado"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/18",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_mutacion_sesion": true,
+            "m4b_onboarding_completado": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_mutacion_sesion": true,
+            "m4b_onboarding_completado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_mutacion_sesion": false,
+            "m4b_onboarding_completado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_mutacion_sesion": false,
+            "m4b_onboarding_completado": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B04",
+      "clave": "m4b_30",
+      "titulo": "Respeto del cooldown de seguridad de reenvío OTP",
+      "descripcion": "Solo ante un intento efectivo de reenvío OTP, BLOQUEAR si continúa el cooldown ordinario de AUTH/OTP_ORDINARY_RESEND_TIMER_SECONDS o prevalece cooldown de agotamiento AUTH/OTP_EXHAUSTION_COOLDOWN_SECONDS tras AUTH/OTP_MAX_ATTEMPTS. Parámetros gobernados por public.lf_global_config y lector public.lf_auth_config_integer_v1. Sin números fijos ni decisión de umbral nueva.",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_reenvio_backend"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_cooldown_backend_otp_activo"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/30",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_backend": true,
+            "m4b_cooldown_backend_otp_activo": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_backend": true,
+            "m4b_cooldown_backend_otp_activo": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_backend": false,
+            "m4b_cooldown_backend_otp_activo": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_backend": false,
+            "m4b_cooldown_backend_otp_activo": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B05",
+      "clave": "m4b_63",
+      "titulo": "Deshabilitar reenvío UI durante timer ordinario",
+      "descripcion": "En pantalla OTP, al intentar habilitar reenvío visual, BLOQUEAR mientras no venza timer AUTH/OTP_ORDINARY_RESEND_TIMER_SECONDS obtenido de public.lf_global_config según tiempo server-side. No sustituye el bloqueo de backend.",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_habilitar_reenvio_ui"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_timer_otp_ordinario_no_vencido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/63",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_habilitar_reenvio_ui": true,
+            "m4b_timer_otp_ordinario_no_vencido": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_habilitar_reenvio_ui": true,
+            "m4b_timer_otp_ordinario_no_vencido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_habilitar_reenvio_ui": false,
+            "m4b_timer_otp_ordinario_no_vencido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_habilitar_reenvio_ui": false,
+            "m4b_timer_otp_ordinario_no_vencido": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B06",
+      "clave": "m4b_64",
+      "titulo": "Cooldown temporal por agotamiento de reenvíos",
+      "descripcion": "Al solicitar reenvío OTP después de agotar el máximo AUTH/OTP_MAX_RESENDS, BLOQUEAR mientras siga el cooldown AUTH/OTP_RESEND_LIMIT_COOLDOWN_MINUTES de public.lf_global_config leído mediante public.lf_auth_config_integer_v1. No bloquear permanentemente ni otras sesiones.",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_reenvio_tras_agotamiento"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_cooldown_agotamiento_reenvios_activo"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/64",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_tras_agotamiento": true,
+            "m4b_cooldown_agotamiento_reenvios_activo": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_tras_agotamiento": true,
+            "m4b_cooldown_agotamiento_reenvios_activo": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_tras_agotamiento": false,
+            "m4b_cooldown_agotamiento_reenvios_activo": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_reenvio_tras_agotamiento": false,
+            "m4b_cooldown_agotamiento_reenvios_activo": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B07",
+      "clave": "m4b_65",
+      "titulo": "Rate de cambios de celular inline por sesión",
+      "descripcion": "Solo al intentar cambiar inline el número de una sesión, BLOQUEAR exceso del máximo AUTH/PHONE_UPDATE_MAX_PER_SESSION de public.lf_global_config, con mensaje de soporte. No aplicar a otras sesiones ni confundir con bloqueo de campo y nueva sesión REG_SEG_005.",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_cambiar_numero_inline"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_limite_cambio_inline_excedido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/65",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_cambiar_numero_inline": true,
+            "m4b_limite_cambio_inline_excedido": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_cambiar_numero_inline": true,
+            "m4b_limite_cambio_inline_excedido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_cambiar_numero_inline": false,
+            "m4b_limite_cambio_inline_excedido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_cambiar_numero_inline": false,
+            "m4b_limite_cambio_inline_excedido": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-B08",
+      "clave": "m4b_123",
+      "titulo": "Evitar CAPTCHA adicional en paso OTP",
+      "descripcion": "Solo si en Paso 2 OTP se intenta presentar un CAPTCHA adicional, BLOQUEAR la doble fricción, sin modificar CAPTCHA del Paso 1 ni controles de otras superficies.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_intento_captcha_paso_otp"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4b_captcha_adicional_otp_presentado"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/123",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_captcha_paso_otp": true,
+            "m4b_captcha_adicional_otp_presentado": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_captcha_paso_otp": true,
+            "m4b_captcha_adicional_otp_presentado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_captcha_paso_otp": false,
+            "m4b_captcha_adicional_otp_presentado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4b_intento_captcha_paso_otp": false,
+            "m4b_captcha_adicional_otp_presentado": false
+          },
+          "esperado": false
+        }
+      ]
+    }
+  ]
+}
