@@ -1,0 +1,302 @@
+{
+  "schema": "LF-NUCLEO-TANDA3-8-JUICIOS-INDEPENDIENTES-V1",
+  "fecha": "2026-11-23",
+  "fuente": "Claude Sonnet 5.5 Anthropic; revisión independiente atestada por Claude, 1 llamada por regla",
+  "procedencia": "Claude verificó texto, condición, efecto y pruebas. Evaluaciones únicas de Supabase 131..138 y hashes canónicos coincidentes. GPT no alteró los puntajes.",
+  "alcance": "M4-C01..M4-C08 solo",
+  "juicios": [
+    {
+      "codigo": "M4-C01",
+      "version": 1,
+      "hash_version_atestado": "f4298bd204c1f0d72373e2fd39715895f355b94e765bbdfb911aac7c4d272d44",
+      "hash_paquete_atestado": "fcdccbac4a180aecb9fc76e708a3bc60971ed91325215acf285832f00e258fea",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa parcialmente con M4-C07 en analytics y replay del DNI, distinto alcance (telemetría general vs paso ONB_003)."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El texto lista logs, analytics, headers y mensajes de error y la condición usa un solo hecho agregado."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C02",
+      "version": 1,
+      "hash_version_atestado": "0bbeee62763297478c2ea1ffd119d687c530a08cd5378dd88b6b45a48e5a1389",
+      "hash_paquete_atestado": "13b0aafcb74b8ea0c08d9933241a06329036c0782c3d2314ab09a9c0be698be7",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El transporte autorizado por header o cookie httpOnly figura en el texto y la condición no lo evalúa."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C03",
+      "version": 1,
+      "hash_version_atestado": "341b1dfa1bede23e1bac0890eefac503997c6a6925248fb6917619d14029dab5",
+      "hash_paquete_atestado": "99eba3acd744025da6e8deea4407c5b03e176d3f9eb1e5a1393936b79c847594",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El texto permite solo resultado sin secreto y la condición solo evalúa la presencia del otp_code."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C04",
+      "version": 1,
+      "hash_version_atestado": "c12b5def17aa97cd1265b2106d014f539a6eee535a73c059c406be8814e0cf13",
+      "hash_paquete_atestado": "89bf328afbcefee527e6a154f3dafdd477ddf5fd06e196f6dd4e9e149c8c8185",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa parcialmente con M4-C08 (no revelar existencia de cuenta por DNI), distinta superficie (validación protegida vs resolución ONB_003)."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Registrado, bloqueado y sospechoso colapsan en un hecho."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C05",
+      "version": 1,
+      "hash_version_atestado": "6267608343aa70099eea478c1ee72620d9a60628cc089f48c89b694be21f94a2",
+      "hash_paquete_atestado": "cb5614ac2890a0fe93e3b09c7beb0d226e88615a9a944216c89bd83a4effa833",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Registrado y bloqueado colapsan en un hecho."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C06",
+      "version": 1,
+      "hash_version_atestado": "0029e125d7c9a3c34d3a5bbc73ca4ce686cf981ddb8a3660e81ebb5c8edc4ccd",
+      "hash_paquete_atestado": "8f5e6b3f6afa58e7d121f25c566acfa3de8658cc838edd60e31c2f2e6fc0ff08",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.95,
+          "observacion": "No distingue atribuir identidad civil de reasignar cuenta; ambos van en un solo hecho de intento."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Falta de acreditación o de recuperación autorizada se evalúa en un hecho agregado."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C07",
+      "version": 1,
+      "hash_version_atestado": "95f9117d079d8fa4a4fd60fa6ea9f46096da608cf9eb1c09c308edf0321169e9",
+      "hash_paquete_atestado": "627b7d152fc5d24e424db2a78261111f0582bd5e9f0fc4f7adba8191dd80c68f",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa parcialmente con M4-C01 en analytics y replay."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El texto lista localStorage, sessionStorage, URL, analytics, replay y caché offline y la condición usa un hecho agregado."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-C08",
+      "version": 1,
+      "hash_version_atestado": "3aedc3c2fa41b7e54b444ce99ceb119ca6d0f17dc9d328b59267b921ae122f7d",
+      "hash_paquete_atestado": "6171ba0a0cd47a57dfeb520b8377e3d893221b1a8454cbf98078a2d90a26039d",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa parcialmente con M4-C04 en no revelar existencia por DNI."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Flags, códigos y mensajes colapsan en un solo hecho."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    }
+  ]
+}
