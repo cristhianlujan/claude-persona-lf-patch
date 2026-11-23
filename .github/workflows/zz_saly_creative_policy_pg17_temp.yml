@@ -1,0 +1,35 @@
+name: TEMP SALY creative policy PG17 isolated
+on:
+  push:
+    branches:
+      - saly-creative-queue-pg17-pilot-20261122
+jobs:
+  policy-pg17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGDATABASE: saly_policy_test
+      PGSSLMODE: disable
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Prepare isolated database
+        run: psql -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE saly_policy_test"
+      - name: Run policy seed tests
+        run: bash sandbox/creative_factory/queue_v13/test_policy_pg17.sh
