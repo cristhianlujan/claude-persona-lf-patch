@@ -1,5 +1,5 @@
 -- Governed one-shot SUNAT writer freeze before destructive SALY purge.
--- Source provenance and immutable manifest remain untouched.
+-- Source provenance, immutable catalog rights and signed manifest remain untouched.
 -- Must be applied through ACTUALIZACION_DB_LF / LF Merge Train only.
 BEGIN;
 SET LOCAL lock_timeout='3s';
@@ -43,7 +43,7 @@ BEGIN
     AND operation_code='INGESTA_EMPRESARIAL_SALY'
   FOR SHARE;
   IF v_opstatus IS DISTINCT FROM 'IN_PROGRESS' OR
-     v_lease IS NULL OR v_lease>=clock_timestamp()
+     v_lease IS NULL OR v_lease>=now()
   THEN RAISE EXCEPTION 'SUNAT_FREEZE_INGEST_LEASE_ACTIVE_OR_OP_DRIFT'; END IF;
 
   SELECT id INTO STRICT v_run FROM saly.ventas_discovery_runs
@@ -54,15 +54,16 @@ BEGIN
   WHERE source_id='PE-SUNAT-RUC';
   IF v_bcount<1 THEN RAISE EXCEPTION 'SUNAT_FREEZE_NO_SOURCE_INGESTS'; END IF;
 
-  UPDATE saly.ventas_discovery_catalogo SET
-    habilitada=false,persist_business_data=false,
-    runtime_status='PURGE_FREEZE_OLD_MANIFEST'
-  WHERE source_id='PE-SUNAT-RUC'
-    AND habilitada AND persist_business_data
-    AND runtime_status='CONTROLLED_SEQUENTIAL_INGESTION'
-    AND rights_status='PERSISTENCIA_PERMITIDA';
-  GET DIAGNOSTICS v_updated=ROW_COUNT;
-  IF v_updated<>1 THEN RAISE EXCEPTION 'SUNAT_FREEZE_CATALOG_DRIFT:%',v_updated; END IF;
+  -- Immutable historical catalog flags are referenced by existing ingestas
+  -- through saly_l28_ingesta_catalog_rights_fk; NEVER flip them.
+  -- Writer is blocked by SUNAT_POLICY_V1.enabled=false, tested against
+  -- saly.ventas_sunat_ingesta_context_v1, not by altering history.
+  IF (SELECT count(*) FROM saly.ventas_discovery_catalogo
+      WHERE source_id='PE-SUNAT-RUC'
+        AND habilitada AND persist_business_data
+        AND runtime_status='CONTROLLED_SEQUENTIAL_INGESTION'
+        AND rights_status='PERSISTENCIA_PERMITIDA')<>1
+  THEN RAISE EXCEPTION 'SUNAT_FREEZE_CATALOG_DRIFT'; END IF;
 
   v_next:=v_prev||jsonb_build_object(
     'enabled',false,
@@ -76,7 +77,7 @@ BEGIN
   VALUES (
     'SALY_DISCOVERY','SUNAT_POLICY_V1',v_next::text,'JSON','REAL',
     'Freeze prior PE-SUNAT-RUC manifest before governed delete of commercial-ineligible records',
-    clock_timestamp());
+    now());
 
   UPDATE saly.ventas_discovery_runs SET estado='HOLD'
   WHERE id=v_run AND estado='EN_EJECUCION';
@@ -91,8 +92,8 @@ BEGIN
   OR (SELECT estado FROM saly.ventas_discovery_runs WHERE id=v_run) IS DISTINCT FROM 'HOLD'
   OR (SELECT count(*) FROM saly.ventas_discovery_catalogo
       WHERE source_id='PE-SUNAT-RUC'
-      AND NOT habilitada AND NOT persist_business_data
-      AND runtime_status='PURGE_FREEZE_OLD_MANIFEST')<>1
+      AND habilitada AND persist_business_data
+      AND runtime_status='CONTROLLED_SEQUENTIAL_INGESTION')<>1
   OR (SELECT count(*) FROM saly.ventas_discovery_ingestas
       WHERE source_id='PE-SUNAT-RUC')<>v_bcount
   THEN RAISE EXCEPTION 'SUNAT_FREEZE_READBACK_FAILED'; END IF;
