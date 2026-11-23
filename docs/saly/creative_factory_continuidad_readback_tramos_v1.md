@@ -10,8 +10,14 @@ No detenerse en la generación de la imagen ni declarar completado por lo visibl
 3. **Inicio:** invocar solo el mecanismo autorizado vigente para begin/reserva; releer orden, ítem, RUN, claim, token y deadline. Si no hay RUN registrado, reportar NO_INICIADO (no afirmar que está procesando).
 4. **Invocación Native:** utilizar el mensaje/handoff íntegro, sin recortarlo. Conforme al contrato V12, image_gen del chat es bloqueante; no simular una API de polling 10/20/30 s mientras corre. Al retornar, capturar resultado real o error antes de cualquier otra acción.
 5. **QA y evidencia:** cotejar imagen real, activos oficiales, texto, veredicto independiente y recibo de entrega. Si falta cualquiera, permanecer sin TERMINADO y guardar causal. No repetir dispatch ante respuesta ambigua.
-6. **Finalización:** usar exclusivamente función gobernada de cierre, nunca UPDATE manual. Releer orden/ítem/RUN/evidencia por conexión de lectura; requerir pedido TERMINADO y hash/recibo coincidentes.
+6. **Finalización y actualización de estado (RUTA GOBERNADA OBLIGATORIA):** una vez verificada la generación, QA y entrega, efectuar el cambio de estado y cualquier escritura en Supabase exclusivamente por la ruta aprobada **PR → PASE → Merge Train → readback de Supabase**, mediante la migración/función gobernada aplicable; jamás UPDATE, DDL ni ejecución SQL directa fuera de esa ruta. Releer orden/ítem/RUN/evidencia por conexión de solo lectura; requerir pedido `TERMINADO` y hash/recibo coincidentes. La aprobación o merge de PR por sí solos no acreditan el cierre.
 7. **Dependencia:** solo si HOME original está TERMINADO, iniciar SOLICITAR_ADELANTO.
+
+## Escritura y cierre por ruta gobernada — norma ineludible
+- **Aplica a todas las actualizaciones del pedido**, especialmente la transición a `TERMINADO`, el recibo de QA, evidencia de entrega y correcciones a pedidos #7/#9. Supabase no se modifica con SQL directo desde el chat ni mediante el conector de solo lectura.
+- La ejecución autorizada crea un **PR específico** con migración/cambio controlado, evidencia y pruebas de caso positivo y negativo; valida **PASE**, pasa por **Merge Train** y comprueba el despliegue en Supabase por **readback**. Sin pruebas o sin Train, la actualización sigue pendiente.
+- No escribir `TERMINADO` como ajuste cosmético para resolver un pendiente histórico: primero conciliar imagen, QA y evidencia real. Si no hay evidencia, conservar estado actual y registrar pendiente/causa mediante cambio gobernado, sin fabricar RUN retrospectivo.
+- La consulta de 30 segundos solo observa el estado; **no escribe**, no crea PR y no sustituye el cierre gobernado. Tras la generación y el QA se dispara el cierre por la ruta definida; el observador espera el readback final verificable.
 
 ## Revisión por tramos o tiempo
 - En cada transición y después de toda llamada larga se hace readback inmediato: esto es obligatorio incluso cuando no exista polling temporal.
