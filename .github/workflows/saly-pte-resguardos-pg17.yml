@@ -118,6 +118,8 @@ jobs:
         run: python3 skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py
       - name: Test SUNAT verified delivery staging and cleanup
         run: python3 skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py
+      - name: Test commercial SUNAT governed-loader admission and readback without DB credentials
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py
       - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
         run: python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
       - name: Test exact Unicode source-name guard before and after patch in disposable PG17
