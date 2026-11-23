@@ -71,7 +71,7 @@ BEGIN
 ('SEGUIMIENTO_ADELANTO',2,'G02_EN_PROCESO','Mostrar En proceso durante la ventana tecnica SQS','PANTALLA_DIBUJADA','SALY_SEGUIMIENTO_MINIMAL_v1.5.png','En proceso durante procesamiento de cola; abono inmediato de negocio.'),
 ('SEGUIMIENTO_ADELANTO',3,'G03_MOTOR','El Motor de Abonos procesa por canal configurable','INTERNO','SIN_PANTALLA','REFERENCIA_NODO=MOTOR_ABONOS. No fijar Niubiz/Manual ni ramas por canal.'),
 ('SEGUIMIENTO_ADELANTO',4,'G04_CONTINGENCIA','Derivar a manual tras falla de canal','INTERNO','SIN_PANTALLA','La vista del empleado permanece En proceso; VACÍO reintentos antes del recurso manual.'),
-('SEGUIMIENTO_ADELANTO',5,'G05_MANUAL_PENDIENTE','Mostrar En proceso con abono manual programado','POR_CONSTRUIR','VACÍO','VACÍO: pantalla En proceso para manual programado, reubicacion de v1.4; no crear estado Incidencia.'),
+('SEGUIMIENTO_ADELANTO',5,'G05_ESPERA_PROGRAMADA','Mostrar En proceso con abono manual programado','POR_CONSTRUIR','VACÍO','VACÍO: pantalla En proceso para manual programado, reubicacion de v1.4; no crear estado Incidencia.'),
 ('SEGUIMIENTO_ADELANTO',6,'G06_HORARIOS','Mostrar horario configurable del abono manual','POR_CONSTRUIR','VACÍO','VACÍO: tabla de horarios, vigencia y pantalla de linea temporal; no fijar hora en interfaz.'),
 ('SEGUIMIENTO_ADELANTO',7,'G07_RESULTADO','Actualizar consulta y emitir notificaciones de estado','INTERNO','SIN_PANTALLA','Push y correo tras procesamiento y estado consultable; VACÍO catalogo tecnico y pantalla final independiente.')
  ) AS pasos(proceso_codigo,orden,codigo,titulo,tipo,pantalla,detalle)
