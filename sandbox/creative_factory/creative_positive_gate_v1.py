@@ -184,8 +184,13 @@ def prepare_positive_review(plan: dict[str, Any],
     ]
     selected = by_id[choice["id"]]
     # Only renderable directives, not the deliberation, grades or QA metadata.
+    # Only visual instructions for the proposed recipient, never QA, hashes,
+    # process state or internal NATIVE/COMPOSITOR ownership labels.
     prompt = "\n".join([
-        structural["art_direction_supplement"],
+        "Destino visual: " + frozen_plan["presentation"]["destination"],
+        frozen_plan["blueprint"]["art"],
+        *[frozen_plan["direction"][key]["instruction"] for key in
+          ("scene", "style", "background", "typography", "hierarchy", "visual_impact")],
         "Concepto compositivo seleccionado: " + selected["design_move"],
         *[row["visual_instruction"] for row in outcomes],
         *[row["component"] + ": " + row["positive_direction"] for row in zones
