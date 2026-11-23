@@ -1,8 +1,8 @@
 {
   "schema": "LF-NUCLEO-CINCO-JUICIOS-INDEPENDIENTES-PILOTO-V1",
-  "estado": "EVIDENCIA_RECIBIDA_NO_REGISTRADA",
-  "fuente": "Claude Sonnet 5.5 Anthropic — veredicto comunicado por usuario, llamada externa no acreditada con RAW o call_id",
-  "guard": "Verificar hash_evaluado contra nucleo_hash_paquete_v1 real; detener si difiere del hash suministrado",
+  "estado": "JUICIOS_EXTERNOS_ATESTADOS_POR_CLAUDE_PILOTO_PENDIENTE_PUBLICACION",
+  "fuente": "Claude Sonnet 5.5, Anthropic, juicio comunicado y atestado por Claude en mensaje 23/11/2026 14:04 Lima (revisión declarada ~18:40 UTC); no reinterpretado por GPT",
+  "guard": "Validar version.hash aportado y nucleo_hash_paquete_v1(code,version) frente al hash_paquete canónico atestado por Claude. Hash_evaluado=hash_paquete calculado en la transacción únicamente si ambos coinciden. No recalcular puntajes.",
   "juicios": [
     {
       "codigo": "M1-C03",
@@ -40,7 +40,11 @@
         "COH_EFECTO": {
           "puntaje": 1
         }
-      }
+      },
+      "hash_version_atestado": "abcd1de4e4d9d98a7e977832d742665432465ef37b1badc8a911a3af50cfc28d",
+      "hash_paquete_atestado": "88037d12c84e63878831844bf176ed595db947ab4215b20af316abd54ca0f141",
+      "pruebas_atestadas": 7,
+      "procedencia": "Claude atesta revisión separada de GPT productor, Claude Sonnet 5.5 Anthropic, 1 llamada; source hash version y paquete arriba."
     },
     {
       "codigo": "M2-C05",
@@ -77,7 +81,11 @@
         "COH_EFECTO": {
           "puntaje": 1
         }
-      }
+      },
+      "hash_version_atestado": "9dbb758a6d6076b3f45b87e72e2c0d1e31bbb76e8e18f131a495781b32c121cd",
+      "hash_paquete_atestado": "831eb9cc95a03ea8a6910e3f910b011317cd038c1b4d53b46fc85c34bae475a3",
+      "pruebas_atestadas": 3,
+      "procedencia": "Claude atesta revisión separada de GPT productor, Claude Sonnet 5.5 Anthropic, 1 llamada; source hash version y paquete arriba."
     },
     {
       "codigo": "M2-C06",
@@ -113,7 +121,11 @@
         "COH_EFECTO": {
           "puntaje": 1
         }
-      }
+      },
+      "hash_version_atestado": "55705ea6f841c64cdccca0018e678e34ea8e6387dea4f887f541a90894ba7256",
+      "hash_paquete_atestado": "35f1c4da34ff1c7a13ae3cf5ee8d429b854910ceaa496c491ac004c74f0af714",
+      "pruebas_atestadas": 3,
+      "procedencia": "Claude atesta revisión separada de GPT productor, Claude Sonnet 5.5 Anthropic, 1 llamada; source hash version y paquete arriba."
     },
     {
       "codigo": "M3-C01",
@@ -149,7 +161,11 @@
         "COH_EFECTO": {
           "puntaje": 1
         }
-      }
+      },
+      "hash_version_atestado": "664a8302b33256e3597c535609c51e39ca4b6c876ebc545d12639401eb73aa69",
+      "hash_paquete_atestado": "13bfde2b3e30b853dd3a31fe290ba69a4e2acd38112148a88ab743af01386071",
+      "pruebas_atestadas": 3,
+      "procedencia": "Claude atesta revisión separada de GPT productor, Claude Sonnet 5.5 Anthropic, 1 llamada; source hash version y paquete arriba."
     },
     {
       "codigo": "M3-C02",
@@ -185,7 +201,12 @@
         "COH_EFECTO": {
           "puntaje": 1
         }
-      }
+      },
+      "hash_version_atestado": "262b5c0b559015c3a9013fb304a9648becbdb879dbb87181e50682a8475878e5",
+      "hash_paquete_atestado": "17d78c7a41191d75d627292fa15f825682112c570223e434e620c95c33942e21",
+      "pruebas_atestadas": 6,
+      "procedencia": "Claude atesta revisión separada de GPT productor, Claude Sonnet 5.5 Anthropic, 1 llamada; source hash version y paquete arriba."
     }
-  ]
+  ],
+  "procedencia_atestada": "Claude declara revisión posterior a creación atómica de versión, pruebas y evaluación; count pruebas 7,3,3,3,6; mismo paquete, llamadas_modelo=1 y revisor_es_productor=false."
 }
