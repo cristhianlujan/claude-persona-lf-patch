@@ -33,11 +33,11 @@ BEGIN
  THEN RAISE EXCEPTION 'M1_C03_PREFLIGHT_REJECTED %',dry; END IF;
  FOR i IN 0..6 LOOP
   SELECT value INTO c FROM jsonb_array_elements(p->'pruebas') WITH ORDINALITY x(value,ord) WHERE ord=i+1;
-  IF lf_ops.nucleo_eval_v1(p->'condicion',c->'entrada') IS DISTINCT FROM (c->>'esperado')::boolean
+  IF lf_ops.nucleo_eval_v1(p->'condicion',c->'entrada') IS DISTINCT FROM c->'esperado'
   THEN RAISE EXCEPTION 'M1_C03_CASE_FAIL %',i; END IF;
  END LOOP;
  SELECT value INTO c FROM jsonb_array_elements(p->'pruebas') WITH ORDINALITY x(value,ord) WHERE ord=6;
- IF lf_ops.nucleo_eval_v1(p->'condicion'->'der',c->'entrada') IS DISTINCT FROM true
+ IF lf_ops.nucleo_eval_v1(p->'condicion'->'der',c->'entrada') IS DISTINCT FROM 'true'::jsonb
  THEN RAISE EXCEPTION 'M1_C03_GUARD_MUTANT_SURVIVED'; END IF;
  RAISE NOTICE 'M1_C03_TESTS_PASS 7/7 and negative no-guard mutant detected';
  got:=lf_ops.nucleo_regla_proponer_v1(p,true);
