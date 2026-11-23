@@ -3,7 +3,17 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.13 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.14 (PLAN_ONLY / REVIEW_ONLY)
+
+## Política transversal de eficiencia espacial y decoración v0.14 (22/11/2026)
+
+**Autoridad:** instrucción expresa del dueño en el chat SALY (22/11/2026); aplica a toda imagen propuesta por esta skill, no solo al Home. Esta política no modifica activos oficiales ni inventa nuevos tokens, contenidos, métricas o permisos.
+
+- **HARD LOCK, sin excepciones decorativas:** nunca dibujar trazos radiales, palitos de énfasis, rayos de explosión, destellos o líneas cinéticas/impacto que rodean iconos, cifras, botones, ilustraciones o fotografías para simular movimiento, emoción o energía. También queda prohibido usarlos como ornamento suelto, en cualquier composición o modelo gráfico receptor. Conservar las líneas estructurales imprescindibles de iconos funcionales (p. ej. calendario, reloj, chevron, símbolo informativo), separadores necesarios y elementos exigidos por un activo oficial; ante conflicto con un activo oficial, no modificarlo ni sustituirlo: registrar la contradicción y bloquear el componente para decisión del dueño.
+- **Eficiencia espacial (habilidad v0.11 reforzada):** antes de seleccionar la composición, identificar áreas o alturas ociosas, quiebres de texto, columnas desiguales y filas dedicadas solo a iconos. Comparar al menos dos distribuciones factibles para los grupos afectados (icono al lado de etiqueta y valor frente a icono superior; agrupación horizontal/mixta; sección frente a tarjeta), y seleccionar la que conserve legibilidad y jerarquía con menos desperdicio. No imponer distribución horizontal por defecto ni comprimir tipografía o márgenes por estética. Expresar la alternativa seleccionada mediante relaciones renderizables en `hierarchy.instruction`, `components[].instruction` y `selected_alternative.design_move`; mantener la comparación y descarte en `hierarchy.rationale`/QA. El generador recibe **solo** la dirección elegida.
+- **Caso SALY ilustrado (evidencia adjunta 1001948503.jpg):** el resumen «Próximo descuento / Importe estimado / Mi disponible» reserva una franja superior para tres iconos, introduce saltos en las etiquetas y deja espacio libre no compensado. En propuestas nuevas evaluar iconos laterales con etiqueta/valor agrupados, distribución de dos datos y acceso «Mi disponible» en otra fila, o un esquema sin contenedor extra, sin alterar los textos. No convertir esta solución posible en plantilla global.
+- **QA objetivo, no prueba de usuario:** el QA previo verifica que existe una comparación espacial y que el handoff no pide decoración prohibida; el QA de imagen señala rayos/palitos decorativos, huecos evitables y desbordes cuando son visibles. La efectividad, satisfacción y aprobación estética la evalúa exclusivamente el dueño mediante sus iteraciones; no exigir ni simular pruebas de usuarios.
+- **Estado:** tras entregar la imagen solicitada con evidencia técnica real, el pedido puede quedar `TERMINADO`, sin esperar aceptación subjetiva. `TERMINADO` no significa `APROBADO`; los ajustes posteriores son nuevas instrucciones acotadas. Un fallo real de entrega sigue impidiendo marcarlo terminado.
 
 ## Alcance y activación
 
