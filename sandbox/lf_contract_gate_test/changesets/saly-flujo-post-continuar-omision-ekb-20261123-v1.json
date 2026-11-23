@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-flujo-post-continuar-omision-ekb-20261123-v1",
+  "paths": {
+    "supabase/migrations/20261123110000_lf_saly_ekb_omision_post_continuar_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-flujo-post-continuar-omision-ekb-20261123-v1.json": "CHANGESET_MANIFEST"
+  }
+}
