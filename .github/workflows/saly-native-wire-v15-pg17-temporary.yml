@@ -1,0 +1,40 @@
+name: SALY Native Wire V15 PG17 Temporary
+on:
+  push:
+    branches:
+      - feat/saly-creative-render-wire-infra-v1-20261123
+    paths:
+      - 'supabase/migrations/20261123064300_lf_saly_creative_native_render_wire_infrastructure_v1.sql'
+      - 'sandbox/creative_factory/queue_v15/**'
+      - '.github/workflows/saly-native-wire-v15-pg17-temporary.yml'
+permissions:
+  contents: read
+jobs:
+  pg17-wire:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_native_wire_v15_test
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_native_wire_v15_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PG17 V05 wire against V02/V06 staging
+        run: |
+          docker run --rm --network host \
+            -v "$PWD:/repo:ro" -w /repo \
+            -e PGHOST=127.0.0.1 -e PGPORT=5432 \
+            -e PGDATABASE=saly_native_wire_v15_test \
+            -e PGUSER=postgres -e PGPASSWORD=postgres \
+            postgres:17 bash sandbox/creative_factory/queue_v15/test_pg17.sh
