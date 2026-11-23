@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-ventas-oece-pg17-sourcepath-fix-v1",
+  "paths": {
+    ".github/workflows/saly-ventas-vinculos-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-oece-pg17-sourcepath-fix-v1.json": "CHANGESET_MANIFEST"
+  }
+}
