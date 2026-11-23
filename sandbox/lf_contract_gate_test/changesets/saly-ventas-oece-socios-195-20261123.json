@@ -1,0 +1,10 @@
+{
+  "solution_ref": "saly-ventas-oece-socios-195-20261123",
+  "paths": {
+    "supabase/migrations/20261123201500_lf_saly_oece_socios_candidates_v1.sql": "MIGRATION",
+    "supabase/tests/saly_oece_socios_candidates_v1_pg17_readback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-ventas-vinculos-pg17.yml": "WORKFLOW",
+    "docs/saly/ventas/candidate/oece/OECE_SOCIOS_195_CANDIDATOS_20261123.md": "DOCUMENTATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-ventas-oece-socios-195-20261123.json": "CHANGESET_MANIFEST"
+  }
+}
