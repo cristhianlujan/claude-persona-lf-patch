@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone
-from social_convergence_v1 import CandidateEngine
+from .social_convergence_v1 import CandidateEngine
 
 
 class RepeatedConfirmation(unittest.TestCase):
