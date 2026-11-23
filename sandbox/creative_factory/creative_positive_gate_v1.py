@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 from typing import Any
 
 from art_direction_preflight_v1 import ArtBlocked, preflight
@@ -20,6 +21,30 @@ CRITERIA = ("direccion", "creatividad_funcional", "composicion",
 GENERIC = {"premium", "moderno", "elegante", "wow", "bonito", "creativo",
            "más premium", "más moderno", "más elegante", "más creativo"}
 SHA64 = set("0123456789abcdef")
+# Restricción del dueño: aplica a cualquier negocio y a todo handoff de este gate.
+NO_DECORATIVE_BURSTS = (
+    "No agregar rayos de explosión, palitos de énfasis, destellos radiales "
+    "ni líneas cinéticas decorativas alrededor de iconos, montos, botones o "
+    "ilustraciones. Mantener solamente trazos funcionales de iconografía y "
+    "separadores estructurales justificados."
+)
+_DECOR_ACTION = re.compile(
+    r"\\b(?:agrega|agregar|añade|añadir|dibuja|dibujar|incluye|incluir|"
+    r"coloca|colocar|incorpora|incorporar|usa|usar|pon|poner)\\b", re.I)
+_DECOR_EFFECT = re.compile(
+    r"\\b(?:rayos|palitos|destellos|chispas|burst|"
+    r"l[ií]neas\\s+(?:cin[eé]ticas|de\\s+(?:explosi[oó]n|impacto|velocidad)))\\b", re.I)
+_NEGATION = re.compile(r"\\b(?:no|nunca|sin|evita|evitar|prohibido|prohibir)\\b", re.I)
+
+
+def demands_decorative_bursts(value: str) -> bool:
+    """Detecta instrucciones positivas claras; no pretende ser un juez visual."""
+    for clause in re.split(r"[;.\\n]", value):
+        if (_DECOR_ACTION.search(clause) and _DECOR_EFFECT.search(clause)
+                and not _NEGATION.search(clause)):
+            return True
+    return False
+
 
 
 class CreativeProcessBlocked(ValueError):
@@ -186,6 +211,19 @@ def prepare_positive_review(plan: dict[str, Any],
     # Only renderable directives, not the deliberation, grades or QA metadata.
     # Only visual instructions for the proposed recipient, never QA, hashes,
     # process state or internal NATIVE/COMPOSITOR ownership labels.
+    # Solo instrucciones renderizables producidas por el autor: el pedido
+    # literal del usuario no se reinterpreta ni se utiliza como autoridad
+    # para pedir decoraciones que contradicen el LOCK transversal.
+    graphic_instructions = [
+        *[frozen_plan["direction"][key]["instruction"] for key in
+          ("scene", "style", "background", "typography", "hierarchy", "visual_impact")],
+        selected["design_move"],
+        *[row["visual_instruction"] for row in outcomes],
+        *[row["positive_direction"] for row in zones
+          if components[row["component"]]["owner"] == "NATIVE"],
+    ]
+    check(not any(demands_decorative_bursts(v) for v in graphic_instructions),
+          "CREATIVE_DECORATIVE_STROKES_FORBIDDEN")
     prompt = "\n".join([
         "Destino visual: " + frozen_plan["presentation"]["destination"],
         frozen_plan["blueprint"]["art"],
@@ -195,6 +233,7 @@ def prepare_positive_review(plan: dict[str, Any],
         *[row["visual_instruction"] for row in outcomes],
         *[row["component"] + ": " + row["positive_direction"] for row in zones
           if components[row["component"]]["owner"] == "NATIVE"],
+        NO_DECORATIVE_BURSTS,
     ])
     return {
         "schema_version": SCHEMA,
