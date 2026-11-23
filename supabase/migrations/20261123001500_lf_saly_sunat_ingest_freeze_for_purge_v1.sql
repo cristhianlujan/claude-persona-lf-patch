@@ -86,7 +86,7 @@ BEGIN
   IF (SELECT config_value::jsonb->'enabled'
     FROM public.lf_global_config
     WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_POLICY_V1'
-    AND value_status='REAL' AND valid_from<=now()
+    AND value_status='REAL'
     ORDER BY valid_from DESC LIMIT 1) IS DISTINCT FROM 'false'::jsonb
   OR (SELECT estado FROM saly.ventas_discovery_runs WHERE id=v_run) IS DISTINCT FROM 'HOLD'
   OR (SELECT count(*) FROM saly.ventas_discovery_catalogo
