@@ -40,6 +40,9 @@ class GovernedCommercialWriter(unittest.TestCase):
         p,r=v3.validate_policy_and_roster(self.raw,self.exact)
         self.assertEqual(p,self.policy)
         self.assertEqual(r,set(self.rucs))
+        candidate=dict(self.raw,operation=None,new_run=None)
+        new_pol,new_roster=v3.validate_policy_and_roster(candidate,self.exact)
+        self.assertEqual(new_roster,set(self.rucs))
 
     def test_reject_disabled_policy_old_run_or_new_run_drift(self):
         for change in (
@@ -87,7 +90,8 @@ class GovernedCommercialWriter(unittest.TestCase):
     def test_only_native_governed_operation_in_generated_sql(self):
         plan=[dict(batch_key="a"*64,ordinal=1,rows=1,bytes=2,
              capture_sha256=sha(b"[]"),consulta_evidencia_ref="https://example.com")]
-        q=v3.plan_sql(plan)
+        q=v3.plan_sql(plan,self.exact["source_sha256"])
+        self.assertIn("fn_lf_operation_reserve_execution_v1",q)
         self.assertIn("saly.ventas_sunat_plan_prepare_v1",q)
         self.assertIn("fn_lf_operation_acquire_lease_v1",q)
         self.assertNotIn("INSERT INTO saly.ventas_hallazgos",q)

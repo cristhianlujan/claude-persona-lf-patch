@@ -35,7 +35,9 @@ def validate_policy_and_roster(raw, exact):
         raise ValueError("COMMERCIAL_DB_POLICY_MISSING")
     pol=raw["policy"]
     if not (raw.get("old_run")=="HOLD" and raw.get("old_batches")==136
-            and raw.get("old_hist_rows")==136000 and raw.get("operation")=="IN_PROGRESS"
+            and raw.get("old_hist_rows")==136000
+            and raw.get("operation") in (None,"IN_PROGRESS")
+            and (raw.get("operation")=="IN_PROGRESS" or raw.get("new_run") is None)
             and raw.get("new_run") in (None,"EN_EJECUCION","PARTIAL")
             and raw.get("trigger_active") is True
             and pol.get("enabled") is True and pol.get("commercial_mode") is True
@@ -125,19 +127,34 @@ def verify_manifest(receipt, pol):
     return {k:receipt.get(k) for k in fields}
 
 
-def plan_sql(entries):
+def plan_sql(entries,source_sha256):
     # Client cannot supply an unverified manifest: only the sealed source stream.
     plan_json=canonical(entries).decode("utf8")
     if "$saly_commercial_plan$" in plan_json:
         raise ValueError("COMMERCIAL_PLAN_DELIMITER")
+    if not (type(source_sha256) is list and len(source_sha256)==2 and
+            all(type(x) is str and HEX.fullmatch(x) for x in source_sha256)):
+        raise ValueError("COMMERCIAL_SOURCE_PINS_INVALID")
+    source_req=dict(business="SALY",source_id=SOURCE,scope_key=SCOPE,
+                    snapshot_sha256=source_sha256,
+                    manifest_digest_sha256=sha(canonical(entries)))
+    request_digest=sha(canonical(source_req))
     qrun,qowner,qplan=map(sql_literal,(RUN,OWNER,plan_json))
+    qdigest=sql_literal(request_digest)
+    qmanifest=sql_literal(json.dumps({"sunat_plan":source_req},
+                                    ensure_ascii=False,separators=(",",":")))
     return f"""BEGIN;
 SET LOCAL lock_timeout='20s';
 SET LOCAL statement_timeout='150s';
 DO $saly_commercial_plan$
-DECLARE v_lease jsonb; v_run uuid;
+DECLARE v_lease jsonb; v_execution jsonb; v_run uuid;
 BEGIN
  PERFORM pg_advisory_xact_lock(hashtextextended('SALY:PE-SUNAT-RUC:SEQUENTIAL',0));
+ v_execution:=public.fn_lf_operation_reserve_execution_v1(
+    {qrun},'INGESTA_EMPRESARIAL_SALY','DISCOVERY_SOURCE','PE-SUNAT-RUC',
+    {qrun},{qdigest},{qrun},NULL,NULL,{qmanifest}::jsonb);
+ IF v_execution->>'result' NOT IN ('RESERVED_NEW_EXECUTION','REPLAY_EXISTING_EXECUTION')
+ THEN RAISE EXCEPTION 'SUNAT_COMMERCIAL_RUN_RESERVATION'; END IF;
  v_lease:=public.fn_lf_operation_acquire_lease_v1({qrun},{qowner},3600,{qrun});
  IF v_lease->>'result' IS DISTINCT FROM 'LEASE_ACQUIRED'
  THEN RAISE EXCEPTION 'SUNAT_COMMERCIAL_LEASE_NOT_ACQUIRED'; END IF;
@@ -241,7 +258,7 @@ def run():
         ) as (candidate,verified):
             metadata=verify_manifest(candidate,pol)
             entries=candidate["plan"]
-            prep=psql(plan_sql(entries),timeout=180)
+            prep=psql(plan_sql(entries,pol["snapshot_sha256"]),timeout=180)
             if prep.get("planned")!=len(entries) or prep.get("run_ref")!=RUN:
                 raise ValueError("SUNAT_COMMERCIAL_PLAN_READBACK_FAILED")
             count=0
