@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-nucleo-reg-chk-007-v2",
+  "paths": {
+    "supabase/migrations/20261123230000_lf_nucleo_reg_chk_007_revision_v2_candidata_v1.sql": "MIGRATION",
+    "docs/nucleo/LF_REG_CHK_007_V2_SELECCION_INMUTABLE_20261123.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-reg-chk-007-v2.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT"
+  }
+}
