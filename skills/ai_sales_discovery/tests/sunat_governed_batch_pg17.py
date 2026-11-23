@@ -52,8 +52,8 @@ CREATE UNIQUE INDEX fixture_operation_idempotency ON public.lf_operation_executi
     snapshots=['d'*64,'e'*64]
     captures=[]
     for i in (1,2):
-        m=dict.fromkeys(MONTHLY_FIELDS,''); m.update(RUC=str(20000002000+i),Estado='ACTIVO',UBIGEO='110101',NroTrab='3')
-        d=dict(RUC=m['RUC'],nombre='Fixture jurídica '+str(i),estado='ACTIVO',condicion='',ubigeo='110101')
+        m=dict.fromkeys(MONTHLY_FIELDS,''); m.update(RUC=str(20000002000+i),Estado='ACTIVO',Condicion='HABIDO',UBIGEO='110101',NroTrab=('50' if i==1 else '49'))
+        d=dict(RUC=m['RUC'],nombre='Fixture jurídica '+str(i),estado='ACTIVO',condicion='HABIDO',ubigeo='110101')
         ev=dict(url=monthly,ordinal=i,zip_sha256=snapshots[0],header_sha256='c'*64)
         captures.append(company(m,d,ev,dict(ev,url=reduced,zip_sha256=snapshots[1])))
     payloads=list(batches(captures,1,10000))
@@ -116,6 +116,37 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     assert psql("SELECT count(*) FROM saly.ventas_hallazgos h JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id WHERE i.source_id='PE-SUNAT-RUC'")=='2'
     assert psql("SELECT count(*) FROM public.lf_operation_effect_guard WHERE execution_id='EXEC-SUNAT-FIXTURE' AND state='SUCCEEDED'")=='2'
     assert psql("SELECT count(*) FROM saly.ventas_discovery_plan_batches WHERE run_id="+lit(run)+"::uuid AND estado='FOUND'")=='2'
+    # Verify EXACT commercial view DDL on PG17, with one config key (B13).
+    migration_path=ROOT/'supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql'
+    migration=migration_path.read_text()
+    ddl=migration[migration.index('CREATE VIEW saly.ventas_sunat_elegibilidad_v1'):
+                  migration.index('REVOKE ALL ON saly.ventas_sunat_elegibilidad_v1')]
+    # Legacy disposable fixture preceded production value_type/description.
+    psql("ALTER TABLE public.lf_global_config ADD COLUMN value_type text NOT NULL DEFAULT 'JSON';")
+    psql("ALTER TABLE public.lf_global_config ADD COLUMN description text;")
+    psql("""INSERT INTO public.lf_global_config
+    (scope,config_key,config_value,value_type,value_status,description,valid_from)
+    VALUES('SALY_DISCOVERY','SUNAT_COMMERCIAL_MIN_WORKERS_V1','50','INTEGER','REAL','synthetic policy',now());""")
+    psql(ddl)
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1")=='2'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='1'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE clasificacion_comercial='EXCLUIDA_MENOS_50_EMPLEADOS'")=='1'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1 WHERE nrotrab=50")=='1'
+    # Mutate the single policy source of truth to 51, prove dynamic admission.
+    psql("""INSERT INTO public.lf_global_config
+    (scope,config_key,config_value,value_type,value_status,description,valid_from)
+    VALUES('SALY_DISCOVERY','SUNAT_COMMERCIAL_MIN_WORKERS_V1','51','INTEGER','REAL','synthetic threshold mutation',now());""")
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='0'
+    psql("DELETE FROM public.lf_global_config WHERE config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1' AND config_value='51'")
+    candidate='20000002001'
+    original=psql("SELECT captura_empresarial::text FROM saly.ventas_hallazgos WHERE ruc_candidato="+lit(candidate))
+    psql("UPDATE saly.ventas_hallazgos SET captura_empresarial=jsonb_set(captura_empresarial,"+
+         "'{capture,observations,reduced,raw,condicion}',"+lit(json.dumps('NO HABIDO'))+"::jsonb) WHERE ruc_candidato="+lit(candidate))
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='0'
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE clasificacion_comercial='EXCLUIDA_CONDICION'")=='1'
+    psql("UPDATE saly.ventas_hallazgos SET captura_empresarial="+lit(original)+"::jsonb WHERE ruc_candidato="+lit(candidate))
+    assert psql("SELECT count(*) FROM saly.ventas_sunat_comercial_v1")=='1'
+    print('PASS_SALY_SUNAT_COMMERCIAL_GATE_PG17_50_49_NO_HABIDO_DYNAMIC_POLICY')
     # A stale worker cannot continue. A mutated persisted row cannot be reported as replay success.
     fail(execute(f=fence+1),'SUNAT_STALE_LEASE')
     psql("UPDATE saly.ventas_hallazgos SET captura_empresarial='{}'::jsonb WHERE ingesta_id="+lit(json.loads(first)['ingesta_id'])+"::uuid")

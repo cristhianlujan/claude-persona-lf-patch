@@ -129,7 +129,7 @@ def reduced_rows(source, limits, deadline, cohort, stats):
         it.close()
 
 
-def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, batch_plan=None, _staging=None):
+def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, batch_plan=None, _staging=None, commercial_min_workers=None):
     """No publication or external I/O. Caller supplies reviewed, pinned local archives."""
     require(isinstance(limits,dict) and all(type(limits.get(k)) is int and limits[k]>0 for k in LIMITS), 'LIMITS')
     require(isinstance(departments,(list,tuple)) and departments and
@@ -145,7 +145,14 @@ def candidate_receipt(monthly, reduced, *, departments, limits, directory=None, 
     stats = dict(monthly_rows=0,monthly_selected=0,reduced_rows=0,reduced_selected=0,reduced_quarantined=0)
     ms = monthly_rows(monthly,limits,deadline,departments,cohort,stats)
     rs = reduced_rows(reduced,limits,deadline,cohort,stats)
-    stream = joined_batches(ms,rs,**{k:limits[k] for k in ('spool_pages','max_source_rows','max_batch_rows','max_batch_bytes')},directory=directory)
+    # Commercial opt-in changes row counts and canonical batch hashes. It MUST be
+    # accompanied by a separately approved commercial manifest; never reuse 479 raw batches.
+    require(commercial_min_workers is None or
+            (type(commercial_min_workers) is int and commercial_min_workers > 0),'COMMERCIAL_MIN_WORKERS')
+    if commercial_min_workers is not None:
+        require(batch_plan is not None,'COMMERCIAL_NEW_MANIFEST_REQUIRED')
+    stream = joined_batches(ms,rs,**{k:limits[k] for k in ('spool_pages','max_source_rows','max_batch_rows','max_batch_bytes')},
+                            directory=directory,commercial_min_workers=commercial_min_workers)
     count = batches = 0
     digest = hashlib.sha256()
     plan = None

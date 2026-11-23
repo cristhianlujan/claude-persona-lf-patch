@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 
 from sunat_company_v1 import company, batches, MONTHLY_FIELDS, REDUCED_FIELDS
+from sunat_commercial_gate_v1 import commercially_admissible
 
 
 def source_rows(db, slot, stream, fields, max_rows):
@@ -24,11 +25,13 @@ def source_rows(db, slot, stream, fields, max_rows):
 
 
 def joined_batches(monthly_rows, reduced_rows, *, spool_pages, max_source_rows,
-                   max_batch_rows, max_batch_bytes, directory=None):
+                   max_batch_rows, max_batch_bytes, directory=None, commercial_min_workers=None):
     """Inputs are policy-scoped projections. Both iterators reach EOF before yielding a batch."""
     if any(type(v) is not int or v<=0 for v in
            (spool_pages,max_source_rows,max_batch_rows,max_batch_bytes)):
         raise ValueError("JOIN_POLICY")
+    if commercial_min_workers is not None and (type(commercial_min_workers) is not int or commercial_min_workers < 1):
+        raise ValueError('SUNAT_COMMERCIAL_POLICY_REQUIRED')
     with tempfile.TemporaryDirectory(dir=directory) as work:
         db = sqlite3.connect(Path(work)/"join.tmp")
         try:
@@ -49,7 +52,9 @@ def joined_batches(monthly_rows, reduced_rows, *, spool_pages, max_source_rows,
                     m, me = json.loads(month)
                     d, de = json.loads(reduced)
                     if d["nombre"].strip():
-                        yield company(m,d,me,de)
+                        item=company(m,d,me,de)
+                        if commercial_min_workers is None or commercially_admissible(item,min_workers=commercial_min_workers):
+                            yield item
 
             yield from batches(captures(),max_batch_rows,max_batch_bytes)
         finally:
