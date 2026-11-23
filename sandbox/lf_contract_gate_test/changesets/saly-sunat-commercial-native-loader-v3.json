@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-sunat-commercial-native-loader-v3",
+  "paths": {
+    "skills/ai_sales_discovery/tests/sunat_commercial_governed_v3.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/saly-sunat-commercial-native-loader-v3.json": "CHANGESET_MANIFEST"
+  }
+}
