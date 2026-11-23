@@ -1,0 +1,148 @@
+{
+  "schema": "LF-M1-C03-V2",
+  "fuentes": [
+    "Drive LF_resguardos_construccion.md",
+    "Drive INPUT GOVERNANCE LF V1.4",
+    "docs/nucleo/LF_M1_DECISIONES_20261121.md",
+    "docs/nucleo/LF_M1_INVENTARIO_43_CANDIDATAS_20261121.md",
+    "docs/nucleo/LF_M1_JUEZ_SEMANTICO_V1_20261122.md",
+    "Supabase LF M1-C03 V1 y EKB readback"
+  ],
+  "decision": "revisión V2 CANDIDATA mediante puerta canónica y hash V1",
+  "patch": {
+    "titulo": "Bloquear emisión de recibo inválido sin bloquear otro backend",
+    "descripcion": "SOLO si se intenta emitir un recibo: BLOQUEAR la emisión cuando falte PAYMENT_CONFIRMED confirmado por evidencia autoritativa, o cuando falte el correo real registrado y validado del cliente. Ante cualquier rechazo de emisión se debe registrar incidencia trazable; el mecanismo real de persistencia de esa incidencia queda PENDIENTE de fuente y binding de Paulo, y esta regla lógica no prueba que la incidencia haya sido registrada. Si no hay intento de emisión, no bloquear otras operaciones de BACKEND aunque el pago esté pendiente o el correo falte. customer_email no es niubiz_technical_email; no enviar al identificador técnico Niubiz ni a correo genérico o de rebotes. PAGOS/NIUBIZ_EMAIL_TEMPLATE y PAGOS/NIUBIZ_EMAIL_DOMAIN son referencias de configuración, no fuentes de correo real. No inferir confirmación de un rebote técnico.",
+    "condicion": {
+      "op": "y",
+      "izq": {
+        "op": "=",
+        "izq": {
+          "hecho": "m1_intento_emision_recibo"
+        },
+        "der": {
+          "lit": true
+        }
+      },
+      "der": {
+        "op": "o",
+        "izq": {
+          "op": "o",
+          "izq": {
+            "op": "!=",
+            "izq": {
+              "hecho": "estado_pago_normalizado"
+            },
+            "der": {
+              "lit": "PAYMENT_CONFIRMED"
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "evidencia_autoritativa_pago"
+            },
+            "der": {
+              "lit": false
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m1_destinatario_recibo_real_validado"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      }
+    },
+    "pruebas": [
+      {
+        "casuistica": "SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": true,
+          "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+          "evidencia_autoritativa_pago": true,
+          "m1_destinatario_recibo_real_validado": true
+        },
+        "esperado": true
+      },
+      {
+        "casuistica": "SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": true,
+          "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+          "evidencia_autoritativa_pago": false,
+          "m1_destinatario_recibo_real_validado": true
+        },
+        "esperado": true
+      },
+      {
+        "casuistica": "SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": true,
+          "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+          "evidencia_autoritativa_pago": true,
+          "m1_destinatario_recibo_real_validado": false
+        },
+        "esperado": true
+      },
+      {
+        "casuistica": "SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": true,
+          "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+          "evidencia_autoritativa_pago": false,
+          "m1_destinatario_recibo_real_validado": false
+        },
+        "esperado": true
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": true,
+          "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+          "evidencia_autoritativa_pago": true,
+          "m1_destinatario_recibo_real_validado": true
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": false,
+          "estado_pago_normalizado": "PAYMENT_PENDING_CONFIRMATION",
+          "evidencia_autoritativa_pago": false,
+          "m1_destinatario_recibo_real_validado": false
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "m1_intento_emision_recibo": false,
+          "estado_pago_normalizado": "PAYMENT_CONFIRMED",
+          "evidencia_autoritativa_pago": true,
+          "m1_destinatario_recibo_real_validado": false
+        },
+        "esperado": false
+      }
+    ]
+  },
+  "hecho_nuevo": {
+    "codigo": "m1_intento_emision_recibo",
+    "tipo_dato": "boolean",
+    "unidad": "ninguna",
+    "tabla_ref": null,
+    "columna_ref": null,
+    "binding": "PENDIENTE Paulo"
+  },
+  "incidencia": "obligación funcional sin writer ni destino inventado; comprobación runtime pendiente",
+  "review": "revisor independiente NO ejecutado; ningún juicio nuevo fabricado",
+  "casos_limite": [
+    "Pago pendiente con intento: bloquear",
+    "Sin intento aunque falte pago/correo: no bloquear",
+    "Confirmado y correo real validado con intento: no bloquear"
+  ]
+}

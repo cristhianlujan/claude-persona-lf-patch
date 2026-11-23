@@ -1,0 +1,8 @@
+# M1-C03 — Revisión V2 CANDIDATA (23/11/2026)
+**Alcance aprobado:** guard de intento de emisión y obligación de registrar incidencia; sin inventar contrato, tabla, columna, writer ni fuente Paulo.
+**Fuentes:** EKB focal leída, LF_resguardos_construccion.md (Drive), INPUT GOVERNANCE LF V1.4 (Drive), 3 docs M1, M1-C03 V1 real en Supabase y pruebas V1.
+**Cambio V2:** `m1_intento_emision_recibo=true` Y (`estado_pago_normalizado != PAYMENT_CONFIRMED` O `evidencia_autoritativa_pago=false` O `m1_destinatario_recibo_real_validado=false`) → BLOQUEAR exclusivamente la emisión; registrar incidencia operativa como obligación de integración pendiente. `m1_intento_emision_recibo=false` → jamás bloquea otras operaciones BACKEND.
+**Hechos:** nuevo boolean `m1_intento_emision_recibo` sin tabla_ref/columna_ref, resto de hechos tipados existentes. Fuente Paulo PENDIENTE para los cuatro bindings y persistencia real de incidencia.
+**Pruebas:** 7 entradas sintéticas de positivos/negativos y borde PAYMENT_PENDING_CONFIRMATION/PAYMENT_CONFIRMED y sin intento. Mutante sin guard debe fallar en el caso sin intento. PG17 BEGIN/ROLLBACK y snapshot antes/después; revisión VERSION/HASH optimistic, preservación de V1, juicio V1 y legadas. Archivo sandbox/lf_contract_gate_test/nucleo_ci/m1_c03_revision_v2.json.
+**Gobernanza:** puerta `lf_ops.nucleo_regla_proponer_v1(...,true)` con `tipo=REVISION`, V1 `DESCARTADA` en historial, V2 `CANDIDATA`; sin publicación ni deprecación de la regla. EKB nueva `LF-NUCLEO-M1-C03-BACKEND-GUARD-20261123-001` en el mismo PR gobernado. Sin juicio independiente, ni implementación real verificada.
+**No tocar:** REG_CHK_007, reglas legadas, otros candidatos, lectores o IG. No declarar cierre hasta CI real/Train/readback.
