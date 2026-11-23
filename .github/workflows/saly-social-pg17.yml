@@ -1,0 +1,43 @@
+name: SALY social isolated PostgreSQL 17 candidate
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/saly-social-pg17.yml'
+      - 'skills/ai_sales_discovery/adapters/social_native_writer_candidate_v1.sql'
+      - 'skills/ai_sales_discovery/adapters/social_convergence_v1.py'
+      - 'skills/ai_sales_discovery/tests/social_native_pg17_v1.sql'
+      - 'skills/ai_sales_discovery/tests/test_social_ingesta_preparation_v1.py'
+      - 'supabase/migrations/20261122233000_lf_saly_social_evidence_schema_v1.sql'
+permissions:
+  contents: read
+jobs:
+  social-disposable-pg17:
+    name: PostgreSQL 17 — social writer, replay and rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_social_disposable
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_social_disposable"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_social_disposable
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install client for disposable PostgreSQL only
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Execute schema, insertion, idempotency, cross-source and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f skills/ai_sales_discovery/tests/social_native_pg17_v1.sql
+      - name: Run deterministic candidate regression
+        run: python3 -m unittest discover -s skills/ai_sales_discovery/tests -p 'test_social_ingesta_preparation_v1.py' -v
