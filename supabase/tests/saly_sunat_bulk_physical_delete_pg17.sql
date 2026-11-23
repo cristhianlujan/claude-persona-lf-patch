@@ -69,7 +69,7 @@ jsonb_build_object('capture',jsonb_build_object(
  'observations',jsonb_build_object(
    'monthly',jsonb_build_object('raw',jsonb_build_object('Estado','ACTIVO','Condicion','HABIDO')),
    'reduced',jsonb_build_object('raw',jsonb_build_object('estado','ACTIVO','condicion','HABIDO'))
- ))))
+ )))
 FROM generate_series(1,136000) n;
 
 \i /tmp/saly-sunat-commercial-views.sql
