@@ -288,7 +288,38 @@ def main():
                         or psql(name, snapshot).stdout != before):
                     raise RuntimeError("M1_FIVE_ROLLBACK_OR_TEST_FAILED")
                 print("M1_FIVE_OUTER_ROLLBACK_PASS exact baseline", flush=True)
+            if "_lf_nucleo_m2_offers_candidatas_v1.sql" in path.name:
+                snapshot = """SELECT jsonb_build_object(
+                    'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                    'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
+                    'versions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones r),
+                    'facts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_hechos r),
+                    'vocab',(SELECT jsonb_agg(to_jsonb(r) ORDER BY familia,hecho) FROM lf_ops.nucleo_familia_vocabulario r),
+                    'tests',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version,n) FROM lf_ops.nucleo_regla_pruebas r),
+                    'judges',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_juicios r),
+                    'eval',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_evaluaciones r),
+                    'apps',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,nodo) FROM lf_ops.nucleo_aplicaciones r),
+                    'deprec',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r),
+                    'ekb',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM public.lf_error_knowledge r));"""
+                before = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("M2_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if (trial.returncode or trial.stderr.count("M2_CASES ") != 6
+                        or trial.stderr.count("M2_CANDIDATE ") != 6
+                        or "M2_PASS 6/6 candidate-only" not in trial.stderr
+                        or psql(name, snapshot).stdout != before):
+                    raise RuntimeError("M2_ROLLBACK_OR_NEGATIVE_FAILED")
+                print("M2_OUTER_ROLLBACK_PASS exact baseline", flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_m2_offers_candidatas_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr, flush=True)
+                if (replay.stderr.count("M2_CASES ") != 6
+                        or replay.stderr.count("M2_CANDIDATE ") != 6
+                        or "M2_PASS 6/6 candidate-only" not in replay.stderr):
+                    raise RuntimeError("M2_REPLAY_NOT_EVIDENCED")
             if "_lf_nucleo_m1_5_revisiones_v2.sql" in path.name:
                 print(replay.stdout + replay.stderr, flush=True)
                 if (replay.stderr.count("M1_FIVE_CASES ") != 5
