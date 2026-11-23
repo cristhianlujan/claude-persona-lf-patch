@@ -125,10 +125,12 @@ BEGIN
  v_res:=public.fn_lf_operation_release_lease_v1(v_exec,v_owner,v_fence,v_exec);
  IF v_res->>'result'<>'LEASE_RELEASED' THEN
    RAISE EXCEPTION 'SALY_EDITORIAL_LEASE_RELEASE'; END IF;
- UPDATE public.lf_operation_execution
- SET status='COMPLETED', completed_at=clock_timestamp(),updated_by_execution_id=v_exec
- WHERE execution_id=v_exec AND status='IN_PROGRESS' AND lease_owner IS NULL;
- IF NOT FOUND THEN RAISE EXCEPTION 'SALY_EDITORIAL_OPERATION_CLOSURE'; END IF;
+ -- The two-month capture is not complete. Keep the native execution
+ -- IN_PROGRESS with a released lease; do not manufacture terminal policy
+ -- snapshots or falsely close discovery. The scoped source RUN is INCOMPLETO.
+ IF NOT EXISTS (SELECT 1 FROM public.lf_operation_execution
+   WHERE execution_id=v_exec AND status='IN_PROGRESS' AND lease_owner IS NULL)
+ THEN RAISE EXCEPTION 'SALY_EDITORIAL_OPERATION_CHECKPOINT'; END IF;
 
  IF (SELECT count(*) FROM saly.ventas_social_publicaciones_v1 WHERE source_id='PE-NEWS-FACTS-CORREO')<>1
  OR (SELECT count(*) FROM saly.ventas_social_afirmaciones_v1 WHERE source_id='PE-NEWS-FACTS-CORREO')<>1
