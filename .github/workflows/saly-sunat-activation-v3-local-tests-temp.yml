@@ -19,4 +19,5 @@ jobs:
           set -euo pipefail
           python3 -m py_compile skills/ai_sales_discovery/tests/sunat_commercial_governed_v3.py
           python3 skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py
-          echo PASS_SUNAT_COMMERCIAL_V3_NATIVE_RESERVATION_SOURCE
+          python3 skills/ai_sales_discovery/tests/test_sunat_commercial_activation_source_v3.py
+          echo PASS_SUNAT_COMMERCIAL_V3_NATIVE_RESERVATION_SOURCE_AND_POLICY
