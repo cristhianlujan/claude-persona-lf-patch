@@ -289,6 +289,11 @@ def main():
                     raise RuntimeError("M1_FIVE_ROLLBACK_OR_TEST_FAILED")
                 print("M1_FIVE_OUTER_ROLLBACK_PASS exact baseline", flush=True)
             if "_lf_nucleo_m2_offers_candidatas_v1.sql" in path.name:
+                fixture_sql = (HERE / "m2_53_fixture_pg17.sql").read_text()
+                seeded = psql(name, fixture_sql)
+                if "M2_PG17_SOURCE_FIXTURE 53" not in seeded.stderr:
+                    raise RuntimeError("M2_PG17_SOURCE_FIXTURE_FAIL")
+                print("M2_PG17_SOURCE_SEEDED 53 synthetic-only", flush=True)
                 snapshot = """SELECT jsonb_build_object(
                     'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
                     'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
