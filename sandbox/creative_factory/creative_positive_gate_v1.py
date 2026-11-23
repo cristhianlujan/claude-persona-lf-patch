@@ -29,17 +29,17 @@ NO_DECORATIVE_BURSTS = (
     "separadores estructurales justificados."
 )
 _DECOR_ACTION = re.compile(
-    r"\\b(?:agrega|agregar|añade|añadir|dibuja|dibujar|incluye|incluir|"
-    r"coloca|colocar|incorpora|incorporar|usa|usar|pon|poner)\\b", re.I)
+    r"\b(?:agrega|agregar|añade|añadir|dibuja|dibujar|incluye|incluir|"
+    r"coloca|colocar|incorpora|incorporar|usa|usar|pon|poner)\b", re.I)
 _DECOR_EFFECT = re.compile(
-    r"\\b(?:rayos|palitos|destellos|chispas|burst|"
-    r"l[ií]neas\\s+(?:cin[eé]ticas|de\\s+(?:explosi[oó]n|impacto|velocidad)))\\b", re.I)
-_NEGATION = re.compile(r"\\b(?:no|nunca|sin|evita|evitar|prohibido|prohibir)\\b", re.I)
+    r"\b(?:rayos|palitos|destellos|chispas|burst|"
+    r"l[ií]neas\s+(?:cin[eé]ticas|de\s+(?:explosi[oó]n|impacto|velocidad)))\b", re.I)
+_NEGATION = re.compile(r"\b(?:no|nunca|sin|evita|evitar|prohibido|prohibir)\b", re.I)
 
 
 def demands_decorative_bursts(value: str) -> bool:
     """Detecta instrucciones positivas claras; no pretende ser un juez visual."""
-    for clause in re.split(r"[;.\\n]", value):
+    for clause in re.split(r"[;.\n]", value):
         if (_DECOR_ACTION.search(clause) and _DECOR_EFFECT.search(clause)
                 and not _NEGATION.search(clause)):
             return True
