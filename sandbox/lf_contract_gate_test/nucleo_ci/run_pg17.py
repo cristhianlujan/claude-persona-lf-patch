@@ -472,7 +472,30 @@ def main():
                 if trial.returncode or trial.stderr.count("TANDA1_RESULT ") != 10 or "TANDA1_PASS 10/10 judged" not in trial.stderr or psql(name, snapshot).stdout != before:
                     raise RuntimeError("TANDA1_ROLLBACK_OR_RESULTS_FAILED")
                 print("TANDA1_OUTER_ROLLBACK_PASS exact baseline", flush=True)
+            if "_lf_nucleo_tanda2_nueve_juicios_publicacion_v1.sql" in path.name:
+                snapshot = """SELECT jsonb_build_object(
+                    'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                    'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
+                    'versions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones r),
+                    'judges',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_juicios r),
+                    'evaluations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_evaluaciones r),
+                    'deprec',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r),
+                    'ekb',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM public.lf_error_knowledge r));"""
+                before = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("TANDA2_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if trial.returncode or trial.stderr.count("TANDA2_RESULT ") != 9 or "TANDA2_PASS 9/9 judged" not in trial.stderr or psql(name, snapshot).stdout != before:
+                    raise RuntimeError("TANDA2_ROLLBACK_OR_RESULTS_FAILED")
+                print("TANDA2_OUTER_ROLLBACK_PASS exact baseline", flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_tanda2_nueve_juicios_publicacion_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr, flush=True)
+                if replay.stderr.count("TANDA2_RESULT ") != 9 or "TANDA2_PASS 9/9 judged" not in replay.stderr:
+                    raise RuntimeError("TANDA2_REPLAY_FAILED")
+
             if "_lf_nucleo_tanda1_diez_juicios_publicacion_v1.sql" in path.name:
                 print(replay.stdout + replay.stderr, flush=True)
                 if replay.stderr.count("TANDA1_RESULT ") != 10 or "TANDA1_PASS 10/10 judged" not in replay.stderr:
