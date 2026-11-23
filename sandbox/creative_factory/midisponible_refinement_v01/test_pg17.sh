@@ -16,7 +16,7 @@ ALTER TABLE saly.creative_order_items ADD COLUMN required boolean NOT NULL DEFAU
 CREATE FUNCTION saly.creative_chat_begin_pending_v1(text,text[],text,text,jsonb)
 RETURNS jsonb LANGUAGE sql AS 'SELECT ''{}''::jsonb';
 SQL
-psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261123105500_lf_saly_creative_intake_literal_semantic_repair_v1.sql >/dev/null
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261123170239_lf_saly_creative_intake_literal_semantic_repair_v1.sql >/dev/null
 psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261123191500_lf_saly_home_midisponible_refinement_draft_v1.sql >/dev/null
 psql -X -v ON_ERROR_STOP=1 -f sandbox/creative_factory/midisponible_refinement_v01/validate_pg17.sql
 echo 'SALY_MIDISPONIBLE_REFINEMENT_DRAFT_PG17_PASS'
