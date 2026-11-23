@@ -1,0 +1,41 @@
+name: SALY Creative Queue V14 PG17 Temporary
+on:
+  push:
+    branches:
+      - feat/saly-creative-queue-serial-staging-v1-20261123
+    paths:
+      - 'supabase/migrations/20261123064000_lf_saly_creative_serial_queue_infrastructure_v1.sql'
+      - 'sandbox/creative_factory/queue_v14/**'
+      - '.github/workflows/saly-creative-queue-v14-pg17-temporary.yml'
+permissions:
+  contents: read
+jobs:
+  pg17-serial-staging:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_queue_staging_test
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_queue_staging_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PostgreSQL 17 two-worker serial tests (never Supabase)
+        run: |
+          docker run --rm --network host \
+            -v "$PWD:/repo:ro" -w /repo \
+            -e PGHOST=127.0.0.1 \
+            -e PGPORT=5432 \
+            -e PGDATABASE=saly_queue_staging_test \
+            -e PGUSER=postgres -e PGPASSWORD=postgres \
+            postgres:17 bash sandbox/creative_factory/queue_v14/test_pg17.sh
