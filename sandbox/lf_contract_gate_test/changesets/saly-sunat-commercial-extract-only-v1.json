@@ -1,0 +1,10 @@
+{
+  "solution_ref": "saly-sunat-commercial-extract-only-v1",
+  "paths": {
+    "skills/ai_sales_discovery/adapters/sunat_join_batches_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/adapters/sunat_commercial_delivery_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_join_batches_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/tests/test_sunat_commercial_delivery_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-sunat-commercial-extract-only-v1.json": "CHANGESET_MANIFEST"
+  }
+}

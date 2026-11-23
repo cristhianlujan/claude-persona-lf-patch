@@ -1,0 +1,17 @@
+SALY creative queue_v03 — delivery_completion_guard_v1
+Local isolated run, 2026-11-22. No Postgres, no provider SDK, no actual ChatGPT host callback.
+
+Command:
+  cd sandbox/creative_factory/queue_v03
+  python3 -m unittest -v test_delivery_completion_guard_v1.py
+
+Result: Ran 18 tests in 0.001s; OK (18/18 PASS).
+Negative cases: missing ports, missing Native adapter, missing independent QA,
+expired claim, wrong run, no host delivery, no generation, altered bytes,
+cross-claim message, mismatched DB receipt, DB write failure, release failure,
+wrong DB record response, wrong release claim, blank message, forged existing receipt.
+Positive cases: synthetic end-to-end sequencing and idempotent matching receipt.
+
+WARNING: All positive cases use test doubles and are NOT real delivery evidence.
+The provider, host ChatGPT, Postgres and governed runtime ports are NOT connected.
+The older 21/21 local and 39/39 PG17 results are historical, not a retest of this new code.

@@ -1,0 +1,19 @@
+SALY RENDER_READY candidate — local deterministic evidence (2026-11-22)
+
+Environment: Python 3.13.5, /mnt/data/saly_render_gate_lote.
+Command:
+  python -m unittest -v test_render_ready_gate_v1.py test_mutations_v1.py
+Observed:
+  Ran 33 tests in 1.350s
+  OK (33/33)
+
+31 contract tests, of which 2 are positive synthetic GPT_NATIVE/CLAUDE_NATIVE.
+2 mutation tests B25/B28:
+  - remove render_authorized check => specific expected rejection no longer raised
+  - remove review_only check => specific expected rejection no longer raised
+Mutants failed with expected AssertionError, not SyntaxError.
+
+No PG17 run, no Supabase writes, no models invoked, no render, no host receipts,
+no native delivery, no grants. Synthetic policy values are ONLY unit fixtures.
+The source blob hashes of all 3 test/code files were compared with remote GitHub
+and matched. This test does NOT authorize a runtime execution or a merge.

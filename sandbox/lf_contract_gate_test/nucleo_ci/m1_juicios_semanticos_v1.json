@@ -1,0 +1,470 @@
+{
+  "schema": "LF-M1-JUICIO-SEMANTICO-CONTEXTO-ACTUAL-V1",
+  "fuentes": [
+    "INPUT GOVERNANCE LF — INSTRUCCIONES OPERATIVAS V1.4, sección 10",
+    "lf_ops.nucleo_rubrica, 7 criterios ACTIVE SELECT",
+    "lf_ops.nucleo_regla_versiones/nucleo_reglas/nucleo_aplicaciones, seis candidatas V1 SELECT",
+    "lf_ops.v_reglas_compat_v1, legadas 155/183/185/229/277/289/13126 SELECT",
+    "docs/nucleo/LF_M1_DECISIONES_20261121.md M1-D01..D03",
+    "docs/nucleo/LF_M1_INVENTARIO_43_CANDIDATAS_20261121.md"
+  ],
+  "main_base_preflight": "ba0e27990c119524dfcd0675c2aaa03a4d3aa5fd",
+  "metodo": "Revisión de contenido en contexto actual; NO independiente; no se ejecutó un perfil juez ni step70; cero llamadas externas a modelo.",
+  "modo": "CONTEXTO_ACTUAL",
+  "revisor_es_productor": true,
+  "llamadas_modelo": 0,
+  "resultado_por_regla": "DEVOLVER (cuestionamientos semánticos materiales; no usar para promoción)",
+  "entries": [
+    {
+      "codigo": "M1-C01",
+      "fuente": "REG_CHK_001 / lf_ops.reglas/155",
+      "hallazgos": [
+        "La condición booleana no verifica que haya un único resumen ni el detalle separado por modalidad y oferta; únicamente confirma un indicador precalculado.",
+        "La legada REG_CHK_001 permanece VIGENTE bajo convivencia, sin acreditación de equivalencia completa."
+      ],
+      "puntajes": {
+        "CAL_ACCIONABLE": {
+          "puntaje": 1,
+          "observacion": "BLOQUEAR impide presentar como correcto un resumen discordante."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1,
+          "observacion": "CLIENT_PAYMENTS limita el análisis al módulo de pagos y checkout."
+        },
+        "CAL_CLARIDAD": {
+          "puntaje": 1,
+          "observacion": "Texto especifica consolidación de ofertas, modalidades y preservación de selección."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1,
+          "observacion": "BLOQUEAR corresponde al guard de presentación discrepante."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.5,
+          "observacion": "El hecho corresponde_seleccion no prueba unicidad del resumen ni detalle por oferta y modalidad."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1,
+          "observacion": "No introduce cifra de comisión; D01 y cálculo de REG_CHK_002 quedan separados."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.5,
+          "observacion": "Solapa contenido con REG_CHK_001 vigente por convivencia, sin prueba de absorción exacta."
+        }
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica M1 en contexto actual (no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR impide presentar como correcto un resumen discordante."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "CLIENT_PAYMENTS limita el análisis al módulo de pagos y checkout."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto especifica consolidación de ofertas, modalidades y preservación de selección."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR corresponde al guard de presentación discrepante."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "El hecho corresponde_seleccion no prueba unicidad del resumen ni detalle por oferta y modalidad."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "No introduce cifra de comisión; D01 y cálculo de REG_CHK_002 quedan separados."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Solapa contenido con REG_CHK_001 vigente por convivencia, sin prueba de absorción exacta."
+          }
+        }
+      }
+    },
+    {
+      "codigo": "M1-C02",
+      "fuente": "REG_CHK_014 / 277 y REG_CHK_CUO_006 / 289",
+      "hallazgos": [
+        "La condición comprueba un indicador de cancelación, pero no representa canal Mis operaciones, visibilidad previa ni tratamiento de la carta de no adeudo.",
+        "El alcance BACKEND no satisface por sí solo la obligación visible en checkout; la conciliación de saldos y recurrencia requiere fuente técnica aún no entregada."
+      ],
+      "puntajes": {
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Bloquear rechazo improcedente de cancelación es útil, pero no demuestra ejecución del cambio ni aviso UI."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.5,
+          "observacion": "BACKEND cubre la operación interna; checkout y Mis operaciones son superficies separadas pendientes."
+        },
+        "CAL_CLARIDAD": {
+          "puntaje": 1,
+          "observacion": "El texto distingue cancelar cobro recurrente y mantener deuda exigible."
+        },
+        "COH_EFECTO": {
+          "puntaje": 0.5,
+          "observacion": "BLOQUEAR expresa impedir rechazo indebido, no garantiza cancelación disponible y ejecutada."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.5,
+          "observacion": "Solo compara bandera sintética; no valida canal, estado de plan, penalidad efectiva ni aviso previo."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1,
+          "observacion": "Respeta que cancelar el cobro recurrente no liquida deuda ni habilita carta anticipada."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.5,
+          "observacion": "Hay coincidencia funcional con dos legadas vigentes; falta demostrar absorción y alcance UI."
+        }
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica M1 en contexto actual (no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 0.5,
+            "observacion": "Bloquear rechazo improcedente de cancelación es útil, pero no demuestra ejecución del cambio ni aviso UI."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "BACKEND cubre la operación interna; checkout y Mis operaciones son superficies separadas pendientes."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "El texto distingue cancelar cobro recurrente y mantener deuda exigible."
+          },
+          "COH_EFECTO": {
+            "puntaje": 0.5,
+            "observacion": "BLOQUEAR expresa impedir rechazo indebido, no garantiza cancelación disponible y ejecutada."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Solo compara bandera sintética; no valida canal, estado de plan, penalidad efectiva ni aviso previo."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Respeta que cancelar el cobro recurrente no liquida deuda ni habilita carta anticipada."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Hay coincidencia funcional con dos legadas vigentes; falta demostrar absorción y alcance UI."
+          }
+        }
+      }
+    },
+    {
+      "codigo": "M1-C03",
+      "fuente": "REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001 / 13126 (legada CANDIDATO)",
+      "hallazgos": [
+        "Bloqueo en BACKEND carece de un guard de intención de emisión de recibo; estado de pago pendiente activaría BLOQUEAR incluso en otras operaciones backend.",
+        "No comprueba source/customer_email validado, entrega, incidencia ni separación del correo técnico; la fuente legada sigue CANDIDATO y no autoriza producción.",
+        "El literal PAYMENT_CONFIRMED genera aviso no bloqueante de texto fijo en el proponente; requiere lista del vocabulario o respaldo."
+      ],
+      "puntajes": {
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Evitar recibos sin confirmación es correcto, pero un bloqueo global de BACKEND sería dañino."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0,
+          "observacion": "La condición no contiene guard 'emitir recibo'; BACKEND abarca otros procesos distintos."
+        },
+        "CAL_CLARIDAD": {
+          "puntaje": 1,
+          "observacion": "Texto distingue correo real validado, Niubiz técnico e incidencia."
+        },
+        "COH_EFECTO": {
+          "puntaje": 0.5,
+          "observacion": "BLOQUEAR corresponde a recibo, pero la condición no restringe su disparo a ese evento."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0,
+          "observacion": "Falta guard de emisión, verificación del destinatario y ruta de incidencia; los hechos no prueban todos los efectos declarados."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 0.5,
+          "observacion": "Puede bloquear pagos normales no confirmados aunque no se solicite emitir recibo."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.5,
+          "observacion": "Existe fuente legada CANDIDATO 13126 con contenido equivalente parcial, sin homologación completa."
+        }
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica M1 en contexto actual (no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 0.5,
+            "observacion": "Evitar recibos sin confirmación es correcto, pero un bloqueo global de BACKEND sería dañino."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0,
+            "observacion": "La condición no contiene guard 'emitir recibo'; BACKEND abarca otros procesos distintos."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto distingue correo real validado, Niubiz técnico e incidencia."
+          },
+          "COH_EFECTO": {
+            "puntaje": 0.5,
+            "observacion": "BLOQUEAR corresponde a recibo, pero la condición no restringe su disparo a ese evento."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0,
+            "observacion": "Falta guard de emisión, verificación del destinatario y ruta de incidencia; los hechos no prueban todos los efectos declarados."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 0.5,
+            "observacion": "Puede bloquear pagos normales no confirmados aunque no se solicite emitir recibo."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Existe fuente legada CANDIDATO 13126 con contenido equivalente parcial, sin homologación completa."
+          }
+        }
+      }
+    },
+    {
+      "codigo": "M1-C04",
+      "fuente": "REG_NIU_005 / 229",
+      "hallazgos": [
+        "Los booleanos sandbox_certificado y credenciales_separadas carecen de fuente/procedimiento de certificación observado; no acreditan prueba integral real.",
+        "La obligación de separación de ambientes debe verificarse con evidencia del adaptador y no solo con estado calculado."
+      ],
+      "puntajes": {
+        "CAL_ACCIONABLE": {
+          "puntaje": 1,
+          "observacion": "Bloquea activación de checkout si faltan condiciones previas declaradas."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1,
+          "observacion": "BACKEND con guard habilitacion_produccion_pago acota el caso de uso."
+        },
+        "CAL_CLARIDAD": {
+          "puntaje": 1,
+          "observacion": "Separa sandbox Niubiz, producción y credenciales."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1,
+          "observacion": "BLOQUEAR coincide con prohibir activación sin certificación previa."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.5,
+          "observacion": "Condición usa evidencias booleanas sin verificar pruebas integrales ni distinción real de credenciales."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1,
+          "observacion": "Consistente con obligación legada 229, sin habilitar producción ni mezclar credenciales."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.5,
+          "observacion": "Replica núcleo preventivo de REG_NIU_005 vigente; absorción no certificada."
+        }
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica M1 en contexto actual (no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "Bloquea activación de checkout si faltan condiciones previas declaradas."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "BACKEND con guard habilitacion_produccion_pago acota el caso de uso."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Separa sandbox Niubiz, producción y credenciales."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "BLOQUEAR coincide con prohibir activación sin certificación previa."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "Condición usa evidencias booleanas sin verificar pruebas integrales ni distinción real de credenciales."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Consistente con obligación legada 229, sin habilitar producción ni mezclar credenciales."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Replica núcleo preventivo de REG_NIU_005 vigente; absorción no certificada."
+          }
+        }
+      }
+    },
+    {
+      "codigo": "M1-C05",
+      "fuente": "REG_TEC_007 / 183",
+      "hallazgos": [
+        "La condición solo observa desconexión en captura inicial; no exige persistencia local comprobable ni el banner literal aprobado.",
+        "El texto omite literalmente «Sin conexión. Tus datos están guardados.» y el alcance CLIENT_ONBOARDING no demuestra mapeo exacto PANTALLA-1 y PANTALLA-2."
+      ],
+      "puntajes": {
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "EXIGIR en offline no identifica la acción técnica verificable ni el contenido exacto a mostrar."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.5,
+          "observacion": "CLIENT_ONBOARDING más indicador de paso no acredita selección real de las dos pantallas."
+        },
+        "CAL_CLARIDAD": {
+          "puntaje": 0.5,
+          "observacion": "Explica intención, pero omite texto literal del banner y prueba de conservación de datos."
+        },
+        "COH_EFECTO": {
+          "puntaje": 0.5,
+          "observacion": "EXIGIR expresa obligación genérica, sin precisar guardado y señal al usuario."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0,
+          "observacion": "Detectar offline no demuestra datos preservados ni aviso presentado; faltan ambos efectos."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1,
+          "observacion": "No altera el bloqueo de pagos offline ya recogido por REG_TEC_007 V2."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.5,
+          "observacion": "Absorción parcial de REG_TEC_007 vigente; no se certifica reemplazo funcional."
+        }
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica M1 en contexto actual (no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 0.5,
+            "observacion": "EXIGIR en offline no identifica la acción técnica verificable ni el contenido exacto a mostrar."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 0.5,
+            "observacion": "CLIENT_ONBOARDING más indicador de paso no acredita selección real de las dos pantallas."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 0.5,
+            "observacion": "Explica intención, pero omite texto literal del banner y prueba de conservación de datos."
+          },
+          "COH_EFECTO": {
+            "puntaje": 0.5,
+            "observacion": "EXIGIR expresa obligación genérica, sin precisar guardado y señal al usuario."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0,
+            "observacion": "Detectar offline no demuestra datos preservados ni aviso presentado; faltan ambos efectos."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "No altera el bloqueo de pagos offline ya recogido por REG_TEC_007 V2."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Absorción parcial de REG_TEC_007 vigente; no se certifica reemplazo funcional."
+          }
+        }
+      }
+    },
+    {
+      "codigo": "M1-C06",
+      "fuente": "REG_TEC_009 / 185",
+      "hallazgos": [
+        "La condición valida repetición equivalente y plazo, pero no representa explícitamente identidad del usuario, idempotency_key, request_sha256 ni operation_number; tampoco verifica devolución de la misma respuesta.",
+        "La generación UUID v4 y envío X-Idempotency-Key siguen documentados, no evaluados en la condición; el borde exacto exige tratamiento sin segundo submit."
+      ],
+      "puntajes": {
+        "CAL_ACCIONABLE": {
+          "puntaje": 1,
+          "observacion": "PERMITIR representa reutilización de respuesta en reenvío equivalente dentro de ventana."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1,
+          "observacion": "BACKEND queda acotado con m1_operacion_submit_onboarding_inicial, sin actuar sobre checkout."
+        },
+        "CAL_CLARIDAD": {
+          "puntaje": 1,
+          "observacion": "Texto explica reenvíos, ventana parametrizada y ausencia de duplicados."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1,
+          "observacion": "PERMITIR es coherente con reutilizar resultado anterior y no ejecutar otro cargo."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.5,
+          "observacion": "No comprueba identidad/reserva ni recuperación real del resultado; el borde sin duplicado no queda modelado."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1,
+          "observacion": "Respeta la ventana AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES y no cambia checkout."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.5,
+          "observacion": "Solapa REG_TEC_009 vigente y candidata de checkout; acota onboarding, falta demostrar alcance exacto."
+        }
+      },
+      "juicio": {
+        "veredicto": "DEVOLVER",
+        "juez": "GPT-6 revisión semántica M1 en contexto actual (no independiente)",
+        "modo": "CONTEXTO_ACTUAL",
+        "revisor_es_productor": true,
+        "llamadas_modelo": 0,
+        "puntajes": {
+          "CAL_ACCIONABLE": {
+            "puntaje": 1,
+            "observacion": "PERMITIR representa reutilización de respuesta en reenvío equivalente dentro de ventana."
+          },
+          "CAL_ALCANCE": {
+            "puntaje": 1,
+            "observacion": "BACKEND queda acotado con m1_operacion_submit_onboarding_inicial, sin actuar sobre checkout."
+          },
+          "CAL_CLARIDAD": {
+            "puntaje": 1,
+            "observacion": "Texto explica reenvíos, ventana parametrizada y ausencia de duplicados."
+          },
+          "COH_EFECTO": {
+            "puntaje": 1,
+            "observacion": "PERMITIR es coherente con reutilizar resultado anterior y no ejecutar otro cargo."
+          },
+          "COH_TEXTO_CONDICION": {
+            "puntaje": 0.5,
+            "observacion": "No comprueba identidad/reserva ni recuperación real del resultado; el borde sin duplicado no queda modelado."
+          },
+          "SEM_NO_CONTRADICE": {
+            "puntaje": 1,
+            "observacion": "Respeta la ventana AUTH.IDEMPOTENCY_KEY_VALIDITY_MINUTES y no cambia checkout."
+          },
+          "SEM_NO_DUPLICA": {
+            "puntaje": 0.5,
+            "observacion": "Solapa REG_TEC_009 vigente y candidata de checkout; acota onboarding, falta demostrar alcance exacto."
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "status": "CANDIDATE_NOT_PERSISTED",
+  "business_key": "GARDEN_KIDS_EIRL_SFC_ICA_CANDIDATE",
+  "window_local": {
+    "from": "2026-09-22",
+    "to": "2026-11-22"
+  },
+  "sample": {
+    "presented": 8,
+    "dated_unique_events": 4,
+    "facebook_held_no_publish_date": 2,
+    "outside_window": 1,
+    "same_source_replay": 1,
+    "cross_channel_matches_in_review": 2
+  },
+  "sources": [
+    {
+      "source": "INSTAGRAM",
+      "ref": "DfzgHtPoIfS",
+      "date": "2026-11-16",
+      "event": "taller_digital_realizado"
+    },
+    {
+      "source": "INSTAGRAM",
+      "ref": "Df7KV5JB-9H",
+      "date": "2026-11-19",
+      "event": "alianza_vanguard_peru_mejor"
+    },
+    {
+      "source": "INSTAGRAM",
+      "ref": "Df0JE1HoD0a",
+      "date": "2026-11-16",
+      "event": "exhibition_pep_2026"
+    },
+    {
+      "source": "NEWS",
+      "ref": "diario_correo_nov_01",
+      "date": "2026-11-01",
+      "event": "juegos_escolares_basquet_2026"
+    }
+  ],
+  "hypotheses": [
+    {
+      "code": "H1",
+      "status": "CANDIDATE",
+      "description": "Apertura empresarial a iniciativas y colaboradores externos"
+    },
+    {
+      "code": "H2",
+      "status": "PLAUSIBLE_NOT_OBSERVED",
+      "description": "Disposición podría extenderse a beneficios laborales"
+    },
+    {
+      "code": "H3",
+      "status": "FIELD_VALIDATION",
+      "description": "Apertura potencial a servicios de bienestar financiero SALY"
+    }
+  ],
+  "alternative": "Iniciativas podrían responder al aprendizaje estudiantil y posicionamiento institucional sin extensión a trabajadores",
+  "priority": "ALTA_EXPLORATORIA_CANDIDATE",
+  "predictive_probability": null,
+  "open_issues": [
+    "No Facebook publication timestamps for matched events",
+    "No historic pagination continuity",
+    "No Meta commercial capture rights verified",
+    "No governed writer/readback"
+  ],
+  "supabase_write_confirmed": false
+}

@@ -1,0 +1,27 @@
+SALY Native V07 source preflight — execution evidence
+Date: 2026-11-22
+Source-tested SHA: ffba6d596c11c0f666c78fba1988f14f2ae23c81
+GitHub Actions:
+ https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45070113988
+Job ID: 137354948570
+Observed status: completed / success
+Command: python -m unittest -v test_native_source_preflight_v1.py
+Python: 3.11
+Observed: Ran 24 tests in 0.003s; OK.
+Features tested: GPT_NATIVE/CLAUDE_NATIVE, freeze pin, raw source bytes,
+PNG magic/IHDR/dimensions, filename, MIME, duplicate refs, replay binding,
+untrusted/absent reader, wrong executor/provider, fake delivered markers.
+Test source file: synthetic one-pixel PNG, not the real SALY assets.
+
+Independent real source verification in this lot:
+ - three original Google Drive PNG files fetched via authenticated connector
+ - SHA256 calculated directly from downloaded raw bytes in JS
+ - same files independently checked with Python hashlib and Pillow
+ - 3/3 exact SHA256 and declared byte counts, actual PNG dimensions PASS
+ - checked with live Supabase RO source_assets and creative_item_sources
+ - source approval_status stays CANDIDATE, not APPROVED
+ - details: real_drive_byte_evidence_20261122.json
+
+No Native provider invoked, no image produced/delivered by a new RUN,
+no host callback, no DB write, no SQL migration, no usage of synthetic config.
+Temporary workflow will be retired; final PASE must be checked after deletion.

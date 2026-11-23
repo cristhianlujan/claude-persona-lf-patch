@@ -3,7 +3,17 @@ name: creative-factory-standalone
 description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
 ---
 
-# Fábrica Digital — skill autónoma v0.12 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.15 (PLAN_ONLY / REVIEW_ONLY)
+
+## Política transversal de eficiencia espacial y decoración v0.14 (22/11/2026)
+
+**Autoridad:** instrucción expresa del dueño en el chat SALY (22/11/2026); aplica a toda imagen propuesta por esta skill, no solo al Home. Esta política no modifica activos oficiales ni inventa nuevos tokens, contenidos, métricas o permisos.
+
+- **HARD LOCK, sin excepciones decorativas:** nunca dibujar trazos radiales, palitos de énfasis, rayos de explosión, destellos o líneas cinéticas/impacto que rodean iconos, cifras, botones, ilustraciones o fotografías para simular movimiento, emoción o energía. También queda prohibido usarlos como ornamento suelto, en cualquier composición o modelo gráfico receptor. Conservar las líneas estructurales imprescindibles de iconos funcionales (p. ej. calendario, reloj, chevron, símbolo informativo), separadores necesarios y elementos exigidos por un activo oficial; ante conflicto con un activo oficial, no modificarlo ni sustituirlo: registrar la contradicción y bloquear el componente para decisión del dueño.
+- **Eficiencia espacial (habilidad v0.11 reforzada):** antes de seleccionar la composición, identificar áreas o alturas ociosas, quiebres de texto, columnas desiguales y filas dedicadas solo a iconos. Comparar al menos dos distribuciones factibles para los grupos afectados (icono al lado de etiqueta y valor frente a icono superior; agrupación horizontal/mixta; sección frente a tarjeta), y seleccionar la que conserve legibilidad y jerarquía con menos desperdicio. No imponer distribución horizontal por defecto ni comprimir tipografía o márgenes por estética. Expresar la alternativa seleccionada mediante relaciones renderizables en `hierarchy.instruction`, `components[].instruction` y `selected_alternative.design_move`; mantener la comparación y descarte en `hierarchy.rationale`/QA. El generador recibe **solo** la dirección elegida.
+- **Caso SALY ilustrado (evidencia adjunta 1001948503.jpg):** el resumen «Próximo descuento / Importe estimado / Mi disponible» reserva una franja superior para tres iconos, introduce saltos en las etiquetas y deja espacio libre no compensado. En propuestas nuevas evaluar iconos laterales con etiqueta/valor agrupados, distribución de dos datos y acceso «Mi disponible» en otra fila, o un esquema sin contenedor extra, sin alterar los textos. No convertir esta solución posible en plantilla global.
+- **QA objetivo, no prueba de usuario:** el QA previo verifica que existe una comparación espacial y que el handoff no pide decoración prohibida; el QA de imagen señala rayos/palitos decorativos, huecos evitables y desbordes cuando son visibles. La efectividad, satisfacción y aprobación estética la evalúa exclusivamente el dueño mediante sus iteraciones; no exigir ni simular pruebas de usuarios.
+- **Estado:** tras entregar la imagen solicitada con evidencia técnica real, el pedido puede quedar `TERMINADO`, sin esperar aceptación subjetiva. `TERMINADO` no significa `APROBADO`; los ajustes posteriores son nuevas instrucciones acotadas. Un fallo real de entrega sigue impidiendo marcarlo terminado.
 
 ## Alcance y activación
 
@@ -421,6 +431,124 @@ negativos incluyen fuentes cruzadas, hash alterado, omisiones de componentes,
 copy no sustentado, falta de dirección y conflicto de responsables.
 No declara QA semántico independiente, render real ni persistencia de
 nuevos pedidos. El flujo L2C anterior permanece intacto.
+
+## Razonamiento espacial, cromático y handoff compacto v0.15
+
+**Fuente de diseño:** investigación previa de Fábrica Creativa SALY/LF (prompts demostrativos compactos de 134 y 128 palabras), habilidad espacial v0.11, decisiones v0.12–v0.14 y observaciones del dueño. Los ejemplos no son una cuota universal de palabras ni prueban efectividad. No crear un segundo motor, nuevos campos de contrato, aprobaciones ni estilos oficiales.
+
+### Razonamiento interno, previo al handoff
+1. **Espacio y agrupación:** identificar por componente su función, prioridad, contenido literal y longitud. Diagnosticar filas de iconos aislados, blancos ociosos, rotura de etiquetas, columnas con alturas desiguales, contenedores redundantes y geometría LOCK. Comparar al menos dos distribuciones viables cuando exista libertad; justificar ganancia y coste con el contenido real. Prohibido solucionar un hueco ocultando contenido, inventando cifras o comprimiendo letra hasta la ilegibilidad. No asumir que todos los componentes deben compartir tarjeta ni imponer posiciones fijas a negocios diferentes.
+2. **Color y superficies:** identificar qué quiere comunicar cada elemento (acción, selección, información, resultado, categoría o alerta) y su prioridad; resolver tokens por negocio/versión/estado APPROVED o CANDIDATE. Comparar neutro, tono de la misma familia o acento secundario **solo si aporta distinción**; elegir conscientemente fondo general, franja/sección, tarjeta o elemento libre. Verificar contraste, competencia visual y si el color parece recomendar un monto o prometer un resultado sin respaldo. Ningún token CANDIDATE es aprobado por su uso en una imagen; sin fuente suficiente no declarar un hex como oficial.
+3. **Elección y evidencia:** registrar alternativas, tradeoff y razón en `alternatives`, `selected_alternative.reason` y `direction.*.rationale` existentes, sin agregar claves. Conservar la decisión espacial seleccionada en `direction.hierarchy.instruction` / componentes, la cromática en `style.instruction` y `background.instruction`, y el tratamiento de superficies en la instrucción pertinente. La descripción debe indicar posiciones y relaciones visibles, no adjetivos genéricos. Un QA semántico independiente revisa que la selección esté realmente reflejada y sustentada; el Python no inventa ni juzga estas decisiones.
+
+### Compilación: transmitir lo mínimo suficiente
+- El generador **no recibe** investigación, alternativas descartadas, justificaciones, puntuaciones, QA, hashes, identificadores de transporte ni catálogos completos de tokens.
+- Conservar: destino, identidad/copy autorizado y activos que le correspondan al receptor, tesis visual elegida, jerarquía/distribución precisa, colores/superficies elegidos, instrucciones de componentes NATIVE y restricciones visuales indispensables. No pedirle que vuelva a decidir estrategia ni que implemente activos propiedad de COMPOSITOR.
+- Reutilizar `creative_positive_gate_v1.py` para proyectar `prompt_review`. Su compactador elimina únicamente **instrucciones idénticas tras normalizar espacios y mayúsculas**, nunca borra decisiones distintas por similitud semántica, ni aplica un límite arbitrario de palabras. Las repeticiones semánticas o contradicciones requieren corrección del autor y QA independiente, no supresión automática a ciegas.
+- Antes del wire canónico cotejar uno a uno los componentes/LOCK y las decisiones seleccionadas con el prompt compilado. Si falta una decisión importante, corregir la fuente y recompilar; no agregar un apéndice de metadatos al prompt sellado. No reescribir el wire sin su ruta ni su hash.
+- La prohibición transversal de palitos, rayos de explosión y destellos decorativos v0.14 permanece como único LOCK compacto común. La longitud del prompt crece solo si la pieza lo exige; los ejemplos de 128/134 palabras no son límites de producción.
+
+### Pruebas y límites de evidencia
+- Casos positivos: instrucciones repetidas se emiten una sola vez; decisión espacial seleccionada, token/superficie específica y cada instrucción única sobreviven; alternativas descartadas y racionales no se transportan.
+- Negativos: ornamentación explícita prohibida; falta de fuente, LOCK o dato no validado; payload que omite un componente o altera contenido; compresión que intenta eliminar instrucciones distintas. La inspección del PNG real comprueba composición y color, pero **no es una prueba de efectividad de usuarios**.
+- El gate sigue devolviendo `CREATIVE_REVIEW_PREPARED_SEMANTIC_QA_PENDING`; el resultado no equivale a QA independiente, generación, entrega o aprobación. El dueño evalúa la utilidad y efectividad de las imágenes entregadas, sin condicionar el estado técnico `TERMINADO` a esa evaluación.
+
+## Decisión creativa positiva y transporte v0.13
+
+**Origen:** instrucción expresa del dueño (23/11/2026): mejorar la
+especificación, privilegiar objetivos positivos y dejar espacio creativo
+para una evaluación posterior. No modifica pedidos anteriores y no autoriza
+generación de imágenes.
+
+**Integrado en la skill vigente, no en otra skill ni pipeline:**
+
+Solicitud literal + fuentes versionadas → interpretación del objetivo →
+modo y áreas LOCK/GUIDED/FREE → dirección de arte positiva →
+dos composiciones diferentes cuando se explora → selección motivada →
+preflight estructural vigente → control creativo positivo →
+QA semántico independiente → compilador y wire canónico existentes
+(solo con autoridad real) → QA de arte obtenido.
+
+### Modo y libertad real
+
+- EXPLORE_CREATIVE: cuando el usuario quiere proponer, explorar, mejorar la
+  creatividad o comparar diseños. La referencia previa orienta identidad
+  y objetivo, no bloquea automáticamente su composición.
+- CORRECTION_STRICT: únicamente si el usuario pide correcciones localizadas.
+  Aquí se preserva lo que no fue incluido en el cambio.
+- Registrar el texto literal y la cita de la que se deriva el modo,
+  separando solicitud e interpretación. Una coincidencia de texto
+  no acredita interpretación semántica; esa revisión sigue independiente.
+- Para EXPLORE_CREATIVE, design_lock.FREE debe permitir al menos una
+  región propiedad de NATIVE. No aceptar FREE vacío o bloqueo de todos
+  los componentes. GUIDED orienta el resultado; no inmoviliza su geometría.
+- LOCK se reserva para identidad, activos oficiales, contenido/cifras
+  respaldadas, obligaciones funcionales, seguridad o geometría de
+  compositor verdaderamente fija. Cada restricción debe tener origen
+  (resguardo B19). No convertir una preferencia heredada en prohibición
+  global. Mantener protegidas las fuentes y evitar funciones inventadas.
+
+### Decisión positiva antes del handoff
+
+Para cada componente expresar propósito, efecto deseado e instrucciones
+observables: foco visual, agrupación, relación de tamaños, contraste,
+alineación, lectura, ritmo, profundidad, iconografía y legibilidad.
+No reemplazar instrucciones concretas por "premium", "wow", "moderno".
+En EXPLORE_CREATIVE construir al menos dos alternativas con composición
+realmente diferente; registrar su beneficio, compromiso y elección.
+La exploración cambia el tratamiento visual, nunca inventa contenido
+financiero, funciones, cifras, logos ni autoridad de fuente.
+
+Antes del compilador existente ejecutar
+sandbox/creative_factory/creative_positive_gate_v1.py:
+prepare_positive_review(plan, decision), que reutiliza el preflight v1.
+El complemento SALY_CREATIVE_POSITIVE_PROCESS_V1 recibe:
+mode, mode_evidence, positive_outcomes, creative_zones, alternatives,
+selected_alternative y transport. Valida origen de las citas, libertad
+coherente con los componentes, alternativas distintas, instrucciones
+positivas renderizables y referencias de fuente; no altera el plan.
+Devuelve CREATIVE_REVIEW_PREPARED_SEMANTIC_QA_PENDING y hashes del plan,
+decisión y prompt propuesto. Para CORRECTION_STRICT se permite FREE vacío
+si se desprende de la solicitud. La ausencia de libertad en
+EXPLORE_CREATIVE devuelve CREATIVE_EXPLORE_FREEDOM_EMPTY y no avanza.
+
+**Transporte:** convertir solo la dirección elegida en instrucciones
+gráficas para el receptor. Mantener deliberación, hashes, puntuaciones,
+estados y diagnósticos en el sobre de trazabilidad, no en el prompt Native.
+El resultado del gate es un **borrador verificable**, no un nuevo canal
+de envío ni autorización. El compilador y la captura Native vigentes
+vuelven a comprobar prompt, attachment, item, contrato y hash.
+El integrador debe releer bytes/versión/estado de logo, frame e iconos
+antes de enviar; un identificador o texto no prueba entrega de un
+activo real. Si falta un activo obligatorio, bloquear ese handoff sin
+dibujar un sustituto no oficial. Nunca inferir que transmitted=false
+significa enviado.
+
+**QA en dos capas:**
+1. Antes de generar, revisor independiente coteja pedido literal,
+   fuentes, alternativas, dirección y proyección final; evidencia
+   vinculada al hash del plan. El preflight local no sustituye esa
+   evaluación ni puede autootorgar PASS.
+2. Después de generar, evaluar la imagen real y su composición,
+   jerarquía, originalidad funcional, espacios, legibilidad,
+   identidad y copy. Registrar lo observable, el elemento afectado
+   y la corrección específica. La rúbrica sin PNG real queda
+   NO_EVALUADO y jamás se transforma en aprobación. Separar
+   cierre técnico TERMINADO de aprobación creativa.
+
+No abrir otra solicitud, modificar estados, producir imágenes, crear RUN
+ni activar transporte Native con este cambio. La prueba visual comparativa
+queda para un lote posterior autorizado por el dueño.
+
+**Pruebas de proceso (sin generación):**
+cd sandbox/creative_factory &&
+python -m unittest -v test_creative_positive_gate_v1.py
+test_art_direction_preflight_v1.py
+
+El resultado PASS de esas pruebas acredita solo forma y guardas de
+proceso, no superioridad estética ni ejecución Native real.
+
+---
 
 ## Contrato de entrada
 

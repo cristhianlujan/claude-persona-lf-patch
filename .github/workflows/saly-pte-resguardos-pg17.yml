@@ -116,8 +116,16 @@ jobs:
           python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
       - name: Test SUNAT candidate deterministic batch manifest
         run: python3 skills/ai_sales_discovery/tests/test_sunat_batch_plan_v1.py
+      - name: Test SUNAT verified delivery staging and cleanup
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py
+      - name: Test commercial SUNAT governed-loader admission and readback without DB credentials
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py
       - name: Qualify candidate SUNAT writer with rollback and competing PG17 sessions
         run: python3 skills/ai_sales_discovery/tests/sunat_writer_pg17.py
+      - name: Test exact Unicode source-name guard before and after patch in disposable PG17
+        run: python3 skills/ai_sales_discovery/tests/sunat_name_whitespace_pg17.py
+      - name: Qualify native SUNAT plan and batch transaction candidate in disposable PG17
+        run: python3 skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py
 
   sunat-source-schema-one-shot:
     name: SUNAT official ZIP schema evidence (bounded read only)
@@ -182,3 +190,124 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
       - run: python3 skills/ai_sales_discovery/tests/sunat_integrated_real_probe.py
+
+  sunat-pinned-plan-one-shot:
+    name: SUNAT pinned batch manifest QA (aggregate only)
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT manifiestos integrados v1.7')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 skills/ai_sales_discovery/tests/test_sunat_candidate_run_v1.py
+      - run: python3 skills/ai_sales_discovery/tests/sunat_pinned_plan_real_probe.py
+
+  sunat-commercial-governed-v3:
+    name: SUNAT commercial-only new RUN with verified 50+ extraction and per-batch readback
+    # Main-only, owner-approved one-shot. Not a recurring trigger and not the old 479 plan.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT comercial ejecutar v3.0')
+    environment: lf-merge-train
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: saly-sunat-commercial-v3-once
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate trusted SALY commercial RUN/lease source before reading secrets
+        run: |
+          set -euo pipefail
+          python3 -m py_compile skills/ai_sales_discovery/tests/sunat_commercial_governed_v3.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_commercial_delivery_v1.py
+      - name: Install PostgreSQL client for approved native operation
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Re-verify complete SUNAT source then insert only accepted new RUN batches
+        timeout-minutes: 36
+        env:
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: python3 skills/ai_sales_discovery/tests/sunat_commercial_governed_v3.py
+
+  sunat-first-real-batch:
+    name: SUNAT first real batch — governed native writer and independent readback
+    # The Train must first apply the activation migration and merge this PR to main.
+    # Workflow-dispatch opt-in is a recovery path; no timer or recurring run.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT insert real v2.4')
+    environment: lf-merge-train
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit test first-batch dispatch and tamper/redaction handling
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_first_governed_batch_v22.py
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Execute exactly one pinned SUNAT batch against SALY governed writer
+        timeout-minutes: 32
+        env:
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: python3 skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py
+  
+  sunat-current-snapshot-rebaseline:
+    name: SUNAT current snapshot hashes and bounded aggregate reconciliation
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT recalcular snapshot v2.3')
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Measure official SUNAT current archive and complete deterministic metadata
+        run: python3 skills/ai_sales_discovery/tests/sunat_current_snapshot_measure_v23.py
+
+  sunat-all-sequential-v25:
+    name: SUNAT registered plan — batches 2 through 479 STRICTLY sequential
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'SUNAT normalizar nombre v2.7')
+    environment: lf-merge-train
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test sequential contract — no DB connection
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_remaining_sequential_v25.py
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Execute remaining SUNAT batches serially, halt and preserve committed prefix on failure
+        timeout-minutes: 345
+        env:
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: python3 skills/ai_sales_discovery/tests/sunat_remaining_sequential_v25.py

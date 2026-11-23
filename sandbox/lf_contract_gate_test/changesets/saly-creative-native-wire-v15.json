@@ -1,0 +1,11 @@
+{
+  "solution_ref": "saly-creative-native-wire-v15",
+  "paths": {
+    "supabase/migrations/20261123064300_lf_saly_creative_native_render_wire_infrastructure_v1.sql": "MIGRATION",
+    "sandbox/creative_factory/queue_v15/fixture_preprod_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v15/test_wire_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v15/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v15/README.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-native-wire-v15.json": "CHANGESET_MANIFEST"
+  }
+}

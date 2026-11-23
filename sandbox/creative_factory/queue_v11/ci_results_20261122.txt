@@ -1,0 +1,38 @@
+SALY V11 · Native reservation bridge · CI evidence · 2026-11-22
+PR: #4616 (DRAFT)
+Repository: cristhianlujan/claude-persona-lf-patch
+Source/CI SHA tested: 62673ed5ee7bb62381082d65cf944c13440b1d7d
+CI URL: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45081493060
+CI conclusion: SUCCESS
+
+Python job v11_python:
+- 69/69 PASS (V08=25, V09=18, V11=26).
+- B25/B28 mutations 2/2 killed by specific expected assertion:
+  - INDEPENDENT_DB_ROW_READBACK_GUARD
+  - FALSE_NATIVE_DELIVERY_FLAG_GUARD
+- Mutated source restored byte-for-byte.
+
+PG17 job v11_pg17_real_v10_ports:
+- PostgreSQL 17.6 isolated service at 127.0.0.1, database saly_queue_test.
+- Loaded actual candidate V02 + V05 + V06 + V10 SQL and synthetic source/RUN fixture.
+- V11 Python called actual V10 reserve_dispatch SQL and independent SELECT readback.
+- PASS_V11_REAL_V10_PG17_SQL_INSERT_AND_ROW_READBACK
+- PASS_V11_REAL_V10_PG17_REPLAY_UNCHANGED_AND_NOT_SENT
+- PASS_V11_REAL_V10_PG17_REJECTS_FORGED_WIRE
+- PASS_V11_REAL_V10_PG17_ONE_RESERVATION_ZERO_DELIVERY_ZERO_DONE
+- PASS_V11_RESTORE_NO_SUPABASE
+
+Previous failed attempt:
+- GitHub Actions run 45081427979 FAILED due to ModuleNotFoundError: No module named 'sandbox'
+  in test invocation by file path. Corrected workflow to 'python -m sandbox.creative_factory.queue_v11.test_real_v10_ports_pg17'
+  and reran successfully. Not a failure of the V10 SQL rule.
+
+Explicit assurance limits:
+- V11 unittest uses synthetic port doubles. V09 existing tests exercised separately in CI.
+- PG17 V11->V10 adapter exercises actual V10 SQL, not the production Supabase DB.
+- The PG17 bridge test mocks V09 output; does NOT certify the live Native host.
+- Source/file hashes here are local integrity, not host auth or provider attestation.
+- No GPT_NATIVE/CLAUDE_NATIVE call; no image generation, provider receipt,
+  host message readback, real delivered message, QA, DONE, GRANT or deployment.
+- Candidate PR remains Draft until separate governed activation with approved
+  CREATIVE_FACTORY policy and verified host/provenance contracts.

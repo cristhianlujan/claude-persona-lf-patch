@@ -1,0 +1,27 @@
+SALY Chat Judge → TERMINADO · governance V02
+Isolated PostgreSQL 17.6 run: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45088364765
+Tested SHA c00b224421d57cd67060f4ec8e5f54a5af221aff
+SUCCESS · archive manifest + actual migration: five items and two orders TERMINADO
+without inventing RUN, false QA semantic independence or production authorization.
+Positive checks:
+  exact 5 TERMINADO, exactly 2 orders TERMINADO;
+  5 QA technical comments and artifacts SHA bound;
+  no fake RUN and no approved_at or approved_by;
+  independent_semantic_proven=false declared; foreign order/item untouched;
+  Adelanto dimension and Rewards placeholder observations preserved.
+Exact negative checks:
+  replay blocked;
+  terminal item change/delete blocked;
+  terminal order change/delete blocked;
+  APROBADO from PENDIENTE blocked by existing L1 guard;
+  terminal without QA evidence blocked;
+  order premature terminal blocked;
+  image SHA drift causes atomic rollback with no DDL left behind;
+  historical fabricated RUN causes full rejection.
+All PASS in disposable PG17; fixture restored.
+Source: skills/creative_factory/SKILL.md:QA and anti-forgery,
+LF_resguardos_construccion.md Parte A/2, source-bound local QA judgment
+recorded in manifest.json and QA_JUEZ_RECEIPTS_V1.json.
+Technical deterministic judge is separate from the image generation process.
+Independent semantic judge NOT attested, so terminal is completion not APROBADO.
+No production change occurred in isolated CI.

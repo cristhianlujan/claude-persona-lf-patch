@@ -1,0 +1,10 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-insert-real-v24",
+  "paths": {
+    "supabase/migrations/20261122163000_lf_saly_sunat_first_batch_resnapshot_v1.sql": "MIGRATION",
+    "skills/ai_sales_discovery/tests/sunat_first_governed_batch_v22.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/evidence/sunat_current_20261122.json": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-insert-real-v24.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-current-snapshot-v23",
+  "paths": {
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/sunat_current_snapshot_measure_v23.py": "RUNTIME_TESTING",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "supabase/migrations/20261122151000_lf_saly_sunat_pilot_pause_snapshot_changed_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-current-snapshot-v23.json": "CHANGESET_MANIFEST"
+  }
+}

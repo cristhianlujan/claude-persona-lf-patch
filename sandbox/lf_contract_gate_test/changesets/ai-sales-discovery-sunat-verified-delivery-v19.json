@@ -1,0 +1,15 @@
+{
+  "solution_ref": "ai-sales-discovery-sunat-verified-delivery-v19",
+  "paths": {
+    "skills/ai_sales_discovery/SKILL.md": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/source_registry.v1.json": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/contracts/SUNAT_INGEST_PREPARATION_V11.md": "RUNTIME_CODE",
+    ".github/workflows/saly-pte-resguardos-pg17.yml": "WORKFLOW",
+    "skills/ai_sales_discovery/adapters/sunat_dual_stream_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/adapters/sunat_candidate_run_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/adapters/sunat_verified_delivery_v1.py": "RUNTIME_CODE",
+    "skills/ai_sales_discovery/tests/test_sunat_verified_delivery_v1.py": "RUNTIME_TESTING",
+    "skills/ai_sales_discovery/contracts/SUNAT_GOVERNED_DELIVERY_V19.md": "RUNTIME_CODE",
+    "sandbox/lf_contract_gate_test/changesets/ai-sales-discovery-sunat-verified-delivery-v19.json": "CHANGESET_MANIFEST"
+  }
+}

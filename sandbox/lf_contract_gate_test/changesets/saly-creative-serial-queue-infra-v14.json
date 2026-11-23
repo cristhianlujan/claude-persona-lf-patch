@@ -1,0 +1,11 @@
+{
+  "solution_ref": "saly-creative-serial-queue-infra-v14",
+  "paths": {
+    "supabase/migrations/20261123064000_lf_saly_creative_serial_queue_infrastructure_v1.sql": "MIGRATION",
+    "sandbox/creative_factory/queue_v14/fixture_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v14/test_queue_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v14/test_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v14/README.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-serial-queue-infra-v14.json": "CHANGESET_MANIFEST"
+  }
+}
