@@ -1,5 +1,5 @@
 {
-  "solution_ref": "lf-nucleo-tanda8-2-juicios",
+  "solution_ref": "lf-nucleo-tanda8-dos-juicios",
   "paths": {
     "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_juicios_independientes_tanda8_v1.json": "PASE_SUPPORT",
     "supabase/migrations/20261123234500_lf_nucleo_tanda8_dos_juicios_publicacion_v1.sql": "MIGRATION",
