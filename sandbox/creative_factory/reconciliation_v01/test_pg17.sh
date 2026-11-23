@@ -20,7 +20,7 @@ VALUES (5,4,'HOME','PENDIENTE'),(6,4,'ADELANTO','PENDIENTE'),
  (7,4,'REWARDS','PENDIENTE'),(8,5,'HOME_A','PENDIENTE'),(9,5,'HOME_B','PENDIENTE');
 SQL
 }
-migrate='supabase/migrations/20261122235500_saly_creative_chat_artifact_reconciliation_v1.sql'
+migrate='supabase/migrations/20261122235500_lf_saly_creative_chat_artifact_reconciliation_v1.sql'
 reset
 psql -Xq -v ON_ERROR_STOP=1 -f "$migrate"
 test "$(sql "SELECT count(*) FROM saly.creative_order_items WHERE status='PENDIENTE'")" = 5
