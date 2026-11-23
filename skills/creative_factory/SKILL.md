@@ -15,6 +15,9 @@ description: Orquesta la composición gráfica de revisión reutilizando el comp
 - **QA objetivo, no prueba de usuario:** el QA previo verifica que existe una comparación espacial y que el handoff no pide decoración prohibida; el QA de imagen señala rayos/palitos decorativos, huecos evitables y desbordes cuando son visibles. La efectividad, satisfacción y aprobación estética la evalúa exclusivamente el dueño mediante sus iteraciones; no exigir ni simular pruebas de usuarios.
 - **Estado:** tras entregar la imagen solicitada con evidencia técnica real, el pedido puede quedar `TERMINADO`, sin esperar aceptación subjetiva. `TERMINADO` no significa `APROBADO`; los ajustes posteriores son nuevas instrucciones acotadas. Un fallo real de entrega sigue impidiendo marcarlo terminado.
 
+## Actualización de estado y cierre: ruta gobernada obligatoria
+La generación visible de una imagen no cierra por sí sola un pedido. Después del retorno de Native, ejecutar QA, reconciliar evidencia y actualizar los estados de RUN, ítem y pedido **solo por la ruta gobernada vigente: PR con migración/cambio probado → PASE → Merge Train → readback en Supabase**. No usar UPDATE SQL directo, el conector de solo lectura como escritor, ni declarar `TERMINADO` antes del readback de estado y evidencia. Para pedidos históricos #7/#9, conciliar los artefactos existentes sin inventar RUN ni entregar otra imagen por un pendiente contable. La espera/verificación de 30 segundos es observación, no mecanismo de escritura. Seguir `docs/saly/creative_factory_continuidad_readback_tramos_v1.md`; conservar `PLAN_ONLY/REVIEW_ONLY` y los controles de autorización ya existentes.
+
 ## Alcance y activación
 
 La skill puede invocarse directamente en modo PLAN_ONLY mediante el adaptador
