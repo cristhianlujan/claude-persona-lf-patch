@@ -1,0 +1,524 @@
+{
+  "schema": "LF-M2-CANDIDATAS-6-V1",
+  "source_inventory": "sandbox/lf_contract_gate_test/nucleo_ci/m2_inventory_53_31groups.json",
+  "source_group_coverage": [
+    "M2-G02",
+    "M2-G03",
+    "M2-G04",
+    "M2-G06",
+    "M2-G07",
+    "M2-G22"
+  ],
+  "trace": "Source legacy IDs through lf_ops.nucleo_regla_familia and v_reglas_compat_v1",
+  "bindings": "FUTURE Paulo, all logical bool no table/column refs",
+  "status": "CANDIDATA_ONLY",
+  "defs": [
+    {
+      "code": "M2-C01",
+      "group": "M2-G02",
+      "name": "Autoselección solo con modalidad única",
+      "legacy": [
+        142,
+        143,
+        149
+      ],
+      "scope": "CLIENT_HOME",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_oferta_activa_en_presentacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_oferta_una_sola_modalidad_disponible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_modalidad_unica_autoseleccionada"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      },
+      "description": "En la presentación de una oferta activa, cuando existe exactamente una modalidad habilitada (pago único o cuotas), EXIGIR su selección automática. Se considera incumplimiento si la modalidad única no queda seleccionada. Si existen ambas modalidades, nunca autoseleccionar por esta regla; no presupone fuente runtime ni tabla Paulo.",
+      "effect": "EXIGIR",
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_una_sola_modalidad_disponible": true,
+            "m2_modalidad_unica_autoseleccionada": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_una_sola_modalidad_disponible": true,
+            "m2_modalidad_unica_autoseleccionada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_una_sola_modalidad_disponible": false,
+            "m2_modalidad_unica_autoseleccionada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": false,
+            "m2_oferta_una_sola_modalidad_disponible": true,
+            "m2_modalidad_unica_autoseleccionada": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/142,143,149",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M2-C02",
+      "group": "M2-G03",
+      "name": "Elección explícita entre modalidades disponibles",
+      "legacy": [
+        144,
+        150
+      ],
+      "scope": "CLIENT_HOME",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_oferta_activa_en_presentacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_oferta_ambas_modalidades_disponibles"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_modalidad_autoseleccionada_sin_cliente"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "m2_intento_continuar_con_oferta"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "m2_modalidad_elegida_por_cliente"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        }
+      },
+      "description": "En una oferta activa con ambas modalidades disponibles, BLOQUEAR selección automática no consentida y el intento de continuar sin elección del cliente. La obligación se limita a oferta efectivamente mostrada; no interfiere cuando solo hay una modalidad. Los hechos son lógicos, binding de pantalla pendiente de Paulo.",
+      "effect": "BLOQUEAR",
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_ambas_modalidades_disponibles": true,
+            "m2_modalidad_autoseleccionada_sin_cliente": true,
+            "m2_intento_continuar_con_oferta": false,
+            "m2_modalidad_elegida_por_cliente": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_ambas_modalidades_disponibles": true,
+            "m2_modalidad_autoseleccionada_sin_cliente": false,
+            "m2_intento_continuar_con_oferta": true,
+            "m2_modalidad_elegida_por_cliente": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_ambas_modalidades_disponibles": true,
+            "m2_modalidad_autoseleccionada_sin_cliente": false,
+            "m2_intento_continuar_con_oferta": true,
+            "m2_modalidad_elegida_por_cliente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_oferta_ambas_modalidades_disponibles": false,
+            "m2_modalidad_autoseleccionada_sin_cliente": true,
+            "m2_intento_continuar_con_oferta": false,
+            "m2_modalidad_elegida_por_cliente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": false,
+            "m2_oferta_ambas_modalidades_disponibles": true,
+            "m2_modalidad_autoseleccionada_sin_cliente": true,
+            "m2_intento_continuar_con_oferta": true,
+            "m2_modalidad_elegida_por_cliente": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/144,150",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M2-C03",
+      "group": "M2-G04",
+      "name": "Multi oferta parcial e independiente",
+      "legacy": [
+        145,
+        153,
+        154
+      ],
+      "scope": "CLIENT_HOME",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_pantalla_multi_oferta_en_presentacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "o",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_seleccion_parcial_incorrectamente_impedida"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_modalidad_por_oferta_alterada_por_otra"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        }
+      },
+      "description": "En la pantalla de dos o más ofertas activas, BLOQUEAR la restricción indebida de elegir solo una parte de las ofertas y la alteración de la modalidad de otra oferta por seleccionar/editar una. Cada oferta conserva selección propia; las alternativas no se duplican por modalidad. Los hechos lógicos no acreditan la implementación real ni la cardinalidad de tablas.",
+      "effect": "BLOQUEAR",
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_pantalla_multi_oferta_en_presentacion": true,
+            "m2_seleccion_parcial_incorrectamente_impedida": true,
+            "m2_modalidad_por_oferta_alterada_por_otra": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_pantalla_multi_oferta_en_presentacion": true,
+            "m2_seleccion_parcial_incorrectamente_impedida": false,
+            "m2_modalidad_por_oferta_alterada_por_otra": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_pantalla_multi_oferta_en_presentacion": true,
+            "m2_seleccion_parcial_incorrectamente_impedida": true,
+            "m2_modalidad_por_oferta_alterada_por_otra": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_pantalla_multi_oferta_en_presentacion": true,
+            "m2_seleccion_parcial_incorrectamente_impedida": false,
+            "m2_modalidad_por_oferta_alterada_por_otra": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_pantalla_multi_oferta_en_presentacion": false,
+            "m2_seleccion_parcial_incorrectamente_impedida": true,
+            "m2_modalidad_por_oferta_alterada_por_otra": true
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/145,153,154",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M2-C04",
+      "group": "M2-G06",
+      "name": "Modalidades visibles autorizadas por oferta",
+      "legacy": [
+        148
+      ],
+      "scope": "CLIENT_HOME",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_oferta_activa_en_presentacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_modalidad_visible_fuera_de_disponibles"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "description": "Al mostrar modalidades de una oferta activa, BLOQUEAR presentar o habilitar una modalidad que no conste entre las modalidades autorizadas de esa oferta. La comprobación debe proceder de disponibilidad de oferta autorizada por backend, binding pendiente Paulo; la regla no crea modalidades ni interpreta la oferta desde UI.",
+      "effect": "BLOQUEAR",
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_modalidad_visible_fuera_de_disponibles": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": true,
+            "m2_modalidad_visible_fuera_de_disponibles": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_oferta_activa_en_presentacion": false,
+            "m2_modalidad_visible_fuera_de_disponibles": true
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/148",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M2-C05",
+      "group": "M2-G07",
+      "name": "Checkout solo con modalidades definidas",
+      "legacy": [
+        152
+      ],
+      "scope": "CLIENT_PAYMENTS",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_intento_ingreso_checkout"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_oferta_seleccionada_sin_modalidad"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "description": "En intento de ingreso al checkout con selección de ofertas, BLOQUEAR si alguna oferta seleccionada no tiene modalidad de pago elegida; ninguna oferta no seleccionada debe impedir el paso. No sustituye revalidación de precio/quote, REG_CHK_007 ni la selección server-side. Hechos lógicos sin bindings reales de Paulo.",
+      "effect": "BLOQUEAR",
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_intento_ingreso_checkout": true,
+            "m2_oferta_seleccionada_sin_modalidad": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_intento_ingreso_checkout": true,
+            "m2_oferta_seleccionada_sin_modalidad": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_intento_ingreso_checkout": false,
+            "m2_oferta_seleccionada_sin_modalidad": true
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/152",
+        "solicitante": "migracion-nucleo"
+      }
+    },
+    {
+      "code": "M2-C06",
+      "group": "M2-G22",
+      "name": "Fecha de débito seleccionada antes de continuar plan",
+      "legacy": [
+        259
+      ],
+      "scope": "CLIENT_HOME",
+      "guard": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_intento_continuar_plan_cuotas"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2_fecha_debito_seleccionada"
+          },
+          "der": {
+            "lit": false
+          }
+        }
+      },
+      "description": "En PASO3_CUOTAS_DESGLOSE_V2, el intento de continuar con el plan de cuotas debe quedar BLOQUEADO hasta que el cliente seleccione una fecha de débito. No infiere qué fechas son elegibles ni crea calendario; validación server-side de fecha y binding del selector quedan pendientes de Paulo. No afecta flujos fuera de selección de cuotas.",
+      "effect": "BLOQUEAR",
+      "tests": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2_intento_continuar_plan_cuotas": true,
+            "m2_fecha_debito_seleccionada": false
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_intento_continuar_plan_cuotas": true,
+            "m2_fecha_debito_seleccionada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2_intento_continuar_plan_cuotas": false,
+            "m2_fecha_debito_seleccionada": false
+          },
+          "esperado": false
+        }
+      ],
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/259",
+        "solicitante": "migracion-nucleo"
+      }
+    }
+  ]
+}
