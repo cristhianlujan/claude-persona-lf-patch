@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-sunat-freeze-before-delete-v1",
+  "paths": {
+    "supabase/migrations/20261123001500_lf_saly_sunat_ingest_freeze_for_purge_v1.sql": "MIGRATION",
+    "supabase/tests/saly_sunat_freeze_for_purge_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-sunat-freeze-before-delete-v1.json": "CHANGESET_MANIFEST"
+  }
+}
