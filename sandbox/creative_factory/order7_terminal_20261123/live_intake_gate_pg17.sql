@@ -1,4 +1,6 @@
 -- Current exact production semantic trigger, isolated PG17 fixture only.
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 CREATE OR REPLACE FUNCTION saly.creative_intake_semantic_gate_v1()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
 SET search_path TO pg_catalog,saly,extensions,pg_temp
