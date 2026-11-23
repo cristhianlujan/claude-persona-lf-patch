@@ -63,7 +63,7 @@ def commercial_payloads_from_verified(
                 (max_rows,max_bytes,max_batches,max_total_bytes)),
             "COMMERCIAL_LIMITS")
     require(isinstance(monthly_url,str) and re.fullmatch(
-        r"https://www\\.datosabiertos\\.gob\\.pe/sites/default/files/PadronRUC_[0-9]{6}\\.zip",
+        r"https://www\.datosabiertos\.gob\.pe/sites/default/files/PadronRUC_[0-9]{6}\.zip",
         monthly_url), "COMMERCIAL_SOURCE_URL")
 
     with tempfile.TemporaryDirectory(prefix="sunat-commercial-",dir=directory) as work:
@@ -77,17 +77,24 @@ def commercial_payloads_from_verified(
         source_previous = ""
         selected_rucs = set()
         original_rows = 0
+        historical_plan = []
 
         def eligible_rows():
             nonlocal found,scanned,skipped_old,skipped_present,excluded
             nonlocal source_previous,original_rows
             for entry,payload in verified_raw_pairs:
                 found+=1
-                require(type(entry) is dict and
-                        isinstance(entry.get("ordinal"),int) and
+                require(type(entry) is dict and set(entry)==ENTRY_KEYS and
+                        type(entry.get("ordinal")) is int and
                         entry["ordinal"]==found and found<=original_batches and
+                        type(payload) is bytes and
                         entry.get("capture_sha256")==sha(payload) and
-                        len(payload)==entry.get("bytes"),"COMMERCIAL_PRIOR_BATCH")
+                        len(payload)==entry.get("bytes") and
+                        entry.get("batch_key")==sha(canonical([SOURCE,snapshot_sha256,SCOPE,found])) and
+                        entry.get("consulta_evidencia_ref")==monthly_url+
+                            "#captura-json-sha256="+entry["capture_sha256"],
+                        "COMMERCIAL_PRIOR_BATCH")
+                historical_plan.append(entry)
                 require(type(payload) is bytes and canonical(json.loads(payload))==payload,
                         "COMMERCIAL_PRIOR_CANONICAL")
                 rows=json.loads(payload)
@@ -99,7 +106,13 @@ def commercial_payloads_from_verified(
                             and type(item["capture"]) is dict and
                             sha(canonical(item["capture"]))==item["capture_sha256"],
                             "COMMERCIAL_PRIOR_ROW_HASH")
-                    ruc=item["capture"].get("normalized",{}).get("ruc")
+                    capture=item["capture"]
+                    require(capture.get("version")=="sunat.company.v1" and
+                            capture.get("source")=="SUNAT" and
+                            capture.get("observations",{}).get("monthly",{}).get("evidence",{}).get("zip_sha256")==snapshot_sha256[0] and
+                            capture.get("observations",{}).get("reduced",{}).get("evidence",{}).get("zip_sha256")==snapshot_sha256[1],
+                            "COMMERCIAL_SOURCE_PIN")
+                    ruc=capture.get("normalized",{}).get("ruc")
                     require(type(ruc) is str and RUC.fullmatch(ruc) and
                             ruc>source_previous,"COMMERCIAL_RUC_SORTED_UNIQUE")
                     source_previous=ruc
@@ -139,6 +152,8 @@ def commercial_payloads_from_verified(
                                      "#captura-json-sha256="+payload_hash))
                 staged.append(payload)
             require(found==original_batches,"COMMERCIAL_PRIOR_INCOMPLETE")
+            require(sha(canonical(historical_plan))==original_manifest_sha256,
+                    "COMMERCIAL_PRIOR_MANIFEST_CHANGED")
             require(original_rows==scanned+skipped_old,"COMMERCIAL_SOURCE_ACCOUNTING")
             require(scanned==excluded+skipped_present+expected_rows,
                     "COMMERCIAL_SELECTION_ACCOUNTING")
