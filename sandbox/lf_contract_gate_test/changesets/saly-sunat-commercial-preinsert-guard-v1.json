@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-sunat-commercial-preinsert-guard-v1",
+  "paths": {
+    "supabase/migrations/20261123011000_lf_saly_sunat_commercial_preinsert_guard_v1.sql": "MIGRATION",
+    "supabase/tests/saly_sunat_commercial_preinsert_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-sunat-commercial-preinsert-guard-v1.json": "CHANGESET_MANIFEST"
+  }
+}
