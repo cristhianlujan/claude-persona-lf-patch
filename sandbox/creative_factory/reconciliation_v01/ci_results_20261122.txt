@@ -1,0 +1,20 @@
+SALY chat artifact reconciliation V01
+PR #4625
+PG17 CI: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45086596408
+Code SHA tested: eaa2428452b724a11cfcb0d1ad565f8248476b1b
+Conclusion: SUCCESS on disposable PostgreSQL 17.6
+- PASS_SALY_CHAT_ARCHIVE_FIVE_QA_COMMENTS_NO_FAKE_TERMINAL_STATES
+- PASS_SALY_CHAT_ARCHIVE_REPLAY_REJECTED
+- PASS_SALY_CHAT_ARCHIVE_STALE_SCOPE_ROLLBACK_ATOMIC
+- PASS_SALY_CHAT_ARCHIVE_RUN_CONFLICT_BLOCKS
+- PASS_SALY_CHAT_ARCHIVE_FIXTURE_RESTORED
+
+5 PNG local hashes and dimensions directly verified:
+  item 5 HOME     1086x1448 SHA cba43bc26d06f40eb037c24c7d8f2ed8fe666042e3bdf9748e0cc4cc775f0990
+  item 6 ADELANTO 1086x1448 SHA 9f08caec72e426bd0253bf2d28cb2c9ef70e742fb5e83d42ca9dcfd1ee283a92
+  item 7 REWARDS  1086x1448 SHA 6cbe7c336ed0e1d39ba93c37a39fe9822a54f9f288a04e1c6274cc56504b62cd
+  item 8 HOME_A   1024x1536 SHA 5d0960b46b9140da69b6157b0b6a5ae9b7de365551aaad30bc9b96550de5a3d9
+  item 9 HOME_B   1086x1448 SHA c39e2f99aa949c8bc57b12e3aa7f1ef5567a299c2ddc67ea9d7ecfb562c7319f
+
+No QA independent, no RUN, no host receipt. The migration DOES NOT mark APROBADO/COMPLETADO.
+No production write until governed PR Merge Train and readback.
