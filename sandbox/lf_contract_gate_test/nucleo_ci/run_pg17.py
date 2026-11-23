@@ -592,7 +592,16 @@ def main():
             psql(name, "CREATE DATABASE saly_test_procesos;")
             run_cmd(["docker", "cp", str(HERE / "procesos_saly"), name + ":/tmp/procesos_saly"])
             for sql_name, marks in (("pruebas_evolucion_v2.sql", ("QA_453: PASS", "Rollback: PASS")),
-                                    ("pruebas_adicionales.sql", ("PROCESOS_EXTRA_PASS", "EXTRA_ROLLBACK_PASS"))):
+                                    ("pruebas_adicionales.sql", ("PROCESOS_EXTRA_PASS", "EXTRA_ROLLBACK_PASS")),
+                                    ("fixture_solicitud_seguimiento_lote1_pg17.sql", (
+                                      "LOTE1_PROCESOS_PASS 2/2",
+                                      "LOTE1_VERSIONES_PASS 2/2 BORRADOR",
+                                      "LOTE1_PASOS_PASS 17/17",
+                                      "LOTE1_MOTOR_NODO_PASS",
+                                      "LOTE1_TIPOS_PASS",
+                                      "LOTE1_SELLADO_INCOMPLETO_RECHAZADO_PASS",
+                                      "LOTE1_ROLLBACK_PASS"
+                                    ))):
                 res = run_cmd(["docker", "exec", "-w", "/tmp/procesos_saly", name, "psql", "-X", "-h", "127.0.0.1",
                                "-U", "postgres", "-d", "saly_test_procesos", "-v", "ON_ERROR_STOP=1", "-f", sql_name], check=False)
                 print(res.stdout + res.stderr, flush=True)
