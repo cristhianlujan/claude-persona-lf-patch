@@ -1,0 +1,301 @@
+{
+  "schema": "LF-NUCLEO-TANDA4-8-JUICIOS-INDEPENDIENTES-V1",
+  "fecha": "2026-11-23",
+  "fuente": "Claude Sonnet 5.5 Anthropic; juicio independiente atestado por Claude, 1 llamada por regla",
+  "procedencia": "Claude verificó texto, condición, efecto y pruebas. Evaluaciones únicas de Supabase 139..146, hashes canónicos contrastados; siete claves AUTH y función lf_auth_config_integer_v1 verificadas por lectura. GPT no alteró puntajes.",
+  "alcance": "M4-B01..M4-B08 solamente",
+  "juicios": [
+    {
+      "codigo": "M4-B01",
+      "version": 1,
+      "hash_version_atestado": "e10eb5988e1c2da9b8d4f76cf5934a79077517e1ab1f773ace053c16cc825f8a",
+      "hash_paquete_atestado": "d1708f425fb4d78d84f4054bb5e4c5f025a9e4423433fc721860fbad964aa6c6",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El texto exige que la sesión quede ABANDONED y la condición solo evalúa el hecho de sesión vencida."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B02",
+      "version": 1,
+      "hash_version_atestado": "9c17ba09a0e06a0b965b0475228885d7ebbbfba057d8691e0f9e2e03d1f19ef5",
+      "hash_paquete_atestado": "4419f2f4526c02cfe7d0b0fa4d5537c0d09bde8e86b6118812a80e86281bbd55",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Se acerca a M4-B01 (sesión expirada), pero B02 trata la precarga de datos y B01 la reanudación del OTP."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Exigir inicio desde Paso 1 figura en el texto y la condición no lo evalúa."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B03",
+      "version": 1,
+      "hash_version_atestado": "7dc4c8c3af97f840594053fd93fc2ad0c1238c6ba8d6301cc0d7bbbd6aae228e",
+      "hash_paquete_atestado": "daa3023fa3aec253ea89b0857f7a042192980add1952ef3c0a9b7edc009865fb",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B04",
+      "version": 1,
+      "hash_version_atestado": "b9deb6d43f4f98c3f5088892394f12ca951fe680a04a002b92e97a670dfd255b",
+      "hash_paquete_atestado": "b6cb9b5640847664c00fedf3771a82a8323416ed6363b4532dd0d2af5bba5516",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.95,
+          "observacion": "Dos cooldowns (ordinario y de agotamiento) en una sola frase."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa con M4-B05 (timer ordinario en UI) y M4-B06 (cooldown tras agotar reenvíos); B04 es el bloqueo de backend."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "Ambos cooldowns colapsan en un hecho agregado."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B05",
+      "version": 1,
+      "hash_version_atestado": "5331b1910cb72d713251d5f844d52b8753d941ceed37fa0a8e61f6310e14b121",
+      "hash_paquete_atestado": "95f2db493088dafe83cd6658e95bb780096c46bba918d265fb6398bca1b698ac",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa con el cooldown ordinario de M4-B04 (UI vs backend, el texto lo aclara)."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El tiempo server-side se evalúa dentro del hecho."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B06",
+      "version": 1,
+      "hash_version_atestado": "c34791d662d96ef44e435a37d6ee01f9cbbcd4290219177c130f0d6c201e4fa4",
+      "hash_paquete_atestado": "dc9c027110359174e2fd7fb391b865c209946fa89e38bab392d0df452e32a86f",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "El cooldown por agotamiento se parece al de M4-B04 pero usa OTP_MAX_RESENDS y no OTP_MAX_ATTEMPTS."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 0.95,
+          "observacion": "Dos contadores de agotamiento (intentos y reenvíos) con cooldown de 120 s y 2 min podrían producir reglas redundantes si Paulo los une; no hay contradicción hoy."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El texto cita parámetros y la condición un hecho agregado."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B07",
+      "version": 1,
+      "hash_version_atestado": "6a9c8ff107164633f25049135135427fe0d33d6e6a6954ad4f9b243c57ace8a6",
+      "hash_paquete_atestado": "594781cbff38161d663a4fbab45575eaa800742701e260755e8443967a9e8345",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "El mensaje de soporte figura en el texto y la condición no lo evalúa."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    },
+    {
+      "codigo": "M4-B08",
+      "version": 1,
+      "hash_version_atestado": "0237ed6d71ffe268934fdda266e354af156c83f84a2f3b56ebe60792b2198567",
+      "hash_paquete_atestado": "8d8cbf05853d25c8b673b1dfddc264fbc716d62856fcdb2318aa1741babcac19",
+      "pruebas_atestadas": 4,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    }
+  ]
+}
