@@ -1,0 +1,665 @@
+{
+  "schema": "LF-M2L2-7-V1",
+  "facts": [
+    {
+      "codigo": "m2l2_intento_materializar_ofertas",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_modalidades_duplican_deuda_como_ofertas",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_intento_mostrar_ver_mas_planes",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_sin_planes_adicionales_autorizados",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_intento_render_card_oferta",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_card_estado_visual_incongruente",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_intento_render_copy_ofertas",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_copy_incongruente_con_seleccion",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_intento_cerrar_modal_cuotas",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_modal_cierre_pierde_seleccion_o_navega",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_intento_render_plan_modal",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_primera_cuota_no_destacada_o_ausente",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_intento_mostrar_cta_oferta_home",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    },
+    {
+      "codigo": "m2l2_copy_promete_simulacion_o_oferta_no_real",
+      "familia": "OFFERS_INSTALLMENTS",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "Paulo pendiente"
+    }
+  ],
+  "entries": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C01",
+      "clave": "m2l2_g05",
+      "titulo": "Una oferta por deuda con modalidades alternativas",
+      "descripcion": "Al materializar ofertas de un cliente, BLOQUEAR que pago único y cuotas de una misma deuda sean creados o presentados como ofertas independientes; cada oferta representa una deuda independiente y sus modalidades comparten identidad de oferta. No valida montos ni inventa vínculo físico deuda/oferta; fuente de Paulo pendiente.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_materializar_ofertas"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_modalidades_duplican_deuda_como_ofertas"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/146,147",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_materializar_ofertas": true,
+            "m2l2_modalidades_duplican_deuda_como_ofertas": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_materializar_ofertas": true,
+            "m2l2_modalidades_duplican_deuda_como_ofertas": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_materializar_ofertas": false,
+            "m2l2_modalidades_duplican_deuda_como_ofertas": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_materializar_ofertas": false,
+            "m2l2_modalidades_duplican_deuda_como_ofertas": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C02",
+      "clave": "m2l2_g09",
+      "titulo": "Ver más planes solo con adicionales autorizados",
+      "descripcion": "En presentación de planes de cuotas, BLOQUEAR el enlace Ver más planes si la lista autoritativa no contiene planes adicionales fuera del conjunto inicial. No asumir cardinalidad ni configurar plan ficticio; fuente de disponibilidad Paulo pendiente.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_mostrar_ver_mas_planes"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_sin_planes_adicionales_autorizados"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/157",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_ver_mas_planes": true,
+            "m2l2_sin_planes_adicionales_autorizados": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_ver_mas_planes": true,
+            "m2l2_sin_planes_adicionales_autorizados": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_ver_mas_planes": false,
+            "m2l2_sin_planes_adicionales_autorizados": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_ver_mas_planes": false,
+            "m2l2_sin_planes_adicionales_autorizados": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C03",
+      "clave": "m2l2_g13",
+      "titulo": "Card de oferta refleja el estado autorizado",
+      "descripcion": "En render de card de oferta, BLOQUEAR presentación visual incongruente con estado server-side: sin selección sin borde activo, seleccionada con modalidad y ahorro visibles cuando corresponde, vencida con opciones deshabilitadas, borde gris y badge Oferta vencida. No impone estilo en otras cards y estado efectivo proviene de Paulo.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_render_card_oferta"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_card_estado_visual_incongruente"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/171",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_card_oferta": true,
+            "m2l2_card_estado_visual_incongruente": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_card_oferta": true,
+            "m2l2_card_estado_visual_incongruente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_card_oferta": false,
+            "m2l2_card_estado_visual_incongruente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_card_oferta": false,
+            "m2l2_card_estado_visual_incongruente": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C04",
+      "clave": "m2l2_g14",
+      "titulo": "Copy de ofertas pendientes según selección",
+      "descripcion": "Al mostrar CTA Continuar en pantalla multi oferta, BLOQUEAR si existen ofertas sin seleccionar y falta o se altera el texto aprobado Podrás configurar las demás ofertas después.; si todas están elegidas, BLOQUEAR el copy sobrante. El hecho de incongruencia se deriva del estado de selección y del texto renderizado, sin binding inventado.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_render_copy_ofertas"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_copy_incongruente_con_seleccion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/172",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_copy_ofertas": true,
+            "m2l2_copy_incongruente_con_seleccion": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_copy_ofertas": true,
+            "m2l2_copy_incongruente_con_seleccion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_copy_ofertas": false,
+            "m2l2_copy_incongruente_con_seleccion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_copy_ofertas": false,
+            "m2l2_copy_incongruente_con_seleccion": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C05",
+      "clave": "m2l2_g16",
+      "titulo": "Cerrar modal de planes conserva selección anterior",
+      "descripcion": "Al cerrar por X o Cancelar el modal de cuotas, BLOQUEAR el cambio involuntario de navegación o la pérdida de selecciones anteriores en pantalla multi oferta. No convierte Cancelar en confirmación de nuevo plan ni afecta otros modales.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_cerrar_modal_cuotas"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_modal_cierre_pierde_seleccion_o_navega"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/238",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_cerrar_modal_cuotas": true,
+            "m2l2_modal_cierre_pierde_seleccion_o_navega": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_cerrar_modal_cuotas": true,
+            "m2l2_modal_cierre_pierde_seleccion_o_navega": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_cerrar_modal_cuotas": false,
+            "m2l2_modal_cierre_pierde_seleccion_o_navega": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_cerrar_modal_cuotas": false,
+            "m2l2_modal_cierre_pierde_seleccion_o_navega": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C06",
+      "clave": "m2l2_g18",
+      "titulo": "Primera cuota a pagar hoy destacada por plan",
+      "descripcion": "En render de cada plan dentro del modal de cuotas, BLOQUEAR cuando la primera cuota a pagar hoy no aparece visible y con jerarquía destacada sobre el total. El importe exacto se obtiene de plan backend autorizado por Paulo; no inferir fórmula ni precio.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_render_plan_modal"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_primera_cuota_no_destacada_o_ausente"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/244",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_plan_modal": true,
+            "m2l2_primera_cuota_no_destacada_o_ausente": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_plan_modal": true,
+            "m2l2_primera_cuota_no_destacada_o_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_plan_modal": false,
+            "m2l2_primera_cuota_no_destacada_o_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_render_plan_modal": false,
+            "m2l2_primera_cuota_no_destacada_o_ausente": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M2L2-C07",
+      "clave": "m2l2_g25",
+      "titulo": "Home no presenta estimación hipotética como oferta",
+      "descripcion": "Solo al mostrar el CTA de oferta en Home, BLOQUEAR el copy que prometa simulación referencial u oferta inexistente. Mantener texto aprobado Revisar tu oferta, si la tenemos disponible y resultado binario con oferta real autorizada o sin oferta; validación comercial efectiva pendiente Paulo.",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-PRODUCTO",
+      "dueno": "PRODUCTO",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_intento_mostrar_cta_oferta_home"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m2l2_copy_promete_simulacion_o_oferta_no_real"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/382",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_cta_oferta_home": true,
+            "m2l2_copy_promete_simulacion_o_oferta_no_real": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_cta_oferta_home": true,
+            "m2l2_copy_promete_simulacion_o_oferta_no_real": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_cta_oferta_home": false,
+            "m2l2_copy_promete_simulacion_o_oferta_no_real": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m2l2_intento_mostrar_cta_oferta_home": false,
+            "m2l2_copy_promete_simulacion_o_oferta_no_real": false
+          },
+          "esperado": false
+        }
+      ]
+    }
+  ]
+}
