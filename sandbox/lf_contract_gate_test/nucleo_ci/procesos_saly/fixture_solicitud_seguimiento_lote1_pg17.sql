@@ -1,8 +1,7 @@
 -- Lote 1: SOLO PG17 aislado en CI; no usar sobre Supabase.
 -- Fuente: extracción SALY 2026-11-23 13:08, corrección 13:20.
 -- No contiene ramas por canal ni estado visible INCIDENCIA.
--- La nota del paso motor guarda REFERENCIA_NODO=MOTOR_ABONOS porque
--- base_candidata.sql NO incluye columna/clave foranea paso -> nodo.
+-- El paso motor usa nodo_codigo con FK real a MOTOR_ABONOS; los demas, NULL.
 -- Ninguna regla de seleccion provisional se materializa aqui.
 \set ON_ERROR_STOP on
 BEGIN;
@@ -63,13 +62,13 @@ BEGIN
 ('SOLICITUD_ADELANTO',4,'S04_SQS_ENCOLAR','Enviar orden de abono a SQS','INTERNO','SIN_PANTALLA','Encolar orden para procesamiento; interfaz SQS VACÍO; sin llamada real a AWS.'),
 ('SOLICITUD_ADELANTO',5,'S05_CONFIRMACION','Mostrar confirmacion de solicitud','POR_CONSTRUIR','VACÍO','Pantalla de confirmacion POR CONSTRUIR; cinco minutos son margen tecnico de cola, no espera de negocio.'),
 ('SOLICITUD_ADELANTO',6,'S06_SQS_PROCESAR','Ejecutar procesamiento posterior de cola','INTERNO','SIN_PANTALLA','Worker consume orden SQS; ejecucion de cola no definida tecnicamente.'),
-('SOLICITUD_ADELANTO',7,'S07_MOTOR_ABONOS','El Motor de Abonos elige el canal y ejecuta el abono','INTERNO','SIN_PANTALLA','REFERENCIA_NODO=MOTOR_ABONOS. Canal configurable, sin ramas ni etiquetas por proveedor. VACÍO: elegibilidad, pricing/vigencia, regla de seleccion.'),
+('SOLICITUD_ADELANTO',7,'S07_MOTOR_ABONOS','El Motor de Abonos elige el canal y ejecuta el abono','INTERNO','SIN_PANTALLA','Canal configurable, sin ramas ni etiquetas por proveedor. VACÍO: elegibilidad, pricing/vigencia, regla de seleccion.'),
 ('SOLICITUD_ADELANTO',8,'S08_CONTINGENCIA','Derivar a manual como ultimo recurso si un canal falla','INTERNO','SIN_PANTALLA','Si falla un canal, se deriva a manual como ultimo recurso. VACÍO: numero y criterios de reintentos.'),
 ('SOLICITUD_ADELANTO',9,'S09_NOTIFICAR','Enviar estado por push y correo','INTERNO','SIN_PANTALLA','Notificacion posterior al procesamiento; contratos y plantillas VACÍO.'),
 ('SOLICITUD_ADELANTO',10,'S10_ACTUALIZAR','Actualizar estado consultable en Seguimiento','INTERNO','SIN_PANTALLA','Salida hacia proceso SEGUIMIENTO_ADELANTO; representacion de estado en UI depende de Seguimiento.'),
 ('SEGUIMIENTO_ADELANTO',1,'G01_CONSULTAR','Consultar el estado de la solicitud','PANTALLA_DIBUJADA','SALY_SEGUIMIENTO_MINIMAL_v1.5.png','Consulta de solicitud confirmada; no existe estado Incidencia visible para el empleado.'),
 ('SEGUIMIENTO_ADELANTO',2,'G02_EN_PROCESO','Mostrar En proceso durante la ventana tecnica SQS','PANTALLA_DIBUJADA','SALY_SEGUIMIENTO_MINIMAL_v1.5.png','En proceso durante procesamiento de cola; abono inmediato de negocio.'),
-('SEGUIMIENTO_ADELANTO',3,'G03_MOTOR','El Motor de Abonos procesa por canal configurable','INTERNO','SIN_PANTALLA','REFERENCIA_NODO=MOTOR_ABONOS. No fijar Niubiz/Manual ni ramas por canal.'),
+('SEGUIMIENTO_ADELANTO',3,'G03_MOTOR','El Motor de Abonos procesa por canal configurable','INTERNO','SIN_PANTALLA','No fijar proveedores ni ramas por canal.'),
 ('SEGUIMIENTO_ADELANTO',4,'G04_CONTINGENCIA','Derivar a manual tras falla de canal','INTERNO','SIN_PANTALLA','La vista del empleado permanece En proceso; VACÍO reintentos antes del recurso manual.'),
 ('SEGUIMIENTO_ADELANTO',5,'G05_ESPERA_PROGRAMADA','Mostrar En proceso con abono manual programado','POR_CONSTRUIR','VACÍO','VACÍO: pantalla En proceso para manual programado, reubicacion de v1.4; no crear estado Incidencia.'),
 ('SEGUIMIENTO_ADELANTO',6,'G06_HORARIOS','Mostrar horario configurable del abono manual','POR_CONSTRUIR','VACÍO','VACÍO: tabla de horarios, vigencia y pantalla de linea temporal; no fijar hora en interfaz.'),
@@ -80,9 +79,10 @@ BEGIN
   SELECT id INTO STRICT v_proceso FROM saly.procesos WHERE codigo=rec.proceso_codigo;
   INSERT INTO saly.procesos_pasos(proceso_id,codigo)
   VALUES (v_proceso,rec.codigo) RETURNING paso_id INTO v_paso;
-  INSERT INTO saly.procesos_pasos_versiones(proceso_id,paso_id,version,titulo,descripcion)
+  INSERT INTO saly.procesos_pasos_versiones(proceso_id,paso_id,version,titulo,descripcion,nodo_codigo)
   VALUES (v_proceso,v_paso,1,rec.titulo,
-       format('TIPO=%s | PANTALLA=%s | %s',rec.tipo,rec.pantalla,rec.detalle));
+       format('TIPO=%s | PANTALLA=%s | %s',rec.tipo,rec.pantalla,rec.detalle),
+       CASE WHEN rec.codigo IN ('S07_MOTOR_ABONOS','G03_MOTOR') THEN 'MOTOR_ABONOS' ELSE NULL END);
   INSERT INTO saly.procesos_version_pasos
   (proceso_id,proceso_version,paso_id,paso_version,orden,es_inicio,es_fin)
   VALUES(v_proceso,1,v_paso,1,rec.orden,rec.orden=1,
@@ -128,15 +128,68 @@ BEGIN
  THEN RAISE EXCEPTION 'LOTE1_DISTRIBUCION_10_7_FALLIDA'; END IF;
  RAISE NOTICE 'LOTE1_PASOS_PASS 17/17 (Solicitud=10, Seguimiento=7)';
 
+ -- Caso 1: los dos pasos de motor usan una FK real a un unico nodo MODULO.
  SELECT count(*) INTO v_obtenidos FROM saly.procesos_pasos_versiones
- WHERE descripcion LIKE '%REFERENCIA_NODO=MOTOR_ABONOS%';
+ WHERE nodo_codigo='MOTOR_ABONOS';
  IF v_obtenidos<>2 OR
  NOT EXISTS(SELECT 1 FROM saly.nucleo_nodos
    WHERE codigo='MOTOR_ABONOS' AND nivel='MODULO' AND padre='ADELANTO')
- THEN RAISE EXCEPTION 'LOTE1_MOTOR_REFERENCIA_NODO_FALLIDA'; END IF;
+ OR NOT EXISTS(SELECT 1 FROM pg_constraint
+   WHERE conrelid='saly.procesos_pasos_versiones'::regclass
+     AND contype='f' AND pg_get_constraintdef(oid) LIKE '%(nodo_codigo) REFERENCES saly.nucleo_nodos(codigo)%')
+ THEN RAISE EXCEPTION 'LOTE1_MOTOR_FK_REAL_FALLIDA'; END IF;
  IF EXISTS (SELECT 1 FROM saly.nucleo_nodos WHERE codigo IN ('NIUBIZ','LIGO','MANUAL','YAPE')) THEN
     RAISE EXCEPTION 'LOTE1_NODO_POR_CANAL_PROHIBIDO'; END IF;
- RAISE NOTICE 'LOTE1_MOTOR_NODO_PASS 1 MODULO, 2 referencias documentales, 0 nodos por canal';
+ RAISE NOTICE 'LOTE1_MOTOR_FK_PASS 2 pasos FK=MOTOR_ABONOS, 1 MODULO, 0 nodos por canal';
+
+ -- Caso 4: los otros quince pasos continuan con FK opcional NULL.
+ SELECT count(*) INTO v_obtenidos FROM saly.procesos_pasos_versiones
+ WHERE nodo_codigo IS NULL;
+ IF v_obtenidos<>15 THEN RAISE EXCEPTION 'LOTE1_NULL_PASOS_FALLIDA %',v_obtenidos; END IF;
+ RAISE NOTICE 'LOTE1_NODO_NULL_PASS 15/15';
+
+ -- Casos 2 y 3: el nivel no MODULO lo rechaza el guard; codigo ausente lo rechaza FK.
+ SELECT p.id,s.paso_id INTO STRICT v_proceso,v_paso FROM saly.procesos p
+ JOIN saly.procesos_pasos s ON s.proceso_id=p.id
+ WHERE p.codigo='SOLICITUD_ADELANTO' AND s.codigo='S07_MOTOR_ABONOS';
+ BEGIN
+  INSERT INTO saly.procesos_pasos_versiones(proceso_id,paso_id,version,titulo,descripcion,nodo_codigo)
+  VALUES (v_proceso,v_paso,2,'QA nivel incorrecto','Intento nivel no MODULO','ADELANTO');
+  RAISE EXCEPTION 'LOTE1_NODO_NO_MODULO_ACEPTADO';
+ EXCEPTION WHEN SQLSTATE '23514' THEN
+  GET STACKED DIAGNOSTICS v_error=MESSAGE_TEXT;
+  IF v_error IS DISTINCT FROM 'SALY_PASO_NODO_NO_MODULO' THEN
+     RAISE EXCEPTION 'LOTE1_GUARD_ERRONEO: %',v_error;
+  END IF;
+  RAISE NOTICE 'LOTE1_NODO_NO_MODULO_RECHAZADO_PASS 23514';
+ END;
+ BEGIN
+  INSERT INTO saly.procesos_pasos_versiones(proceso_id,paso_id,version,titulo,descripcion,nodo_codigo)
+  VALUES (v_proceso,v_paso,2,'QA nodo ausente','Intento codigo inexistente','NODO_INEXISTENTE_QA');
+  RAISE EXCEPTION 'LOTE1_NODO_INEXISTENTE_ACEPTADO';
+ EXCEPTION WHEN SQLSTATE '23503' THEN
+  GET STACKED DIAGNOSTICS v_error=MESSAGE_TEXT;
+  IF position('foreign key constraint' IN v_error)=0 THEN
+    RAISE EXCEPTION 'LOTE1_FK_ERRONEA: %',v_error;
+  END IF;
+  RAISE NOTICE 'LOTE1_NODO_INEXISTENTE_RECHAZADO_PASS 23503';
+ END;
+ IF EXISTS(SELECT 1 FROM saly.procesos_pasos_versiones WHERE version=2) THEN
+   RAISE EXCEPTION 'LOTE1_NEGATIVOS_DEJARON_RESIDUO';
+ END IF;
+
+ -- El nuevo campo sigue cubierto por la inmutabilidad original de la version.
+ BEGIN
+  UPDATE saly.procesos_pasos_versiones SET nodo_codigo=NULL
+  WHERE proceso_id=v_proceso AND paso_id=v_paso AND version=1;
+  RAISE EXCEPTION 'LOTE1_NODO_VERSION_MUTABLE';
+ EXCEPTION WHEN SQLSTATE '55000' THEN
+  GET STACKED DIAGNOSTICS v_error=MESSAGE_TEXT;
+  IF v_error IS DISTINCT FROM 'SALY_PROCESO_INMUTABLE' THEN
+    RAISE EXCEPTION 'LOTE1_INMUTABILIDAD_ERRONEA: %',v_error;
+  END IF;
+  RAISE NOTICE 'LOTE1_NODO_INMUTABLE_PASS 55000';
+ END;
 
  SELECT count(*) INTO v_obtenidos FROM saly.procesos_pasos_versiones
  WHERE descripcion LIKE '%TIPO=PANTALLA_DIBUJADA%';
