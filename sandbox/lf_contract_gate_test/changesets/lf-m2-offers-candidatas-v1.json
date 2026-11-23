@@ -6,6 +6,7 @@
     "sandbox/lf_contract_gate_test/nucleo_ci/m2_6_candidatas_v1.json": "PASE_SUPPORT",
     "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
     "docs/nucleo/LF_M2_INVENTARIO_53_31_GRUPOS_20261123.md": "PASE_SUPPORT",
-    "sandbox/lf_contract_gate_test/changesets/lf-m2-offers-candidatas-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/lf-m2-offers-candidatas-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/nucleo_ci/m2_53_fixture_pg17.sql": "PASE_SUPPORT"
   }
 }
