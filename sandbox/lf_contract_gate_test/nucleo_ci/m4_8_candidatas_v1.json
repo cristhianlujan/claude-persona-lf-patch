@@ -1,0 +1,761 @@
+{
+  "schema": "LF-M4-EIGHT-CANDIDATES-V1",
+  "source_inventory": "docs/nucleo/LF_M4_INVENTARIO_112_PRELIMINAR_20261123.md",
+  "review": "Hechos tipados lógicos sin binding físico; juicio independiente no ejecutado",
+  "facts": [
+    {
+      "codigo": "m4_intento_exponer_dni",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/21"
+    },
+    {
+      "codigo": "m4_dni_expuesto_en_canal_no_permitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/21"
+    },
+    {
+      "codigo": "m4_intento_transportar_sesion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/24"
+    },
+    {
+      "codigo": "m4_sesion_incluida_en_url",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/24"
+    },
+    {
+      "codigo": "m4_intento_responder_api_otp",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/62"
+    },
+    {
+      "codigo": "m4_respuesta_api_contiene_otp",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/62"
+    },
+    {
+      "codigo": "m4_intento_respuesta_dni_protegida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/128"
+    },
+    {
+      "codigo": "m4_respuesta_dni_revela_existencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/128"
+    },
+    {
+      "codigo": "m4_intento_respuesta_celular_protegida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/129"
+    },
+    {
+      "codigo": "m4_respuesta_celular_revela_existencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/129"
+    },
+    {
+      "codigo": "m4_intento_identidad_o_rebind_por_otp",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/456"
+    },
+    {
+      "codigo": "m4_otp_unica_prueba_sin_identidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/456"
+    },
+    {
+      "codigo": "m4_onb003_intento_persistir_dni_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/492"
+    },
+    {
+      "codigo": "m4_dni_persistencia_cliente_prohibida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/492"
+    },
+    {
+      "codigo": "m4_onb003_intento_responder_resolucion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/499"
+    },
+    {
+      "codigo": "m4_onb003_respuesta_revela_cuenta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "tabla_ref": null,
+      "columna_ref": null,
+      "binding": "PENDIENTE Paulo",
+      "fuente_legada": "lf_ops.reglas/499"
+    }
+  ],
+  "entries": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C01",
+      "clave": "m4_seg_guard_21",
+      "titulo": "No exponer DNI en telemetría",
+      "descripcion": "Cuando se intenta registrar DNI en logs, analytics, headers o mensajes de error BLOQUEAR la exposición de PII. No bloquea otras operaciones sin intento de exposición.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_intento_exponer_dni"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_dni_expuesto_en_canal_no_permitido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/21",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_intento_exponer_dni": true,
+            "m4_dni_expuesto_en_canal_no_permitido": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_exponer_dni": true,
+            "m4_dni_expuesto_en_canal_no_permitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_exponer_dni": false,
+            "m4_dni_expuesto_en_canal_no_permitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_exponer_dni": false,
+            "m4_dni_expuesto_en_canal_no_permitido": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C02",
+      "clave": "m4_seg_guard_24",
+      "titulo": "No transportar token de sesión en URL",
+      "descripcion": "Ante intento de construir URL con identificador de sesión, BLOQUEAR su inclusión como parámetro GET; el transporte autorizado corresponde a header o cookie httpOnly. No bloquear solicitudes sin transporte de sesión.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_intento_transportar_sesion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_sesion_incluida_en_url"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/24",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_intento_transportar_sesion": true,
+            "m4_sesion_incluida_en_url": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_transportar_sesion": true,
+            "m4_sesion_incluida_en_url": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_transportar_sesion": false,
+            "m4_sesion_incluida_en_url": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_transportar_sesion": false,
+            "m4_sesion_incluida_en_url": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C03",
+      "clave": "m4_seg_guard_62",
+      "titulo": "No devolver código OTP por respuesta API",
+      "descripcion": "Ante intento de construir una respuesta API OTP, BLOQUEAR si incluye el secreto otp_code; permitir solo resultado de envío/verificación sin secreto. No bloquear otras respuestas API.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_intento_responder_api_otp"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_respuesta_api_contiene_otp"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/62",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_intento_responder_api_otp": true,
+            "m4_respuesta_api_contiene_otp": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_responder_api_otp": true,
+            "m4_respuesta_api_contiene_otp": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_responder_api_otp": false,
+            "m4_respuesta_api_contiene_otp": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_responder_api_otp": false,
+            "m4_respuesta_api_contiene_otp": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C04",
+      "clave": "m4_seg_guard_128",
+      "titulo": "No enumerar DNI en validación protegida",
+      "descripcion": "Ante intento de responder por un DNI registrado, bloqueado o sospechoso, BLOQUEAR si el mensaje revela existencia o estado del DNI; la respuesta al usuario debe ser genérica. No imponerlo a consultas fuera de validación protegida.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_intento_respuesta_dni_protegida"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_respuesta_dni_revela_existencia"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/128",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_dni_protegida": true,
+            "m4_respuesta_dni_revela_existencia": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_dni_protegida": true,
+            "m4_respuesta_dni_revela_existencia": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_dni_protegida": false,
+            "m4_respuesta_dni_revela_existencia": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_dni_protegida": false,
+            "m4_respuesta_dni_revela_existencia": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C05",
+      "clave": "m4_seg_guard_129",
+      "titulo": "No enumerar celular en validación protegida",
+      "descripcion": "Ante intento de responder por celular registrado o bloqueado, BLOQUEAR si el mensaje revela existencia o estado del celular; usar respuesta genérica. No alterar respuestas ajenas a consulta protegida.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_intento_respuesta_celular_protegida"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_respuesta_celular_revela_existencia"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/129",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_celular_protegida": true,
+            "m4_respuesta_celular_revela_existencia": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_celular_protegida": true,
+            "m4_respuesta_celular_revela_existencia": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_celular_protegida": false,
+            "m4_respuesta_celular_revela_existencia": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_respuesta_celular_protegida": false,
+            "m4_respuesta_celular_revela_existencia": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C06",
+      "clave": "m4_seg_guard_456",
+      "titulo": "OTP celular no acredita identidad civil",
+      "descripcion": "Ante intento de atribuir identidad civil o reasignar cuenta existente, BLOQUEAR si solo consta prueba de control del celular por OTP y falta acreditación de identidad o recuperación autorizada. No bloquear verificación OTP ordinaria sin reasignación.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_intento_identidad_o_rebind_por_otp"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_otp_unica_prueba_sin_identidad"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/456",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_intento_identidad_o_rebind_por_otp": true,
+            "m4_otp_unica_prueba_sin_identidad": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_identidad_o_rebind_por_otp": true,
+            "m4_otp_unica_prueba_sin_identidad": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_identidad_o_rebind_por_otp": false,
+            "m4_otp_unica_prueba_sin_identidad": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_intento_identidad_o_rebind_por_otp": false,
+            "m4_otp_unica_prueba_sin_identidad": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C07",
+      "clave": "m4_seg_guard_492",
+      "titulo": "DNI no persiste en almacenamiento cliente",
+      "descripcion": "En el paso ONB_003, ante intento de persistencia de DNI en navegador, BLOQUEAR localStorage, sessionStorage, URL, analytics, replay o caché offline. La validación server-side queda fuera de este guard.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "clase": "PANTALLA",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_onb003_intento_persistir_dni_cliente"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_dni_persistencia_cliente_prohibida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/492",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_persistir_dni_cliente": true,
+            "m4_dni_persistencia_cliente_prohibida": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_persistir_dni_cliente": true,
+            "m4_dni_persistencia_cliente_prohibida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_persistir_dni_cliente": false,
+            "m4_dni_persistencia_cliente_prohibida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_persistir_dni_cliente": false,
+            "m4_dni_persistencia_cliente_prohibida": false
+          },
+          "esperado": false
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "M4-C08",
+      "clave": "m4_seg_guard_499",
+      "titulo": "No enumerar cuenta desde ONB_003",
+      "descripcion": "En resolución server-side ONB_003, ante intento de respuesta al cliente, BLOQUEAR flags, códigos o mensajes que expongan explícitamente existencia de cuenta por DNI. No bloquea navegación posterior autorizada sin divulgación explícita.",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "autoridad": "LEG-SEGURIDAD",
+      "dueno": "SEGURIDAD",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "clase": "BACKEND",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_onb003_intento_responder_resolucion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "m4_onb003_respuesta_revela_cuenta"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/499",
+        "solicitante": "migracion-nucleo"
+      },
+      "pruebas": [
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_responder_resolucion": true,
+            "m4_onb003_respuesta_revela_cuenta": true
+          },
+          "esperado": true
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_responder_resolucion": true,
+            "m4_onb003_respuesta_revela_cuenta": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_responder_resolucion": false,
+            "m4_onb003_respuesta_revela_cuenta": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "m4_onb003_intento_responder_resolucion": false,
+            "m4_onb003_respuesta_revela_cuenta": false
+          },
+          "esperado": false
+        }
+      ]
+    }
+  ]
+}
