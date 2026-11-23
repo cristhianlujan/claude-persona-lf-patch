@@ -1,0 +1,110 @@
+{
+  "schema_version": "SALY_CREATIVE_JUDGE_MANIFEST_V1",
+  "scope": "HISTORICAL_CHAT_ARTIFACT_TERMINAL_RECONCILIATION",
+  "business_code": "SALY",
+  "allow_regeneration": false,
+  "source_authority": {
+    "creative_skill": "skills/creative_factory/SKILL.md",
+    "judge_resguardos": "LF_resguardos_construccion.md Parte A/2",
+    "resguardos_file_sha256": "df009461ae1fe0237a2e3bd7bee91da691e27089ebfc1806d607dd927c17a69b",
+    "contract": "SHA and deep-copy immutable review; observed result kept separate from approval"
+  },
+  "judge_execution": {
+    "technical_judge": "DETERMINISTIC_TECHNICAL_SEPARATE_PROCESS",
+    "judge_independent_of_render_tool": true,
+    "semantic_independence_proven": false,
+    "semantic_qa": "NOT_INDEPENDENTLY_EVALUATED",
+    "evidence_source": "Actual PNG bytes in current ChatGPT conversation; hash and dimension independently checked by isolated Python process",
+    "image_generation_not_replayed": true
+  },
+  "terminal_semantics": {
+    "item_status": "TERMINADO",
+    "order_status": "TERMINADO",
+    "meaning": "IMAGE_DELIVERED_AND_QA_COMMENTED_NOT_APPROVED",
+    "approved_at_must_remain_null": true,
+    "do_not_forge_run": true,
+    "do_not_assert_provider_attestation": true,
+    "do_not_promote_prod": true
+  },
+  "images": [
+    {
+      "item_id": 5,
+      "order_code": "SALY_HOME_BATCH_001",
+      "item_code": "HOME",
+      "filename": "03_HOME_PRINCIPAL_LOGO_OFICIAL.png",
+      "artifact_sha256": "cba43bc26d06f40eb037c24c7d8f2ed8fe666042e3bdf9748e0cc4cc775f0990",
+      "width": 1086,
+      "height": 1448,
+      "technical_verdict": "PASS_TECHNICAL",
+      "qa_comment": "Home presentado: composición de referencia corregida y CTA verde. Coincide dimensión 1086x1448. Semántica completa y comparación de fuente quedan NO_EVALUADAS por juez independiente.",
+      "observations": [],
+      "judge_receipt_sha256": "6d490612f690ff9a02119071a2eff1977ea8134d97b138f941037444a980f733",
+      "judge_input_sha256": "736b561352c724a038fba7883bfd782bc653569fa7f8ab6cb89ae661085dbf5c"
+    },
+    {
+      "item_id": 6,
+      "order_code": "SALY_HOME_BATCH_001",
+      "item_code": "ADELANTO",
+      "filename": "04_SOLICITUD_ADELANTO.png",
+      "artifact_sha256": "9f08caec72e426bd0253bf2d28cb2c9ef70e742fb5e83d42ca9dcfd1ee283a92",
+      "width": 1086,
+      "height": 1448,
+      "technical_verdict": "PASS_TECHNICAL_WITH_OBSERVATIONS",
+      "qa_comment": "Solicitud de adelanto: arte recibido 1086x1448; blueprint requiere 1024x1536. Diferencia dimensional; no equivale a QA aprobado.",
+      "observations": [
+        "OUTPUT_DIMENSIONS_MISMATCH"
+      ],
+      "judge_receipt_sha256": "6099e9d41bbcc136e404652397aa7c5887218a6350c493a81aa6528f801528c6",
+      "judge_input_sha256": "581b1e22696165196889eec2da2704b5df2176f568b36e4402e98faefd5d7e9c"
+    },
+    {
+      "item_id": 7,
+      "order_code": "SALY_HOME_BATCH_001",
+      "item_code": "REWARDS",
+      "filename": "05_SALY_REWARDS.png",
+      "artifact_sha256": "6cbe7c336ed0e1d39ba93c37a39fe9822a54f9f288a04e1c6274cc56504b62cd",
+      "width": 1086,
+      "height": 1448,
+      "technical_verdict": "PASS_TECHNICAL_WITH_OBSERVATIONS",
+      "qa_comment": "Rewards: copy de sorteos visible. Premios S/200 y S/50 y hábitos 1/2/3 son elementos ilustrativos sin fuente aprobada verificada; no promoverlos como reglas.",
+      "observations": [
+        "UNVERIFIED_REWARDS_PRIZE_VALUES",
+        "PLACEHOLDER_REWARDS_HABITS"
+      ],
+      "judge_receipt_sha256": "6c9b880aaff8ae3ed985044637490e752cc058d06f7cbaf9d3215e5e115a2a0e",
+      "judge_input_sha256": "23e46c210e038483cf1f416c5c2a6d1eee3a68c7d3564ecf9f791e23b35dc7c4"
+    },
+    {
+      "item_id": 8,
+      "order_code": "SALY_HOME_TEMPLATE_AB_001",
+      "item_code": "HOME_A",
+      "filename": "01_HOME_A_IPHONE16PRO.png",
+      "artifact_sha256": "5d0960b46b9140da69b6157b0b6a5ae9b7de365551aaad30bc9b96550de5a3d9",
+      "width": 1024,
+      "height": 1536,
+      "technical_verdict": "PASS_TECHNICAL_WITH_OBSERVATIONS",
+      "qa_comment": "Home A: imagen existente conservada, con importe de muestra S/575, CTA y navegación. Pedido origen REVIEW_ONLY: producción no acreditada.",
+      "observations": [
+        "REVIEW_ONLY_ORIGIN"
+      ],
+      "judge_receipt_sha256": "5c2226f2bd2cafd24d5fc28bcdc6f4b7c57e3bd7e59d912ed78fe0506f15e9f5",
+      "judge_input_sha256": "4028f0333cb0953a183114ed17ef4240b89b0a57e30df46616fd97eadbb85769"
+    },
+    {
+      "item_id": 9,
+      "order_code": "SALY_HOME_TEMPLATE_AB_001",
+      "item_code": "HOME_B",
+      "filename": "02_HOME_B_LOGO_FOOTER.png",
+      "artifact_sha256": "c39e2f99aa949c8bc57b12e3aa7f1ef5567a299c2ddc67ea9d7ecfb562c7319f",
+      "width": 1086,
+      "height": 1448,
+      "technical_verdict": "PASS_TECHNICAL_WITH_OBSERVATIONS",
+      "qa_comment": "Home B: imagen existente conservada, con logo, CTA y footer. Pedido origen REVIEW_ONLY: producción no acreditada.",
+      "observations": [
+        "REVIEW_ONLY_ORIGIN"
+      ],
+      "judge_receipt_sha256": "a7d61d5c78a48837d6ecf00d0d2ca787682875b1e5bccb3bf43eb3bba728ea99",
+      "judge_input_sha256": "fd959f83679923c316436ba1d22c600da650b7df89bedb665efa0a198cb47da6"
+    }
+  ]
+}
