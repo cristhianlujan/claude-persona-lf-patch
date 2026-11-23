@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-nucleo-m1-juicios-v1",
+  "paths": {
+    "supabase/migrations/20261122231800_lf_nucleo_m1_juicios_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/m1_juicios_semanticos_v1.json": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "docs/nucleo/LF_M1_JUEZ_SEMANTICO_V1_20261122.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-m1-juicios-v1.json": "CHANGESET_MANIFEST"
+  }
+}
