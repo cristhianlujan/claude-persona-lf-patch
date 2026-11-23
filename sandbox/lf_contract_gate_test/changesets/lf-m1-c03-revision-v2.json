@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-m1-c03-revision-v2",
+  "paths": {
+    "supabase/migrations/20261123152800_lf_nucleo_m1_c03_revision_v2.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/m1_c03_revision_v2.json": "PASE_SUPPORT",
+    "docs/nucleo/LF_M1_C03_REVISION_V2_20261123.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-m1-c03-revision-v2.json": "CHANGESET_MANIFEST"
+  }
+}
