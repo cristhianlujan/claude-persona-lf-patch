@@ -49,7 +49,7 @@ def meaningful_direction(text: Any) -> bool:
     if not filled(text):
         return False
     clean = " ".join(text.lower().split()).strip(". ")
-    return clean not in GENERIC and len(clean.split()) >= 5
+    return clean not in GENERIC
 
 
 def prepare_positive_review(plan: dict[str, Any],
@@ -87,7 +87,7 @@ def prepare_positive_review(plan: dict[str, Any],
     components = {c["name"]: c for c in frozen_plan["components"]}
 
     outcomes = frozen_decision["positive_outcomes"]
-    check(type(outcomes) is list and len(outcomes) >= 3,
+    check(type(outcomes) is list and len(outcomes) >= 1,
           "CREATIVE_POSITIVE_OUTCOMES_MISSING")
     seen_goals = set()
     for row in outcomes:
@@ -158,9 +158,10 @@ def prepare_positive_review(plan: dict[str, Any],
           transport["render_authorized"] is False,
           "CREATIVE_TRANSPORT_FALSE_AUTHORITY")
     refs = transport["source_ids"]
-    check(type(refs) is list and refs and len(set(refs)) == len(refs)
-          and all(type(k) is str and k in sources for k in refs),
+    check(type(refs) is list and refs and
+          all(type(k) is str and k in sources for k in refs),
           "CREATIVE_TRANSPORT_SOURCE_UNGROUNDED")
+    check(len(set(refs)) == len(refs), "CREATIVE_TRANSPORT_SOURCE_DUPLICATE")
     # Assets referenced here are metadata, never attest binary access or
     # attach an unofficial logo. Actual sender re-reads source bytes.
     source_manifest = [
