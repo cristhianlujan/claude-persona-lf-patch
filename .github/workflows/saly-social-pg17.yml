@@ -1,6 +1,7 @@
 name: SALY social isolated PostgreSQL 17 candidate
 on:
-  pull_request:
+  push:
+    branches: [feat/saly-social-multifuente-piloto-20261122]
     paths:
       - '.github/workflows/saly-social-pg17.yml'
       - 'skills/ai_sales_discovery/adapters/social_native_writer_candidate_v1.sql'
