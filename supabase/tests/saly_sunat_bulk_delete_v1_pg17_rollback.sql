@@ -83,7 +83,7 @@ SELECT gen_random_uuid(),'00000000-0000-4000-8000-000000000001'::uuid,
 FROM rows;
 
 -- Parent migration exactly as checked in, including ACLs and readback.
-\i supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql
+\i supabase/migrations/20261123000336_lf_saly_sunat_commercial_filter_v1.sql
 -- Child migration exactly as checked in; no deletion should occur on installation.
 \i supabase/migrations/20261122222000_lf_saly_sunat_bulk_delete_v1.sql
 
