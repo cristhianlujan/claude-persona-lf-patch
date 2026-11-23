@@ -1,0 +1,22 @@
+name: SALY SUNAT commercial activation v3 temporary source tests
+on:
+  push:
+    branches: [saly/sunat-commercial-activation-v3-20261123]
+    paths:
+      - '.github/workflows/saly-sunat-activation-v3-local-tests-temp.yml'
+      - 'skills/ai_sales_discovery/tests/sunat_commercial_governed_v3.py'
+      - 'skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py'
+permissions:
+  contents: read
+jobs:
+  dryrun-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test real native reservation SQL source, no credentials, no database
+        run: |
+          set -euo pipefail
+          python3 -m py_compile skills/ai_sales_discovery/tests/sunat_commercial_governed_v3.py
+          python3 skills/ai_sales_discovery/tests/test_sunat_commercial_governed_v3.py
+          echo PASS_SUNAT_COMMERCIAL_V3_NATIVE_RESERVATION_SOURCE
