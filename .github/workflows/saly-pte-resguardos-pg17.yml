@@ -9,11 +9,19 @@ on:
       - 'supabase/migrations/*_lf_saly_ventas_pte_writer_core_v1.sql'
       - 'supabase/migrations/*_lf_saly_ventas_pte_snapshot_unique_v1.sql'
       - 'skills/ai_sales_discovery/**'
+  pull_request:
+    paths:
+      - '.github/workflows/saly-pte-resguardos-pg17.yml'
+      - 'skills/ai_sales_discovery/adapters/social_native_writer_candidate_v1.sql'
+      - 'skills/ai_sales_discovery/adapters/social_convergence_v1.py'
+      - 'skills/ai_sales_discovery/tests/social_native_pg17_v1.sql'
+      - 'supabase/migrations/20261122233000_lf_saly_social_evidence_schema_v1.sql'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   pg17-two-session-evidence:
+    if: github.event_name != 'pull_request'
     name: PG17 disposable two-session PTE writer and cross-run negative
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -124,6 +132,38 @@ jobs:
         run: python3 skills/ai_sales_discovery/tests/sunat_name_whitespace_pg17.py
       - name: Qualify native SUNAT plan and batch transaction candidate in disposable PG17
         run: python3 skills/ai_sales_discovery/tests/sunat_governed_batch_pg17.py
+
+  social-pg17-candidate:
+    name: SALY social candidate — PG17 insert and rollback
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_social_disposable
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_social_disposable"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_social_disposable
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Verify social native schema, writer, replay and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f skills/ai_sales_discovery/tests/social_native_pg17_v1.sql
+      - name: Check deterministic convergence
+        run: python3 -m unittest discover -s skills/ai_sales_discovery/tests -p 'test_social_ingesta_preparation_v1.py' -v
 
   sunat-source-schema-one-shot:
     name: SUNAT official ZIP schema evidence (bounded read only)
