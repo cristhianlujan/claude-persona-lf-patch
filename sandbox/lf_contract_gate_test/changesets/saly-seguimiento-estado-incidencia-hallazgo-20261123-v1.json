@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-seguimiento-estado-incidencia-hallazgo-20261123-v1",
+  "paths": {
+    "supabase/migrations/20261123121000_lf_saly_ekb_seguimiento_estado_visual_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-seguimiento-estado-incidencia-hallazgo-20261123-v1.json": "CHANGESET_MANIFEST"
+  }
+}
