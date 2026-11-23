@@ -597,7 +597,11 @@ def main():
                                       "LOTE1_PROCESOS_PASS 2/2",
                                       "LOTE1_VERSIONES_PASS 2/2 BORRADOR",
                                       "LOTE1_PASOS_PASS 17/17",
-                                      "LOTE1_MOTOR_NODO_PASS",
+                                      "LOTE1_MOTOR_FK_PASS",
+                                      "LOTE1_NODO_NULL_PASS 15/15",
+                                      "LOTE1_NODO_NO_MODULO_RECHAZADO_PASS 23514",
+                                      "LOTE1_NODO_INEXISTENTE_RECHAZADO_PASS 23503",
+                                      "LOTE1_NODO_INMUTABLE_PASS 55000",
                                       "LOTE1_TIPOS_PASS",
                                       "LOTE1_SELLADO_INCOMPLETO_RECHAZADO_PASS",
                                       "LOTE1_ROLLBACK_PASS"
