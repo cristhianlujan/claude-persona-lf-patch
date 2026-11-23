@@ -1,0 +1,47 @@
+{
+  "schema": "LF-NUCLEO-TANDA7-REG_CHK_004-V4-INDEPENDIENTE-V1",
+  "fecha": "2026-11-23",
+  "fuente": "Claude Sonnet 5.5, juicio externo atestado por Claude",
+  "evaluacion_base_id": 271,
+  "procedencia": "Claude revisó texto, condición, efecto y 8 pruebas, v3-v4 misma condición y pruebas y redacción revisada. GPT comparó hash de versión y hash paquete de evaluación inicial con readback de Supabase y no reescribió puntuaciones.",
+  "juicios": [
+    {
+      "codigo": "REG_CHK_004",
+      "version": 4,
+      "hash_version_atestado": "49829ff10996a0bf24fd1425a7eac53a787460cc7c5b54b27f7e61a427fe34fc",
+      "hash_paquete_atestado": "10b866019738ecd9bf2ff52d21d09e35cd8515b835ecea36f7aefcf4d1cd8198",
+      "pruebas_atestadas": 8,
+      "veredicto": "PASS",
+      "juez": "Claude Sonnet 5.5 Anthropic, juicio independiente declarado por Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.95,
+          "observacion": "La descripción es larga y mezcla la lista de outcomes seguros con las verificaciones del backend."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.95,
+          "observacion": "Se relaciona con REG_TEC_009 publicada (respuesta idempotente reutilizable en checkout) pero esta regla gobierna el reintento tras un intento iniciado, no la recuperación de la misma respuesta."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.95,
+          "observacion": "user_id, quote_status=VALID, expires_at y referencia reservada se comprueban en el backend antes de emitir los hechos y la condición los recibe agregados."
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
+    }
+  ]
+}

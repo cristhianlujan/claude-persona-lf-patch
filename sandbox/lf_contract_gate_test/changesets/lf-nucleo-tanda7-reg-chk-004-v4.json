@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-nucleo-tanda7-reg-chk-004-v4",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_juicios_independientes_tanda7_v1.json": "PASE_SUPPORT",
+    "docs/nucleo/LF_TANDA7_REG_CHK_004_V4_JUICIO_INDEPENDIENTE_20261123.md": "PASE_SUPPORT",
+    "supabase/migrations/20261123215500_lf_nucleo_tanda7_reg_chk_004_v4_juicio_publicacion_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-tanda7-reg-chk-004-v4.json": "CHANGESET_MANIFEST"
+  }
+}
