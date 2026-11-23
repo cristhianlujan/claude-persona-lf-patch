@@ -2,9 +2,9 @@
 -- Disposable PG17 schema, never actual Supabase production.
 ALTER TABLE saly.creative_orders ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 ALTER TABLE saly.creative_order_items ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-INSERT INTO saly.creative_orders (id,code,status,scope_json,created_at)
+INSERT INTO saly.creative_orders (id,code,status,scope_json,created_at,request_kind)
 OVERRIDING SYSTEM VALUE VALUES (7,'SALY_HOME_V015_SINGLE_20261123','PLANIFICADO',
- '{"render_authorized":false,"review_only":true}'::jsonb,now());
+ '{"render_authorized":false,"rendering_authority":false,"review_only":true,"intake_source_status":"MISSING_VERIFIED_USER_VISUAL_REQUEST"}'::jsonb,now(),'APP_SCREEN_SINGLE');
 INSERT INTO saly.creative_order_items (id,order_id,code,ordinal,status,required,qa_receipt)
 OVERRIDING SYSTEM VALUE VALUES (10,7,'HOME',1,'PENDIENTE',true,'{}'::jsonb);
 DO $negative$
