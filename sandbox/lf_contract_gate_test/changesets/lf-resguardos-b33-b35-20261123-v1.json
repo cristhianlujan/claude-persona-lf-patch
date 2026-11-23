@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-resguardos-b33-b35-20261123-v1",
+  "paths": {
+    "LF_resguardos_construccion.md": "TRANSVERSAL_ASSETS",
+    "sandbox/lf_contract_gate_test/changesets/lf-resguardos-b33-b35-20261123-v1.json": "CHANGESET_MANIFEST"
+  }
+}
