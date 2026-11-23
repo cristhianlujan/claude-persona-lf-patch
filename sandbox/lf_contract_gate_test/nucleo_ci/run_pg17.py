@@ -472,7 +472,30 @@ def main():
                 if trial.returncode or trial.stderr.count("TANDA1_RESULT ") != 10 or "TANDA1_PASS 10/10 judged" not in trial.stderr or psql(name, snapshot).stdout != before:
                     raise RuntimeError("TANDA1_ROLLBACK_OR_RESULTS_FAILED")
                 print("TANDA1_OUTER_ROLLBACK_PASS exact baseline", flush=True)
+            if "_lf_nucleo_tanda2_nueve_juicios_publicacion_v1.sql" in path.name:
+                snapshot = """SELECT jsonb_build_object(
+                    'legacy',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r),
+                    'core',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM lf_ops.nucleo_reglas r),
+                    'versions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones r),
+                    'judges',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_juicios r),
+                    'evaluations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.nucleo_evaluaciones r),
+                    'deprec',(SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r),
+                    'ekb',(SELECT jsonb_agg(to_jsonb(r) ORDER BY codigo) FROM public.lf_error_knowledge r));"""
+                before = psql(name, snapshot).stdout
+                source = path.read_text().rstrip()
+                if not source.endswith("\nCOMMIT;") or source.count("\nCOMMIT;") != 1:
+                    raise RuntimeError("TANDA2_TRANSACTION_BOUNDARY")
+                trial = psql(name, source[:-len("COMMIT;")] + "ROLLBACK;\n", check=False)
+                print(trial.stdout + trial.stderr, flush=True)
+                if trial.returncode or trial.stderr.count("TANDA2_RESULT ") != 9 or "TANDA2_PASS 9/9 judged" not in trial.stderr or psql(name, snapshot).stdout != before:
+                    raise RuntimeError("TANDA2_ROLLBACK_OR_RESULTS_FAILED")
+                print("TANDA2_OUTER_ROLLBACK_PASS exact baseline", flush=True)
             replay = psql(name, path.read_text())
+            if "_lf_nucleo_tanda2_nueve_juicios_publicacion_v1.sql" in path.name:
+                print(replay.stdout + replay.stderr, flush=True)
+                if replay.stderr.count("TANDA2_RESULT ") != 9 or "TANDA2_PASS 9/9 judged" not in replay.stderr:
+                    raise RuntimeError("TANDA2_REPLAY_FAILED")
+
             if "_lf_nucleo_tanda1_diez_juicios_publicacion_v1.sql" in path.name:
                 print(replay.stdout + replay.stderr, flush=True)
                 if replay.stderr.count("TANDA1_RESULT ") != 10 or "TANDA1_PASS 10/10 judged" not in replay.stderr:
@@ -610,10 +633,15 @@ def main():
                 raise RuntimeError("DPIG03_TEST_MISSING")
             dpig03_sql = dpig03_test.read_text()
             if any("_lf_nucleo_piloto_publicacion_2_v1.sql" in n for n in replayed_names):
-                # The published checkout rules now resolve on screen 59; preserve
-                # legacy-only oracle on real node 43 outside CLIENT_PAYMENTS.
-                # Original exact screen-59 suite already ran before pilot.
-                dpig03_sql = re.sub(r"(?<![0-9])59(?![0-9])", "43", dpig03_sql)
+                # The published checkout rules resolve on screen 59 and M3-C04
+                # now resolves on B2B screen 43. Preserve the fixture's required
+                # legacy-only oracle on legal screen 36, verified as native-empty.
+                native_count = psql(name, """SELECT COALESCE(jsonb_array_length(
+                    (lf_ops.lf_nucleo_lectura_transicion_v1(
+                    36,'INPUT_GOVERNANCE','DIRECTAS'))->'nativas'),0);""").stdout.strip()
+                if native_count != "0":
+                    raise RuntimeError("DPIG03_LEGACY_ONLY_ORACLE_DRIFT_SCREEN36 " + native_count)
+                dpig03_sql = re.sub(r"(?<![0-9])59(?![0-9])", "36", dpig03_sql)
             dpig03 = psql(name, dpig03_sql, check=False)
             print(dpig03.stdout + dpig03.stderr, flush=True)
             if (dpig03.returncode or dpig03.stderr.count("DPIG03_TEST_PASS ") != 14
