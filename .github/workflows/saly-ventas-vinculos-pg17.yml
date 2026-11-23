@@ -5,6 +5,8 @@ on:
       - '.github/workflows/saly-ventas-vinculos-pg17.yml'
       - 'supabase/migrations/*_lf_saly_ventas_vinculos_societarios_v1.sql'
       - 'supabase/tests/saly_ventas_vinculos_societarios_v1_pg17_rollback.sql'
+      - 'supabase/migrations/*_lf_saly_oece_socios_candidates_v1.sql'
+      - 'supabase/tests/saly_oece_socios_candidates_v1_pg17_readback.sql'
   workflow_dispatch:
 permissions:
   contents: read
@@ -57,3 +59,13 @@ jobs:
           test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_vinculos_empresariales_v1')" = '0'
           test "$(psql -X -qAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.ventas_vinculos_evidencias_v1')" = '0'
           echo PASS_SALY_VINCULOS_PG17_DISPOSABLE
+      - name: Apply historic OECE Socios 195 candidate import (disposable PG17)
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_oece_socios_candidates_v1.sql)
+          test "${#files[@]}" -eq 1
+          psql -X -v ON_ERROR_STOP=1 -f "${files[0]}"
+      - name: Assert imported candidates, evidence, RLS and negative rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_oece_socios_candidates_v1_pg17_readback.sql
