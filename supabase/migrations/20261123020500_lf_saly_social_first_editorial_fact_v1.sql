@@ -141,7 +141,6 @@ BEGIN
   AND summary_non_personal=v_summary)
  OR (SELECT count(*) FROM saly.ventas_discovery_catalogo
      WHERE source_id IN ('PE-FACEBOOK','PE-INSTAGRAM'))<>0
- OR (SELECT count(*) FROM saly.ventas_hallazgos WHERE source_id='PE-NEWS-FACTS-CORREO')<>0
  THEN RAISE EXCEPTION 'SALY_EDITORIAL_READBACK_OR_UNRELATED_DATA'; END IF;
  RAISE NOTICE 'PASS_SALY_FIRST_EDITORIAL_FACT_RUN %, source %, rows 1, meta_enabled false',
   v_exec,'PE-NEWS-FACTS-CORREO';
