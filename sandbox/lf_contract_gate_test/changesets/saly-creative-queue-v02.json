@@ -68,6 +68,9 @@
     "sandbox/creative_factory/queue_v12/README.md": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v12/002_qa_comment_completion_candidate.sql": "SERVICE_RUNTIME",
     "sandbox/creative_factory/queue_v12/test_qa_pg17.sql": "RUNTIME_TESTING",
-    "sandbox/creative_factory/queue_v12/ci_results_20261122.txt": "RUNTIME_TESTING"
+    "sandbox/creative_factory/queue_v12/ci_results_20261122.txt": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v13/fixture_policy_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v13/test_policy_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/queue_v13/README.md": "SERVICE_RUNTIME"
   }
 }
