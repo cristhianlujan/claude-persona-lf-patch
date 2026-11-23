@@ -31,16 +31,16 @@ CREATE TABLE public.lf_stub_effects(
 CREATE FUNCTION public.fn_lf_operation_reserve_effect_v1(
  p_exec text,p_owner text,p_fence bigint,p_key text,p_hash text,p_group text,p_actor text)
 RETURNS jsonb LANGUAGE plpgsql AS $$
-DECLARE found public.lf_stub_effects%ROWTYPE;
+DECLARE v_stored public.lf_stub_effects%ROWTYPE;
 BEGIN
- SELECT * INTO found FROM public.lf_stub_effects
+ SELECT * INTO v_stored FROM public.lf_stub_effects
  WHERE execution_id=p_exec AND effect_key=p_key FOR UPDATE;
  IF FOUND THEN
-   IF found.payload_hash IS DISTINCT FROM p_hash THEN
+   IF v_stored.payload_hash IS DISTINCT FROM p_hash THEN
      RAISE EXCEPTION 'STUB_HASH_DRIFT';
    END IF;
-   IF found.receipt IS NOT NULL THEN
-     RETURN jsonb_build_object('result','REPLAY_SUCCEEDED_EFFECT','receipt',found.receipt);
+   IF v_stored.receipt IS NOT NULL THEN
+     RETURN jsonb_build_object('result','REPLAY_SUCCEEDED_EFFECT','receipt',v_stored.receipt);
    END IF;
    RAISE EXCEPTION 'STUB_PENDING_EFFECT';
  END IF;
