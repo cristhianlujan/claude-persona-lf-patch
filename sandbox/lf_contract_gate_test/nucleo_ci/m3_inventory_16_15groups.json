@@ -1,0 +1,160 @@
+{
+  "schema": "LF-M3-FINANCIAL-INTEGRITY-INVENTORY-V1",
+  "source": "lf_ops.nucleo_regla_familia + lf_ops.v_reglas_compat_v1 read-only 16 rows; 2026-11-23",
+  "count_source": 16,
+  "count_groups": 15,
+  "groups": [
+    {
+      "id": "M3-G01",
+      "obligacion": "Redondeo de cuotas y conciliación del plan",
+      "legacy_ids": [
+        161,
+        422
+      ],
+      "estado": "REQUIERE_DECISION",
+      "motivo": "REG_CUO_005 exige ceiling a entero; B2B-RULE-INSTALLMENT-001 exige normalizar dos decimales, residuo solo última cuota si Asistente, rechazo diferencia Excel. Reconciliar semántica antes de migrar.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G02",
+      "obligacion": "Formato monetario en Cliente",
+      "legacy_ids": [
+        163
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Obligación de presentación y moneda; fuente por PALABRA_CLAVE. No integridad ni conciliación financiera.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G03",
+      "obligacion": "Estado transitorio de checkout recuperable",
+      "legacy_ids": [
+        314
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Backend/adaptador y prueba de recuperación de estado; no afirmar dependencia de ventana del navegador.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G04",
+      "obligacion": "Referencia de operación canónica",
+      "legacy_ids": [
+        317
+      ],
+      "estado": "MIGRAR",
+      "motivo": "Bloquear presentar referencia técnica inventada; omisión en estado transitorio no bloquea UI.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G05",
+      "obligacion": "Cancelación completa por deuda según ledger",
+      "legacy_ids": [
+        533
+      ],
+      "estado": "MIGRAR",
+      "motivo": "No confirmar deuda liquidada con pago parcial/pendiente ni sin settlement requerido; hechos lógicos sin binding.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G06",
+      "obligacion": "Carta de no adeudo sin promesa anticipada",
+      "legacy_ids": [
+        548
+      ],
+      "estado": "MIGRAR",
+      "motivo": "Un claim de carta disponible exige deuda confirmada liquidada y carta elegible; publicidad universal queda pendiente copy.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G07",
+      "obligacion": "Aprenda antes de decidir, no copy paralelo",
+      "legacy_ids": [
+        552
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Coincidencia léxica; contenido educativo y fuentes compartidas, fuera de conciliación transaccional.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G08",
+      "obligacion": "Stepper onboarding con fuente consistente",
+      "legacy_ids": [
+        575
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Coincidencia léxica; UI onboarding, no integridad financiera.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G09",
+      "obligacion": "Dashboard B2B con cifras autoritativas",
+      "legacy_ids": [
+        603
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Datos financieros de dashboard y KPIs, sin fabricar saldos o ratios.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G10",
+      "obligacion": "Pago B2B únicamente confirmado y atribuido",
+      "legacy_ids": [
+        604
+      ],
+      "estado": "MIGRAR",
+      "motivo": "Solo PAYMENT_CONFIRMED habilita exposición B2B como pagado; atribución por deuda/oferta y empresa verificada.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G11",
+      "obligacion": "Ledger canónico entre Cliente y B2B",
+      "legacy_ids": [
+        605
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "No hay contrato físico del ledger fuente confirmado; no dibujar tablas ni vistas ficticias.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G12",
+      "obligacion": "Liquidación B2B rastreable a pagos/ajustes",
+      "legacy_ids": [
+        606
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Operaciones componentes, ajustes autorizados y neto backend pendiente.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G13",
+      "obligacion": "Conciliación con evidencia externa independiente",
+      "legacy_ids": [
+        607
+      ],
+      "estado": "MIGRAR",
+      "motivo": "No marcar conciliado sin contraste proveedor/banco/canal y sin excepción trazable.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G14",
+      "obligacion": "Árbol funcional Portal Empresa",
+      "legacy_ids": [
+        608
+      ],
+      "estado": "FALTA_MIGRAR",
+      "motivo": "Navegación B2B, clasificación PALABRA_CLAVE ajena a integridad financiera.",
+      "nucleo_actual": null
+    },
+    {
+      "id": "M3-G15",
+      "obligacion": "Detalle de carga con auditoría",
+      "legacy_ids": [
+        652
+      ],
+      "estado": "DEPENDE_PAULO",
+      "motivo": "Enlace de carga, timeline y conciliación de lote; fuente técnica pendiente.",
+      "nucleo_actual": null
+    }
+  ],
+  "notes": "CUBIERTO 0 verificados por equivalencia; no presumir cobertura por similitud textual. Clasificación PALABRA_CLAVE parcial."
+}
