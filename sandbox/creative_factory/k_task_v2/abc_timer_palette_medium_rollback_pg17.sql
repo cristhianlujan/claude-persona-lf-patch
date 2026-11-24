@@ -229,3 +229,89 @@ CREATE TRIGGER trg_creative_queue_native_delivery_guard_v1
 BEFORE INSERT OR UPDATE ON saly.creative_queue_native_delivery_evidence_v1
 FOR EACH ROW EXECUTE FUNCTION saly.creative_queue_native_delivery_guard_v1();
 
+
+SELECT 'B0_OUTPUT|'||jsonb_build_object(
+ 'order8',(SELECT status FROM saly.creative_orders WHERE id=8),
+ 'item11',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'run800',(SELECT state FROM saly.creative_runs WHERE id=800),
+ 'claim700',(SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700)
+)::text;
+SELECT 'A_GENERATE_INPUT|generator GPT_GENERATOR completes RUN as EXITOSO BEFORE timer detection';
+SELECT 'A_GENERATE_OUTPUT|'||saly.creative_queue_advance_run_v1(
+ '70000000-0000-4000-8000-000000000700'::uuid,800,'EXITOSO',
+ jsonb_build_object('artifact_ref','fixture-image-11.png',
+ 'sha256',repeat('a',64),'worker_receipt','worker_receipt_test'),NULL)::text;
+SELECT 'A_READY_OUTPUT|'||saly.creative_run_image_readback_v2(800,11)::text;
+
+SELECT 'B_MISSING_DETECTION_INPUT|QA PASS must reject if timer not yet recorded READY, no TERMINADO';
+DO $negative$ DECLARE msg text;
+BEGIN
+ BEGIN
+ PERFORM saly.creative_chat_save_qa_v1(
+ '70000000-0000-4000-8000-000000000700'::uuid,800,
+ 'fixture-image-11.png',repeat('a',64),'worker_receipt_test',
+ (SELECT receipt FROM qa_test_data));
+ RAISE EXCEPTION 'FAIL_QA_WITHOUT_DETECTION_SUCCEEDED';
+ EXCEPTION WHEN OTHERS THEN
+  GET STACKED DIAGNOSTICS msg=MESSAGE_TEXT;
+  IF msg<>'SALY_CHAT_QA_DETECTION_NOT_RECORDED' THEN RAISE; END IF;
+  RAISE NOTICE 'B_MISSING_DETECTION_OUTPUT: %',msg;
+ END;
+END $negative$;
+SELECT 'B_MISSING_DETECTION_READBACK|'||jsonb_build_object(
+ 'item',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'claim',(SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700),
+ 'detection_rows',(SELECT count(*) FROM saly.creative_run_detection_v1))::text;
+
+SELECT 'A_DETECTION_INPUT|image ready at t20, observer first sees READY t30, 2 checks';
+SELECT 'A_DETECTION_OUTPUT|'||saly.creative_run_detection_record_v1(
+ '70000000-0000-4000-8000-000000000700'::uuid,800,2)::text;
+SELECT 'A_DETECTION_READBACK|'||jsonb_build_object(
+ 'run_state',(SELECT state FROM saly.creative_runs WHERE id=800),
+ 'checks',(SELECT check_count FROM saly.creative_run_detection_v1 WHERE run_id=800),
+ 'first_ready_s',(SELECT first_ready_elapsed_seconds FROM saly.creative_run_detection_v1 WHERE run_id=800),
+ 'item',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'native_delivery_rows',(SELECT count(*) FROM saly.creative_queue_native_delivery_evidence_v1))::text;
+
+SELECT 'B_SAME_REVIEWER_INPUT|generator GPT_GENERATOR and same reviewer_ref GPT_GENERATOR, reject';
+DO $negative$ DECLARE msg text;
+BEGIN
+ BEGIN
+ PERFORM saly.creative_chat_save_qa_v1(
+ '70000000-0000-4000-8000-000000000700'::uuid,800,
+ 'fixture-image-11.png',repeat('a',64),'worker_receipt_test',
+ (SELECT jsonb_set(receipt,'{reviewer_ref}','"GPT_GENERATOR"'::jsonb)
+ FROM qa_test_data));
+ RAISE EXCEPTION 'FAIL_AUTOMATED_SELF_REVIEW_SUCCEEDED';
+ EXCEPTION WHEN OTHERS THEN
+  GET STACKED DIAGNOSTICS msg=MESSAGE_TEXT;
+  IF msg<>'CREATIVE_CHAT_QA_REVIEWER_NOT_INDEPENDENT' THEN RAISE; END IF;
+  RAISE NOTICE 'B_SAME_REVIEWER_OUTPUT: %',msg;
+ END;
+END $negative$;
+
+SAVEPOINT before_qa_fail;
+SELECT 'B_QA_FAIL_INPUT|detected READY + independent automated CLAUDE_QA rejects image';
+SELECT 'B_QA_FAIL_OUTPUT|'||saly.creative_chat_save_qa_v1(
+ '70000000-0000-4000-8000-000000000700'::uuid,800,
+ 'fixture-image-11.png',repeat('a',64),'worker_receipt_test',
+ jsonb_build_object(
+ 'verdict','FAIL','comment','Automated technical QA failure',
+ 'reviewer_ref','CLAUDE_QA','reviewer_kind','AUTOMATED_MODEL',
+ 'generator_model_family','GPT','reviewer_model_family','CLAUDE',
+ 'artifact_sha256',repeat('a',64)))::text;
+SELECT 'B_QA_FAIL_READBACK|'||jsonb_build_object(
+ 'item',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'claim',(SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700),
+ 'run',(SELECT state FROM saly.creative_runs WHERE id=800),
+ 'order',(SELECT status FROM saly.creative_orders WHERE id=8),
+ 'approved_at',(SELECT approved_at FROM saly.creative_order_items WHERE id=11)
+)::text;
+DO $assert$ BEGIN
+ IF (SELECT status FROM saly.creative_order_items WHERE id=11)<>'BLOQUEADO'
+ OR (SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700)<>'BLOCKED'
+ OR (SELECT status FROM saly.creative_orders WHERE id=8)='TERMINADO'
+ THEN RAISE EXCEPTION 'FAIL_QA_FAIL_NOT_BLOCKED'; END IF;
+END $assert$;
+ROLLBACK TO SAVEPOINT before_qa_fail;
+
