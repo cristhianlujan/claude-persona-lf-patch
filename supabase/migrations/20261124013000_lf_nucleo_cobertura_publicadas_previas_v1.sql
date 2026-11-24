@@ -128,7 +128,8 @@ BEGIN
  RAISE NOTICE 'COB58_FINAL_PASS distinct_reemplazadas=% no_deprecations',n;
 END $final$;
 -- Transacción única: tanda S2 de candidatas sin juicio.
--- Tanda SECURITY S2: doce candidatas, 96 vectores, sin juicio y sin promocion.DO $baseline$ BEGIN
+-- Tanda SECURITY S2: doce candidatas, 96 vectores, sin juicio y sin promocion.
+DO $baseline$ BEGIN
  IF (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='VIGENTE')<>64
     OR (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='CANDIDATA')<>0
     OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0
