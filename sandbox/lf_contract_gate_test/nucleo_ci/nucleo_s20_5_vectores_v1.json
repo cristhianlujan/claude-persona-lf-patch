@@ -1,0 +1,698 @@
+{
+  "paquetes": [
+    {
+      "modo": "HEREDA",
+      "tipo": "REVISION",
+      "clase": "BACKEND",
+      "clave": "s19_reg_tec_003",
+      "dueno": "TECNICO",
+      "codigo": "S19-C05",
+      "efecto": "BLOQUEAR",
+      "origen": {
+        "ref": "lf_ops.reglas/179",
+        "tipo": "MIGRACION",
+        "solicitante": "Cristhian / Claude S19 2026-11-24"
+      },
+      "titulo": "Estructura de respuesta API backend LF",
+      "alcance": "BACKEND",
+      "familia": "API_DATA_CONTRACT",
+      "impacto": "REVISAR",
+      "autoridad": "LEG-TECNICO",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c05_api_backend_lf"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c05_respuesta_emitida"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s20c05_estructura_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "naturaleza": "CONDUCTA",
+      "descripcion": "BLOQUEAR respuesta API del backend LF que incumpla el contrato: success booleano, data objeto o nulo, error objeto o nulo con code, message y field opcional nulo, meta con timestamp y request_id. Respetar anti-enumeración y no exponer errores internos. No acredita endpoints desplegados.",
+      "version_anterior": 1,
+      "hash_anterior": "64dcdff5a740529e060f0b526b4f810cd05c6cee19beea35927800856bad8846",
+      "motivo_revision": "DPIG03: contrato de respuesta backend sin herencia CLIENT_LEGAL.",
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": false,
+            "s20c05_respuesta_emitida": false,
+            "s20c05_estructura_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": false,
+            "s20c05_respuesta_emitida": false,
+            "s20c05_estructura_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": false,
+            "s20c05_respuesta_emitida": true,
+            "s20c05_estructura_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": false,
+            "s20c05_respuesta_emitida": true,
+            "s20c05_estructura_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": true,
+            "s20c05_respuesta_emitida": false,
+            "s20c05_estructura_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": true,
+            "s20c05_respuesta_emitida": false,
+            "s20c05_estructura_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": true,
+            "s20c05_respuesta_emitida": true,
+            "s20c05_estructura_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s20c05_api_backend_lf": true,
+            "s20c05_respuesta_emitida": true,
+            "s20c05_estructura_invalida": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S20-C01",
+      "clave": "s20_reg_acc_002_b2b",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores visibles sin información técnica — B2B",
+      "descripcion": "En B2B, BLOQUEAR mensaje de error visible al usuario que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Preservar mensajes de negocio autorizados no sensibles, referencias opacas de soporte y precedencia anti-enumeración. No altera S18-C01 de onboarding.",
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/46",
+        "solicitante": "Cristhian / Claude S20 2026-11-24"
+      },
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c01_superficie_en_alcance"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c01_error_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s20c01_detalle_tecnico_expuesto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": false,
+            "s20c01_error_visible": false,
+            "s20c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": false,
+            "s20c01_error_visible": false,
+            "s20c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": false,
+            "s20c01_error_visible": true,
+            "s20c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": false,
+            "s20c01_error_visible": true,
+            "s20c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": true,
+            "s20c01_error_visible": false,
+            "s20c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": true,
+            "s20c01_error_visible": false,
+            "s20c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": true,
+            "s20c01_error_visible": true,
+            "s20c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s20c01_superficie_en_alcance": true,
+            "s20c01_error_visible": true,
+            "s20c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S20-C02",
+      "clave": "s20_reg_acc_002_backend",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores visibles sin información técnica — BACKEND",
+      "descripcion": "En BACKEND, BLOQUEAR mensaje de error visible al usuario que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Preservar mensajes de negocio autorizados no sensibles, referencias opacas de soporte y precedencia anti-enumeración. No altera S18-C01 de onboarding.",
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/46",
+        "solicitante": "Cristhian / Claude S20 2026-11-24"
+      },
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c02_superficie_en_alcance"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c02_error_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s20c02_detalle_tecnico_expuesto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": false,
+            "s20c02_error_visible": false,
+            "s20c02_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": false,
+            "s20c02_error_visible": false,
+            "s20c02_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": false,
+            "s20c02_error_visible": true,
+            "s20c02_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": false,
+            "s20c02_error_visible": true,
+            "s20c02_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": true,
+            "s20c02_error_visible": false,
+            "s20c02_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": true,
+            "s20c02_error_visible": false,
+            "s20c02_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": true,
+            "s20c02_error_visible": true,
+            "s20c02_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s20c02_superficie_en_alcance": true,
+            "s20c02_error_visible": true,
+            "s20c02_detalle_tecnico_expuesto": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S20-C03",
+      "clave": "s20_reg_acc_002_client_home",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores visibles sin información técnica — CLIENT_HOME",
+      "descripcion": "En CLIENT_HOME, BLOQUEAR mensaje de error visible al usuario que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Preservar mensajes de negocio autorizados no sensibles, referencias opacas de soporte y precedencia anti-enumeración. No altera S18-C01 de onboarding.",
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/46",
+        "solicitante": "Cristhian / Claude S20 2026-11-24"
+      },
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c03_superficie_en_alcance"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c03_error_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s20c03_detalle_tecnico_expuesto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": false,
+            "s20c03_error_visible": false,
+            "s20c03_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": false,
+            "s20c03_error_visible": false,
+            "s20c03_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": false,
+            "s20c03_error_visible": true,
+            "s20c03_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": false,
+            "s20c03_error_visible": true,
+            "s20c03_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": true,
+            "s20c03_error_visible": false,
+            "s20c03_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": true,
+            "s20c03_error_visible": false,
+            "s20c03_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": true,
+            "s20c03_error_visible": true,
+            "s20c03_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s20c03_superficie_en_alcance": true,
+            "s20c03_error_visible": true,
+            "s20c03_detalle_tecnico_expuesto": true
+          },
+          "esperado": true
+        }
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S20-C04",
+      "clave": "s20_reg_acc_002_client_payments",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores visibles sin información técnica — CLIENT_PAYMENTS",
+      "descripcion": "En CLIENT_PAYMENTS, BLOQUEAR mensaje de error visible al usuario que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Preservar mensajes de negocio autorizados no sensibles, referencias opacas de soporte y precedencia anti-enumeración. No altera S18-C01 de onboarding.",
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/46",
+        "solicitante": "Cristhian / Claude S20 2026-11-24"
+      },
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c04_superficie_en_alcance"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s20c04_error_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s20c04_detalle_tecnico_expuesto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": false,
+            "s20c04_error_visible": false,
+            "s20c04_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": false,
+            "s20c04_error_visible": false,
+            "s20c04_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": false,
+            "s20c04_error_visible": true,
+            "s20c04_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": false,
+            "s20c04_error_visible": true,
+            "s20c04_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": true,
+            "s20c04_error_visible": false,
+            "s20c04_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": true,
+            "s20c04_error_visible": false,
+            "s20c04_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": true,
+            "s20c04_error_visible": true,
+            "s20c04_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s20c04_superficie_en_alcance": true,
+            "s20c04_error_visible": true,
+            "s20c04_detalle_tecnico_expuesto": true
+          },
+          "esperado": true
+        }
+      ]
+    }
+  ],
+  "preflight_nodos": [
+    {
+      "codigo": "B2B",
+      "hereda_p36": false
+    },
+    {
+      "codigo": "BACKEND",
+      "hereda_p36": false
+    },
+    {
+      "codigo": "CLIENT_HOME",
+      "hereda_p36": false
+    },
+    {
+      "codigo": "CLIENT_PAYMENTS",
+      "hereda_p36": false
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S19-C05",
+      "legacy_id": 179,
+      "clase": "BACKEND",
+      "alcance": "BACKEND"
+    },
+    {
+      "codigo": "S20-C01",
+      "legacy_id": 46,
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B"
+    },
+    {
+      "codigo": "S20-C02",
+      "legacy_id": 46,
+      "clase": "BACKEND",
+      "alcance": "BACKEND"
+    },
+    {
+      "codigo": "S20-C03",
+      "legacy_id": 46,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME"
+    },
+    {
+      "codigo": "S20-C04",
+      "legacy_id": 46,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS"
+    }
+  ],
+  "nota": "S19-C01 permanece candidata global no publicable; nuevas reglas cubren cuatro nodos autorizados; no se declara cobertura integral de superficies no acreditadas."
+}
