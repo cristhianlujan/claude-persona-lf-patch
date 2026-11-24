@@ -3,5 +3,12 @@
   "paths": {
     "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s10_16_vectores_v1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/changesets/lf-nucleo-s10-residuales-20261124.json": "CHANGESET_MANIFEST"
+  },
+  "baseline_readback": {
+    "reemplazadas": 180,
+    "publicadas": 215,
+    "candidatas": 12,
+    "s10_existentes": 0,
+    "source": "Supabase SELECT after S9 merge f6366315"
   }
 }
