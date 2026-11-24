@@ -1,0 +1,2302 @@
+{
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C01",
+      "clave": "s13_reg_client_auth_header_capability_gating_001",
+      "familia": "ROUTING_NAVIGATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Header autenticado por capacidades · CLIENT_HOME",
+      "descripcion": "En Home autenticado: BLOQUEAR header Cliente autenticado que habilite navegación o perfil sin destino canónico, reporte crediticio sin capacidad definida, soporte sin disponibilidad real, nombre no proveniente de cuenta autenticada, o badges con claims/binding no autorizados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c01_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c01_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c01_incumplimiento_s13c04"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": false,
+            "s14c01_obligacion_evaluada": false,
+            "s14c01_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": false,
+            "s14c01_obligacion_evaluada": false,
+            "s14c01_incumplimiento_s13c04": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": false,
+            "s14c01_obligacion_evaluada": true,
+            "s14c01_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": false,
+            "s14c01_obligacion_evaluada": true,
+            "s14c01_incumplimiento_s13c04": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": true,
+            "s14c01_obligacion_evaluada": false,
+            "s14c01_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": true,
+            "s14c01_obligacion_evaluada": false,
+            "s14c01_incumplimiento_s13c04": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": true,
+            "s14c01_obligacion_evaluada": true,
+            "s14c01_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c01_superficie_modulo_aplicable": true,
+            "s14c01_obligacion_evaluada": true,
+            "s14c01_incumplimiento_s13c04": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/537",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C04",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C02",
+      "clave": "s13_reg_client_auth_header_capability_gating_001",
+      "familia": "ROUTING_NAVIGATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Header autenticado por capacidades · CLIENT_PAYMENTS",
+      "descripcion": "En Pagos autenticado: BLOQUEAR header Cliente autenticado que habilite navegación o perfil sin destino canónico, reporte crediticio sin capacidad definida, soporte sin disponibilidad real, nombre no proveniente de cuenta autenticada, o badges con claims/binding no autorizados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c02_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c02_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c02_incumplimiento_s13c04"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": false,
+            "s14c02_obligacion_evaluada": false,
+            "s14c02_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": false,
+            "s14c02_obligacion_evaluada": false,
+            "s14c02_incumplimiento_s13c04": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": false,
+            "s14c02_obligacion_evaluada": true,
+            "s14c02_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": false,
+            "s14c02_obligacion_evaluada": true,
+            "s14c02_incumplimiento_s13c04": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": true,
+            "s14c02_obligacion_evaluada": false,
+            "s14c02_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": true,
+            "s14c02_obligacion_evaluada": false,
+            "s14c02_incumplimiento_s13c04": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": true,
+            "s14c02_obligacion_evaluada": true,
+            "s14c02_incumplimiento_s13c04": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c02_superficie_modulo_aplicable": true,
+            "s14c02_obligacion_evaluada": true,
+            "s14c02_incumplimiento_s13c04": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/537",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C04",
+        "especializacion": "CLIENT_PAYMENTS"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C03",
+      "clave": "s13_reg_client_auth_navigation_001",
+      "familia": "ROUTING_NAVIGATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Navegación autenticada con etiquetas · CLIENT_HOME",
+      "descripcion": "En navegación de Home autenticado: BLOQUEAR navegación Cliente autenticada sin destinos Inicio, Oferta, Pagos, Documentos y Ayuda con etiquetas visibles, u ocultar Oferta por ausencia de oferta; habilitar destino runtime solo con ruta y pantalla canónicas; Documentos conserva Carta de No Adeudo para consulta. La etiqueta permanece visible incluso en tab bar móvil; el icono nunca comunica solo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c03_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c03_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c03_incumplimiento_s13c10"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": false,
+            "s14c03_obligacion_evaluada": false,
+            "s14c03_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": false,
+            "s14c03_obligacion_evaluada": false,
+            "s14c03_incumplimiento_s13c10": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": false,
+            "s14c03_obligacion_evaluada": true,
+            "s14c03_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": false,
+            "s14c03_obligacion_evaluada": true,
+            "s14c03_incumplimiento_s13c10": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": true,
+            "s14c03_obligacion_evaluada": false,
+            "s14c03_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": true,
+            "s14c03_obligacion_evaluada": false,
+            "s14c03_incumplimiento_s13c10": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": true,
+            "s14c03_obligacion_evaluada": true,
+            "s14c03_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c03_superficie_modulo_aplicable": true,
+            "s14c03_obligacion_evaluada": true,
+            "s14c03_incumplimiento_s13c10": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/589",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C10",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C04",
+      "clave": "s13_reg_client_auth_navigation_001",
+      "familia": "ROUTING_NAVIGATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Navegación autenticada con etiquetas · CLIENT_PAYMENTS",
+      "descripcion": "En navegación de Pagos autenticado: BLOQUEAR navegación Cliente autenticada sin destinos Inicio, Oferta, Pagos, Documentos y Ayuda con etiquetas visibles, u ocultar Oferta por ausencia de oferta; habilitar destino runtime solo con ruta y pantalla canónicas; Documentos conserva Carta de No Adeudo para consulta. La etiqueta permanece visible incluso en tab bar móvil; el icono nunca comunica solo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c04_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c04_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c04_incumplimiento_s13c10"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": false,
+            "s14c04_obligacion_evaluada": false,
+            "s14c04_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": false,
+            "s14c04_obligacion_evaluada": false,
+            "s14c04_incumplimiento_s13c10": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": false,
+            "s14c04_obligacion_evaluada": true,
+            "s14c04_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": false,
+            "s14c04_obligacion_evaluada": true,
+            "s14c04_incumplimiento_s13c10": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": true,
+            "s14c04_obligacion_evaluada": false,
+            "s14c04_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": true,
+            "s14c04_obligacion_evaluada": false,
+            "s14c04_incumplimiento_s13c10": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": true,
+            "s14c04_obligacion_evaluada": true,
+            "s14c04_incumplimiento_s13c10": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c04_superficie_modulo_aplicable": true,
+            "s14c04_obligacion_evaluada": true,
+            "s14c04_incumplimiento_s13c10": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/589",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C10",
+        "especializacion": "CLIENT_PAYMENTS"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C05",
+      "clave": "s13_reg_lf_benefits_dev_activation_001",
+      "familia": "ROLLOUT_PRODUCTION_GATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Beneficios sin activación por desarrollo · CLIENT_HOME",
+      "descripcion": "En exposición comercial de beneficios en Home: BLOQUEAR exposición comercial de beneficio LF por solo estado diseño/desarrollo/QA; exigir validaciones pre-lanzamiento por componente, mantener desactivado ante rechazo Legal y resolver observación económica antes de activar. Construcción puede continuar en paralelo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c05_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c05_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c05_incumplimiento_s13c11"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": false,
+            "s14c05_obligacion_evaluada": false,
+            "s14c05_incumplimiento_s13c11": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": false,
+            "s14c05_obligacion_evaluada": false,
+            "s14c05_incumplimiento_s13c11": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": false,
+            "s14c05_obligacion_evaluada": true,
+            "s14c05_incumplimiento_s13c11": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": false,
+            "s14c05_obligacion_evaluada": true,
+            "s14c05_incumplimiento_s13c11": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": true,
+            "s14c05_obligacion_evaluada": false,
+            "s14c05_incumplimiento_s13c11": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": true,
+            "s14c05_obligacion_evaluada": false,
+            "s14c05_incumplimiento_s13c11": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": true,
+            "s14c05_obligacion_evaluada": true,
+            "s14c05_incumplimiento_s13c11": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c05_superficie_modulo_aplicable": true,
+            "s14c05_obligacion_evaluada": true,
+            "s14c05_incumplimiento_s13c11": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/592",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C11",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C06",
+      "clave": "s13_reg_lf_benefits_reversibility_001",
+      "familia": "DEPENDENCIES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Beneficios reversibles e independientes · CLIENT_HOME",
+      "descripcion": "En composición de Home con beneficios opcionales: BLOQUEAR diseño de beneficio opcional LF que no permita activación/desactivación independiente o cuya desactivación rompa navegación, pricing base, resolución de deuda o capacidades ajenas; producto base debe funcionar aun sin beneficios.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c06_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c06_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c06_incumplimiento_s13c12"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": false,
+            "s14c06_obligacion_evaluada": false,
+            "s14c06_incumplimiento_s13c12": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": false,
+            "s14c06_obligacion_evaluada": false,
+            "s14c06_incumplimiento_s13c12": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": false,
+            "s14c06_obligacion_evaluada": true,
+            "s14c06_incumplimiento_s13c12": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": false,
+            "s14c06_obligacion_evaluada": true,
+            "s14c06_incumplimiento_s13c12": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": true,
+            "s14c06_obligacion_evaluada": false,
+            "s14c06_incumplimiento_s13c12": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": true,
+            "s14c06_obligacion_evaluada": false,
+            "s14c06_incumplimiento_s13c12": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": true,
+            "s14c06_obligacion_evaluada": true,
+            "s14c06_incumplimiento_s13c12": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c06_superficie_modulo_aplicable": true,
+            "s14c06_obligacion_evaluada": true,
+            "s14c06_incumplimiento_s13c12": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/593",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C12",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C07",
+      "clave": "s13_reg_lf_benefits_config_001",
+      "familia": "RUNTIME_CONFIG",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Beneficios desde configuración gobernada · CLIENT_HOME",
+      "descripcion": "En resolución de parámetros de beneficios para Home: BLOQUEAR resolver ON/OFF o parámetros comerciales/operativos de Beneficios LF desde literales frontend, mockup o lógica local de pantalla; obtener valores variables de configuración gobernada sin crear persistencia especializada por inferencia.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c07_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c07_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c07_incumplimiento_s13c13"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": false,
+            "s14c07_obligacion_evaluada": false,
+            "s14c07_incumplimiento_s13c13": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": false,
+            "s14c07_obligacion_evaluada": false,
+            "s14c07_incumplimiento_s13c13": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": false,
+            "s14c07_obligacion_evaluada": true,
+            "s14c07_incumplimiento_s13c13": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": false,
+            "s14c07_obligacion_evaluada": true,
+            "s14c07_incumplimiento_s13c13": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": true,
+            "s14c07_obligacion_evaluada": false,
+            "s14c07_incumplimiento_s13c13": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": true,
+            "s14c07_obligacion_evaluada": false,
+            "s14c07_incumplimiento_s13c13": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": true,
+            "s14c07_obligacion_evaluada": true,
+            "s14c07_incumplimiento_s13c13": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c07_superficie_modulo_aplicable": true,
+            "s14c07_obligacion_evaluada": true,
+            "s14c07_incumplimiento_s13c13": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/594",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C13",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C08",
+      "clave": "s13_reg_lf_benefits_surface_resolution_001",
+      "familia": "FEATURE_FLAGS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Visibilidad de beneficios por elegibilidad · CLIENT_HOME",
+      "descripcion": "En Home Cliente: BLOQUEAR superficie Cliente que infiera activación de beneficio por diseño/código o muestre disponibilidad sin configuración y elegibilidad autoritativas; beneficio inactivo se oculta o degrada sin espacios rotos. En B2B/administración, control visual no concede permiso ni activación (alcance complementario pendiente).",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c08_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c08_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c08_incumplimiento_s13c14"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": false,
+            "s14c08_obligacion_evaluada": false,
+            "s14c08_incumplimiento_s13c14": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": false,
+            "s14c08_obligacion_evaluada": false,
+            "s14c08_incumplimiento_s13c14": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": false,
+            "s14c08_obligacion_evaluada": true,
+            "s14c08_incumplimiento_s13c14": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": false,
+            "s14c08_obligacion_evaluada": true,
+            "s14c08_incumplimiento_s13c14": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": true,
+            "s14c08_obligacion_evaluada": false,
+            "s14c08_incumplimiento_s13c14": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": true,
+            "s14c08_obligacion_evaluada": false,
+            "s14c08_incumplimiento_s13c14": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": true,
+            "s14c08_obligacion_evaluada": true,
+            "s14c08_incumplimiento_s13c14": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c08_superficie_modulo_aplicable": true,
+            "s14c08_obligacion_evaluada": true,
+            "s14c08_incumplimiento_s13c14": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/595",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C14",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C09",
+      "clave": "s13_reg_lf_benefits_change_control_001",
+      "familia": "GOVERNANCE_APPROVAL",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Cambios de beneficios autorizados y trazables · CLIENT_HOME",
+      "descripcion": "En Home Cliente, BLOQUEAR que el cliente final modifique configuración comercial de beneficios; la administración autorizada, roles, permisos, tablas y pantalla quedan fuera de esta especialización.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c09_superficie_modulo_aplicable"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c09_obligacion_evaluada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c09_incumplimiento_s13c15"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": false,
+            "s14c09_obligacion_evaluada": false,
+            "s14c09_incumplimiento_s13c15": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": false,
+            "s14c09_obligacion_evaluada": false,
+            "s14c09_incumplimiento_s13c15": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": false,
+            "s14c09_obligacion_evaluada": true,
+            "s14c09_incumplimiento_s13c15": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": false,
+            "s14c09_obligacion_evaluada": true,
+            "s14c09_incumplimiento_s13c15": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": true,
+            "s14c09_obligacion_evaluada": false,
+            "s14c09_incumplimiento_s13c15": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": true,
+            "s14c09_obligacion_evaluada": false,
+            "s14c09_incumplimiento_s13c15": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": true,
+            "s14c09_obligacion_evaluada": true,
+            "s14c09_incumplimiento_s13c15": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c09_superficie_modulo_aplicable": true,
+            "s14c09_obligacion_evaluada": true,
+            "s14c09_incumplimiento_s13c15": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/596",
+        "solicitante": "Cristhian / Claude S14 2026-11-24",
+        "candidata_origen": "S13-C15",
+        "especializacion": "CLIENT_HOME"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C10",
+      "clave": "s14_reg_onb002_phone_display_001",
+      "familia": "PRIVACY_PII",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Mostrar celular ingresado solo en UI",
+      "descripcion": "BLOQUEAR ONB_002 que no muestre el celular recién ingresado en subtítulo y acción Editar, o capture el número completo en analytics, logs o session replay.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c10_onb002"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c10_celular_presentado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c10_exposicion_o_edicion_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": false,
+            "s14c10_celular_presentado": false,
+            "s14c10_exposicion_o_edicion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": false,
+            "s14c10_celular_presentado": false,
+            "s14c10_exposicion_o_edicion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": false,
+            "s14c10_celular_presentado": true,
+            "s14c10_exposicion_o_edicion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": false,
+            "s14c10_celular_presentado": true,
+            "s14c10_exposicion_o_edicion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": true,
+            "s14c10_celular_presentado": false,
+            "s14c10_exposicion_o_edicion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": true,
+            "s14c10_celular_presentado": false,
+            "s14c10_exposicion_o_edicion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": true,
+            "s14c10_celular_presentado": true,
+            "s14c10_exposicion_o_edicion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c10_onb002": true,
+            "s14c10_celular_presentado": true,
+            "s14c10_exposicion_o_edicion_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/567",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C11",
+      "clave": "s14_reg_onb003_document_type_001",
+      "familia": "FIELDS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Tipo documental seleccionable",
+      "descripcion": "BLOQUEAR ONB_003 sin selector visible obligatorio CAMPO_TIPO_DOC y CAMPO_NRO_DOC, que restrinja a DNI o no valide según DNI, CE o PASAPORTE seleccionados; DNI es default de presentación.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c11_onb003"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c11_documento_solicitado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c11_tipo_o_validacion_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": false,
+            "s14c11_documento_solicitado": false,
+            "s14c11_tipo_o_validacion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": false,
+            "s14c11_documento_solicitado": false,
+            "s14c11_tipo_o_validacion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": false,
+            "s14c11_documento_solicitado": true,
+            "s14c11_tipo_o_validacion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": false,
+            "s14c11_documento_solicitado": true,
+            "s14c11_tipo_o_validacion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": true,
+            "s14c11_documento_solicitado": false,
+            "s14c11_tipo_o_validacion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": true,
+            "s14c11_documento_solicitado": false,
+            "s14c11_tipo_o_validacion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": true,
+            "s14c11_documento_solicitado": true,
+            "s14c11_tipo_o_validacion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c11_onb003": true,
+            "s14c11_documento_solicitado": true,
+            "s14c11_tipo_o_validacion_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/569",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C12",
+      "clave": "s14_reg_onb003_ui_states_001",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores ONB_003 sin desplazamiento",
+      "descripcion": "BLOQUEAR ONB_003 que no reserve líneas de documento y consentimiento desde A_NORMAL, impida errores simultáneos en B_ERROR, desplace CTA/trust row o no use tokens error_text, text_body_small, warm_surface, space_8 y space_16 conforme al contrato visual.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c12_onb003"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c12_estado_visual"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c12_slots_o_tokens_invalidos"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": false,
+            "s14c12_estado_visual": false,
+            "s14c12_slots_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": false,
+            "s14c12_estado_visual": false,
+            "s14c12_slots_o_tokens_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": false,
+            "s14c12_estado_visual": true,
+            "s14c12_slots_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": false,
+            "s14c12_estado_visual": true,
+            "s14c12_slots_o_tokens_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": true,
+            "s14c12_estado_visual": false,
+            "s14c12_slots_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": true,
+            "s14c12_estado_visual": false,
+            "s14c12_slots_o_tokens_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": true,
+            "s14c12_estado_visual": true,
+            "s14c12_slots_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c12_onb003": true,
+            "s14c12_estado_visual": true,
+            "s14c12_slots_o_tokens_invalidos": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/574",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C13",
+      "clave": "s14_reg_onb004_ui_states_001",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores ONB_004 sin desplazamiento",
+      "descripcion": "BLOQUEAR ONB_004 sin slots reservados de nombre, email, Términos y marketing desde A_NORMAL, que impida errores simultáneos de nombre/email/Términos en B_ERROR, acepte email vacío, exija marketing o desplace CTA; usar error_text, form_error_inline, input_error, consent_checkbox_error y border_soft conforme al contrato.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c13_onb004"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c13_estado_visual"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c13_slots_validacion_o_tokens_invalidos"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": false,
+            "s14c13_estado_visual": false,
+            "s14c13_slots_validacion_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": false,
+            "s14c13_estado_visual": false,
+            "s14c13_slots_validacion_o_tokens_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": false,
+            "s14c13_estado_visual": true,
+            "s14c13_slots_validacion_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": false,
+            "s14c13_estado_visual": true,
+            "s14c13_slots_validacion_o_tokens_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": true,
+            "s14c13_estado_visual": false,
+            "s14c13_slots_validacion_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": true,
+            "s14c13_estado_visual": false,
+            "s14c13_slots_validacion_o_tokens_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": true,
+            "s14c13_estado_visual": true,
+            "s14c13_slots_validacion_o_tokens_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c13_onb004": true,
+            "s14c13_estado_visual": true,
+            "s14c13_slots_validacion_o_tokens_invalidos": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/578",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C14",
+      "clave": "s14_reg_client_home_lifecycle_orchestration_001",
+      "familia": "DOMAIN_LIFECYCLE",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Inicio integral autenticado",
+      "descripcion": "BLOQUEAR Inicio autenticado resuelto solo por ofertas, sin considerar planes/pagos, operaciones pendientes, liquidación, documentos y beneficios elegibles coexistentes; backend selecciona acción principal y conserva estados secundarios; HOME_002/003 son subestados de oferta, no sustituyen destinos especializados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c14_cuenta_autenticada"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c14_inicio_resuelto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c14_contexto_integral_omitido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": false,
+            "s14c14_inicio_resuelto": false,
+            "s14c14_contexto_integral_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": false,
+            "s14c14_inicio_resuelto": false,
+            "s14c14_contexto_integral_omitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": false,
+            "s14c14_inicio_resuelto": true,
+            "s14c14_contexto_integral_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": false,
+            "s14c14_inicio_resuelto": true,
+            "s14c14_contexto_integral_omitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": true,
+            "s14c14_inicio_resuelto": false,
+            "s14c14_contexto_integral_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": true,
+            "s14c14_inicio_resuelto": false,
+            "s14c14_contexto_integral_omitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": true,
+            "s14c14_inicio_resuelto": true,
+            "s14c14_contexto_integral_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c14_cuenta_autenticada": true,
+            "s14c14_inicio_resuelto": true,
+            "s14c14_contexto_integral_omitido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/599",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C15",
+      "clave": "s14_edu_nodo_03_elige",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Educación sobre modalidades de pago",
+      "descripcion": "BLOQUEAR nodo Elige que presente pago único y cuotas como ofertas distintas, omita capacidad de pago, riesgo de nueva mora o condiciones escritas, o presente reprogramación/refinanciación bancaria como mecanismo LF.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c15_nodo_elige"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c15_contenido_educativo"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c15_orientacion_modalidad_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": false,
+            "s14c15_contenido_educativo": false,
+            "s14c15_orientacion_modalidad_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": false,
+            "s14c15_contenido_educativo": false,
+            "s14c15_orientacion_modalidad_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": false,
+            "s14c15_contenido_educativo": true,
+            "s14c15_orientacion_modalidad_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": false,
+            "s14c15_contenido_educativo": true,
+            "s14c15_orientacion_modalidad_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": true,
+            "s14c15_contenido_educativo": false,
+            "s14c15_orientacion_modalidad_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": true,
+            "s14c15_contenido_educativo": false,
+            "s14c15_orientacion_modalidad_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": true,
+            "s14c15_contenido_educativo": true,
+            "s14c15_orientacion_modalidad_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c15_nodo_elige": true,
+            "s14c15_contenido_educativo": true,
+            "s14c15_orientacion_modalidad_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/376",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S14-C16",
+      "clave": "s14_edu_nodo_04_cierra",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Educación de cierre sin promesa SBS",
+      "descripcion": "BLOQUEAR nodo Cierra que omita conservar comprobantes y constancia correspondiente, prometa plazo fijo de actualización SBS o confunda carta LF por deuda con orientación externa; recomendar verificar actualización en canales oficiales.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c16_nodo_cierra"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s14c16_contenido_educativo"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s14c16_promesa_o_evidencia_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": false,
+            "s14c16_contenido_educativo": false,
+            "s14c16_promesa_o_evidencia_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": false,
+            "s14c16_contenido_educativo": false,
+            "s14c16_promesa_o_evidencia_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": false,
+            "s14c16_contenido_educativo": true,
+            "s14c16_promesa_o_evidencia_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": false,
+            "s14c16_contenido_educativo": true,
+            "s14c16_promesa_o_evidencia_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": true,
+            "s14c16_contenido_educativo": false,
+            "s14c16_promesa_o_evidencia_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": true,
+            "s14c16_contenido_educativo": false,
+            "s14c16_promesa_o_evidencia_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": true,
+            "s14c16_contenido_educativo": true,
+            "s14c16_promesa_o_evidencia_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s14c16_nodo_cierra": true,
+            "s14c16_contenido_educativo": true,
+            "s14c16_promesa_o_evidencia_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/377",
+        "solicitante": "Cristhian / Claude S14 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 376,
+      "codigo": "EDU-NODO-03-ELIGE",
+      "descripcion": "Explicar diferencia entre pago unico y cuotas segun capacidad real de pago (REG_OFR_002: son modalidades de la misma oferta, no ofertas distintas). Advertir que un descuento que deja sin liquidez puede generar nueva mora. Pedir siempre condiciones por escrito antes de aceptar. CORREGIDO 2026-07-04: se elimina la distincion reprogramacion vs refinanciacion -- no aplica al modelo de LF, que opera unicamente sobre deuda ya vendida a entidad cobradora (no reestructuracion con el banco original). El unico mecanismo real es pago unico vs cuotas, ya modelado en REG_OFR_002 a REG_OFR_009.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 377,
+      "codigo": "EDU-NODO-04-CIERRA",
+      "descripcion": "Nodo Cierra: después de pagar, conservar los comprobantes y obtener la constancia o Carta de No Adeudo que corresponda según la entidad/operación. No prometer un plazo fijo de 7–9 días hábiles para que la información o calificación SBS se actualice: el Reporte de Deudas SBS se publica con ciclo mensual y refleja la información remitida por las entidades financieras. Para operaciones LF, la Carta sigue el estado por deuda definido por REG_CLIENT_NO_DEBT_LETTER_STATUS_001; para orientación externa, explicar que el usuario debe conservar evidencia y verificar la actualización en los canales oficiales.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 537,
+      "codigo": "REG_CLIENT_AUTH_HEADER_CAPABILITY_GATING_001",
+      "descripcion": "En superficies autenticadas Cliente, el header se compone desde capacidades y destinos canónicos habilitados por backend/configuración; el frontend no convierte automáticamente los botones presentes en mockups en rutas funcionales. Mis operaciones solo se muestra como navegación cuando exista su ruta canónica. Reporte crediticio permanece oculto hasta que se defina esa capacidad. Soporte muestra únicamente canal/estado de disponibilidad real y no el claim 24/7 sin evidencia. El menú de perfil solo se habilita cuando exista destino Cliente canónico. El nombre visible del cliente, si se usa, proviene de la cuenta autenticada y nunca de texto hardcodeado. Badges de seguridad/proveedor solo aparecen cuando sus claims y binding estén autorizados.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 567,
+      "codigo": "REG_ONB002_PHONE_DISPLAY_001",
+      "descripcion": "En ONB_002 el subtítulo muestra el número completo que el usuario acaba de ingresar y la acción visible para corregirlo se etiqueta “Editar”. La exposición completa es solo de UI; analytics, logs y session replay no pueden capturar el número completo.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 569,
+      "codigo": "REG_ONB003_DOCUMENT_TYPE_001",
+      "descripcion": "ONB_003 reutiliza CAMPO_TIPO_DOC y CAMPO_NRO_DOC. El selector de tipo es visible y obligatorio. Tipos permitidos: DNI, CE y PASAPORTE. DNI es el valor por defecto de presentación, no el único tipo permitido. Las validaciones de CAMPO_NRO_DOC se aplican según el tipo seleccionado.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 574,
+      "codigo": "REG_ONB003_UI_STATES_001",
+      "descripcion": "ONB_003 tiene A_NORMAL y B_ERROR. La implementación reserva desde A una línea fija bajo Número de documento y otra línea fija bajo el bloque de consentimiento. B puede mostrar simultáneamente documento requerido y consentimiento requerido. Todos los estados de error usan error_text en bordes y mensajes; mensajes text_body_small peso 400. Surface usa warm_surface. Separa control→mensaje con space_8 y mensaje→siguiente bloque con space_16. CTA Continuar y la fila Solo para verificar tu identidad conservan exactamente la misma coordenada Y en todos los estados. Tokens canónicos gobiernan implementación; cualquier hex del historial visual es solo referencia.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 578,
+      "codigo": "REG_ONB004_UI_STATES_001",
+      "descripcion": "ONB_004 tiene A_NORMAL y B_ERROR. Desde A se reservan slots de error para nombre, email, Términos y comunicaciones comerciales; los slots no muestran contenido si no hay error. B muestra simultáneamente nombre requerido, email inválido y Términos no aceptados. Email vacío es error requerido. Marketing continúa opcional y sin error funcional definido, pero conserva su slot para evitar movimiento. CTA mantiene la misma coordenada Y en todas las variantes. Todos los errores usan error_text + form_error_inline; inputs usan input_error y Términos usa consent_checkbox_error. Checkboxes normales usan border_soft, sin azul.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 589,
+      "codigo": "REG_CLIENT_AUTH_NAVIGATION_001",
+      "descripcion": "La navegación autenticada conserva cinco destinos con etiquetas visibles y lenguaje cotidiano: Inicio, Oferta, Pagos, Documentos y Ayuda. El icono nunca comunica solo: el label permanece visible, incluido el tab bar móvil. Oferta no se oculta cuando no haya oferta; el destino muestra el estado correspondiente. Un destino solo se habilita en runtime cuando exista ruta y pantalla Cliente canónicas. Documentos conserva la Carta de No Adeudo disponible para consulta posterior.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 592,
+      "codigo": "REG_LF_BENEFITS_DEV_ACTIVATION_001",
+      "descripcion": "El estado de desarrollo, diseño o QA de un beneficio no autoriza su exposición comercial. Legal y Economía pueden validar en paralelo sin bloquear construcción. La activación productiva se decide por componente y requiere que las validaciones pre-lanzamiento aplicables estén resueltas. Un rechazo legal obliga a mantener el componente desactivado; una observación económica debe resolverse mediante configuración, pricing, alcance o desactivación antes de su activación comercial.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 593,
+      "codigo": "REG_LF_BENEFITS_REVERSIBILITY_001",
+      "descripcion": "Cada beneficio opcional de la estrategia LF debe poder activarse o desactivarse de manera independiente. Ningún beneficio pendiente de validación puede convertirse en dependencia estructural del producto base. El producto debe conservar una ruta funcional válida aunque uno, varios o todos los beneficios opcionales estén desactivados. Desactivar un componente no puede romper navegación, pricing base, resolución de deuda ni el acceso a funcionalidades no relacionadas.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 594,
+      "codigo": "REG_LF_BENEFITS_CONFIG_001",
+      "descripcion": "Los estados ON/OFF y los parámetros comerciales u operativos de Beneficios LF deben resolverse desde configuración gobernada y no desde literales de frontend, mockups o lógica específica de una pantalla. Tasas, topes, frecuencias, ciclos de refresco, multiplicadores, participaciones por referido y demás valores variables permanecen configurables. Esta regla no crea todavía una tabla o módulo de configuración: la persistencia especializada se definirá reutilizando estructuras canónicas cuando el dominio y su módulo estén formalizados.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 595,
+      "codigo": "REG_LF_BENEFITS_SURFACE_RESOLUTION_001",
+      "descripcion": "Las superficies Cliente, B2B/Empresa o de administración que en el futuro muestren o gestionen Beneficios LF no pueden inferir que un beneficio está activo por existir en el diseño o en el código. La visibilidad y disponibilidad se resuelven desde configuración y elegibilidad autoritativas. En Cliente, un beneficio inactivo se oculta o degrada sin dejar espacios rotos. En superficies administrativas o de empresa, la existencia de un control visual no concede permiso ni activa por sí misma el beneficio.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 596,
+      "codigo": "REG_LF_BENEFITS_CHANGE_CONTROL_001",
+      "descripcion": "Toda futura capacidad administrativa que permita cambiar activación, parámetros, vigencia o alcance de Beneficios LF debe operar sobre configuración canónica, con autorización efectiva y trazabilidad del cambio. La regla no define todavía roles, permisos, tabla de auditoría ni pantalla específica: esos bindings se resuelven al revisar el módulo correspondiente. El cliente final nunca es autoridad para modificar configuración comercial.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 599,
+      "codigo": "REG_CLIENT_HOME_LIFECYCLE_ORCHESTRATION_001",
+      "descripcion": "Después de AUTHENTICATED_CLIENT_ACCOUNT, Inicio debe resolverse con contexto integral del cliente y no únicamente por presencia de ofertas. Ofertas, planes/pagos, operaciones pendientes, estado de liquidación, documentos y beneficios elegibles pueden coexistir. El backend selecciona una siguiente acción principal y conserva los demás estados relevantes en bloques secundarios. HOME_002/HOME_003 continúan como subestados de oferta dentro de esta composición y no se eliminan. Inicio no sustituye los destinos especializados Mi oferta, Mis pagos, Documentos o Ayuda.",
+      "estado": "VIGENTE"
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S14-C01",
+      "legacy_id": 537,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C04",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C02",
+      "legacy_id": 537,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "especializa": "S13-C04",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C03",
+      "legacy_id": 589,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C10",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C04",
+      "legacy_id": 589,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "especializa": "S13-C10",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C05",
+      "legacy_id": 592,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C11",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C06",
+      "legacy_id": 593,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C12",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C07",
+      "legacy_id": 594,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C13",
+      "residual": "Superficies fuera del módulo no certificadas",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C08",
+      "legacy_id": 595,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C14",
+      "residual": "B2B/administración y demás superficies",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C09",
+      "legacy_id": 596,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": "S13-C15",
+      "residual": "Capacidad administrativa, roles, permisos, tablas y pantalla",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C10",
+      "legacy_id": 567,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C11",
+      "legacy_id": 569,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C12",
+      "legacy_id": 574,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C13",
+      "legacy_id": 578,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C14",
+      "legacy_id": 599,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C15",
+      "legacy_id": 376,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    },
+    {
+      "codigo": "S14-C16",
+      "legacy_id": 377,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "especializa": null,
+      "residual": "Binding runtime pendiente",
+      "binding": "Runtime pendiente"
+    }
+  ]
+}
