@@ -1,0 +1,498 @@
+{
+  "contrato": "LF_S18_JUICIOS_11",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S18-C01",
+      "version": 1,
+      "eval_id": 1140,
+      "hash_version_atestado": "67edf5a1cd0d2e6d942b905a94cae65d35d3798131149a8eece640e3819df526",
+      "hash_paquete_atestado": "8347f6d88eba0733c898ab42466e60ae7e09a66ea89d70edd8e2c00f9a4a8a73",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Solo onboarding; el legado es global."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 46,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR mensaje de error visible en onboarding que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Otras superficies quedan fuera. Solo onboarding; el legado es global.",
+      "residual": "Mensajes de error de otras superficies fuera de onboarding.",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C02",
+      "version": 1,
+      "eval_id": 1141,
+      "hash_version_atestado": "daec8cdebd77fe69d47434aa9062f72cac564d2282f1705a698fbb5874848ca7",
+      "hash_paquete_atestado": "00f94dcf534e14e4d331137982029eb47e3036dcbfbf22b2dbfcacf86e7a82ce",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 47,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR presentación de ONB_001 u ONB_002 en viewport móvil estándar del contrato vigente cuando la acción principal de verificación celular o código requiera scroll para verse. No introducir un nuevo ancho fijo en la regla. No fija 375px; viewport del contrato.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C03",
+      "version": 1,
+      "eval_id": 1142,
+      "hash_version_atestado": "0eea627c30aaf3c9d88fd6fb373aca0fa09c5e4c3ed7a02e87851eb8d084159d",
+      "hash_paquete_atestado": "24cea533a43f299393be69a9e305ebdb55798f4259bbe028d89238cdaf353610",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Añade no restaurar campos históricos pre-OTP."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 184,
+      "familia": "VALIDATIONS",
+      "diferencias": "Contraste funcional: BLOQUEAR submit del formulario inicial celular-first sin validación local de los campos presentes antes de llamada, o sin validación independiente del servidor. No restaurar campos históricos anteriores a OTP. Añade no restaurar campos históricos pre-OTP.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C04",
+      "version": 1,
+      "eval_id": 1143,
+      "hash_version_atestado": "e5eb17a8aef3a41a546e2c0d4e71eddd2ad6343a8747467b6748aa1f221a3d03",
+      "hash_paquete_atestado": "d79e7ea2bf3bbb1809cd3e58a8153206bb9f09ddd269e2c20085eecb8b0ad1c8",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 190,
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR respuesta a fallo de red o servidor durante submit que borre valores del formulario o no ofrezca reintento controlado. Mostrar mensaje comprensible; afirmar datos guardados únicamente con evidencia de persistencia. No autorizar reenvío automático. Afirma datos guardados solo con evidencia de persistencia.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C05",
+      "version": 1,
+      "eval_id": 1144,
+      "hash_version_atestado": "6bfa66218d97de5d6f4a1f3492d328b9e6ef52bcf6775eb87d2366e675c93272",
+      "hash_paquete_atestado": "c3e471fa4a050d2d95d17575a0ad3626787ab653310771542c8d09038e8be0c4",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 191,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR tratamiento de fallo de envío OTP por WhatsApp que omita informar que no se pudo enviar el código, orientar a verificar número o intentar más tarde, y ofrecer corrección de número y reintento conforme contrato vigente. No habilita SMS ni bypass.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C06",
+      "version": 1,
+      "eval_id": 1145,
+      "hash_version_atestado": "92df118db0c0c0d4b0ba53e48d9cd1548fd41b732d2486845f1011e138319205",
+      "hash_paquete_atestado": "d73ba7ebf691515ddf55ed4309cc150524a5570d1d6c41f5715533e8eec77923",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Solapa parcialmente S4-C11; actúa en checkout, informa acreedor y recalcula, sin contradicción."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 195,
+      "familia": "OFFERS_INSTALLMENTS",
+      "diferencias": "Contraste funcional: BLOQUEAR checkout con oferta seleccionada vencida que omita informar al usuario identificando acreedor, retirar esa oferta del resumen y recalcular total autorizado conservando selecciones válidas. No eliminar silenciosamente card de oferta ni modificar intentos enviados. Solapa parcialmente S4-C11; actúa en checkout, informa acreedor y recalcula, sin contradicción.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C07",
+      "version": 1,
+      "eval_id": 1146,
+      "hash_version_atestado": "d8ee74c0f2cc139d6f78c6f5a1202dace34343a6040826bf99effe97daf7b06f",
+      "hash_paquete_atestado": "ab87ec11709c5b691f430b27c4bff7a1ea58d02e199da85b751b76c3e49bb5cc",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 203,
+      "familia": "STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR resumen de selección incongruente con estado autoritativo vacío, parcial o completo: vacío con orientación y Continuar deshabilitado; parcial con seleccionadas, total y disclaimer cuotas cuando corresponda; completo con todas seleccionadas, total y sin copy Podrás configurar después. No recalcular precios en frontend.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C09",
+      "version": 1,
+      "eval_id": 1148,
+      "hash_version_atestado": "29abdb8795a4a6cae4a19cd547d4e733c215cc18bb4b457e9d9f64540046597e",
+      "hash_paquete_atestado": "90458473c4b77fef325296d08205e166d28f9ba03caa69bf24f555b441a2f4aa",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 294,
+      "familia": "ACTIONS",
+      "diferencias": "Contraste funcional: BLOQUEAR checkout que omita acceso flotante a soporte humano WhatsApp cuando el canal está realmente disponible y autorizado, o muestre contacto no operativo. Copy de orientación ¿Dudas? Escríbenos por WhatsApp; no inventar número ni disponibilidad.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C10",
+      "version": 1,
+      "eval_id": 1149,
+      "hash_version_atestado": "a8fdd1a9b745df675e9671bf7f894020f0c555bfde974e57875ac1c45a73f269",
+      "hash_paquete_atestado": "43849aa0ce8a9203e34237f8cddc759c626ee11f50d328a90e673667318d2fb8",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 314,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+      "diferencias": "Contraste funcional: BLOQUEAR diseño ABRIENDO o CONFIRMANDO que condicione integridad o reconciliación a mantener abierta la ventana o al copy visible. Copy neutral permitido, no exigir No cierres esta ventana. Estado depende de backend/adaptador y evidencia canónica del proveedor.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C11",
+      "version": 1,
+      "eval_id": 1150,
+      "hash_version_atestado": "dcef9db4890fc6b01b4215e5bcf88cdf22f8de3a4874511f0469f8ae507149b0",
+      "hash_paquete_atestado": "c7f460ec2ea0061e480e2061a313097ab3c5b47ce034cbecc0f66a65324ce601",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 487,
+      "familia": "SCREEN_IDENTITY",
+      "diferencias": "Contraste funcional: BLOQUEAR indicador ONB_002 que no represente Paso 2 de 3 de la secuencia pre-resolución ONB_001, ONB_002, ONB_003, o incremente total por destinos condicionales ONB_004 o REC_001. No obligar ONB_003 si cuenta activa verificada accede tras OTP.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S18-C12",
+      "version": 1,
+      "eval_id": 1151,
+      "hash_version_atestado": "c6f687babe2f6ba3dbb5f4f513f0d812cbae008eb4cb6003498f6166941e7230",
+      "hash_paquete_atestado": "4db0e79a6b5851e90c10d6175f965e603ff337d4091ef736aaa7b3cec0604b69",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 14:52 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 579,
+      "familia": "SCREEN_IDENTITY",
+      "diferencias": "Contraste funcional: BLOQUEAR indicador de ONB_004 que no use client_auth_stepper_4, etiqueta Paso 4 de 4 y cuatro segmentos verdes según contrato visible aprobado en ONB_003. No modifica indicadores históricos de ONB_001/ONB_002 ni convierte destinos condicionales en pasos obligatorios.",
+      "residual": "",
+      "complementa": null
+    }
+  ],
+  "descartada": {
+    "codigo": "S18-C08",
+    "version": 1,
+    "eval_id": 1147,
+    "hash_version_atestado": "9f4855cf4eaeb6561f10c00cb7ed117dd5f0e2dfec5c6b8d0a50f8584525b6a0",
+    "hash_paquete_atestado": "49f23047b4f9ea217716d7c77f05de7bb0d5a72cf11bcfd248fec7e09b17f9a2",
+    "veredicto": "FAIL",
+    "juez": "Claude independiente 2026-11-24 14:52 Lima",
+    "modo": "INDEPENDIENTE",
+    "revisor_es_productor": false,
+    "llamadas_modelo": 1,
+    "puntajes": {
+      "CAL_CLARIDAD": {
+        "puntaje": 1
+      },
+      "CAL_ACCIONABLE": {
+        "puntaje": 1
+      },
+      "CAL_ALCANCE": {
+        "puntaje": 1
+      },
+      "SEM_NO_DUPLICA": {
+        "puntaje": 0.4,
+        "observacion": "S9-C24 PUBLICADA ya cubre emisión, firma, permisos, evidencia, reenvío y SLA no acreditado."
+      },
+      "SEM_NO_CONTRADICE": {
+        "puntaje": 1
+      },
+      "COH_TEXTO_CONDICION": {
+        "puntaje": 1
+      },
+      "COH_EFECTO": {
+        "puntaje": 1
+      }
+    },
+    "legada_id": 235,
+    "familia": "DOCUMENTS_CERTIFICATES",
+    "diferencias": "Contraste funcional: BLOQUEAR entrega, alojamiento o reenvío de Carta de No Adeudo sin evidencia de emisión por aliado acreedor o representante autorizado y permisos efectivos, o atribuir firma/emisión a LF. SLA y escalación exclusivamente del convenio confirmado; no prometer plazo fijo sin convenio, modelos y permisos acreditados. Integración y pruebas de formatos quedan pendientes. S9-C24 PUBLICADA ya cubre emisión, firma, permisos, evidencia, reenvío y SLA no acreditado.",
+    "residual": "",
+    "complementa": null
+  }
+}
