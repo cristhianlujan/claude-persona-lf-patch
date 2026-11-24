@@ -1,0 +1,12 @@
+{
+  "solution_ref": "saly-creative-k-pr1-233000-20261123",
+  "paths": {
+    "sandbox/creative_factory/k_task_v2/fixture_live_knowledge_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/pr1_pg17_only.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/test_rollback_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/test_wait_after_dispatch_v2.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/wait_after_dispatch_v2.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-k-pr1-233000-20261123.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261123233000_lf_saly_creative_k_task_orchestration_v2.sql": "MIGRATION"
+  }
+}
