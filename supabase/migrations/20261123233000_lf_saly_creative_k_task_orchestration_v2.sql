@@ -117,7 +117,7 @@ BEGIN
    'decisions',v_decisions,'modules',v_review->'modules',
    'pins',v_pins,'mode','CANDIDATE_REVIEW_ONLY',
    'render_authorized',false);
-END $f$;
+END; $f$;
 
 -- Once per item: subsequent steps read the saved selector output.
 CREATE FUNCTION saly.creative_task_select_once_v2(
@@ -144,7 +144,7 @@ BEGIN
  VALUES(p_item_id,p_task,p_spatial_change,v_j,
     encode(extensions.digest(v_j::text,'sha256'),'hex'));
  RETURN v_j;
-END $f$;
+END; $f$;
 
 -- Store real K results once; omitted K gets explicit typed reason.
 -- A second evaluation on the same object is rejected (including concurrent retries).
@@ -200,7 +200,7 @@ BEGIN
      'object_kind',p_object_kind,'step',p_step,'reason',v_reason,
      'output',p_output,'already_executed',false);
 EXCEPTION WHEN unique_violation THEN RAISE EXCEPTION 'SALY_K_DUPLICATE_OBJECT_EXECUTION';
-END $f$;
+END; $f$;
 
 CREATE FUNCTION saly.creative_k_consume_v2(p_item_id bigint,p_object_kind text,
  p_object_sha256 text,p_module_code text)
@@ -228,7 +228,7 @@ BEGIN
  RETURN jsonb_build_object('step','4','status','CON_REFERENCIA',
      'execute',true,'blocking',false,'reference',p_reference,
      'k03_k04_mode','LENTE_SIN_REEJECUCION');
-END $f$;
+END; $f$;
 
 -- Separate human/authenticated principal submits plan. No automatic PASS.
 CREATE FUNCTION saly.creative_plan_submit_v2(
@@ -247,7 +247,7 @@ BEGIN
  VALUES(p_item_id,v_sha,p_plan_json,v_author);
  RETURN jsonb_build_object('status','PENDING','plan_sha256',v_sha,
        'author_uid',v_author,'independent_pass',false);
-END $f$;
+END; $f$;
 
 -- Authenticated reviewer identity is determined by auth.uid(), NEVER by caller.
 CREATE FUNCTION saly.creative_plan_review_v2(
@@ -280,7 +280,7 @@ BEGIN
  WHERE item_id=p_item_id AND plan_sha256=p_plan_sha256;
  RETURN jsonb_build_object('status',p_verdict,'plan_sha256',p_plan_sha256,
   'reviewer_uid',v_reviewer,'independent_pass',p_verdict='PASS');
-END $f$;
+END; $f$;
 
 REVOKE ALL ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
  saly.creative_task_select_once_v2(bigint,text,boolean),
