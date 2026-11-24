@@ -1,0 +1,13 @@
+{
+  "solution_ref": "saly-creative-owner-pr2-234000-20261123",
+  "paths": {
+    "sandbox/creative_factory/k_task_v2/abc_live_pending_fixture_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/abc_pr1_dependency_snapshot_233000.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/abc_timer_palette_medium_rollback_pg17.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/image_format_similarity_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/pr2_over_pr1_pg17.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/k_task_v2/test_image_format_similarity_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-owner-pr2-234000-20261123.json": "CHANGESET_MANIFEST",
+    "supabase/migrations/20261123234000_lf_saly_creative_owner_state_and_medium_v1.sql": "MIGRATION"
+  }
+}
