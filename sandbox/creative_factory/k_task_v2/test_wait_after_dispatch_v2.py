@@ -1,6 +1,6 @@
 """Deterministic simulation of post-dispatch seven-check policy."""
 import unittest
-from wait_after_dispatch_v2 import wait_after_dispatch
+from wait_after_dispatch_v2 import wait_after_dispatch, wait_for_saly_run, RUN_READBACK_SQL, RUN_EXPIRE_SQL
 
 
 class VirtualClock:
@@ -59,6 +59,29 @@ class TestWait(unittest.TestCase):
         self.assertEqual(expirations, [180])
         self.assertEqual(clock.t, 180)
         print("ENEVER_INPUT=never_ready ENEVER_OUTPUT=", out)
+
+    def test_bound_sql_readback_used_in_each_poll(self):
+        clock = VirtualClock()
+        sql_calls = []
+
+        def execute_sql(sql, args):
+            sql_calls.append((sql, args, clock.t))
+            if sql == RUN_READBACK_SQL:
+                return {"result": {"status": "READY" if clock.t >= 30 else "PENDING"}}
+            if sql == RUN_EXPIRE_SQL:
+                raise AssertionError("EXPIRY_SHOULD_NOT_BE_CALLED_ON_READY")
+            raise AssertionError("UNEXPECTED_SQL")
+
+        out = wait_for_saly_run(execute_sql, 701, 101,
+                                monotonic=clock.now, sleep=clock.sleep)
+        self.assertEqual(out["status"], "READY")
+        self.assertEqual(out["count"], 2)
+        self.assertEqual(sql_calls, [
+            (RUN_READBACK_SQL, (701, 101), 0),
+            (RUN_READBACK_SQL, (701, 101), 30),
+        ])
+        print("E_SQL_BIND_INPUT=run701,item101 SQL=creative_run_image_readback_v2 "
+              "E_SQL_BIND_OUTPUT=", {"result": out, "calls": sql_calls})
 
     def test_invalid_capture_is_error_not_ready(self):
         clock = VirtualClock()
