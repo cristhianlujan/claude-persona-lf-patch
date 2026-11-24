@@ -315,3 +315,75 @@ DO $assert$ BEGIN
 END $assert$;
 ROLLBACK TO SAVEPOINT before_qa_fail;
 
+
+SELECT 'B_ATOMIC_PASS_INPUT|READY detected at t30, CLAUDE_QA automated independent verdict PASS; single database call';
+SELECT 'B_ATOMIC_PASS_OUTPUT|'||saly.creative_chat_save_qa_v1(
+ '70000000-0000-4000-8000-000000000700'::uuid,800,
+ 'fixture-image-11.png',repeat('a',64),'worker_receipt_test',
+ (SELECT receipt FROM qa_test_data))::text;
+SELECT 'B_ATOMIC_PASS_READBACK|'||jsonb_build_object(
+ 'item',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'order',(SELECT status FROM saly.creative_orders WHERE id=8),
+ 'claim',(SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700),
+ 'run',(SELECT state FROM saly.creative_runs WHERE id=800),
+ 'approved_at',(SELECT approved_at FROM saly.creative_order_items WHERE id=11),
+ 'approved_by',(SELECT approved_by FROM saly.creative_order_items WHERE id=11),
+ 'detections',(SELECT count(*) FROM saly.creative_run_detection_v1 WHERE run_id=800),
+ 'external_verified_deliveries',(SELECT count(*) FROM saly.creative_queue_native_delivery_evidence_v1),
+ 'check_count',(SELECT check_count FROM saly.creative_run_detection_v1 WHERE run_id=800)
+)::text;
+DO $assert$ BEGIN
+ IF (SELECT status FROM saly.creative_order_items WHERE id=11)<>'TERMINADO'
+ OR (SELECT status FROM saly.creative_orders WHERE id=8)<>'TERMINADO'
+ OR (SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700)<>'DONE'
+ OR (SELECT approved_at FROM saly.creative_order_items WHERE id=11) IS NOT NULL
+ OR (SELECT count(*) FROM saly.creative_queue_native_delivery_evidence_v1)<>0
+ THEN RAISE EXCEPTION 'FAIL_ATOMIC_CLOSE_NO_EXTERNAL_VERIFIER'; END IF;
+END $assert$;
+
+SELECT 'B_OWNER_APPROVE_INPUT|explicit owner decision after independent automated QA and atomic technical close';
+SELECT 'B_OWNER_APPROVE_OUTPUT|'||saly.creative_owner_approve_v1(
+ 11,'APROBADO','Owner separately approves the image')::text;
+SELECT 'B_OWNER_APPROVE_READBACK|'||jsonb_build_object(
+ 'item',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'order',(SELECT status FROM saly.creative_orders WHERE id=8),
+ 'approved_by',(SELECT approved_by FROM saly.creative_order_items WHERE id=11),
+ 'approved_at_present',(SELECT approved_at IS NOT NULL FROM saly.creative_order_items WHERE id=11)
+)::text;
+
+SELECT 'B_TIMEOUT_INPUT|item13 copied from BORRADOR and PENDIENTE; test-only run never READY, seven checks until t180; expire real run';
+UPDATE saly.creative_orders SET status='EN_PROCESO' WHERE id=9;
+UPDATE saly.creative_order_items SET status='PRODUCIENDO' WHERE id=13;
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,attempt_number,
+ worker_ref,deadline_at,started_at,idempotency_key)
+VALUES(801,9,13,'EJECUTANDO',1,'GPT_GENERATOR',
+ clock_timestamp()-interval '1 second',clock_timestamp()-interval '5 minutes',
+ 'TEST_TIMEOUT_ITEM13');
+SELECT 'B_TIMEOUT_PRE|'||saly.creative_run_image_readback_v2(801,13)::text;
+SELECT 'B_TIMEOUT_EXPIRE|'||saly.creative_run_expire_v1(801)::text;
+SELECT 'B_TIMEOUT_OUTPUT|'||jsonb_build_object(
+ 'run',(SELECT state FROM saly.creative_runs WHERE id=801),
+ 'item',(SELECT status FROM saly.creative_order_items WHERE id=13),
+ 'order',(SELECT status FROM saly.creative_orders WHERE id=9),
+ 'detection_rows',(SELECT count(*) FROM saly.creative_run_detection_v1 WHERE item_id=13)
+)::text;
+DO $assert$ BEGIN
+ IF (SELECT status FROM saly.creative_order_items WHERE id=13)='TERMINADO'
+ OR (SELECT state FROM saly.creative_runs WHERE id=801)<>'FALLIDO'
+ THEN RAISE EXCEPTION 'FAIL_TIMEOUT_CLOSED_ITEM13'; END IF;
+END $assert$;
+
+SELECT 'ABC_ROLLBACK_INPUT|ROLLBACK all test-only state, token roles, owner medium confirmations, records of image detection and QA';
+ROLLBACK;
+SELECT 'ABC_ROLLBACK_OUTPUT|'||jsonb_build_object(
+ 'order8',(SELECT status FROM saly.creative_orders WHERE id=8),
+ 'item11',(SELECT status FROM saly.creative_order_items WHERE id=11),
+ 'order9',(SELECT status FROM saly.creative_orders WHERE id=9),
+ 'item13',(SELECT status FROM saly.creative_order_items WHERE id=13),
+ 'historical_terminal',(SELECT count(*) FROM saly.creative_order_items WHERE id BETWEEN 5 AND 10 AND status='TERMINADO'),
+ 'classification_count',(SELECT count(*) FROM saly.identity_versions WHERE metadata ? 'token_role'),
+ 'context100_exists',(SELECT count(*) FROM saly.creative_context_sets WHERE id=100),
+ 'detection_table_exists',to_regclass('saly.creative_run_detection_v1') IS NOT NULL,
+ 'owner_medium_confirmation_table_exists',to_regclass('saly.creative_token_medium_confirmations_v1') IS NOT NULL
+)::text;
+SELECT 'PASS_ABC_TIMER_PALETTE_MEDIUM_REAL_PENDING_ROLLBACK';
