@@ -1,0 +1,660 @@
+{
+  "contrato": "LF_S10_JUICIOS_16",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S10-C01",
+      "version": 1,
+      "eval_id": 818,
+      "hash_version_atestado": "4453a7de8cf96b8a97eba7d77e6beb74e62d8c0bd61469b4125fe2ac6133ac88",
+      "hash_paquete_atestado": "580ce923fc7d1b2496e08d2c8a7beccd48f08876378bff6130d609774a845753",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 98,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Cobertura conjunta con S8-C10: BLOQUEAR cierre de medición operativa OTP sin medir intervalo emisión-verificación de cada par correlacionado y calcular p95; no repetir umbral ni alerta de S8-C10.",
+      "residual": "",
+      "complementa": "S8-C10"
+    },
+    {
+      "codigo": "S10-C02",
+      "version": 1,
+      "eval_id": 819,
+      "hash_version_atestado": "0457652ce543de44afa4d693ff4a966bf388dc9b5a016d3e94ef86a79b12400e",
+      "hash_paquete_atestado": "fac4025780ec0442c037639ca80a7eb1047d3a73674476c5b9bc8733bb5d2536",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 114,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Cobertura conjunta con S8-C14: BLOQUEAR evaluación del umbral LCP de S8-C14 que use una agregación distinta del promedio de las observaciones correspondientes a la sesión/población definida por el contrato; no repetir alerta ni límites.",
+      "residual": "",
+      "complementa": "S8-C14"
+    },
+    {
+      "codigo": "S10-C03",
+      "version": 1,
+      "eval_id": 820,
+      "hash_version_atestado": "88e6da36468515d49a4de0faee9aad13967396c152609e0ce2a23c8aae4a24a6",
+      "hash_paquete_atestado": "a49855d580a5d141632d74532749794e87628992bf9018c0fe715a286b76183d",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 0.9,
+          "observacion": "frontera autorizada sin inventario verificado; no inventar roles"
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 416,
+      "familia": "AUDIT",
+      "diferencias": "Cobertura conjunta con S8-C18: BLOQUEAR inserción de evento de lf_ops.auditoria_eventos por proceso servidor que no pertenezca a frontera autorizada de escritura; complementa S8-C18 sin repetir inmutabilidad ni campos.",
+      "residual": "",
+      "complementa": "S8-C18"
+    },
+    {
+      "codigo": "S10-C04",
+      "version": 1,
+      "eval_id": 821,
+      "hash_version_atestado": "6c3787bbf4a9519cc0a6f2442917cac2cf57cf916be5822291a2eb91a333766c",
+      "hash_paquete_atestado": "0171affeae98c60d17ad58f2543f8d539b9ac4074be7390e8142aff31bf70ce5",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 443,
+      "familia": "AUDIT",
+      "diferencias": "Cobertura conjunta con S8-C19: BLOQUEAR considerar un evento de analytics de producto como sustituto del registro de seguridad requerido en lf_ops.auditoria_eventos; complementa S8-C19.",
+      "residual": "",
+      "complementa": "S8-C19"
+    },
+    {
+      "codigo": "S10-C05",
+      "version": 1,
+      "eval_id": 822,
+      "hash_version_atestado": "dda539a99463e6ec4ec00164a9e904c3a9e34fc909ccbd94ba844ad77601f0bf",
+      "hash_paquete_atestado": "8fc80450460b3e54f79ddf6b509a92f72942510f582b7089b4388f723417ef60",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 205,
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "diferencias": "Cobertura conjunta con S8-C20: BLOQUEAR skeleton de resolución de Home que no represente estructura de cards de oferta o Ruta de Claridad correspondiente al destino que se carga; no repetir tiempo límite ni fallback de S8-C20.",
+      "residual": "",
+      "complementa": "S8-C20"
+    },
+    {
+      "codigo": "S10-C06",
+      "version": 1,
+      "eval_id": 823,
+      "hash_version_atestado": "8ad9cdb4fd0aec5ec42ddd6835512036b20027adf5a25c640d13ede3c94cc103",
+      "hash_paquete_atestado": "e8b437fdfaaaf46cdfe75c4f2003a77462af21aff1a012e8039a5eaa48428ae7",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "excluye Home y B2B"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 206,
+      "familia": "DESIGN_SYSTEM",
+      "diferencias": "Cobertura conjunta con S8-C21: BLOQUEAR transición abrupta en componentes de onboarding o fade fuera de UX/COMPONENT_TRANSITION_MIN_MS, UX/COMPONENT_TRANSITION_MAX_MS, UX/SCREEN_FADE_MS y UX/SKELETON_FADE_MS de public.lf_global_config según tipo; respetar preferencia de movimiento reducido. No aplica a Home cubierto por S8-C21.",
+      "residual": "Falta B2B y otras superficies fuera de onboarding y Home.",
+      "complementa": "S8-C21"
+    },
+    {
+      "codigo": "S10-C07",
+      "version": 1,
+      "eval_id": 824,
+      "hash_version_atestado": "eb7cf11edc1dfe49d342ed1ab95c84ffc3a2afa187b1a1e4e3f4d9c794d69dce",
+      "hash_paquete_atestado": "9e4380635b3c4a15a0c150aa90d832204bddc423f3ebf10c7d7236c80316ac75",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.8,
+          "observacion": "cardinalidad por conjunto canónico, sin fijar los 5 hitos de la legada"
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 364,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Cobertura conjunta con S8-C22: BLOQUEAR Ruta de Claridad cuya cardinalidad difiera del conjunto canónico de hitos de la legada, cuyo nav no tenga etiqueta Ruta de Claridad, cuyo nodo activo no tenga aria-current true o cuyo terreno decorativo no esté oculto con aria-hidden true; complementa S8-C22.",
+      "residual": "Cardinalidad de cinco hitos no fijada en fuente canónica verificable.",
+      "complementa": "S8-C22"
+    },
+    {
+      "codigo": "S10-C08",
+      "version": 1,
+      "eval_id": 825,
+      "hash_version_atestado": "bb6428a306c22bf161a4f4923124e525aa4b852440f75bd2882003ddd045ab7b",
+      "hash_paquete_atestado": "e1aa49f1e8f348fbd31bab9c98540405ada5cc99832765a01a3d79775974ea29",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "solo onboarding; Home en S8-C25; falta B2B y otras superficies"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 199,
+      "familia": "STATES",
+      "diferencias": "Cobertura conjunta con S8-C25: BLOQUEAR componente interactivo de onboarding sin estados funcionales idle, loading, success, error y disabled definidos, o con estado fuera de contrato; no aplica a Home cubierto por S8-C25.",
+      "residual": "Falta B2B y otras superficies fuera de onboarding y Home.",
+      "complementa": "S8-C25"
+    },
+    {
+      "codigo": "S10-C09",
+      "version": 1,
+      "eval_id": 826,
+      "hash_version_atestado": "e4f90d3ac9c16809273ceb8b77f1b41e0ef899ed51c0d4172750315ed26ca6d9",
+      "hash_paquete_atestado": "e170f6f83e3b0255dc0acd88438c9b56bd7b17b6104a509ebdb75769f6e80ab3",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 89,
+      "familia": "ANALYTICS",
+      "diferencias": "Contraste funcional: BLOQUEAR cerrar instrumentación de ONB_002 sin eventos otp_screen_viewed, otp_attempt, otp_attempt_failed, otp_verified, otp_resend_clicked, number_change_inline_started, number_change_inline_completed y otp_blocked_max_attempts definidos en lf_ops.analytics_eventos_definicion; no emitir catálogo CANDIDATO como activo.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C10",
+      "version": 1,
+      "eval_id": 827,
+      "hash_version_atestado": "d9aa0218e27bff2be7133faf5456122c7cd979af47c23c9a7e273d48761556a8",
+      "hash_paquete_atestado": "9e2c877374ef267b3e325a6163475a8c3a131042737a3a217feec54e57798896",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 115,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR routing de alerta crítica de fallo total sin Slack técnico y email inmediato, de degradación alta sin Slack técnico, o anomalía media sin Slack producto.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C11",
+      "version": 1,
+      "eval_id": 828,
+      "hash_version_atestado": "ecb1145cedca93af02648cbecd92a7af91bcb34e1d4f35b2726dee80d197dd0c",
+      "hash_paquete_atestado": "b9a0ca43729f14093cd5e6e34212c2a03226fe9556345a24a8796e117d75d6c9",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 173,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR mostrar resumen de selección con planes en cuotas sin el texto En el checkout pagarás hoy la primera cuota de cada plan seleccionado., o mostrarlo cuando solo hay pagos únicos.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C12",
+      "version": 1,
+      "eval_id": 829,
+      "hash_version_atestado": "b841c3d5259d396547b16cd11ebe8662b79bc531693c66e2d66bb5563f781e79",
+      "hash_paquete_atestado": "de13b1278c54f2020d223c6f08d32e0f2bdeab961719af573b9d74639fa7df40",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 188,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR emitir log backend en texto libre sin estructura JSON con timestamp, level, request_id, user_session_id anónimo, pantalla, accion, duracion_ms y error_code cuando aplique; no exponer PII.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C13",
+      "version": 1,
+      "eval_id": 830,
+      "hash_version_atestado": "adbbf78746edd70809c6b99408beeb4e385813f0b6f48445c39f1bc3e84ca03a",
+      "hash_paquete_atestado": "73b4c907f0fb869def2c1686b506d52927cd257f54e668c0bde5d444e7946700",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 213,
+      "familia": "API_DATA_CONTRACT",
+      "diferencias": "Contraste funcional: BLOQUEAR exponer endpoint sin prefijo de versión o sustituir versión incompatible sin coexistencia durante migración completa.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C14",
+      "version": 1,
+      "eval_id": 831,
+      "hash_version_atestado": "9cf7af30118dfbca46c2998922f2b201430a1b35ca0633b351e8d4353f8e42e3",
+      "hash_paquete_atestado": "e6ad47159f5712325705fd79fefee3735b497de9c47c52ea99ebc71614fffea1",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 231,
+      "familia": "B2B_PARTNERS",
+      "diferencias": "Contraste funcional: BLOQUEAR que LF invente o sustituya monto de descuento, plazo o condiciones de oferta cargadas por aliado; LF presenta condiciones autorizadas.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C15",
+      "version": 1,
+      "eval_id": 832,
+      "hash_version_atestado": "91994a4085fe81404755d0eb35fa82bcc083b4c13bd22c8b584b48bcf0baee94",
+      "hash_paquete_atestado": "a20c6a5ff69c85b0e8a313490baeedd5e4edf61f13692bb04acc6e94e0800392",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 237,
+      "familia": "ASSETS_ICONS",
+      "diferencias": "Contraste funcional: BLOQUEAR uso en prototipo de nombres o logos reales de aliados sin autorización documentada; utilizar placeholder genérico o ficticio. No gobierna logos de medios de pago de S6-C14.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S10-C16",
+      "version": 1,
+      "eval_id": 833,
+      "hash_version_atestado": "8a43dad6fdbca0ef37f537ee97164bafe721d4a802e3244f7cd6a7b4f4a8714b",
+      "hash_paquete_atestado": "1f99b3ad92798e98326e161358f794fed5740ee95ffb22b78c75309b252b3ada",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 04:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 0.9,
+          "observacion": "copy delegado a la legada, no literal"
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 283,
+      "familia": "ACTIONS",
+      "diferencias": "Contraste funcional: BLOQUEAR checkout sin acción visible de soporte WhatsApp cuando exista canal LF autorizado; copy de ayuda según legada, sin inventar número ni disponibilidad.",
+      "residual": "",
+      "complementa": null
+    }
+  ],
+  "nota": "16 hashes de versión contrastados con Claude; hash_paquete de evaluación para puerta. Cobertura conjunta funcional no certifica runtime."
+}
