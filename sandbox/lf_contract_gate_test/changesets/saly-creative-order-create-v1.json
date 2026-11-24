@@ -5,7 +5,6 @@
     "supabase/tests/saly_creative_order_create_v1_pg17_rollback.sql": "RUNTIME_TESTING",
     ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW",
     "sandbox/lf_contract_gate_test/changesets/saly-creative-order-create-v1.json": "CHANGESET_MANIFEST",
-    "sandbox/lf_contract_gate_test/pase_github_entrypoint/auxiliary_pr_workflows_v1.json": "PASE_SUPPORT",
-    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json": "PASE_SUPPORT"
+    "sandbox/lf_contract_gate_test/pase_github_entrypoint/auxiliary_pr_workflows_v1.json": "PASE_SUPPORT"
   }
 }
