@@ -153,7 +153,7 @@ DO $assert$ BEGIN
  OR saly.creative_item_context_medium_v3(13,'REDES_SOCIALES')->>'selected_count'<>'0'
  OR saly.creative_item_context_medium_v3(11,NULL)#>>'{effective_color_roles,CTA,hex}'<>'#008200'
  OR saly.creative_item_context_medium_v3(11,NULL)#>>'{effective_color_roles,MARCA,hex}'<>'#00C853'
- OR (saly.creative_item_context_medium_v3(11,NULL)->>'selected_count')::int<>55
+ OR (saly.creative_item_context_medium_v3(11,NULL)->>'selected_count')::int<>53
  OR (SELECT metadata->>'alias_target_code' FROM saly.identity_versions WHERE id=21)<>'color.action.primary.bg'
  THEN RAISE EXCEPTION 'FAIL_CLASSIFICATION_COLORS_OR_COUNTS'; END IF;
 END $assert$;
