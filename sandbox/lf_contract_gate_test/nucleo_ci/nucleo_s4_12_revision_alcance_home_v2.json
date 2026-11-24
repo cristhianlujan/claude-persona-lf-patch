@@ -51,7 +51,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/166",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -182,7 +182,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/167",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -313,7 +313,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/168",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -444,7 +444,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/169",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -575,7 +575,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/175",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -706,7 +706,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/242",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -837,7 +837,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/243",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -968,7 +968,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/261",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -1099,7 +1099,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/141",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -1230,7 +1230,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/151",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -1361,7 +1361,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/240",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
@@ -1492,7 +1492,7 @@
       "impacto": "REVISAR",
       "origen": {
         "tipo": "MIGRACION",
-        "ref": "S4_v1_scope_FIX/PR4702",
+        "ref": "lf_ops.reglas/241",
         "solicitante": "Cristhian / Claude alcance 2026-11-23"
       },
       "pruebas": [
