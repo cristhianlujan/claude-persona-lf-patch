@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-creative-order-rico-intake-v1",
+  "paths": {
+    "supabase/migrations/20261124141000_lf_saly_creative_order_rico_intake_v1.sql": "MIGRATION",
+    "supabase/tests/saly_creative_order_rico_intake_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-order-rico-intake-v1.json": "CHANGESET_MANIFEST"
+  }
+}

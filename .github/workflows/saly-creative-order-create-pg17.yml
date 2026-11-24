@@ -2,8 +2,10 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_creative_order_rico_intake_v1.sql'
+      - 'supabase/tests/saly_creative_order_rico_intake_v1_pg17_rollback.sql'
       - '.github/workflows/saly-creative-order-create-pg17.yml'
-      - 'supabase/migrations/20261124124000_lf_saly_creative_order_create_v1.sql'
+      - 'supabase/migrations/*_lf_saly_creative_order_create_v1.sql'
       - 'supabase/tests/saly_creative_order_create_v1_pg17_rollback.sql'
 permissions:
   contents: read
@@ -348,8 +350,14 @@ jobs:
           CREATE TRIGGER trg_creative_00_single_screen_item_guard_v1 BEFORE INSERT OR UPDATE ON saly.creative_order_items FOR EACH ROW EXECUTE FUNCTION saly.creative_single_screen_item_guard_v1();
           CREATE TRIGGER trg_creative_item_guard_l1 BEFORE INSERT OR UPDATE ON saly.creative_order_items FOR EACH ROW EXECUTE FUNCTION saly.creative_item_guard_l1();
           SQL
-      - name: Apply one migration
-        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261124124000_lf_saly_creative_order_create_v1.sql
+      - name: Apply governed function migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_order_create_v1.sql)
+          test "${#files[@]}" -eq 1
+          psql -X -v ON_ERROR_STOP=1 -f "${files[0]}"
       - name: Positive and negative rollback
         run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_order_create_v1_pg17_rollback.sql
       - name: Verify empty tables
@@ -360,3 +368,16 @@ jobs:
             test "$(psql -XAt -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM saly.$t")" = 0
           done
           echo PASS_SALY_CREATIVE_ORDER_PG17_DISPOSABLE
+      - name: Test exact new order migration body with rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_order_rico_intake_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_creative_rico_candidate_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_order_rico_intake_v1_pg17_rollback.sql
+          for table in creative_context_sets creative_context_tokens creative_orders creative_order_items creative_order_sequence_v1; do
+            test "$(psql -XAt -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM saly.$table")" = 0
+          done
+          echo PASS_SALY_RICO_ROLLBACK
