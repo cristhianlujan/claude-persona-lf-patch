@@ -29,7 +29,7 @@ def wait_after_dispatch(
             sleep(delta)
         row = readback()
         if not isinstance(row, dict) or row.get("status") not in (
-            "READY", "PENDING", "FAILED"
+            "READY", "PENDING", "FAILED", "ERROR"
         ):
             return {"status": "READBACK_INVALID", "checks": trace, "count": n + 1}
         status = row["status"]
