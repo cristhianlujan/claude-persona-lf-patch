@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-nucleo-s7-juicios-config-20261124",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s7_juicios_14_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-s7-juicios-config-20261124.json": "CHANGESET_MANIFEST"
+  }
+}
