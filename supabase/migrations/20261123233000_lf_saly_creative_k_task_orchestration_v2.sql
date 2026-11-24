@@ -283,6 +283,117 @@ BEGIN
   'reviewer_uid',v_reviewer,'independent_pass',p_verdict='PASS');
 END; $f$;
 
+-- Paso 10b: the authoritative generation-ready signal is the actual RUN row,
+-- NOT the review-only capture table and NOT post-QA delivery receipts.
+-- Existing runtime must persist output_evidence.artifact_ref / sha256 /
+-- numeric width / numeric height on successful provider generation.
+CREATE FUNCTION saly.creative_run_image_readback_v2(p_run_id bigint,p_item_id bigint)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','saly','pg_temp'
+AS $f$
+DECLARE r saly.creative_runs%ROWTYPE;
+  v_artifact text;v_sha text;v_width integer;v_height integer;
+BEGIN
+ IF p_run_id IS NULL OR p_run_id<1 OR p_item_id IS NULL OR p_item_id<1
+ THEN RAISE EXCEPTION 'SALY_IMAGE_READBACK_BAD_INPUT'; END IF;
+ SELECT * INTO r FROM saly.creative_runs
+ WHERE id=p_run_id AND item_id=p_item_id;
+ IF NOT FOUND THEN
+   RETURN jsonb_build_object('status','PENDING','run_id',p_run_id,
+       'item_id',p_item_id,'signal','RUN_ROW_NOT_FOUND');
+ END IF;
+ IF r.state IN ('EN_COLA','EJECUTANDO') THEN
+   RETURN jsonb_build_object('status','PENDING','run_id',p_run_id,
+       'item_id',p_item_id,'run_state',r.state,'signal','GENERATION_NOT_FINISHED');
+ END IF;
+ IF r.state<>'EXITOSO' THEN
+   RETURN jsonb_build_object('status','FAILED','run_id',p_run_id,
+       'item_id',p_item_id,'run_state',r.state,
+       'reason',COALESCE(r.error_code,'RUN_NOT_SUCCESSFUL'));
+ END IF;
+ v_artifact:=r.output_evidence->>'artifact_ref';
+ v_sha:=r.output_evidence->>'sha256';
+ IF jsonb_typeof(r.output_evidence) IS DISTINCT FROM 'object'
+ OR nullif(btrim(v_artifact),'') IS NULL
+ OR coalesce(v_sha,'') !~ '^[0-9a-f]{64}(text,text,boolean),
+ saly.creative_task_select_once_v2(bigint,text,boolean),
+ saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_plan_submit_v2(bigint,jsonb),
+ saly.creative_plan_review_v2(bigint,text,text,jsonb),
+ saly.creative_reference_step_v2(jsonb),
+ saly.creative_run_image_readback_v2(bigint,bigint)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
+ saly.creative_task_select_once_v2(bigint,text,boolean),
+ saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_reference_step_v2(jsonb),
+ saly.creative_run_image_readback_v2(bigint,bigint)
+ TO service_role;
+GRANT EXECUTE ON FUNCTION saly.creative_plan_submit_v2(bigint,jsonb),
+ saly.creative_plan_review_v2(bigint,text,text,jsonb)
+ TO authenticated;
+COMMIT;
+
+ OR jsonb_typeof(r.output_evidence->'width') IS DISTINCT FROM 'number'
+ OR jsonb_typeof(r.output_evidence->'height') IS DISTINCT FROM 'number'
+ OR coalesce(r.output_evidence->>'width','') !~ '^[1-9][0-9]{0,4}(text,text,boolean),
+ saly.creative_task_select_once_v2(bigint,text,boolean),
+ saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_plan_submit_v2(bigint,jsonb),
+ saly.creative_plan_review_v2(bigint,text,text,jsonb),
+ saly.creative_reference_step_v2(jsonb)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
+ saly.creative_task_select_once_v2(bigint,text,boolean),
+ saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_reference_step_v2(jsonb)
+ TO service_role;
+GRANT EXECUTE ON FUNCTION saly.creative_plan_submit_v2(bigint,jsonb),
+ saly.creative_plan_review_v2(bigint,text,text,jsonb)
+ TO authenticated;
+COMMIT;
+
+ OR coalesce(r.output_evidence->>'height','') !~ '^[1-9][0-9]{0,4}(text,text,boolean),
+ saly.creative_task_select_once_v2(bigint,text,boolean),
+ saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_plan_submit_v2(bigint,jsonb),
+ saly.creative_plan_review_v2(bigint,text,text,jsonb),
+ saly.creative_reference_step_v2(jsonb)
+ FROM PUBLIC,anon,authenticated,service_role;
+GRANT EXECUTE ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
+ saly.creative_task_select_once_v2(bigint,text,boolean),
+ saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_reference_step_v2(jsonb)
+ TO service_role;
+GRANT EXECUTE ON FUNCTION saly.creative_plan_submit_v2(bigint,jsonb),
+ saly.creative_plan_review_v2(bigint,text,text,jsonb)
+ TO authenticated;
+COMMIT;
+
+ THEN
+   RETURN jsonb_build_object('status','ERROR','run_id',p_run_id,
+      'item_id',p_item_id,'reason','IMAGE_EVIDENCE_INVALID');
+ END IF;
+ v_width:=(r.output_evidence->>'width')::integer;
+ v_height:=(r.output_evidence->>'height')::integer;
+ IF v_width>16384 OR v_height>16384 THEN
+   RETURN jsonb_build_object('status','ERROR','run_id',p_run_id,
+      'item_id',p_item_id,'reason','IMAGE_DIMENSIONS_OUT_OF_RANGE');
+ END IF;
+ RETURN jsonb_build_object('status','READY','run_id',p_run_id,
+     'item_id',p_item_id,'run_state',r.state,
+     'artifact_ref',v_artifact,'sha256',v_sha,
+     'width',v_width,'height',v_height,
+     'evidence_source','saly.creative_runs.output_evidence',
+     'next_step','11');
+END; $f$;
+
 REVOKE ALL ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
  saly.creative_task_select_once_v2(bigint,text,boolean),
  saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
