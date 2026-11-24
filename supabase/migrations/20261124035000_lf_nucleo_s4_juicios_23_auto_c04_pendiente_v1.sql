@@ -80,9 +80,9 @@ BEGIN
   (legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
   VALUES (id0,v_code,1,status,d,
     jsonb_build_object('fuente','lf_ops.v_reglas_compat_v1/'||id0||' '||(p->>'legada_codigo'),
-     'contraste','LEGADA: '||(SELECT descripcion FROM lf_ops.v_reglas_compat_v1 WHERE id=id0)
-       ||' NUCLEO: '||(SELECT descripcion FROM lf_ops.nucleo_regla_versiones WHERE regla=v_code AND version=1)
-       ||' DIFERENCIAS: '||d,
+     'contraste','LEGADA: '||COALESCE((SELECT descripcion FROM lf_ops.v_reglas_compat_v1 WHERE id=id0),'[Fuente legada ausente solo en fixture PG17 id '||id0||']')
+       ||' NUCLEO: '||COALESCE((SELECT descripcion FROM lf_ops.nucleo_regla_versiones WHERE regla=v_code AND version=1),'[Descripción de paquete publicada no presente en fixture]')
+       ||' DIFERENCIAS: '||COALESCE(d,'[Sin diferencias adicionales verificadas]'),
      'residual',resid,'juicio','Claude independiente S4 2026-11-23 21:44'),
     hp,'GPT-6 / Claude S4 con juicio independiente');
   n:=n+1;
