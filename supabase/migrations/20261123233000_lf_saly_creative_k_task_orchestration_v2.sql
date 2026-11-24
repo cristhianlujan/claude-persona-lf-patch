@@ -293,8 +293,6 @@ DECLARE
  r saly.creative_runs%ROWTYPE;
  v_artifact text;
  v_sha text;
- v_width integer;
- v_height integer;
 BEGIN
  IF p_run_id IS NULL OR p_run_id<1 OR p_item_id IS NULL OR p_item_id<1
  THEN RAISE EXCEPTION 'SALY_IMAGE_READBACK_BAD_INPUT'; END IF;
@@ -318,24 +316,13 @@ BEGIN
  IF jsonb_typeof(r.output_evidence) IS DISTINCT FROM 'object'
  OR nullif(btrim(v_artifact),'') IS NULL
  OR coalesce(v_sha,'') !~ '^[0-9a-f]{64}$'
- OR jsonb_typeof(r.output_evidence->'width') IS DISTINCT FROM 'number'
- OR jsonb_typeof(r.output_evidence->'height') IS DISTINCT FROM 'number'
- OR coalesce(r.output_evidence->>'width','') !~ '^[1-9][0-9]{0,4}$'
- OR coalesce(r.output_evidence->>'height','') !~ '^[1-9][0-9]{0,4}$'
  THEN
    RETURN jsonb_build_object('status','ERROR','run_id',p_run_id,
        'item_id',p_item_id,'reason','IMAGE_EVIDENCE_INVALID');
  END IF;
- v_width:=(r.output_evidence->>'width')::integer;
- v_height:=(r.output_evidence->>'height')::integer;
- IF v_width>16384 OR v_height>16384 THEN
-   RETURN jsonb_build_object('status','ERROR','run_id',p_run_id,
-       'item_id',p_item_id,'reason','IMAGE_DIMENSIONS_OUT_OF_RANGE');
- END IF;
  RETURN jsonb_build_object('status','READY','run_id',p_run_id,
      'item_id',p_item_id,'run_state',r.state,
      'artifact_ref',v_artifact,'sha256',v_sha,
-     'width',v_width,'height',v_height,
      'evidence_source','saly.creative_runs.output_evidence',
      'next_step','11');
 END; $f$;
