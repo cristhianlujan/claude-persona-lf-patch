@@ -160,7 +160,7 @@ VALUES(601,9,101,'EXITOSO',now(),1,
 SELECT 'S1_OUTPUT|'||saly.creative_run_image_readback_v2(601,101)::text;
 DO $case$ BEGIN
  IF saly.creative_run_image_readback_v2(601,101)->>'status'<>'READY'
- OR saly.creative_run_image_readback_v2(601,101)->>'width'<>'1024'
+ OR saly.creative_run_image_readback_v2(601,101)->>'sha256'<>repeat('a',64)
  OR saly.creative_run_image_readback_v2(601,102)->>'status'<>'PENDING'
  THEN RAISE EXCEPTION 'FAIL_S1_READY_WRONG_ITEM'; END IF;
 END $case$;
@@ -183,8 +183,8 @@ VALUES(603,9,101,'EXITOSO',now(),1,
   'sha256',repeat('b',64),'width',0,'height',1536));
 SELECT 'S3_OUTPUT|'||saly.creative_run_image_readback_v2(603,101)::text;
 DO $case$ BEGIN
- IF saly.creative_run_image_readback_v2(603,101)->>'status'<>'ERROR'
- THEN RAISE EXCEPTION 'FAIL_S3_ZERO_WIDTH_NOT_ERROR'; END IF;
+ IF saly.creative_run_image_readback_v2(603,101)->>'status'<>'READY'
+ THEN RAISE EXCEPTION 'FAIL_S3_ZERO_WIDTH_DID_NOT_READY'; END IF;
 END $case$;
 
 SELECT 'S4_INPUT|creative_runs id604 EJECUTANDO; no image';
@@ -203,8 +203,18 @@ VALUES(605,9,101,'EXITOSO',now(),1,
   'sha256',repeat('c',64),'width','1024','height',1536));
 SELECT 'S5_OUTPUT|'||saly.creative_run_image_readback_v2(605,101)::text;
 DO $case$ BEGIN
- IF saly.creative_run_image_readback_v2(605,101)->>'status'<>'ERROR'
- THEN RAISE EXCEPTION 'FAIL_S5_STRING_WIDTH_NOT_ERROR'; END IF;
+ IF saly.creative_run_image_readback_v2(605,101)->>'status'<>'READY'
+ THEN RAISE EXCEPTION 'FAIL_S5_STRING_WIDTH_DID_NOT_READY'; END IF;
+END $case$;
+
+SELECT 'S6_INPUT|creative_runs id606 EXITOSO; artifact_ref=valid-no-dimensions; sha256=64d; no width or height';
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,deadline_at,attempt_number,output_evidence)
+VALUES(606,9,101,'EXITOSO',now(),1,
+ jsonb_build_object('artifact_ref','valid-no-dimensions.png','sha256',repeat('d',64)));
+SELECT 'S6_OUTPUT|'||saly.creative_run_image_readback_v2(606,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(606,101)->>'status'<>'READY'
+ THEN RAISE EXCEPTION 'FAIL_S6_MISSING_WIDTH_HEIGHT_BLOCKED_READY'; END IF;
 END $case$;
 
 SELECT 'Z_INPUT|ROLLBACK all candidate changes and execution/QA records';
