@@ -26,12 +26,13 @@ psql -X -v ON_ERROR_STOP=1 -f sandbox/creative_factory/k_task_v2/abc_live_pendin
 echo 'OUTPUT_ABC_FIXTURE|COPY_READY_IN_ISOLATED_PG17'
 sed -e '/^BEGIN;$/d' -e '/^COMMIT;$/d' supabase/migrations/20261123234000_lf_saly_creative_owner_state_and_medium_v1.sql > /tmp/saly_abc_candidate_no_boundary.sql
 echo 'INPUT_ABC_ROLLBACK|BEGIN -> candidate functions and applies_to metadata -> item11 QA / delivery / TERMINADO / owner approve -> item11/13 medium -> ROLLBACK'
-psql -X -v ON_ERROR_STOP=1 -f sandbox/creative_factory/k_task_v2/abc_real_pending_rollback_pg17.sql 2>&1 | tee /tmp/saly_abc_v1.log
-grep -F 'ABC_PG17_ROLLBACK_TESTS_PASS' /tmp/saly_abc_v1.log >/dev/null
-grep -F '"item11": "PENDIENTE"' /tmp/saly_abc_v1.log >/dev/null
-grep -F '"context100_exists": 0' /tmp/saly_abc_v1.log >/dev/null
-grep -F '"owner_table_exists": false' /tmp/saly_abc_v1.log >/dev/null
+psql -X -v ON_ERROR_STOP=1 -f sandbox/creative_factory/k_task_v2/abc_timer_palette_medium_rollback_pg17.sql 2>&1 | tee /tmp/saly_abc_v2.log
+grep -F 'PASS_ABC_TIMER_PALETTE_MEDIUM_REAL_PENDING_ROLLBACK' /tmp/saly_abc_v2.log >/dev/null
+grep -F '"item11": "PENDIENTE"' /tmp/saly_abc_v2.log >/dev/null
+grep -F '"context100_exists": 0' /tmp/saly_abc_v2.log >/dev/null
+grep -F '"detection_table_exists": false' /tmp/saly_abc_v2.log >/dev/null
+grep -F '"owner_medium_confirmation_table_exists": false' /tmp/saly_abc_v2.log >/dev/null
 echo 'INPUT_A_FORMAT|decode actual PNG bytes and compare aspect ratio of IPHONE16PRO (3% relative tolerance)'
 PYTHONPATH=sandbox/creative_factory/k_task_v2 python3 -u -m unittest -v sandbox/creative_factory/k_task_v2/test_image_format_similarity_v1.py 2>&1 | tee /tmp/saly_image_ratio.log
-echo 'PASS_PG17_SALY_REAL_PENDING_ABC_ROLLBACK_AND_IMAGE_RATIO'
+echo 'PASS_PG17_SALY_TIMER_PALETTE_MEDIUM_ROLLBACK_AND_IMAGE_RATIO'
 echo 'PASS_PG17_K_TASK_ROLLBACK_AND_WAIT_TESTS'
