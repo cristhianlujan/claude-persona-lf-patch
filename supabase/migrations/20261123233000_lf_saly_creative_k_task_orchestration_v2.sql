@@ -214,6 +214,22 @@ AS $f$
  AND r.object_sha256=p_object_sha256 AND r.module_code=p_module_code;
 $f$;
 
+-- Step 4: reference is optional; no fabricated asset, no new blocker.
+CREATE FUNCTION saly.creative_reference_step_v2(p_reference jsonb)
+RETURNS jsonb LANGUAGE plpgsql IMMUTABLE
+SET search_path TO 'pg_catalog','pg_temp'
+AS $f$
+BEGIN
+ IF p_reference IS NULL OR p_reference='null'::jsonb
+ THEN RETURN jsonb_build_object('step','4','status','SIN_REFERENCIA',
+       'execute',false,'blocking',false,'reference_observations','[]'::jsonb); END IF;
+ IF jsonb_typeof(p_reference) IS DISTINCT FROM 'object'
+ THEN RAISE EXCEPTION 'SALY_REFERENCE_INVALID'; END IF;
+ RETURN jsonb_build_object('step','4','status','CON_REFERENCIA',
+     'execute',true,'blocking',false,'reference',p_reference,
+     'k03_k04_mode','LENTE_SIN_REEJECUCION');
+END $f$;
+
 -- Separate human/authenticated principal submits plan. No automatic PASS.
 CREATE FUNCTION saly.creative_plan_submit_v2(
  p_item_id bigint,p_plan_json jsonb)
@@ -271,12 +287,14 @@ REVOKE ALL ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
  saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
  saly.creative_k_consume_v2(bigint,text,text,text),
  saly.creative_plan_submit_v2(bigint,jsonb),
- saly.creative_plan_review_v2(bigint,text,text,jsonb)
+ saly.creative_plan_review_v2(bigint,text,text,jsonb),
+ saly.creative_reference_step_v2(jsonb)
  FROM PUBLIC,anon,authenticated,service_role;
 GRANT EXECUTE ON FUNCTION visual.knowledge_select_task_v2(text,text,boolean),
  saly.creative_task_select_once_v2(bigint,text,boolean),
  saly.creative_k_record_once_v2(bigint,text,text,text,text,text,jsonb,jsonb),
- saly.creative_k_consume_v2(bigint,text,text,text)
+ saly.creative_k_consume_v2(bigint,text,text,text),
+ saly.creative_reference_step_v2(jsonb)
  TO service_role;
 GRANT EXECUTE ON FUNCTION saly.creative_plan_submit_v2(bigint,jsonb),
  saly.creative_plan_review_v2(bigint,text,text,jsonb)
