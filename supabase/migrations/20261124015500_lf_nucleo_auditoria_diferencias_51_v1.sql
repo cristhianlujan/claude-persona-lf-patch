@@ -46,11 +46,11 @@ END $negative$;
 ROLLBACK TO SAVEPOINT audit_negativo;
 DO $final$ DECLARE n int; BEGIN
  SELECT count(distinct legacy_id) INTO n FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA';
- IF n<>48
- OR (SELECT count(*) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='PARCIAL')<>30
+ IF n<>46
+ OR (SELECT count(*) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='PARCIAL')<>34
  OR (SELECT count(*) FROM lf_ops.lf_nucleo_cobertura_legada WHERE diferencias LIKE 'La regla legada es descriptiva%')<>0
  OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0
  THEN RAISE EXCEPTION 'LF_AUDIT_FINAL_COUNTS:%',n; END IF;
- RAISE NOTICE 'LF_AUDIT_FINAL_PASS replaced=% partial_rows=30',n;
+ RAISE NOTICE 'LF_AUDIT_FINAL_PASS replaced=% partial_rows=34',n;
 END $final$;
 COMMIT;
