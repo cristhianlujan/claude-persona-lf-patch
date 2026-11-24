@@ -715,6 +715,24 @@ UPDATE saly.identity_versions v SET metadata=v.metadata
    'conflict_resolution_note','ORIGINAL_VALUE_JSON_PRESERVED;TARGET_APPROVED_CTA')
  WHERE v.id=21;
 
+-- Non-destructive depuration: existing sealed contexts still reference these
+-- immutable version IDs, so NEVER DELETE or change value_json / context hashes.
+-- Not a promotion; removes only versions 10/21 from effective selection.
+UPDATE saly.identity_versions v SET metadata=v.metadata
+ || jsonb_build_object(
+   'effective_use_state','RETIRADO',
+   'retired_from_selection',true,
+   'retired_reason',CASE WHEN v.id=10
+     THEN 'DUPLICATE_APPROVED_CTA_008200_NOT_BRAND'
+     ELSE 'REDUNDANT_SEMANTIC_ALIAS_ALREADY_COVERED_BY_APPROVED_CTA' END,
+   'replaced_by_version_id',7,
+   'replaced_by_code','color.action.primary.bg',
+   'retirement_scope','EFFECTIVE_GENERATION_ONLY',
+   'retirement_review','CANDIDATE_OWNER_REVIEW',
+   'preserve_historical_versions',true,
+   'source_values_unchanged',true)
+ WHERE v.id IN(10,21);
+
 -- Authenticated owner signs precisely those proposed media already enumerated.
 CREATE FUNCTION saly.creative_token_confirm_medium_v1(
  p_version_id bigint,p_medium text,p_comment text)
@@ -789,7 +807,9 @@ BEGIN
    v.metadata->>'token_role' token_role,
    v.metadata->>'duplicate_of_code' duplicate_of_code,
    v.metadata->>'alias_target_code' alias_target_code,
-   v.metadata->>'kind' token_kind
+   v.metadata->>'kind' token_kind,
+   COALESCE(v.metadata->>'effective_use_state','')='RETIRADO' AS retired_from_selection,
+   v.metadata->>'replaced_by_code' replaced_by_code
   FROM saly.creative_context_tokens t
   JOIN saly.identity_versions v ON v.id=t.identity_version_id
   JOIN saly.identity_elements e ON e.id=v.element_id
@@ -798,6 +818,7 @@ BEGIN
  ), decision AS (
   SELECT *,
     CASE
+      WHEN retired_from_selection THEN 'TOKEN_RETIRADO'
       WHEN jsonb_typeof(applies_to) IS DISTINCT FROM 'array'
        OR jsonb_array_length(applies_to)=0 THEN 'SIN_CLASIFICAR'
       WHEN media IS NULL THEN 'MEDIO_SIN_DEFINIR'
@@ -814,7 +835,8 @@ BEGIN
    'alias_target_code',alias_target_code,'duplicate_of_code',duplicate_of_code) ORDER BY code)
    FILTER(WHERE reason IS NULL),'[]'::jsonb),
   COALESCE(jsonb_agg(jsonb_build_object(
-   'code',code,'version_id',version_id,'reason',reason) ORDER BY code)
+   'code',code,'version_id',version_id,'reason',reason,
+   'replaced_by_code',replaced_by_code) ORDER BY code)
    FILTER(WHERE reason IS NOT NULL),'[]'::jsonb)
  INTO selections,omissions FROM decision;
  SELECT COALESCE(jsonb_object_agg(
@@ -835,10 +857,11 @@ BEGIN
  'effective_color_roles',v_palette,
  'effective_palette_exclusions',
    COALESCE((SELECT jsonb_agg(jsonb_build_object(
-       'code',e->>'code','reason','DUPLICADO_DE_CTA',
-       'duplicate_of_code',e->>'duplicate_of_code'))
-      FROM jsonb_array_elements(selections) e
-      WHERE e->>'token_role'='DUPLICADO_DE_CTA'),'[]'::jsonb)
+       'code',e->>'code','version_id',(e->>'version_id')::bigint,
+       'reason',e->>'reason','replacement_code',e->>'replaced_by_code')
+       ORDER BY (e->>'version_id')::bigint)
+      FROM jsonb_array_elements(omissions) e
+      WHERE e->>'reason'='TOKEN_RETIRADO'),'[]'::jsonb)
  );
 END; $f$;
 REVOKE ALL ON FUNCTION saly.creative_item_context_medium_v3(bigint,text) FROM PUBLIC,anon,authenticated;
