@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-nucleo-cobertura58-s2-20261123",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_security_tanda_s2_vectores_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-cobertura58-s2-20261123.json": "CHANGESET_MANIFEST"
+  }
+}
