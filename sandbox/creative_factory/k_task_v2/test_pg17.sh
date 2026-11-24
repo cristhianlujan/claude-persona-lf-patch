@@ -20,5 +20,5 @@ grep -F '"selection_rows": 0' /tmp/saly_k_v2_sql.log >/dev/null
 grep -F '"result_rows": 0' /tmp/saly_k_v2_sql.log >/dev/null
 grep -F '"preqa_rows": 0' /tmp/saly_k_v2_sql.log >/dev/null
 echo 'INPUT_WAIT|simulated ready at 20,100,never and expirer NOT_EXPIRED'
-python3 -u -m unittest -v sandbox/creative_factory/k_task_v2/test_wait_after_dispatch_v2.py 2>&1 | tee /tmp/saly_k_v2_wait.log
+PYTHONPATH=sandbox/creative_factory/k_task_v2 python3 -u -m unittest -v sandbox/creative_factory/k_task_v2/test_wait_after_dispatch_v2.py 2>&1 | tee /tmp/saly_k_v2_wait.log
 echo 'PASS_PG17_K_TASK_ROLLBACK_AND_WAIT_TESTS'
