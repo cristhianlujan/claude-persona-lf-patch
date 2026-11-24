@@ -89,7 +89,7 @@ BEGIN
    'run_id',p_run_id,'item_id',i.id,'qa_verdict','PASS',
    'item_state','TERMINADO','comment_saved',true,
    'native_delivery_verified',false,'db_done_allowed',false);
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_queue_release_v1(p_token uuid, p_outcome text, p_note text DEFAULT NULL::text)
  RETURNS jsonb
@@ -166,7 +166,7 @@ BEGIN
   THEN RAISE EXCEPTION 'CREATIVE_SINGLE_SCREEN_DID_NOT_TERMINATE'; END IF;
   RETURN jsonb_build_object('status','RELEASED','result',p_outcome,
     'claim_id',v_claim.id,'order_closed',v_closed);
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_chat_finalize_after_verified_delivery_v1(p_token uuid, p_run_id bigint)
  RETURNS jsonb
@@ -208,7 +208,7 @@ BEGIN
     'item_id',i.id,'db_item_state','TERMINADO','db_claim_state','DONE',
     'qa_comment',i.qa_receipt->>'comment',
     'order_closed',v_result->'order_closed');
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_queue_native_delivery_guard_v1()
  RETURNS trigger
@@ -256,7 +256,7 @@ BEGIN
     THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_SELF_VERIFICATION'; END IF;
  END IF;
  RETURN NEW;
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_item_guard_l1()
  RETURNS trigger
@@ -319,7 +319,7 @@ BEGIN
    END IF;
  END IF;
  RETURN NEW;
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_chat_terminal_item_guard_v1()
  RETURNS trigger
@@ -399,7 +399,7 @@ BEGIN
   END IF;
  END IF;
  RETURN NEW;
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_chat_terminal_order_guard_v1()
  RETURNS trigger
@@ -452,7 +452,7 @@ BEGIN
   THEN RAISE EXCEPTION 'SALY_CHAT_TERMINAL_ORDER_DETAILS_INCOMPLETE'; END IF;
  END IF;
  RETURN NEW;
-END $function$
+END $function$;
 
 CREATE OR REPLACE FUNCTION saly.creative_order_close_guard_l1()
  RETURNS trigger
@@ -474,7 +474,7 @@ BEGIN
  IF TG_OP='UPDATE' AND OLD.status='COMPLETADO'
  THEN RAISE EXCEPTION 'CREATIVE_COMPLETED_ORDER_IMMUTABLE'; END IF;
  RETURN NEW;
-END $function$
+END $function$;
 
 
 CREATE FUNCTION saly.creative_owner_approve_v1(
