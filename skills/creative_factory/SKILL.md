@@ -1031,3 +1031,7 @@ Hasta contar con adaptador y pruebas contractuales, la ausencia de fuentes
 se trata como **bloqueo**, no como permiso para consultar reglas de otro negocio.
 Para integrar posteriormente Router y perfiles se requiere otro lote; aquí no
 se implementan ni modifican.
+
+## Runbook operativo de Merge Train — control de versiones
+
+Antes de crear cada migración consultar en solo lectura max(version) de supabase_migrations.schema_migrations y comprobar que la versión candidata no existe; contrastar con main y crear la rama desde su SHA actual. Un PR, una migración, un changeset. Confirmar 4/4 checks del head vigente y aplicar ready-to-merge. Si el tren retira la etiqueta, leer comentarios del bot y logs del run. PRE-APPLY STOP permite corregir la causa y repetir checks; POST-APPLY STOP exige reconciliar el ledger sin reaplicar ni retimestamp. Ante FAIL_TRAIN_EXISTING_LEDGER_IDENTITY_MISMATCH, verificar si la migración propia no fue aplicada, cambiar únicamente su versión y su manifiesto, revalidar y reetiquetar. No tocar migraciones ajenas. Ante FAIL_CHANGESET_MULTIPLE_SOLUTIONS, reconstruir el diff propio sobre main vigente. Confirmar merged:true y readback de BD antes del siguiente lote; no declarar despliegue por la etiqueta sola.
