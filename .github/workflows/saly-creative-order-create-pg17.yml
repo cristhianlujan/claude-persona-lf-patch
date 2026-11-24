@@ -2,6 +2,8 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_full_active_context_v1.sql'
+      - 'supabase/tests/saly_full_active_context_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_fix_creative_terminal_guard_v1.sql'
       - 'supabase/tests/saly_fix_creative_terminal_guard_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_activate_design_system_v2.sql'
@@ -514,3 +516,13 @@ jobs:
           test "${#files[@]}" -eq 1
           sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_terminal_guard_body.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_fix_creative_terminal_guard_v1_pg17_rollback.sql
+      - name: Full active context rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGDATABASE=saly_accent_ci
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_full_active_context_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_full_context_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_full_active_context_v1_pg17_rollback.sql
