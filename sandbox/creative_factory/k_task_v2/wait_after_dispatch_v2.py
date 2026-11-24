@@ -63,3 +63,37 @@ def wait_after_dispatch(
         "count": 7,
         "elapsed_seconds": 180,
     }
+
+# Concrete SQL signal contract. The executor must persist real output_evidence
+# before a ready image is observable; a capture/prompt receipt is not READY.
+RUN_READBACK_SQL = "SELECT saly.creative_run_image_readback_v2(%s,%s) AS result"
+RUN_EXPIRE_SQL = "SELECT saly.creative_run_expire_v1(%s) AS result"
+
+
+def wait_for_saly_run(
+    execute_sql: Callable[[str, tuple[int, ...]], dict[str, Any]],
+    run_id: int,
+    item_id: int,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Wire 10b to the SQL readback and existing run-expiry RPC.
+
+    execute_sql is an injected parameterized DB adapter whose return value
+    is a single row {"result": {...}}. No adapter = no production polling.
+    """
+    if not isinstance(run_id, int) or run_id < 1:
+        raise ValueError("SALY_INVALID_RUN_ID")
+    if not isinstance(item_id, int) or item_id < 1:
+        raise ValueError("SALY_INVALID_ITEM_ID")
+
+    def call(sql: str, params: tuple[int, ...]) -> dict[str, Any]:
+        row = execute_sql(sql, params)
+        if not isinstance(row, dict) or not isinstance(row.get("result"), dict):
+            return {"status": "ERROR", "reason": "SQL_READBACK_ROW_INVALID"}
+        return row["result"]
+
+    return wait_after_dispatch(
+        lambda: call(RUN_READBACK_SQL, (run_id, item_id)),
+        lambda: call(RUN_EXPIRE_SQL, (run_id,)),
+        **kwargs,
+    )
