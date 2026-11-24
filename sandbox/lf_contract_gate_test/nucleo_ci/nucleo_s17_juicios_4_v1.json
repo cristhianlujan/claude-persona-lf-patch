@@ -1,0 +1,174 @@
+{
+  "contrato": "LF_S17_JUICIOS_4",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S17-C01",
+      "version": 1,
+      "eval_id": 1128,
+      "hash_version_atestado": "a5dc950b252c664af9a41949019376144f108628b40456722fc04750bf80b714",
+      "hash_paquete_atestado": "b8a58c8e5ca1fedc456ecd1f4472b16de16cc04b59faba05a641f584dc1db95c",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 13:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 657,
+      "familia": "SECURITY",
+      "diferencias": "Contraste funcional: BLOQUEAR certificación del Login B2B sin evidencia de controles contra agotamiento de recursos y DDoS, inyección mediante validación server-side y consultas parametrizadas, XSS, SSRF, clickjacking, CORS, TLS y headers, replay, supply chain/SBOM y límites de payload. No afirmar implementación ni QA aprobada sin evidencia. La legada declara implementación y QA pendientes; no afirmarlas sin evidencia.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S17-C02",
+      "version": 1,
+      "eval_id": 1129,
+      "hash_version_atestado": "874f6f3536583228d822f76c87ff8095a8ec2b7415e0da8f3efbcaece1383a45",
+      "hash_paquete_atestado": "3daffbb168e0ba8bf307b4ac05d9cbd1ecd6c1a8260e01e0ff2e4760715c155c",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 13:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 559,
+      "familia": "OFFERS_INSTALLMENTS",
+      "diferencias": "Contraste funcional: BLOQUEAR modal de cuotas que preseleccione plan nuevo, habilite Aplicar sin plan válido, persista cambios antes de Aplicar o altere selección comprometida al cancelar o cerrar. Solo restaurar plan previo de misma oferta, versión y vigencia; aplicar revalidación backend y actualizar únicamente oferta contextual y resumen, sin cálculo monetario frontend.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S17-C03",
+      "version": 1,
+      "eval_id": 1130,
+      "hash_version_atestado": "216ed16e3c7860c596cc3379f87fe3d96340a629649f56cad2fd69d92edd24b3",
+      "hash_paquete_atestado": "00701fd25d8b697cc313f2029e83ec09b03ef66c0c26111f300181c131e70207",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 13:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 369,
+      "familia": "DESIGN_SYSTEM",
+      "diferencias": "Contraste funcional: BLOQUEAR bloque de confianza de Home que desplace jerarquía del Hero, Ruta de Claridad o CTA principal, incluya CTA del simulador o agregue panel explicativo sin evidencia real.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S17-C04",
+      "version": 1,
+      "eval_id": 1131,
+      "hash_version_atestado": "99c4e23c635eb20be67c79fff87f715200cc5b0cf3ca9f52d82bb5e29e002a05",
+      "hash_paquete_atestado": "d60a66a09d3c2ce623363a3acb16063bb9bb19413003a0b1d08909bcb36ae4a8",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 13:35 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 361,
+      "familia": "DESIGN_SYSTEM",
+      "diferencias": "Contraste funcional: BLOQUEAR restricción de slate_text_strong exclusivamente al Hero cuando un subtítulo, disclaimer o microcopy de Home requiera margen de contraste; usar token canónico sin copiar hex ni fijar nuevas métricas. Conserva alcance amplio de slate_text_strong a Home.",
+      "residual": "",
+      "complementa": null
+    }
+  ]
+}
