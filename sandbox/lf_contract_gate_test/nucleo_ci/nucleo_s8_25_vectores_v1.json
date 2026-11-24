@@ -1,0 +1,3333 @@
+{
+  "contrato": "LF_S8_25_CANDIDATAS",
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C01",
+      "clave": "s8_reg_acc_001",
+      "familia": "ACCESSIBILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Teclado numérico en campos numéricos",
+      "descripcion": "BLOQUEAR presentación móvil de DNI, celular u OTP que no active teclado numérico mediante inputmode numeric o type tel.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c01_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c01_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c01_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": false,
+            "s8c01_contexto": false,
+            "s8c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": false,
+            "s8c01_contexto": false,
+            "s8c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": false,
+            "s8c01_contexto": true,
+            "s8c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": false,
+            "s8c01_contexto": true,
+            "s8c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": true,
+            "s8c01_contexto": false,
+            "s8c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": true,
+            "s8c01_contexto": false,
+            "s8c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": true,
+            "s8c01_contexto": true,
+            "s8c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c01_intento": true,
+            "s8c01_contexto": true,
+            "s8c01_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/45",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C02",
+      "clave": "s8_reg_acc_004",
+      "familia": "BROWSER_PLATFORM",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Autocompletado limitado a campos seguros",
+      "descripcion": "BLOQUEAR habilitar autocomplete en DNI, celular u OTP del onboarding Cliente; nombre y correo pueden habilitarlo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c02_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c02_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c02_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": false,
+            "s8c02_contexto": false,
+            "s8c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": false,
+            "s8c02_contexto": false,
+            "s8c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": false,
+            "s8c02_contexto": true,
+            "s8c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": false,
+            "s8c02_contexto": true,
+            "s8c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": true,
+            "s8c02_contexto": false,
+            "s8c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": true,
+            "s8c02_contexto": false,
+            "s8c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": true,
+            "s8c02_contexto": true,
+            "s8c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c02_intento": true,
+            "s8c02_contexto": true,
+            "s8c02_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/48",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C03",
+      "clave": "s8_b2b_rule_a11y_001",
+      "familia": "ACCESSIBILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Controles B2B accesibles",
+      "descripcion": "BLOQUEAR controles interactivos B2B que carezcan de foco visible, navegación por teclado, etiqueta accesible o área táctil conforme al contrato de diseño vigente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c03_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c03_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c03_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": false,
+            "s8c03_contexto": false,
+            "s8c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": false,
+            "s8c03_contexto": false,
+            "s8c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": false,
+            "s8c03_contexto": true,
+            "s8c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": false,
+            "s8c03_contexto": true,
+            "s8c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": true,
+            "s8c03_contexto": false,
+            "s8c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": true,
+            "s8c03_contexto": false,
+            "s8c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": true,
+            "s8c03_contexto": true,
+            "s8c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c03_intento": true,
+            "s8c03_contexto": true,
+            "s8c03_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/394",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C04",
+      "clave": "s8_b2b_rule_a11y_002",
+      "familia": "ACCESSIBILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Estado B2B no depende solo del color",
+      "descripcion": "BLOQUEAR representar un estado B2B exclusivamente con color sin indicador adicional comprensible.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c04_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c04_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c04_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": false,
+            "s8c04_contexto": false,
+            "s8c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": false,
+            "s8c04_contexto": false,
+            "s8c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": false,
+            "s8c04_contexto": true,
+            "s8c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": false,
+            "s8c04_contexto": true,
+            "s8c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": true,
+            "s8c04_contexto": false,
+            "s8c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": true,
+            "s8c04_contexto": false,
+            "s8c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": true,
+            "s8c04_contexto": true,
+            "s8c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c04_intento": true,
+            "s8c04_contexto": true,
+            "s8c04_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/395",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C05",
+      "clave": "s8_b2b_rule_a11y_003",
+      "familia": "REDUCED_MOTION",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Respetar preferencia de movimiento reducido",
+      "descripcion": "BLOQUEAR animaciones no esenciales cuando el usuario activa movimiento reducido, o estados y acciones que dependan exclusivamente del movimiento.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c05_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c05_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c05_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": false,
+            "s8c05_contexto": false,
+            "s8c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": false,
+            "s8c05_contexto": false,
+            "s8c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": false,
+            "s8c05_contexto": true,
+            "s8c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": false,
+            "s8c05_contexto": true,
+            "s8c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": true,
+            "s8c05_contexto": false,
+            "s8c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": true,
+            "s8c05_contexto": false,
+            "s8c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": true,
+            "s8c05_contexto": true,
+            "s8c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c05_intento": true,
+            "s8c05_contexto": true,
+            "s8c05_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/465",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C06",
+      "clave": "s8_b2b_rule_a11y_004",
+      "familia": "FORCED_COLORS_CONTRAST",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Conservar funcionalidad con colores forzados",
+      "descripcion": "BLOQUEAR pérdida de lectura, foco, estados, errores o acciones en modo forced colors o alto contraste; no anular globalmente preferencias del usuario.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c06_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c06_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c06_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": false,
+            "s8c06_contexto": false,
+            "s8c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": false,
+            "s8c06_contexto": false,
+            "s8c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": false,
+            "s8c06_contexto": true,
+            "s8c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": false,
+            "s8c06_contexto": true,
+            "s8c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": true,
+            "s8c06_contexto": false,
+            "s8c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": true,
+            "s8c06_contexto": false,
+            "s8c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": true,
+            "s8c06_contexto": true,
+            "s8c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c06_intento": true,
+            "s8c06_contexto": true,
+            "s8c06_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/466",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C07",
+      "clave": "s8_reg_anl_002",
+      "familia": "PRIVACY_PII",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Excluir datos identificantes de GA4",
+      "descripcion": "BLOQUEAR envío GA4 con nombre, correo, celular, DNI u otro identificador personal; admitir únicamente identificadores internos anónimos, rangos y categorías.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c07_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c07_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c07_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": false,
+            "s8c07_contexto": false,
+            "s8c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": false,
+            "s8c07_contexto": false,
+            "s8c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": false,
+            "s8c07_contexto": true,
+            "s8c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": false,
+            "s8c07_contexto": true,
+            "s8c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": true,
+            "s8c07_contexto": false,
+            "s8c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": true,
+            "s8c07_contexto": false,
+            "s8c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": true,
+            "s8c07_contexto": true,
+            "s8c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c07_intento": true,
+            "s8c07_contexto": true,
+            "s8c07_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/87",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C08",
+      "clave": "s8_reg_anl_008",
+      "familia": "ANALYTICS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Sanear eventos de error GA4",
+      "descripcion": "BLOQUEAR envío de evento de error GA4 sin categoría y pantalla, o con mensaje técnico crudo, stack trace o datos del servidor.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c08_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c08_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c08_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": false,
+            "s8c08_contexto": false,
+            "s8c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": false,
+            "s8c08_contexto": false,
+            "s8c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": false,
+            "s8c08_contexto": true,
+            "s8c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": false,
+            "s8c08_contexto": true,
+            "s8c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": true,
+            "s8c08_contexto": false,
+            "s8c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": true,
+            "s8c08_contexto": false,
+            "s8c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": true,
+            "s8c08_contexto": true,
+            "s8c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c08_intento": true,
+            "s8c08_contexto": true,
+            "s8c08_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/93",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C09",
+      "clave": "s8_reg_obs_002",
+      "familia": "PRIVACY_PII",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Filtrar datos personales antes de Sentry",
+      "descripcion": "BLOQUEAR despacho de eventos Sentry que contengan DNI, celular, correo o nombre; aplicar filtro beforeSend antes del envío.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c09_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c09_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c09_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": false,
+            "s8c09_contexto": false,
+            "s8c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": false,
+            "s8c09_contexto": false,
+            "s8c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": false,
+            "s8c09_contexto": true,
+            "s8c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": false,
+            "s8c09_contexto": true,
+            "s8c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": true,
+            "s8c09_contexto": false,
+            "s8c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": true,
+            "s8c09_contexto": false,
+            "s8c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": true,
+            "s8c09_contexto": true,
+            "s8c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c09_intento": true,
+            "s8c09_contexto": true,
+            "s8c09_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/95",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C10",
+      "clave": "s8_reg_obs_005",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Alerta por latencia de verificación OTP",
+      "descripcion": "BLOQUEAR omisión de alerta operativa cuando el percentil p95 entre emisión y verificación OTP supera OBSERVABILIDAD/OTP_DELIVERY_P95_SECONDS_MAX de public.lf_global_config.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c10_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c10_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c10_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": false,
+            "s8c10_contexto": false,
+            "s8c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": false,
+            "s8c10_contexto": false,
+            "s8c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": false,
+            "s8c10_contexto": true,
+            "s8c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": false,
+            "s8c10_contexto": true,
+            "s8c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": true,
+            "s8c10_contexto": false,
+            "s8c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": true,
+            "s8c10_contexto": false,
+            "s8c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": true,
+            "s8c10_contexto": true,
+            "s8c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c10_intento": true,
+            "s8c10_contexto": true,
+            "s8c10_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/98",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C11",
+      "clave": "s8_reg_alr_001",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Alerta por caída de verificación OTP",
+      "descripcion": "BLOQUEAR omitir alerta al equipo técnico si tasa de OTP verificado sobre enviado cae bajo ALERTAS/OTP_VERIFICATION_MIN_RATE durante ALERTAS/OTP_VERIFICATION_WINDOW_MINUTES de public.lf_global_config.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c11_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c11_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c11_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": false,
+            "s8c11_contexto": false,
+            "s8c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": false,
+            "s8c11_contexto": false,
+            "s8c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": false,
+            "s8c11_contexto": true,
+            "s8c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": false,
+            "s8c11_contexto": true,
+            "s8c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": true,
+            "s8c11_contexto": false,
+            "s8c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": true,
+            "s8c11_contexto": false,
+            "s8c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": true,
+            "s8c11_contexto": true,
+            "s8c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c11_intento": true,
+            "s8c11_contexto": true,
+            "s8c11_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/110",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C12",
+      "clave": "s8_reg_alr_002",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Alerta por abandono inicial",
+      "descripcion": "BLOQUEAR omisión de alerta a producto cuando tasa de abandono inicial supera ALERTAS/PASO1_ABANDON_RATE_MAX durante ALERTAS/PASO1_ABANDON_WINDOW_HOURS de public.lf_global_config.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c12_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c12_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c12_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": false,
+            "s8c12_contexto": false,
+            "s8c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": false,
+            "s8c12_contexto": false,
+            "s8c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": false,
+            "s8c12_contexto": true,
+            "s8c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": false,
+            "s8c12_contexto": true,
+            "s8c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": true,
+            "s8c12_contexto": false,
+            "s8c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": true,
+            "s8c12_contexto": false,
+            "s8c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": true,
+            "s8c12_contexto": true,
+            "s8c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c12_intento": true,
+            "s8c12_contexto": true,
+            "s8c12_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/111",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C13",
+      "clave": "s8_reg_alr_004",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Alerta por errores de submit inicial",
+      "descripcion": "BLOQUEAR omisión de alerta técnica cuando tasa de error de submit inicial supera ALERTAS/PASO1_SUBMIT_ERROR_RATE_MAX durante ALERTAS/PASO1_SUBMIT_ERROR_WINDOW_MINUTES de public.lf_global_config.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c13_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c13_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c13_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": false,
+            "s8c13_contexto": false,
+            "s8c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": false,
+            "s8c13_contexto": false,
+            "s8c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": false,
+            "s8c13_contexto": true,
+            "s8c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": false,
+            "s8c13_contexto": true,
+            "s8c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": true,
+            "s8c13_contexto": false,
+            "s8c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": true,
+            "s8c13_contexto": false,
+            "s8c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": true,
+            "s8c13_contexto": true,
+            "s8c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c13_intento": true,
+            "s8c13_contexto": true,
+            "s8c13_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/113",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C14",
+      "clave": "s8_reg_alr_005",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Alerta LCP por sesiones afectadas",
+      "descripcion": "BLOQUEAR omisión de alerta a técnico y producto cuando LCP supera ALERTAS/LCP_ALERT_THRESHOLD_MS en proporción de sesiones superior a ALERTAS/LCP_ALERT_SESSIONS_RATIO durante ALERTAS/LCP_ALERT_WINDOW_HOURS de public.lf_global_config.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c14_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c14_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c14_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": false,
+            "s8c14_contexto": false,
+            "s8c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": false,
+            "s8c14_contexto": false,
+            "s8c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": false,
+            "s8c14_contexto": true,
+            "s8c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": false,
+            "s8c14_contexto": true,
+            "s8c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": true,
+            "s8c14_contexto": false,
+            "s8c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": true,
+            "s8c14_contexto": false,
+            "s8c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": true,
+            "s8c14_contexto": true,
+            "s8c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c14_intento": true,
+            "s8c14_contexto": true,
+            "s8c14_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/114",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C15",
+      "clave": "s8_reg_aud_002",
+      "familia": "AUDIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Enmascarar identificantes en auditoría",
+      "descripcion": "BLOQUEAR registrar DNI, nombre, celular o email completos en eventos de auditoría; admitir representación enmascarada o hash.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c15_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c15_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c15_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": false,
+            "s8c15_contexto": false,
+            "s8c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": false,
+            "s8c15_contexto": false,
+            "s8c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": false,
+            "s8c15_contexto": true,
+            "s8c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": false,
+            "s8c15_contexto": true,
+            "s8c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": true,
+            "s8c15_contexto": false,
+            "s8c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": true,
+            "s8c15_contexto": false,
+            "s8c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": true,
+            "s8c15_contexto": true,
+            "s8c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c15_intento": true,
+            "s8c15_contexto": true,
+            "s8c15_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/37",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C16",
+      "clave": "s8_reg_aud_004",
+      "familia": "AUDIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Auditar cambio inline de celular",
+      "descripcion": "BLOQUEAR finalizar cambio inline sin evento con anterior y nuevo número enmascarados, timestamp y contador resultante lf_client.onboarding_sessions.phone_update_count.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c16_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c16_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c16_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": false,
+            "s8c16_contexto": false,
+            "s8c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": false,
+            "s8c16_contexto": false,
+            "s8c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": false,
+            "s8c16_contexto": true,
+            "s8c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": false,
+            "s8c16_contexto": true,
+            "s8c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": true,
+            "s8c16_contexto": false,
+            "s8c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": true,
+            "s8c16_contexto": false,
+            "s8c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": true,
+            "s8c16_contexto": true,
+            "s8c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c16_intento": true,
+            "s8c16_contexto": true,
+            "s8c16_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/39",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C17",
+      "clave": "s8_reg_aud_005",
+      "familia": "AUDIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Auditar intento OTP fallido sin secreto",
+      "descripcion": "BLOQUEAR finalizar registro de fallo OTP sin timestamp, contador resultante lf_client.onboarding_sessions.otp_attempt_count_current y evidencia de bloqueo derivada de blocked_at; excluir código ingresado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c17_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c17_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c17_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": false,
+            "s8c17_contexto": false,
+            "s8c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": false,
+            "s8c17_contexto": false,
+            "s8c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": false,
+            "s8c17_contexto": true,
+            "s8c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": false,
+            "s8c17_contexto": true,
+            "s8c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": true,
+            "s8c17_contexto": false,
+            "s8c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": true,
+            "s8c17_contexto": false,
+            "s8c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": true,
+            "s8c17_contexto": true,
+            "s8c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c17_intento": true,
+            "s8c17_contexto": true,
+            "s8c17_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/40",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C18",
+      "clave": "s8_b2b_rule_audit_001",
+      "familia": "AUDIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Auditoría B2B inmutable server-side",
+      "descripcion": "BLOQUEAR actualización o eliminación de eventos de auditoría, inserción desde navegador o registro sin correlation_id; lf_ops.auditoria_eventos conserva company_id y actor_user_id cuando contexto resuelto.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c18_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c18_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c18_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": false,
+            "s8c18_contexto": false,
+            "s8c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": false,
+            "s8c18_contexto": false,
+            "s8c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": false,
+            "s8c18_contexto": true,
+            "s8c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": false,
+            "s8c18_contexto": true,
+            "s8c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": true,
+            "s8c18_contexto": false,
+            "s8c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": true,
+            "s8c18_contexto": false,
+            "s8c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": true,
+            "s8c18_contexto": true,
+            "s8c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c18_intento": true,
+            "s8c18_contexto": true,
+            "s8c18_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/416",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C19",
+      "clave": "s8_b2b_rule_auth_024",
+      "familia": "AUDIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Auditoría de seguridad B2B redactada",
+      "descripcion": "BLOQUEAR omitir registro trazable de resultados de login, MFA, rate limit, anti-bot, sesión, recuperación o emergencia en lf_ops.auditoria_eventos con correlation_id y metadata_redacted, o registrar secretos, OTP, tokens, payload crudo o correo completo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c19_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c19_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c19_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": false,
+            "s8c19_contexto": false,
+            "s8c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": false,
+            "s8c19_contexto": false,
+            "s8c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": false,
+            "s8c19_contexto": true,
+            "s8c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": false,
+            "s8c19_contexto": true,
+            "s8c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": true,
+            "s8c19_contexto": false,
+            "s8c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": true,
+            "s8c19_contexto": false,
+            "s8c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": true,
+            "s8c19_contexto": true,
+            "s8c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c19_intento": true,
+            "s8c19_contexto": true,
+            "s8c19_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/443",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C20",
+      "clave": "s8_reg_ui_007",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Skeleton contextual con límite configurado",
+      "descripcion": "BLOQUEAR presentar spinner genérico durante resolución de home o mantener skeleton tras UX/HOME_VARIANT_MAX_SKELETON_SECONDS de public.lf_global_config; aplicar fallback funcional sin oferta.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c20_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c20_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c20_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": false,
+            "s8c20_contexto": false,
+            "s8c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": false,
+            "s8c20_contexto": false,
+            "s8c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": false,
+            "s8c20_contexto": true,
+            "s8c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": false,
+            "s8c20_contexto": true,
+            "s8c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": true,
+            "s8c20_contexto": false,
+            "s8c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": true,
+            "s8c20_contexto": false,
+            "s8c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": true,
+            "s8c20_contexto": true,
+            "s8c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c20_intento": true,
+            "s8c20_contexto": true,
+            "s8c20_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/205",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C21",
+      "clave": "s8_reg_ui_008",
+      "familia": "DESIGN_SYSTEM",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Transiciones visuales desde configuración",
+      "descripcion": "BLOQUEAR transiciones fuera de UX/COMPONENT_TRANSITION_MIN_MS y UX/COMPONENT_TRANSITION_MAX_MS; fade de pantalla y skeleton según UX/SCREEN_FADE_MS y UX/SKELETON_FADE_MS de public.lf_global_config. Respetar movimiento reducido aplicable.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c21_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c21_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c21_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": false,
+            "s8c21_contexto": false,
+            "s8c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": false,
+            "s8c21_contexto": false,
+            "s8c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": false,
+            "s8c21_contexto": true,
+            "s8c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": false,
+            "s8c21_contexto": true,
+            "s8c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": true,
+            "s8c21_contexto": false,
+            "s8c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": true,
+            "s8c21_contexto": false,
+            "s8c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": true,
+            "s8c21_contexto": true,
+            "s8c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c21_intento": true,
+            "s8c21_contexto": true,
+            "s8c21_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/206",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C22",
+      "clave": "s8_ux_ruta_accesibilidad_01",
+      "familia": "ACCESSIBILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Ruta de Claridad con navegación semántica",
+      "descripcion": "BLOQUEAR Ruta de Claridad sin nav etiquetado y lista ordenada de enlaces o botones reales, sin aria-current en nodo activo o con SVG decorativo expuesto al lector.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c22_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c22_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c22_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": false,
+            "s8c22_contexto": false,
+            "s8c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": false,
+            "s8c22_contexto": false,
+            "s8c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": false,
+            "s8c22_contexto": true,
+            "s8c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": false,
+            "s8c22_contexto": true,
+            "s8c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": true,
+            "s8c22_contexto": false,
+            "s8c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": true,
+            "s8c22_contexto": false,
+            "s8c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": true,
+            "s8c22_contexto": true,
+            "s8c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c22_intento": true,
+            "s8c22_contexto": true,
+            "s8c22_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/364",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C23",
+      "clave": "s8_b2b_rule_auth_006",
+      "familia": "ACTIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B_AUTENTICACION",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Recuperación visible y separada de login",
+      "descripcion": "BLOQUEAR login B2B sin acción de recuperación visible junto a contraseña o que ejecute recuperación dentro del formulario principal.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c23_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c23_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c23_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": false,
+            "s8c23_contexto": false,
+            "s8c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": false,
+            "s8c23_contexto": false,
+            "s8c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": false,
+            "s8c23_contexto": true,
+            "s8c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": false,
+            "s8c23_contexto": true,
+            "s8c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": true,
+            "s8c23_contexto": false,
+            "s8c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": true,
+            "s8c23_contexto": false,
+            "s8c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": true,
+            "s8c23_contexto": true,
+            "s8c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c23_intento": true,
+            "s8c23_contexto": true,
+            "s8c23_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/427",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C24",
+      "clave": "s8_b2b_rule_auth_012",
+      "familia": "IDEMPOTENCY_CONCURRENCY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B_AUTENTICACION",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Login single-flight mientras solicitud pendiente",
+      "descripcion": "BLOQUEAR envío duplicado de autenticación mientras solicitud anterior sigue pendiente; CTA permanece procesando.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c24_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c24_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c24_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": false,
+            "s8c24_contexto": false,
+            "s8c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": false,
+            "s8c24_contexto": false,
+            "s8c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": false,
+            "s8c24_contexto": true,
+            "s8c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": false,
+            "s8c24_contexto": true,
+            "s8c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": true,
+            "s8c24_contexto": false,
+            "s8c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": true,
+            "s8c24_contexto": false,
+            "s8c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": true,
+            "s8c24_contexto": true,
+            "s8c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c24_intento": true,
+            "s8c24_contexto": true,
+            "s8c24_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/431",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S8-C25",
+      "clave": "s8_reg_ui_001",
+      "familia": "STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Estados explícitos de componentes interactivos",
+      "descripcion": "BLOQUEAR componente interactivo del Home sin estados funcionales idle, loading, success, error y disabled definidos, o con estado fuera de su contrato.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c25_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s8c25_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s8c25_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": false,
+            "s8c25_contexto": false,
+            "s8c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": false,
+            "s8c25_contexto": false,
+            "s8c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": false,
+            "s8c25_contexto": true,
+            "s8c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": false,
+            "s8c25_contexto": true,
+            "s8c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": true,
+            "s8c25_contexto": false,
+            "s8c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": true,
+            "s8c25_contexto": false,
+            "s8c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": true,
+            "s8c25_contexto": true,
+            "s8c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s8c25_intento": true,
+            "s8c25_contexto": true,
+            "s8c25_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/199",
+        "solicitante": "Cristhian / Claude S8 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 37,
+      "codigo": "REG_AUD_002",
+      "descripcion": "Los eventos de auditoría no deben contener DNI completo, nombre completo, celular completo ni email completo. Solo versiones enmascaradas o hashes."
+    },
+    {
+      "id": 39,
+      "codigo": "REG_AUD_004",
+      "descripcion": "Cada cambio de número inline genera un evento con: número anterior enmascarado, número nuevo enmascarado, timestamp y phone_update_count resultante."
+    },
+    {
+      "id": 40,
+      "codigo": "REG_AUD_005",
+      "descripcion": "Cada intento fallido registra: timestamp, otp_attempts resultante y estado de bloqueo. No registra el código ingresado."
+    },
+    {
+      "id": 45,
+      "codigo": "REG_ACC_001",
+      "descripcion": "Los campos DNI, celular y OTP deben activar el teclado numérico en móvil (inputmode=numeric o type=tel)."
+    },
+    {
+      "id": 48,
+      "codigo": "REG_ACC_004",
+      "descripcion": "Nombre y email pueden tener autocomplete habilitado. DNI, celular y OTP deben tener autocomplete=off para evitar que el browser sugiera datos de terceros."
+    },
+    {
+      "id": 87,
+      "codigo": "REG_ANL_002",
+      "descripcion": "GA4 nunca recibe DNI, celular, correo, nombre ni ningún dato que identifique al usuario. Solo recibe IDs internos anónimos, rangos y categorías."
+    },
+    {
+      "id": 93,
+      "codigo": "REG_ANL_008",
+      "descripcion": "Los eventos de error en GA4 envían categoría de error y pantalla, nunca el mensaje técnico crudo, stack trace ni datos del servidor."
+    },
+    {
+      "id": 95,
+      "codigo": "REG_OBS_002",
+      "descripcion": "Sentry nunca recibe DNI, celular, correo ni nombre. Se activa beforeSend para filtrar estos campos antes de enviar el evento."
+    },
+    {
+      "id": 98,
+      "codigo": "REG_OBS_005",
+      "descripcion": "Se mide el tiempo entre otp_sent y otp_verified. Si el percentil p95 supera el umbral operativo configurado en public.lf_global_config, variable OBSERVABILIDAD/OTP_DELIVERY_P95_SECONDS_MAX, se activa alerta operativa."
+    },
+    {
+      "id": 110,
+      "codigo": "REG_ALR_001",
+      "descripcion": "Si la tasa otp_verified / otp_sent cae por debajo del umbral de verificación OTP configurado en public.lf_global_config, variable ALERTAS/OTP_VERIFICATION_MIN_RATE, durante la ventana definida por ALERTAS/OTP_VERIFICATION_WINDOW_MINUTES de la misma tabla, se activa alerta inmediata al equipo técnico."
+    },
+    {
+      "id": 111,
+      "codigo": "REG_ALR_002",
+      "descripcion": "Si la tasa de abandono en Paso 1 supera el umbral definido en public.lf_global_config, variable ALERTAS/PASO1_ABANDON_RATE_MAX, durante la ventana de ALERTAS/PASO1_ABANDON_WINDOW_HOURS, se activa alerta a producto."
+    },
+    {
+      "id": 113,
+      "codigo": "REG_ALR_004",
+      "descripcion": "Si la tasa de errores en los intentos de submit del Paso 1 supera el umbral definido en public.lf_global_config, variable ALERTAS/PASO1_SUBMIT_ERROR_RATE_MAX, durante la ventana ALERTAS/PASO1_SUBMIT_ERROR_WINDOW_MINUTES, se activa la alerta al equipo técnico."
+    },
+    {
+      "id": 114,
+      "codigo": "REG_ALR_005",
+      "descripcion": "Si el LCP promedio supera el umbral de rendimiento definido en public.lf_global_config, variable ALERTAS/LCP_ALERT_THRESHOLD_MS, en una proporción de sesiones superior a ALERTAS/LCP_ALERT_SESSIONS_RATIO y durante la ventana ALERTAS/LCP_ALERT_WINDOW_HOURS, se activa la alerta a técnico y producto conforme a la regla vigente."
+    },
+    {
+      "id": 199,
+      "codigo": "REG_UI_001",
+      "descripcion": "Todo componente interactivo tiene definidos explícitamente estos estados: idle, loading, success, error, disabled. El componente no puede estar en un estado no definido."
+    },
+    {
+      "id": 205,
+      "codigo": "REG_UI_007",
+      "descripcion": "Al resolver home_variant, mostrar skeleton contextual de la pantalla destino (no spinner genérico), reflejando la estructura de cards de oferta o ruta de claridad según lo que se está cargando. La duración máxima del skeleton se obtiene exclusivamente de public.lf_global_config, variable UX/HOME_VARIANT_MAX_SKELETON_SECONDS, y al superarla se usa el fallback home_variant_sin_oferta."
+    },
+    {
+      "id": 206,
+      "codigo": "REG_UI_008",
+      "descripcion": "Los cambios de estado de componentes usan transiciones CSS suaves dentro del rango parametrizado en public.lf_global_config por UX/COMPONENT_TRANSITION_MIN_MS y UX/COMPONENT_TRANSITION_MAX_MS. Sin animaciones abruptas. Los cambios de pantalla usan fade con UX/SCREEN_FADE_MS y la desaparición del skeleton usa fade con UX/SKELETON_FADE_MS de la misma tabla."
+    },
+    {
+      "id": 364,
+      "codigo": "UX-RUTA-ACCESIBILIDAD-01",
+      "descripcion": "El contenedor de los 5 hitos debe ser <nav aria-label=\"Ruta de Claridad\"> con <ol> de items, cada uno un <a> o <button> real (no div). El nodo activo lleva aria-current=\"true\". El SVG del path y el terreno de fondo no necesitan ningun atributo ARIA por ser puramente decorativos (aria-hidden=true), consistente con el patron ya usado en el terreno."
+    },
+    {
+      "id": 394,
+      "codigo": "B2B-RULE-A11Y-001",
+      "descripcion": "Controles con área táctil mínima, foco visible, navegación por teclado y etiquetas."
+    },
+    {
+      "id": 395,
+      "codigo": "B2B-RULE-A11Y-002",
+      "descripcion": "Ningún estado depende únicamente del color."
+    },
+    {
+      "id": 416,
+      "codigo": "B2B-RULE-AUDIT-001",
+      "descripcion": "Los eventos de auditoría son append-only y se escriben únicamente desde la frontera server-side autorizada. No se actualizan ni eliminan; correlation_id es obligatorio y company_id/actor se registran cuando el contexto ya está resuelto. El navegador no inserta, modifica ni elimina auditoría directamente."
+    },
+    {
+      "id": 427,
+      "codigo": "B2B-RULE-AUTH-006",
+      "descripcion": "El Login debe mostrar una acción visible de recuperación inmediatamente asociada al campo Contraseña. La recuperación se resuelve en un flujo separado y no debe ejecutarse dentro del formulario principal de Login."
+    },
+    {
+      "id": 431,
+      "codigo": "B2B-RULE-AUTH-012",
+      "descripcion": "El Login aplica un patrón single-flight: mientras exista una solicitud de autenticación pendiente, se ignoran envíos duplicados y el CTA permanece en estado procesando. La regla expresa comportamiento, no un umbral numérico configurable."
+    },
+    {
+      "id": 443,
+      "codigo": "B2B-RULE-AUTH-024",
+      "descripcion": "Los eventos de seguridad relevantes del Login deben registrarse en lf_ops.auditoria_eventos con correlation_id y metadata_redacted. La auditoría debe permitir reconstruir éxito, fallo, requerimiento/resultado MFA, activación de rate limit o anti-bot, creación de sesión, recuperación y uso de acceso de emergencia, sin almacenar contraseña, OTP, tokens, payload crudo del proveedor ni correo completo. Analytics de producto no sustituye la auditoría de seguridad."
+    },
+    {
+      "id": 465,
+      "codigo": "B2B-RULE-A11Y-003",
+      "descripcion": "El Backoffice B2B debe respetar la preferencia de movimiento reducido del usuario. Cuando esté activa, las animaciones y transiciones no esenciales se reducen o eliminan; ningún estado, error, progreso ni acción puede depender exclusivamente del movimiento para ser comprendido o ejecutado."
+    },
+    {
+      "id": 466,
+      "codigo": "B2B-RULE-A11Y-004",
+      "descripcion": "El Backoffice B2B debe conservar lectura, foco, estados, errores y acciones cuando el sistema operativo o navegador active forced colors o un modo de alto contraste. No se permite depender únicamente de colores de marca ni desactivar globalmente los ajustes de color del usuario."
+    }
+  ],
+  "nota": "Hechos lógicos; binding runtime y evidencia de implementación pendientes. Sin juicio independiente ni promoción. Los estados visuales no se presentan como catálogo de BD."
+}
