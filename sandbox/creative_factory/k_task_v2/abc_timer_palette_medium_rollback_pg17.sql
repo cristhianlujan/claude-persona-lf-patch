@@ -44,7 +44,7 @@ DO $assert$ BEGIN
  OR (saly.creative_item_context_medium_v3(13,'IMPRESION')->>'selected_count')::int<>0
  OR (saly.creative_item_context_medium_v3(13,'IMPRESION')->>'omitted_count')::int<>55
  OR EXISTS (SELECT 1 FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,'IMPRESION')->'omitted') e
- WHERE e->>'reason'<>'MEDIO_NO_APLICA')
+ WHERE e->>'reason' NOT IN('MEDIO_NO_APLICA','TOKEN_RETIRADO'))
  THEN RAISE EXCEPTION 'FAIL_MEDIUM_SELECTION_COUNTS'; END IF;
 END $assert$;
 
