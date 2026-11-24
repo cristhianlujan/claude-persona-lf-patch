@@ -1,0 +1,3433 @@
+{
+  "contrato": "LF_S4_25_CANDIDATAS_TRANSITIONS_OFFERS_V1",
+  "fecha": "2026-11-23",
+  "criterio": "MIGRAR_SIN_COBERTURA",
+  "juez_independiente": "PENDIENTE_CLAUDE",
+  "candidatas": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C01",
+      "clave": "s4_secuencia_onb",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Bloquear salto o retroceso de pasos tras OTP",
+      "descripcion": "En el onboarding de secuencia Paso 1 a Paso 2 y Paso 3, BLOQUEAR avanzar saltando pasos o retroceder después de verificar OTP. No equiparar navegación de Ayuda con retroceso de sesión ni impedir reiniciar una sesión nueva.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c01_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c01_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c01_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/31",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": false,
+            "s4c01_contexto": false,
+            "s4c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": false,
+            "s4c01_contexto": false,
+            "s4c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": false,
+            "s4c01_contexto": true,
+            "s4c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": false,
+            "s4c01_contexto": true,
+            "s4c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": true,
+            "s4c01_contexto": false,
+            "s4c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": true,
+            "s4c01_contexto": false,
+            "s4c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": true,
+            "s4c01_contexto": true,
+            "s4c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c01_intento": true,
+            "s4c01_contexto": true,
+            "s4c01_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 31,
+      "legada_codigo": "REG_FLUJO_001",
+      "diferencias_esperadas": "La intención de secuencia histórica se expresa como guard de transición; comprobar el contrato celular-first antes de publicar.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c01_intento",
+        "s4c01_contexto",
+        "s4c01_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C02",
+      "clave": "s4_entrada_onb002",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Exigir celular y desafío OTP antes de ONB_002",
+      "descripcion": "ONB_002 solo puede renderizarse si ONB_001 entregó phone_number válido y existe para esa sesión un desafío OTP activo o generable. BLOQUEAR su presentación sin esas dos precondiciones; no exigir DNI, nombre, correo ni consentimientos de perfil antes de OTP en celular-first.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c02_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c02_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c02_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/32",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": false,
+            "s4c02_contexto": false,
+            "s4c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": false,
+            "s4c02_contexto": false,
+            "s4c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": false,
+            "s4c02_contexto": true,
+            "s4c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": false,
+            "s4c02_contexto": true,
+            "s4c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": true,
+            "s4c02_contexto": false,
+            "s4c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": true,
+            "s4c02_contexto": false,
+            "s4c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": true,
+            "s4c02_contexto": true,
+            "s4c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c02_intento": true,
+            "s4c02_contexto": true,
+            "s4c02_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 32,
+      "legada_codigo": "REG_FLUJO_002",
+      "diferencias_esperadas": "Protege precondiciones de OTP sin añadir formulario anticipado de perfil.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c02_intento",
+        "s4c02_contexto",
+        "s4c02_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C03",
+      "clave": "s4_entrada_onb003",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Bloquear ONB_003 sin OTP verificado o si cuenta ya reconocida",
+      "descripcion": "BLOQUEAR renderizar ONB_003 si otp_verified no es verdadero o si el celular pertenece a una cuenta activa verificada; en ese último caso el flujo continúa hacia acceso. No inferir ausencia de cuenta desde la vista del cliente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c03_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c03_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c03_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/33",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": false,
+            "s4c03_contexto": false,
+            "s4c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": false,
+            "s4c03_contexto": false,
+            "s4c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": false,
+            "s4c03_contexto": true,
+            "s4c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": false,
+            "s4c03_contexto": true,
+            "s4c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": true,
+            "s4c03_contexto": false,
+            "s4c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": true,
+            "s4c03_contexto": false,
+            "s4c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": true,
+            "s4c03_contexto": true,
+            "s4c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c03_intento": true,
+            "s4c03_contexto": true,
+            "s4c03_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 33,
+      "legada_codigo": "REG_FLUJO_003",
+      "diferencias_esperadas": "Diferencia de enfoque: guard negativo; la rama de cliente reconocido conserva acceso como destino.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c03_intento",
+        "s4c03_contexto",
+        "s4c03_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C04",
+      "clave": "s4_estados_onb_canon",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Bloquear estados de onboarding ajenos al catálogo legado",
+      "descripcion": "Al escribir estado de onboarding, BLOQUEAR un valor fuera del conjunto funcional legado INICIADO, PASO1_COMPLETO, OTP_ENVIADO, OTP_VERIFICADO, COMPLETADO, ABANDONADO, BLOQUEADO y EXPIRADO. Su mapeo con estados persistidos y enums de núcleo debe verificarse antes de promulgar, sin atribuir equivalencia a códigos de otro sistema.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c04_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c04_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c04_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/34",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": false,
+            "s4c04_contexto": false,
+            "s4c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": false,
+            "s4c04_contexto": false,
+            "s4c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": false,
+            "s4c04_contexto": true,
+            "s4c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": false,
+            "s4c04_contexto": true,
+            "s4c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": true,
+            "s4c04_contexto": false,
+            "s4c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": true,
+            "s4c04_contexto": false,
+            "s4c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": true,
+            "s4c04_contexto": true,
+            "s4c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c04_intento": true,
+            "s4c04_contexto": true,
+            "s4c04_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 34,
+      "legada_codigo": "REG_FLUJO_004",
+      "diferencias_esperadas": "Pendiente reconciliar vocabulario exacto legado con enums del núcleo, riesgo de negocio/técnico; no activar hasta juicio.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c04_intento",
+        "s4c04_contexto",
+        "s4c04_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C05",
+      "clave": "s4_cambio_celular_otp",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resetear desafío OTP al modificar celular inline",
+      "descripcion": "Cuando el usuario cambia su teléfono inline, BLOQUEAR conservar otp_code anterior, contadores otp_attempts/otp_resend_count anteriores o continuar sin generar un nuevo OTP. El desafío anterior queda invalidado y ambos contadores se reinician a estado inicial; nunca reutilizar OTP ligado al número previo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c05_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c05_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c05_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/67",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": false,
+            "s4c05_contexto": false,
+            "s4c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": false,
+            "s4c05_contexto": false,
+            "s4c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": false,
+            "s4c05_contexto": true,
+            "s4c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": false,
+            "s4c05_contexto": true,
+            "s4c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": true,
+            "s4c05_contexto": false,
+            "s4c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": true,
+            "s4c05_contexto": false,
+            "s4c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": true,
+            "s4c05_contexto": true,
+            "s4c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c05_intento": true,
+            "s4c05_contexto": true,
+            "s4c05_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 67,
+      "legada_codigo": "REG_FLU_002",
+      "diferencias_esperadas": "El estado inicial de contadores reemplaza números fijos por semántica de reinicio; no cambia la intención de seguridad.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c05_intento",
+        "s4c05_contexto",
+        "s4c05_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C06",
+      "clave": "s4_persistencia_paso",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Registrar paso completado inmediatamente para abandono",
+      "descripcion": "Tras completar satisfactoriamente cualquier paso de onboarding, BLOQUEAR avanzar sin actualizar onboarding_step al paso recién completado en la sesión persistida para trazabilidad de abandono; no registrar pasos incompletos como completados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c06_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c06_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c06_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/68",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": false,
+            "s4c06_contexto": false,
+            "s4c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": false,
+            "s4c06_contexto": false,
+            "s4c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": false,
+            "s4c06_contexto": true,
+            "s4c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": false,
+            "s4c06_contexto": true,
+            "s4c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": true,
+            "s4c06_contexto": false,
+            "s4c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": true,
+            "s4c06_contexto": false,
+            "s4c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": true,
+            "s4c06_contexto": true,
+            "s4c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c06_intento": true,
+            "s4c06_contexto": true,
+            "s4c06_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 68,
+      "legada_codigo": "REG_FLU_003",
+      "diferencias_esperadas": "Se aclara persistencia server-side y avance solo con paso completado.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c06_intento",
+        "s4c06_contexto",
+        "s4c06_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C07",
+      "clave": "s4_consent_gate",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Exigir consentimientos obligatorios y marketing opcional",
+      "descripcion": "Ante intento de habilitar Continuar en etapa de consentimiento, BLOQUEARlo si consent_terms o consent_data no están aceptados. consent_marketing es opcional y su ausencia no puede bloquear; no inferir aceptación a partir del botón mostrado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c07_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c07_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c07_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/70",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": false,
+            "s4c07_contexto": false,
+            "s4c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": false,
+            "s4c07_contexto": false,
+            "s4c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": false,
+            "s4c07_contexto": true,
+            "s4c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": false,
+            "s4c07_contexto": true,
+            "s4c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": true,
+            "s4c07_contexto": false,
+            "s4c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": true,
+            "s4c07_contexto": false,
+            "s4c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": true,
+            "s4c07_contexto": true,
+            "s4c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c07_intento": true,
+            "s4c07_contexto": true,
+            "s4c07_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 70,
+      "legada_codigo": "REG_FLU_005",
+      "diferencias_esperadas": "Convierte los dos consentimientos obligatorios en guard, excluyendo marketing opcional.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c07_intento",
+        "s4c07_contexto",
+        "s4c07_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C08",
+      "clave": "s4_modalidad_inline",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Mantener modalidad inline en tarjetas multi oferta",
+      "descripcion": "En pantalla multi oferta, al seleccionar modalidad BLOQUEAR navegación adicional o apertura de modal: pago único usa radio en su card y Ver planes en cuotas expande planes inline de la misma card. No aplicar este guard a flujo de oferta única.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c08_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c08_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c08_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/166",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": false,
+            "s4c08_contexto": false,
+            "s4c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": false,
+            "s4c08_contexto": false,
+            "s4c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": false,
+            "s4c08_contexto": true,
+            "s4c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": false,
+            "s4c08_contexto": true,
+            "s4c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": true,
+            "s4c08_contexto": false,
+            "s4c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": true,
+            "s4c08_contexto": false,
+            "s4c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": true,
+            "s4c08_contexto": true,
+            "s4c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c08_intento": true,
+            "s4c08_contexto": true,
+            "s4c08_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 166,
+      "legada_codigo": "REG_FLU_006",
+      "diferencias_esperadas": "La legada favorece inline; revisar convivencia con modal de plan más reciente antes de publicar.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c08_intento",
+        "s4c08_contexto",
+        "s4c08_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C09",
+      "clave": "s4_cambio_plan_inline",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Exigir cambio de plan inline sin navegación en multi oferta",
+      "descripcion": "Si una oferta multi oferta ya tiene plan en cuotas seleccionado, Cambiar plan debe expandir el desglose dentro de su card. BLOQUEAR navegación a PASO3_CUOTAS_DESGLOSE en multi oferta; reservar dicha pantalla al flujo de oferta única.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c09_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c09_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c09_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/167",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": false,
+            "s4c09_contexto": false,
+            "s4c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": false,
+            "s4c09_contexto": false,
+            "s4c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": false,
+            "s4c09_contexto": true,
+            "s4c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": false,
+            "s4c09_contexto": true,
+            "s4c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": true,
+            "s4c09_contexto": false,
+            "s4c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": true,
+            "s4c09_contexto": false,
+            "s4c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": true,
+            "s4c09_contexto": true,
+            "s4c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c09_intento": true,
+            "s4c09_contexto": true,
+            "s4c09_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 167,
+      "legada_codigo": "REG_FLU_007",
+      "diferencias_esperadas": "Se restringe por ámbito multi oferta y preserva pantalla de desglose para oferta única.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c09_intento",
+        "s4c09_contexto",
+        "s4c09_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C10",
+      "clave": "s4_cta_multi_oferta",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Habilitar Continuar con ofertas seleccionadas válidas",
+      "descripcion": "En multi oferta, habilitar CTA Continuar con N ofertas únicamente si existe al menos una oferta seleccionada con modalidad válida (pago único o plan de cuotas); N debe actualizarse inmediatamente al seleccionar o deseleccionar. BLOQUEAR CTA con ninguna selección válida o contador incongruente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c10_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c10_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c10_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/168",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": false,
+            "s4c10_contexto": false,
+            "s4c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": false,
+            "s4c10_contexto": false,
+            "s4c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": false,
+            "s4c10_contexto": true,
+            "s4c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": false,
+            "s4c10_contexto": true,
+            "s4c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": true,
+            "s4c10_contexto": false,
+            "s4c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": true,
+            "s4c10_contexto": false,
+            "s4c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": true,
+            "s4c10_contexto": true,
+            "s4c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c10_intento": true,
+            "s4c10_contexto": true,
+            "s4c10_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 168,
+      "legada_codigo": "REG_FLU_008",
+      "diferencias_esperadas": "N es cardinalidad dinámica, nunca número fijo ni precio calculado por la vista.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c10_intento",
+        "s4c10_contexto",
+        "s4c10_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C11",
+      "clave": "s4_oferta_vencida_en_vista",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Conservar card vencida y retirar su selección",
+      "descripcion": "Cuando una oferta vence durante la vista multi oferta, mantener visible la card marcada Oferta vencida, deshabilitar opciones y deseleccionarla si estaba marcada, recalculando resumen en tiempo real. BLOQUEAR continuar con esa oferta vencida o eliminarla silenciosamente de la lista.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c11_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c11_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c11_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/169",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": false,
+            "s4c11_contexto": false,
+            "s4c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": false,
+            "s4c11_contexto": false,
+            "s4c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": false,
+            "s4c11_contexto": true,
+            "s4c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": false,
+            "s4c11_contexto": true,
+            "s4c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": true,
+            "s4c11_contexto": false,
+            "s4c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": true,
+            "s4c11_contexto": false,
+            "s4c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": true,
+            "s4c11_contexto": true,
+            "s4c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c11_intento": true,
+            "s4c11_contexto": true,
+            "s4c11_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 169,
+      "legada_codigo": "REG_FLU_009",
+      "diferencias_esperadas": "Distingue presencia visual de elegibilidad para el pago; no permite checkout vencido.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c11_intento",
+        "s4c11_contexto",
+        "s4c11_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C12",
+      "clave": "s4_cuotas_unica_entrada",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Entrar directamente a desglose si solo existen cuotas",
+      "descripcion": "En oferta única donde tiene_pago_unico es falso y tiene_cuotas es verdadero, llevar directamente a PASO3_CUOTAS_DESGLOSE; BLOQUEAR paso intermedio de oferta única solo cuotas y no autoelegir un plan de cuotas.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c12_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c12_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c12_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/175",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": false,
+            "s4c12_contexto": false,
+            "s4c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": false,
+            "s4c12_contexto": false,
+            "s4c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": false,
+            "s4c12_contexto": true,
+            "s4c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": false,
+            "s4c12_contexto": true,
+            "s4c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": true,
+            "s4c12_contexto": false,
+            "s4c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": true,
+            "s4c12_contexto": false,
+            "s4c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": true,
+            "s4c12_contexto": true,
+            "s4c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c12_intento": true,
+            "s4c12_contexto": true,
+            "s4c12_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 175,
+      "legada_codigo": "REG_FLU_010",
+      "diferencias_esperadas": "No confundir autoselección de modalidad única con selección de plan.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c12_intento",
+        "s4c12_contexto",
+        "s4c12_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C13",
+      "clave": "s4_aplicar_plan_modal",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Aplicar plan elegido y actualizar tarjeta y resumen",
+      "descripcion": "Cuando el usuario confirma Aplicar plan seleccionado, cerrar el modal, actualizar card con el plan y badge Tu selección actual y recalcular resumen en tiempo real. BLOQUEAR actualización parcial o demora superior a UX/MODAL_APPLY_MAX_LATENCY_MS de public.lf_global_config; conservar versión del plan autorizado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c13_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c13_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c13_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/242",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": false,
+            "s4c13_contexto": false,
+            "s4c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": false,
+            "s4c13_contexto": false,
+            "s4c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": false,
+            "s4c13_contexto": true,
+            "s4c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": false,
+            "s4c13_contexto": true,
+            "s4c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": true,
+            "s4c13_contexto": false,
+            "s4c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": true,
+            "s4c13_contexto": false,
+            "s4c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": true,
+            "s4c13_contexto": true,
+            "s4c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c13_intento": true,
+            "s4c13_contexto": true,
+            "s4c13_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 242,
+      "legada_codigo": "REG_MOD_003",
+      "diferencias_esperadas": "El límite de latencia es configurable, no se replica cifra de implementación.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c13_intento",
+        "s4c13_contexto",
+        "s4c13_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C14",
+      "clave": "s4_cancelar_plan_modal",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Preservar selección anterior al cerrar modal sin aplicar",
+      "descripcion": "Si en modal de planes el usuario pulsa Cancelar o X, BLOQUEAR cualquier reemplazo o borrado de selección anterior. Si no existía selección, mantener la card sin selección; cerrar el modal no equivale a confirmar el plan mostrado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c14_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c14_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c14_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/243",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": false,
+            "s4c14_contexto": false,
+            "s4c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": false,
+            "s4c14_contexto": false,
+            "s4c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": false,
+            "s4c14_contexto": true,
+            "s4c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": false,
+            "s4c14_contexto": true,
+            "s4c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": true,
+            "s4c14_contexto": false,
+            "s4c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": true,
+            "s4c14_contexto": false,
+            "s4c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": true,
+            "s4c14_contexto": true,
+            "s4c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c14_intento": true,
+            "s4c14_contexto": true,
+            "s4c14_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 243,
+      "legada_codigo": "REG_MOD_004",
+      "diferencias_esperadas": "Explicita preservar estado previo frente a vista provisional de planes.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c14_intento",
+        "s4c14_contexto",
+        "s4c14_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C15",
+      "clave": "s4_ver_desglose_cuotas",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Abrir desglose del plan seleccionado solamente",
+      "descripcion": "En PASO3_CUOTAS_SELECCION, Ver detalle del pago debe navegar a PASO3_CUOTAS_DESGLOSE_V2 del plan efectivamente seleccionado en ese momento. BLOQUEAR el enlace cuando ningún plan está seleccionado o intentar mostrar datos de otro plan.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c15_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c15_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c15_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/261",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": false,
+            "s4c15_contexto": false,
+            "s4c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": false,
+            "s4c15_contexto": false,
+            "s4c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": false,
+            "s4c15_contexto": true,
+            "s4c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": false,
+            "s4c15_contexto": true,
+            "s4c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": true,
+            "s4c15_contexto": false,
+            "s4c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": true,
+            "s4c15_contexto": false,
+            "s4c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": true,
+            "s4c15_contexto": true,
+            "s4c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c15_intento": true,
+            "s4c15_contexto": true,
+            "s4c15_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 261,
+      "legada_codigo": "REG_CUO_011",
+      "diferencias_esperadas": "Vincula enlace a plan activo, evita referencias obsoletas y no inventa destino.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c15_intento",
+        "s4c15_contexto",
+        "s4c15_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C16",
+      "clave": "s4_checkout_con_plan",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Guardar plan y fecha antes de entrar a checkout",
+      "descripcion": "Al pulsar Continuar con este plan en PASO3_CUOTAS_DESGLOSE_V2, persistir plan elegido y fecha de débito válida y navegar a checkout. BLOQUEAR entrada sin ambos datos guardados o modificación del plan desde checkout; el precio se revalida según quote autorizado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c16_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c16_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c16_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/262",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": false,
+            "s4c16_contexto": false,
+            "s4c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": false,
+            "s4c16_contexto": false,
+            "s4c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": false,
+            "s4c16_contexto": true,
+            "s4c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": false,
+            "s4c16_contexto": true,
+            "s4c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": true,
+            "s4c16_contexto": false,
+            "s4c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": true,
+            "s4c16_contexto": false,
+            "s4c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": true,
+            "s4c16_contexto": true,
+            "s4c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c16_intento": true,
+            "s4c16_contexto": true,
+            "s4c16_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 262,
+      "legada_codigo": "REG_CUO_012",
+      "diferencias_esperadas": "Plan/fecha quedan congelados para checkout; no crea cálculo nuevo de cuotas.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c16_intento",
+        "s4c16_contexto",
+        "s4c16_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C17",
+      "clave": "s4_celular_primero",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Exigir onboarding celular-first antes de solicitar perfil",
+      "descripcion": "En ONB_001 pedir únicamente el celular como primer dato operativo y pasar a ONB_002 para OTP antes de capturar DNI, nombre, correo u otros atributos de perfil. BLOQUEAR formularios de perfil anticipados y navegación directa a ONB_003 sin OTP.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c17_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c17_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c17_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/455",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": false,
+            "s4c17_contexto": false,
+            "s4c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": false,
+            "s4c17_contexto": false,
+            "s4c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": false,
+            "s4c17_contexto": true,
+            "s4c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": false,
+            "s4c17_contexto": true,
+            "s4c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": true,
+            "s4c17_contexto": false,
+            "s4c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": true,
+            "s4c17_contexto": false,
+            "s4c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": true,
+            "s4c17_contexto": true,
+            "s4c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c17_intento": true,
+            "s4c17_contexto": true,
+            "s4c17_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 455,
+      "legada_codigo": "REG_FLOW_CELL_FIRST_001",
+      "diferencias_esperadas": "Reafirma celular-first del legado sin crear campos ni pasos nuevos.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c17_intento",
+        "s4c17_contexto",
+        "s4c17_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C18",
+      "clave": "s4_rama_celular_verificado",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resolver rama cuenta reconocida o nuevo cliente tras OTP",
+      "descripcion": "Tras otp_verified verdadero, el backend verifica asociación del celular a cuenta activa verificada. Si existe, ir a acceso sin ONB_003; si no existe, presentar ONB_003 con tipo/número documento y consentimiento. BLOQUEAR alta/recuperación sin OTP, consentimiento y documento válidos de la misma sesión, y no revelar existencia de cuenta.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c18_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c18_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c18_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/457",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": false,
+            "s4c18_contexto": false,
+            "s4c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": false,
+            "s4c18_contexto": false,
+            "s4c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": false,
+            "s4c18_contexto": true,
+            "s4c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": false,
+            "s4c18_contexto": true,
+            "s4c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": true,
+            "s4c18_contexto": false,
+            "s4c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": true,
+            "s4c18_contexto": false,
+            "s4c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": true,
+            "s4c18_contexto": true,
+            "s4c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c18_intento": true,
+            "s4c18_contexto": true,
+            "s4c18_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 457,
+      "legada_codigo": "REG_FLOW_PHONE_BRANCH_001",
+      "diferencias_esperadas": "Resume ramas y condiciones exactas de legado; no inventa contratos de endpoints.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c18_intento",
+        "s4c18_contexto",
+        "s4c18_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C19",
+      "clave": "s4_new_client_completion",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Proteger submit atómico de nuevos datos de cliente",
+      "descripcion": "Cuando el backend resuelve NEW_CLIENT_DATA_COMPLETION, exigir en submit CAMPO_NOMBRE_COMPLETO, CAMPO_EMAIL válido en formato/longitud y CAMPO_CONSENT_TERMS. CAMPO_CONSENT_MKT sigue opcional. Reutilizar CAMPO_CONSENT_DATA válido de la misma sesión ONB_003 sin volver a pedirlo. BLOQUEAR submit no atómico, sin idempotencia o sin precondiciones.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c19_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c19_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c19_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/504",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": false,
+            "s4c19_contexto": false,
+            "s4c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": false,
+            "s4c19_contexto": false,
+            "s4c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": false,
+            "s4c19_contexto": true,
+            "s4c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": false,
+            "s4c19_contexto": true,
+            "s4c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": true,
+            "s4c19_contexto": false,
+            "s4c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": true,
+            "s4c19_contexto": false,
+            "s4c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": true,
+            "s4c19_contexto": true,
+            "s4c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c19_intento": true,
+            "s4c19_contexto": true,
+            "s4c19_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 504,
+      "legada_codigo": "REG_NEW_CLIENT_COMPLETION_SUBMIT_001",
+      "diferencias_esperadas": "No se inventan reglas de formato: campo correo validado por las políticas ya vigentes.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c19_intento",
+        "s4c19_contexto",
+        "s4c19_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C20",
+      "clave": "s4_destinos_onb002",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "No habilitar navegación sin rutas Cliente canónicas",
+      "descripcion": "En ONB_002, Back, Ayuda e Ingresar solo aparecen operativos si existen destinos canónicos definidos para Cliente. BLOQUEAR rutas inventadas, enlaces a otro frente o navegación hacia destinos inferidos por mockup; deshabilitar acción sin destino aprobado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c20_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c20_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c20_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/488",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": false,
+            "s4c20_contexto": false,
+            "s4c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": false,
+            "s4c20_contexto": false,
+            "s4c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": false,
+            "s4c20_contexto": true,
+            "s4c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": false,
+            "s4c20_contexto": true,
+            "s4c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": true,
+            "s4c20_contexto": false,
+            "s4c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": true,
+            "s4c20_contexto": false,
+            "s4c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": true,
+            "s4c20_contexto": true,
+            "s4c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c20_intento": true,
+            "s4c20_contexto": true,
+            "s4c20_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 488,
+      "legada_codigo": "REG_ONB002_NAVIGATION_001",
+      "diferencias_esperadas": "Alcance solo ONB_002, no crea URLs.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c20_intento",
+        "s4c20_contexto",
+        "s4c20_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C21",
+      "clave": "s4_home_sin_ofertas",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Evitar claims de pago cuando no existen ofertas",
+      "descripcion": "Cuando la cuenta no tiene ninguna oferta activa confirmada por backend, renderizar el Home sin montos de oferta, modalidades ni CTA de pago. BLOQUEAR presentar una oferta ficticia o una acción de cobro; no confundir fallo de consulta con cero ofertas.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c21_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c21_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c21_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/141",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": false,
+            "s4c21_contexto": false,
+            "s4c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": false,
+            "s4c21_contexto": false,
+            "s4c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": false,
+            "s4c21_contexto": true,
+            "s4c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": false,
+            "s4c21_contexto": true,
+            "s4c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": true,
+            "s4c21_contexto": false,
+            "s4c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": true,
+            "s4c21_contexto": false,
+            "s4c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": true,
+            "s4c21_contexto": true,
+            "s4c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c21_intento": true,
+            "s4c21_contexto": true,
+            "s4c21_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 141,
+      "legada_codigo": "REG_HMV_001",
+      "diferencias_esperadas": "La ausencia de ofertas exige consulta autoritativa exitosa; no inferir sin oferta por timeout.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c21_intento",
+        "s4c21_contexto",
+        "s4c21_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C22",
+      "clave": "s4_cuotas_vs_contado",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Permitir total cuotas mayor al pago único sin falsear descuento",
+      "descripcion": "Cuando backend presenta una oferta con pago único y plan en cuotas, no bloquear por defecto la cuota cuyo total del plan supere el pago único; mostrar los montos reales diferenciados y no prometer equivalencia financiera. BLOQUEAR UI que fuerza total cuotas igual o inferior al contado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c22_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c22_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c22_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/151",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": false,
+            "s4c22_contexto": false,
+            "s4c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": false,
+            "s4c22_contexto": false,
+            "s4c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": false,
+            "s4c22_contexto": true,
+            "s4c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": false,
+            "s4c22_contexto": true,
+            "s4c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": true,
+            "s4c22_contexto": false,
+            "s4c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": true,
+            "s4c22_contexto": false,
+            "s4c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": true,
+            "s4c22_contexto": true,
+            "s4c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c22_intento": true,
+            "s4c22_contexto": true,
+            "s4c22_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 151,
+      "legada_codigo": "REG_OFR_006",
+      "diferencias_esperadas": "La intención es permitir diferencia financiera legítima, no definir tasa de interés.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c22_intento",
+        "s4c22_contexto",
+        "s4c22_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C23",
+      "clave": "s4_total_hoy_modalidades",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Calcular total a pagar hoy por modalidades seleccionadas",
+      "descripcion": "El total a pagar hoy suma montos de pago único elegidos y solo primera cuota de cada plan en cuotas elegido; no sumar el total completo de planes en cuotas. BLOQUEAR mostrar total incongruente con selección autoritativa, sin recalcular precios backend desde la UI.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c23_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c23_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c23_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/165",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": false,
+            "s4c23_contexto": false,
+            "s4c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": false,
+            "s4c23_contexto": false,
+            "s4c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": false,
+            "s4c23_contexto": true,
+            "s4c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": false,
+            "s4c23_contexto": true,
+            "s4c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": true,
+            "s4c23_contexto": false,
+            "s4c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": true,
+            "s4c23_contexto": false,
+            "s4c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": true,
+            "s4c23_contexto": true,
+            "s4c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c23_intento": true,
+            "s4c23_contexto": true,
+            "s4c23_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 165,
+      "legada_codigo": "REG_DAT_004",
+      "diferencias_esperadas": "Especifica componentes del pago de hoy, separado de total contractual de cuotas.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c23_intento",
+        "s4c23_contexto",
+        "s4c23_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C24",
+      "clave": "s4_badge_plan_recomendado",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Asignar badge Recomendado por máximo ahorro absoluto",
+      "descripcion": "En modal de planes mostrar como máximo un badge Recomendado en el plan con mayor deuda_original menos monto_total_plan; ante empate elegir menor primera cuota. BLOQUEAR badge Popular o múltiples badges; no calcular montos desde el frontend sino usar planes y datos autorizados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c24_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c24_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c24_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/240",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": false,
+            "s4c24_contexto": false,
+            "s4c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": false,
+            "s4c24_contexto": false,
+            "s4c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": false,
+            "s4c24_contexto": true,
+            "s4c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": false,
+            "s4c24_contexto": true,
+            "s4c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": true,
+            "s4c24_contexto": false,
+            "s4c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": true,
+            "s4c24_contexto": false,
+            "s4c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": true,
+            "s4c24_contexto": true,
+            "s4c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c24_intento": true,
+            "s4c24_contexto": true,
+            "s4c24_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 240,
+      "legada_codigo": "REG_CUO_006",
+      "diferencias_esperadas": "Mantiene desempate del legado sin añadir ponderadores comerciales.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c24_intento",
+        "s4c24_contexto",
+        "s4c24_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S4-C25",
+      "clave": "s4_descuento_plan_copy",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENTE",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Distinguir ahorro positivo de ausencia de descuento",
+      "descripcion": "Para un plan cuyo deuda_original excede monto_total_plan, mostrar Ahorras S/ X (Y%) calculado desde datos autoritativos; cuando monto_total_plan sea igual o superior, mostrar Sin descuento adicional. BLOQUEAR ahorro negativo, cero mostrado como negativo o copy que declare descuento inexistente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c25_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s4c25_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c25_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/241",
+        "solicitante": "Cristhian/Claude S4 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": false,
+            "s4c25_contexto": false,
+            "s4c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": false,
+            "s4c25_contexto": false,
+            "s4c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": false,
+            "s4c25_contexto": true,
+            "s4c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": false,
+            "s4c25_contexto": true,
+            "s4c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": true,
+            "s4c25_contexto": false,
+            "s4c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": true,
+            "s4c25_contexto": false,
+            "s4c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": true,
+            "s4c25_contexto": true,
+            "s4c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s4c25_intento": true,
+            "s4c25_contexto": true,
+            "s4c25_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 241,
+      "legada_codigo": "REG_CUO_007",
+      "diferencias_esperadas": "Conserva la distinción de copy y porcentaje legado; cálculo de ahorro es backend.",
+      "cobertura_esperada": "REEMPLAZADA",
+      "hechos": [
+        "s4c25_intento",
+        "s4c25_contexto",
+        "s4c25_violacion"
+      ]
+    }
+  ]
+}
