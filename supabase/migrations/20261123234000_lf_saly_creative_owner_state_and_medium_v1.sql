@@ -516,14 +516,154 @@ GRANT EXECUTE ON FUNCTION saly.creative_owner_approve_v1(bigint,text,text)
  TO authenticated;
 
 
--- Tokens sourced from the SALY app design system: APP only, no invented media.
--- Already-approved/candidate approval_status remains untouched.
-UPDATE saly.identity_versions v
- SET metadata=jsonb_set(COALESCE(v.metadata,'{}'::jsonb),
-  '{applies_to}','["PROTOTIPO_APP"]'::jsonb,true)
- WHERE v.id IN (7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,57,58,59,60,61,62,63)
- AND NOT (v.metadata ? 'applies_to');
+-- 55 actual SALY app-system versions, exactly once. Source-confirmed medium
+-- is PROTOTIPO_APP only. Suggested media are never selected automatically.
+CREATE TABLE saly.creative_token_medium_confirmations_v1(
+ version_id bigint NOT NULL REFERENCES saly.identity_versions(id) ON DELETE RESTRICT,
+ medium text NOT NULL CHECK(medium IN ('REDES_SOCIALES','IMPRESION','PAPEL')),
+ confirmed_by uuid NOT NULL,
+ confirmed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ comment text NOT NULL CHECK(length(btrim(comment))>0),
+ metadata_previous_sha256 text NOT NULL CHECK(metadata_previous_sha256~'^[0-9a-f]{64}$'),
+ PRIMARY KEY(version_id,medium)
+);
+REVOKE ALL ON saly.creative_token_medium_confirmations_v1
+ FROM PUBLIC,anon,authenticated,service_role;
 
+-- The roles list is explicit (no recursive/unknown automatic classification).
+WITH roles(id,token_role,proposed) AS (
+ VALUES
+(7,'CTA','[]'::jsonb),
+(8,'MARCA','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(10,'DUPLICADO_DE_CTA','[]'::jsonb),
+(11,'TEXTO','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(12,'SUPERFICIE_BASE','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(13,'SUPERFICIE_UI','[]'::jsonb),
+(14,'SUPERFICIE_UI','[]'::jsonb),
+(15,'TEXTO','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(16,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(17,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(18,'SUPERFICIE_UI','[]'::jsonb),
+(19,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(20,'SUPERFICIE_UI','[]'::jsonb),
+(21,'CTA','[]'::jsonb),
+(22,'CTA','[]'::jsonb),
+(23,'TEXTO','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(24,'TEXTO','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(25,'SUPERFICIE_BASE','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(26,'SUPERFICIE_BASE','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(27,'SUPERFICIE_UI','[]'::jsonb),
+(28,'SUPERFICIE_UI','[]'::jsonb),
+(29,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(30,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(31,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(32,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(33,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(34,'TIPOGRAFIA_FAMILIA','["REDES_SOCIALES","IMPRESION","PAPEL"]'::jsonb),
+(35,'TIPOGRAFIA_ESTILO_UI','[]'::jsonb),
+(36,'TIPOGRAFIA_ESTILO_UI','[]'::jsonb),
+(37,'TIPOGRAFIA_ESTILO_UI','[]'::jsonb),
+(38,'TIPOGRAFIA_ESTILO_UI','[]'::jsonb),
+(39,'TIPOGRAFIA_ESTILO_UI','[]'::jsonb),
+(40,'TIPOGRAFIA_ESTILO_UI','[]'::jsonb),
+(41,'CTA','[]'::jsonb),
+(42,'GEOMETRIA_UI','[]'::jsonb),
+(43,'GEOMETRIA_UI','[]'::jsonb),
+(44,'GEOMETRIA_UI','[]'::jsonb),
+(45,'GEOMETRIA_UI','[]'::jsonb),
+(46,'GEOMETRIA_UI','[]'::jsonb),
+(47,'GEOMETRIA_UI','[]'::jsonb),
+(48,'GEOMETRIA_UI','[]'::jsonb),
+(49,'GEOMETRIA_UI','[]'::jsonb),
+(50,'GEOMETRIA_UI','[]'::jsonb),
+(51,'CTA','[]'::jsonb),
+(52,'GEOMETRIA_UI','[]'::jsonb),
+(53,'ACCESIBILIDAD_UI','[]'::jsonb),
+(54,'ACCESIBILIDAD_UI','[]'::jsonb),
+(55,'ACCESIBILIDAD_UI','[]'::jsonb),
+(57,'SUPERFICIE_UI','[]'::jsonb),
+(58,'NAVEGACION_ESTADO_UI','[]'::jsonb),
+(59,'NAVEGACION_ESTADO_UI','[]'::jsonb),
+(60,'NAVEGACION_ESTADO_UI','[]'::jsonb),
+(61,'ACENTO_MODULO','["REDES_SOCIALES"]'::jsonb),
+(62,'NAVEGACION_ESTADO_UI','[]'::jsonb),
+(63,'GEOMETRIA_UI','[]'::jsonb)
+)
+UPDATE saly.identity_versions v SET metadata=
+ COALESCE(v.metadata,'{}'::jsonb)
+ || jsonb_build_object(
+  'token_role',r.token_role,
+  'applies_to',jsonb_build_array('PROTOTIPO_APP'),
+  'applies_to_proposed',r.proposed,
+  'medium_provenance','SALY_DS_V1_APP_CONFIRMED_ONLY')
+ FROM roles r WHERE v.id=r.id
+   AND v.approval_status IN ('APPROVED','CANDIDATE');
+
+-- Split approved roles permanently: brand #00C853 is brand-only,
+-- action #008200 is CTA only. Preserve candidate raw source and approval_status.
+UPDATE saly.identity_versions v SET metadata=v.metadata
+ || jsonb_build_object(
+   'duplicate_of_code','color.action.primary.bg',
+   'duplicate_resolution','EXCLUDE_FROM_EFFECTIVE_PALETTE',
+   'visual_usage','CTA_DUPLICATE_NOT_BRAND',
+   'not_effective',true,
+   'conflict_resolution_note','APPROVED_CTA_008200_KEPT;APPROVED_BRAND_00C853_KEPT')
+ WHERE v.id=10;
+UPDATE saly.identity_versions v SET metadata=v.metadata
+ || jsonb_build_object(
+   'kind','ALIAS',
+   'alias_target_code','color.action.primary.bg',
+   'resolved_role','CTA',
+   'visual_usage','REFERENCE_APPROVED_CTA_NOT_SECOND_COLOR',
+   'not_effective',true,
+   'conflict_resolution_note','ORIGINAL_VALUE_JSON_PRESERVED;TARGET_APPROVED_CTA')
+ WHERE v.id=21;
+
+-- Authenticated owner signs precisely those proposed media already enumerated.
+CREATE FUNCTION saly.creative_token_confirm_medium_v1(
+ p_version_id bigint,p_medium text,p_comment text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','saly','auth','extensions','pg_temp'
+AS $fn$
+DECLARE uid uuid; v saly.identity_versions%ROWTYPE;
+ v_role text; v_old_sha text; v_next jsonb;
+BEGIN
+ uid:=auth.uid();
+ IF uid IS NULL OR p_version_id IS NULL OR p_version_id<1
+ OR p_medium NOT IN ('REDES_SOCIALES','IMPRESION','PAPEL')
+ OR nullif(btrim(coalesce(p_comment,'')),'') IS NULL
+ THEN RAISE EXCEPTION 'SALY_TOKEN_CONFIRM_INPUT_INVALID'; END IF;
+ IF NOT EXISTS (SELECT 1 FROM saly.creative_owner_accounts_v1
+  WHERE requested_by='CHAT_USER' AND owner_uid=uid)
+ THEN RAISE EXCEPTION 'SALY_TOKEN_CONFIRM_OWNER_REQUIRED'; END IF;
+ SELECT * INTO STRICT v FROM saly.identity_versions WHERE id=p_version_id FOR UPDATE;
+ v_role:=v.metadata->>'token_role';
+ IF v_role IN ('CTA','DUPLICADO_DE_CTA','GEOMETRIA_UI','NAVEGACION_ESTADO_UI')
+ THEN RAISE EXCEPTION 'SALY_TOKEN_ROLE_APP_ONLY'; END IF;
+ IF jsonb_typeof(v.metadata->'applies_to_proposed') IS DISTINCT FROM 'array'
+ OR NOT (v.metadata->'applies_to_proposed' ? p_medium)
+ THEN RAISE EXCEPTION 'SALY_TOKEN_MEDIUM_NOT_PROPOSED'; END IF;
+ IF v.metadata->'applies_to' ? p_medium
+ THEN RAISE EXCEPTION 'SALY_TOKEN_MEDIUM_ALREADY_CONFIRMED'; END IF;
+ v_old_sha:=encode(extensions.digest(v.metadata::text,'sha256'),'hex');
+ v_next:=jsonb_set(v.metadata,'{applies_to}',
+    (v.metadata->'applies_to')||jsonb_build_array(p_medium),true);
+ INSERT INTO saly.creative_token_medium_confirmations_v1(
+ version_id,medium,confirmed_by,comment,metadata_previous_sha256)
+ VALUES(p_version_id,p_medium,uid,p_comment,v_old_sha);
+ UPDATE saly.identity_versions SET metadata=v_next WHERE id=p_version_id;
+ RETURN jsonb_build_object('version_id',p_version_id,
+  'medium',p_medium,'confirmed_by',uid,'confirmed_at',
+  (SELECT confirmed_at FROM saly.creative_token_medium_confirmations_v1
+  WHERE version_id=p_version_id AND medium=p_medium),
+  'metadata_previous_sha256',v_old_sha,
+  'approval_status',v.approval_status,
+  'role',v_role,'status','CONFIRMADO');
+END; $fn$;
+REVOKE ALL ON FUNCTION saly.creative_token_confirm_medium_v1(bigint,text,text)
+ FROM PUBLIC,anon,service_role;
+GRANT EXECUTE ON FUNCTION saly.creative_token_confirm_medium_v1(bigint,text,text)
+ TO authenticated;
 
 CREATE FUNCTION saly.creative_item_context_medium_v3(
  p_item_id bigint,p_medium_override text DEFAULT NULL)
@@ -548,7 +688,12 @@ BEGIN
  IF o.context_set_id IS NULL THEN RAISE EXCEPTION 'SALY_MEDIUM_CONTEXT_MISSING'; END IF;
  WITH token_rows AS (
   SELECT e.code,v.id AS version_id,v.approval_status,t.role,v.value_json,
-   v.metadata->'applies_to' applies_to
+   v.metadata->'applies_to' applies_to,
+   v.metadata->'applies_to_proposed' applies_to_proposed,
+   v.metadata->>'token_role' token_role,
+   v.metadata->>'duplicate_of_code' duplicate_of_code,
+   v.metadata->>'alias_target_code' alias_target_code,
+   v.metadata->>'kind' token_kind
   FROM saly.creative_context_tokens t
   JOIN saly.identity_versions v ON v.id=t.identity_version_id
   JOIN saly.identity_elements e ON e.id=v.element_id
@@ -567,7 +712,10 @@ BEGIN
  SELECT
   COALESCE(jsonb_agg(jsonb_build_object(
    'code',code,'version_id',version_id,'approval_status',approval_status,
-   'role',role,'value_json',value_json) ORDER BY code)
+   'role',role,'value_json',value_json,
+   'token_role',token_role,'applies_to_proposed',applies_to_proposed,
+   'effective_for_palette',token_role IS DISTINCT FROM 'DUPLICADO_DE_CTA',
+   'alias_target_code',alias_target_code,'duplicate_of_code',duplicate_of_code) ORDER BY code)
    FILTER(WHERE reason IS NULL),'[]'::jsonb),
   COALESCE(jsonb_agg(jsonb_build_object(
    'code',code,'version_id',version_id,'reason',reason) ORDER BY code)
@@ -579,7 +727,19 @@ BEGIN
  'selected',selections,'omitted',omissions,
  'selected_count',jsonb_array_length(selections),
  'omitted_count',jsonb_array_length(omissions),
- 'candidates_promoted',false);
+ 'candidates_promoted',false,
+ 'effective_color_roles',jsonb_build_object(
+   'CTA',jsonb_build_object('code','color.action.primary.bg',
+         'hex','#008200','version_id',7),
+   'MARCA',jsonb_build_object('code','color.brand.primary',
+         'hex','#00C853','version_id',8)),
+ 'effective_palette_exclusions',
+   COALESCE((SELECT jsonb_agg(jsonb_build_object(
+       'code',e->>'code','reason','DUPLICADO_DE_CTA',
+       'duplicate_of_code',e->>'duplicate_of_code'))
+      FROM jsonb_array_elements(selections) e
+      WHERE e->>'token_role'='DUPLICADO_DE_CTA'),'[]'::jsonb)
+ );
 END; $f$;
 REVOKE ALL ON FUNCTION saly.creative_item_context_medium_v3(bigint,text) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION saly.creative_item_context_medium_v3(bigint,text) TO service_role;
