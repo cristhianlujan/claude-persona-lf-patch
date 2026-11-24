@@ -138,7 +138,8 @@
         "s3c01_intento",
         "s3c01_contexto",
         "s3c01_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -274,7 +275,8 @@
         "s3c02_intento",
         "s3c02_contexto",
         "s3c02_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -410,7 +412,8 @@
         "s3c03_intento",
         "s3c03_contexto",
         "s3c03_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -546,7 +549,8 @@
         "s3c04_intento",
         "s3c04_contexto",
         "s3c04_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -682,7 +686,8 @@
         "s3c05_intento",
         "s3c05_contexto",
         "s3c05_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -818,7 +823,8 @@
         "s3c06_intento",
         "s3c06_contexto",
         "s3c06_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -954,7 +960,8 @@
         "s3c07_intento",
         "s3c07_contexto",
         "s3c07_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1090,7 +1097,8 @@
         "s3c08_intento",
         "s3c08_contexto",
         "s3c08_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1226,7 +1234,8 @@
         "s3c09_intento",
         "s3c09_contexto",
         "s3c09_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1362,7 +1371,8 @@
         "s3c10_intento",
         "s3c10_contexto",
         "s3c10_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1498,7 +1508,8 @@
         "s3c11_intento",
         "s3c11_contexto",
         "s3c11_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1634,7 +1645,8 @@
         "s3c12_intento",
         "s3c12_contexto",
         "s3c12_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1770,7 +1782,8 @@
         "s3c13_intento",
         "s3c13_contexto",
         "s3c13_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -1906,7 +1919,8 @@
         "s3c14_intento",
         "s3c14_contexto",
         "s3c14_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2042,7 +2056,8 @@
         "s3c15_intento",
         "s3c15_contexto",
         "s3c15_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2178,7 +2193,8 @@
         "s3c16_intento",
         "s3c16_contexto",
         "s3c16_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2314,7 +2330,8 @@
         "s3c17_intento",
         "s3c17_contexto",
         "s3c17_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2450,7 +2467,8 @@
         "s3c18_intento",
         "s3c18_contexto",
         "s3c18_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2586,7 +2604,8 @@
         "s3c19_intento",
         "s3c19_contexto",
         "s3c19_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2722,7 +2741,8 @@
         "s3c20_intento",
         "s3c20_contexto",
         "s3c20_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     },
     {
       "tipo": "NUEVA",
@@ -2858,7 +2878,8 @@
         "s3c21_intento",
         "s3c21_contexto",
         "s3c21_violacion"
-      ]
+      ],
+      "dueno": "TECNICO"
     }
   ]
 }
