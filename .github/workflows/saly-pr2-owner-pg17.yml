@@ -1,0 +1,40 @@
+name: SALY PR2 owner/token PostgreSQL17 ROLLBACK over PR1
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261123234000_lf_saly_creative_owner_state_and_medium_v1.sql'
+      - 'sandbox/creative_factory/k_task_v2/**'
+      - '.github/workflows/saly-pr2-owner-pg17.yml'
+permissions:
+  contents: read
+jobs:
+  pg17:
+    runs-on: ubuntu-latest
+    services:
+      pg:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_pr2_owner_pg17
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_pr2_owner_pg17"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: '127.0.0.1'
+      PGDATABASE: saly_pr2_owner_pg17
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: '5432'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PostgreSQL and Pillow
+        run: |
+          if ! command -v psql >/dev/null; then sudo apt-get install -y postgresql-client; fi
+          if ! python3 -c 'from PIL import Image' >/dev/null 2>&1; then sudo apt-get install -y python3-pil; fi
+          psql --version
+      - name: Apply PR1 fixture; PR2 schema ROLLBACK and positive/negative test ROLLBACK
+        run: bash sandbox/creative_factory/k_task_v2/pr2_over_pr1_pg17.sh
