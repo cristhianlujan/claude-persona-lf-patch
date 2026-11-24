@@ -223,19 +223,13 @@ BEGIN
         AND NOT EXISTS (SELECT 1 FROM saly.creative_runs newer
                         WHERE newer.item_id=r.item_id AND newer.attempt_number>r.attempt_number)
         AND EXISTS (
-          SELECT 1 FROM saly.creative_queue_native_delivery_evidence_v1 delivery
-          WHERE delivery.claim_id=v_claim.id AND delivery.run_id=r.id
-            AND delivery.order_id=v_claim.order_id
-            AND delivery.item_id=v_claim.item_id
-            AND delivery.artifact_ref=r.output_evidence->>'artifact_ref'
-            AND delivery.artifact_sha256=r.output_evidence->>'sha256'
-            AND delivery.state='VERIFIED'
-            AND delivery.verified_at IS NOT NULL
-            AND nullif(btrim(delivery.verifier_ref),'') IS NOT NULL
-            AND lower(btrim(delivery.verifier_ref))<>lower(btrim(v_claim.worker_ref))
-            AND nullif(btrim(delivery.host_evidence_ref),'') IS NOT NULL
-            AND delivery.host_evidence_sha256 ~ '^[0-9a-f]{64}$'
-            AND nullif(btrim(delivery.message_id),'') IS NOT NULL
+          SELECT 1 FROM saly.creative_run_detection_v1 d
+          WHERE d.claim_id=v_claim.id AND d.run_id=r.id
+            AND d.order_id=v_claim.order_id AND d.item_id=v_claim.item_id
+            AND d.artifact_ref=r.output_evidence->>'artifact_ref'
+            AND d.artifact_sha256=r.output_evidence->>'sha256'
+            AND d.check_count BETWEEN 1 AND 7
+            AND d.first_ready_elapsed_seconds=30*(d.check_count-1)
         )
     ) THEN RAISE EXCEPTION 'CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED'; END IF;
   ELSE
@@ -291,6 +285,10 @@ BEGIN
  OR i.qa_receipt->>'verdict' IS DISTINCT FROM 'PASS'
  OR nullif(btrim(i.qa_receipt->>'comment'),'') IS NULL
  OR i.qa_receipt->>'artifact_sha256' IS DISTINCT FROM r.output_evidence->>'sha256'
+ OR NOT EXISTS(SELECT 1 FROM saly.creative_run_detection_v1 d
+       WHERE d.run_id=r.id AND d.order_id=c.order_id AND d.item_id=i.id
+         AND d.claim_id=c.id AND d.artifact_sha256=r.output_evidence->>'sha256'
+         AND d.artifact_ref=r.output_evidence->>'artifact_ref')
  THEN RAISE EXCEPTION 'CREATIVE_CHAT_FINISH_QA_NOT_SAVED'; END IF;
  -- V06 verifies actual evidence. A textual "generated" or a worker receipt
  -- does not suffice. On absence the transaction fails and remains pending.
@@ -407,6 +405,11 @@ BEGIN
      AND r.state='EXITOSO' AND nullif(r.output_evidence->>'artifact_ref','') IS NOT NULL
      AND NOT EXISTS (SELECT 1 FROM saly.creative_runs newer
        WHERE newer.item_id=r.item_id AND newer.attempt_number>r.attempt_number);
+   IF NEW.status='TERMINADO' AND NOT EXISTS (
+     SELECT 1 FROM saly.creative_run_detection_v1 d
+     WHERE d.run_id=v_run_id::bigint AND d.item_id=NEW.id AND d.order_id=NEW.order_id
+       AND d.artifact_sha256=v_run.output_evidence->>'sha256'
+   ) THEN RAISE EXCEPTION 'SALY_ITEM_TERMINADO_REQUIRES_TIMER_DETECTION'; END IF;
    IF NOT FOUND OR lower(btrim(NEW.qa_receipt->>'reviewer_ref'))=lower(btrim(v_run.worker_ref))
       OR (NEW.status='TERMINADO' AND (NEW.approved_by IS NOT NULL OR NEW.approved_at IS NOT NULL))
       OR (NEW.status='APROBADO' AND NEW.approved_by IS DISTINCT FROM NEW.qa_receipt->>'reviewer_ref')
@@ -456,8 +459,12 @@ BEGIN
  IF NEW.status='TERMINADO' AND OLD.status='EN_QA' THEN
    IF NEW.approved_at IS NOT NULL OR NEW.approved_by IS NOT NULL
       OR NEW.qa_receipt->>'verdict' IS DISTINCT FROM 'PASS'
-      OR NOT EXISTS(SELECT 1 FROM saly.creative_runs r WHERE r.item_id=NEW.id
-        AND r.order_id=NEW.order_id AND r.state='EXITOSO'
+      OR NOT EXISTS(SELECT 1 FROM saly.creative_runs r
+        JOIN saly.creative_run_detection_v1 d ON d.run_id=r.id
+        WHERE r.item_id=NEW.id AND r.order_id=NEW.order_id AND r.state='EXITOSO'
+        AND d.item_id=NEW.id AND d.order_id=NEW.order_id
+        AND d.artifact_sha256=r.output_evidence->>'sha256'
+        AND d.artifact_ref=r.output_evidence->>'artifact_ref'
         AND r.output_evidence->>'sha256'=NEW.qa_receipt->>'artifact_sha256')
    THEN RAISE EXCEPTION 'SALY_CHAT_TERMINAL_QA_RUN_MISSING'; END IF;
    RETURN NEW;
@@ -540,10 +547,11 @@ BEGIN
               AND i.qa_receipt->>'verdict'='PASS'
               AND i.qa_receipt->>'artifact_sha256'=r.output_evidence->>'sha256'
               AND EXISTS (
-                SELECT 1 FROM saly.creative_queue_native_delivery_evidence_v1 d
+                SELECT 1 FROM saly.creative_run_detection_v1 d
                 WHERE d.run_id=r.id AND d.item_id=i.id AND d.order_id=i.order_id
-                  AND d.state='VERIFIED' AND d.verified_at IS NOT NULL
                   AND d.artifact_sha256=r.output_evidence->>'sha256'
+                  AND d.artifact_ref=r.output_evidence->>'artifact_ref'
+                  AND d.check_count BETWEEN 1 AND 7
               )
           )
         )))
