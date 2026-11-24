@@ -11,6 +11,7 @@ CREATE TABLE saly.creative_task_selection_v2 (
  selection_sha256 text NOT NULL CHECK(selection_sha256 ~ '^[0-9a-f]{64}$'),
  created_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE UNIQUE INDEX creative_task_selection_sha256_uk_v2 ON saly.creative_task_selection_v2(selection_sha256);
 CREATE TABLE saly.creative_k_results_v2 (
  item_id bigint NOT NULL REFERENCES saly.creative_order_items(id) ON DELETE RESTRICT,
  object_kind text NOT NULL CHECK(object_kind IN ('PLAN','IMAGE')),
@@ -25,7 +26,6 @@ CREATE TABLE saly.creative_k_results_v2 (
  created_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(item_id,object_kind,object_sha256,module_code)
 );
-CREATE UNIQUE INDEX creative_task_selection_sha256_uk_v2 ON saly.creative_task_selection_v2(selection_sha256);
 CREATE TABLE saly.creative_plan_pre_qa_v2 (
  item_id bigint NOT NULL REFERENCES saly.creative_order_items(id) ON DELETE RESTRICT,
  plan_sha256 text NOT NULL CHECK(plan_sha256 ~ '^[0-9a-f]{64}$'),
