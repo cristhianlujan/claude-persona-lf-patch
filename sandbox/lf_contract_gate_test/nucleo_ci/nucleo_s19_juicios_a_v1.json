@@ -133,48 +133,6 @@
       "complementa": null
     },
     {
-      "codigo": "S19-C05",
-      "version": 1,
-      "eval_id": 1178,
-      "hash_version_atestado": "64dcdff5a740529e060f0b526b4f810cd05c6cee19beea35927800856bad8846",
-      "hash_paquete_atestado": "73e23d52daf20fc421e677ead97a5c3da4e09a61213007653a2e622f6520df1e",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 15:50 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 0.8,
-          "observacion": "Solo API Cliente; legado todas."
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 0.8,
-          "observacion": "Error solapa S11-C04."
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 179,
-      "familia": "API_DATA_CONTRACT",
-      "diferencias": "Contraste funcional: BLOQUEAR respuesta de API Cliente que incumpla estructura del contrato legado: success booleano, data objeto o nulo, error objeto o nulo con code, message y field opcional nulo, meta con timestamp y request_id. Respetar anti-enumeración y no exponer errores internos. No acredita endpoints desplegados.  Solo API Cliente; legado todas. Error solapa S11-C04.",
-      "residual": "APIs fuera de Cliente (B2B) no cubiertas.",
-      "complementa": null
-    },
-    {
       "codigo": "S19-C06",
       "version": 1,
       "eval_id": 1179,
