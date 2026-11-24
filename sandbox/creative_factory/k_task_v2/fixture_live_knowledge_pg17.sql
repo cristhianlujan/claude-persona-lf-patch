@@ -12,8 +12,10 @@ AS $f$ SELECT NULLIF(current_setting('request.jwt.claim.sub',true),'')::uuid; $f
 CREATE TABLE saly.creative_order_items (id bigint PRIMARY KEY);
 INSERT INTO saly.creative_order_items(id) VALUES (101),(102),(103),(104),(105),(106);
 CREATE TABLE saly.creative_runs(
- id bigint PRIMARY KEY,state text NOT NULL,deadline_at timestamptz,
- attempt_number integer NOT NULL,error_code text,updated_at timestamptz DEFAULT now());
+ id bigint PRIMARY KEY,order_id bigint,item_id bigint,
+ state text NOT NULL,output_evidence jsonb NOT NULL DEFAULT '{}'::jsonb,
+ deadline_at timestamptz,attempt_number integer NOT NULL,
+ error_code text,updated_at timestamptz DEFAULT now());
 CREATE TABLE saly.documentos (
  id bigint PRIMARY KEY,codigo text,nombre_archivo text,mime_type text,tamano_bytes bigint,
  sha256 text,origen text,tipo text,contenido bytea,metadata jsonb,
