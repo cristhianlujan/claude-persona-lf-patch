@@ -175,8 +175,9 @@ BEGIN
    IF p_decision<>'OMITIDO' OR p_step<>'2'
    THEN RAISE EXCEPTION 'SALY_K_SKIP_MISMATCH'; END IF;
  ELSE
+   IF p_module_code='K06' THEN v_owner:='8'; END IF;
    IF p_decision<>'EJECUTADO'
-   OR p_step IS DISTINCT FROM CASE p_module_code WHEN 'K06' THEN '8' ELSE v_owner END
+   OR p_step IS DISTINCT FROM v_owner
    OR p_evidence='{}'::jsonb OR p_output='{}'::jsonb
    THEN RAISE EXCEPTION 'SALY_K_OWNER_OR_EVIDENCE_MISMATCH'; END IF;
  END IF;
