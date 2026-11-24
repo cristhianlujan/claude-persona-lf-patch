@@ -2,6 +2,7 @@
   "solution_ref": "lf-nucleo-puente-17-20261124",
   "paths": {
     "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_puente_17_v1.json": "ENGINEERING_CHECKPOINTS",
-    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-puente-17-20261124.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-puente-17-20261124.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s18_juicios_11_v1.json": "ENGINEERING_CHECKPOINTS"
   }
 }
