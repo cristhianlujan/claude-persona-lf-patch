@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-creative-serial-loop-v1",
+  "paths": {
+    "supabase/migrations/20261124215102_lf_saly_creative_serial_loop_v1.sql": "MIGRATION",
+    "skills/creative_factory/SKILL.md": "SKILL",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-serial-loop-v1.json": "CHANGESET_MANIFEST"
+  }
+}
