@@ -8,7 +8,7 @@
     {
       "tipo": "NUEVA",
       "codigo": "S2-C01",
-      "clave": "s2_PARCIAL",
+      "clave": "s2_otp_agotado_sin_resguardo",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -132,19 +132,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "El estado ABANDONED/BLOCKED y las operaciones no intentadas pueden requerir obligación adicional.",
+      "cobertura_esperada": "PARCIAL",
       "legada_id": 19,
       "legada_codigo": "REG_SEG_001",
       "hechos": [
         "s2c01_intento",
         "s2c01_contexto",
         "s2c01_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "El estado ABANDONED/BLOCKED y las operaciones no intentadas pueden requerir obligación adicional."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C02",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_otp_final_agotado_sin_bloqueo",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -268,19 +269,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "Núcleo expresa el límite de continuación como bloqueo condicional, sin implementar por sí solo la escritura de estado.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 20,
       "legada_codigo": "REG_SEG_002",
       "hechos": [
         "s2c02_intento",
         "s2c02_contexto",
         "s2c02_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "Núcleo expresa el límite de continuación como bloqueo condicional, sin implementar por sí solo la escritura de estado."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C03",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_cambio_celular_excede_maximo",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -404,19 +406,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "La nueva representación es una condición de bloqueo, el bloqueo visual del campo debe implementarse en runtime.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 23,
       "legada_codigo": "REG_SEG_005",
       "hechos": [
         "s2c03_intento",
         "s2c03_contexto",
         "s2c03_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "La nueva representación es una condición de bloqueo, el bloqueo visual del campo debe implementarse en runtime."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C04",
-      "clave": "s2_PARCIAL",
+      "clave": "s2_limite_backend_otp_violado",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -540,19 +543,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "La legada define cuotas explícitas por minuto y dos dimensiones; quedan pendientes la identificación y validación de políticas backend equivalentes sin números hardcodeados.",
+      "cobertura_esperada": "PARCIAL",
       "legada_id": 127,
       "legada_codigo": "REG_ATQ_007",
       "hechos": [
         "s2c04_intento",
         "s2c04_contexto",
         "s2c04_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "La legada define cuotas explícitas por minuto y dos dimensiones; quedan pendientes la identificación y validación de políticas backend equivalentes sin números hardcodeados."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C05",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_token_almacenado_inseguro",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -676,19 +680,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "La legada conserva una frase histórica de JWT en cookie; se adopta su aclaración posterior explícita: access token en memoria y refresh cookie protegida.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 139,
       "legada_codigo": "REG_ATQ_019",
       "hechos": [
         "s2c05_intento",
         "s2c05_contexto",
         "s2c05_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "La legada conserva una frase histórica de JWT en cookie; se adopta su aclaración posterior explícita: access token en memoria y refresh cookie protegida."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C06",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_mfa_config_local_no_central",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -812,19 +817,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "Control condicional de autoridad central, no implementación de proveedor MFA.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 398,
       "legada_codigo": "B2B-RULE-AUTH-003",
       "hechos": [
         "s2c06_intento",
         "s2c06_contexto",
         "s2c06_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "Control condicional de autoridad central, no implementación de proveedor MFA."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C07",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_limite_tasa_fuera_politica",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -948,19 +954,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "La regla nueva rechaza configuración local en ejecución; la asociación física de rate_limit_policy_id sigue siendo responsabilidad runtime.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 418,
       "legada_codigo": "B2B-RULE-RATE-001",
       "hechos": [
         "s2c07_intento",
         "s2c07_contexto",
         "s2c07_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "La regla nueva rechaza configuración local en ejecución; la asociación física de rate_limit_policy_id sigue siendo responsabilidad runtime."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C08",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_antibot_login_incorrecto",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -1084,19 +1091,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "Se expresa política UX y seguridad como guard observable; no especifica proveedor.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 429,
       "legada_codigo": "B2B-RULE-AUTH-008",
       "hechos": [
         "s2c08_intento",
         "s2c08_contexto",
         "s2c08_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "Se expresa política UX y seguridad como guard observable; no especifica proveedor."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C09",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_autenticacion_fuera_frontera",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -1220,19 +1228,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "Se explicita bloqueo de la ruta insegura; no atribuye un endpoint o grant OIDC aún no aprobado.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 432,
       "legada_codigo": "B2B-RULE-AUTH-013",
       "hechos": [
         "s2c09_intento",
         "s2c09_contexto",
         "s2c09_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "Se explicita bloqueo de la ruta insegura; no atribuye un endpoint o grant OIDC aún no aprobado."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C10",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_error_proveedor_no_normalizado",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -1356,19 +1365,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "El núcleo representa el control de normalización como guard de emisión, no implementa el adaptador.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 433,
       "legada_codigo": "B2B-RULE-AUTH-014",
       "hechos": [
         "s2c10_intento",
         "s2c10_contexto",
         "s2c10_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "El núcleo representa el control de normalización como guard de emisión, no implementa el adaptador."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C11",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_respuesta_auth_no_minima",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -1492,19 +1502,20 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "El núcleo expresa la obligación sobre el contrato de salida, sin inventar campos adicionales.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 436,
       "legada_codigo": "B2B-RULE-AUTH-017",
       "hechos": [
         "s2c11_intento",
         "s2c11_contexto",
         "s2c11_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "El núcleo expresa la obligación sobre el contrato de salida, sin inventar campos adicionales."
     },
     {
       "tipo": "NUEVA",
       "codigo": "S2-C12",
-      "clave": "s2_REEMPLAZADA",
+      "clave": "s2_sesion_plena_sin_mfa",
       "familia": "SECURITY",
       "naturaleza": "CONDUCTA",
       "clase": "BACKEND",
@@ -1628,14 +1639,15 @@
           "esperado": true
         }
       ],
-      "cobertura_esperada": "No se copia un número fijo de perfiles; se utiliza la política vigente y la condición de segundo factor.",
+      "cobertura_esperada": "REEMPLAZADA",
       "legada_id": 437,
       "legada_codigo": "B2B-RULE-AUTH-018",
       "hechos": [
         "s2c12_intento",
         "s2c12_contexto",
         "s2c12_violacion"
-      ]
+      ],
+      "diferencias_esperadas": "No se copia un número fijo de perfiles; se utiliza la política vigente y la condición de segundo factor."
     }
   ]
 }
