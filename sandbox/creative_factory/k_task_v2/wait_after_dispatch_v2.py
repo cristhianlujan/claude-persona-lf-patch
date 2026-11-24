@@ -22,7 +22,6 @@ def wait_after_dispatch(
         raise ValueError("SALY_WAIT_POLICY_INVALID")
     start = monotonic()
     trace = []
-    first_ready = None
     for n in range(7):  # time 0, 30, 60, 90, 120, 150, 180
         when = start + 30 * n
         delta = when - monotonic()
@@ -36,19 +35,18 @@ def wait_after_dispatch(
         status = row["status"]
         elapsed = 30 * n
         trace.append({"elapsed_seconds": elapsed, "status": status})
-        if status == "FAILED":
-            return {"status": "FAILED", "checks": trace, "count": n + 1}
-        if status == "READY" and first_ready is None:
-            first_ready = elapsed
-    if first_ready is not None:
-        return {
-            "status": "READY",
-            "first_observed_ready_seconds": first_ready,
-            "checks": trace,
-            "count": 7,
-            "elapsed_seconds": 180,
-            "next_step": "11",
-        }
+        if status in ("FAILED", "ERROR"):
+            return {"status": status, "readback": row, "checks": trace,
+                    "count": n + 1, "elapsed_seconds": elapsed}
+        if status == "READY":
+            return {
+                "status": "READY",
+                "first_observed_ready_seconds": elapsed,
+                "checks": trace,
+                "count": n + 1,
+                "elapsed_seconds": elapsed,
+                "next_step": "11",
+            }
     result = expire()
     if not isinstance(result, dict) or result.get("status") != "EXPIRED_CLOSED":
         return {
