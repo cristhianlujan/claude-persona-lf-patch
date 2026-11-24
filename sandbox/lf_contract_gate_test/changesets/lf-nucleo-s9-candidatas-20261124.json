@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-nucleo-s9-candidatas-20261124",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s9_25_vectores_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-s9-candidatas-20261124.json": "CHANGESET_MANIFEST"
+  }
+}
