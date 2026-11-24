@@ -1,0 +1,233 @@
+{
+  "contrato": "LF_S20_JUICIOS",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S19-C05",
+      "version": 2,
+      "eval_id": 1212,
+      "hash_version_atestado": "81ddf203e3356bfd7c10caefa7fbc902a8aacac6b8c09e65c635bfdd81334ad2",
+      "hash_paquete_atestado": "8bfaa2e103681ed85490579a637ff53abb723ad03320ae13f3644a6a0e2e37c2",
+      "hash_evaluado": "81ddf203e3",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 17:05 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 179,
+      "familia": "API_DATA_CONTRACT",
+      "diferencias": "No acredita endpoints desplegados; contrato de estructura solamente.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S20-C01",
+      "version": 1,
+      "eval_id": 1213,
+      "hash_version_atestado": "9ccf3429a5f7c337a28820f3f7367ff21c29db01796c3ae1fe25e4b68fb5a85f",
+      "hash_paquete_atestado": "fa6f685e7da4d8a8f88b8d8d34743e6a92b7fae8f142e74caf7c8b8cc5a80db1",
+      "hash_evaluado": "9ccf3429a5",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 17:05 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "mismo texto por nodo; aceptable porque el motor aplica un nodo por candidata y los nodos son disjuntos, no solapa con S18-C01 de onboarding"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 46,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Una regla por nodo por limitación de aplicaciones; CLIENT_ONBOARDING cubierto por S18-C01. Cobertura conjunta de S20-C01..C04 y S18-C01.",
+      "residual": "",
+      "complementa": "S18-C01"
+    },
+    {
+      "codigo": "S20-C02",
+      "version": 1,
+      "eval_id": 1214,
+      "hash_version_atestado": "7a349f0cf13a63fc5e3e865a0e619b5fc1c63039a95505cf8bc44a05816acf29",
+      "hash_paquete_atestado": "54c95ebef6805313855a821c03346349cc47cf9e3114f6de0973875fd6119f29",
+      "hash_evaluado": "7a349f0cf1",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 17:05 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "mismo texto por nodo; aceptable porque el motor aplica un nodo por candidata y los nodos son disjuntos, no solapa con S18-C01 de onboarding"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 46,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Una regla por nodo por limitación de aplicaciones; CLIENT_ONBOARDING cubierto por S18-C01. Cobertura conjunta de S20-C01..C04 y S18-C01.",
+      "residual": "",
+      "complementa": "S18-C01"
+    },
+    {
+      "codigo": "S20-C03",
+      "version": 1,
+      "eval_id": 1215,
+      "hash_version_atestado": "ed5ceee5d57c27b227caaecf9ad25bd780da72a5b88cb441808b6019ccea90ed",
+      "hash_paquete_atestado": "9b5feca8aa741cc28777fdfd4087c2dfbf9f63a77206fb808a2cbe8d94d669c8",
+      "hash_evaluado": "ed5ceee5d5",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 17:05 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "mismo texto por nodo; aceptable porque el motor aplica un nodo por candidata y los nodos son disjuntos, no solapa con S18-C01 de onboarding"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 46,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Una regla por nodo por limitación de aplicaciones; CLIENT_ONBOARDING cubierto por S18-C01. Cobertura conjunta de S20-C01..C04 y S18-C01.",
+      "residual": "",
+      "complementa": "S18-C01"
+    },
+    {
+      "codigo": "S20-C04",
+      "version": 1,
+      "eval_id": 1216,
+      "hash_version_atestado": "ff79f8b94eacb1389b2108bc4425950bd748d37659cae8d644cac7f1826ab4f8",
+      "hash_paquete_atestado": "48474c184a39e3aa7dfe5d735cd69f1c32900b99c2f64b68ce1863405ec820a8",
+      "hash_evaluado": "ff79f8b94e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 17:05 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "mismo texto por nodo; aceptable porque el motor aplica un nodo por candidata y los nodos son disjuntos, no solapa con S18-C01 de onboarding"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 46,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Una regla por nodo por limitación de aplicaciones; CLIENT_ONBOARDING cubierto por S18-C01. Cobertura conjunta de S20-C01..C04 y S18-C01.",
+      "residual": "",
+      "complementa": "S18-C01"
+    }
+  ],
+  "cobertura_conjunta": {
+    "legacy_id": 46,
+    "reglas": [
+      "S18-C01",
+      "S20-C01",
+      "S20-C02",
+      "S20-C03",
+      "S20-C04"
+    ]
+  }
+}
