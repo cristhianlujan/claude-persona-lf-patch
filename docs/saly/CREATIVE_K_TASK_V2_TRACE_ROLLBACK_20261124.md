@@ -16,9 +16,9 @@ Los valores a continuación proceden del log real, sin inferencia ni sustitucion
 | B · NUMERIC_ADJUST | `task=NUMERIC_ADJUST; spatial=false; item=102` | `{"omitted": [{"reason": "TAREA_LOCAL_SIN_REDISENO", "module_code": "K01"}, {"reason": "TAREA_LOCAL_SIN_REDISENO", "module_code": "K02"}, {"reason": "TAREA_NO_REQUIERE_RECOMPOSICION", "module_code": "K03"}, {"reason": "TAREA_NO_REQUIERE_RECOMPOSICION", "module_code": "K04"}], "selected": ["K05", "K06"]}` |
 | C · LOCAL_CORRECTION espacial | `task=LOCAL_CORRECTION; spatial=true; item=103` | `{"omitted": ["K01", "K02", "K03"], "selected": ["K04", "K05", "K06"]}` |
 | D · Sin referencia | `step4; reference=NULL; image not sent by owner` | `{"step": "4", "status": "SIN_REFERENCIA", "execute": false, "blocking": false, "reference_observations": []}` |
-| E · READY a 20 s | `NO REGISTRADO` | `NO REGISTRADO` |
-| E · READY a 100 s | `NO REGISTRADO` | `NO REGISTRADO` |
-| E · Nunca READY | `NO REGISTRADO` | `NO REGISTRADO` |
+| E · READY a 20 s | `E20_INPUT=ready_at_20_seconds` | `E20_OUTPUT= {'status': 'READY', 'first_observed_ready_seconds': 30, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'READY'}, {'elapsed_seconds': 60, 'status': 'READY'}, {'elapsed_seconds': 90, 'status': 'READY'}, {'elapsed_seconds': 120, 'status': 'READY'}, {'elapsed_seconds': 150, 'status': 'READY'}, {'elapsed_seconds': 180, 'status': 'READY'}], 'count': 7, 'elapsed_seconds': 180, 'next_step': '11'}` |
+| E · READY a 100 s | `E100_INPUT=ready_at_100_seconds` | `E100_OUTPUT= {'status': 'READY', 'first_observed_ready_seconds': 120, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'READY'}, {'elapsed_seconds': 150, 'status': 'READY'}, {'elapsed_seconds': 180, 'status': 'READY'}], 'count': 7, 'elapsed_seconds': 180, 'next_step': '11'}` |
+| E · Nunca READY | `ENEVER_INPUT=never_ready` | `ENEVER_OUTPUT= {'status': 'ESPERA_AGOTADA', 'run_state': 'FALLIDO', 'run_expired': True, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'PENDING'}, {'elapsed_seconds': 150, 'status': 'PENDING'}, {'elapsed_seconds': 180, 'status': 'PENDING'}], 'count': 7, 'elapsed_seconds': 180}` |
 | E · Expirar RUN SQL | `expired RUN deadline passed; use ORIGINAL creative_run_expire_v1` | `{"state": "FALLIDO", "run_id": 501, "status": "EXPIRED_CLOSED", "changed": true, "error_code": "LEASE_EXPIRED", "attempt_number": 1, "retry_dispatched": false}` |
 | F · Doble K | `record K05 twice on same PLAN object; item 102` | `{"k05_row_count": 1, "step9_consumer": {"requirements": ["CTA copy unchanged"]}}` |
 | G · K06 dos objetos | `K06 reviews PLAN and IMAGE as different objects, once each` | `{"k06_objects": 2, "different_objects": 2}` |
@@ -26,11 +26,11 @@ Los valores a continuación proceden del log real, sin inferencia ni sustitucion
 | Z · ROLLBACK | `ROLLBACK all candidate changes and execution/QA records` | `{"preqa_rows": 0, "result_rows": 0, "selection_rows": 0, "creative_run_rows": 0}` |
 
 ### Otros readbacks reales
-- **F, segundo intento del mismo K05 PLAN:** `NO REGISTRADO`. Resultado esperado: rechazado.
+- **F, segundo intento del mismo K05 PLAN:** `2026-11-24T00:36:16.0316293Z psql:sandbox/creative_factory/k_task_v2/test_rollback_pg17.sql:92: NOTICE:  F_SECOND_OUTPUT: SALY_K_DUPLICATE_OBJECT_EXECUTION`.
 - **F, readback step 9:** `{"k05_row_count": 1, "step9_consumer": {"requirements": ["CTA copy unchanged"]}}`. Reutiliza salida de K05, sin repetir ejecución.
-- **H, intento de auto-PASS:** `NO REGISTRADO`. Resultado esperado: rechazado.
+- **H, intento de auto-PASS:** `2026-11-24T00:36:16.0328503Z psql:sandbox/creative_factory/k_task_v2/test_rollback_pg17.sql:128: NOTICE:  H_SELF_REVIEW_OUTPUT: SALY_PREQA_INDEPENDENT_REVIEWER_REQUIRED`.
 - **H, revisión independiente:** `{"status": "PASS", "plan_sha256": "ac3df17b58b39a343f24cf80bb944605a5e72e5d8a22035866da9f0b7996d9e5", "reviewer_uid": "22222222-2222-4222-8222-222222222222", "independent_pass": true}`.
-- **E, expiración no permitida:** `NO REGISTRADO`. Devuelve `EXPIRY_NOT_CONFIRMED`, no cierre falso.
+- **E, expiración no permitida:** `2026-11-24T00:36:16.1231859Z test_expirer_refuses_without_deadline (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_expirer_refuses_without_deadline) ... E_EXPIRY_GUARD_OUTPUT= {'status': 'EXPIRY_NOT_CONFIRMED', 'expire_readback': {'status': 'NOT_EXPIRED', 'changed': False}, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'PENDING'}, {'elapsed_seconds': 150, 'status': 'PENDING'}, {'elapsed_seconds': 180, 'status': 'PENDING'}], 'count': 7}`.
 
 ## 2. Entradas SQL y salida original sin reducción
 
