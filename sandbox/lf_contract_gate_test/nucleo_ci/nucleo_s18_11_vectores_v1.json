@@ -1,0 +1,1575 @@
+{
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C01",
+      "clave": "s18_reg_acc_002",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Errores comprensibles en onboarding",
+      "descripcion": "BLOQUEAR mensaje de error visible en onboarding que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Otras superficies quedan fuera.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c01_onboarding"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c01_error_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c01_detalle_tecnico_expuesto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": false,
+            "s18c01_error_visible": false,
+            "s18c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": false,
+            "s18c01_error_visible": false,
+            "s18c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": false,
+            "s18c01_error_visible": true,
+            "s18c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": false,
+            "s18c01_error_visible": true,
+            "s18c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": true,
+            "s18c01_error_visible": false,
+            "s18c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": true,
+            "s18c01_error_visible": false,
+            "s18c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": true,
+            "s18c01_error_visible": true,
+            "s18c01_detalle_tecnico_expuesto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c01_onboarding": true,
+            "s18c01_error_visible": true,
+            "s18c01_detalle_tecnico_expuesto": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/46",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C02",
+      "clave": "s18_reg_acc_003",
+      "familia": "ACCESSIBILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "CTA visible en móvil",
+      "descripcion": "BLOQUEAR presentación de ONB_001 u ONB_002 en viewport móvil estándar del contrato vigente cuando la acción principal de verificación celular o código requiera scroll para verse. No introducir un nuevo ancho fijo en la regla.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c02_onb001_o_onb002"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c02_viewport_movil_contractual"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c02_cta_fuera_area_visible"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": false,
+            "s18c02_viewport_movil_contractual": false,
+            "s18c02_cta_fuera_area_visible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": false,
+            "s18c02_viewport_movil_contractual": false,
+            "s18c02_cta_fuera_area_visible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": false,
+            "s18c02_viewport_movil_contractual": true,
+            "s18c02_cta_fuera_area_visible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": false,
+            "s18c02_viewport_movil_contractual": true,
+            "s18c02_cta_fuera_area_visible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": true,
+            "s18c02_viewport_movil_contractual": false,
+            "s18c02_cta_fuera_area_visible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": true,
+            "s18c02_viewport_movil_contractual": false,
+            "s18c02_cta_fuera_area_visible": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": true,
+            "s18c02_viewport_movil_contractual": true,
+            "s18c02_cta_fuera_area_visible": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c02_onb001_o_onb002": true,
+            "s18c02_viewport_movil_contractual": true,
+            "s18c02_cta_fuera_area_visible": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/47",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C03",
+      "clave": "s18_reg_tec_008",
+      "familia": "VALIDATIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Validación independiente de formulario inicial",
+      "descripcion": "BLOQUEAR submit del formulario inicial celular-first sin validación local de los campos presentes antes de llamada, o sin validación independiente del servidor. No restaurar campos históricos anteriores a OTP.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c03_formulario_inicial"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c03_submit_solicitado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c03_validacion_cliente_o_servidor_ausente"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": false,
+            "s18c03_submit_solicitado": false,
+            "s18c03_validacion_cliente_o_servidor_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": false,
+            "s18c03_submit_solicitado": false,
+            "s18c03_validacion_cliente_o_servidor_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": false,
+            "s18c03_submit_solicitado": true,
+            "s18c03_validacion_cliente_o_servidor_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": false,
+            "s18c03_submit_solicitado": true,
+            "s18c03_validacion_cliente_o_servidor_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": true,
+            "s18c03_submit_solicitado": false,
+            "s18c03_validacion_cliente_o_servidor_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": true,
+            "s18c03_submit_solicitado": false,
+            "s18c03_validacion_cliente_o_servidor_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": true,
+            "s18c03_submit_solicitado": true,
+            "s18c03_validacion_cliente_o_servidor_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c03_formulario_inicial": true,
+            "s18c03_submit_solicitado": true,
+            "s18c03_validacion_cliente_o_servidor_ausente": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/184",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C04",
+      "clave": "s18_reg_err_002",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Conservación de formulario ante fallo técnico",
+      "descripcion": "BLOQUEAR respuesta a fallo de red o servidor durante submit que borre valores del formulario o no ofrezca reintento controlado. Mostrar mensaje comprensible; afirmar datos guardados únicamente con evidencia de persistencia. No autorizar reenvío automático.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c04_formulario_onboarding"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c04_fallo_red_o_servidor"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c04_formulario_perdido_o_respuesta_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": false,
+            "s18c04_fallo_red_o_servidor": false,
+            "s18c04_formulario_perdido_o_respuesta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": false,
+            "s18c04_fallo_red_o_servidor": false,
+            "s18c04_formulario_perdido_o_respuesta_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": false,
+            "s18c04_fallo_red_o_servidor": true,
+            "s18c04_formulario_perdido_o_respuesta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": false,
+            "s18c04_fallo_red_o_servidor": true,
+            "s18c04_formulario_perdido_o_respuesta_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": true,
+            "s18c04_fallo_red_o_servidor": false,
+            "s18c04_formulario_perdido_o_respuesta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": true,
+            "s18c04_fallo_red_o_servidor": false,
+            "s18c04_formulario_perdido_o_respuesta_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": true,
+            "s18c04_fallo_red_o_servidor": true,
+            "s18c04_formulario_perdido_o_respuesta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c04_formulario_onboarding": true,
+            "s18c04_fallo_red_o_servidor": true,
+            "s18c04_formulario_perdido_o_respuesta_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/190",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C05",
+      "clave": "s18_reg_err_003",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Error de envío OTP WhatsApp",
+      "descripcion": "BLOQUEAR tratamiento de fallo de envío OTP por WhatsApp que omita informar que no se pudo enviar el código, orientar a verificar número o intentar más tarde, y ofrecer corrección de número y reintento conforme contrato vigente. No habilita SMS ni bypass.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c05_otp_whatsapp"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c05_envio_fallido"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c05_mensaje_o_acciones_omitidas"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": false,
+            "s18c05_envio_fallido": false,
+            "s18c05_mensaje_o_acciones_omitidas": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": false,
+            "s18c05_envio_fallido": false,
+            "s18c05_mensaje_o_acciones_omitidas": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": false,
+            "s18c05_envio_fallido": true,
+            "s18c05_mensaje_o_acciones_omitidas": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": false,
+            "s18c05_envio_fallido": true,
+            "s18c05_mensaje_o_acciones_omitidas": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": true,
+            "s18c05_envio_fallido": false,
+            "s18c05_mensaje_o_acciones_omitidas": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": true,
+            "s18c05_envio_fallido": false,
+            "s18c05_mensaje_o_acciones_omitidas": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": true,
+            "s18c05_envio_fallido": true,
+            "s18c05_mensaje_o_acciones_omitidas": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c05_otp_whatsapp": true,
+            "s18c05_envio_fallido": true,
+            "s18c05_mensaje_o_acciones_omitidas": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/191",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C06",
+      "clave": "s18_reg_err_007",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Retiro de selección vencida en checkout",
+      "descripcion": "BLOQUEAR checkout con oferta seleccionada vencida que omita informar al usuario identificando acreedor, retirar esa oferta del resumen y recalcular total autorizado conservando selecciones válidas. No eliminar silenciosamente card de oferta ni modificar intentos enviados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c06_checkout_preenvio"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c06_oferta_seleccionada_vencida"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c06_resumen_o_aviso_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": false,
+            "s18c06_oferta_seleccionada_vencida": false,
+            "s18c06_resumen_o_aviso_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": false,
+            "s18c06_oferta_seleccionada_vencida": false,
+            "s18c06_resumen_o_aviso_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": false,
+            "s18c06_oferta_seleccionada_vencida": true,
+            "s18c06_resumen_o_aviso_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": false,
+            "s18c06_oferta_seleccionada_vencida": true,
+            "s18c06_resumen_o_aviso_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": true,
+            "s18c06_oferta_seleccionada_vencida": false,
+            "s18c06_resumen_o_aviso_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": true,
+            "s18c06_oferta_seleccionada_vencida": false,
+            "s18c06_resumen_o_aviso_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": true,
+            "s18c06_oferta_seleccionada_vencida": true,
+            "s18c06_resumen_o_aviso_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c06_checkout_preenvio": true,
+            "s18c06_oferta_seleccionada_vencida": true,
+            "s18c06_resumen_o_aviso_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/195",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C07",
+      "clave": "s18_reg_ui_005",
+      "familia": "STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Estados del resumen de selección",
+      "descripcion": "BLOQUEAR resumen de selección incongruente con estado autoritativo vacío, parcial o completo: vacío con orientación y Continuar deshabilitado; parcial con seleccionadas, total y disclaimer cuotas cuando corresponda; completo con todas seleccionadas, total y sin copy Podrás configurar después. No recalcular precios en frontend.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c07_resumen_home"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c07_estado_seleccion_resuelto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c07_presentacion_estado_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": false,
+            "s18c07_estado_seleccion_resuelto": false,
+            "s18c07_presentacion_estado_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": false,
+            "s18c07_estado_seleccion_resuelto": false,
+            "s18c07_presentacion_estado_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": false,
+            "s18c07_estado_seleccion_resuelto": true,
+            "s18c07_presentacion_estado_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": false,
+            "s18c07_estado_seleccion_resuelto": true,
+            "s18c07_presentacion_estado_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": true,
+            "s18c07_estado_seleccion_resuelto": false,
+            "s18c07_presentacion_estado_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": true,
+            "s18c07_estado_seleccion_resuelto": false,
+            "s18c07_presentacion_estado_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": true,
+            "s18c07_estado_seleccion_resuelto": true,
+            "s18c07_presentacion_estado_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c07_resumen_home": true,
+            "s18c07_estado_seleccion_resuelto": true,
+            "s18c07_presentacion_estado_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/203",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C08",
+      "clave": "s18_reg_b2b_005",
+      "familia": "DOCUMENTS_CERTIFICATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Autoridad de emisión de carta y SLA contractual",
+      "descripcion": "BLOQUEAR entrega, alojamiento o reenvío de Carta de No Adeudo sin evidencia de emisión por aliado acreedor o representante autorizado y permisos efectivos, o atribuir firma/emisión a LF. SLA y escalación exclusivamente del convenio confirmado; no prometer plazo fijo sin convenio, modelos y permisos acreditados. Integración y pruebas de formatos quedan pendientes.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c08_carta_no_adeudo_pagos"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c08_entrega_o_promesa_solicitada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c08_autoridad_permiso_evidencia_o_sla_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": false,
+            "s18c08_entrega_o_promesa_solicitada": false,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": false,
+            "s18c08_entrega_o_promesa_solicitada": false,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": false,
+            "s18c08_entrega_o_promesa_solicitada": true,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": false,
+            "s18c08_entrega_o_promesa_solicitada": true,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": true,
+            "s18c08_entrega_o_promesa_solicitada": false,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": true,
+            "s18c08_entrega_o_promesa_solicitada": false,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": true,
+            "s18c08_entrega_o_promesa_solicitada": true,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c08_carta_no_adeudo_pagos": true,
+            "s18c08_entrega_o_promesa_solicitada": true,
+            "s18c08_autoridad_permiso_evidencia_o_sla_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/235",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C09",
+      "clave": "s18_reg_chk_cuo_011",
+      "familia": "ACTIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Soporte humano previo al pago",
+      "descripcion": "BLOQUEAR checkout que omita acceso flotante a soporte humano WhatsApp cuando el canal está realmente disponible y autorizado, o muestre contacto no operativo. Copy de orientación ¿Dudas? Escríbenos por WhatsApp; no inventar número ni disponibilidad.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c09_checkout"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c09_soporte_renderizado_o_requerido"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c09_acceso_soporte_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": false,
+            "s18c09_soporte_renderizado_o_requerido": false,
+            "s18c09_acceso_soporte_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": false,
+            "s18c09_soporte_renderizado_o_requerido": false,
+            "s18c09_acceso_soporte_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": false,
+            "s18c09_soporte_renderizado_o_requerido": true,
+            "s18c09_acceso_soporte_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": false,
+            "s18c09_soporte_renderizado_o_requerido": true,
+            "s18c09_acceso_soporte_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": true,
+            "s18c09_soporte_renderizado_o_requerido": false,
+            "s18c09_acceso_soporte_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": true,
+            "s18c09_soporte_renderizado_o_requerido": false,
+            "s18c09_acceso_soporte_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": true,
+            "s18c09_soporte_renderizado_o_requerido": true,
+            "s18c09_acceso_soporte_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c09_checkout": true,
+            "s18c09_soporte_renderizado_o_requerido": true,
+            "s18c09_acceso_soporte_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/294",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C10",
+      "clave": "s18_reg_chk_024",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Independencia de ventana durante confirmación",
+      "descripcion": "BLOQUEAR diseño ABRIENDO o CONFIRMANDO que condicione integridad o reconciliación a mantener abierta la ventana o al copy visible. Copy neutral permitido, no exigir No cierres esta ventana. Estado depende de backend/adaptador y evidencia canónica del proveedor.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c10_checkout_abriendo_confirmando"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c10_cierre_o_espera_ventana"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c10_integridad_depende_ventana"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": false,
+            "s18c10_cierre_o_espera_ventana": false,
+            "s18c10_integridad_depende_ventana": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": false,
+            "s18c10_cierre_o_espera_ventana": false,
+            "s18c10_integridad_depende_ventana": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": false,
+            "s18c10_cierre_o_espera_ventana": true,
+            "s18c10_integridad_depende_ventana": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": false,
+            "s18c10_cierre_o_espera_ventana": true,
+            "s18c10_integridad_depende_ventana": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": true,
+            "s18c10_cierre_o_espera_ventana": false,
+            "s18c10_integridad_depende_ventana": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": true,
+            "s18c10_cierre_o_espera_ventana": false,
+            "s18c10_integridad_depende_ventana": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": true,
+            "s18c10_cierre_o_espera_ventana": true,
+            "s18c10_integridad_depende_ventana": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c10_checkout_abriendo_confirmando": true,
+            "s18c10_cierre_o_espera_ventana": true,
+            "s18c10_integridad_depende_ventana": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/314",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C11",
+      "clave": "s18_reg_onb002_step_indicator_001",
+      "familia": "SCREEN_IDENTITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Indicador pre-resolución ONB_002",
+      "descripcion": "BLOQUEAR indicador ONB_002 que no represente Paso 2 de 3 de la secuencia pre-resolución ONB_001, ONB_002, ONB_003, o incremente total por destinos condicionales ONB_004 o REC_001. No obligar ONB_003 si cuenta activa verificada accede tras OTP.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c11_onb002"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c11_indicador_renderizado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c11_secuencia_pre_resolucion_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": false,
+            "s18c11_indicador_renderizado": false,
+            "s18c11_secuencia_pre_resolucion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": false,
+            "s18c11_indicador_renderizado": false,
+            "s18c11_secuencia_pre_resolucion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": false,
+            "s18c11_indicador_renderizado": true,
+            "s18c11_secuencia_pre_resolucion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": false,
+            "s18c11_indicador_renderizado": true,
+            "s18c11_secuencia_pre_resolucion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": true,
+            "s18c11_indicador_renderizado": false,
+            "s18c11_secuencia_pre_resolucion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": true,
+            "s18c11_indicador_renderizado": false,
+            "s18c11_secuencia_pre_resolucion_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": true,
+            "s18c11_indicador_renderizado": true,
+            "s18c11_secuencia_pre_resolucion_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c11_onb002": true,
+            "s18c11_indicador_renderizado": true,
+            "s18c11_secuencia_pre_resolucion_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/487",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 46,
+      "codigo": "REG_ACC_002",
+      "descripcion": "Ningún mensaje de error visible al usuario puede contener códigos de error, términos técnicos, referencias a la base de datos ni mensajes del sistema.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 47,
+      "codigo": "REG_ACC_003",
+      "descripcion": "Los botones de acción principal (Verificar mi celular, Validar código) deben estar visibles sin necesidad de hacer scroll en viewport móvil estándar (375px).",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 184,
+      "codigo": "REG_TEC_008",
+      "descripcion": "Todos los campos del formulario Paso 1 deben validarse en el cliente antes de hacer cualquier llamada al servidor. El servidor valida nuevamente de forma independiente. El cliente nunca confía solo en la validación del servidor para feedback inmediato.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 190,
+      "codigo": "REG_ERR_002",
+      "descripcion": "Si el submit falla por error de red o servidor (no por validación): mostrar \"No pudimos procesar tu solicitud. Tus datos están guardados. Intenta nuevamente.\" con botón \"Reintentar\". No borrar el formulario.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 191,
+      "codigo": "REG_ERR_003",
+      "descripcion": "Si el OTP no se puede enviar: \"No pudimos enviar el código a tu WhatsApp. Verifica que el número sea correcto o inténtalo en unos minutos.\" con opciones \"Cambiar número\" y \"Reintentar\".",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 195,
+      "codigo": "REG_ERR_007",
+      "descripcion": "Si el usuario intenta hacer checkout con una oferta vencida: \"La oferta de [ACREEDOR] venció. Fue retirada de tu selección.\" La oferta se elimina del resumen y el total se recalcula automáticamente.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 203,
+      "codigo": "REG_UI_005",
+      "descripcion": "El resumen de selección tiene 3 estados: (1) vacio: ilustración + \"Aún no has seleccionado cómo pagar tus ofertas.\", botón Continuar deshabilitado. (2) parcial: lista de seleccionadas + total + disclaimer cuotas si aplica, botón habilitado. (3) completo: todas seleccionadas + total + sin copy \"Podrás configurar después\".",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 235,
+      "codigo": "REG_B2B_005",
+      "descripcion": "La Carta de No Adeudo es emitida y firmada por el aliado acreedor (o representante autorizado), no por LF. LF aloja, entrega y habilita reenvío solamente con permisos del perfil y evidencia de emisión. Se contemplan dos formatos de carta del aliado; su recepción, firma, entrega y reenvío requieren integración y pruebas. El SLA para generarla y la escalación al aliado provienen exclusivamente del convenio/contrato confirmado: NO existe un SLA de 48 horas aprobado para esta carta. Hasta acreditar convenio, modelos y permisos, no publicar promesa de plazo fijo.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 294,
+      "codigo": "REG_CHK_CUO_011",
+      "descripcion": "El botón flotante de WhatsApp \"¿Dudas? Escríbenos por WhatsApp\" está disponible en la pantalla de checkout. Es el canal de soporte humano para resolver dudas antes de pagar.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 314,
+      "codigo": "REG_CHK_024",
+      "descripcion": "ABRIENDO y CONFIRMANDO pueden mostrar copy neutral de espera, pero la integridad del pago no depende de mantener abierta la ventana. No es obligatorio mostrar “No cierres esta ventana”. El estado y la reconciliación dependen del backend/adaptador y de evidencia canónica del proveedor.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 487,
+      "codigo": "REG_ONB002_STEP_INDICATOR_001",
+      "descripcion": "ONB_002 es el segundo paso visible de la secuencia pre-resolución. El indicador usa Paso 2 de 3 como máximo de la secuencia ONB_001 → ONB_002 → ONB_003. Si el celular ya pertenece a una cuenta activa verificada, el flujo puede terminar después de OTP sin mostrar ONB_003; ONB_004 y REC_001 son destinos condicionales posteriores y no incrementan este total.",
+      "estado": "VIGENTE"
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S18-C01",
+      "legacy_id": 46,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C02",
+      "legacy_id": 47,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C03",
+      "legacy_id": 184,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C04",
+      "legacy_id": 190,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C05",
+      "legacy_id": 191,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C06",
+      "legacy_id": 195,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C07",
+      "legacy_id": 203,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C08",
+      "legacy_id": 235,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C09",
+      "legacy_id": 294,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C10",
+      "legacy_id": 314,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C11",
+      "legacy_id": 487,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    }
+  ],
+  "exclusiones": [
+    199,
+    370,
+    579,
+    158,
+    178,
+    315,
+    360,
+    363,
+    508,
+    519,
+    362,
+    384,
+    420,
+    496
+  ]
+}
