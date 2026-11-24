@@ -1,0 +1,543 @@
+{
+  "contrato": "LF_S7_JUICIOS_14",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S7-C01",
+      "version": 1,
+      "eval_id": 632,
+      "hash_paquete_atestado": "70f6b3b4d70305341f29dbe7db5307619dedd544c95657bef278c7d3602eddc8",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Decisión pendiente: fuente y versión inmutable del snapshot contractual de cuotas."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 528,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "S7-C02",
+      "version": 1,
+      "eval_id": 633,
+      "hash_paquete_atestado": "17b11c965953f0cc32fa8e6a5b6b9971eac41a2d3d3ef2bdb63edee6de5afc8b",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Decisión pendiente: fuente canónica de liquidaciones, pagos y ajustes autorizados."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 606,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "S7-C03",
+      "version": 1,
+      "eval_id": 634,
+      "hash_paquete_atestado": "777182c5b8193f803f4b93d214a8f50090be1cf5330b93536c4f35d2a4d0548a",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Decisión pendiente: ruta de devolución y separación de beneficio comercial."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 625,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "S7-C04",
+      "version": 1,
+      "eval_id": 635,
+      "hash_paquete_atestado": "b365f377d95334a6ef091ea88d920839e8e970d480aa7a7b1c22a81356d657d5",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Decisión pendiente: modalidad contractual y control de exclusión de cobros paralelos."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 530,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "S7-C05",
+      "version": 1,
+      "eval_id": 636,
+      "hash_paquete_atestado": "22ab1b6f0df1cc31b122f1dda1d8e79f870f2f235c492bca8ac6fe416dd113c7",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Identidad del contador de recuperación y referencia de secreto HMAC runtime no verificadas."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 501,
+      "familia": "RATE_LIMIT"
+    },
+    {
+      "codigo": "S7-C06",
+      "version": 1,
+      "eval_id": 637,
+      "hash_paquete_atestado": "b87097c1f296bc043cb562c6ca99e5d7485389ca91878360f0ad38f10e140f26",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 498,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S7-C07",
+      "version": 1,
+      "eval_id": 638,
+      "hash_paquete_atestado": "3d565e327fc3b0da57a29083352a311a80c8254f67cee48e900b09ccbf4004cb",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.9,
+          "observacion": "Especificación de cookie larga."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 497,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S7-C08",
+      "version": 1,
+      "eval_id": 639,
+      "hash_paquete_atestado": "d6b753429b76602cd1a0703d0fc1b4954f5a23bacba63e5ff37def8f0342a63e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 454,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S7-C09",
+      "version": 1,
+      "eval_id": 640,
+      "hash_paquete_atestado": "ba99d8049f9baaaa0136e31266a10861596cc991a415ece9afbffe2aad61d894",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 450,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S7-C10",
+      "version": 1,
+      "eval_id": 641,
+      "hash_paquete_atestado": "678a32fc1d44f9c3016d17afb38ce96c07519e63b5f590565f6957e3ec5f8df8",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Cerca de S5-C23 y S7-C05."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 446,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S7-C11",
+      "version": 1,
+      "eval_id": 642,
+      "hash_paquete_atestado": "f0d784961d13fbb57e9b74d0675c5fb83c28a54c77608099c26fd6837970867a",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.9,
+          "observacion": "Referencia y acción requieren binding operativo."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 410,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S7-C12",
+      "version": 1,
+      "eval_id": 643,
+      "hash_paquete_atestado": "d305fa4a089f21a0839cd41fd77db08eeb0c9e3f8b945da15825e63470e030b6",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.5,
+          "observacion": "Decisión pendiente: evidencia autoritativa de envío y contrato de handoff."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 540,
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "S5-C12",
+      "version": 2,
+      "eval_id": 644,
+      "hash_paquete_atestado": "c228404ce00eeef5935be6154b2d6f4f7615ec274742e3021298b4433e142383",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa M4-B01 sobre expiración."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 14,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S6-C03",
+      "version": 2,
+      "eval_id": 645,
+      "hash_paquete_atestado": "645d3339f40681b6e73919269ec80c4ba06b23c2583776220b4ab21d80ba031a",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 00:10 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S2-C02 y S5-C13."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 132,
+      "familia": "SECURITY"
+    }
+  ],
+  "decisiones_pendientes": {
+    "S7-C01": "Decisión pendiente: fuente y versión inmutable del snapshot contractual de cuotas.",
+    "S7-C02": "Decisión pendiente: fuente canónica de liquidaciones, pagos y ajustes autorizados.",
+    "S7-C03": "Decisión pendiente: ruta de devolución y separación de beneficio comercial.",
+    "S7-C04": "Decisión pendiente: modalidad contractual y control de exclusión de cobros paralelos.",
+    "S7-C05": "Identidad del contador de recuperación y referencia de secreto HMAC runtime no verificadas.",
+    "S7-C12": "Decisión pendiente: evidencia autoritativa de envío y contrato de handoff."
+  },
+  "notas": {
+    "S6_C14": "CANDIDATA; espera permiso de uso de marca Visa/Mastercard; no puente a candidata.",
+    "Q08": "Texto pendiente aprobación Legal; bloquea producción, no desarrollo. Medios Yape o débito; Yape recurrente deshabilitado hasta certificación. Ley 28587 art.5 nota Legal; no afirmar consentimiento inicial a partir de ese artículo.",
+    "REG_ATQ_008": "Ya REEMPLAZADA por S5-C19; no duplicar.",
+    "REG_CHK_006": "Fuera de alcance."
+  }
+}
