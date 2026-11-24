@@ -1407,6 +1407,134 @@
         "ref": "lf_ops.reglas/487",
         "solicitante": "Cristhian / Claude S18 2026-11-24"
       }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S18-C12",
+      "clave": "s18_reg_onb004_stepper_4_001",
+      "familia": "SCREEN_IDENTITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Stepper específico ONB_004",
+      "descripcion": "BLOQUEAR indicador de ONB_004 que no use client_auth_stepper_4, etiqueta Paso 4 de 4 y cuatro segmentos verdes según contrato visible aprobado en ONB_003. No modifica indicadores históricos de ONB_001/ONB_002 ni convierte destinos condicionales en pasos obligatorios.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c12_onb004"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s18c12_stepper_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s18c12_componente_etiqueta_segmentos_invalidos"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": false,
+            "s18c12_stepper_visible": false,
+            "s18c12_componente_etiqueta_segmentos_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": false,
+            "s18c12_stepper_visible": false,
+            "s18c12_componente_etiqueta_segmentos_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": false,
+            "s18c12_stepper_visible": true,
+            "s18c12_componente_etiqueta_segmentos_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": false,
+            "s18c12_stepper_visible": true,
+            "s18c12_componente_etiqueta_segmentos_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": true,
+            "s18c12_stepper_visible": false,
+            "s18c12_componente_etiqueta_segmentos_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": true,
+            "s18c12_stepper_visible": false,
+            "s18c12_componente_etiqueta_segmentos_invalidos": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": true,
+            "s18c12_stepper_visible": true,
+            "s18c12_componente_etiqueta_segmentos_invalidos": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s18c12_onb004": true,
+            "s18c12_stepper_visible": true,
+            "s18c12_componente_etiqueta_segmentos_invalidos": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/579",
+        "solicitante": "Cristhian / Claude S18 2026-11-24"
+      }
     }
   ],
   "fuentes": [
@@ -1474,6 +1602,12 @@
       "id": 487,
       "codigo": "REG_ONB002_STEP_INDICATOR_001",
       "descripcion": "ONB_002 es el segundo paso visible de la secuencia pre-resolución. El indicador usa Paso 2 de 3 como máximo de la secuencia ONB_001 → ONB_002 → ONB_003. Si el celular ya pertenece a una cuenta activa verificada, el flujo puede terminar después de OTP sin mostrar ONB_003; ONB_004 y REC_001 son destinos condicionales posteriores y no incrementan este total.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 579,
+      "codigo": "REG_ONB004_STEPPER_4_001",
+      "descripcion": "ONB_004 usa client_auth_stepper_4 con etiqueta Paso 4 de 4 y cuatro segmentos verdes. Es continuidad del contrato visible aprobado en ONB_003; no modifica automáticamente referencias históricas de ONB_001/ONB_002.",
       "estado": "VIGENTE"
     }
   ],
@@ -1554,12 +1688,18 @@
       "clase": "PANTALLA",
       "alcance": "CLIENT_ONBOARDING",
       "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S18-C12",
+      "legacy_id": 579,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; obligación exclusiva ONB_004"
     }
   ],
   "exclusiones": [
     199,
     370,
-    579,
     158,
     178,
     315,
@@ -1571,5 +1711,6 @@
     384,
     420,
     496
-  ]
+  ],
+  "decision_370": "Fuera del núcleo de producto: proceso de agentes; sin cobertura."
 }
