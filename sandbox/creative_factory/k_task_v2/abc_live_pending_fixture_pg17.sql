@@ -340,6 +340,29 @@ BEGIN
   END IF;
   RETURN jsonb_build_object('run_id',v_run.id,'state',p_next_state,'claim_id',v_claim.id);
 END $function$;
+-- Exact current single-screen item guard from pg_get_functiondef.
+CREATE OR REPLACE FUNCTION saly.creative_single_screen_item_guard_v1()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'saly', 'pg_temp'
+AS $function$
+DECLARE kind_of_order text;
+BEGIN
+ SELECT request_kind INTO kind_of_order FROM saly.creative_orders
+ WHERE id=NEW.order_id FOR UPDATE;
+ IF kind_of_order IS DISTINCT FROM 'APP_SCREEN_SINGLE' THEN RETURN NEW; END IF;
+ IF NEW.kind IS DISTINCT FROM 'SCREEN' OR NEW.ordinal IS DISTINCT FROM 1
+ OR NEW.variant_of_item_id IS NOT NULL
+ THEN RAISE EXCEPTION 'CREATIVE_SINGLE_SCREEN_ITEM_SHAPE'; END IF;
+ IF TG_OP='UPDATE' AND (NEW.id IS DISTINCT FROM OLD.id
+  OR NEW.order_id IS DISTINCT FROM OLD.order_id
+  OR NEW.code IS DISTINCT FROM OLD.code)
+ THEN RAISE EXCEPTION 'CREATIVE_SINGLE_SCREEN_ITEM_BINDING_IMMUTABLE'; END IF;
+ IF TG_OP='INSERT' AND EXISTS (SELECT 1 FROM saly.creative_order_items
+   WHERE order_id=NEW.order_id)
+ THEN RAISE EXCEPTION 'CREATIVE_SINGLE_SCREEN_MULTIPLE_ITEMS'; END IF;
+ RETURN NEW;
+END $function$;
 -- L3B is a fixture-specific adapter: gives a fixed five-check contract for
 -- a synthetic QA receipt; NOT the production creative_item_visual_contract_l3b.
 CREATE FUNCTION saly.creative_item_visual_contract_l3b(p_item_id bigint)
