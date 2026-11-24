@@ -1,0 +1,626 @@
+{
+  "contrato": "LF_S19_JUICIOS_A",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S19-C02",
+      "version": 1,
+      "eval_id": 1175,
+      "hash_version_atestado": "2cc35686eb5fe87d9e5f9655c6f80d4e9b8f8d85335c43ef2fd6325c7023d540",
+      "hash_paquete_atestado": "1a43e5915f44f2f49204c9119139a2da474bb27c74bbf7c17de148f6f7607413",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Adyacente S14-C10; edición inline sin volver a ONB_001."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 6,
+      "familia": "ACTIONS",
+      "diferencias": "Contraste funcional: BLOQUEAR corrección de celular en ONB_002 que obligue a regresar a ONB_001 o no permita convertir el número mostrado en campo editable cuando el cambio está autorizado. No altera límites ni invalidación de OTP vigentes.  Adyacente S14-C10; edición inline sin volver a ONB_001.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C03",
+      "version": 1,
+      "eval_id": 1176,
+      "hash_version_atestado": "a11b1eeb3d643a1c4f0107889e40ac96c5b4bf47306e39daf7d76eb705a2a162",
+      "hash_paquete_atestado": "96a61772dffef6b3c56c0c9515c61201644a3bcb539a7c7c4f01bd6181233f57",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Cruce DNI y timeout Home; OTP y submit en S8-C13, S9-C05, S9-C13, S8-C10, S8-C11."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 96,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR omisión de alerta inmediata a Sentry ante fallo de cruce DNI para home_variant o timeout de resolución del Home. Conservar alertas de OTP y submit ya gobernadas; no declarar integración implementada.  Cruce DNI y timeout Home; OTP y submit en S8-C13, S9-C05, S9-C13, S8-C10, S8-C11.",
+      "residual": "La legada exige Sentry inmediato por cada fallo de envío WhatsApp; S9-C05 permite Sentry o Slack.",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C04",
+      "version": 1,
+      "eval_id": 1177,
+      "hash_version_atestado": "2fdca921861be47208a41ba4b106cb0d6d6639116faeb580d5841f4da1065ac5",
+      "hash_paquete_atestado": "9da8c01f0af35a3840ede5c0af89b0ecd44de412d24e91b110e3f3ef958b03f9",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 106,
+      "familia": "HEATMAP_SESSION_RECORDING",
+      "diferencias": "Contraste funcional: BLOQUEAR instrumentación de heatmaps o grabación del onboarding con herramienta distinta de Microsoft Clarity sin autorización explícita para alternativa como Hotjar. No afirma gratuidad, cumplimiento legal ni habilita capturas de PII; conservar máscaras vigentes. No afirma gratuidad ni GDPR no acreditados; Hotjar solo con autorización explícita. ",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C05",
+      "version": 1,
+      "eval_id": 1178,
+      "hash_version_atestado": "64dcdff5a740529e060f0b526b4f810cd05c6cee19beea35927800856bad8846",
+      "hash_paquete_atestado": "73e23d52daf20fc421e677ead97a5c3da4e09a61213007653a2e622f6520df1e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Solo API Cliente; legado todas."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Error solapa S11-C04."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 179,
+      "familia": "API_DATA_CONTRACT",
+      "diferencias": "Contraste funcional: BLOQUEAR respuesta de API Cliente que incumpla estructura del contrato legado: success booleano, data objeto o nulo, error objeto o nulo con code, message y field opcional nulo, meta con timestamp y request_id. Respetar anti-enumeración y no exponer errores internos. No acredita endpoints desplegados.  Solo API Cliente; legado todas. Error solapa S11-C04.",
+      "residual": "APIs fuera de Cliente (B2B) no cubiertas.",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C06",
+      "version": 1,
+      "eval_id": 1179,
+      "hash_version_atestado": "8e39f2b2de832ef338873acc002417fb0f9ff682a530600d5e3f1af160d4f4e3",
+      "hash_paquete_atestado": "3a2a55880a0313c3b9bc632708025041c066e49bc400a070660f07b185482704",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Adyacente a S8-C20 y S16-C01."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 198,
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR representar ausencia confirmada de oferta como error técnico, omitir orientación de próximos pasos o mostrar CTA de aviso sin capacidad autorizada. Mostrar estado vacío neutro y texto de ausencia de alternativa activa; ofrecer aviso solo cuando esté habilitado. No confundir indisponibilidad técnica con ausencia confirmada. CTA aviso solo si habilitada. Adyacente a S8-C20 y S16-C01.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C07",
+      "version": 1,
+      "eval_id": 1180,
+      "hash_version_atestado": "2877b1b94a8ad7bdd42b2f6897a539a290b0ff17dc65b64ee24d313de60fdf1d",
+      "hash_paquete_atestado": "bd23a6f35191ae01b801cc20f369c5c36a76a35dd2301ebac64a61c44b9020d1",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 249,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR presentación de precio final de oferta que omita el título PRECIO FINAL PARA RESOLVER TU DEUDA, subtítulo Incluye servicios e impuestos aplicables o acceso Ver detalle del precio, o sustituya ese encabezado por Lo que pagas hoy o Monto a pagar. No aplica al pago inicial de cuotas ni al checkout.  ",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C08",
+      "version": 1,
+      "eval_id": 1181,
+      "hash_version_atestado": "2fbf051fe6436925bbc33ea52c11e8a8e597ed660eab80f1d6179227b57559a6",
+      "hash_paquete_atestado": "9c10f1039fa270f21a27dca4685f432ef069c2b4f0c6eaee81dbf2c27f12b918",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Especializa S11-C09 en PASO3_CUOTAS_DESGLOSE_V2."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 263,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR bloque Qué incluye este plan en PASO3_CUOTAS_DESGLOSE_V2 que no resuelva contenido autorizado del aliado o contenido por defecto gobernado; incluir gestión digital, seguimiento, carta de no adeudo y débito automático solo cuando la modalidad y capacidad autorizadas lo sustenten. No promete emisión anticipada ni activa recurrencia. Ítems por defecto solo si modalidad y capacidad sustentan. Especializa S11-C09 en PASO3_CUOTAS_DESGLOSE_V2.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C09",
+      "version": 1,
+      "eval_id": 1182,
+      "hash_version_atestado": "4ee88f5da303a1bdbaf3d7f1ecb2a35cd9b25cf11b285fae23e3ec8bfc204d40",
+      "hash_paquete_atestado": "24a953f726c61036a43b6493b081a5f114f4ea3a65412a1b5f4dc47d0bdd7c8b",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Solapa S2-C06."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 0.8,
+          "observacion": "Contingencia SMS Intico por soporte Q01 debe figurar en política central para no quedar bloqueada."
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 438,
+      "familia": "MFA_OTP_SSO",
+      "diferencias": "Contraste funcional: BLOQUEAR resolver segundo factor B2B humano mediante factor distinto del autorizado por SEC-B2B-MFA y SEC-B2B-MFA-FACTOR-ELIGIBILITY: OTP de correo registrado mediante Brevo cuando corresponda. No atribuir resistencia phishing, AAL2 nativo ni implementación IdP/Brevo sin evidencia; no cambiar políticas ni activar producción. No atribuye phishing-resistance ni AAL2. Solapa S2-C06. Contingencia SMS Intico por soporte Q01 debe figurar en política central para no quedar bloqueada.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C10",
+      "version": 1,
+      "eval_id": 1183,
+      "hash_version_atestado": "4c538978b6657da79dc07454d43ac47b602384c44d51813de1c723040566d70f",
+      "hash_paquete_atestado": "79ae79c644a19ce1d19233ae0c6a692110de88b3d1e70aad25d601906ae00b6f",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 439,
+      "familia": "MFA_OTP_SSO",
+      "diferencias": "Contraste funcional: BLOQUEAR recuperación asistida que carezca de permiso efectivo de recuperación, verificación documental por operador autorizado, clave temporal de un solo uso con vigencia AUTH/TEMP_KEY_TTL_HOURS de public.lf_global_config, invalidación de claves anteriores o actualización atómica de correo y contraseña. Caducidad exige nueva verificación; notificación anterior informativa; auditoría protegida sin secretos. No concede sesión operativa ni activa IDV. Permiso 38 por concepto; IDV apagada. ",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C11",
+      "version": 1,
+      "eval_id": 1184,
+      "hash_version_atestado": "61d871af76949b6f5697610a655281e25fad2d09001ffc8408ec84da618f488b",
+      "hash_paquete_atestado": "2359d2a6e1107b0c5bd62bceb4c9b5df774d7bf94f0922719db553ffcfedaa33",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 440,
+      "familia": "SECURITY",
+      "diferencias": "Contraste funcional: BLOQUEAR evaluación de abuso en login B2B que imponga bloqueo definitivo por una sola señal, equipare contadores de sujeto y red/IP o aplique umbral sin política, unidad y referencia central autorizadas. Exigir evidencia de pruebas NAT/CGNAT y mantenimiento gobernado antes de afirmar habilitación. No activa política candidata ni crea parámetros. No activa política 22 ni crea parámetros. ",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C12",
+      "version": 1,
+      "eval_id": 1185,
+      "hash_version_atestado": "98f72056e1a402e2cb84eab6de5f9542a1ffb13e977f78dcda7970899a0f737c",
+      "hash_paquete_atestado": "e5c66936bd56776ba917cb6591acdabdca2b4c10780aba3ace14393a8aa3f214",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 469,
+      "familia": "ROUTING_NAVIGATION",
+      "diferencias": "Contraste funcional: BLOQUEAR acción Términos, Privacidad o Soporte del login B2B que no resuelva ruta oficial accesible sin autenticación. Conservar destinos canónicos de login, visibilidad de contraseña y recuperación; no inventar rutas ni habilitar acceso operativo.  ",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C13",
+      "version": 1,
+      "eval_id": 1186,
+      "hash_version_atestado": "9500322d42d0f9ee4e425c60e958fa25f018f5487534c912a49d6107e5430040",
+      "hash_paquete_atestado": "86f68113f9c8ccb6f175e187174725ee193fdb97c6f0c4d782dd18d8a4c4dc17",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Prueba de recuperación válida OTP anterior o validación reforzada implícita."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 508,
+      "familia": "IDEMPOTENCY_CONCURRENCY",
+      "diferencias": "Contraste funcional: BLOQUEAR commit de rebind si no revalida sesión ONB_002 ligada al celular actual, resolución RECOVERY_FLOW y ausencia de asociación activa verificada ajena; exigir reemplazo, invalidación anterior, auditoría enmascarada y transición atómicos e idempotentes, sin asociaciones dobles ante carreras. Riesgo HIGH multi-DNI exige step-up antes del commit; IDV apagado no acredita prueba; conservar OTP anterior autorizado.  Prueba de recuperación válida OTP anterior o validación reforzada implícita.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S19-C14",
+      "version": 1,
+      "eval_id": 1187,
+      "hash_version_atestado": "04e3386a4f23dcb6a6407a32233072e3a48c66a046873cad30bae9a1749580b4",
+      "hash_paquete_atestado": "73ecca1d145daf3373c975789623492fb4bdbf7ef6de563b434edae36026bb89",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Solapa S18-C06 y S4-C11; añade revalidación individual previa al cobro."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 519,
+      "familia": "OFFERS_INSTALLMENTS",
+      "diferencias": "Contraste funcional: BLOQUEAR creación de intento de cobro sin sesión autenticada y selección válida revalidada individualmente por backend: vigencia, versión, modalidad, plan, montos, cuota inicial, comisiones, ahorro, campos críticos y duplicidad. Excluir solo oferta inválida, recalcular total autoritativo y exigir reconfirmación explícita ante cambio material de monto o versión; sin selección válida no iniciar. No fijar precios frontend.  Solapa S18-C06 y S4-C11; añade revalidación individual previa al cobro.",
+      "residual": "",
+      "complementa": null
+    }
+  ],
+  "puentes": [
+    {
+      "legacy_id": 270,
+      "codigo": "S11-C12",
+      "version": 1,
+      "hash": "93f95d482285cd3650178bf5105e3c5ab0d27cc8f13cb21dfd38fd2aed22c0c5",
+      "paquete": "471b17b5f2f5bf2f6e1f1d9eed7d05f9867caf6fab79c111d4782dbf074efce7",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Añade prohibición de etiquetas Total del plan / Total final / Total a pagar; excluye contrato activado y pago de hoy.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 180,
+      "codigo": "S11-C04",
+      "version": 1,
+      "hash": "102c6dd8c5c9a9c509646bd0d20c9dd8b3c921fdbc9569a02a1d3ad745166191",
+      "paquete": "11a82cd37e20c86f43586facc84cdeacc6098190b91e5b7ba0192b1776db11ae",
+      "estado": "PARCIAL",
+      "diferencias": "Catálogo canónico y precedencia anti-enumeración.",
+      "residual": "Catálogo lf_ops.errores_catalogo no acreditado con los ocho códigos mínimos; LF_DNI_DUPLICADO y LF_CELULAR_BLOQUEADO revelarían existencia de cuenta y deben mapearse a respuesta externa genérica."
+    },
+    {
+      "legacy_id": 96,
+      "codigo": "S8-C13",
+      "version": 1,
+      "hash": "2bac0d167fc13ca57abf2a6d914a8c75574c2f895478cbef99aab5f3c6c90545",
+      "paquete": "95c9a9f54032aef57b77c052b992ef2e12b6ad28d56229512be1e2e9d1a682ee",
+      "estado": "PARCIAL",
+      "diferencias": "Cobertura conjunta con S19-C03 y controles publicados de alertas OTP/submit.",
+      "residual": "La legada exige Sentry inmediato por cada fallo de envío WhatsApp; S9-C05 permite Sentry o Slack."
+    },
+    {
+      "legacy_id": 96,
+      "codigo": "S9-C05",
+      "version": 1,
+      "hash": "3cd2ad6ec8769ac7f6a2969958dee64e85aea97b0e589f18c13b41b175038bfa",
+      "paquete": "a5a6c6d014e9577f7195f8619c30f5734661db8c157621c9926adfee53412fbd",
+      "estado": "PARCIAL",
+      "diferencias": "Cobertura conjunta con S19-C03 y controles publicados de alertas OTP/submit.",
+      "residual": "La legada exige Sentry inmediato por cada fallo de envío WhatsApp; S9-C05 permite Sentry o Slack."
+    },
+    {
+      "legacy_id": 96,
+      "codigo": "S9-C13",
+      "version": 1,
+      "hash": "c24fbad3e4ec81e4498205fbe2cb89ad060e5dd45f1faa0224c90d2610677bff",
+      "paquete": "f50efcfd9369855786f26974ee069cd9cd8701c28c88846b5880cc3b1d55dfc3",
+      "estado": "PARCIAL",
+      "diferencias": "Cobertura conjunta con S19-C03 y controles publicados de alertas OTP/submit.",
+      "residual": "La legada exige Sentry inmediato por cada fallo de envío WhatsApp; S9-C05 permite Sentry o Slack."
+    },
+    {
+      "legacy_id": 96,
+      "codigo": "S8-C10",
+      "version": 1,
+      "hash": "0db6857367cfe5e0020ad1169757b0985fc4d4e455e3908d525bd86460983504",
+      "paquete": "5e6c572637709870001948c0534e8e1cd13d63bf3258fbe37d6a6a7e0d01cc31",
+      "estado": "PARCIAL",
+      "diferencias": "Cobertura conjunta con S19-C03 y controles publicados de alertas OTP/submit.",
+      "residual": "La legada exige Sentry inmediato por cada fallo de envío WhatsApp; S9-C05 permite Sentry o Slack."
+    },
+    {
+      "legacy_id": 96,
+      "codigo": "S8-C11",
+      "version": 1,
+      "hash": "4eeb5ba1cc097aea690a24732b47f7ada194a6309f9d533bbc6220d8e735720c",
+      "paquete": "a4ccc26dd4b80eb4ed7f035f44738ab346e756fcf983c9d17ff13c1f3f2f1a7a",
+      "estado": "PARCIAL",
+      "diferencias": "Cobertura conjunta con S19-C03 y controles publicados de alertas OTP/submit.",
+      "residual": "La legada exige Sentry inmediato por cada fallo de envío WhatsApp; S9-C05 permite Sentry o Slack."
+    },
+    {
+      "legacy_id": 271,
+      "codigo": "S19-C08",
+      "version": 1,
+      "hash": "2fbf051fe6436925bbc33ea52c11e8a8e597ed660eab80f1d6179227b57559a6",
+      "paquete": "9c10f1039fa270f21a27dca4685f432ef069c2b4f0c6eaee81dbf2c27f12b918",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Misma obligación de legada 263; ítems por defecto solo si modalidad y capacidad sustentan.",
+      "residual": ""
+    }
+  ]
+}
