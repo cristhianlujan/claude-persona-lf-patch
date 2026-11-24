@@ -36,6 +36,32 @@
 
 ## Entrada y salida literal sin reinterpretación
 
+### A · READY desde `creative_runs`, sin exigir medidas — entrada/salida literal
+
+````text
+2026-11-24T02:38:26.5736547Z S0_INPUT|readback(run_id=601,item_id=101); no row
+2026-11-24T02:38:26.5737310Z S0_OUTPUT|{"run_id": 601, "signal": "RUN_ROW_NOT_FOUND", "status": "PENDING", "item_id": 101}
+2026-11-24T02:38:26.5738473Z S1_INPUT|creative_runs id601 EXITOSO; artifact_ref=chat-image; sha256=64a; width=1024; height=1536
+2026-11-24T02:38:26.5741219Z S1_OUTPUT|{"run_id": 601, "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "READY", "item_id": 101, "next_step": "11", "run_state": "EXITOSO", "artifact_ref": "chat-image-601.png", "evidence_source": "saly.creative_runs.output_evidence"}
+2026-11-24T02:38:26.5743656Z S2_INPUT|creative_runs id602 EXITOSO; sha256=badsha; width=1024; height=1536
+2026-11-24T02:38:26.5744904Z S2_OUTPUT|{"reason": "IMAGE_EVIDENCE_INVALID", "run_id": 602, "status": "ERROR", "item_id": 101}
+2026-11-24T02:38:26.5746322Z S3_INPUT|creative_runs id603 EXITOSO; sha256=64b; width=0; height=1536
+2026-11-24T02:38:26.5748867Z S3_OUTPUT|{"run_id": 603, "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "status": "READY", "item_id": 101, "next_step": "11", "run_state": "EXITOSO", "artifact_ref": "chat-image-603.png", "evidence_source": "saly.creative_runs.output_evidence"}
+2026-11-24T02:38:26.5751217Z S4_INPUT|creative_runs id604 EJECUTANDO; no image
+2026-11-24T02:38:26.5752479Z S4_OUTPUT|{"run_id": 604, "signal": "GENERATION_NOT_FINISHED", "status": "PENDING", "item_id": 101, "run_state": "EJECUTANDO"}
+2026-11-24T02:38:26.5754119Z S5_INPUT|creative_runs id605 EXITOSO; sha256=64c; width string 1024; height=1536
+2026-11-24T02:38:26.5756622Z S5_OUTPUT|{"run_id": 605, "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "status": "READY", "item_id": 101, "next_step": "11", "run_state": "EXITOSO", "artifact_ref": "chat-image-605.png", "evidence_source": "saly.creative_runs.output_evidence"}
+2026-11-24T02:38:26.5758565Z S6_INPUT|creative_runs id606 EXITOSO; artifact_ref=valid-no-dimensions; sha256=64d; no width or height
+2026-11-24T02:38:26.5760659Z S6_OUTPUT|{"run_id": 606, "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "status": "READY", "item_id": 101, "next_step": "11", "run_state": "EXITOSO", "artifact_ref": "valid-no-dimensions.png", "evidence_source": "saly.creative_runs.output_evidence"}
+2026-11-24T02:38:26.6364238Z test_bound_sql_readback_used_in_each_poll (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_bound_sql_readback_used_in_each_poll) ... E_SQL_BIND_INPUT=run701,item101 SQL=creative_run_image_readback_v2 E_SQL_BIND_OUTPUT= {'result': {'status': 'READY', 'first_observed_ready_seconds': 30, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'READY'}], 'count': 2, 'elapsed_seconds': 30, 'next_step': '11'}, 'calls': [('SELECT saly.creative_run_image_readback_v2(%s,%s) AS result', (701, 101), 0.0), ('SELECT saly.creative_run_image_readback_v2(%s,%s) AS result', (701, 101), 30.0)]}
+2026-11-24T02:38:26.6400997Z test_invalid_capture_is_error_not_ready (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_invalid_capture_is_error_not_ready) ... E_INVALID_INPUT=invalid_capture E_INVALID_OUTPUT= {'status': 'ERROR', 'readback': {'status': 'ERROR', 'reason': 'IMAGE_EVIDENCE_INVALID'}, 'checks': [{'elapsed_seconds': 0, 'status': 'ERROR'}], 'count': 1, 'elapsed_seconds': 0}
+2026-11-24T02:38:26.6404447Z test_never_ready (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_never_ready) ... ENEVER_INPUT=never_ready ENEVER_OUTPUT= {'status': 'ESPERA_AGOTADA', 'run_state': 'FALLIDO', 'run_expired': True, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'PENDING'}, {'elapsed_seconds': 150, 'status': 'PENDING'}, {'elapsed_seconds': 180, 'status': 'PENDING'}], 'count': 7, 'elapsed_seconds': 180}
+2026-11-24T02:38:26.6407959Z test_ready_at_100_seconds (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_ready_at_100_seconds) ... E100_INPUT=ready_at_100_seconds E100_OUTPUT= {'status': 'READY', 'first_observed_ready_seconds': 120, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'READY'}], 'count': 5, 'elapsed_seconds': 120, 'next_step': '11'}
+2026-11-24T02:38:26.6411616Z test_ready_at_20_seconds (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_ready_at_20_seconds) ... E20_INPUT=ready_at_20_seconds E20_OUTPUT= {'status': 'READY', 'first_observed_ready_seconds': 30, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'READY'}], 'count': 2, 'elapsed_seconds': 30, 'next_step': '11'}
+````
+
+
+
 Los bloques siguientes copian todas las líneas INPUT/OUTPUT relevantes del log GitHub Actions, incluida la enumeración íntegra de las 55 versiones. Las dimensiones del QA A proceden de PNGs sintéticos válidos abiertos/decodificados desde bytes y no de metadatos del ejecutor.
 
 ### 1 · Estado copiado + contexto
