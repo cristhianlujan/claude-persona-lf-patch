@@ -1,0 +1,256 @@
+{
+  "contrato": "LF_S16_JUICIOS_6",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S16-C01",
+      "version": 1,
+      "eval_id": 1110,
+      "hash_version_atestado": "28352fc2e15fe4e2a3674f4e325b5da714630ceeedc350fa2226b795083e119a",
+      "hash_paquete_atestado": "9289ed846bfff03f69a9b675392750bca19ff5077b9360f749f734563d801f4e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 12:41 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 379,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR orientación Explora que indique contactar al banco como camino principal cuando existe oferta de aliado B2B; reservar orientación de contacto al acreedor como respaldo de Home sin oferta.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S16-C02",
+      "version": 1,
+      "eval_id": 1111,
+      "hash_version_atestado": "fa2c201d33efd53741f33e26cedc60779f1d282414f277591e3ed53988ead860",
+      "hash_paquete_atestado": "c1c1788ed07ae1fb1bb529e838b87de377d982c031f78c14a40f6cf669e19a29",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 12:41 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Cubre formato visual y error; el valor canónico de 9 dígitos iniciados en 9 y el mensaje exacto quedan en contrato existente y no se verifican aquí."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 483,
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR ONB_001 con placeholder distinto de CAMPO_CELULAR aprobado, error sin token error_text o desplazamiento de CTA y confianza al mostrar error. Validación canónica de celular se conserva en contrato existente, no se redefine. Observación del juez: Cubre formato visual y error; el valor canónico de 9 dígitos iniciados en 9 y el mensaje exacto quedan en contrato existente y no se verifican aquí.",
+      "residual": "Valor canónico y mensaje exacto quedan en contrato existente.",
+      "complementa": null
+    },
+    {
+      "codigo": "S16-C03",
+      "version": 1,
+      "eval_id": 1112,
+      "hash_version_atestado": "b15adba304c53903e3e92e2834aa71a2c14454182f2c4851864033c6b25b7e51",
+      "hash_paquete_atestado": "6dfa705ce8caed93bc6f15e433dee559551288c74a2f5a7108174b2d4f3f92ad",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 12:41 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 580,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR login B2B cuya disposición responsive controle estado de disclosure, que no permita corregir email tras disclosure, no preserve formulario de contraseña o no gestione foco y aria-live; validación local email sin llamada al gateway. No redefine reglas de autofill ni envío de autenticación. La solicitud única correo+contraseña permanece en el contrato de envío existente.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S16-C04",
+      "version": 1,
+      "eval_id": 1113,
+      "hash_version_atestado": "95adc7f6254f225a36312c948f0a18c37ab4c27da358447cebf8acc268692695",
+      "hash_paquete_atestado": "0b94f388233124ddc343fb50be715b5188b3495141f630ed1745a7a889a9886e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 12:41 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 442,
+      "familia": "ROUTING_NAVIGATION",
+      "diferencias": "Contraste funcional: BLOQUEAR redirección B2B posterior a AUTHENTICATED a ruta no autorizada o URL arbitraria; recuperar destino solicitado solo si continúa habilitado, de lo contrario primer menú visible y habilitado conforme permisos de pantalla/perfil y orden canónico menu_item_id y route_id.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S16-C05",
+      "version": 1,
+      "eval_id": 1114,
+      "hash_version_atestado": "30be49cd02f75444fdabb7e32fe8b3707f747a08662b327176ca0b340899ba05",
+      "hash_paquete_atestado": "fa9492371038ec61e4b205df2b0ba9c76e04d03a2c7aef1af600fcffd8280966",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 12:41 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Cubre solo el vencimiento web sin segundos; las variantes por cantidad de ofertas y modalidades, y la no preselección, quedan fuera."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 517,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR countdown web de oferta activa que muestre segundos o unidades agotadas; proyectar días, horas y minutos restantes según vigencia autoritativa, sin redefinir selección ni modalidades. Observación del juez: Cubre solo el vencimiento web sin segundos; las variantes por cantidad de ofertas y modalidades, y la no preselección, quedan fuera.",
+      "residual": "Variantes por ofertas/modalidades y no preselección quedan fuera.",
+      "complementa": null
+    },
+    {
+      "codigo": "S16-C06",
+      "version": 1,
+      "eval_id": 1115,
+      "hash_version_atestado": "57aa3c8fbc88b7a6a6caf362467d4579f085fa46103d80430dea7efdb91181f1",
+      "hash_paquete_atestado": "9c19cc7f87c74741c1e8d50cabfd867dd59ad8c9f6b03fba1a46c9d37d1fffc4",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 12:41 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 368,
+      "familia": "B2B_PARTNERS",
+      "diferencias": "Contraste funcional: BLOQUEAR Home público que muestre aliado sin aprobación y visibilidad, noticia sin verificación y visibilidad, o slot futuro fuera de sandbox/pitch interno.",
+      "residual": "",
+      "complementa": null
+    }
+  ]
+}
