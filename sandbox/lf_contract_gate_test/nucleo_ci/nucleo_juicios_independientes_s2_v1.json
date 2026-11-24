@@ -1,0 +1,484 @@
+{
+  "contrato": "NUCLEO_S2_JUICIOS_INDEPENDIENTES_V1",
+  "origen": "Claude 2026-11-23 21:02 Lima",
+  "criterios": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S2-C01",
+      "version": 1,
+      "eval_id": 299,
+      "hash_paquete_atestado": "f8e362ae9f40a62ef030189a4de7b8e7fdf890df5e6b6569b9dd682e6b571239",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "La regla no precisa el caso con cooldown ya vencido; queda modelado dentro del hecho violación."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 19,
+      "estado_cobertura_esperado": "PARCIAL",
+      "diferencias": "La regla núcleo bloquea continuidad OTP ante violación agregada. No exige explícitamente que el OTP agotado cambie a inválido y que la sesión permanezca reutilizable tras el primer agotamiento; AUTH/OTP_MAX_ATTEMPTS y AUTH/OTP_EXHAUSTION_COOLDOWN_SECONDS se interpretan por backend.",
+      "residual": "Queda exigir invalidación física del OTP agotado, cooldown de seguridad completo y condición de primer agotamiento sin bloqueo permanente, independientemente del solo intento de continuar."
+    },
+    {
+      "codigo": "S2-C02",
+      "version": 1,
+      "eval_id": 300,
+      "hash_paquete_atestado": "121373d073a9bf4a1a9060ac128e0c8ecaa58772dc10937e67d358169ef94976",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.8,
+          "observacion": "La expresión «o se intenta reanudar la misma sesión» admite dos lecturas y debe precisarse en la siguiente revisión."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Solapa protección por reenvíos con M4-B06 y con S2-C01; el agotamiento final y bloqueo definitivo delimita la intención."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 20,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "El núcleo bloquea continuación y reanudación de la misma sesión tras agotar el último OTP reenviado; la legada exige estado BLOCKED y reiniciar ONB_001. El efecto BLOQUEAR no acredita transición física ni handler, sin diferencia de intención final verificada.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C03",
+      "version": 1,
+      "eval_id": 301,
+      "hash_paquete_atestado": "e15752e0566e2a6727c8d8a547a0bf0eef562268fa109b94f9afed20c12b1225",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Cercana a M4-B07; la diferencia es bloqueo de campo y nueva sesión de REG_SEG_005, no aviso de soporte de REG_RL_003."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 23,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "El núcleo impide cambio de celular sobre límite AUTH/PHONE_UPDATE_MAX_PER_SESSION; la legada además exige bloquear visualmente el campo e iniciar nueva sesión. El predicado agrega esas violaciones; no atribuye el mensaje de soporte propio de M4-B07.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C04",
+      "version": 1,
+      "eval_id": 302,
+      "hash_paquete_atestado": "234b2d93a9dfd95441c7ff0801c1d0728b1dd1089d15bc282448dcc099b05428",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.8,
+          "observacion": "Política vigente sin versión fijada; binding de política rate limit de backend permanece pendiente."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Cercana a S2-C07, pero aplica OTP backend y no a políticas B2B operativas."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 127,
+      "estado_cobertura_esperado": "PARCIAL",
+      "diferencias": "El núcleo demanda rate limiting independiente del frontend por session_id e IP, pero no garantiza equivalencia de cuotas backend de la legada ni versión de política. Se refiere a lf_ops.politicas_rate_limit en lugar de límites incrustados.",
+      "residual": "Quedan verificar cuotas y ventanas de rate limiting en políticas backend independientes por session_id e IP y su binding; el contrato original no queda cubierto por el hecho lógico."
+    },
+    {
+      "codigo": "S2-C05",
+      "version": 1,
+      "eval_id": 303,
+      "hash_paquete_atestado": "459e62449016a18bbb4d91ea19bb84cbd06d7c079868671b1cc3b0a1be0ddb5b",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 139,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada históricamente indica JWT en cookie, aclarada como access token en memoria + refresh token cookie httpOnly/Secure/SameSite con PKCE; el núcleo adopta la aclaración más reciente y bloquea localStorage/sessionStorage.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C06",
+      "version": 1,
+      "eval_id": 304,
+      "hash_paquete_atestado": "fb3dfd5b2886919c522f722887d69e3c424cfa2519daa65a1d9697d1d3238430",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.9,
+          "observacion": "Listas locales de perfiles es concepto poco acotado; la regla no debe sustituir política central MFA."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.8,
+          "observacion": "Requiere tipificar como lista local cualquier matriz hardcodeada de perfiles o factores fuera de política central."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 398,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada exige MFA y step-up por políticas centrales; núcleo bloquea decisión basada en matrices locales. Diferencia técnica: listas locales representan configuración hardcodeada y no referencias vigentes a políticas MFA.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C07",
+      "version": 1,
+      "eval_id": 305,
+      "hash_paquete_atestado": "eabc82d7d97d9e25cd8e94985db879c773628a4fa09cfba0492ef0a846c9b88c",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "Cercana a S2-C04; esta gobierna B2B rate limits por política central, no endpoint OTP."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 418,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada exige política lf_ops.politicas_rate_limit vía rate_limit_policy_id; núcleo bloquea máximos, ventanas y burst hardcodeados. Se limita a B2B; distinto de OTP backend en S2-C04.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C08",
+      "version": 1,
+      "eval_id": 306,
+      "hash_paquete_atestado": "cdbe997aab8ab48704ac77a2972cc4516785887412f9703344d64951c36742ae",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.8,
+          "observacion": "Expresión «sin riesgo/señal de fallo» combina ausencia de riesgo y ausencia de fallo del invisible."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 429,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada exige anti-bot invisible por defecto y visible solo tras riesgo o fallo; núcleo expresa ambos casos como bloqueo de desafío innecesario o ausencia de protección. Proveedor permanece agnóstico.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C09",
+      "version": 1,
+      "eval_id": 307,
+      "hash_paquete_atestado": "331beef3aad99451002cd6147638245622bc25c7ab6cc403de4a3e0a1296ef60",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 432,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada permite IdP confiable detrás de LF_AUTH_BOUNDARY server-side; núcleo bloquea credenciales verificadas en navegador y sesión sin validación en servidor. No se selecciona endpoint OIDC.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C10",
+      "version": 1,
+      "eval_id": 308,
+      "hash_paquete_atestado": "b985a103398b5ef5552608e744309e8d6e2d6a9601aeaba4787af88e50ba7639",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "error_id también aparece en S2-C11; S2-C10 es autoridad del mapeo proveedor a outcome y catálogo, no contrato de exposición externa."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 433,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada exige traducción única del proveedor a outcome estable y error_id del catálogo; S2-C10 posee autoridad exclusiva de asignación de error_id y resolución HTTP/mensaje por catálogo. S2-C11 solo verifica estructura de respuesta.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C11",
+      "version": 1,
+      "eval_id": 309,
+      "hash_paquete_atestado": "9a2408c36eb3b7d0f648d282ca324940bc65202a45fe6c265fad7b3c33e3e9fe",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.9,
+          "observacion": "S2-C11 combina reglas de mínima respuesta y reference error_id; delimitar consumidor de la salida y origen."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "S2-C10 genera outcome/error_id canónico; S2-C11 únicamente verifica que respuesta de LF_AUTH_BOUNDARY lo conserve, no define una segunda asignación."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 436,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada exige respuesta mínima con outcome, correlation_id, error_id cuando proceda y exclusión de datos sensibles; S2-C11 valida el uso del error_id producido por S2-C10, sin asignar ni mapear error_id nuevo.",
+      "residual": ""
+    },
+    {
+      "codigo": "S2-C12",
+      "version": 1,
+      "eval_id": 310,
+      "hash_paquete_atestado": "dfe0babd39b3c1bd579c78288a5b0aa18e1835df08d87b3d692229836b7a6093",
+      "veredicto": "PASS",
+      "juez": "Claude — juicio independiente comunicado 2026-11-23 21:02 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legacy_id": 437,
+      "estado_cobertura_esperado": "REEMPLAZADA",
+      "diferencias": "La legada exige MFA_REQUIRED sin crear sesión AUTHENTICATED para usuarios con política MFA; núcleo bloquea acceso antes del segundo factor, sin fijar cantidad de perfiles ni proveedor.",
+      "residual": ""
+    }
+  ]
+}
