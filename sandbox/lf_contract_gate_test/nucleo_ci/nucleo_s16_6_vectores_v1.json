@@ -1,0 +1,854 @@
+{
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S16-C01",
+      "clave": "s16_neg_ruta_elegibilidad_b2b_01",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Orientación Explora según oferta",
+      "descripcion": "BLOQUEAR orientación Explora que indique contactar al banco como camino principal cuando existe oferta de aliado B2B; reservar orientación de contacto al acreedor como respaldo de Home sin oferta.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c01_nodo_explora"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c01_orientacion_presentada"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s16c01_camino_principal_incorrecto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": false,
+            "s16c01_orientacion_presentada": false,
+            "s16c01_camino_principal_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": false,
+            "s16c01_orientacion_presentada": false,
+            "s16c01_camino_principal_incorrecto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": false,
+            "s16c01_orientacion_presentada": true,
+            "s16c01_camino_principal_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": false,
+            "s16c01_orientacion_presentada": true,
+            "s16c01_camino_principal_incorrecto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": true,
+            "s16c01_orientacion_presentada": false,
+            "s16c01_camino_principal_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": true,
+            "s16c01_orientacion_presentada": false,
+            "s16c01_camino_principal_incorrecto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": true,
+            "s16c01_orientacion_presentada": true,
+            "s16c01_camino_principal_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s16c01_nodo_explora": true,
+            "s16c01_orientacion_presentada": true,
+            "s16c01_camino_principal_incorrecto": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/379",
+        "solicitante": "Cristhian / Claude S16 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S16-C02",
+      "clave": "s16_reg_onb001_phone_display_001",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Estabilidad visual de error celular",
+      "descripcion": "BLOQUEAR ONB_001 con placeholder distinto de CAMPO_CELULAR aprobado, error sin token error_text o desplazamiento de CTA y confianza al mostrar error. Validación canónica de celular se conserva en contrato existente, no se redefine.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c02_onb001"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c02_estado_visual"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s16c02_placeholder_error_o_anclaje_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": false,
+            "s16c02_estado_visual": false,
+            "s16c02_placeholder_error_o_anclaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": false,
+            "s16c02_estado_visual": false,
+            "s16c02_placeholder_error_o_anclaje_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": false,
+            "s16c02_estado_visual": true,
+            "s16c02_placeholder_error_o_anclaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": false,
+            "s16c02_estado_visual": true,
+            "s16c02_placeholder_error_o_anclaje_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": true,
+            "s16c02_estado_visual": false,
+            "s16c02_placeholder_error_o_anclaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": true,
+            "s16c02_estado_visual": false,
+            "s16c02_placeholder_error_o_anclaje_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": true,
+            "s16c02_estado_visual": true,
+            "s16c02_placeholder_error_o_anclaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s16c02_onb001": true,
+            "s16c02_estado_visual": true,
+            "s16c02_placeholder_error_o_anclaje_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/483",
+        "solicitante": "Cristhian / Claude S16 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S16-C03",
+      "clave": "s16_b2b_rule_auth_048",
+      "familia": "ACCESSIBILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Disclosure de contraseña accesible",
+      "descripcion": "BLOQUEAR login B2B cuya disposición responsive controle estado de disclosure, que no permita corregir email tras disclosure, no preserve formulario de contraseña o no gestione foco y aria-live; validación local email sin llamada al gateway. No redefine reglas de autofill ni envío de autenticación.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c03_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c03_disclosure_interaccion"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s16c03_estado_foco_o_email_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": false,
+            "s16c03_disclosure_interaccion": false,
+            "s16c03_estado_foco_o_email_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": false,
+            "s16c03_disclosure_interaccion": false,
+            "s16c03_estado_foco_o_email_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": false,
+            "s16c03_disclosure_interaccion": true,
+            "s16c03_estado_foco_o_email_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": false,
+            "s16c03_disclosure_interaccion": true,
+            "s16c03_estado_foco_o_email_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": true,
+            "s16c03_disclosure_interaccion": false,
+            "s16c03_estado_foco_o_email_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": true,
+            "s16c03_disclosure_interaccion": false,
+            "s16c03_estado_foco_o_email_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": true,
+            "s16c03_disclosure_interaccion": true,
+            "s16c03_estado_foco_o_email_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s16c03_login_b2b": true,
+            "s16c03_disclosure_interaccion": true,
+            "s16c03_estado_foco_o_email_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/580",
+        "solicitante": "Cristhian / Claude S16 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S16-C04",
+      "clave": "s16_b2b_rule_auth_023",
+      "familia": "ROUTING_NAVIGATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Destino autorizado tras autenticación",
+      "descripcion": "BLOQUEAR redirección B2B posterior a AUTHENTICATED a ruta no autorizada o URL arbitraria; recuperar destino solicitado solo si continúa habilitado, de lo contrario primer menú visible y habilitado conforme permisos de pantalla/perfil y orden canónico menu_item_id y route_id.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c04_b2b_autenticado"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c04_redireccion"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s16c04_destino_no_autorizado"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": false,
+            "s16c04_redireccion": false,
+            "s16c04_destino_no_autorizado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": false,
+            "s16c04_redireccion": false,
+            "s16c04_destino_no_autorizado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": false,
+            "s16c04_redireccion": true,
+            "s16c04_destino_no_autorizado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": false,
+            "s16c04_redireccion": true,
+            "s16c04_destino_no_autorizado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": true,
+            "s16c04_redireccion": false,
+            "s16c04_destino_no_autorizado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": true,
+            "s16c04_redireccion": false,
+            "s16c04_destino_no_autorizado": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": true,
+            "s16c04_redireccion": true,
+            "s16c04_destino_no_autorizado": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s16c04_b2b_autenticado": true,
+            "s16c04_redireccion": true,
+            "s16c04_destino_no_autorizado": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/442",
+        "solicitante": "Cristhian / Claude S16 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S16-C05",
+      "clave": "s16_reg_client_home_active_offer_variant_001",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Cuenta regresiva de oferta web",
+      "descripcion": "BLOQUEAR countdown web de oferta activa que muestre segundos o unidades agotadas; proyectar días, horas y minutos restantes según vigencia autoritativa, sin redefinir selección ni modalidades.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c05_oferta_activa_web"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c05_countdown_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s16c05_unidad_temporal_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": false,
+            "s16c05_countdown_visible": false,
+            "s16c05_unidad_temporal_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": false,
+            "s16c05_countdown_visible": false,
+            "s16c05_unidad_temporal_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": false,
+            "s16c05_countdown_visible": true,
+            "s16c05_unidad_temporal_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": false,
+            "s16c05_countdown_visible": true,
+            "s16c05_unidad_temporal_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": true,
+            "s16c05_countdown_visible": false,
+            "s16c05_unidad_temporal_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": true,
+            "s16c05_countdown_visible": false,
+            "s16c05_unidad_temporal_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": true,
+            "s16c05_countdown_visible": true,
+            "s16c05_unidad_temporal_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s16c05_oferta_activa_web": true,
+            "s16c05_countdown_visible": true,
+            "s16c05_unidad_temporal_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/517",
+        "solicitante": "Cristhian / Claude S16 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S16-C06",
+      "clave": "s16_neg_respaldo_sin_cajas_vacias_01",
+      "familia": "B2B_PARTNERS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Aliados y prensa visibles autorizados",
+      "descripcion": "BLOQUEAR Home público que muestre aliado sin aprobación y visibilidad, noticia sin verificación y visibilidad, o slot futuro fuera de sandbox/pitch interno.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c06_home_publico"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s16c06_aliado_o_prensa_renderizado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s16c06_visibilidad_no_autorizada"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": false,
+            "s16c06_aliado_o_prensa_renderizado": false,
+            "s16c06_visibilidad_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": false,
+            "s16c06_aliado_o_prensa_renderizado": false,
+            "s16c06_visibilidad_no_autorizada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": false,
+            "s16c06_aliado_o_prensa_renderizado": true,
+            "s16c06_visibilidad_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": false,
+            "s16c06_aliado_o_prensa_renderizado": true,
+            "s16c06_visibilidad_no_autorizada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": true,
+            "s16c06_aliado_o_prensa_renderizado": false,
+            "s16c06_visibilidad_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": true,
+            "s16c06_aliado_o_prensa_renderizado": false,
+            "s16c06_visibilidad_no_autorizada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": true,
+            "s16c06_aliado_o_prensa_renderizado": true,
+            "s16c06_visibilidad_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s16c06_home_publico": true,
+            "s16c06_aliado_o_prensa_renderizado": true,
+            "s16c06_visibilidad_no_autorizada": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/368",
+        "solicitante": "Cristhian / Claude S16 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 368,
+      "codigo": "NEG-RESPALDO-SIN-CAJAS-VACIAS-01",
+      "descripcion": "Renderizar aliado SOLO si authorization_status=approved AND visible=true. Ocultar si pending/draft/rejected/unknown/hidden. Renderizar prensa SOLO si source_status=verified AND visible=true. Los slots futuros se permiten en sandbox/pitch interno, NUNCA en Home publica.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 379,
+      "codigo": "NEG-RUTA-ELEGIBILIDAD-B2B-01",
+      "descripcion": "El nodo 02 Explora NO debe instruir al usuario a \"contactar su banco\" como camino principal -- si la deuda esta con un aliado B2B de LF (REG_B2B_001/003/006), LF ya tiene la oferta sin que el usuario haga nada. El contenido de \"contactar al acreedor\" aplica solo como contexto de respaldo para el caso Home sin oferta (HOME_003/PASO3_SIN_OFERTA).",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 442,
+      "codigo": "B2B-RULE-AUTH-023",
+      "descripcion": "Después de AUTHENTICATED, el destino de navegación se resuelve únicamente contra rutas internas autorizadas. Si existe una ruta solicitada antes del Login, puede retomarse solo si continúa autorizada. Si no existe, LF selecciona dinámicamente la primera ruta de menú visible y habilitada que satisfaga simultáneamente acceso de pantalla y permiso del perfil, ordenada por menu_item_id y luego route_id. El cliente no puede imponer URL, route_pattern ni destino arbitrario.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 483,
+      "codigo": "REG_ONB001_PHONE_DISPLAY_001",
+      "descripcion": "ONB_001 mantiene placeholder “9XX XXX XXX” para CAMPO_CELULAR y exige valor canónico de 9 dígitos numéricos iniciados en 9. El estado ERROR usa borde y texto error_text con mensaje “Ingresa tu número de 9 dígitos”. La línea de error debe reservar espacio también en estado NORMAL para impedir layout shift: CTA y texto de confianza conservan exactamente el mismo anclaje vertical en NORMAL y ERROR.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 517,
+      "codigo": "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001",
+      "descripcion": "Cuando REG_CLIENT_AUTH_HOME_RESOLUTION_001 produce ACTIVE_OFFER_HOME, el backend especializa el estado según cantidad de ofertas elegibles activas y modalidades vigentes. El estado funcional no depende del nombre de una pantalla PASO3_* ni puede ser impuesto por el cliente. Ninguna oferta queda preseleccionada al cargar el Home. Si una oferta tiene una sola modalidad, esa modalidad puede resolverse automáticamente únicamente después de que el usuario seleccione explícitamente esa oferta; esto no equivale a preseleccionar la oferta al cargar. Si la única modalidad es cuotas, el usuario todavía debe seleccionar un plan válido. Con dos o más ofertas, cada oferta mantiene su selección independiente y el usuario puede continuar con una o varias selecciones válidas. Cierre owner 2026-08-24: el vencimiento WEB usa bloques numéricos adaptativos centrados. Mientras existan días se muestran DÍAS, HORAS y MINUTOS; al agotarse una unidad se elimina en lugar de mostrar cero. Nunca se muestran segundos.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 580,
+      "codigo": "B2B-RULE-AUTH-048",
+      "descripcion": "B2B-AUTH-001 puede usar divulgación completa o progresiva según el modo responsive, pero el estado de divulgación pertenece al controlador del formulario de Login y no al layout. El layout responsive solo compone slots y no conoce pasos de autenticación. En modo progresivo, el primer avance valida localmente el correo y no ejecuta autenticación ni llamadas al gateway. El campo Contraseña permanece asociado al mismo formulario durante todo el flujo. El paso de contraseña muestra el correo en modo lectura con una acción visible para editarlo, gestiona foco al cambiar de etapa y anuncia el cambio mediante una región aria-live. La autenticación real continúa siendo una única solicitud con correo y contraseña juntos.",
+      "estado": "VIGENTE"
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S16-C01",
+      "legacy_id": 379,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S16-C02",
+      "legacy_id": 483,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S16-C03",
+      "legacy_id": 580,
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S16-C04",
+      "legacy_id": 442,
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S16-C05",
+      "legacy_id": 517,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S16-C06",
+      "legacy_id": 368,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    }
+  ]
+}
