@@ -39,8 +39,8 @@ SELECT 'C13_APP_OUTPUT|'||saly.creative_item_context_medium_v3(13,NULL)::text;
 SELECT 'C13_PRINT_INPUT|same item13, output_medium override IMPRESION';
 SELECT 'C13_PRINT_OUTPUT|'||saly.creative_item_context_medium_v3(13,'IMPRESION')::text;
 DO $assert$ BEGIN
- IF (saly.creative_item_context_medium_v3(11,NULL)->>'selected_count')::int<>55
- OR (saly.creative_item_context_medium_v3(13,NULL)->>'selected_count')::int<>55
+ IF (saly.creative_item_context_medium_v3(11,NULL)->>'selected_count')::int<>53
+ OR (saly.creative_item_context_medium_v3(13,NULL)->>'selected_count')::int<>53
  OR (saly.creative_item_context_medium_v3(13,'IMPRESION')->>'selected_count')::int<>0
  OR (saly.creative_item_context_medium_v3(13,'IMPRESION')->>'omitted_count')::int<>55
  OR EXISTS (SELECT 1 FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,'IMPRESION')->'omitted') e
@@ -57,8 +57,8 @@ SELECT 'C_UNCLASSIFIED_OUTPUT|'||jsonb_build_object(
    FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,NULL)->'omitted') e)
 )::text;
 DO $assert$ BEGIN
- IF (saly.creative_item_context_medium_v3(13,NULL)->>'selected_count')::int<>54
- OR (saly.creative_item_context_medium_v3(13,NULL)->'omitted'->0->>'reason')<>'SIN_CLASIFICAR'
+ IF (saly.creative_item_context_medium_v3(13,NULL)->>'selected_count')::int<>52
+ OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,NULL)->'omitted') e WHERE e->>'reason'='SIN_CLASIFICAR')
  THEN RAISE EXCEPTION 'FAIL_UNCLASSIFIED_TOKEN_NOT_EXCLUDED'; END IF;
 END $assert$;
 
@@ -75,6 +75,61 @@ SELECT 'C_ROLES_OUTPUT|'||jsonb_build_object(
  'proposed_impresion',(SELECT count(*) FROM saly.identity_versions WHERE metadata->'applies_to_proposed' ? 'IMPRESION'),
  'proposed_papel',(SELECT count(*) FROM saly.identity_versions WHERE metadata->'applies_to_proposed' ? 'PAPEL')
 )::text;
+
+-- Snapshot existing sealed context members + their original value_json and hashes.
+CREATE TEMP TABLE sealed_snapshot_before AS
+ SELECT t.context_set_id,t.identity_version_id,t.role,t.value_sha256,
+ v.value_json
+ FROM saly.creative_context_tokens t
+ JOIN saly.identity_versions v ON v.id=t.identity_version_id
+ WHERE t.context_set_id IN (3,4);
+SELECT 'C_SEALED_INPUT|prior SEALED context 3 and 4 before depuration, original membership/hashes unchanged';
+SELECT 'C_SEALED_OUTPUT|'||jsonb_build_object(
+ 'contexts',(SELECT jsonb_agg(jsonb_build_object(
+ 'id',ctx.id,'state',ctx.state,
+ 'token_members',(SELECT count(*) FROM sealed_snapshot_before snap WHERE snap.context_set_id=ctx.id),
+ 'member_refs',(SELECT jsonb_agg(snap.identity_version_id ORDER BY snap.identity_version_id)
+  FROM sealed_snapshot_before snap WHERE snap.context_set_id=ctx.id))
+ ORDER BY ctx.id) FROM saly.creative_context_sets ctx WHERE ctx.id IN (3,4)),
+ 'same_value_json',(SELECT bool_and(s.value_json IS NOT DISTINCT FROM v.value_json)
+ FROM sealed_snapshot_before s JOIN saly.identity_versions v ON v.id=s.identity_version_id),
+ 'same_sealed_hashes',(SELECT bool_and(s.value_sha256 IS NOT DISTINCT FROM t.value_sha256)
+ FROM sealed_snapshot_before s JOIN saly.creative_context_tokens t
+ ON t.context_set_id=s.context_set_id AND t.identity_version_id=s.identity_version_id),
+ 'retired_metadata',(SELECT jsonb_agg(jsonb_build_object('id',v.id,
+ 'state',v.metadata->>'effective_use_state',
+ 'replacement',v.metadata->>'replaced_by_code') ORDER BY v.id)
+ FROM saly.identity_versions v WHERE v.id IN(10,21))
+)::text;
+DO $assert$ BEGIN
+ IF (SELECT count(*) FROM sealed_snapshot_before)<>(SELECT count(*) FROM saly.creative_context_tokens WHERE context_set_id IN (3,4))
+ OR EXISTS (SELECT 1 FROM sealed_snapshot_before s JOIN saly.identity_versions v ON v.id=s.identity_version_id
+ WHERE s.value_json IS DISTINCT FROM v.value_json)
+ OR EXISTS (SELECT 1 FROM sealed_snapshot_before s JOIN saly.creative_context_tokens t
+ ON t.context_set_id=s.context_set_id AND t.identity_version_id=s.identity_version_id
+ WHERE s.value_sha256 IS DISTINCT FROM t.value_sha256)
+ THEN RAISE EXCEPTION 'FAIL_HISTORICAL_SEALED_HASHES_CHANGED'; END IF;
+END $assert$;
+SELECT 'C_EFFECTIVE_INPUT|item13 app after non-destructive RETIRADO 10 and 21; no retired in selected';
+SELECT 'C_EFFECTIVE_OUTPUT|'||jsonb_build_object(
+ 'classified',(SELECT count(*) FROM saly.identity_versions WHERE metadata ? 'token_role'),
+ 'effective',(saly.creative_item_context_medium_v3(13,NULL)->>'selected_count')::int,
+ 'omitted',(saly.creative_item_context_medium_v3(13,NULL)->>'omitted_count')::int,
+ 'retired_ids',(SELECT jsonb_agg((e->>'version_id')::bigint ORDER BY (e->>'version_id')::bigint)
+ FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,NULL)->'omitted') e
+ WHERE e->>'reason'='TOKEN_RETIRADO'),
+ 'retired_in_selected',(SELECT count(*) FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,NULL)->'selected') e
+ WHERE (e->>'version_id')::bigint IN(10,21))
+)::text;
+DO $assert$ BEGIN
+ IF saly.creative_item_context_medium_v3(13,NULL)->>'selected_count'<>'53'
+ OR (SELECT count(*) FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,NULL)->'omitted') e
+    WHERE (e->>'version_id')::bigint IN(10,21) AND e->>'reason'='TOKEN_RETIRADO')<>2
+ OR EXISTS(SELECT 1 FROM jsonb_array_elements(saly.creative_item_context_medium_v3(13,NULL)->'selected') e
+    WHERE (e->>'version_id')::bigint IN(10,21))
+ THEN RAISE EXCEPTION 'FAIL_RETIRED_EFFECTIVE_SET'; END IF;
+END $assert$;
+
 SELECT 'C_GREEN_INPUT|item11 with CTA and logo; approved CTA7 vs approved brand8; duplicate10/alias21 candidates';
 SELECT 'C_GREEN_OUTPUT|'||jsonb_build_object(
  'palette',saly.creative_item_context_medium_v3(11,NULL)->'effective_color_roles',
