@@ -1,0 +1,417 @@
+{
+  "contrato": "LF_S15_JUICIOS_10",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S15-C01",
+      "version": 1,
+      "eval_id": 1080,
+      "hash_version_atestado": "08852693675609b1881f551a8d4ae6ba95fd011c21496242ae30b87b254630c7",
+      "hash_paquete_atestado": "d66acc11d905ea1d5564e66290fcf776c60b3a34aefb26b5e02ef1899df98feb",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 7,
+      "familia": "MFA_OTP_SSO",
+      "diferencias": "Contraste funcional: BLOQUEAR cambio de número en ONB_002 que conserve el desafío OTP anterior o reinicie datos ajenos al teléfono y desafío; en celular-first todavía no se capturaron nombre, DNI ni correo.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C02",
+      "version": 1,
+      "eval_id": 1081,
+      "hash_version_atestado": "93f8bc84ac493e649737a78b15095e94605411e85236aaa4787a9fd82598d5fd",
+      "hash_paquete_atestado": "e91f0d5c9bc56df56535088b92e87fd6a8aa7c80fb719a7fd803ead04635cc2e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 11,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR copy de espera OTP que omita la orientación «Revisa tu WhatsApp, incluyendo la pestaña de solicitudes de mensajes nuevos.» o sustituya esa orientación por una promesa fija de duración del proceso.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C03",
+      "version": 1,
+      "eval_id": 1082,
+      "hash_version_atestado": "5a499f1a745040d8b43bfb211ea0395cbb7e3ae6a437031b16972fbcc9d53ae2",
+      "hash_paquete_atestado": "c6242c054259414d2b13d90a1a41b19502fc8df47d5fc40bde551a6836024ddb",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 36,
+      "familia": "AUDIT",
+      "diferencias": "Contraste funcional: BLOQUEAR omisión del evento de auditoría correspondiente a inicio, submit paso inicial, envío OTP, intento fallido, verificación, completado, abandono, bloqueo o cambio inline de número; conservar los códigos de REG_AUD_001 sin exponer PII.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C04",
+      "version": 1,
+      "eval_id": 1083,
+      "hash_version_atestado": "2f41ddb3895a9376c9443712277501cd315e72c3266a1786bb3301ddfc684b7d",
+      "hash_paquete_atestado": "3a7301954e7f4d59673a0e9db137ad1a703bb77f34815b7d8ec88138138cdcbb",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 90,
+      "familia": "ANALYTICS",
+      "diferencias": "Contraste funcional: BLOQUEAR instrumentación ONB_003 que omita identity_screen_viewed, dni_submit_attempt, dni_submit_error o dni_resolution_completed cuando corresponda, o incluya DNI, celular o resultado que revele explícitamente existencia de cuenta.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C05",
+      "version": 1,
+      "eval_id": 1084,
+      "hash_version_atestado": "6cfa505d4b42d9ee96190fc84b23f82a433a1aa74869313ad5b1975ef3c427ea",
+      "hash_paquete_atestado": "a4d8a0150216f5890c8b2e502a18fb160c86f0a941fb4c76ecbe7796a56d04d9",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 92,
+      "familia": "ANALYTICS",
+      "diferencias": "Contraste funcional: BLOQUEAR configuración del embudo GA4 que no represente onboarding_started → otp_verified → onboarding_funnel_completed en ese orden, sin inferir que todo usuario necesita completar todos los formularios históricos.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C06",
+      "version": 1,
+      "eval_id": 1085,
+      "hash_version_atestado": "ce6a4854c2899d8fa5f7ed06dafe9c644ae649e1a4c9c3436f56247e01d213b7",
+      "hash_paquete_atestado": "2d0246fcba334026c2f7bca881f2fffe20e414173597bb502b73c3cfa22003f5",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Solo pagos; la legada exige dataLayer en todos los eventos y las demás superficies quedan pendientes."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 101,
+      "familia": "ANALYTICS",
+      "diferencias": "Contraste funcional: BLOQUEAR instrumentación de pagos que entregue eventos a GTM sin pasar por dataLayer o extraiga datos directamente del DOM. No autoriza campos ni eventos adicionales; resto de superficies queda pendiente. Observación del juez: Solo pagos; la legada exige dataLayer en todos los eventos y las demás superficies quedan pendientes.",
+      "residual": "Faltan HOME/ONBOARDING y demás superficies.",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C07",
+      "version": 1,
+      "eval_id": 1086,
+      "hash_version_atestado": "ff7a39799a8e396a82ac2621e4dcb9cf9ffa4ce8024a2e05c0d1cd5450202be4",
+      "hash_paquete_atestado": "dc4194b4c644668e01a137af9b0aa026bfb81b956a9ec89009e5ba695d8df248",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Alcance HOME; PASO3_CUOTAS_DESGLOSE_V2 y la fecha fija del aliado (REG_CUO_008/009) deben confirmarse en su módulo."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 160,
+      "familia": "OFFERS_INSTALLMENTS",
+      "diferencias": "Contraste funcional: BLOQUEAR confirmación de plan en PASO3_CUOTAS_DESGLOSE_V2 que no permita elegir fecha de débito de cuotas posteriores a la inicial desde opciones configuradas por aliado para la oferta; no inventar fechas ni defaults. Observación del juez: Alcance HOME; PASO3_CUOTAS_DESGLOSE_V2 y la fecha fija del aliado (REG_CUO_008/009) deben confirmarse en su módulo.",
+      "residual": "PASO3 y override fijo del aliado fuera de este alcance.",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C08",
+      "version": 1,
+      "eval_id": 1087,
+      "hash_version_atestado": "423b77b819ff7629b6bd51867ed46348e61018205d9b3253417d18ea6bea9887",
+      "hash_paquete_atestado": "2738d8cc063fe949204eee32db9a319b9f67ad84aefd3cab430e692dc5188c72",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 174,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR copy de multi oferta que prometa Carta de No Adeudo antes de confirmar pago total de cada deuda o use «al cancelar» ambiguamente para cuotas; explicar firma electrónica y emisión por deuda sin atribuir emisión a LF.",
+      "residual": "",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C09",
+      "version": 1,
+      "eval_id": 1088,
+      "hash_version_atestado": "d1d84491e6ef9d96c6d5be5b6e4a3006a9b9084a2a44c2b1314e1126ced01798",
+      "hash_paquete_atestado": "3e3a1746d8b3434ddae59d30a99532cf416a27d8a8f4a41ba2698ee180281219",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Solo pagos; la legada rige cualquier operación y las demás superficies quedan pendientes."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 182,
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR operación de pagos que supere UX/SKELETON_SHOW_AFTER_MS de public.lf_global_config sin skeleton de estructura de pantalla destino o con spinner global en su lugar; no altera reconciliación ni estados de pago. Observación del juez: Solo pagos; la legada rige cualquier operación y las demás superficies quedan pendientes.",
+      "residual": "Faltan demás superficies.",
+      "complementa": null
+    },
+    {
+      "codigo": "S15-C10",
+      "version": 1,
+      "eval_id": 1089,
+      "hash_version_atestado": "cb9ef81c7c6647a9c0145164ffb1f9f76418e6909056d584908be824cbbfb0e6",
+      "hash_paquete_atestado": "3f6938fd2b7502efb06e32cfa1f8c33468879627e747e41c29bf52c9c357b082",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 11:44 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 197,
+      "familia": "PAYMENTS_CHECKOUT",
+      "diferencias": "Contraste funcional: BLOQUEAR inicio de cobro cuando aliado necesario para checkout no está disponible antes de enviar el intento; informar indisponibilidad y permitir retomar selección solo si está conservada. No aplicar a intento ya enviado o ambiguo, que exige reconciliación.",
+      "residual": "",
+      "complementa": null
+    }
+  ]
+}
