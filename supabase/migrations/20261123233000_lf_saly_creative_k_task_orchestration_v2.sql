@@ -11,7 +11,7 @@ CREATE TABLE saly.creative_task_selection_v2 (
  selection_sha256 text NOT NULL CHECK(selection_sha256 ~ '^[0-9a-f]{64}$'),
  created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE UNIQUE INDEX creative_task_selection_sha256_uk_v2 ON saly.creative_task_selection_v2(selection_sha256);
+CREATE UNIQUE INDEX creative_task_selection_item_sha256_uk_v2 ON saly.creative_task_selection_v2(item_id,selection_sha256);
 CREATE TABLE saly.creative_k_results_v2 (
  item_id bigint NOT NULL REFERENCES saly.creative_order_items(id) ON DELETE RESTRICT,
  object_kind text NOT NULL CHECK(object_kind IN ('PLAN','IMAGE')),
@@ -22,7 +22,8 @@ CREATE TABLE saly.creative_k_results_v2 (
  reason text,
  evidence jsonb NOT NULL DEFAULT '{}'::jsonb,
  output jsonb NOT NULL DEFAULT '{}'::jsonb,
- selection_sha256 text NOT NULL REFERENCES saly.creative_task_selection_v2(selection_sha256) DEFERRABLE INITIALLY IMMEDIATE,
+ selection_sha256 text NOT NULL,
+ FOREIGN KEY(item_id,selection_sha256) REFERENCES saly.creative_task_selection_v2(item_id,selection_sha256) DEFERRABLE INITIALLY IMMEDIATE,
  created_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(item_id,object_kind,object_sha256,module_code)
 );
