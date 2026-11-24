@@ -16,26 +16,6 @@ BEGIN;
 -- all schema, function and metadata writes are undone by the FINAL ROLLBACK.
 \i /tmp/saly_abc_candidate_no_boundary.sql
 
--- Original item and order guards, with candidate function bodies, run in the test.
-CREATE TRIGGER trg_creative_item_guard_l1
-BEFORE INSERT OR UPDATE ON saly.creative_order_items
-FOR EACH ROW EXECUTE FUNCTION saly.creative_item_guard_l1();
-CREATE TRIGGER trg_saly_creative_chat_terminal_item_guard_v1
-BEFORE UPDATE OR DELETE ON saly.creative_order_items
-FOR EACH ROW EXECUTE FUNCTION saly.creative_chat_terminal_item_guard_v1();
-CREATE TRIGGER trg_creative_00_single_screen_item_guard_v1
-BEFORE INSERT OR UPDATE ON saly.creative_order_items
-FOR EACH ROW EXECUTE FUNCTION saly.creative_single_screen_item_guard_v1();
-CREATE TRIGGER trg_saly_creative_chat_terminal_order_guard_v1
-BEFORE UPDATE ON saly.creative_orders
-FOR EACH ROW EXECUTE FUNCTION saly.creative_chat_terminal_order_guard_v1();
-CREATE TRIGGER trg_creative_order_close_guard_l1
-BEFORE UPDATE ON saly.creative_orders
-FOR EACH ROW EXECUTE FUNCTION saly.creative_order_close_guard_l1();
-CREATE TRIGGER trg_creative_queue_native_delivery_guard_v1
-BEFORE INSERT OR UPDATE ON saly.creative_queue_native_delivery_evidence_v1
-FOR EACH ROW EXECUTE FUNCTION saly.creative_queue_native_delivery_guard_v1();
-
 SELECT 'C0_INPUT|new 55-token SEALED context in disposable transaction; order8 and order9 moved only in fixture';
 INSERT INTO saly.creative_context_sets(id,code,state,project_id)
 VALUES(100,'SALY_55_TOKENS_TEST_ONLY','SEALED',2);
@@ -140,6 +120,26 @@ BEGIN
   'visual_contract',visual,'visual_contract_sha256',sha_contract),
  '{}'::jsonb,'TEST_ITEM11_ATTEMPT1');
 END $qa$;
+-- Original item and order guards, with candidate function bodies, run in the test.
+CREATE TRIGGER trg_creative_item_guard_l1
+BEFORE INSERT OR UPDATE ON saly.creative_order_items
+FOR EACH ROW EXECUTE FUNCTION saly.creative_item_guard_l1();
+CREATE TRIGGER trg_saly_creative_chat_terminal_item_guard_v1
+BEFORE UPDATE OR DELETE ON saly.creative_order_items
+FOR EACH ROW EXECUTE FUNCTION saly.creative_chat_terminal_item_guard_v1();
+CREATE TRIGGER trg_creative_00_single_screen_item_guard_v1
+BEFORE INSERT OR UPDATE ON saly.creative_order_items
+FOR EACH ROW EXECUTE FUNCTION saly.creative_single_screen_item_guard_v1();
+CREATE TRIGGER trg_saly_creative_chat_terminal_order_guard_v1
+BEFORE UPDATE ON saly.creative_orders
+FOR EACH ROW EXECUTE FUNCTION saly.creative_chat_terminal_order_guard_v1();
+CREATE TRIGGER trg_creative_order_close_guard_l1
+BEFORE UPDATE ON saly.creative_orders
+FOR EACH ROW EXECUTE FUNCTION saly.creative_order_close_guard_l1();
+CREATE TRIGGER trg_creative_queue_native_delivery_guard_v1
+BEFORE INSERT OR UPDATE ON saly.creative_queue_native_delivery_evidence_v1
+FOR EACH ROW EXECUTE FUNCTION saly.creative_queue_native_delivery_guard_v1();
+
 SELECT 'B0_OUTPUT|'||jsonb_build_object('order_status',(SELECT status FROM saly.creative_orders WHERE id=8),
 'item_status',(SELECT status FROM saly.creative_order_items WHERE id=11),
 'claim_state',(SELECT state FROM saly.creative_queue_claims_v1 WHERE id=700),
