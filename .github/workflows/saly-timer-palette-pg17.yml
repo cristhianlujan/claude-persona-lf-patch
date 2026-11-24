@@ -32,6 +32,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install PG17 client and image decoder
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client python3-pil
+        run: |
+          if ! command -v psql >/dev/null; then sudo apt-get install -y postgresql-client; fi
+          if ! python3 -c 'from PIL import Image' >/dev/null 2>&1; then sudo apt-get install -y python3-pil; fi
+          psql --version
+          python3 -c 'from PIL import Image; print("PIL_READY")'
       - name: Execute real pending fixtures and rollback
         run: bash sandbox/creative_factory/k_task_v2/test_pg17.sh
