@@ -1,0 +1,40 @@
+name: SALY PR1 K-only PostgreSQL17 ROLLBACK
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261123233000_lf_saly_creative_k_task_orchestration_v2.sql'
+      - 'sandbox/creative_factory/k_task_v2/**'
+      - '.github/workflows/saly-pr1-k-only-pg17.yml'
+permissions:
+  contents: read
+jobs:
+  pg17:
+    runs-on: ubuntu-latest
+    services:
+      pg:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_pr1_k_pg17
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_pr1_k_pg17"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: '127.0.0.1'
+      PGDATABASE: saly_pr1_k_pg17
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: '5432'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check preinstalled PostgreSQL client and Python
+        run: |
+          if ! command -v psql >/dev/null; then sudo apt-get install -y postgresql-client; fi
+          psql --version
+          python3 --version
+      - name: Exact migration BEGIN/ROLLBACK and independent K selection tests
+        run: bash sandbox/creative_factory/k_task_v2/pr1_pg17_only.sh
