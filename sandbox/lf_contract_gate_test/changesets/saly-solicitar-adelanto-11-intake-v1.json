@@ -3,6 +3,8 @@
   "paths": {
     "supabase/migrations/20261124215100_lf_saly_solicitar_adelanto_11_intake_v1.sql": "MIGRATION",
     "skills/creative_factory/SKILL.md": "SKILL",
-    "sandbox/lf_contract_gate_test/changesets/saly-solicitar-adelanto-11-intake-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/saly-solicitar-adelanto-11-intake-v1.json": "CHANGESET_MANIFEST",
+    "supabase/tests/saly_solicitar_adelanto_11_intake_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW"
   }
 }
