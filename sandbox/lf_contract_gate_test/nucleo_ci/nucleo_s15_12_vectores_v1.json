@@ -1,0 +1,1700 @@
+{
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C01",
+      "clave": "s15_reg_onb_002",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Cambio de celular reinicia desafío",
+      "descripcion": "BLOQUEAR cambio de número en ONB_002 que conserve el desafío OTP anterior o reinicie datos ajenos al teléfono y desafío; en celular-first todavía no se capturaron nombre, DNI ni correo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c01_onb002"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c01_cambio_celular"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c01_reinicio_incorrecto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": false,
+            "s15c01_cambio_celular": false,
+            "s15c01_reinicio_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": false,
+            "s15c01_cambio_celular": false,
+            "s15c01_reinicio_incorrecto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": false,
+            "s15c01_cambio_celular": true,
+            "s15c01_reinicio_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": false,
+            "s15c01_cambio_celular": true,
+            "s15c01_reinicio_incorrecto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": true,
+            "s15c01_cambio_celular": false,
+            "s15c01_reinicio_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": true,
+            "s15c01_cambio_celular": false,
+            "s15c01_reinicio_incorrecto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": true,
+            "s15c01_cambio_celular": true,
+            "s15c01_reinicio_incorrecto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c01_onb002": true,
+            "s15c01_cambio_celular": true,
+            "s15c01_reinicio_incorrecto": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/7",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C02",
+      "clave": "s15_reg_copy_002",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Orientación de recepción WhatsApp",
+      "descripcion": "BLOQUEAR copy de espera OTP que omita la orientación «Revisa tu WhatsApp, incluyendo la pestaña de solicitudes de mensajes nuevos.» o sustituya esa orientación por una promesa fija de duración del proceso.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c02_otp_whatsapp"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c02_orientacion_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c02_copy_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": false,
+            "s15c02_orientacion_visible": false,
+            "s15c02_copy_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": false,
+            "s15c02_orientacion_visible": false,
+            "s15c02_copy_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": false,
+            "s15c02_orientacion_visible": true,
+            "s15c02_copy_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": false,
+            "s15c02_orientacion_visible": true,
+            "s15c02_copy_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": true,
+            "s15c02_orientacion_visible": false,
+            "s15c02_copy_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": true,
+            "s15c02_orientacion_visible": false,
+            "s15c02_copy_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": true,
+            "s15c02_orientacion_visible": true,
+            "s15c02_copy_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c02_otp_whatsapp": true,
+            "s15c02_orientacion_visible": true,
+            "s15c02_copy_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/11",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C03",
+      "clave": "s15_reg_aud_001",
+      "familia": "AUDIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Auditoría del ciclo de onboarding",
+      "descripcion": "BLOQUEAR omisión del evento de auditoría correspondiente a inicio, submit paso inicial, envío OTP, intento fallido, verificación, completado, abandono, bloqueo o cambio inline de número; conservar los códigos de REG_AUD_001 sin exponer PII.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c03_onboarding"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c03_evento_auditable"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c03_registro_evento_omitido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": false,
+            "s15c03_evento_auditable": false,
+            "s15c03_registro_evento_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": false,
+            "s15c03_evento_auditable": false,
+            "s15c03_registro_evento_omitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": false,
+            "s15c03_evento_auditable": true,
+            "s15c03_registro_evento_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": false,
+            "s15c03_evento_auditable": true,
+            "s15c03_registro_evento_omitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": true,
+            "s15c03_evento_auditable": false,
+            "s15c03_registro_evento_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": true,
+            "s15c03_evento_auditable": false,
+            "s15c03_registro_evento_omitido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": true,
+            "s15c03_evento_auditable": true,
+            "s15c03_registro_evento_omitido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c03_onboarding": true,
+            "s15c03_evento_auditable": true,
+            "s15c03_registro_evento_omitido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/36",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C04",
+      "clave": "s15_reg_anl_005",
+      "familia": "ANALYTICS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Eventos de resolución documental",
+      "descripcion": "BLOQUEAR instrumentación ONB_003 que omita identity_screen_viewed, dni_submit_attempt, dni_submit_error o dni_resolution_completed cuando corresponda, o incluya DNI, celular o resultado que revele explícitamente existencia de cuenta.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c04_onb003"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c04_evento_analitico"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c04_evento_o_payload_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": false,
+            "s15c04_evento_analitico": false,
+            "s15c04_evento_o_payload_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": false,
+            "s15c04_evento_analitico": false,
+            "s15c04_evento_o_payload_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": false,
+            "s15c04_evento_analitico": true,
+            "s15c04_evento_o_payload_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": false,
+            "s15c04_evento_analitico": true,
+            "s15c04_evento_o_payload_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": true,
+            "s15c04_evento_analitico": false,
+            "s15c04_evento_o_payload_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": true,
+            "s15c04_evento_analitico": false,
+            "s15c04_evento_o_payload_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": true,
+            "s15c04_evento_analitico": true,
+            "s15c04_evento_o_payload_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c04_onb003": true,
+            "s15c04_evento_analitico": true,
+            "s15c04_evento_o_payload_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/90",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C05",
+      "clave": "s15_reg_anl_007",
+      "familia": "ANALYTICS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Embudo principal de onboarding",
+      "descripcion": "BLOQUEAR configuración del embudo GA4 que no represente onboarding_started → otp_verified → onboarding_funnel_completed en ese orden, sin inferir que todo usuario necesita completar todos los formularios históricos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c05_onboarding"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c05_embudo_ga4"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c05_secuencia_eventos_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": false,
+            "s15c05_embudo_ga4": false,
+            "s15c05_secuencia_eventos_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": false,
+            "s15c05_embudo_ga4": false,
+            "s15c05_secuencia_eventos_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": false,
+            "s15c05_embudo_ga4": true,
+            "s15c05_secuencia_eventos_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": false,
+            "s15c05_embudo_ga4": true,
+            "s15c05_secuencia_eventos_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": true,
+            "s15c05_embudo_ga4": false,
+            "s15c05_secuencia_eventos_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": true,
+            "s15c05_embudo_ga4": false,
+            "s15c05_secuencia_eventos_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": true,
+            "s15c05_embudo_ga4": true,
+            "s15c05_secuencia_eventos_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c05_onboarding": true,
+            "s15c05_embudo_ga4": true,
+            "s15c05_secuencia_eventos_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/92",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C06",
+      "clave": "s15_reg_tag_002",
+      "familia": "ANALYTICS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "DataLayer de pagos sin lectura DOM",
+      "descripcion": "BLOQUEAR instrumentación de pagos que entregue eventos a GTM sin pasar por dataLayer o extraiga datos directamente del DOM. No autoriza campos ni eventos adicionales; resto de superficies queda pendiente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c06_pagos"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c06_evento_gtm"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c06_origen_dato_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": false,
+            "s15c06_evento_gtm": false,
+            "s15c06_origen_dato_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": false,
+            "s15c06_evento_gtm": false,
+            "s15c06_origen_dato_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": false,
+            "s15c06_evento_gtm": true,
+            "s15c06_origen_dato_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": false,
+            "s15c06_evento_gtm": true,
+            "s15c06_origen_dato_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": true,
+            "s15c06_evento_gtm": false,
+            "s15c06_origen_dato_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": true,
+            "s15c06_evento_gtm": false,
+            "s15c06_origen_dato_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": true,
+            "s15c06_evento_gtm": true,
+            "s15c06_origen_dato_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c06_pagos": true,
+            "s15c06_evento_gtm": true,
+            "s15c06_origen_dato_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/101",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C07",
+      "clave": "s15_reg_cuo_004",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Elección de fechas de cuotas futuras",
+      "descripcion": "BLOQUEAR confirmación de plan en PASO3_CUOTAS_DESGLOSE_V2 que no permita elegir fecha de débito de cuotas posteriores a la inicial desde opciones configuradas por aliado para la oferta; no inventar fechas ni defaults.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c07_plan_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c07_confirmacion_plan"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c07_fecha_no_autorizada"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": false,
+            "s15c07_confirmacion_plan": false,
+            "s15c07_fecha_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": false,
+            "s15c07_confirmacion_plan": false,
+            "s15c07_fecha_no_autorizada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": false,
+            "s15c07_confirmacion_plan": true,
+            "s15c07_fecha_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": false,
+            "s15c07_confirmacion_plan": true,
+            "s15c07_fecha_no_autorizada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": true,
+            "s15c07_confirmacion_plan": false,
+            "s15c07_fecha_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": true,
+            "s15c07_confirmacion_plan": false,
+            "s15c07_fecha_no_autorizada": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": true,
+            "s15c07_confirmacion_plan": true,
+            "s15c07_fecha_no_autorizada": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c07_plan_cuotas": true,
+            "s15c07_confirmacion_plan": true,
+            "s15c07_fecha_no_autorizada": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/160",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C08",
+      "clave": "s15_reg_copy_005",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Carta por deuda tras pago total",
+      "descripcion": "BLOQUEAR copy de multi oferta que prometa Carta de No Adeudo antes de confirmar pago total de cada deuda o use «al cancelar» ambiguamente para cuotas; explicar firma electrónica y emisión por deuda sin atribuir emisión a LF.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c08_multi_oferta"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c08_copy_carta_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c08_promesa_carta_invalida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": false,
+            "s15c08_copy_carta_visible": false,
+            "s15c08_promesa_carta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": false,
+            "s15c08_copy_carta_visible": false,
+            "s15c08_promesa_carta_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": false,
+            "s15c08_copy_carta_visible": true,
+            "s15c08_promesa_carta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": false,
+            "s15c08_copy_carta_visible": true,
+            "s15c08_promesa_carta_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": true,
+            "s15c08_copy_carta_visible": false,
+            "s15c08_promesa_carta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": true,
+            "s15c08_copy_carta_visible": false,
+            "s15c08_promesa_carta_invalida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": true,
+            "s15c08_copy_carta_visible": true,
+            "s15c08_promesa_carta_invalida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c08_multi_oferta": true,
+            "s15c08_copy_carta_visible": true,
+            "s15c08_promesa_carta_invalida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/174",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C09",
+      "clave": "s15_reg_tec_006",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Skeleton contextual de pagos",
+      "descripcion": "BLOQUEAR operación de pagos que supere UX/SKELETON_SHOW_AFTER_MS de public.lf_global_config sin skeleton de estructura de pantalla destino o con spinner global en su lugar; no altera reconciliación ni estados de pago.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c09_operacion_pagos"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c09_umbral_skeleton_superado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c09_skeleton_contextual_ausente"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": false,
+            "s15c09_umbral_skeleton_superado": false,
+            "s15c09_skeleton_contextual_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": false,
+            "s15c09_umbral_skeleton_superado": false,
+            "s15c09_skeleton_contextual_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": false,
+            "s15c09_umbral_skeleton_superado": true,
+            "s15c09_skeleton_contextual_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": false,
+            "s15c09_umbral_skeleton_superado": true,
+            "s15c09_skeleton_contextual_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": true,
+            "s15c09_umbral_skeleton_superado": false,
+            "s15c09_skeleton_contextual_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": true,
+            "s15c09_umbral_skeleton_superado": false,
+            "s15c09_skeleton_contextual_ausente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": true,
+            "s15c09_umbral_skeleton_superado": true,
+            "s15c09_skeleton_contextual_ausente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c09_operacion_pagos": true,
+            "s15c09_umbral_skeleton_superado": true,
+            "s15c09_skeleton_contextual_ausente": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/182",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C10",
+      "clave": "s15_reg_err_009",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Aliado no disponible antes de cobro",
+      "descripcion": "BLOQUEAR inicio de cobro cuando aliado necesario para checkout no está disponible antes de enviar el intento; informar indisponibilidad y permitir retomar selección solo si está conservada. No aplicar a intento ya enviado o ambiguo, que exige reconciliación.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c10_checkout_preenvio"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c10_aliado_no_disponible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c10_cobro_o_mensaje_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": false,
+            "s15c10_aliado_no_disponible": false,
+            "s15c10_cobro_o_mensaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": false,
+            "s15c10_aliado_no_disponible": false,
+            "s15c10_cobro_o_mensaje_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": false,
+            "s15c10_aliado_no_disponible": true,
+            "s15c10_cobro_o_mensaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": false,
+            "s15c10_aliado_no_disponible": true,
+            "s15c10_cobro_o_mensaje_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": true,
+            "s15c10_aliado_no_disponible": false,
+            "s15c10_cobro_o_mensaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": true,
+            "s15c10_aliado_no_disponible": false,
+            "s15c10_cobro_o_mensaje_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": true,
+            "s15c10_aliado_no_disponible": true,
+            "s15c10_cobro_o_mensaje_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c10_checkout_preenvio": true,
+            "s15c10_aliado_no_disponible": true,
+            "s15c10_cobro_o_mensaje_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/197",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C11",
+      "clave": "s15_reg_cuo_014",
+      "familia": "UI_MESSAGES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Total estimado incluye cargos aplicables",
+      "descripcion": "BLOQUEAR presentación del total estimado de cuotas sin aclaración «Incluye servicios, impuestos y comisiones aplicables.»; no confundir con monto bruto de oferta ni calcular cargos en frontend.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c11_plan_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c11_total_estimado_visible"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c11_aclaracion_omitida"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": false,
+            "s15c11_total_estimado_visible": false,
+            "s15c11_aclaracion_omitida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": false,
+            "s15c11_total_estimado_visible": false,
+            "s15c11_aclaracion_omitida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": false,
+            "s15c11_total_estimado_visible": true,
+            "s15c11_aclaracion_omitida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": false,
+            "s15c11_total_estimado_visible": true,
+            "s15c11_aclaracion_omitida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": true,
+            "s15c11_total_estimado_visible": false,
+            "s15c11_aclaracion_omitida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": true,
+            "s15c11_total_estimado_visible": false,
+            "s15c11_aclaracion_omitida": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": true,
+            "s15c11_total_estimado_visible": true,
+            "s15c11_aclaracion_omitida": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c11_plan_cuotas": true,
+            "s15c11_total_estimado_visible": true,
+            "s15c11_aclaracion_omitida": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/270",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S15-C12",
+      "clave": "s15_reg_chk_cuo_008",
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resumen de plan durante pago",
+      "descripcion": "BLOQUEAR checkout de cuotas que oculte resumen lateral al interactuar con formulario de pago o no conserve número de cuotas, cuota mensual, total, acceso a cronograma y bloque Carta de No Adeudo, sin inventar datos ni prometer emisión.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c12_checkout_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s15c12_interaccion_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s15c12_resumen_oculto_o_incompleto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": false,
+            "s15c12_interaccion_pago": false,
+            "s15c12_resumen_oculto_o_incompleto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": false,
+            "s15c12_interaccion_pago": false,
+            "s15c12_resumen_oculto_o_incompleto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": false,
+            "s15c12_interaccion_pago": true,
+            "s15c12_resumen_oculto_o_incompleto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": false,
+            "s15c12_interaccion_pago": true,
+            "s15c12_resumen_oculto_o_incompleto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": true,
+            "s15c12_interaccion_pago": false,
+            "s15c12_resumen_oculto_o_incompleto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": true,
+            "s15c12_interaccion_pago": false,
+            "s15c12_resumen_oculto_o_incompleto": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": true,
+            "s15c12_interaccion_pago": true,
+            "s15c12_resumen_oculto_o_incompleto": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s15c12_checkout_cuotas": true,
+            "s15c12_interaccion_pago": true,
+            "s15c12_resumen_oculto_o_incompleto": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/291",
+        "solicitante": "Cristhian / Claude S15 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 7,
+      "codigo": "REG_ONB_002",
+      "descripcion": "En ONB_002, cambiar el número reinicia únicamente phone_number y el desafío OTP asociado. Bajo celular-first todavía no existen nombre, DNI ni correo capturados en ese punto del flujo.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 11,
+      "codigo": "REG_COPY_002",
+      "descripcion": "Reemplazar \"Este proceso es seguro y puede tomar entre 15 y 30 segundos\" por \"Revisa tu WhatsApp, incluyendo la pestaña de solicitudes de mensajes nuevos.\"",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 36,
+      "codigo": "REG_AUD_001",
+      "descripcion": "El sistema debe registrar: onboarding_started, paso1_submitted, otp_sent, otp_attempt_failed, otp_verified, onboarding_completed, onboarding_abandoned, onboarding_blocked, number_changed_inline.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 90,
+      "codigo": "REG_ANL_005",
+      "descripcion": "Eventos mínimos de ONB_003: identity_screen_viewed, dni_submit_attempt, dni_submit_error y dni_resolution_completed. Ningún evento contiene DNI, celular ni resultado que revele explícitamente la existencia de una cuenta.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 92,
+      "codigo": "REG_ANL_007",
+      "descripcion": "El funnel principal tiene 3 pasos: onboarding_started → otp_verified → onboarding_funnel_completed. GA4 debe tener este funnel configurado como exploración de embudo.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 101,
+      "codigo": "REG_TAG_002",
+      "descripcion": "Todos los eventos se empujan al dataLayer antes de que GTM los procese. GTM nunca lee directamente del DOM para obtener datos.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 160,
+      "codigo": "REG_CUO_004",
+      "descripcion": "La fecha de débito de cuotas 2 en adelante la elige el usuario desde una lista de opciones configurada por el aliado B2B. Las opciones se muestran en PASO3_CUOTAS_DESGLOSE_V2 antes de confirmar el plan. El aliado define qué fechas están disponibles (ejemplo: 5, 15 y 30 de cada mes).",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 174,
+      "codigo": "REG_COPY_005",
+      "descripcion": "En multi oferta el copy de carta de no adeudo dice: \"La emitiremos con firma electrónica para cada deuda una vez que confirmemos tu pago total.\" No dice \"al cancelar\" porque en cuotas el pago no es inmediato.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 182,
+      "codigo": "REG_TEC_006",
+      "descripcion": "Cualquier operación cuya duración supere el umbral de carga definido en public.lf_global_config, variable UX/SKELETON_SHOW_AFTER_MS, debe mostrar un skeleton screen contextual y no un spinner global. El skeleton refleja la estructura de la pantalla que está cargando.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 197,
+      "codigo": "REG_ERR_009",
+      "descripcion": "Si el aliado B2B no está disponible al momento del checkout: \"El servicio de [ALIADO] no está disponible en este momento. Tu selección fue guardada. Intenta en unos minutos.\" No cobrar al usuario.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 270,
+      "codigo": "REG_CUO_014",
+      "descripcion": "El total estimado siempre va acompañado de: \"Incluye servicios, impuestos y comisiones aplicables.\" para que el usuario sepa que no es el monto bruto de la oferta.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 291,
+      "codigo": "REG_CHK_CUO_008",
+      "descripcion": "El resumen lateral del plan siempre está visible durante el checkout de cuotas: número de cuotas, cuota mensual, total del plan, link \"Ver cronograma\" y bloque de carta de no adeudo. No se oculta al interactuar con el formulario de pago.",
+      "estado": "VIGENTE"
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S15-C01",
+      "legacy_id": 7,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C02",
+      "legacy_id": 11,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C03",
+      "legacy_id": 36,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C04",
+      "legacy_id": 90,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C05",
+      "legacy_id": 92,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C06",
+      "legacy_id": 101,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C07",
+      "legacy_id": 160,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C08",
+      "legacy_id": 174,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C09",
+      "legacy_id": 182,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C10",
+      "legacy_id": 197,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C11",
+      "legacy_id": 270,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S15-C12",
+      "legacy_id": 291,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    }
+  ]
+}
