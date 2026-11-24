@@ -1,5 +1,5 @@
 {
-  "contrato": "LF_S13_JUICIOS_17",
+  "contrato": "LF_S13_JUICIOS_10",
   "rubrica": [
     "CAL_CLARIDAD",
     "CAL_ACCIONABLE",
@@ -127,46 +127,6 @@
       "legada_id": 486,
       "familia": "UI_MESSAGES",
       "diferencias": "Contraste funcional: BLOQUEAR copy ONB_002 que afirme que el OTP por sí solo verifica identidad civil o que no comunique control o acceso al celular.",
-      "residual": "",
-      "complementa": null
-    },
-    {
-      "codigo": "S13-C04",
-      "version": 1,
-      "eval_id": 998,
-      "hash_version_atestado": "5fb76dc2c0c67e46eb7a0887fb464d16de61073c7e187dc8230cfffa1189562b",
-      "hash_paquete_atestado": "416226ee7abf4711307d0e3390ef9b5862a3a6c144a127528d6b484fabb3fa39",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 1
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 537,
-      "familia": "ROUTING_NAVIGATION",
-      "diferencias": "Contraste funcional: BLOQUEAR header Cliente autenticado que habilite navegación o perfil sin destino canónico, reporte crediticio sin capacidad definida, soporte sin disponibilidad real, nombre no proveniente de cuenta autenticada, o badges con claims/binding no autorizados.",
       "residual": "",
       "complementa": null
     },
@@ -371,249 +331,6 @@
       "complementa": null
     },
     {
-      "codigo": "S13-C10",
-      "version": 1,
-      "eval_id": 1004,
-      "hash_version_atestado": "295a1dae74a7178946a2848b8a286f4d235b6158b0a27c980ee039165b93210b",
-      "hash_paquete_atestado": "07f79b597a9a465612ae78253d1e86e41cd583331991e020c7a77620a5a41ea7",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 0.8,
-          "observacion": "No explicita tab bar móvil ni que el icono nunca comunica solo."
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 589,
-      "familia": "ROUTING_NAVIGATION",
-      "diferencias": "Contraste funcional: BLOQUEAR navegación Cliente autenticada sin destinos Inicio, Oferta, Pagos, Documentos y Ayuda con etiquetas visibles, u ocultar Oferta por ausencia de oferta; habilitar destino runtime solo con ruta y pantalla canónicas; Documentos conserva Carta de No Adeudo para consulta. Observación del juez: No explicita tab bar móvil ni que el icono nunca comunica solo.",
-      "residual": "",
-      "complementa": null
-    },
-    {
-      "codigo": "S13-C11",
-      "version": 1,
-      "eval_id": 1005,
-      "hash_version_atestado": "48363896ca40ccf752762e196daedd9f90fc3a0ce6426e92e3a79beab96a698d",
-      "hash_paquete_atestado": "4685bf5c476641d65a76432413374cc0bf78349ed9bc8cff1998c0b581a17935",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 1
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 592,
-      "familia": "ROLLOUT_PRODUCTION_GATES",
-      "diferencias": "Contraste funcional: BLOQUEAR exposición comercial de beneficio LF por solo estado diseño/desarrollo/QA; exigir validaciones pre-lanzamiento por componente, mantener desactivado ante rechazo Legal y resolver observación económica antes de activar. Construcción puede continuar en paralelo.",
-      "residual": "",
-      "complementa": null
-    },
-    {
-      "codigo": "S13-C12",
-      "version": 1,
-      "eval_id": 1006,
-      "hash_version_atestado": "310238a3881f37419577a2c938b542c0667272cf26092e46c349c600f6f13576",
-      "hash_paquete_atestado": "4e9088fe8a197f85ec326c6f0d960bc02660c45f76a0da5974a0ce71d72690ee",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 1
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 593,
-      "familia": "DEPENDENCIES",
-      "diferencias": "Contraste funcional: BLOQUEAR diseño de beneficio opcional LF que no permita activación/desactivación independiente o cuya desactivación rompa navegación, pricing base, resolución de deuda o capacidades ajenas; producto base debe funcionar aun sin beneficios.",
-      "residual": "",
-      "complementa": null
-    },
-    {
-      "codigo": "S13-C13",
-      "version": 1,
-      "eval_id": 1007,
-      "hash_version_atestado": "ac24b8a0ca137e058d25f4980d1fb9e161e16201563251c12dfef8421c26f0e2",
-      "hash_paquete_atestado": "f47525a0e39ad7f54d735d88fac5374f83a2456aeb6fc06de9b640e1d6e8b62c",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 1
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 594,
-      "familia": "RUNTIME_CONFIG",
-      "diferencias": "Contraste funcional: BLOQUEAR resolver ON/OFF o parámetros comerciales/operativos de Beneficios LF desde literales frontend, mockup o lógica local de pantalla; obtener valores variables de configuración gobernada sin crear persistencia especializada por inferencia.",
-      "residual": "",
-      "complementa": null
-    },
-    {
-      "codigo": "S13-C14",
-      "version": 1,
-      "eval_id": 1008,
-      "hash_version_atestado": "2f5c2d373a7b249f08134503858638126a5df1d8c04ab73b60885c72eb1035da",
-      "hash_paquete_atestado": "167c25c4d771a5655cdff86bb65552a04add9da6ff9900451c8b00c26e53f8d3",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 0.8,
-          "observacion": "Alcance B2B/administración pendiente."
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 595,
-      "familia": "FEATURE_FLAGS",
-      "diferencias": "Contraste funcional: BLOQUEAR superficie Cliente que infiera activación de beneficio por diseño/código o muestre disponibilidad sin configuración y elegibilidad autoritativas; beneficio inactivo se oculta o degrada sin espacios rotos. En B2B/administración, control visual no concede permiso ni activación (alcance complementario pendiente). Observación del juez: Alcance B2B/administración pendiente.",
-      "residual": "Alcance B2B/administración pendiente.",
-      "complementa": null
-    },
-    {
-      "codigo": "S13-C15",
-      "version": 1,
-      "eval_id": 1009,
-      "hash_version_atestado": "b39252e60127d6a7b1619fade8ea6401e4f0cdd3ace1a881e83f48b8ca93552a",
-      "hash_paquete_atestado": "1fa0429696aeeebe0a8e1e8c39b80b5192e977fffa9ce331c6706a9856c62753",
-      "veredicto": "PASS",
-      "juez": "Claude independiente 2026-11-24 09:20 Lima",
-      "modo": "INDEPENDIENTE",
-      "revisor_es_productor": false,
-      "llamadas_modelo": 1,
-      "puntajes": {
-        "CAL_CLARIDAD": {
-          "puntaje": 1
-        },
-        "CAL_ACCIONABLE": {
-          "puntaje": 1
-        },
-        "CAL_ALCANCE": {
-          "puntaje": 0.8,
-          "observacion": "Alcance administrativo no cubierto como superficie; roles, permisos, tablas y pantalla por resolver."
-        },
-        "SEM_NO_DUPLICA": {
-          "puntaje": 1
-        },
-        "SEM_NO_CONTRADICE": {
-          "puntaje": 1
-        },
-        "COH_TEXTO_CONDICION": {
-          "puntaje": 1
-        },
-        "COH_EFECTO": {
-          "puntaje": 1
-        }
-      },
-      "legada_id": 596,
-      "familia": "GOVERNANCE_APPROVAL",
-      "diferencias": "Contraste funcional: BLOQUEAR cambio de activación, parámetros, vigencia o alcance de beneficio LF sin configuración canónica, autorización efectiva y trazabilidad; cliente final no es autoridad. Roles, permisos, tablas y pantallas quedan por resolver. Observación del juez: Alcance administrativo no cubierto como superficie; roles, permisos, tablas y pantalla por resolver.",
-      "residual": "Alcance administrativo no cubierto como superficie; roles, permisos, tablas y pantalla por resolver.",
-      "complementa": null
-    },
-    {
       "codigo": "S13-C16",
       "version": 1,
       "eval_id": 1010,
@@ -693,6 +410,50 @@
       "diferencias": "Contraste funcional: BLOQUEAR transición AUTH_FLOW B2B no registrada en lf_ops.estados_transiciones o impuesta por cliente; servidor determina origen/destino y resultado; MFA_REQUIRED/AUTHENTICATED proyectan estado y INVALID_CREDENTIALS/RATE_LIMITED/ACCESS_DENIED/SERVICE_UNAVAILABLE preservan estado no autenticado o MFA vigente según corresponda.",
       "residual": "",
       "complementa": null
+    }
+  ],
+  "diferidos": [
+    {
+      "codigo": "S13-C04",
+      "legada_id": 537,
+      "hash_version_atestado": "5fb76dc2c0c67e46eb7a0887fb464d16de61073c7e187dc8230cfffa1189562b",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
+    },
+    {
+      "codigo": "S13-C10",
+      "legada_id": 589,
+      "hash_version_atestado": "295a1dae74a7178946a2848b8a286f4d235b6158b0a27c980ee039165b93210b",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
+    },
+    {
+      "codigo": "S13-C11",
+      "legada_id": 592,
+      "hash_version_atestado": "48363896ca40ccf752762e196daedd9f90fc3a0ce6426e92e3a79beab96a698d",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
+    },
+    {
+      "codigo": "S13-C12",
+      "legada_id": 593,
+      "hash_version_atestado": "310238a3881f37419577a2c938b542c0667272cf26092e46c349c600f6f13576",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
+    },
+    {
+      "codigo": "S13-C13",
+      "legada_id": 594,
+      "hash_version_atestado": "ac24b8a0ca137e058d25f4980d1fb9e161e16201563251c12dfef8421c26f0e2",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
+    },
+    {
+      "codigo": "S13-C14",
+      "legada_id": 595,
+      "hash_version_atestado": "2f5c2d373a7b249f08134503858638126a5df1d8c04ab73b60885c72eb1035da",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
+    },
+    {
+      "codigo": "S13-C15",
+      "legada_id": 596,
+      "hash_version_atestado": "b39252e60127d6a7b1619fade8ea6401e4f0cdd3ace1a881e83f48b8ca93552a",
+      "motivo": "DPIG03: no registrar juicio, promover ni crear puente en este lote"
     }
   ]
 }
