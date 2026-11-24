@@ -65,6 +65,11 @@
       "name": "saly-ventas-vinculos-pg17.yml",
       "owner": "SALY Ventas — Agrupación empresarial",
       "reason": "Runs PostgreSQL 17 disposable positive/negative RLS tests for the SALY corporate-links candidate schema only."
+    },
+    {
+      "name": "saly-creative-order-create-pg17.yml",
+      "owner": "SALY Creative Factory",
+      "reason": "Runs PostgreSQL 17 disposable positive and negative rollback tests for the governed single-screen creative order creation function only."
     }
   ]
 }
