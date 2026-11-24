@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-nucleo-s2-juicios-20261123",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_juicios_independientes_s2_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-s2-juicios-20261123.json": "CHANGESET_MANIFEST"
+  }
+}
