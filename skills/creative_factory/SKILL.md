@@ -1,9 +1,41 @@
 ---
 name: creative-factory-standalone
-description: Orquesta la composición gráfica de revisión reutilizando el compilador, adaptador por negocio y verificador de transporte existentes, sin invocar Router, perfiles ni generación de producción.
+description: Orquesta pedidos gráficos SALY de forma autónoma, con generación en chat autorizada y cierre gobernado, además de los modos históricos de revisión.
 ---
 
-# Fábrica Digital — skill autónoma v0.15 (PLAN_ONLY / REVIEW_ONLY)
+# Fábrica Digital — skill autónoma v0.16
+
+## Modo operativo vigente AUTONOMOUS — SALY (v0.16, 24/11/2026)
+
+Este modo prevalece para pedidos nuevos SALY sobre instrucciones históricas PLAN_ONLY / REVIEW_ONLY de las secciones siguientes. Los modos locales de revisión conservan su semántica y no constituyen una generación real. GPT es el único responsable de ejecutar el pedido autorizado de punta a punta; Claude puede auditar en lectura, no es condición de avance.
+
+1. Registrar literal real e interpretación separada mediante creative_order_create_v1, contexto 5 SEALED para pedidos nuevos. No usar un pedido histórico como fuente de una nueva intención.
+2. Preparar con creative_skill_prepare_v1, esquema CREATIVE_SKILL_PREPARE_REQUEST_V1, mode AUTONOMOUS y los mismos siete campos del contrato. Consumir literal, prompt, tokens versionados y logo devueltos. AUTONOMOUS_PREPARED con image_generation_allowed=true permite invocar el generador de imágenes del chat; no significa que ya se transmitió ni que existe un RUN o recibo del proveedor.
+3. GPT coteja contenido y fuentes, registra QA propio previo, congela el prompt y ejecuta la generación autorizada sin microaprobaciones. Resolver referencias {token} a sus valores vigentes, respetar los roles y evitar modificar el literal.
+4. Inspeccionar el arte real, corregir defectos dentro de la misma intención y conservar los intentos. Registrar QA propio posterior (no independiente) y evidencia real mediante la ruta gobernada de PR y Merge Train. Cerrar TERMINADO únicamente al comprobar la entrega, QA y estado persistido; no esperar aceptación estética ni intervención de Claude. Si una capacidad de transporte o registro falta, reportarla literalmente, nunca inventar un RUN, bytes o un PASS.
+
+### Estrategia visual genérica por función
+
+| Tipo de bloque | Estrategia | BUENO | MALO |
+|---|---|---|---|
+| Cabecera y navegación | Orientación, logo y controles funcionales; jerarquía discreta | Título legible, acción de volver clara, pestaña activa distinguible | Logo redibujado, navegación que compite con el saldo |
+| Dato financiero protagonista | Una cifra dominante y su significado próximo | Saldo con etiqueta y unidad, espacio suficiente | Tres cifras de igual peso o adornos sobre montos |
+| Selección y acción | Diferenciar opciones, selección y CTA; evitar dependencia exclusiva del color | Borde, marcador y etiqueta de opción seleccionada | Todos los botones verdes o estados indistinguibles |
+| Resumen y explicación | Agrupar etiquetas/valores y conservar el orden de lectura | Importes alineados, nota breve legible | Contenedores repetidos y filas vacías |
+| Módulos promocionales | Superficie tonal y acento propios, icono funcional junto al contenido cuando convenga | Categorías diferenciadas con CTA principal reservado | Verde uniforme, rayos decorativos o texto de bajo contraste |
+| Alertas y ayuda | Priorizar mensaje y acción concreta | Icono funcional y texto explícito | Comunicar el estado solo por color |
+
+### Paleta y activo oficial
+
+Usar los valores del contexto sellado; los siguientes son ejemplos vigentes comprobados, no reemplazan su lectura:
+- Plus: menta #EAF9EE y verde #008200.
+- Rewards: crema #FFF9E9 y dorado #9D6800; amarillo #F6B400 para acento decorativo, no texto funcional sobre blanco.
+- Beneficios: lila #F4E7FD y morado #923CF3.
+- Texto navy #081631, secundario gris #5C6577; CTA primario #008200.
+- Logo: asset 9, código logo.primary.transparent, archivo 01_SALY_PRINCIPAL_TRANSPARENTE.png. Materializar el archivo oficial y componerlo sin redibujar. Verificar presencia visible.
+- No incrustar captions de entrega, explicaciones del asistente, nombres de archivos, estados QA, etiquetas de mockup ni notas de producción en el PNG. Solo incluir el copy funcional literal pedido para la pieza. Los captions y evidencias se entregan por separado.
+
+
 
 ## Política transversal de eficiencia espacial y decoración v0.14 (22/11/2026)
 
