@@ -2,6 +2,8 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_fix_creative_terminal_guard_v1.sql'
+      - 'supabase/tests/saly_fix_creative_terminal_guard_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_activate_design_system_v2.sql'
       - 'supabase/tests/saly_activate_design_system_v2_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_activate_three_accent_colors_v1.sql'
@@ -501,3 +503,14 @@ jobs:
           test "$(psql -XAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.identity_elements')" = 0
           test "$(psql -XAt -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM saly.identity_versions')" = 0
           echo PASS_SALY_DS_ROLLBACK
+      - name: Terminal guard transition rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb saly_terminal_ci
+          export PGDATABASE=saly_terminal_ci
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_fix_creative_terminal_guard_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_terminal_guard_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_fix_creative_terminal_guard_v1_pg17_rollback.sql
