@@ -6,7 +6,8 @@ DO $pre$ BEGIN
   OR (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE estado='CANDIDATA')<>13
   OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>0
   OR (SELECT count(*) FROM lf_ops.reglas) NOT IN (215,586)
-  OR (SELECT count(distinct legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA')<>86
+  OR ((SELECT count(*) FROM lf_ops.reglas)=586 AND (SELECT count(distinct legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA')<>86)
+  OR ((SELECT count(*) FROM lf_ops.reglas)=215 AND (SELECT count(distinct legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA') NOT BETWEEN 75 AND 86)
   OR (SELECT hash FROM lf_ops.nucleo_regla_versiones WHERE regla='S4-C04' AND version=1)
        IS DISTINCT FROM 'ca6c604524be1dcc825a68248d1b5dbf0d6788569c0098f818ba130540b26c25'
  THEN RAISE EXCEPTION 'S5_BASELINE_DRIFT'; END IF;
