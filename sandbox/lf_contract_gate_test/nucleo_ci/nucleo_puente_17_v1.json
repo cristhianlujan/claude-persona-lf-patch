@@ -1,0 +1,190 @@
+{
+  "juicio": "Claude 2026-11-24 14:40 Lima",
+  "puentes": [
+    {
+      "legacy_id": 8,
+      "codigo": "S4-C07",
+      "version": 1,
+      "hash": "e765eec1ecf587d5a4439b8c296d470dfc285ecf6d9ec52518f709c9a50b0abf",
+      "paquete": "3c07c8dbd1fa23520525d6ebdae488eac2c192c161996288200bfa7907a92ac2",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Sin diferencia relevante.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 42,
+      "codigo": "S4-C18",
+      "version": 1,
+      "hash": "ea6f5f2939d80a9e8462e39a83a32b9f4e98a05e3c0fbbc4601067fdb774c51d",
+      "paquete": "3ecde02350ea976ce1b0127689d949d89e578774a3d91e295c9ef3d76679f140",
+      "estado": "REEMPLAZADA",
+      "diferencias": "El legado informa existencia del celular; núcleo lo prohíbe por anti-enumeración, decisión Cristhian.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 162,
+      "codigo": "S4-C25",
+      "version": 2,
+      "hash": "1ab247d6371c5243771bda6e1e98f22a7bc60541c1aafc351c1c103f9e31a6a2",
+      "paquete": "b065f3c45237662450eda9fde1b58f9f9a5bc3a0f4decef624eef28cfb098a30",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Ejemplo numérico no se conserva; base deuda_original frente a monto_total_plan.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 193,
+      "codigo": "S3-C19",
+      "version": 1,
+      "hash": "25f1beb370f2f3cbf1ce742fcbac7a0e33a4b55b224a9d36b44af7f48c5f3396",
+      "paquete": "bade10271d5197b561f0d8d0728b8e08da99b84fff4affd37652d3b06ab1f2cc",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Nunca inferir ausencia de cargo; PAYMENT_DECLINED_CONFIRMED implícito.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 194,
+      "codigo": "S3-C19",
+      "version": 1,
+      "hash": "25f1beb370f2f3cbf1ce742fcbac7a0e33a4b55b224a9d36b44af7f48c5f3396",
+      "paquete": "bade10271d5197b561f0d8d0728b8e08da99b84fff4affd37652d3b06ab1f2cc",
+      "estado": "REEMPLAZADA",
+      "diferencias": "No nombra CHECKOUT_ESTADO_CONFIRMANDO ni PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 202,
+      "codigo": "M2L2-C03",
+      "version": 1,
+      "hash": "eb4b65f6100449196020917b215dd45815b0e77ba535e197d90c4e5069c7dcab",
+      "paquete": "dfc12611c59569c61db9ea6bf4fcf2aa2a89341bfd3f684fbaacddbc4fc15151",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Borde verde y opacidad pasan a tokens de diseño.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 291,
+      "codigo": "S6-C19",
+      "version": 1,
+      "hash": "8421db0008df4b078c6ec1ac53f164ed27a85879ee09aa1aedde811167212b92",
+      "paquete": "4debb0b35ba40e95f6cafbeb8039ff7484c1ecb4959109e1620030e15fc45d78",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Disparador cambio de medio frente a interacción con formulario.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 307,
+      "codigo": "S6-C17",
+      "version": 1,
+      "hash": "e4f62685b7fe5192e45b5f9da32e3b8cc4274f3893edc0b734c7d2c937efc323",
+      "paquete": "d4d1c4a23cd917344e391c437d406a0ad074ebac6769db035c705ca2584f0964",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Sin navegar cubre mismo estado del checkout.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 385,
+      "codigo": "S16-C06",
+      "version": 1,
+      "hash": "57aa3c8fbc88b7a6a6caf362467d4579f085fa46103d80430dea7efdb91181f1",
+      "paquete": "9c19cc7f87c74741c1e8d50cabfd867dd59ad8c9f6b03fba1a46c9d37d1fffc4",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Reporte puntual de regresión convertido en obligación general.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 441,
+      "codigo": "S2-C12",
+      "version": 1,
+      "hash": "e3f997feaa940f373fedc72a9bfb143ef6780e7719d0e828d9b86a04693a266e",
+      "paquete": "dfe0babd39b3c1bd579c78288a5b0aa18e1835df08d87b3d692229836b7a6093",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Cobertura conjunta con S5-C08; no nombra AUTH-018.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 441,
+      "codigo": "S5-C08",
+      "version": 1,
+      "hash": "3540b21f7d024337fb7ed89e5b0d07e1eccd38ac5bb28ebdb3b960183199cd26",
+      "paquete": "bf7a2abc4c63fae7e992d49dfd5d4836eb5ed1b08442118313b25a6d636123fc",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Cobertura conjunta con S2-C12; no nombra AUTH-018.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 41,
+      "codigo": "S4-C18",
+      "version": 1,
+      "hash": "ea6f5f2939d80a9e8462e39a83a32b9f4e98a05e3c0fbbc4601067fdb774c51d",
+      "paquete": "3ecde02350ea976ce1b0127689d949d89e578774a3d91e295c9ef3d76679f140",
+      "estado": "PARCIAL",
+      "diferencias": "Falta unicidad de DNI con onboarding_completed.",
+      "residual": "Falta unicidad de DNI con onboarding_completed."
+    },
+    {
+      "legacy_id": 43,
+      "codigo": "S5-C02",
+      "version": 1,
+      "hash": "15974cdbb1d97a2d14e8236cf978424722c078b5e3b70768bb1273b591a788bf",
+      "paquete": "7484b9eeb399ab74221a2af98ca185c42d3778dbc47d1fec8f56df0f667a60d3",
+      "estado": "PARCIAL",
+      "diferencias": "Falta no crear sesión nueva por mismo DNI.",
+      "residual": "Falta no crear sesión nueva por mismo DNI."
+    },
+    {
+      "legacy_id": 159,
+      "codigo": "S4-C23",
+      "version": 1,
+      "hash": "6c9ea737eee9d5da391859e705c899bd6ccf2dbd1ee97843877e50f6cd20049d",
+      "paquete": "02fb08b681c8d3fc8db2b14c08e26293d550e806aea6b78ad10c4b7c65c99222",
+      "estado": "PARCIAL",
+      "diferencias": "No impide diferir primera cuota ni fecha de cuotas siguientes por aliado.",
+      "residual": "No impide diferir primera cuota ni fecha de cuotas siguientes por aliado."
+    },
+    {
+      "legacy_id": 246,
+      "codigo": "S11-C10",
+      "version": 1,
+      "hash": "145e5358377e679d766ba2eba4117450de591571fa9ea777b208004bd2c1b219",
+      "paquete": "750768d73719b7d5c712400d00f09ea2b5700c25d499fc2f258a73f2e2e39c45",
+      "estado": "PARCIAL",
+      "diferencias": "No define composición oferta neta+comisión LF+Niubiz+IGV ni ausencia de costos extra.",
+      "residual": "No define composición oferta neta+comisión LF+Niubiz+IGV ni ausencia de costos extra."
+    },
+    {
+      "legacy_id": 248,
+      "codigo": "S4-C25",
+      "version": 2,
+      "hash": "1ab247d6371c5243771bda6e1e98f22a7bc60541c1aafc351c1c103f9e31a6a2",
+      "paquete": "b065f3c45237662450eda9fde1b58f9f9a5bc3a0f4decef624eef28cfb098a30",
+      "estado": "PARCIAL",
+      "diferencias": "Falta precio_final como base y copy Ahorras realmente.",
+      "residual": "Falta precio_final como base y copy Ahorras realmente."
+    },
+    {
+      "legacy_id": 308,
+      "codigo": "S6-C17",
+      "version": 1,
+      "hash": "e4f62685b7fe5192e45b5f9da32e3b8cc4274f3893edc0b734c7d2c937efc323",
+      "paquete": "d4d1c4a23cd917344e391c437d406a0ad074ebac6769db035c705ca2584f0964",
+      "estado": "PARCIAL",
+      "diferencias": "Faltan encabezado/subtítulo, plan seleccionado y pago inicial hoy.",
+      "residual": "Faltan encabezado/subtítulo, plan seleccionado y pago inicial hoy."
+    },
+    {
+      "legacy_id": 514,
+      "codigo": "S14-C14",
+      "version": 1,
+      "hash": "90fdfd2ec96d7246f940fc39ee1ab52119cc4ae112838e48c80bd6d05b924992",
+      "paquete": "f3ad0bf68214fe0d860881e8b3744575366d3db61491d7d162c814f611183951",
+      "estado": "PARCIAL",
+      "diferencias": "No cubre NO_ACTIVE_OFFER_HOME sin montos, modalidades ni CTA de pago con cero ofertas.",
+      "residual": "No cubre NO_ACTIVE_OFFER_HOME sin montos, modalidades ni CTA de pago con cero ofertas."
+    }
+  ],
+  "excluidas": [
+    44,
+    564,
+    270
+  ]
+}
