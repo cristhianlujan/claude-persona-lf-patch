@@ -1,0 +1,2550 @@
+{
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C01",
+      "clave": "s12_b2b_rule_idemp_001",
+      "familia": "IDEMPOTENCY_CONCURRENCY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Idempotencia de mutaciones de carga",
+      "descripcion": "BLOQUEAR mutación de carga cuya transición vigente exige requires_idempotency_key en lf_ops.estados_transiciones si falta clave o el reintento equivalente duplica efectos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c01_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c01_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c01_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": false,
+            "s12c01_contexto": false,
+            "s12c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": false,
+            "s12c01_contexto": false,
+            "s12c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": false,
+            "s12c01_contexto": true,
+            "s12c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": false,
+            "s12c01_contexto": true,
+            "s12c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": true,
+            "s12c01_contexto": false,
+            "s12c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": true,
+            "s12c01_contexto": false,
+            "s12c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": true,
+            "s12c01_contexto": true,
+            "s12c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c01_intento": true,
+            "s12c01_contexto": true,
+            "s12c01_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/403",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C02",
+      "clave": "s12_b2b_rule_state_001",
+      "familia": "STATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Transición de carga autorizada",
+      "descripcion": "BLOQUEAR transición de carga no registrada como vigente en lf_ops.estados_transiciones o que permita al cliente imponer destino, permiso o saltar guard; resolver origen, destino, required_permission_id, requires_comment, requires_idempotency_key y audit_required desde registro.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c02_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c02_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c02_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": false,
+            "s12c02_contexto": false,
+            "s12c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": false,
+            "s12c02_contexto": false,
+            "s12c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": false,
+            "s12c02_contexto": true,
+            "s12c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": false,
+            "s12c02_contexto": true,
+            "s12c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": true,
+            "s12c02_contexto": false,
+            "s12c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": true,
+            "s12c02_contexto": false,
+            "s12c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": true,
+            "s12c02_contexto": true,
+            "s12c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c02_intento": true,
+            "s12c02_contexto": true,
+            "s12c02_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/404",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C03",
+      "clave": "s12_b2b_rule_approval_002",
+      "familia": "GOVERNANCE_APPROVAL",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Autoaprobación según política",
+      "descripcion": "BLOQUEAR aprobación por mismo usuario sin registro explícito y autorización de política efectiva lf_ops.politicas_aprobacion.same_user_approval_allowed.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c03_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c03_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c03_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": false,
+            "s12c03_contexto": false,
+            "s12c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": false,
+            "s12c03_contexto": false,
+            "s12c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": false,
+            "s12c03_contexto": true,
+            "s12c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": false,
+            "s12c03_contexto": true,
+            "s12c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": true,
+            "s12c03_contexto": false,
+            "s12c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": true,
+            "s12c03_contexto": false,
+            "s12c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": true,
+            "s12c03_contexto": true,
+            "s12c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c03_intento": true,
+            "s12c03_contexto": true,
+            "s12c03_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/406",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C04",
+      "clave": "s12_b2b_rule_error_001",
+      "familia": "ERRORS",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Identidad relacional de error B2B",
+      "descripcion": "BLOQUEAR relación de error B2B que use alias error_code como llave cuando existe error_id numérico de lf_ops.errores_catalogo; conservar alias legible.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c04_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c04_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c04_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": false,
+            "s12c04_contexto": false,
+            "s12c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": false,
+            "s12c04_contexto": false,
+            "s12c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": false,
+            "s12c04_contexto": true,
+            "s12c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": false,
+            "s12c04_contexto": true,
+            "s12c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": true,
+            "s12c04_contexto": false,
+            "s12c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": true,
+            "s12c04_contexto": false,
+            "s12c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": true,
+            "s12c04_contexto": true,
+            "s12c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c04_intento": true,
+            "s12c04_contexto": true,
+            "s12c04_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/408",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C05",
+      "clave": "s12_b2b_rule_error_002",
+      "familia": "ERRORS",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Ocurrencia de error B2B server-side",
+      "descripcion": "BLOQUEAR registro de ocurrencia en lf_ops.errores_ocurrencias desde cliente, sin error_id, trace_code o correlation_id; derivar empresa de lote si load_id existe; sin contexto autorizado conservar solo datos redactados no identificantes.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c05_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c05_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c05_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": false,
+            "s12c05_contexto": false,
+            "s12c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": false,
+            "s12c05_contexto": false,
+            "s12c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": false,
+            "s12c05_contexto": true,
+            "s12c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": false,
+            "s12c05_contexto": true,
+            "s12c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": true,
+            "s12c05_contexto": false,
+            "s12c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": true,
+            "s12c05_contexto": false,
+            "s12c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": true,
+            "s12c05_contexto": true,
+            "s12c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c05_intento": true,
+            "s12c05_contexto": true,
+            "s12c05_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/409",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C06",
+      "clave": "s12_b2b_rule_privacy_001",
+      "familia": "PRIVACY_PII",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Privacidad de telemetría B2B",
+      "descripcion": "BLOQUEAR ingreso de PII en analytics, logs, replay o errores B2B; no sustituye controles específicos de autenticación.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c06_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c06_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c06_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": false,
+            "s12c06_contexto": false,
+            "s12c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": false,
+            "s12c06_contexto": false,
+            "s12c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": false,
+            "s12c06_contexto": true,
+            "s12c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": false,
+            "s12c06_contexto": true,
+            "s12c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": true,
+            "s12c06_contexto": false,
+            "s12c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": true,
+            "s12c06_contexto": false,
+            "s12c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": true,
+            "s12c06_contexto": true,
+            "s12c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c06_intento": true,
+            "s12c06_contexto": true,
+            "s12c06_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/411",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C07",
+      "clave": "s12_b2b_rule_obs_001",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Correlación extremo a extremo B2B",
+      "descripcion": "BLOQUEAR pérdida o sustitución de correlation_id entre frontend, backend, archivos, auditoría y proveedor para misma operación.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c07_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c07_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c07_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": false,
+            "s12c07_contexto": false,
+            "s12c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": false,
+            "s12c07_contexto": false,
+            "s12c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": false,
+            "s12c07_contexto": true,
+            "s12c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": false,
+            "s12c07_contexto": true,
+            "s12c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": true,
+            "s12c07_contexto": false,
+            "s12c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": true,
+            "s12c07_contexto": false,
+            "s12c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": true,
+            "s12c07_contexto": true,
+            "s12c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c07_intento": true,
+            "s12c07_contexto": true,
+            "s12c07_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/412",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C08",
+      "clave": "s12_b2b_rule_obs_002",
+      "familia": "INTEGRATIONS_WEBHOOKS",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Activación de proveedor con evidencia",
+      "descripcion": "BLOQUEAR marcar proveedor externo activo sin evidencia de credenciales, implementación y QA; no registrar secretos en evidencia.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c08_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c08_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c08_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": false,
+            "s12c08_contexto": false,
+            "s12c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": false,
+            "s12c08_contexto": false,
+            "s12c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": false,
+            "s12c08_contexto": true,
+            "s12c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": false,
+            "s12c08_contexto": true,
+            "s12c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": true,
+            "s12c08_contexto": false,
+            "s12c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": true,
+            "s12c08_contexto": false,
+            "s12c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": true,
+            "s12c08_contexto": true,
+            "s12c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c08_intento": true,
+            "s12c08_contexto": true,
+            "s12c08_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/413",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C09",
+      "clave": "s12_b2b_rule_analytics_001",
+      "familia": "ANALYTICS",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "DataLayer autorizado B2B",
+      "descripcion": "BLOQUEAR evento B2B fuera de allowlist dataLayer o lectura GTM directa del DOM; no extender al onboarding ni Home ya cubiertos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c09_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c09_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c09_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": false,
+            "s12c09_contexto": false,
+            "s12c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": false,
+            "s12c09_contexto": false,
+            "s12c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": false,
+            "s12c09_contexto": true,
+            "s12c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": false,
+            "s12c09_contexto": true,
+            "s12c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": true,
+            "s12c09_contexto": false,
+            "s12c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": true,
+            "s12c09_contexto": false,
+            "s12c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": true,
+            "s12c09_contexto": true,
+            "s12c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c09_intento": true,
+            "s12c09_contexto": true,
+            "s12c09_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/414",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C10",
+      "clave": "s12_b2b_rule_crash_001",
+      "familia": "OBSERVABILITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Crashlytics solo aplicación nativa",
+      "descripcion": "BLOQUEAR uso de Firebase Crashlytics sin aplicación móvil nativa acreditada.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c10_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c10_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c10_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": false,
+            "s12c10_contexto": false,
+            "s12c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": false,
+            "s12c10_contexto": false,
+            "s12c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": false,
+            "s12c10_contexto": true,
+            "s12c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": false,
+            "s12c10_contexto": true,
+            "s12c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": true,
+            "s12c10_contexto": false,
+            "s12c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": true,
+            "s12c10_contexto": false,
+            "s12c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": true,
+            "s12c10_contexto": true,
+            "s12c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c10_intento": true,
+            "s12c10_contexto": true,
+            "s12c10_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/415",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C11",
+      "clave": "s12_b2b_rule_timeout_001",
+      "familia": "TIMEOUT_RETRY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Política central de timeout B2B",
+      "descripcion": "BLOQUEAR operación que requiere timeout/reintento sin referencia numérica timeout_policy_id a lf_ops.politicas_timeout o duplicación local de segundos, reintentos y backoff.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c11_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c11_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c11_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": false,
+            "s12c11_contexto": false,
+            "s12c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": false,
+            "s12c11_contexto": false,
+            "s12c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": false,
+            "s12c11_contexto": true,
+            "s12c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": false,
+            "s12c11_contexto": true,
+            "s12c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": true,
+            "s12c11_contexto": false,
+            "s12c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": true,
+            "s12c11_contexto": false,
+            "s12c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": true,
+            "s12c11_contexto": true,
+            "s12c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c11_intento": true,
+            "s12c11_contexto": true,
+            "s12c11_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/417",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C12",
+      "clave": "s12_b2b_rule_perf_001",
+      "familia": "PERFORMANCE",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Medición de rendimiento B2B",
+      "descripcion": "BLOQUEAR cierre de instrumentación B2B sin medir LCP, INP, CLS y TTFB sin datos personales.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c12_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c12_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c12_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": false,
+            "s12c12_contexto": false,
+            "s12c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": false,
+            "s12c12_contexto": false,
+            "s12c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": false,
+            "s12c12_contexto": true,
+            "s12c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": false,
+            "s12c12_contexto": true,
+            "s12c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": true,
+            "s12c12_contexto": false,
+            "s12c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": true,
+            "s12c12_contexto": false,
+            "s12c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": true,
+            "s12c12_contexto": true,
+            "s12c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c12_intento": true,
+            "s12c12_contexto": true,
+            "s12c12_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/419",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C13",
+      "clave": "s12_b2b_rule_retention_001",
+      "familia": "DATA_RETENTION",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Retención desde política central",
+      "descripcion": "BLOQUEAR establecer plazos de retención, eliminación o conservación en pantalla o regla B2B en vez de política central validada legal y operativamente; sin política no inventar cantidades.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c13_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c13_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c13_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": false,
+            "s12c13_contexto": false,
+            "s12c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": false,
+            "s12c13_contexto": false,
+            "s12c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": false,
+            "s12c13_contexto": true,
+            "s12c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": false,
+            "s12c13_contexto": true,
+            "s12c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": true,
+            "s12c13_contexto": false,
+            "s12c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": true,
+            "s12c13_contexto": false,
+            "s12c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": true,
+            "s12c13_contexto": true,
+            "s12c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c13_intento": true,
+            "s12c13_contexto": true,
+            "s12c13_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/423",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C14",
+      "clave": "s12_b2b_rule_prod_001",
+      "familia": "ROLLOUT_PRODUCTION_GATES",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Gate de producción B2B",
+      "descripcion": "BLOQUEAR promoción de activo B2B a vigente, producción o Golden sin QA, revisión de seguridad, aprobación explícita y acceso efectivo; si usa RLS exigir políticas aplicables y negativos cross-tenant.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c14_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c14_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c14_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": false,
+            "s12c14_contexto": false,
+            "s12c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": false,
+            "s12c14_contexto": false,
+            "s12c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": false,
+            "s12c14_contexto": true,
+            "s12c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": false,
+            "s12c14_contexto": true,
+            "s12c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": true,
+            "s12c14_contexto": false,
+            "s12c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": true,
+            "s12c14_contexto": false,
+            "s12c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": true,
+            "s12c14_contexto": true,
+            "s12c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c14_intento": true,
+            "s12c14_contexto": true,
+            "s12c14_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/424",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C15",
+      "clave": "s12_b2b_rule_auth_016",
+      "familia": "TIMEOUT_RETRY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Login B2B fail-closed ante timeout",
+      "descripcion": "BLOQUEAR autenticación B2B que ante timeout o indisponibilidad no conserve fail-closed y outcome SERVICE_UNAVAILABLE según política central lf_ops.politicas_timeout.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c15_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c15_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c15_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": false,
+            "s12c15_contexto": false,
+            "s12c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": false,
+            "s12c15_contexto": false,
+            "s12c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": false,
+            "s12c15_contexto": true,
+            "s12c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": false,
+            "s12c15_contexto": true,
+            "s12c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": true,
+            "s12c15_contexto": false,
+            "s12c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": true,
+            "s12c15_contexto": false,
+            "s12c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": true,
+            "s12c15_contexto": true,
+            "s12c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c15_intento": true,
+            "s12c15_contexto": true,
+            "s12c15_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/435",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C16",
+      "clave": "s12_b2b_rule_auth_025",
+      "familia": "ERRORS",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Ocurrencia de fallo login conserva correlación",
+      "descripcion": "BLOQUEAR registro requerido de fallo Login sin error_id canónico y correlation_id del intento, o reclasificar timeout/indisponibilidad/error interno como credenciales inválidas; redactar payload.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c16_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c16_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c16_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": false,
+            "s12c16_contexto": false,
+            "s12c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": false,
+            "s12c16_contexto": false,
+            "s12c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": false,
+            "s12c16_contexto": true,
+            "s12c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": false,
+            "s12c16_contexto": true,
+            "s12c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": true,
+            "s12c16_contexto": false,
+            "s12c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": true,
+            "s12c16_contexto": false,
+            "s12c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": true,
+            "s12c16_contexto": true,
+            "s12c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c16_intento": true,
+            "s12c16_contexto": true,
+            "s12c16_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/444",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C17",
+      "clave": "s12_b2b_rule_story_readiness_001",
+      "familia": "APPLICABILITY_READINESS",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Story Ready exige familias evaluadas",
+      "descripcion": "BLOQUEAR declarar Story Ready B2B si familia canónica no tiene estado COMPLETE, PARTIAL, MISSING, NOT_APPLICABLE, PENDING o BLOCKED con fuente y razón, o P0 aplicable abierto.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c17_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c17_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c17_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": false,
+            "s12c17_contexto": false,
+            "s12c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": false,
+            "s12c17_contexto": false,
+            "s12c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": false,
+            "s12c17_contexto": true,
+            "s12c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": false,
+            "s12c17_contexto": true,
+            "s12c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": true,
+            "s12c17_contexto": false,
+            "s12c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": true,
+            "s12c17_contexto": false,
+            "s12c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": true,
+            "s12c17_contexto": true,
+            "s12c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c17_intento": true,
+            "s12c17_contexto": true,
+            "s12c17_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/463",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S12-C18",
+      "clave": "s12_b2b_rule_context_001",
+      "familia": "CONTEXT_BUDGET_RETRIEVAL_POLICY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Context Pack mínimo con procedencia",
+      "descripcion": "BLOQUEAR Context Pack B2B con secretos, dumps, EKB completa, reglas indiscriminadas o screenshots sustituyendo reglas; incluir IDs, extractos, políticas, negativos, blockers y procedencia; recuperar dependencias grandes bajo demanda.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c18_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s12c18_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s12c18_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": false,
+            "s12c18_contexto": false,
+            "s12c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": false,
+            "s12c18_contexto": false,
+            "s12c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": false,
+            "s12c18_contexto": true,
+            "s12c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": false,
+            "s12c18_contexto": true,
+            "s12c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": true,
+            "s12c18_contexto": false,
+            "s12c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": true,
+            "s12c18_contexto": false,
+            "s12c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": true,
+            "s12c18_contexto": true,
+            "s12c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s12c18_intento": true,
+            "s12c18_contexto": true,
+            "s12c18_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/474",
+        "solicitante": "Cristhian / Claude S12 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 403,
+      "codigo": "B2B-RULE-IDEMP-001",
+      "descripcion": "La idempotencia de una mutación de carga se deriva de la transición registrada. Si lf_ops.estados_transiciones.requires_idempotency_key=true, el servidor exige una clave idempotente antes de ejecutar la transición y un reintento lógico equivalente no puede duplicar efectos.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 404,
+      "codigo": "B2B-RULE-STATE-001",
+      "descripcion": "Solo se permiten transiciones registradas en lf_ops.estados_transiciones. El servidor toma de la transición vigente el estado origen/destino, required_permission_id, requires_comment, requires_idempotency_key y audit_required; el cliente no puede imponer estado destino, permiso ni saltar una transición.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 406,
+      "codigo": "B2B-RULE-APPROVAL-002",
+      "descripcion": "La aprobación por el mismo usuario se registra explícitamente y se valida contra la política.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 408,
+      "codigo": "B2B-RULE-ERROR-001",
+      "descripcion": "Todo error se relaciona mediante error_id numérico de lf_ops.errores_catalogo. error_code permanece como alias estable y legible para soporte, documentación e integración, pero no se utiliza como llave relacional cuando existe error_id.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 409,
+      "codigo": "B2B-RULE-ERROR-002",
+      "descripcion": "Cada ocurrencia de error se registra server-side en lf_ops.errores_ocurrencias relacionada por error_id numérico y genera trace_code + correlation_id. El cliente nunca inserta ocurrencias directamente. Si existe load_id, el contexto de empresa se deriva del lote; en errores pre-auth o sin relación operativa autorizada se conserva únicamente contexto redactado/no identificante y el registro permanece server-only.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 411,
+      "codigo": "B2B-RULE-PRIVACY-001",
+      "descripcion": "Analytics, logs, replay y errores no reciben PII.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 412,
+      "codigo": "B2B-RULE-OBS-001",
+      "descripcion": "Frontend, backend, archivos, auditoría y proveedores comparten correlation_id.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 413,
+      "codigo": "B2B-RULE-OBS-002",
+      "descripcion": "Ningún proveedor externo se marca activo sin credenciales, implementación y QA.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 414,
+      "codigo": "B2B-RULE-ANALYTICS-001",
+      "descripcion": "Eventos salen por dataLayer allowlist y GTM no lee el DOM.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 415,
+      "codigo": "B2B-RULE-CRASH-001",
+      "descripcion": "Firebase Crashlytics se usa únicamente si existe app móvil nativa.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 417,
+      "codigo": "B2B-RULE-TIMEOUT-001",
+      "descripcion": "Toda operación que requiera timeout o reintentos referencia una política central de lf_ops.politicas_timeout mediante timeout_policy_id numérico. Los segundos, cantidades de reintentos y estrategia de backoff viven únicamente en el registro de política y no se duplican en reglas o pantallas.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 419,
+      "codigo": "B2B-RULE-PERF-001",
+      "descripcion": "Medir LCP, INP, CLS y TTFB sin datos personales.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 423,
+      "codigo": "B2B-RULE-RETENTION-001",
+      "descripcion": "Los plazos de retención, eliminación y conservación no se almacenan en reglas ni pantallas. Deben provenir de una política central reutilizable y validada legal/operativamente. Hasta que exista un destino especializado autorizado, la regla no define cantidades candidatas.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 424,
+      "codigo": "B2B-RULE-PROD-001",
+      "descripcion": "Ningún activo B2B pasa a vigente, producción o Golden sin QA, revisión de seguridad, aprobación explícita y controles de acceso efectivos. Para RLS, habilitar la opción no basta: deben existir políticas aplicables y pasar pruebas negativas cross-tenant.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 435,
+      "codigo": "B2B-RULE-AUTH-016",
+      "descripcion": "La autenticación debe consumir una política de timeout centralizada y reutilizable desde lf_ops.politicas_timeout. La regla de Login no almacena segundos, cantidades de reintentos ni backoff. Ante una política que resulte en timeout o indisponibilidad, se mantiene fail-closed y la respuesta funcional se normaliza como SERVICE_UNAVAILABLE.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 444,
+      "codigo": "B2B-RULE-AUTH-025",
+      "descripcion": "Todo fallo técnico o funcional del Login que requiera registro de ocurrencia debe relacionarse por error_id numérico con lf_ops.errores_catalogo y conservar el mismo correlation_id del intento. La capa LF traduce el error del proveedor al error_id definido por AUTH-014 antes de responder o registrar la ocurrencia. Un timeout, indisponibilidad o error interno no puede reclasificarse como credenciales inválidas, y el payload técnico permanece redactado.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 463,
+      "codigo": "B2B-RULE-STORY-READINESS-001",
+      "descripcion": "Toda pantalla o funcionalidad de LF Backoffice Empresa debe evaluar explícitamente el universo canónico de familias de input antes de considerarse Story Ready. Ninguna familia puede omitirse silenciosamente: cada una debe resolverse como COMPLETE, PARTIAL, MISSING, NOT_APPLICABLE, PENDING o BLOCKED, con fuente y razón. Un P0 aplicable abierto bloquea Story Ready.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 474,
+      "codigo": "B2B-RULE-CONTEXT-001",
+      "descripcion": "El Context Pack de programación contiene solo el contexto mínimo suficiente de la historia: IDs, extractos semánticos, políticas referenciadas, negativos, blockers y provenance. Dependencias grandes se recuperan bajo demanda. No se incluyen secretos, dumps completos, toda la EKB, todas las reglas del proyecto ni screenshots como sustituto de reglas.",
+      "estado": "VIGENTE"
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S12-C01",
+      "legacy_id": 403,
+      "contraste": "Distinto de checkout/onboarding; columna verificada.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C02",
+      "legacy_id": 404,
+      "contraste": "Contrato físico verificado; no es transición visual.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C03",
+      "legacy_id": 406,
+      "contraste": "Columna verificada; no autoriza autoaprobación nueva.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C04",
+      "legacy_id": 408,
+      "contraste": "Complementa S2-C10 y S11-C04; relación distinta de respuesta.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C05",
+      "legacy_id": 409,
+      "contraste": "Columnas verificadas; distinto de auditoría S8-C18.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C06",
+      "legacy_id": 411,
+      "contraste": "S9-C07 y S8-C19 parciales por canal; alcance B2B transversal.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C07",
+      "legacy_id": 412,
+      "contraste": "Columnas ocurrencias y auditoría verificadas; binding propagación pendiente.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C08",
+      "legacy_id": 413,
+      "contraste": "Obligación de activación distinta de uso runtime.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C09",
+      "legacy_id": 414,
+      "contraste": "Complementa S9-C06/S11-C02; allowlist runtime pendiente.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C10",
+      "legacy_id": 415,
+      "contraste": "Fuente legada explícita; no afirmar existencia de app.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C11",
+      "legacy_id": 417,
+      "contraste": "Columnas verificadas; no define valores.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C12",
+      "legacy_id": 419,
+      "contraste": "Distinto de alerta y promedio LCP S8-C14/S10-C02.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C13",
+      "legacy_id": 423,
+      "contraste": "Destino especializado pendiente; guard de no invención.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C14",
+      "legacy_id": 424,
+      "contraste": "Guard de promoción, no prueba de RLS actual.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C15",
+      "legacy_id": 435,
+      "contraste": "Complementa 417; no duplica política ni fija umbral.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C16",
+      "legacy_id": 444,
+      "contraste": "Complementa S2-C10/C11 y 409; específico clasificación y correlación.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C17",
+      "legacy_id": 463,
+      "contraste": "No modifica IG ni ejecuta Story Creator.",
+      "binding": "Runtime pendiente; no certificado"
+    },
+    {
+      "codigo": "S12-C18",
+      "legacy_id": 474,
+      "contraste": "No modifica perfiles ni IG.",
+      "binding": "Runtime pendiente; no certificado"
+    }
+  ],
+  "exclusiones": [
+    [
+      420,
+      "No verificados binarios y catálogo de variantes"
+    ],
+    [
+      434,
+      "Solapa arquitectura 445; ADR no acreditado"
+    ],
+    [
+      445,
+      "ADR M1 no acreditado"
+    ],
+    [
+      455,
+      "Posible duplicidad onboarding celular-first; falta contraste exacto"
+    ],
+    [
+      469,
+      "Rutas B2B oficiales no verificadas"
+    ]
+  ]
+}
