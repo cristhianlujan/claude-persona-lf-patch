@@ -31,7 +31,7 @@ INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('UI_M
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('s20c04_detalle_tecnico_expuesto','boolean','ninguna','s20c04_detalle_tecnico_expuesto; binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('UI_MESSAGES','s20c04_detalle_tecnico_expuesto','CURADO');
 DO $s20$
-DECLARE p jsonb; ans jsonb; cd text; ver int; n int:=0; b_leg jsonb; b_dep jsonb; b_pub bigint; b_cand bigint;
+DECLARE p jsonb; ans jsonb; cd text; ver int; ver_esp int; n int:=0; b_leg jsonb; b_dep jsonb; b_pub bigint; b_cand bigint;
 BEGIN
 SELECT jsonb_agg(to_jsonb(t) ORDER BY id) INTO b_leg FROM lf_ops.reglas t;
 SELECT jsonb_agg(to_jsonb(t) ORDER BY regla,version) INTO b_dep FROM lf_ops.nucleo_deprecaciones t;
@@ -42,7 +42,8 @@ cd:=p->>'codigo';
 IF EXISTS(WITH RECURSIVE anc AS (SELECT codigo,padre FROM lf_ops.nucleo_nodos WHERE pantalla_id=36 UNION ALL SELECT nn.codigo,nn.padre FROM lf_ops.nucleo_nodos nn JOIN anc a ON nn.codigo=a.padre) SELECT 1 FROM anc WHERE codigo=p->>'alcance') THEN RAISE EXCEPTION 'S20_SCOPE_P36 %',cd; END IF;
 ans:=lf_ops.nucleo_regla_proponer_v1(p,true);
 ver:=(ans->>'version')::int;
-IF ans->>'resultado'<>'CANDIDATA' OR ver IS DISTINCT FROM CASE WHEN cd='S19-C05' THEN 2 ELSE 1 END THEN RAISE EXCEPTION 'S20_PROPOSAL_FAIL % %',cd,ans; END IF;
+ver_esp := CASE WHEN cd='S19-C05' THEN 2 ELSE 1 END;
+IF ans->>'resultado'<>'CANDIDATA' OR ver IS DISTINCT FROM ver_esp THEN RAISE EXCEPTION 'S20_PROPOSAL_FAIL % %',cd,ans; END IF;
 ans:=lf_ops.nucleo_regla_evaluar_v1(cd,true);
 IF NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=ver AND estado='CANDIDATA') OR (SELECT count(*) FROM lf_ops.nucleo_regla_pruebas WHERE regla=cd AND version=ver)<>8 OR NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_aplicaciones WHERE regla=cd AND nodo=p->>'alcance' AND modo='HEREDA') THEN RAISE EXCEPTION 'S20_READBACK_FAIL %',cd; END IF;
 n:=n+1;
