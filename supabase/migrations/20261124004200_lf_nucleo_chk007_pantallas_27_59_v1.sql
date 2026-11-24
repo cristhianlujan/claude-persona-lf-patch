@@ -30,7 +30,7 @@ BEGIN
  p:=lf_ops.nucleo_regla_promover_v1('REG_CHK_007');
  IF p->>'resultado'<>'PROMOVIDA_AUTO' THEN RAISE EXCEPTION 'CHK007_SCOPE_NEGATIVE_PROMOTION_FAILED %',p; END IF;
  a:=lf_ops.lf_nucleo_lectura_transicion_v1(36,'INPUT_GOVERNANCE','DIRECTAS');
- IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(a->'nativas') n WHERE n->>'regla'='REG_CHK_007')
+ IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(a->'nativas') n WHERE n->'version'->>'regla'='REG_CHK_007')
  THEN RAISE EXCEPTION 'CHK007_SCOPE_NEGATIVE_NOT_DETECTED %',a; END IF;
  RAISE NOTICE 'CHK007_SCOPE_NEGATIVE_DETECTED legal_screen_36_native=true';
 END $negative$;
@@ -47,7 +47,7 @@ BEGIN
  IF p->>'resultado'<>'PROMOVIDA_AUTO' THEN RAISE EXCEPTION 'CHK007_SCOPE_POSITIVE_PROMOTION_FAILED %',p; END IF;
  FOR sid IN SELECT unnest(ARRAY[27,59]) LOOP
   a:=lf_ops.lf_nucleo_lectura_transicion_v1(sid,'INPUT_GOVERNANCE','DIRECTAS');
-  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(a->'nativas') n WHERE n->>'regla'='REG_CHK_007')
+  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(a->'nativas') n WHERE n->'version'->>'regla'='REG_CHK_007')
   THEN RAISE EXCEPTION 'CHK007_SCOPE_NATIVE_MISSING % %',sid,a; END IF;
  END LOOP;
  a:=lf_ops.lf_nucleo_lectura_transicion_v1(36,'INPUT_GOVERNANCE','DIRECTAS');
@@ -73,7 +73,7 @@ BEGIN
  IF p->>'resultado'<>'PROMOVIDA_AUTO' THEN RAISE EXCEPTION 'CHK007_SCOPE_COMMIT_FAILED %',p; END IF;
  FOR sid IN SELECT unnest(ARRAY[27,59]) LOOP
   a:=lf_ops.lf_nucleo_lectura_transicion_v1(sid,'INPUT_GOVERNANCE','DIRECTAS');
-  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(a->'nativas') n WHERE n->>'regla'='REG_CHK_007') THEN RAISE EXCEPTION 'CHK007_SCOPE_FINAL_NATIVE_MISSING %',sid; END IF;
+  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(a->'nativas') n WHERE n->'version'->>'regla'='REG_CHK_007') THEN RAISE EXCEPTION 'CHK007_SCOPE_FINAL_NATIVE_MISSING %',sid; END IF;
  END LOOP;
  a:=lf_ops.lf_nucleo_lectura_transicion_v1(36,'INPUT_GOVERNANCE','DIRECTAS');
  IF COALESCE(jsonb_array_length(a->'nativas'),0)<>0
