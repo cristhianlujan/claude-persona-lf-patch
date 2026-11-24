@@ -1,0 +1,994 @@
+{
+  "contrato": "LF_S8_JUICIOS_25",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S8-C01",
+      "version": 1,
+      "eval_id": 668,
+      "hash_version_atestado": "400f3e953d52fac0ff1b826a7a24dc1b84278a4515c02930770cf816a1c3ef27",
+      "hash_paquete_atestado": "38628533e710a6e8fdf90691605f8e41e491e131c492ba047e487967e43a87cb",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 45,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR presentación móvil de DNI, celular u OTP que no active teclado numérico mediante inputmode numeric o type tel.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C02",
+      "version": 1,
+      "eval_id": 669,
+      "hash_version_atestado": "b6d04eb1fe06d948d636fc2037523cb0f8ec9a6aab5ae1dc74ddad340207c6d9",
+      "hash_paquete_atestado": "63aac21632d7947bb85120df61f151b72f8d5ee2a9cc294d678e86a881a681f9",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 48,
+      "familia": "BROWSER_PLATFORM",
+      "diferencias": "Contraste funcional: BLOQUEAR habilitar autocomplete en DNI, celular u OTP del onboarding Cliente; nombre y correo pueden habilitarlo.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C03",
+      "version": 1,
+      "eval_id": 670,
+      "hash_version_atestado": "816a28ce279889a6dccdc0a5c54c35e3280acdde67ff037fb767b5929586cb6c",
+      "hash_paquete_atestado": "13ecd932a93d016bc66f4fce4897b0765a8af6452ab139ff2c9a89e20e5a7706",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 394,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR controles interactivos B2B que carezcan de foco visible, navegación por teclado, etiqueta accesible o área táctil conforme al contrato de diseño vigente.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C04",
+      "version": 1,
+      "eval_id": 671,
+      "hash_version_atestado": "7fe2c122b80ee9a5f907ed1e50356e6d8a25a52072c349796e72976ba1dda114",
+      "hash_paquete_atestado": "7628deff595a293b0c828f7a75be6d277de0e8ec34e47f1ec009aeb3074be8bb",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 395,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR representar un estado B2B exclusivamente con color sin indicador adicional comprensible.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C05",
+      "version": 1,
+      "eval_id": 672,
+      "hash_version_atestado": "076e70e376aeb5ee00fb2171d12015d9ba8e4023ccf0865f0e2b8df1fcb68bd8",
+      "hash_paquete_atestado": "7a9b5e2f2c809cefc3c2216f4037f0fbda967e585c29423f0a3358152d07d1ad",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 465,
+      "familia": "REDUCED_MOTION",
+      "diferencias": "Contraste funcional: BLOQUEAR animaciones no esenciales cuando el usuario activa movimiento reducido, o estados y acciones que dependan exclusivamente del movimiento.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C06",
+      "version": 1,
+      "eval_id": 673,
+      "hash_version_atestado": "ef125a82956d710b2707f8cfb1879f6556ae05ded9a27b4aab0de617bc407438",
+      "hash_paquete_atestado": "a9c8fb39c0997ac24e1454079c607c0afddda0169466e8f82eeca6da48746c8d",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 466,
+      "familia": "FORCED_COLORS_CONTRAST",
+      "diferencias": "Contraste funcional: BLOQUEAR pérdida de lectura, foco, estados, errores o acciones en modo forced colors o alto contraste; no anular globalmente preferencias del usuario.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C07",
+      "version": 1,
+      "eval_id": 674,
+      "hash_version_atestado": "c6202bef7ed1df77f11206ccc4a2a1147355eed3eaf67622227a28a5d712612a",
+      "hash_paquete_atestado": "a8c12b9716c6539609291c9edfc1c8ad2c65d36f2d954107e80c65d7c50127ed",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 87,
+      "familia": "PRIVACY_PII",
+      "diferencias": "Contraste funcional: BLOQUEAR envío GA4 con nombre, correo, celular, DNI u otro identificador personal; admitir únicamente identificadores internos anónimos, rangos y categorías.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C08",
+      "version": 1,
+      "eval_id": 675,
+      "hash_version_atestado": "47efa1cde69c0777907fa6e7681e2abfbbc5fc90e7f44361889b4093d0dc7e11",
+      "hash_paquete_atestado": "ed035bb54c44484bca2e760f92a4661072bc7c3ab464cc9f79a8f94eabe29f00",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 93,
+      "familia": "ANALYTICS",
+      "diferencias": "Contraste funcional: BLOQUEAR envío de evento de error GA4 sin categoría y pantalla, o con mensaje técnico crudo, stack trace o datos del servidor.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C09",
+      "version": 1,
+      "eval_id": 676,
+      "hash_version_atestado": "40fa0b243b29bc32d036d5a4b1fc0312f3d6926f170a09a5b0ec32946fdf99de",
+      "hash_paquete_atestado": "9f253394d0214e0dbe090231fc3bac19598f97beb9e99c7ea3721d3ec6e8dc29",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 95,
+      "familia": "PRIVACY_PII",
+      "diferencias": "Contraste funcional: BLOQUEAR despacho de eventos Sentry que contengan DNI, celular, correo o nombre; aplicar filtro beforeSend antes del envío.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C10",
+      "version": 1,
+      "eval_id": 677,
+      "hash_version_atestado": "0db6857367cfe5e0020ad1169757b0985fc4d4e455e3908d525bd86460983504",
+      "hash_paquete_atestado": "5e6c572637709870001948c0534e8e1cd13d63bf3258fbe37d6a6a7e0d01cc31",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 98,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR omisión de alerta operativa cuando el percentil p95 entre emisión y verificación OTP supera OBSERVABILIDAD/OTP_DELIVERY_P95_SECONDS_MAX de public.lf_global_config.",
+      "residual": "La obligación de medir sistemáticamente la latencia no queda explícita como guard independiente; la alerta sí."
+    },
+    {
+      "codigo": "S8-C11",
+      "version": 1,
+      "eval_id": 678,
+      "hash_version_atestado": "4eeb5ba1cc097aea690a24732b47f7ada194a6309f9d533bbc6220d8e735720c",
+      "hash_paquete_atestado": "a4ccc26dd4b80eb4ed7f035f44738ab346e756fcf983c9d17ff13c1f3f2f1a7a",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 110,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR omitir alerta al equipo técnico si tasa de OTP verificado sobre enviado cae bajo ALERTAS/OTP_VERIFICATION_MIN_RATE durante ALERTAS/OTP_VERIFICATION_WINDOW_MINUTES de public.lf_global_config.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C12",
+      "version": 1,
+      "eval_id": 679,
+      "hash_version_atestado": "db0e8c0edbbc060e6b3931f89c7610a9e3df81f036a274ec17d0bb0900d29a37",
+      "hash_paquete_atestado": "fae2223984bf010f23871b866c2fd933dc9f2b70440d2a4ee3e6c36a1d66ea61",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 111,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR omisión de alerta a producto cuando tasa de abandono inicial supera ALERTAS/PASO1_ABANDON_RATE_MAX durante ALERTAS/PASO1_ABANDON_WINDOW_HOURS de public.lf_global_config.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C13",
+      "version": 1,
+      "eval_id": 680,
+      "hash_version_atestado": "2bac0d167fc13ca57abf2a6d914a8c75574c2f895478cbef99aab5f3c6c90545",
+      "hash_paquete_atestado": "95c9a9f54032aef57b77c052b992ef2e12b6ad28d56229512be1e2e9d1a682ee",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 113,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR omisión de alerta técnica cuando tasa de error de submit inicial supera ALERTAS/PASO1_SUBMIT_ERROR_RATE_MAX durante ALERTAS/PASO1_SUBMIT_ERROR_WINDOW_MINUTES de public.lf_global_config.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C14",
+      "version": 1,
+      "eval_id": 681,
+      "hash_version_atestado": "61812e42d8d523b18d3355f600845f0dca5b3c9052010b804fea549a63a7e8fa",
+      "hash_paquete_atestado": "22ca1f107451ba6e06e6dce8b4e1f04d2f2d85e02d1e7aca2938e33c7b3f5441",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "Tres umbrales en una sola regla; vigilar su mantenimiento."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 114,
+      "familia": "OBSERVABILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR omisión de alerta a técnico y producto cuando LCP supera ALERTAS/LCP_ALERT_THRESHOLD_MS en proporción de sesiones superior a ALERTAS/LCP_ALERT_SESSIONS_RATIO durante ALERTAS/LCP_ALERT_WINDOW_HOURS de public.lf_global_config.",
+      "residual": "La legada exige LCP promedio; el guard no especifica explícitamente la agregación promedio."
+    },
+    {
+      "codigo": "S8-C15",
+      "version": 1,
+      "eval_id": 682,
+      "hash_version_atestado": "7fb0775460710f93ad260e624016476ef910cfa82e24fa72226ddc7d39a29084",
+      "hash_paquete_atestado": "1a3ea6dc4ffdde955a75fa0a91219da3c7594cbd9ec209a2550db1bbbb672f40",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 37,
+      "familia": "AUDIT",
+      "diferencias": "Contraste funcional: BLOQUEAR registrar DNI, nombre, celular o email completos en eventos de auditoría; admitir representación enmascarada o hash.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C16",
+      "version": 1,
+      "eval_id": 683,
+      "hash_version_atestado": "23795a23cd27d782c662cf80792a42feab201ed04e251de5f7432c48b739dd37",
+      "hash_paquete_atestado": "d24b1411b3e03210ce9dfdf19769a2dddf1d8e75922fbaaf014fc263b6a81ee7",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 39,
+      "familia": "AUDIT",
+      "diferencias": "Contraste funcional: BLOQUEAR finalizar cambio inline sin evento con anterior y nuevo número enmascarados, timestamp y contador resultante lf_client.onboarding_sessions.phone_update_count.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C17",
+      "version": 1,
+      "eval_id": 684,
+      "hash_version_atestado": "11acf0873dbdc36282819372e56e8864881baba9c2d4f4d0424828134c7e6f2a",
+      "hash_paquete_atestado": "9d8ca2f7068b590283cd5a4fd8a77d321b3156662f39d84810fd9da5bd4149ec",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 40,
+      "familia": "AUDIT",
+      "diferencias": "Contraste funcional: BLOQUEAR finalizar registro de fallo OTP sin timestamp, contador resultante lf_client.onboarding_sessions.otp_attempt_count_current y evidencia de bloqueo derivada de blocked_at; excluir código ingresado.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C18",
+      "version": 1,
+      "eval_id": 685,
+      "hash_version_atestado": "7cb835a2b4769c80bcb540002f43784d01fdc84ef4f727c3979b1d9e10f8bdf3",
+      "hash_paquete_atestado": "ffd8f738f38b6f608a63d83e845b243def4df191685d5268943024c8bb18cc0a",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Reúne inmutabilidad, origen servidor, correlation_id y company_id/actor; candidata a dividir en futura versión."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 416,
+      "familia": "AUDIT",
+      "diferencias": "Contraste funcional: BLOQUEAR actualización o eliminación de eventos de auditoría, inserción desde navegador o registro sin correlation_id; lf_ops.auditoria_eventos conserva company_id y actor_user_id cuando contexto resuelto.",
+      "residual": "No explicita que todo servidor escritor pertenezca a frontera autorizada; prohíbe navegador y mutaciones."
+    },
+    {
+      "codigo": "S8-C19",
+      "version": 1,
+      "eval_id": 686,
+      "hash_version_atestado": "e90260976b6542b8180ca022758f8c4b0fca832be89955d68a29a67550175147",
+      "hash_paquete_atestado": "140abc62892e1a63744da41501a755d53a9962a48e59e170406d2299ef09729f",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Cubre seis familias de evento más redacción de secretos; candidata a dividir en futura versión."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 443,
+      "familia": "AUDIT",
+      "diferencias": "Contraste funcional: BLOQUEAR omitir registro trazable de resultados de login, MFA, rate limit, anti-bot, sesión, recuperación o emergencia en lf_ops.auditoria_eventos con correlation_id y metadata_redacted, o registrar secretos, OTP, tokens, payload crudo o correo completo.",
+      "residual": "No explicita que analytics nunca sustituye auditoría de seguridad."
+    },
+    {
+      "codigo": "S8-C20",
+      "version": 1,
+      "eval_id": 687,
+      "hash_version_atestado": "10963b5b4b1f14d0ad6d7f7f8d0f62abb27d07a1d95ed19f80e8a7d24545d375",
+      "hash_paquete_atestado": "37488f2157bd31e234738bec418115424fb4132b01d51e776e9c79eb14b9a11c",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 205,
+      "familia": "LOADING_EMPTY_ERROR_STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR presentar spinner genérico durante resolución de home o mantener skeleton tras UX/HOME_VARIANT_MAX_SKELETON_SECONDS de public.lf_global_config; aplicar fallback funcional sin oferta.",
+      "residual": "No explicita que skeleton refleje estructura destino de cards o ruta."
+    },
+    {
+      "codigo": "S8-C21",
+      "version": 1,
+      "eval_id": 688,
+      "hash_version_atestado": "47aa279b665f7018f84942928038a6af464fc0d43d99516cbde19e4779af0319",
+      "hash_paquete_atestado": "e547296e5788dee0c06e782227ecbaf955577c07e7092955ab541aaf6837cc40",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.8,
+          "observacion": "Agrupa cuatro parámetros de transición y movimiento reducido; revisar al implementar."
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 206,
+      "familia": "DESIGN_SYSTEM",
+      "diferencias": "Contraste funcional: BLOQUEAR transiciones fuera de UX/COMPONENT_TRANSITION_MIN_MS y UX/COMPONENT_TRANSITION_MAX_MS; fade de pantalla y skeleton según UX/SCREEN_FADE_MS y UX/SKELETON_FADE_MS de public.lf_global_config. Respetar movimiento reducido aplicable.",
+      "residual": "No explicita suavidad y alcance transversal de todas las pantallas; alcance CLIENT_HOME."
+    },
+    {
+      "codigo": "S8-C22",
+      "version": 1,
+      "eval_id": 689,
+      "hash_version_atestado": "281f2939e1bff61361493548a5fcabb9f1603c7529165e48e006a5a495bf9864",
+      "hash_paquete_atestado": "d2b2049b1708a64083389203522ea0419599eadbdf5c10acfed775e49ee26ff2",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 364,
+      "familia": "ACCESSIBILITY",
+      "diferencias": "Contraste funcional: BLOQUEAR Ruta de Claridad sin nav etiquetado y lista ordenada de enlaces o botones reales, sin aria-current en nodo activo o con SVG decorativo expuesto al lector.",
+      "residual": "No especifica cardinalidad de hitos, etiqueta literal ni ocultamiento del terreno decorativo."
+    },
+    {
+      "codigo": "S8-C23",
+      "version": 1,
+      "eval_id": 690,
+      "hash_version_atestado": "37673c2a71ba2d53c44f835a5f4f87ae6a4390b8093052320d2f3daa33a1f342",
+      "hash_paquete_atestado": "f9123f4334a9f5ba07c785192381aa0115bfe29416241004a645e8fddd6c0c08",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 427,
+      "familia": "ACTIONS",
+      "diferencias": "Contraste funcional: BLOQUEAR login B2B sin acción de recuperación visible junto a contraseña o que ejecute recuperación dentro del formulario principal.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C24",
+      "version": 1,
+      "eval_id": 691,
+      "hash_version_atestado": "135cd4d3df9df2accdfbd4c9d62b95f9d1c7aa9f89f29538404b52f9430dc177",
+      "hash_paquete_atestado": "ac09aadee1d9172ed07fcba50ee8f9e09855e53fe4d8233a65a3d2e86fc6f10b",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 431,
+      "familia": "IDEMPOTENCY_CONCURRENCY",
+      "diferencias": "Contraste funcional: BLOQUEAR envío duplicado de autenticación mientras solicitud anterior sigue pendiente; CTA permanece procesando.",
+      "residual": ""
+    },
+    {
+      "codigo": "S8-C25",
+      "version": 1,
+      "eval_id": 692,
+      "hash_version_atestado": "d6664b359ab4e9af83b1f3f98c5512fc2ff88b0217f927a9d8c59d442c7d2768",
+      "hash_paquete_atestado": "bb1fc0d7b99739ee42fb0c7be07ec940bd96743d36e3e1c3aeb8f4f143b95718",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 01:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 199,
+      "familia": "STATES",
+      "diferencias": "Contraste funcional: BLOQUEAR componente interactivo del Home sin estados funcionales idle, loading, success, error y disabled definidos, o con estado fuera de su contrato.",
+      "residual": "Legada transversal; candidata limitada al Home."
+    }
+  ],
+  "nota": "Hash de versión contrastado con Claude; puerta de juicio usa hash_paquete de evaluación, ambos comprobados. Cobertura funcional no certifica runtime."
+}
