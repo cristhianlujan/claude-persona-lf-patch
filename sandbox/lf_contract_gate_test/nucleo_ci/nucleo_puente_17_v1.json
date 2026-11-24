@@ -180,11 +180,22 @@
       "estado": "PARCIAL",
       "diferencias": "No cubre NO_ACTIVE_OFFER_HOME sin montos, modalidades ni CTA de pago con cero ofertas.",
       "residual": "No cubre NO_ACTIVE_OFFER_HOME sin montos, modalidades ni CTA de pago con cero ofertas."
+    },
+    {
+      "legacy_id": 235,
+      "codigo": "S9-C24",
+      "version": 1,
+      "hash": "7ad8e3471ba76df71b47994f84c7a3c002dbc96a4b724ad31ed846a5a0a147a2",
+      "paquete": "8b9bb9fdc2dfd2c48247597e49d8163c788363d5fb938e2e86a1726f51188db1",
+      "estado": "REEMPLAZADA",
+      "diferencias": "Escalación al aliado solo por convenio; formatos de carta e integración pendientes de evidencia.",
+      "residual": ""
     }
   ],
   "excluidas": [
     44,
     564,
     270
-  ]
+  ],
+  "juicio_235": "Claude 2026-11-24 14:52 Lima"
 }
