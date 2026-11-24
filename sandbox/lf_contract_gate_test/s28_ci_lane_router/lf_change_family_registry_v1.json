@@ -284,6 +284,7 @@
       ".github/workflows/pase.yml",
       ".github/workflows/profile-driven-screen-generation.yml",
       ".github/workflows/saly-pte-resguardos-pg17.yml",
+      ".github/workflows/saly-creative-order-create-pg17.yml",
       ".github/workflows/saly-ventas-vinculos-pg17.yml",
       ".github/workflows/story-agent-evidence-verifier.yml",
       ".github/workflows/validate-lf-packs.yml",
