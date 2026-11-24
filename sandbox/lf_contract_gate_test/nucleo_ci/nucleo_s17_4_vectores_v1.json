@@ -1,0 +1,572 @@
+{
+  "paquetes": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S17-C01",
+      "clave": "s17_b2b_rule_security_baseline_001",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Baseline seguridad login B2B",
+      "descripcion": "BLOQUEAR certificación del Login B2B sin evidencia de controles contra agotamiento de recursos y DDoS, inyección mediante validación server-side y consultas parametrizadas, XSS, SSRF, clickjacking, CORS, TLS y headers, replay, supply chain/SBOM y límites de payload. No afirmar implementación ni QA aprobada sin evidencia.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c01_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c01_certificacion_baseline"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s17c01_control_seguridad_sin_evidencia"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": false,
+            "s17c01_certificacion_baseline": false,
+            "s17c01_control_seguridad_sin_evidencia": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": false,
+            "s17c01_certificacion_baseline": false,
+            "s17c01_control_seguridad_sin_evidencia": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": false,
+            "s17c01_certificacion_baseline": true,
+            "s17c01_control_seguridad_sin_evidencia": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": false,
+            "s17c01_certificacion_baseline": true,
+            "s17c01_control_seguridad_sin_evidencia": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": true,
+            "s17c01_certificacion_baseline": false,
+            "s17c01_control_seguridad_sin_evidencia": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": true,
+            "s17c01_certificacion_baseline": false,
+            "s17c01_control_seguridad_sin_evidencia": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": true,
+            "s17c01_certificacion_baseline": true,
+            "s17c01_control_seguridad_sin_evidencia": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s17c01_login_b2b": true,
+            "s17c01_certificacion_baseline": true,
+            "s17c01_control_seguridad_sin_evidencia": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/657",
+        "solicitante": "Cristhian / Claude S17 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S17-C02",
+      "clave": "s17_reg_client_home_installment_plan_modal_001",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Borrador de selección de plan en modal",
+      "descripcion": "BLOQUEAR modal de cuotas que preseleccione plan nuevo, habilite Aplicar sin plan válido, persista cambios antes de Aplicar o altere selección comprometida al cancelar o cerrar. Solo restaurar plan previo de misma oferta, versión y vigencia; aplicar revalidación backend y actualizar únicamente oferta contextual y resumen, sin cálculo monetario frontend.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c02_modal_plan_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c02_interaccion_seleccion"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s17c02_borrador_o_commit_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": false,
+            "s17c02_interaccion_seleccion": false,
+            "s17c02_borrador_o_commit_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": false,
+            "s17c02_interaccion_seleccion": false,
+            "s17c02_borrador_o_commit_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": false,
+            "s17c02_interaccion_seleccion": true,
+            "s17c02_borrador_o_commit_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": false,
+            "s17c02_interaccion_seleccion": true,
+            "s17c02_borrador_o_commit_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": true,
+            "s17c02_interaccion_seleccion": false,
+            "s17c02_borrador_o_commit_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": true,
+            "s17c02_interaccion_seleccion": false,
+            "s17c02_borrador_o_commit_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": true,
+            "s17c02_interaccion_seleccion": true,
+            "s17c02_borrador_o_commit_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s17c02_modal_plan_cuotas": true,
+            "s17c02_interaccion_seleccion": true,
+            "s17c02_borrador_o_commit_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/559",
+        "solicitante": "Cristhian / Claude S17 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S17-C03",
+      "clave": "s17_ux_respaldo_no_compite_01",
+      "familia": "DESIGN_SYSTEM",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Respaldo sin competir con acción principal",
+      "descripcion": "BLOQUEAR bloque de confianza de Home que desplace jerarquía del Hero, Ruta de Claridad o CTA principal, incluya CTA del simulador o agregue panel explicativo sin evidencia real.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c03_home_publico"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c03_bloque_respaldo_presentado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s17c03_jerarquia_o_cta_invalido"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": false,
+            "s17c03_bloque_respaldo_presentado": false,
+            "s17c03_jerarquia_o_cta_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": false,
+            "s17c03_bloque_respaldo_presentado": false,
+            "s17c03_jerarquia_o_cta_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": false,
+            "s17c03_bloque_respaldo_presentado": true,
+            "s17c03_jerarquia_o_cta_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": false,
+            "s17c03_bloque_respaldo_presentado": true,
+            "s17c03_jerarquia_o_cta_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": true,
+            "s17c03_bloque_respaldo_presentado": false,
+            "s17c03_jerarquia_o_cta_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": true,
+            "s17c03_bloque_respaldo_presentado": false,
+            "s17c03_jerarquia_o_cta_invalido": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": true,
+            "s17c03_bloque_respaldo_presentado": true,
+            "s17c03_jerarquia_o_cta_invalido": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s17c03_home_publico": true,
+            "s17c03_bloque_respaldo_presentado": true,
+            "s17c03_jerarquia_o_cta_invalido": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/369",
+        "solicitante": "Cristhian / Claude S17 2026-11-24"
+      }
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S17-C04",
+      "clave": "s17_ux_token_consolidacion_02",
+      "familia": "DESIGN_SYSTEM",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Token de contraste reutilizable Home",
+      "descripcion": "BLOQUEAR restricción de slate_text_strong exclusivamente al Hero cuando un subtítulo, disclaimer o microcopy de Home requiera margen de contraste; usar token canónico sin copiar hex ni fijar nuevas métricas.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c04_home"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s17c04_microcopy_requiere_contraste"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s17c04_token_restringido_indebidamente"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": false,
+            "s17c04_microcopy_requiere_contraste": false,
+            "s17c04_token_restringido_indebidamente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": false,
+            "s17c04_microcopy_requiere_contraste": false,
+            "s17c04_token_restringido_indebidamente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": false,
+            "s17c04_microcopy_requiere_contraste": true,
+            "s17c04_token_restringido_indebidamente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": false,
+            "s17c04_microcopy_requiere_contraste": true,
+            "s17c04_token_restringido_indebidamente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": true,
+            "s17c04_microcopy_requiere_contraste": false,
+            "s17c04_token_restringido_indebidamente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": true,
+            "s17c04_microcopy_requiere_contraste": false,
+            "s17c04_token_restringido_indebidamente": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": true,
+            "s17c04_microcopy_requiere_contraste": true,
+            "s17c04_token_restringido_indebidamente": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s17c04_home": true,
+            "s17c04_microcopy_requiere_contraste": true,
+            "s17c04_token_restringido_indebidamente": true
+          },
+          "esperado": true
+        }
+      ],
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/361",
+        "solicitante": "Cristhian / Claude S17 2026-11-24"
+      }
+    }
+  ],
+  "fuentes": [
+    {
+      "id": 361,
+      "codigo": "UX-TOKEN-CONSOLIDACION-02",
+      "descripcion": "slate_text_strong puede usarse en cualquier subtitulo/disclaimer/microcopy legal del Home que necesite margen de contraste sobre slate_text base (4.50:1 limite vs 5.40:1 con margen), no queda restringido solo al Hero. La restriccion de scope-solo-Hero de la sesion paralela quedo resuelta al consolidar en un solo token; el alcance amplio original (registrado en VD_SLATE_TEXT_STRONG_001) sigue vigente.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 369,
+      "codigo": "UX-RESPALDO-NO-COMPITE-01",
+      "descripcion": "El bloque debe transmitir confianza sin robar jerarquia visual al Hero, Ruta de Claridad o CTA principal. No usar CTA del simulador dentro de este bloque. Sin exceso de texto ni panel explicativo si no aporta evidencia real.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 559,
+      "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_MODAL_001",
+      "descripcion": "PASO3_MODAL_CUOTAS permite al cliente revisar y seleccionar un único plan de cuotas para una oferta ya identificada por el contexto del Home. El sistema no elige un plan por defecto. En una selección nueva, selected_plan_id inicia null y Aplicar plan seleccionado permanece deshabilitado. Si el usuario abre Cambiar plan sobre una selección previamente comprometida por él, esa selección anterior puede mostrarse como contexto únicamente si sigue perteneciendo a la misma oferta, versión y vigencia; no se considera preselección automática del sistema. Los cambios dentro del modal son temporales hasta Aplicar. Cancelar o X descarta el borrador y conserva exactamente la selección previamente comprometida. Aplicar solo acepta un plan perteneciente a la oferta, vigente y revalidado por backend; luego actualiza esa oferta y el resumen sin afectar las demás. Montos, ahorro, primera cuota y demás datos económicos provienen del backend y de configuración versionada autorizada; el frontend no calcula ni infiere valores, tasas, proveedor o vigencia desde el mockup.",
+      "estado": "VIGENTE"
+    },
+    {
+      "id": 657,
+      "codigo": "B2B-RULE-SECURITY-BASELINE-001",
+      "descripcion": "El Login B2B debe aplicar defensa contra DDoS y resource exhaustion, validación server-side contra injection con prepared statements/parameterized queries, mitigación XSS, SSRF, clickjacking, control CORS, TLS y security headers, replay protection, controles de supply chain/SBOM y límites de request payload. La definición es canónica; la implementación y QA permanecen pendientes.",
+      "estado": "VIGENTE"
+    }
+  ],
+  "clasificacion": [
+    {
+      "codigo": "S17-C01",
+      "legacy_id": 657,
+      "clase": "TRANSVERSAL",
+      "alcance": "B2B",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S17-C02",
+      "legacy_id": 559,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S17-C03",
+      "legacy_id": 369,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    },
+    {
+      "codigo": "S17-C04",
+      "legacy_id": 361,
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+    }
+  ]
+}
