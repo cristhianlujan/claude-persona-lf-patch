@@ -1,10 +1,10 @@
--- S4: 25 juicios independientes, 23 AUTO condicionales; C04 queda CANDIDATA v1 DEVOLVER; C17 DESCARTADA.
+-- S4: 25 juicios independientes, 11 publicaciones AUTO; 12 AUTO retenidas por alcance CLIENTE peligroso para legal 36; C04 pendiente; C17 descartada.
 -- Una transacción, un PR, checks negativos de hash, legadas y deprecaciones intactas.
 BEGIN;
 DO $judge$
 DECLARE p jsonb; cd text; h text; v jsonb; result jsonb; e record;
  prev_legacy jsonb; prev_deprec jsonb;
- n int:=0; aut int:=0; pending int:=0; discarded int:=0;
+ n int:=0; aut int:=0; pending int:=0; discarded int:=0; held int:=0;
 BEGIN
  SELECT jsonb_agg(to_jsonb(r) ORDER BY id) INTO prev_legacy FROM lf_ops.reglas r;
  SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) INTO prev_deprec FROM lf_ops.nucleo_deprecaciones r;
@@ -41,6 +41,12 @@ BEGIN
    IF p->>'veredicto'<>'DEVOLVER' OR result->>'decision'='AUTO' THEN RAISE EXCEPTION 'S4_C17_NOT_RETURNED'; END IF;
    PERFORM lf_ops.nucleo_version_descartar_v1(cd,'LEG-TECNICO','DEVOLVER Claude por duplicidad de flujo celular-first con S4-C02/C03; versión descartada sin tocar legada 455');
    discarded:=discarded+1;
+  ELSIF result->>'decision'='AUTO' AND EXISTS(
+     SELECT 1 FROM lf_ops.nucleo_aplicaciones WHERE regla=cd AND nodo='CLIENTE') THEN
+   -- Convivencia DPIG03: CLIENTE hereda en pantalla legal 36, rompiendo el oráculo legada-only.
+   -- Mantener juicio atestado y candidata intactos hasta revisión de alcance con nuevo hash/juicio.
+   held:=held+1;
+   RAISE NOTICE 'S4_AUTO_HELD_SCOPE_CONVIVENCIA %',cd;
   ELSIF result->>'decision'='AUTO' THEN
    v:=lf_ops.nucleo_regla_promover_v1(cd);
    IF v->>'resultado'<>'PROMOVIDA_AUTO' OR (SELECT estado FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=1)<>'PUBLICADA'
@@ -50,14 +56,14 @@ BEGIN
   n:=n+1;
   RAISE NOTICE 'S4_JUDGE % verdict=% decision=% nota=%',cd,p->>'veredicto',result->>'decision',result->>'nota';
  END LOOP;
- IF n<>25 OR aut<>23 OR pending<>1 OR discarded<>1
+ IF n<>25 OR aut<>11 OR held<>12 OR pending<>1 OR discarded<>1
   OR (SELECT count(*) FROM lf_ops.nucleo_juicios WHERE regla LIKE 'S4-C%')<>25
-  OR (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE regla LIKE 'S4-C%' AND estado='CANDIDATA')<>1
+  OR (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE regla LIKE 'S4-C%' AND estado='CANDIDATA')<>13
   OR (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE regla LIKE 'S4-C%' AND estado='DESCARTADA')<>1
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r) IS DISTINCT FROM prev_legacy
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones r) IS DISTINCT FROM prev_deprec
  THEN RAISE EXCEPTION 'S4_JUDGEMENT_FINAL_FAIL'; END IF;
- RAISE NOTICE 'S4_JUDGEMENTS_PASS 25_JUZGADAS 23_AUTO 1_CANDIDATA 1_DESCARTADA';
+ RAISE NOTICE 'S4_JUDGEMENTS_PASS 25_JUZGADAS 11_AUTO_PUBLICADAS 12_AUTO_RETENIDAS_ALCANCE 1_DEVOLVER_CANDIDATA 1_DESCARTADA';
 END $judge$;
 DO $bridge$
 DECLARE p jsonb; v_code text; id0 int; hp text; status text; resid text; d text;
@@ -76,7 +82,10 @@ BEGIN
    CONTINUE;
   END IF;
   IF NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=v_code AND version=1 AND estado='PUBLICADA')
-  THEN RAISE EXCEPTION 'S4_UNPUBLISHED_COVERAGE %',v_code; END IF;
+  THEN
+   RAISE NOTICE 'S4_BRIDGE_PENDING_UNPUBLISHED %',v_code;
+   CONTINUE;
+  END IF;
   hp:=lf_ops.nucleo_hash_paquete_v1(v_code,1);
   status:='REEMPLAZADA';resid:='';
   d:=CASE WHEN v_code='S4-C22' THEN 'La legada REG_OFR_006 permite total cuotas mayor al contado. S4-C22 BLOQUEA únicamente la UI que fuerza total cuotas menor o igual, no bloquea el plan legítimamente mayor. Cálculo y precio autorizados por backend.'
@@ -110,11 +119,11 @@ BEGIN
   VALUES(455,v_code,1,'PARCIAL',d,jsonb_build_object('fuente','lf_ops.v_reglas_compat_v1/455 REG_FLOW_CELL_FIRST_001','contraste',d,'residual',resid,'juicio','Claude S4 C17 DEVOLVER por duplicación'),hp,'GPT-6/CLaude S4 semántica conservadora');
   partial_n:=partial_n+1;
  END LOOP;
- IF ((SELECT count(*) FROM lf_ops.reglas)=586 AND (n<>23 OR partial_n<>2))
+ IF ((SELECT count(*) FROM lf_ops.reglas)=586 AND (n<>11 OR partial_n<>2))
   OR (SELECT count(distinct legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA')<>(75+n)
   OR (SELECT count(*) FROM lf_ops.nucleo_deprecaciones)<>before_deprec
   OR (SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM lf_ops.reglas r) IS DISTINCT FROM before_legadas
  THEN RAISE EXCEPTION 'S4_BRIDGE_INVALID'; END IF;
- RAISE NOTICE 'S4_BRIDGE_PASS nuevos_reemplazos=23 parcial_455=2 vinculos';
+ RAISE NOTICE 'S4_BRIDGE_PASS nuevos_reemplazos=% parcial_455=2 vinculos',n;
 END $bridge$;
 COMMIT;
