@@ -35,9 +35,9 @@ class TestWait(unittest.TestCase):
         clock, expirations, out = self.scenario(20)
         self.assertEqual(out["status"], "READY")
         self.assertEqual(out["first_observed_ready_seconds"], 30)
-        self.assertEqual(out["count"], 7)
+        self.assertEqual(out["count"], 2)
         self.assertEqual(out["next_step"], "11")
-        self.assertEqual(clock.t, 180)
+        self.assertEqual(clock.t, 30)
         self.assertEqual(expirations, [])
         print("E20_INPUT=ready_at_20_seconds E20_OUTPUT=", out)
 
@@ -45,8 +45,8 @@ class TestWait(unittest.TestCase):
         clock, expirations, out = self.scenario(100)
         self.assertEqual(out["status"], "READY")
         self.assertEqual(out["first_observed_ready_seconds"], 120)
-        self.assertEqual(out["count"], 7)
-        self.assertEqual(clock.t, 180)
+        self.assertEqual(out["count"], 5)
+        self.assertEqual(clock.t, 120)
         self.assertEqual(expirations, [])
         print("E100_INPUT=ready_at_100_seconds E100_OUTPUT=", out)
 
@@ -59,6 +59,20 @@ class TestWait(unittest.TestCase):
         self.assertEqual(expirations, [180])
         self.assertEqual(clock.t, 180)
         print("ENEVER_INPUT=never_ready ENEVER_OUTPUT=", out)
+
+    def test_invalid_capture_is_error_not_ready(self):
+        clock = VirtualClock()
+        expired = []
+        out = wait_after_dispatch(
+            lambda: {"status": "ERROR", "reason": "IMAGE_EVIDENCE_INVALID"},
+            lambda: expired.append(clock.now()),
+            monotonic=clock.now, sleep=clock.sleep,
+        )
+        self.assertEqual(out["status"], "ERROR")
+        self.assertEqual(out["count"], 1)
+        self.assertEqual(out["elapsed_seconds"], 0)
+        self.assertEqual(expired, [])
+        print("E_INVALID_INPUT=invalid_capture E_INVALID_OUTPUT=", out)
 
     def test_expirer_refuses_without_deadline(self):
         clock = VirtualClock()
