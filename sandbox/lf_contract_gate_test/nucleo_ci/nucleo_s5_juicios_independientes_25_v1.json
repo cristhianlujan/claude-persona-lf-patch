@@ -1,0 +1,921 @@
+{
+  "contrato": "LF_S5_JUICIOS_25_INDEPENDIENTES",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "fecha": "2026-11-23 22:19 Lima",
+  "juicios": [
+    {
+      "codigo": "S4-C04",
+      "version": 2,
+      "eval_id": 456,
+      "hash_paquete_atestado": "1e0409be1d7cbd7d7e9b0b56a64c00366dc9867cedabbf1fef3d1ee77cf9dc20",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 34
+    },
+    {
+      "codigo": "S5-C01",
+      "version": 1,
+      "eval_id": 457,
+      "hash_paquete_atestado": "8ce27f0caf2afd57049d345a68aea96f1511ece2808117a39f13349961127efd",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 16,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S5-C02",
+      "version": 1,
+      "eval_id": 458,
+      "hash_paquete_atestado": "7484b9eeb399ab74221a2af98ca185c42d3778dbc47d1fec8f56df0f667a60d3",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 17,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S5-C03",
+      "version": 1,
+      "eval_id": 459,
+      "hash_paquete_atestado": "a441cc02244097ecbbbbfb7893e3ab522f9b78c5b0c79ecd1a45274ab904262e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 26,
+      "familia": "RATE_LIMIT"
+    },
+    {
+      "codigo": "S5-C04",
+      "version": 1,
+      "eval_id": 460,
+      "hash_paquete_atestado": "3e19588df29803b2028778244dacd064297a168858ce3ed5b648d754a5a9849c",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "C04 limita validaciones OTP por IP con variables AUTH/OTP_VALIDATION_PER_IP_*, a diferencia de C17 que limita el endpoint/webhook por session_id y por IP con politicas_rate_limit."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 27,
+      "familia": "RATE_LIMIT"
+    },
+    {
+      "codigo": "S5-C05",
+      "version": 1,
+      "eval_id": 461,
+      "hash_paquete_atestado": "b04fe5bdd04a7f7a2629411841bd561b00ddae998d89d1e51217fc845fb24975",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 28,
+      "familia": "RATE_LIMIT"
+    },
+    {
+      "codigo": "S5-C06",
+      "version": 1,
+      "eval_id": 462,
+      "hash_paquete_atestado": "a891a2714368ef8b651aa302a8c689af8ace88dedcb5c6ada035a7c8b58eddb3",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 29,
+      "familia": "RATE_LIMIT"
+    },
+    {
+      "codigo": "S5-C07",
+      "version": 1,
+      "eval_id": 463,
+      "hash_paquete_atestado": "81dd2ac0767d7b53aa907ca25d04d5186fa1c9c540b7904154784aa56a153ff5",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 399,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S5-C08",
+      "version": 1,
+      "eval_id": 464,
+      "hash_paquete_atestado": "bf7a2abc4c63fae7e992d49dfd5d4836eb5ed1b08442118313b25a6d636123fc",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 400,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S5-C09",
+      "version": 1,
+      "eval_id": 465,
+      "hash_paquete_atestado": "d5069415afaeb6d93213eba451a6b13038ebedacfdfff6610f9445a9fd105bed",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 512,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S5-C10",
+      "version": 1,
+      "eval_id": 466,
+      "hash_paquete_atestado": "1d058e6d8007731ea7e0675eff767fc097e4772d69e457ecae16bd972daf5204",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 513,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S5-C11",
+      "version": 1,
+      "eval_id": 467,
+      "hash_paquete_atestado": "d17c362d86f4e7962cd3045a28abf55470b59412af5498d32adb7a5d652818f7",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 515,
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "S5-C12",
+      "version": 1,
+      "eval_id": 468,
+      "hash_paquete_atestado": "c92b75174e481a2e807b4dcb905bc21b230ac31d6b52ee391969d2aaabe9a562",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 0.5,
+          "observacion": "Exige persistir ABANDONED pero onboarding_sessions no tiene campo de estado; una incidencia no equivale a transición persistida, requiere reformulación."
+        }
+      },
+      "legada_id": 14,
+      "familia": "SESSION"
+    },
+    {
+      "codigo": "S5-C13",
+      "version": 1,
+      "eval_id": 469,
+      "hash_paquete_atestado": "c8f22437fc0e1625b5a5b3d54fa60771262ae9ee20dae18c65e1d0f36d14458b",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 19,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C14",
+      "version": 1,
+      "eval_id": 470,
+      "hash_paquete_atestado": "abfffd6f1480135362253c68d81866cc8097cb5ee1ad822544709bbfcd38ac93",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 25,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C15",
+      "version": 1,
+      "eval_id": 471,
+      "hash_paquete_atestado": "edc7b3f310ab7ca738043e7a9e146c7c3a2d813360dd0a0ee953357b2138b162",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 30,
+      "familia": "RATE_LIMIT"
+    },
+    {
+      "codigo": "S5-C16",
+      "version": 1,
+      "eval_id": 472,
+      "hash_paquete_atestado": "969ec86096bce7951b038f0791d822e5616f3c288113cecf6dc73a18be37e095",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 125,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C17",
+      "version": 1,
+      "eval_id": 473,
+      "hash_paquete_atestado": "92c741fe42178d19459cf7f63cae667bd86d5e816ecd4828b246f3b99982328d",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.8,
+          "observacion": "El endpoint/webhook OTP tiene limitación backend independiente por session_id e IP, mientras C04 es validación OTP por IP entre sesiones."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 127,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C18",
+      "version": 1,
+      "eval_id": 474,
+      "hash_paquete_atestado": "316c777a23e450d6b74ed3f206c1be786b6cff6c4e67e598c2c46270529751d0",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 317,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "S5-C19",
+      "version": 1,
+      "eval_id": 475,
+      "hash_paquete_atestado": "9c42806d4c0bc2978d390cfd59251c8ff333f629518d9741f29c1aacb377b5d4",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 0.9,
+          "observacion": "El mensaje literal coincide con la fuente vigente REG_ATQ_008, ID 128, y no propone decisión adicional de negocio."
+        }
+      },
+      "legada_id": 128,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C20",
+      "version": 1,
+      "eval_id": 476,
+      "hash_paquete_atestado": "a06bb782f00c10bc7f968ec3c302e1d928c529e6317bae5c5d859fdd9415aa01",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 130,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C21",
+      "version": 1,
+      "eval_id": 477,
+      "hash_paquete_atestado": "6a363fb81bf3abf2572e6e9c09731fe8730642aab445a3c762804f94e86796f5",
+      "veredicto": "DEVOLVER",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 0.4,
+          "observacion": "No existe variable verificada que represente cantidad inicial de planes, y la regla no nombra la cantidad exacta ni su fuente canónica."
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 157,
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "S5-C22",
+      "version": 1,
+      "eval_id": 478,
+      "hash_paquete_atestado": "69cf28a7e582a344c2a9b97fbe1113511bd70426a85f97a63e9cf3240366212f",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.8,
+          "observacion": "El copy funcional del modal y conservación de selección tiene texto denso; no editar esta versión ya evaluada, aclarar en revisión v2 si corresponde."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 238,
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "S5-C23",
+      "version": 1,
+      "eval_id": 479,
+      "hash_paquete_atestado": "61360e38099048395cb04cfe350fc566ca217290ec070e2f4719aa278abd7e49",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 425,
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "S5-C24",
+      "version": 1,
+      "eval_id": 480,
+      "hash_paquete_atestado": "ff7d4b2d5cfb664a458b8d0fafaa73093fdf8720b0c1f245a1ce1f1274ff770a",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-23 22:19 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 0.8,
+          "observacion": "La condición de settlement backend es densa; simplificar redacción únicamente en nueva versión con nuevo hash y juicio."
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 533,
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    }
+  ]
+}
