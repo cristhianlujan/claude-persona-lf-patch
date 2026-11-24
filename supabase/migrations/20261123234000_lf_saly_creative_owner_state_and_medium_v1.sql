@@ -21,82 +21,69 @@ REVOKE ALL ON saly.creative_owner_accounts_v1,saly.creative_owner_decisions_v1
 GRANT SELECT ON saly.creative_owner_accounts_v1 TO service_role;
 -- The owner RPC has definer privileges; no direct update to either table.
 
--- Detection is the timer's own persisted readback: no fictitious external verifier.
+-- Independent verifier rows do not exist in this chat pipeline.
+-- Persist the timer's actual readback once; same RUN sha/ref required by QA.
 CREATE TABLE saly.creative_run_detection_v1(
  run_id bigint PRIMARY KEY REFERENCES saly.creative_runs(id) ON DELETE RESTRICT,
  order_id bigint NOT NULL,
  item_id bigint NOT NULL,
  claim_id bigint NOT NULL REFERENCES saly.creative_queue_claims_v1(id) ON DELETE RESTRICT,
  artifact_ref text NOT NULL CHECK(length(btrim(artifact_ref))>0),
- artifact_sha256 text NOT NULL CHECK(artifact_sha256~'^[0-9a-f]{64}p_token uuid, p_run_id bigint, p_artifact_ref text, p_artifact_sha256 text, p_worker_receipt text, p_qa_receipt jsonb)
- RETURNS jsonb
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'saly', 'pg_temp'
-AS $function$
-DECLARE c record; r record; i record; v_verdict text; v_reviewer text;
+ artifact_sha256 text NOT NULL CHECK(artifact_sha256~'^[0-9a-f]{64}$'),
+ check_count integer NOT NULL CHECK(check_count BETWEEN 1 AND 7),
+ first_ready_elapsed_seconds integer NOT NULL,
+ observed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ evidence jsonb NOT NULL,
+ CHECK(first_ready_elapsed_seconds=30*(check_count-1))
+);
+REVOKE ALL ON saly.creative_run_detection_v1
+ FROM PUBLIC,anon,authenticated,service_role;
+
+CREATE FUNCTION saly.creative_run_detection_record_v1(
+ p_token uuid,p_run_id bigint,p_check_count integer)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','saly','pg_temp'
+AS $fn$
+DECLARE c saly.creative_queue_claims_v1%ROWTYPE;
+ r saly.creative_runs%ROWTYPE; ready jsonb;
 BEGIN
  IF p_token IS NULL OR p_run_id IS NULL OR p_run_id<1
- OR nullif(btrim(coalesce(p_artifact_ref,'')),'') IS NULL
- OR p_artifact_sha256 IS NULL OR p_artifact_sha256 !~ '^[0-9a-f]{64}$'
- OR nullif(btrim(coalesce(p_worker_receipt,'')),'') IS NULL
- OR jsonb_typeof(p_qa_receipt) IS DISTINCT FROM 'object'
- THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_INPUT_INVALID'; END IF;
- v_verdict:=p_qa_receipt->>'verdict';
- v_reviewer:=p_qa_receipt->>'reviewer_ref';
- IF v_verdict NOT IN ('PASS','FAIL') OR v_verdict IS NULL
- OR nullif(btrim(coalesce(p_qa_receipt->>'comment','')),'') IS NULL
- OR length(p_qa_receipt->>'comment')>4000
- OR nullif(btrim(coalesce(v_reviewer,'')),'') IS NULL
- OR p_qa_receipt->>'artifact_sha256' IS DISTINCT FROM p_artifact_sha256
- THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_COMMENT_OR_HASH_INVALID'; END IF;
-
+ OR p_check_count IS NULL OR p_check_count NOT BETWEEN 1 AND 7
+ THEN RAISE EXCEPTION 'SALY_DETECTION_INPUT_INVALID'; END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));
- SELECT * INTO c FROM saly.creative_queue_claims_v1
+ SELECT * INTO STRICT c FROM saly.creative_queue_claims_v1
  WHERE claim_token=p_token FOR UPDATE;
- SELECT * INTO r FROM saly.creative_runs
- WHERE id=p_run_id FOR UPDATE;
- SELECT * INTO i FROM saly.creative_order_items
- WHERE id=c.item_id AND order_id=c.order_id FOR UPDATE;
- IF c.id IS NULL OR r.id IS NULL OR i.id IS NULL
- OR c.state<>'ACTIVE' OR c.lease_until<=clock_timestamp()
- OR r.queue_claim_id IS DISTINCT FROM c.id OR r.order_id IS DISTINCT FROM c.order_id
- OR r.item_id IS DISTINCT FROM c.item_id
- OR r.state<>'EJECUTANDO' OR i.status<>'PRODUCIENDO'
- THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_RUN_NOT_EXECUTING'; END IF;
- IF lower(btrim(v_reviewer))=lower(btrim(c.worker_ref))
- THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_REVIEWER_NOT_INDEPENDENT'; END IF;
+ SELECT * INTO STRICT r FROM saly.creative_runs WHERE id=p_run_id FOR UPDATE;
+ IF c.state<>'ACTIVE' OR c.lease_until<=clock_timestamp()
+ OR r.queue_claim_id IS DISTINCT FROM c.id
+ OR r.item_id IS DISTINCT FROM c.item_id OR r.order_id IS DISTINCT FROM c.order_id
+ OR r.worker_ref IS DISTINCT FROM c.worker_ref
+ THEN RAISE EXCEPTION 'SALY_DETECTION_CLAIM_RUN_INVALID'; END IF;
+ ready:=saly.creative_run_image_readback_v2(r.id,r.item_id);
+ IF ready->>'status' IS DISTINCT FROM 'READY'
+ THEN RAISE EXCEPTION 'SALY_DETECTION_IMAGE_NOT_READY'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM saly.creative_order_items i
+               WHERE i.id=r.item_id AND i.order_id=r.order_id
+                 AND i.status='PRODUCIENDO')
+ THEN RAISE EXCEPTION 'SALY_DETECTION_ITEM_NOT_PRODUCING'; END IF;
+ INSERT INTO saly.creative_run_detection_v1(
+    run_id,order_id,item_id,claim_id,artifact_ref,artifact_sha256,
+    check_count,first_ready_elapsed_seconds,evidence)
+ VALUES(r.id,r.order_id,r.item_id,c.id,ready->>'artifact_ref',ready->>'sha256',
+    p_check_count,30*(p_check_count-1),ready);
+ RETURN jsonb_build_object('status','READY_DETECTED','run_id',r.id,
+   'item_id',r.item_id,'first_ready_elapsed_seconds',30*(p_check_count-1),
+   'check_count',p_check_count,'artifact_ref',ready->>'artifact_ref',
+   'sha256',ready->>'sha256',
+   'evidence_source','saly.creative_run_image_readback_v2',
+   'next_step','11');
+EXCEPTION WHEN unique_violation THEN RAISE EXCEPTION 'SALY_DETECTION_ALREADY_RECORDED';
+END; $fn$;
+REVOKE ALL ON FUNCTION saly.creative_run_detection_record_v1(uuid,bigint,integer)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION saly.creative_run_detection_record_v1(uuid,bigint,integer)
+ TO service_role;
 
- IF v_verdict='FAIL' THEN
-   PERFORM saly.creative_queue_advance_run_v1(p_token,p_run_id,'BLOQUEADO','{}'::jsonb,'QA_FAIL');
-   UPDATE saly.creative_order_items
-   SET status='BLOQUEADO',qa_receipt=p_qa_receipt||jsonb_build_object('run_id',p_run_id)
-   WHERE id=i.id AND status='PRODUCIENDO';
-   PERFORM saly.creative_queue_release_v1(p_token,'BLOCKED','QA_FAIL');
-   RETURN jsonb_build_object('status','QA_COMMENT_SAVED_BLOCKED',
-      'run_id',p_run_id,'item_id',i.id,'qa_verdict','FAIL',
-      'comment_saved',true,'db_done_allowed',false);
- END IF;
-
- PERFORM saly.creative_queue_advance_run_v1(
-   p_token,p_run_id,'EXITOSO',
-   jsonb_build_object('artifact_ref',p_artifact_ref,'sha256',p_artifact_sha256,
-                      'worker_receipt',p_worker_receipt),NULL);
- UPDATE saly.creative_order_items SET status='EN_QA' WHERE id=i.id
-    AND status='PRODUCIENDO';
- IF NOT FOUND THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_STAGE_NOT_READY'; END IF;
- -- Existing trigger validates independent technical QA, RUN, artifact
- -- and all sealed semantic/technical QA expectations in the real product.
- UPDATE saly.creative_order_items SET status='TERMINADO',
-    approved_at=NULL,approved_by=NULL,
-    qa_receipt=p_qa_receipt||jsonb_build_object('run_id',p_run_id)
- WHERE id=i.id AND status='EN_QA';
- IF NOT FOUND THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_TERMINAL_NOT_READY'; END IF;
- RETURN jsonb_build_object('status','QA_COMMENT_SAVED_AWAITING_VERIFIED_CHAT_DELIVERY',
-   'run_id',p_run_id,'item_id',i.id,'qa_verdict','PASS',
-   'item_state','TERMINADO','comment_saved',true,
-   'native_delivery_verified',false,'db_done_allowed',false);
-END $function$;
 -- Legacy callable name, but the entire detected->review->TERMINADO->DONE
 -- transition now lives inside this ONE database transaction/function call.
 -- Image generation itself has already set RUN=EXITOSO, then timer recorded READY.
