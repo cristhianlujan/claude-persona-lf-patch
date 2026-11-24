@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-full-active-context-v1",
+  "paths": {
+    "supabase/migrations/20261124210000_lf_saly_full_active_context_v1.sql": "MIGRATION",
+    "supabase/tests/saly_full_active_context_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/saly-full-active-context-v1.json": "CHANGESET_MANIFEST"
+  }
+}
