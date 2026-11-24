@@ -1,0 +1,1561 @@
+{
+  "query": {
+    "items": "SELECT o.id AS order_id,o.code AS order_code,o.requested_by,o.request_key,o.status AS order_status,o.request_kind,o.design_mode,o.context_set_id,o.scope_json,o.identity_snapshot, i.id AS item_id,i.code AS item_code,i.status AS item_status,i.kind,i.ordinal,i.required,i.context_json,i.acceptance_json,i.qa_receipt,i.approved_at,i.approved_by FROM saly.creative_orders o JOIN saly.creative_order_items i ON i.order_id=o.id WHERE (o.id=8 AND i.id=11) OR (o.id=9 AND i.id=13) ORDER BY o.id",
+    "tokens": "SELECT v.id AS version_id,v.element_id,e.code,e.family,v.approval_status,v.value_json,v.metadata,e.project_id FROM saly.identity_versions v JOIN saly.identity_elements e ON e.id=v.element_id WHERE e.project_id=2 ORDER BY v.id",
+    "contexts": "SELECT cs.id,cs.code,cs.state,cs.project_id,cs.version_label,cs.mode,cs.sealed_at,cs.provenance FROM saly.creative_context_sets cs WHERE cs.id IN (3,4) ORDER BY cs.id",
+    "allFns": "SELECT p.proname,pg_get_functiondef(p.oid) AS def FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='saly' AND p.proname IN ('creative_chat_save_qa_v1','creative_queue_release_v1','creative_chat_finalize_after_verified_delivery_v1','creative_item_guard_l1','creative_chat_terminal_item_guard_v1','creative_chat_terminal_order_guard_v1','creative_order_close_guard_l1','creative_queue_native_delivery_guard_v1') ORDER BY p.proname"
+  },
+  "readback": {
+    "items": [
+      {
+        "order_id": 8,
+        "order_code": "SALY_ADELANTO_V015_SINGLE_20261123",
+        "requested_by": "CHAT_USER",
+        "request_key": "SALY_ADELANTO_V015_SINGLE_20261123",
+        "order_status": "PLANIFICADO",
+        "request_kind": "APP_SCREEN_SINGLE",
+        "design_mode": "EXPLORE",
+        "context_set_id": 4,
+        "scope_json": {
+          "screen": "SOLICITAR_ADELANTO",
+          "ordinal": 2,
+          "queue_mode": "SERIAL_V1",
+          "review_only": true,
+          "block_reason": "NATIVE_DISPATCH_NOT_DEPLOYED",
+          "prompt_sha256": "c77ce1be1a09aa64b7ab833c1207cc116b22cbe45682e5a7fe611abb5eb54f50",
+          "prompt_source": "SALY_V015_GATE_REAL_REVIEW_ONLY",
+          "compiled_prompt": "Destino visual: Un iPhone 16 Pro con pantalla solicitar SALY\nUna pantalla SALY sin cifras inventadas.\nSolicitar adelanto SALY, iPhone 16 Pro frontal en modo claro.\nCTA verde #008200, montos navy #081631, resto neutro; evitar verde omnipresente.\nDisponible sobre franja menta #EAF9EE integrada al fondo, sin tarjeta adicional.\nDiferenciar monto elegido y monto a recibir por tamaño, etiqueta y posición.\nJerarquía: disponible, selección, resumen y CTA Continuar.\nSelección con borde y marcador funcional; no insinuar recomendación económica.\nConcepto compositivo seleccionado: Franja tonal de disponible, selección agrupada, resumen abierto y CTA final\nTres opciones de monto y entrada manual bajo Cuánto necesitas, sin números ficticios.\nMonto solicitado, Cargos aplicables, Monto a recibir y Fecha de descuento sólo si hay valores respaldados.\nContinuar en CTA verde #008200 con texto blanco; no etiquetar Recomendado sin regla autorizada.\nCabecera: Volver, título Solicitar adelanto y ayuda sobre blanco.\nDisponible: Franja menta integrada, sin contenedor redundante.\nMonto: Tres opciones seleccionables, borde e indicador; entrada manual.\nResumen: Monto a recibir destacado sin tarifas imaginarias.\nContinuar: Un CTA primario Continuar al final.\nNo agregar rayos de explosión, palitos de énfasis, destellos radiales ni líneas cinéticas decorativas alrededor de iconos, montos, botones o ilustraciones. Mantener solamente trazos funcionales de iconografía y separadores estructurales justificados.",
+          "render_authorized": false,
+          "intake_semantic_qa": {
+            "verdict": "BLOCKED",
+            "intent_class": "OPERATIONAL_PROCESS_INSTRUCTION",
+            "source_origin": "PR4648_SOURCE_SEED",
+            "source_sha256": "835c6c243a95d651b473527bf92cb742067897916351919e408d3e5f0d868a3a",
+            "blocking_reason": "CREATIVE_USER_LITERAL_NOT_RECOVERED",
+            "repair_contract": "SALY_CREATIVE_INTAKE_SEMANTIC_REPAIR_V1",
+            "compiled_prompt_origin": "ASSISTANT_DERIVED_REVIEW_NOT_USER_LITERAL"
+          },
+          "rendering_authority": false,
+          "intake_source_status": "MISSING_VERIFIED_USER_VISUAL_REQUEST",
+          "operational_instruction": "No, pero igual eso causa problema. Lo que debemos demandar es solo un pedido con una, o sea, la pantalla de Ergon que termine la pantalla de home y después haces la otra pantalla. Si no va a haber tendencia al error"
+        },
+        "identity_snapshot": {
+          "context_set_id": 4,
+          "selected_versions": [
+            {
+              "role": "OFFICIAL",
+              "sha256": "f52bd036b0760f64f6222f25d95ebe0c56859cbef34dec923c7af8cd5c09ca52",
+              "version_id": 7
+            },
+            {
+              "role": "OFFICIAL",
+              "sha256": "e0bc5fc47e1f2fa3bdd1d51b34356594a0ee88d39d107562cd7a4a2d1de27b7f",
+              "version_id": 8
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "57822661b02310f97ccd242ce929ed82907251ef22f350f9673d76c56c918a13",
+              "version_id": 11
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "0719a985e5f09e61620906078676ecfe93c63810dca870702b834754d1b7046c",
+              "version_id": 12
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "9a003c868816e05d0858815160d14524fdbd037ac9e92c794261e89a4cc48299",
+              "version_id": 14
+            }
+          ]
+        },
+        "item_id": 11,
+        "item_code": "SOLICITAR_ADELANTO",
+        "item_status": "PENDIENTE",
+        "kind": "SCREEN",
+        "ordinal": 1,
+        "required": true,
+        "context_json": {
+          "screen_spec": {
+            "device": "IPHONE16PRO",
+            "screen": "SOLICITAR_ADELANTO"
+          }
+        },
+        "acceptance_json": {
+          "qa_required": true,
+          "semantic_qa": {
+            "status": "PENDING"
+          }
+        },
+        "qa_receipt": {},
+        "approved_at": null,
+        "approved_by": null
+      },
+      {
+        "order_id": 9,
+        "order_code": "SALY_HOME_MIDISPONIBLE_REFINEMENT_20261123",
+        "requested_by": "CHAT_USER",
+        "request_key": "SALY_HOME_MIDISPONIBLE_REFINEMENT_20261123",
+        "order_status": "BORRADOR",
+        "request_kind": "APP_SCREEN_SINGLE",
+        "design_mode": "EXPLORE",
+        "context_set_id": 3,
+        "scope_json": {
+          "screen": "HOME",
+          "queue_mode": "SERIAL_V1",
+          "review_only": true,
+          "change_scope": "ONLY_MI_DISPONIBLE_AS_VIEW_CALCULATION_LINK",
+          "interpretation": "En HOME, el bloque Mi disponible debe mostrar un acceso navegable a Cómo se calcula (chevron), sin un importe monetario. Mantener todo lo demás igual. El valor S/ 800 del mockup no está autorizado.",
+          "literal_origin": "USER_MESSAGE_VERBATIM_EXCERPT",
+          "literal_sha256": "928dd49fc87a21cd4ac396b1a6a78b7a7b4f89442b45e57bc352ff4f8ff01060",
+          "preview_origin": "CHAT_GENERATED_IMAGE_NO_VERIFIED_DB_RUN",
+          "schema_version": "SALY_HOME_MIDISPONIBLE_REFINEMENT_DRAFT_V1",
+          "blocking_reason": "NOT_COMPILED_NOT_QA_ATTESTED_NOT_RENDER_AUTHORIZED_NO_QUEUE_SLOT",
+          "literal_request": "un refinanmiento al perido donde se indica que el mi disonible es un ver para que vea como se calcual.",
+          "target_component": "HOME.SUMMARY.MI_DISPONIBLE",
+          "render_authorized": false,
+          "intake_semantic_qa": {
+            "verdict": "PENDING",
+            "required": true
+          },
+          "single_change_only": true,
+          "source_message_ref": null,
+          "rendering_authority": false,
+          "intake_source_status": "VERBATIM_EXCERPT_PENDING_INDEPENDENT_QA",
+          "refinement_of_item_id": 10,
+          "refinement_of_order_id": 7,
+          "dependency_policy_state": "UNRESOLVED_IMMUTABLE_SUCCESSOR_CHAIN",
+          "preview_artifact_sha256": "8854a525b61d5642b3e864d5f35dbd9e3fdaf1bab83754ddeaa884eaf90f52d0",
+          "source_verification_status": "USER_EXCERPT_AVAILABLE_MESSAGE_ID_NOT_VERIFIED",
+          "no_changes_to_other_components": true
+        },
+        "identity_snapshot": {
+          "context_set_id": 3,
+          "selected_versions": [
+            {
+              "role": "OFFICIAL",
+              "sha256": "f52bd036b0760f64f6222f25d95ebe0c56859cbef34dec923c7af8cd5c09ca52",
+              "version_id": 7
+            },
+            {
+              "role": "OFFICIAL",
+              "sha256": "e0bc5fc47e1f2fa3bdd1d51b34356594a0ee88d39d107562cd7a4a2d1de27b7f",
+              "version_id": 8
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "57822661b02310f97ccd242ce929ed82907251ef22f350f9673d76c56c918a13",
+              "version_id": 11
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "0719a985e5f09e61620906078676ecfe93c63810dca870702b834754d1b7046c",
+              "version_id": 12
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "9a003c868816e05d0858815160d14524fdbd037ac9e92c794261e89a4cc48299",
+              "version_id": 14
+            },
+            {
+              "role": "EXISTING",
+              "sha256": "935bfe20fac036b1ab0a772616d84780171634a84700ef985f06a49a0573dbf2",
+              "version_id": 18
+            },
+            {
+              "role": "HOME",
+              "sha256": "6028d40a3ecbf812fd8bcfb3306c6afc6826535b6a59aa22ef4f4a83cfac9580",
+              "version_id": 57
+            }
+          ]
+        },
+        "item_id": 13,
+        "item_code": "HOME_MIDISPONIBLE",
+        "item_status": "PENDIENTE",
+        "kind": "SCREEN",
+        "ordinal": 1,
+        "required": true,
+        "context_json": {
+          "screen_spec": {
+            "device": "IPHONE16PRO",
+            "screen": "HOME"
+          },
+          "parent_item_id": 10,
+          "parent_order_id": 7,
+          "target_component": "HOME.SUMMARY.MI_DISPONIBLE"
+        },
+        "acceptance_json": {
+          "assertions": [
+            "Mi disponible is a navigation entry to Cómo se calcula",
+            "Do not render a standalone monetary value in Mi disponible",
+            "All other HOME regions and their copy unchanged"
+          ],
+          "qa_required": true,
+          "semantic_qa": {
+            "status": "PENDING"
+          }
+        },
+        "qa_receipt": {},
+        "approved_at": null,
+        "approved_by": null
+      }
+    ],
+    "tokens": [
+      {
+        "version_id": 7,
+        "element_id": 5,
+        "code": "color.action.primary.bg",
+        "family": "COLOR",
+        "approval_status": "APPROVED",
+        "value_json": {
+          "usage": "CTA_BACKGROUND_FOR_WHITE_TEXT",
+          "value": "#008200",
+          "format": "HEX"
+        },
+        "metadata": {
+          "source": "GITHUB:PR3715:SALY_DS_V1_CANDIDATE",
+          "white_text_usage": "WCAG_AA_NORMAL_TEXT_CONTRAST_VERIFIED_5_TO_1",
+          "approval_authority": "OWNER_EXPLICIT_CHAT_CONFIRMATION",
+          "valid_from_meaning": "REGISTRY_ACTIVATION_NOT_RETROACTIVE_DESIGN_APPROVAL",
+          "approval_date_local": "2026-11-18"
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 8,
+        "element_id": 4,
+        "code": "color.brand.primary",
+        "family": "COLOR",
+        "approval_status": "APPROVED",
+        "value_json": {
+          "usage": "BRAND_ONLY_NOT_WHITE_TEXT_CTA",
+          "value": "#00C853",
+          "format": "HEX"
+        },
+        "metadata": {
+          "source": "LIBRARY:Identidad de Marca SALY.png",
+          "white_text_usage": "NOT_APPROVED_FOR_WHITE_TEXT_CTA",
+          "approval_authority": "OWNER_EXPLICIT_CHAT_CONFIRMATION",
+          "valid_from_meaning": "REGISTRY_ACTIVATION_NOT_RETROACTIVE_DESIGN_APPROVAL",
+          "approval_date_local": "2026-11-18"
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 10,
+        "element_id": 6,
+        "code": "candidate.saly_ds_v1.color.brand.green.600",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#008200"
+        },
+        "metadata": {
+          "source_path": "tokens.color.brand.green.600",
+          "conflict_note": "SOURCE_BRAND_008200_CONFLICTS_WITH_APPROVED_BRAND_00C853",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Marca / acción primaria",
+            "value": "#008200",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 11,
+        "element_id": 7,
+        "code": "candidate.saly_ds_v1.color.ink.navy.900",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#081631"
+        },
+        "metadata": {
+          "source_path": "tokens.color.ink.navy.900",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Texto principal y cifras",
+            "value": "#081631",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 12,
+        "element_id": 8,
+        "code": "candidate.saly_ds_v1.color.surface.white",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#FFFFFF"
+        },
+        "metadata": {
+          "source_path": "tokens.color.surface.white",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Card protagonista y superficies",
+            "value": "#FFFFFF",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 13,
+        "element_id": 9,
+        "code": "candidate.saly_ds_v1.color.surface.canvas",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#F5F7F7"
+        },
+        "metadata": {
+          "source_path": "tokens.color.surface.canvas",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Superficies secundarias",
+            "value": "#F5F7F7",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 14,
+        "element_id": 10,
+        "code": "candidate.saly_ds_v1.color.surface.mint",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#EAF9EE"
+        },
+        "metadata": {
+          "source_path": "tokens.color.surface.mint",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Fondo de Saly Plus y estados suaves",
+            "value": "#EAF9EE",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 15,
+        "element_id": 11,
+        "code": "candidate.saly_ds_v1.color.ink.gray.600",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#5C6577"
+        },
+        "metadata": {
+          "source_path": "tokens.color.ink.gray.600",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Texto secundario",
+            "value": "#5C6577",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 16,
+        "element_id": 12,
+        "code": "candidate.saly_ds_v1.color.accent.reward.yellow",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#F6B400"
+        },
+        "metadata": {
+          "source_path": "tokens.color.accent.reward.yellow",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Acento decorativo Rewards, NO texto/ícono funcional sobre blanco",
+            "value": "#F6B400",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 17,
+        "element_id": 13,
+        "code": "candidate.saly_ds_v1.color.accent.reward.gold.700",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#9D6800"
+        },
+        "metadata": {
+          "source_path": "tokens.color.accent.reward.gold.700",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Ícono funcional Rewards contrastado",
+            "value": "#9D6800",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 18,
+        "element_id": 14,
+        "code": "candidate.saly_ds_v1.color.surface.reward",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#FFF9E9"
+        },
+        "metadata": {
+          "source_path": "tokens.color.surface.reward",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Fondo Rewards",
+            "value": "#FFF9E9",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 19,
+        "element_id": 15,
+        "code": "candidate.saly_ds_v1.color.accent.benefits.purple",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#923CF3"
+        },
+        "metadata": {
+          "source_path": "tokens.color.accent.benefits.purple",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Identidad de Beneficios",
+            "value": "#923CF3",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 20,
+        "element_id": 16,
+        "code": "candidate.saly_ds_v1.color.stroke.gray.200",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#E4E8E8"
+        },
+        "metadata": {
+          "source_path": "tokens.color.stroke.gray.200",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "type": "color",
+            "usage": "Bordes y separadores",
+            "value": "#E4E8E8",
+            "status": "candidate"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 21,
+        "element_id": 17,
+        "code": "candidate.saly_ds_v1.semantic.color.action.primary.bg",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.brand.green.600}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.action.primary.bg",
+          "conflict_note": "SEMANTIC_ALIAS_008200_TARGET_COLLIDES_WITH_APPROVED_CTA_TOKEN",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.brand.green.600}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 22,
+        "element_id": 18,
+        "code": "candidate.saly_ds_v1.semantic.color.action.primary.text",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.white}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.action.primary.text",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.surface.white}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 23,
+        "element_id": 19,
+        "code": "candidate.saly_ds_v1.semantic.color.text.primary",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.ink.navy.900}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.text.primary",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.ink.navy.900}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 24,
+        "element_id": 20,
+        "code": "candidate.saly_ds_v1.semantic.color.text.secondary",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.ink.gray.600}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.text.secondary",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.ink.gray.600}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 25,
+        "element_id": 21,
+        "code": "candidate.saly_ds_v1.semantic.color.surface.page",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.white}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.surface.page",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.surface.white}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 26,
+        "element_id": 22,
+        "code": "candidate.saly_ds_v1.semantic.color.surface.card",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.white}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.surface.card",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.surface.white}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 27,
+        "element_id": 23,
+        "code": "candidate.saly_ds_v1.semantic.color.surface.subtle",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.canvas}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.surface.subtle",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.surface.canvas}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 28,
+        "element_id": 24,
+        "code": "candidate.saly_ds_v1.semantic.color.border.subtle",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.stroke.gray.200}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.border.subtle",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.stroke.gray.200}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 29,
+        "element_id": 25,
+        "code": "candidate.saly_ds_v1.semantic.color.module.plus.icon",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.brand.green.600}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.module.plus.icon",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.brand.green.600}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 30,
+        "element_id": 26,
+        "code": "candidate.saly_ds_v1.semantic.color.module.plus.bg",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.mint}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.module.plus.bg",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.surface.mint}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 31,
+        "element_id": 27,
+        "code": "candidate.saly_ds_v1.semantic.color.module.rewards.icon",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.accent.reward.gold.700}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.module.rewards.icon",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.accent.reward.gold.700}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 32,
+        "element_id": 28,
+        "code": "candidate.saly_ds_v1.semantic.color.module.rewards.bg",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.reward}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.module.rewards.bg",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.surface.reward}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 33,
+        "element_id": 29,
+        "code": "candidate.saly_ds_v1.semantic.color.module.benefits.icon",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.accent.benefits.purple}"
+        },
+        "metadata": {
+          "source_path": "tokens.semantic.color.module.benefits.icon",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "alias": "{color.accent.benefits.purple}",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 34,
+        "element_id": 30,
+        "code": "candidate.saly_ds_v1.typography.font.family.base",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "Inter, system-ui, sans-serif"
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.family.base",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "string",
+          "source_payload": {
+            "value": "Inter, system-ui, sans-serif",
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 35,
+        "element_id": 31,
+        "code": "candidate.saly_ds_v1.typography.font.amount.hero",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 700,
+            "size_px": 48,
+            "line_height_px": 56
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.amount.hero",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 700,
+            "size_px": 48,
+            "line_height_px": 56
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 36,
+        "element_id": 32,
+        "code": "candidate.saly_ds_v1.typography.font.heading.card",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 600,
+            "size_px": 20,
+            "line_height_px": 28
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.heading.card",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 600,
+            "size_px": 20,
+            "line_height_px": 28
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 37,
+        "element_id": 33,
+        "code": "candidate.saly_ds_v1.typography.font.heading.section",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 700,
+            "size_px": 22,
+            "line_height_px": 30
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.heading.section",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 700,
+            "size_px": 22,
+            "line_height_px": 30
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 38,
+        "element_id": 34,
+        "code": "candidate.saly_ds_v1.typography.font.body.default",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 400,
+            "size_px": 16,
+            "line_height_px": 24
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.body.default",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 400,
+            "size_px": 16,
+            "line_height_px": 24
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 39,
+        "element_id": 35,
+        "code": "candidate.saly_ds_v1.typography.font.body.secondary",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 400,
+            "size_px": 14,
+            "line_height_px": 20
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.body.secondary",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 400,
+            "size_px": 14,
+            "line_height_px": 20
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 40,
+        "element_id": 36,
+        "code": "candidate.saly_ds_v1.typography.font.caption",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 400,
+            "size_px": 12,
+            "line_height_px": 16
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.caption",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 400,
+            "size_px": 12,
+            "line_height_px": 16
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 41,
+        "element_id": 37,
+        "code": "candidate.saly_ds_v1.typography.font.button.primary",
+        "family": "TYPOGRAPHY",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "weight": 600,
+            "size_px": 16,
+            "line_height_px": 24
+          }
+        },
+        "metadata": {
+          "source_path": "tokens.typography.font.button.primary",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "object",
+          "source_payload": {
+            "status": "CANDIDATO",
+            "weight": 600,
+            "size_px": 16,
+            "line_height_px": 24
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 42,
+        "element_id": 38,
+        "code": "candidate.saly_ds_v1.spacing.space.4",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 4
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.4",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 4,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 43,
+        "element_id": 39,
+        "code": "candidate.saly_ds_v1.spacing.space.8",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 8
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.8",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 8,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 44,
+        "element_id": 40,
+        "code": "candidate.saly_ds_v1.spacing.space.12",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 12
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.12",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 12,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 45,
+        "element_id": 41,
+        "code": "candidate.saly_ds_v1.spacing.space.16",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 16
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.16",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 16,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 46,
+        "element_id": 42,
+        "code": "candidate.saly_ds_v1.spacing.space.24",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 24
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.24",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 24,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 47,
+        "element_id": 43,
+        "code": "candidate.saly_ds_v1.spacing.space.32",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 32
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.32",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 32,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 48,
+        "element_id": 44,
+        "code": "candidate.saly_ds_v1.spacing.space.48",
+        "family": "SPACING",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 48
+        },
+        "metadata": {
+          "source_path": "tokens.spacing.space.48",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 48,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 49,
+        "element_id": 45,
+        "code": "candidate.saly_ds_v1.radius.radius.card.hero",
+        "family": "LAYOUT",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 24
+        },
+        "metadata": {
+          "source_path": "tokens.radius.radius.card.hero",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 24,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 50,
+        "element_id": 46,
+        "code": "candidate.saly_ds_v1.radius.radius.card.secondary",
+        "family": "LAYOUT",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 16
+        },
+        "metadata": {
+          "source_path": "tokens.radius.radius.card.secondary",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 16,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 51,
+        "element_id": 47,
+        "code": "candidate.saly_ds_v1.radius.radius.button.primary",
+        "family": "LAYOUT",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 14
+        },
+        "metadata": {
+          "source_path": "tokens.radius.radius.button.primary",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 14,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 52,
+        "element_id": 48,
+        "code": "candidate.saly_ds_v1.radius.radius.pill",
+        "family": "LAYOUT",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 999
+        },
+        "metadata": {
+          "source_path": "tokens.radius.radius.pill",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": {
+            "px": 999,
+            "status": "CANDIDATO"
+          },
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 53,
+        "element_id": 49,
+        "code": "candidate.saly_ds_v1.accessibility.touch_target_min_px",
+        "family": "RULE",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": 44
+        },
+        "metadata": {
+          "source_path": "tokens.accessibility.touch_target_min_px",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "number",
+          "source_payload": 44,
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 54,
+        "element_id": 50,
+        "code": "candidate.saly_ds_v1.accessibility.supports_font_scaling",
+        "family": "RULE",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": true
+        },
+        "metadata": {
+          "source_path": "tokens.accessibility.supports_font_scaling",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "boolean",
+          "source_payload": true,
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 55,
+        "element_id": 51,
+        "code": "candidate.saly_ds_v1.accessibility.use_color_as_sole_signal",
+        "family": "RULE",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": false
+        },
+        "metadata": {
+          "source_path": "tokens.accessibility.use_color_as_sole_signal",
+          "conflict_note": "NONE",
+          "not_effective": true,
+          "raw_value_type": "boolean",
+          "source_payload": false,
+          "source_git_blob": "551469ed451f60af43e874c4688451a210a82dc1",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 57,
+        "element_id": 53,
+        "code": "candidate.saly_home_v3.color.surface.benefits",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#F4E7FD"
+        },
+        "metadata": {
+          "kind": "ESTIMATED_COLOR",
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "alias_target_code": null,
+          "source_file_sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 58,
+        "element_id": 54,
+        "code": "candidate.saly_home_v3.semantic.color.navigation.active",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.action.primary.bg}"
+        },
+        "metadata": {
+          "kind": "ALIAS",
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "alias_target_code": "color.action.primary.bg",
+          "source_file_sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 59,
+        "element_id": 55,
+        "code": "candidate.saly_home_v3.semantic.color.navigation.inactive",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.ink.gray.600}"
+        },
+        "metadata": {
+          "kind": "ALIAS",
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "alias_target_code": "candidate.saly_ds_v1.color.ink.gray.600",
+          "source_file_sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 60,
+        "element_id": 56,
+        "code": "candidate.saly_home_v3.semantic.color.navigation.background",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.white}"
+        },
+        "metadata": {
+          "kind": "ALIAS",
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "alias_target_code": "candidate.saly_ds_v1.color.surface.white",
+          "source_file_sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 61,
+        "element_id": 57,
+        "code": "candidate.saly_home_v3.semantic.color.module.benefits.bg",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "{color.surface.benefits}"
+        },
+        "metadata": {
+          "kind": "ALIAS",
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "alias_target_code": "candidate.saly_home_v3.color.surface.benefits",
+          "source_file_sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 62,
+        "element_id": 58,
+        "code": "candidate.saly_home_v3.semantic.color.notification.badge",
+        "family": "COLOR",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": "#E62F40"
+        },
+        "metadata": {
+          "kind": "ESTIMATED_COLOR",
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "alias_target_code": null,
+          "source_file_sha256": "d8dd1a4da97f3ac180e060a4fb23ba4f91d7e37668fe905135c769fd3aa68850",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      },
+      {
+        "version_id": 63,
+        "element_id": 59,
+        "code": "candidate.saly_home_v3.elevation.card.hero",
+        "family": "LAYOUT",
+        "approval_status": "CANDIDATE",
+        "value_json": {
+          "value": {
+            "blur": 16,
+            "color": "#081631",
+            "spread": 0,
+            "opacity": 0.1,
+            "offset_x": 0,
+            "offset_y": 4
+          }
+        },
+        "metadata": {
+          "not_effective": true,
+          "source_file_id": "1JbkHTPOhacOdA3dbO_kQgjn8LAP-yHOQ",
+          "creative_policy": "OPTIONAL",
+          "source_pack_sha256": "0571e2de1e5bdb7dd2b9afb06a024abb293beff6a37bacc1e24c33c80e04fbdb",
+          "device_coordinate_warning": "FLATTENED_MOCKUP_NOT_NATIVE",
+          "approval_required_for_activation": true
+        },
+        "project_id": 2
+      }
+    ],
+    "contexts": [
+      {
+        "id": 3,
+        "code": "SALY_HOME_V015_CONTEXT_20261123",
+        "state": "SEALED",
+        "project_id": 2,
+        "version_label": "v1",
+        "mode": "EXPLORE",
+        "sealed_at": "2026-11-23 06:17:19.456003+00",
+        "provenance": "GOVERNED_USER_REQUEST_PR4647_FAIL_FORWARD_V2"
+      },
+      {
+        "id": 4,
+        "code": "SALY_ADELANTO_V015_CONTEXT_20261123",
+        "state": "SEALED",
+        "project_id": 2,
+        "version_label": "v1",
+        "mode": "EXPLORE",
+        "sealed_at": "2026-11-23 06:17:19.456003+00",
+        "provenance": "GOVERNED_USER_REQUEST_PR4647_FAIL_FORWARD_V2"
+      }
+    ],
+    "allFns": [
+      {
+        "proname": "creative_chat_finalize_after_verified_delivery_v1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_chat_finalize_after_verified_delivery_v1(p_token uuid, p_run_id bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'saly', 'pg_temp'\nAS $function$\nDECLARE c record; r record; i record; v_result jsonb;\nBEGIN\n IF p_token IS NULL OR p_run_id IS NULL OR p_run_id<1\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_FINISH_BAD_INPUT'; END IF;\n PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));\n SELECT * INTO c FROM saly.creative_queue_claims_v1\n WHERE claim_token=p_token FOR UPDATE;\n SELECT * INTO r FROM saly.creative_runs WHERE id=p_run_id FOR UPDATE;\n SELECT * INTO i FROM saly.creative_order_items\n WHERE id=c.item_id AND order_id=c.order_id FOR UPDATE;\n IF c.id IS NULL OR r.id IS NULL OR i.id IS NULL\n OR c.state<>'ACTIVE' OR r.queue_claim_id IS DISTINCT FROM c.id\n OR r.state<>'EXITOSO' OR i.status<>'APROBADO'\n OR i.qa_receipt->>'verdict' IS DISTINCT FROM 'PASS'\n OR nullif(btrim(i.qa_receipt->>'comment'),'') IS NULL\n OR i.qa_receipt->>'artifact_sha256' IS DISTINCT FROM r.output_evidence->>'sha256'\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_FINISH_QA_NOT_SAVED'; END IF;\n -- V06 verifies actual evidence. A textual \"generated\" or a worker receipt\n -- does not suffice. On absence the transaction fails and remains pending.\n v_result:=saly.creative_queue_release_v1(p_token,'DONE');\n IF v_result->>'status' IS DISTINCT FROM 'RELEASED'\n OR v_result->>'result' IS DISTINCT FROM 'DONE'\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_FINISH_NOT_VERIFIED'; END IF;\n -- The user-approved single-screen contract requires a REAL order\n -- TERMINADO, never just a conversational alias for COMPLETADO.\n IF EXISTS (\n  SELECT 1 FROM saly.creative_orders o WHERE o.id=c.order_id\n    AND o.request_kind='APP_SCREEN_SINGLE'\n    AND (o.status<>'TERMINADO' OR v_result->'order_closed'<>'true'::jsonb)\n ) THEN RAISE EXCEPTION 'CREATIVE_CHAT_SINGLE_ORDER_NOT_TERMINADO'; END IF;\n  RETURN jsonb_build_object('status','TERMINADO','run_id',p_run_id,\n    'item_id',i.id,'db_item_state','APROBADO','db_claim_state','DONE',\n    'qa_comment',i.qa_receipt->>'comment',\n    'order_closed',v_result->'order_closed');\nEND $function$\n"
+      },
+      {
+        "proname": "creative_chat_save_qa_v1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_chat_save_qa_v1(p_token uuid, p_run_id bigint, p_artifact_ref text, p_artifact_sha256 text, p_worker_receipt text, p_qa_receipt jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'saly', 'pg_temp'\nAS $function$\nDECLARE c record; r record; i record; v_verdict text; v_reviewer text;\nBEGIN\n IF p_token IS NULL OR p_run_id IS NULL OR p_run_id<1\n OR nullif(btrim(coalesce(p_artifact_ref,'')),'') IS NULL\n OR p_artifact_sha256 IS NULL OR p_artifact_sha256 !~ '^[0-9a-f]{64}$'\n OR nullif(btrim(coalesce(p_worker_receipt,'')),'') IS NULL\n OR jsonb_typeof(p_qa_receipt) IS DISTINCT FROM 'object'\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_INPUT_INVALID'; END IF;\n v_verdict:=p_qa_receipt->>'verdict';\n v_reviewer:=p_qa_receipt->>'reviewer_ref';\n IF v_verdict NOT IN ('PASS','FAIL') OR v_verdict IS NULL\n OR nullif(btrim(coalesce(p_qa_receipt->>'comment','')),'') IS NULL\n OR length(p_qa_receipt->>'comment')>4000\n OR nullif(btrim(coalesce(v_reviewer,'')),'') IS NULL\n OR p_qa_receipt->>'artifact_sha256' IS DISTINCT FROM p_artifact_sha256\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_COMMENT_OR_HASH_INVALID'; END IF;\n\n PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));\n SELECT * INTO c FROM saly.creative_queue_claims_v1\n WHERE claim_token=p_token FOR UPDATE;\n SELECT * INTO r FROM saly.creative_runs\n WHERE id=p_run_id FOR UPDATE;\n SELECT * INTO i FROM saly.creative_order_items\n WHERE id=c.item_id AND order_id=c.order_id FOR UPDATE;\n IF c.id IS NULL OR r.id IS NULL OR i.id IS NULL\n OR c.state<>'ACTIVE' OR c.lease_until<=clock_timestamp()\n OR r.queue_claim_id IS DISTINCT FROM c.id OR r.order_id IS DISTINCT FROM c.order_id\n OR r.item_id IS DISTINCT FROM c.item_id\n OR r.state<>'EJECUTANDO' OR i.status<>'PRODUCIENDO'\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_RUN_NOT_EXECUTING'; END IF;\n IF lower(btrim(v_reviewer))=lower(btrim(c.worker_ref))\n THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_REVIEWER_NOT_INDEPENDENT'; END IF;\n\n IF v_verdict='FAIL' THEN\n   PERFORM saly.creative_queue_advance_run_v1(p_token,p_run_id,'BLOQUEADO','{}'::jsonb,'QA_FAIL');\n   UPDATE saly.creative_order_items\n   SET status='BLOQUEADO',qa_receipt=p_qa_receipt||jsonb_build_object('run_id',p_run_id)\n   WHERE id=i.id AND status='PRODUCIENDO';\n   PERFORM saly.creative_queue_release_v1(p_token,'BLOCKED','QA_FAIL');\n   RETURN jsonb_build_object('status','QA_COMMENT_SAVED_BLOCKED',\n      'run_id',p_run_id,'item_id',i.id,'qa_verdict','FAIL',\n      'comment_saved',true,'db_done_allowed',false);\n END IF;\n\n PERFORM saly.creative_queue_advance_run_v1(\n   p_token,p_run_id,'EXITOSO',\n   jsonb_build_object('artifact_ref',p_artifact_ref,'sha256',p_artifact_sha256,\n                      'worker_receipt',p_worker_receipt),NULL);\n UPDATE saly.creative_order_items SET status='EN_QA' WHERE id=i.id\n    AND status='PRODUCIENDO';\n IF NOT FOUND THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_STAGE_NOT_READY'; END IF;\n -- Existing trigger validates independent QA, approved_by, RUN, artifact\n -- and all sealed semantic/technical QA expectations in the real product.\n UPDATE saly.creative_order_items SET status='APROBADO',\n    approved_at=clock_timestamp(),approved_by=v_reviewer,\n    qa_receipt=p_qa_receipt||jsonb_build_object('run_id',p_run_id)\n WHERE id=i.id AND status='EN_QA';\n IF NOT FOUND THEN RAISE EXCEPTION 'CREATIVE_CHAT_QA_APPROVAL_NOT_READY'; END IF;\n RETURN jsonb_build_object('status','QA_COMMENT_SAVED_AWAITING_VERIFIED_CHAT_DELIVERY',\n   'run_id',p_run_id,'item_id',i.id,'qa_verdict','PASS',\n   'item_state','APROBADO','comment_saved',true,\n   'native_delivery_verified',false,'db_done_allowed',false);\nEND $function$\n"
+      },
+      {
+        "proname": "creative_chat_terminal_item_guard_v1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_chat_terminal_item_guard_v1()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'saly', 'pg_temp'\nAS $function$\nDECLARE\n  v_j jsonb;\n  v_a jsonb;\n  v_order_status text;\nBEGIN\n IF TG_OP='DELETE' THEN\n  IF OLD.status='TERMINADO' OR EXISTS (\n   SELECT 1 FROM saly.creative_orders o WHERE o.id=OLD.order_id AND o.status='TERMINADO'\n  ) THEN RAISE EXCEPTION 'SALY_CHAT_TERMINAL_ITEM_IMMUTABLE'; END IF;\n  RETURN OLD;\n END IF;\n IF TG_OP<>'UPDATE' THEN RETURN NEW; END IF;\n SELECT status INTO v_order_status FROM saly.creative_orders\n WHERE id=NEW.order_id FOR UPDATE;\n IF OLD.status='TERMINADO' OR v_order_status='TERMINADO' THEN\n  RAISE EXCEPTION 'SALY_CHAT_TERMINAL_ITEM_IMMUTABLE'; END IF;\n IF NEW.status='TERMINADO' AND OLD.status IS DISTINCT FROM NEW.status THEN\n  IF OLD.status<>'PENDIENTE' OR NEW.order_id<>OLD.order_id\n  OR NEW.code<>OLD.code OR NEW.acceptance_json IS DISTINCT FROM OLD.acceptance_json\n  OR NEW.context_json IS DISTINCT FROM OLD.context_json\n  OR EXISTS (SELECT 1 FROM saly.creative_runs r WHERE r.item_id=NEW.id)\n  THEN RAISE EXCEPTION 'SALY_CHAT_TERMINAL_NOT_ARCHIVED_PENDING'; END IF;\n  v_a:=OLD.qa_receipt->'chat_artifact_reconciliation_v1';\n  v_j:=NEW.qa_receipt->'chat_judge_v1';\n  IF v_a IS NULL OR v_j IS NULL\n  OR NEW.qa_receipt->'chat_artifact_reconciliation_v1' IS DISTINCT FROM v_a\n  OR v_a->>'status' IS DISTINCT FROM 'ENTREGADO_EN_CHAT_PENDIENTE_QA_INDEPENDIENTE'\n  OR v_a->>'avoid_regeneration' IS DISTINCT FROM 'true'\n  OR v_a->>'chat_delivery_observed' IS DISTINCT FROM 'true'\n  OR v_a->>'sha256' !~ '^[0-9a-f]{64}$'\n  OR v_j->>'artifact_sha256' IS DISTINCT FROM v_a->>'sha256'\n  OR v_j->>'judge_receipt_sha256' !~ '^[0-9a-f]{64}$'\n  OR v_j->>'source_manifest_input_sha256' !~ '^[0-9a-f]{64}$'\n  OR v_j->>'judge_kind' IS DISTINCT FROM 'DETERMINISTIC_TECHNICAL_SEPARATE_PROCESS'\n  OR v_j->>'technical_verdict' NOT IN ('PASS_TECHNICAL','PASS_TECHNICAL_WITH_OBSERVATIONS')\n  OR v_j->>'technical_verdict' IS NULL\n  OR v_j->>'semantic_independence_proven' IS DISTINCT FROM 'false'\n  OR v_j->>'semantic_verdict' IS DISTINCT FROM 'NOT_INDEPENDENTLY_EVALUATED'\n  OR v_j->>'production_approved' IS DISTINCT FROM 'false'\n  OR v_j->>'run_verified' IS DISTINCT FROM 'false'\n  OR v_j->>'terminal_semantics' IS DISTINCT FROM 'IMAGE_DELIVERED_AND_QA_COMMENTED_NOT_APPROVED'\n  OR nullif(btrim(v_j->>'qa_comment'),'') IS NULL\n  OR jsonb_typeof(v_j->'observations') IS DISTINCT FROM 'array'\n  OR NEW.approved_at IS NOT NULL OR NEW.approved_by IS NOT NULL\n  OR EXISTS (\n    SELECT 1 FROM saly.creative_item_dependencies d\n    JOIN saly.creative_order_items p ON p.id=d.depends_on_item_id\n    WHERE d.order_id=NEW.order_id AND d.item_id=NEW.id\n      AND p.status NOT IN ('TERMINADO','APROBADO')\n  ) THEN\n   RAISE EXCEPTION 'SALY_CHAT_TERMINAL_JUDGE_OR_DEPENDENCY_MISSING';\n  END IF;\n END IF;\n RETURN NEW;\nEND $function$\n"
+      },
+      {
+        "proname": "creative_chat_terminal_order_guard_v1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_chat_terminal_order_guard_v1()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'saly', 'pg_temp'\nAS $function$\nBEGIN\n IF TG_OP='DELETE' THEN\n  IF OLD.status='TERMINADO' THEN\n   RAISE EXCEPTION 'SALY_CHAT_TERMINAL_ORDER_IMMUTABLE'; END IF;\n  RETURN OLD;\n END IF;\n IF TG_OP<>'UPDATE' THEN RETURN NEW; END IF;\n IF OLD.status='TERMINADO' THEN\n  RAISE EXCEPTION 'SALY_CHAT_TERMINAL_ORDER_IMMUTABLE'; END IF;\n IF NEW.status='TERMINADO' AND OLD.status IS DISTINCT FROM NEW.status THEN\n  IF OLD.status NOT IN ('PLANIFICADO','EN_PROCESO')\n  OR NEW.completed_at IS NULL\n  OR NOT EXISTS (SELECT 1 FROM saly.creative_order_items i\n                 WHERE i.order_id=NEW.id AND i.required)\n  OR EXISTS (\n   SELECT 1 FROM saly.creative_order_items i WHERE i.order_id=NEW.id AND\n      (i.status NOT IN ('TERMINADO','APROBADO','OMITIDO')\n       OR (i.required AND i.status NOT IN ('TERMINADO','APROBADO'))\n       OR (i.status='TERMINADO' AND\n         (i.qa_receipt#>>'{chat_judge_v1,artifact_sha256}' IS DISTINCT FROM\n            i.qa_receipt#>>'{chat_artifact_reconciliation_v1,sha256}'\n          OR nullif(btrim(i.qa_receipt#>>'{chat_judge_v1,qa_comment}'),'') IS NULL)))\n  )\n  OR EXISTS (SELECT 1 FROM saly.creative_runs r WHERE r.order_id=NEW.id\n              AND r.state IN ('EN_COLA','EJECUTANDO'))\n  THEN RAISE EXCEPTION 'SALY_CHAT_TERMINAL_ORDER_DETAILS_INCOMPLETE'; END IF;\n END IF;\n RETURN NEW;\nEND $function$\n"
+      },
+      {
+        "proname": "creative_item_guard_l1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_item_guard_l1()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'saly'\nAS $function$\nDECLARE v_order_status text; v_run record; v_run_id text;\nBEGIN\n SELECT status INTO v_order_status FROM saly.creative_orders WHERE id=NEW.order_id FOR UPDATE;\n IF v_order_status IN ('COMPLETADO','CANCELADO')\n THEN RAISE EXCEPTION 'CREATIVE_CLOSED_ORDER_IMMUTABLE_ITEMS'; END IF;\n IF TG_OP='UPDATE' AND OLD.status='APROBADO'\n THEN RAISE EXCEPTION 'CREATIVE_APPROVED_ITEM_IMMUTABLE'; END IF;\n -- Original input and interpretation cannot be silently replaced after capture.\n IF TG_OP='UPDATE' AND OLD.acceptance_json ? 'semantic_qa'\n    AND NEW.acceptance_json->'semantic_qa' IS DISTINCT FROM OLD.acceptance_json->'semantic_qa'\n THEN RAISE EXCEPTION 'CREATIVE_SEMANTIC_CONTRACT_IMMUTABLE'; END IF;\n IF NEW.status='APROBADO' AND (TG_OP='INSERT' OR OLD.status IS DISTINCT FROM NEW.status) THEN\n   IF TG_OP='INSERT' OR OLD.status<>'EN_QA'\n   THEN RAISE EXCEPTION 'CREATIVE_ITEM_NOT_IN_QA'; END IF;\n   IF EXISTS (\n      SELECT 1 FROM saly.creative_item_dependencies d\n      JOIN saly.creative_order_items prereq ON prereq.id=d.depends_on_item_id\n      WHERE d.order_id=NEW.order_id AND d.item_id=NEW.id AND prereq.status<>'APROBADO'\n   ) THEN RAISE EXCEPTION 'CREATIVE_DEPENDENCY_NOT_APPROVED'; END IF;\n   v_run_id:=NEW.qa_receipt->>'run_id';\n   IF v_run_id IS NULL OR v_run_id !~ '^[0-9]+$'\n      OR (NEW.qa_receipt->>'verdict') IS DISTINCT FROM 'PASS'\n      OR jsonb_typeof(NEW.qa_receipt->'reviewer_ref') IS DISTINCT FROM 'string'\n      OR nullif(btrim(NEW.qa_receipt->>'reviewer_ref'),'') IS NULL\n   THEN RAISE EXCEPTION 'CREATIVE_QA_RECEIPT_MISSING'; END IF;\n   SELECT r.id,r.worker_ref,r.input_snapshot,r.output_evidence INTO v_run\n   FROM saly.creative_runs r\n   WHERE r.id=v_run_id::bigint AND r.item_id=NEW.id AND r.order_id=NEW.order_id\n     AND r.state='EXITOSO' AND nullif(r.output_evidence->>'artifact_ref','') IS NOT NULL\n     AND NOT EXISTS (SELECT 1 FROM saly.creative_runs newer\n       WHERE newer.item_id=r.item_id AND newer.attempt_number>r.attempt_number);\n   IF NOT FOUND OR lower(btrim(NEW.qa_receipt->>'reviewer_ref'))=lower(btrim(v_run.worker_ref))\n      OR NEW.approved_by IS DISTINCT FROM NEW.qa_receipt->>'reviewer_ref'\n   THEN RAISE EXCEPTION 'CREATIVE_QA_NOT_INDEPENDENT_OR_RUN_MISSING'; END IF;\n   IF NEW.acceptance_json ? 'semantic_qa' THEN\n     IF v_run.input_snapshot#>'{visual_contract,qa_checks}' IS DISTINCT FROM\n        saly.creative_item_visual_contract_l3b(NEW.id)#>'{contract,qa_checks}'\n     THEN RAISE EXCEPTION 'CREATIVE_TECHNICAL_CHECK_EXPECTATIONS_MISMATCH'; END IF;\n     PERFORM saly.creative_assert_dual_qa_l3c(\n        NEW.acceptance_json,NEW.qa_receipt,v_run.input_snapshot,v_run.output_evidence);\n   END IF;\n END IF;\n RETURN NEW;\nEND $function$\n"
+      },
+      {
+        "proname": "creative_order_close_guard_l1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_order_close_guard_l1()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'saly'\nAS $function$\nBEGIN\n IF NEW.status='COMPLETADO' AND (TG_OP='INSERT' OR OLD.status IS DISTINCT FROM NEW.status) THEN\n   IF EXISTS(SELECT 1 FROM saly.creative_runs r WHERE r.order_id=NEW.id\n      AND r.state IN ('EN_COLA','EJECUTANDO'))\n   THEN RAISE EXCEPTION 'CREATIVE_ORDER_CLOSURE_WITH_ACTIVE_RUNS'; END IF;\n   IF NOT EXISTS (SELECT 1 FROM saly.creative_order_items i\n                  WHERE i.order_id=NEW.id AND i.required)\n      OR EXISTS (SELECT 1 FROM saly.creative_order_items i WHERE i.order_id=NEW.id\n                 AND (i.status NOT IN ('APROBADO','OMITIDO')\n                  OR (i.required AND i.status<>'APROBADO')))\n   THEN RAISE EXCEPTION 'CREATIVE_ORDER_CLOSURE_WITH_INCOMPLETE_DETAILS'; END IF;\n END IF;\n IF TG_OP='UPDATE' AND OLD.status='COMPLETADO'\n THEN RAISE EXCEPTION 'CREATIVE_COMPLETED_ORDER_IMMUTABLE'; END IF;\n RETURN NEW;\nEND $function$\n"
+      },
+      {
+        "proname": "creative_queue_native_delivery_guard_v1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_queue_native_delivery_guard_v1()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'saly', 'pg_temp'\nAS $function$\nDECLARE c record; r record; i record;\nBEGIN\n IF TG_OP='DELETE' THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_IMMUTABLE'; END IF;\n IF TG_OP='UPDATE' THEN\n   IF OLD.state='VERIFIED' THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_IMMUTABLE'; END IF;\n   IF OLD.state<>'STAGED' OR NEW.state<>'VERIFIED'\n      OR NEW.id IS DISTINCT FROM OLD.id OR NEW.claim_id IS DISTINCT FROM OLD.claim_id\n      OR NEW.run_id IS DISTINCT FROM OLD.run_id OR NEW.order_id IS DISTINCT FROM OLD.order_id\n      OR NEW.item_id IS DISTINCT FROM OLD.item_id\n      OR NEW.artifact_ref IS DISTINCT FROM OLD.artifact_ref\n      OR NEW.artifact_sha256 IS DISTINCT FROM OLD.artifact_sha256\n      OR NEW.host_surface IS DISTINCT FROM OLD.host_surface\n      OR NEW.message_id IS DISTINCT FROM OLD.message_id\n      OR NEW.executor_mode IS DISTINCT FROM OLD.executor_mode\n      OR NEW.host_evidence_ref IS DISTINCT FROM OLD.host_evidence_ref\n      OR NEW.host_evidence_sha256 IS DISTINCT FROM OLD.host_evidence_sha256\n      OR NEW.recorded_at IS DISTINCT FROM OLD.recorded_at\n   THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_PROMOTION_INVALID'; END IF;\n ELSE\n   IF NEW.state<>'STAGED' OR NEW.verified_at IS NOT NULL OR NEW.verifier_ref IS NOT NULL\n   THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_STAGED_ONLY'; END IF;\n END IF;\n\n SELECT * INTO c FROM saly.creative_queue_claims_v1 WHERE id=NEW.claim_id FOR UPDATE;\n SELECT * INTO r FROM saly.creative_runs WHERE id=NEW.run_id FOR UPDATE;\n SELECT status INTO i FROM saly.creative_order_items\n WHERE id=NEW.item_id AND order_id=NEW.order_id FOR UPDATE;\n IF NOT FOUND OR c.id IS NULL OR r.id IS NULL\n OR c.order_id IS DISTINCT FROM NEW.order_id OR c.item_id IS DISTINCT FROM NEW.item_id\n OR r.order_id IS DISTINCT FROM NEW.order_id OR r.item_id IS DISTINCT FROM NEW.item_id\n OR r.queue_claim_id IS DISTINCT FROM c.id\n OR c.state IS DISTINCT FROM 'ACTIVE' OR c.lease_until<=clock_timestamp()\n OR r.state IS DISTINCT FROM 'EXITOSO' OR i.status IS DISTINCT FROM 'APROBADO'\n OR r.output_evidence->>'artifact_ref' IS DISTINCT FROM NEW.artifact_ref\n OR r.output_evidence->>'sha256' IS DISTINCT FROM NEW.artifact_sha256\n THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_BINDING_NOT_READY'; END IF;\n IF TG_OP='UPDATE' THEN\n    IF lower(btrim(NEW.verifier_ref))=lower(btrim(c.worker_ref))\n    THEN RAISE EXCEPTION 'CREATIVE_NATIVE_DELIVERY_SELF_VERIFICATION'; END IF;\n END IF;\n RETURN NEW;\nEND $function$\n"
+      },
+      {
+        "proname": "creative_queue_release_v1",
+        "def": "CREATE OR REPLACE FUNCTION saly.creative_queue_release_v1(p_token uuid, p_outcome text, p_note text DEFAULT NULL::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'saly', 'pg_temp'\nAS $function$\nDECLARE v_claim record; v_now timestamptz; v_item_status text; v_closed boolean:=false;\nBEGIN\n  IF p_token IS NULL OR p_outcome NOT IN ('DONE','FAILED','BLOCKED')\n  THEN RAISE EXCEPTION 'CREATIVE_QUEUE_BAD_INPUT'; END IF;\n  PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));\n  v_now := clock_timestamp();\n  SELECT * INTO v_claim FROM saly.creative_queue_claims_v1\n  WHERE claim_token=p_token FOR UPDATE;\n  IF NOT FOUND OR v_claim.state<>'ACTIVE' OR v_claim.lease_until<=v_now\n  THEN RAISE EXCEPTION 'CREATIVE_QUEUE_STALE_TOKEN'; END IF;\n\n  SELECT status INTO v_item_status FROM saly.creative_order_items\n  WHERE id=v_claim.item_id AND order_id=v_claim.order_id FOR UPDATE;\n  IF p_outcome='DONE' THEN\n    -- Internal QA is obligatory; human creative approval is not.\n    IF v_item_status<>'APROBADO' OR NOT EXISTS (\n      SELECT 1 FROM saly.creative_runs r\n      WHERE r.item_id=v_claim.item_id AND r.order_id=v_claim.order_id\n        AND r.state='EXITOSO' AND r.queue_claim_id=v_claim.id\n        AND nullif(r.output_evidence->>'artifact_ref','') IS NOT NULL\n        AND nullif(r.output_evidence->>'worker_receipt','') IS NOT NULL\n        AND r.output_evidence->>'sha256' ~ '^[0-9a-f]{64}$'\n        AND NOT EXISTS (SELECT 1 FROM saly.creative_runs newer\n                        WHERE newer.item_id=r.item_id AND newer.attempt_number>r.attempt_number)\n        AND EXISTS (\n          SELECT 1 FROM saly.creative_queue_native_delivery_evidence_v1 delivery\n          WHERE delivery.claim_id=v_claim.id AND delivery.run_id=r.id\n            AND delivery.order_id=v_claim.order_id\n            AND delivery.item_id=v_claim.item_id\n            AND delivery.artifact_ref=r.output_evidence->>'artifact_ref'\n            AND delivery.artifact_sha256=r.output_evidence->>'sha256'\n            AND delivery.state='VERIFIED'\n            AND delivery.verified_at IS NOT NULL\n            AND nullif(btrim(delivery.verifier_ref),'') IS NOT NULL\n            AND lower(btrim(delivery.verifier_ref))<>lower(btrim(v_claim.worker_ref))\n            AND nullif(btrim(delivery.host_evidence_ref),'') IS NOT NULL\n            AND delivery.host_evidence_sha256 ~ '^[0-9a-f]{64}$'\n            AND nullif(btrim(delivery.message_id),'') IS NOT NULL\n        )\n    ) THEN RAISE EXCEPTION 'CREATIVE_QUEUE_DELIVERY_NOT_VERIFIED'; END IF;\n  ELSE\n    IF v_item_status<>'BLOQUEADO'\n    THEN RAISE EXCEPTION 'CREATIVE_QUEUE_FAILURE_NOT_BLOCKED'; END IF;\n  END IF;\n\n  UPDATE saly.creative_queue_claims_v1\n  SET state=p_outcome, finished_at=v_now, note=left(p_note,1000)\n  WHERE id=v_claim.id;\n\n  IF p_outcome='DONE' AND NOT EXISTS (\n    SELECT 1 FROM saly.creative_order_items i\n    WHERE i.order_id=v_claim.order_id\n      AND (i.status<>'APROBADO' AND (i.required OR i.status<>'OMITIDO'))\n  ) AND EXISTS (\n    SELECT 1 FROM saly.creative_order_items i\n    WHERE i.order_id=v_claim.order_id AND i.required\n  ) THEN\n    UPDATE saly.creative_orders\n      SET status=CASE WHEN request_kind='APP_SCREEN_SINGLE'\n            THEN 'TERMINADO' ELSE 'COMPLETADO' END, completed_at=v_now\n      WHERE id=v_claim.order_id AND status IN ('PLANIFICADO','EN_PROCESO','EN_QA');\n    v_closed := FOUND;\n  END IF;\n  IF p_outcome='DONE' AND NOT v_closed AND EXISTS (\n     SELECT 1 FROM saly.creative_orders\n     WHERE id=v_claim.order_id AND request_kind='APP_SCREEN_SINGLE')\n  THEN RAISE EXCEPTION 'CREATIVE_SINGLE_SCREEN_DID_NOT_TERMINATE'; END IF;\n  RETURN jsonb_build_object('status','RELEASED','result',p_outcome,\n    'claim_id',v_claim.id,'order_closed',v_closed);\nEND $function$\n"
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+SOURCE: https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/45298444825
+JOB: 138124654592
+PG17: ISOLATED
+RESULT: SUCCESS
+CHANGESET: candidate migration + SQL test under ROLLBACK, no SALY writes
+
+2026-11-24T00:36:15.9907114Z A_INPUT|task=NEW_SCREEN; spatial=false; item=101; source=visual.knowledge_select_review_v1
+2026-11-24T00:36:16.0156251Z A_OUTPUT|{"source": "visual.knowledge_select_review_v1", "omitted": 0, "selected": ["K01", "K02", "K03", "K04", "K05", "K06"], "module_content_count": 6}
+2026-11-24T00:36:16.0157072Z B_INPUT|task=NUMERIC_ADJUST; spatial=false; item=102
+2026-11-24T00:36:16.0222952Z B_OUTPUT|{"omitted": [{"reason": "TAREA_LOCAL_SIN_REDISENO", "module_code": "K01"}, {"reason": "TAREA_LOCAL_SIN_REDISENO", "module_code": "K02"}, {"reason": "TAREA_NO_REQUIERE_RECOMPOSICION", "module_code": "K03"}, {"reason": "TAREA_NO_REQUIERE_RECOMPOSICION", "module_code": "K04"}], "selected": ["K05", "K06"]}
+2026-11-24T00:36:16.0225269Z C_INPUT|task=LOCAL_CORRECTION; spatial=true; item=103
+2026-11-24T00:36:16.0309926Z C_OUTPUT|{"omitted": ["K01", "K02", "K03"], "selected": ["K04", "K05", "K06"]}
+2026-11-24T00:36:16.0310959Z D_INPUT|step4; reference=NULL; image not sent by owner
+2026-11-24T00:36:16.0311914Z D_OUTPUT|{"step": "4", "status": "SIN_REFERENCIA", "execute": false, "blocking": false, "reference_observations": []}
+2026-11-24T00:36:16.0313180Z F_INPUT|record K05 twice on same PLAN object; item 102
+2026-11-24T00:36:16.0314532Z F_FIRST_OUTPUT|{"step": "7", "output": {"requirements": ["CTA copy unchanged"]}, "reason": null, "decision": "EJECUTADO", "module_code": "K05", "object_kind": "PLAN", "already_executed": false}
+2026-11-24T00:36:16.0316293Z psql:sandbox/creative_factory/k_task_v2/test_rollback_pg17.sql:92: NOTICE:  F_SECOND_OUTPUT: SALY_K_DUPLICATE_OBJECT_EXECUTION
+2026-11-24T00:36:16.0317972Z F_READBACK|{"k05_row_count": 1, "step9_consumer": {"requirements": ["CTA copy unchanged"]}}
+2026-11-24T00:36:16.0318875Z G_INPUT|K06 reviews PLAN and IMAGE as different objects, once each
+2026-11-24T00:36:16.0323095Z G_OUTPUT|{"k06_objects": 2, "different_objects": 2}
+2026-11-24T00:36:16.0324162Z H_INPUT|preQA author submits plan, same author attempts PASS, different reviewer PASS
+2026-11-24T00:36:16.0326276Z H_SUBMIT|{"status": "PENDING", "author_uid": "11111111-1111-4111-8111-111111111111", "plan_sha256": "ac3df17b58b39a343f24cf80bb944605a5e72e5d8a22035866da9f0b7996d9e5", "independent_pass": false}
+2026-11-24T00:36:16.0328503Z psql:sandbox/creative_factory/k_task_v2/test_rollback_pg17.sql:128: NOTICE:  H_SELF_REVIEW_OUTPUT: SALY_PREQA_INDEPENDENT_REVIEWER_REQUIRED
+2026-11-24T00:36:16.0331202Z H_REVIEW|{"status": "PASS", "plan_sha256": "ac3df17b58b39a343f24cf80bb944605a5e72e5d8a22035866da9f0b7996d9e5", "reviewer_uid": "22222222-2222-4222-8222-222222222222", "independent_pass": true}
+2026-11-24T00:36:16.0332975Z H_OUTPUT|{"verdict": "PASS", "different_reviewer": true}
+2026-11-24T00:36:16.0333783Z E_SQL_INPUT|expired RUN deadline passed; use ORIGINAL creative_run_expire_v1
+2026-11-24T00:36:16.0335502Z E_SQL_OUTPUT|{"state": "FALLIDO", "run_id": 501, "status": "EXPIRED_CLOSED", "changed": true, "error_code": "LEASE_EXPIRED", "attempt_number": 1, "retry_dispatched": false}
+2026-11-24T00:36:16.0337126Z Z_INPUT|ROLLBACK all candidate changes and execution/QA records
+2026-11-24T00:36:16.0338496Z Z_OUTPUT|{"preqa_rows": 0, "result_rows": 0, "selection_rows": 0, "creative_run_rows": 0}
+2026-11-24T00:36:16.0339208Z PG17_SQL_TESTS_PASS
+2026-11-24T00:36:16.1231859Z test_expirer_refuses_without_deadline (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_expirer_refuses_without_deadline) ... E_EXPIRY_GUARD_OUTPUT= {'status': 'EXPIRY_NOT_CONFIRMED', 'expire_readback': {'status': 'NOT_EXPIRED', 'changed': False}, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'PENDING'}, {'elapsed_seconds': 150, 'status': 'PENDING'}, {'elapsed_seconds': 180, 'status': 'PENDING'}], 'count': 7}
+2026-11-24T00:36:16.1260582Z test_never_ready (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_never_ready) ... ENEVER_INPUT=never_ready ENEVER_OUTPUT= {'status': 'ESPERA_AGOTADA', 'run_state': 'FALLIDO', 'run_expired': True, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'PENDING'}, {'elapsed_seconds': 150, 'status': 'PENDING'}, {'elapsed_seconds': 180, 'status': 'PENDING'}], 'count': 7, 'elapsed_seconds': 180}
+2026-11-24T00:36:16.1264630Z test_ready_at_100_seconds (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_ready_at_100_seconds) ... E100_INPUT=ready_at_100_seconds E100_OUTPUT= {'status': 'READY', 'first_observed_ready_seconds': 120, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'PENDING'}, {'elapsed_seconds': 60, 'status': 'PENDING'}, {'elapsed_seconds': 90, 'status': 'PENDING'}, {'elapsed_seconds': 120, 'status': 'READY'}, {'elapsed_seconds': 150, 'status': 'READY'}, {'elapsed_seconds': 180, 'status': 'READY'}], 'count': 7, 'elapsed_seconds': 180, 'next_step': '11'}
+2026-11-24T00:36:16.1268669Z test_ready_at_20_seconds (sandbox.creative_factory.k_task_v2.test_wait_after_dispatch_v2.TestWait.test_ready_at_20_seconds) ... E20_INPUT=ready_at_20_seconds E20_OUTPUT= {'status': 'READY', 'first_observed_ready_seconds': 30, 'checks': [{'elapsed_seconds': 0, 'status': 'PENDING'}, {'elapsed_seconds': 30, 'status': 'READY'}, {'elapsed_seconds': 60, 'status': 'READY'}, {'elapsed_seconds': 90, 'status': 'READY'}, {'elapsed_seconds': 120, 'status': 'READY'}, {'elapsed_seconds': 150, 'status': 'READY'}, {'elapsed_seconds': 180, 'status': 'READY'}], 'count': 7, 'elapsed_seconds': 180, 'next_step': '11'}
+2026-11-24T00:36:16.1307674Z PASS_PG17_K_TASK_ROLLBACK_AND_WAIT_TESTS

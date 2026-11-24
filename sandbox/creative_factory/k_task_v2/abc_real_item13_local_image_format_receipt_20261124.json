@@ -1,0 +1,19 @@
+{
+  "source": "local project attachment /mnt/data/mockup_del_iphone_con_app_saly.png",
+  "source_origin": "previous chat-generated mockup, not production RUN",
+  "file_sha256": "0adca875c7cd40aed73937914b8b8b4fcfe76138e5f72cc702e632f28e2f88e3",
+  "image_format": "PNG",
+  "measured_width": 1024,
+  "measured_height": 1536,
+  "device_code": "IPHONE16PRO",
+  "reference_width": 1206,
+  "reference_height": 2622,
+  "reference_ratio": 0.459954233409611,
+  "measured_ratio": 0.6666666666666666,
+  "relative_deviation": 0.44941956882255374,
+  "tolerance_relative": 0.03,
+  "result": "NO_SIMILAR",
+  "method": "Pillow Image.open, verify, decode and read actual image dimensions",
+  "sql_run_created": false,
+  "production_effect": false
+}

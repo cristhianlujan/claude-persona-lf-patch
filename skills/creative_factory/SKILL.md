@@ -5,6 +5,63 @@ description: Orquesta la composición gráfica de revisión reutilizando el comp
 
 # Fábrica Digital — skill autónoma v0.15 (PLAN_ONLY / REVIEW_ONLY)
 
+## Propuesta de orquestación K01–K06 v0.16 — CANDIDATA, NO ACTIVADA
+
+**Autoridad y fuente única de K:** `visual.knowledge_select_task_v2` es un sucesor basado en `visual.knowledge_select_review_v1`; este último valida las versiones, los bytes de `saly.documentos` (IDs 10–15) y la evidencia documental. El paso 2 **invoca una vez** `saly.creative_task_select_once_v2(item_id, task, spatial_change)` y todos los siguientes pasos consumen ese resultado persistido. No inventar criterios, volver a leer cada K ni decidir por segunda vez desde la skill. La política sigue siendo `CANDIDATE_REVIEW_ONLY` hasta aprobación y prueba de integración. Este bloque expresa la reestructuración solicitada y no altera el proceso activo mientras el PR siga sin fusionarse.
+
+### Matriz seleccionada por tarea (no por paso)
+
+| Tarea | K que se ejecutan | K omitidos con motivo |
+|---|---|---|
+| `NEW_SCREEN` / `EXPLORE_CREATIVE` | K01,K02,K03,K04,K05,K06 | Ninguno |
+| `LOCAL_CORRECTION` + cambio espacial | K04,K05,K06 | K01,K02: sin rediseño; K03: ajuste local |
+| `LOCAL_CORRECTION` no espacial | K05,K06 | K01–K04: ajuste localizado |
+| `LOCAL_CHAT` | K05,K06 | K01–K04: ajuste localizado |
+| `NUMERIC_ADJUST` (cifra/copy) | K05,K06 | K01–K04: sin recomposición |
+
+La selección devuelve **seis decisiones** (`EJECUTAR` u `OMITIDO` + razón). Cada K elegido pasa a `EJECUTADO` solo después de producir su salida y evidencia real. Guardar una sola salida por `item_id + object_kind + object_sha256 + module_code` mediante `saly.creative_k_record_once_v2`. Si se repite el mismo K sobre el mismo objeto, **error**, no recálculo. `saly.creative_k_consume_v2` recupera el resultado, especialmente K05 en paso 9.
+
+### Responsabilidad única
+
+- K01 y K02 → paso **5** (tesis y alternativas).
+- K03 y K04 → paso **6** (jerarquía, optimización espacial/cromática). En paso **4** sirven solo de lente de lectura de la referencia, sin ejecutar y sin registrar una segunda salida.
+- Paso **6b** → consolida **seis dimensiones** a partir de 5 y 6; no vuelve a ejecutar K.
+- K05 → paso **7** (requisitos atómicos y dueño NATIVE/COMPOSITOR); paso **9** únicamente proyecta y reconcilia el resultado guardado.
+- K06 → paso **8** sobre objeto `PLAN` y paso **11** sobre objeto `IMAGE`: dos objetos diferentes y dos registros; no hay doble ejecución sobre el mismo objeto.
+- Cuando un K no aplica, registrar `OMITIDO` y la razón **desde el selector**, no inventada por cada etapa.
+
+### Secuencia explícita de pedido
+
+| Paso | Entrada → salida obligatoria |
+|---|---|
+| **1** | Literal inmutable + mensaje fuente + SHA → texto normalizado legible en campos correctos; QA de origen |
+| **2** | Interpretación y tipo de tarea → selección K persistida una sola vez |
+| **3** | Inventario de tokens vigentes filtrados por `output_medium` usando `metadata.applies_to` (`APPROVED` + `CANDIDATE` etiquetados, sin promocionarlos); logo, fuentes y assets → snapshot; no K |
+| **4** | Referencia opcional del dueño → observaciones K03/K04 de lectura; sin imagen, `SIN_REFERENCIA` no bloqueante |
+| **5** | Solo nueva pantalla/exploración: K01,K02 → tesis/alternativas |
+| **6** | K03,K04 según selector → decisión espacial y cromática con copy real |
+| **6b** | Consolidar seis dimensiones desde resultados ya producidos |
+| **7** | K05 → requisitos por componente y propietario, una vez |
+| **8** | K06 sobre PLAN → QA semántico independiente, hash exacto y revisor distinto del autor |
+| **9** | Handoff compacto: **consume** salida K05 de paso 7, sin ejecutarlo de nuevo |
+| **10** | Guardar prompt literal, adjuntos, hashes y recibo de preparación **antes** del envío efectivo. Registrar entrada/salida real. |
+| **10b** | Tras dispatch asíncrono: consultar `saly.creative_run_image_readback_v2(run_id,item_id)` en t=0,30,60,90,120,150,180 s; **primer READY→11 inmediatamente**, sin esperar 180 s. Solo sin READY tras 7 lecturas: `ESPERA_AGOTADA` y `creative_run_expire_v1` con readback del deadline |
+| **11** | QA imagen real con K06 e inspección K03/K04 **sin reejecución**; rúbrica 0–4 o `NO_EVALUADO` |
+| **11b** | Si falla 11: readback del plan/handoff, primera causa verificable y reintento acotado; no relanzar todos los K |
+| **12** | `creative_run_detection_record_v1` prueba el primer READY con RUN EXITOSO, artifact_ref y SHA; `creative_chat_save_qa_v1` ejecuta QA técnico/semántico y, con PASS, mueve EN_QA→TERMINADO, libera DONE y cierra el pedido **en una única transacción**. Sin tercero/verificador externo. Con FAIL: BLOQUEADO. APROBADO queda reservado a decisión posterior del dueño. |
+
+**Detección del temporizador (10b):** `saly.creative_run_image_readback_v2(run_id,item_id)` verifica RUN `EXITOSO`, `artifact_ref` y SHA de 64 caracteres; no requiere que el generador declare `width` ni `height`. En la **primera** revisión READY (t=0,30,...,180), persistir mediante `saly.creative_run_detection_record_v1(token,run_id,check_count)`, guardando `first_ready_elapsed_seconds=30×(check_count−1)`, identidad del RUN, artefacto y hash. No inventar `message_id`, `host_evidence` ni `verifier_ref`; no exigir `creative_queue_native_delivery_evidence_v1` en este flujo. Sin READY tras siete revisiones: `ESPERA_AGOTADA`, expiración real del RUN y **nunca TERMINADO**. El contador debe proceder de un observador real: no se considera comprobado un polling en producción si el adaptador no está conectado.
+
+**QA de formato (11):** medir la imagen **decodificada**, no un tamaño declarado por el generador. Para `IPHONE16PRO`, razón de referencia `1206/2622`; tolerancia relativa inicial 3% configurable. Registrar `SIMILAR` / `NO_SIMILAR` / `NO_EVALUADO` con tamaño medido, ratio, hash de bytes, desviación y fuente. Este QA es posterior a READY, no condición de READY.
+
+**Automatización y roles:** `worker_ref` es el generador GPT; `reviewer_ref` es el revisor automatizado Claude, distinto del generador. El recibo usa `reviewer_kind=AUTOMATED_MODEL`, no una persona. El contrato de BD rechaza `reviewer_ref==worker_ref`, exige el recibo y la evidencia de detección, y conserva L3C para PASS. La prueba descartable usa identidades **simuladas**: no acredita una revisión realmente invocada a Claude ni la integridad externa de los campos de procedencia. En caso PASS el ítem `TERMINADO` y el cierre de pedido/claim DONE ocurren **dentro de la misma operación SQL**; `approved_at/approved_by` quedan NULL. Una aprobación posterior por el dueño puede mover `TERMINADO` a `APROBADO` sin reabrir la generación.
+
+**Estado de los contratos:** candidato validado en PostgreSQL 17 con ítems reales 11/13 copiados y ROLLBACK, incluyendo detección t30, QA PASS+TERMINADO atómico, FAIL/BLOQUEADO, autorrevisión rechazada, ausencia de detección rechazada, expiración RUN y aprobación creativa posterior. Ningún generador, polling temporizado real ni Claude QA externo fueron invocados; SALY real permanece sin cambios. Este PR es DRAFT y no autoriza merge.
+
+**Tokens (mandato actual del dueño):** `saly.creative_item_context_medium_v3` usa exclusivamente `metadata.applies_to` como medios confirmados; `metadata.applies_to_proposed` nunca activa medios por sí sola. Las 55 versiones de la fuente SALY_DS_V1 se clasifican una vez en roles; todas tienen medio confirmado `PROTOTIPO_APP`, 18 tienen propuesta para REDES_SOCIALES y 9 para IMPRESION/PAPEL. El dueño puede confirmar medios propuestos con `saly.creative_token_confirm_medium_v1`; se registran `confirmed_by`, `confirmed_at`, motivo y hash anterior. La función rechaza CTA, duplicado, geometría y navegación fuera de app incluso si se manipula su propuesta. **Depuración no destructiva:** versiones candidatas 10 (`brand.green.600` #008200, conflicto de rol) y 21 (alias de CTA redundante) son `RETIRADO` de selección efectiva y sustituidas por la versión aprobada **7**; se retienen filas, valores, estados candidatos y contexto histórico. **55 clasificadas; 53 efectivas para app; 2 omitidas con TOKEN_RETIRADO**. CTA aprobado #008200 (versión 7) y marca aprobada #00C853 (versión 8) no se modifican. Los contextos SEALED existentes 3 y 4 conservan sus miembros y hashes. Con medios REDES_SOCIALES no confirmados: 0 seleccionados; si el dueño confirma las 18 propuestas, 18. Ninguna promoción de CANDIDATE a APPROVED.
+
+
+
 ## Política transversal de eficiencia espacial y decoración v0.14 (22/11/2026)
 
 **Autoridad:** instrucción expresa del dueño en el chat SALY (22/11/2026); aplica a toda imagen propuesta por esta skill, no solo al Home. Esta política no modifica activos oficiales ni inventa nuevos tokens, contenidos, métricas o permisos.
