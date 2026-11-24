@@ -4,7 +4,6 @@
     "sandbox/creative_factory/k_task_v2/abc_live_pending_fixture_pg17.sql": "RUNTIME_TESTING",
     "sandbox/creative_factory/k_task_v2/abc_pr1_dependency_snapshot_233000.sql": "RUNTIME_TESTING",
     "sandbox/creative_factory/k_task_v2/abc_timer_palette_medium_rollback_pg17.sql": "RUNTIME_TESTING",
-    "sandbox/creative_factory/k_task_v2/fixture_live_knowledge_pg17.sql": "RUNTIME_TESTING",
     "sandbox/creative_factory/k_task_v2/image_format_similarity_v1.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/k_task_v2/pr2_over_pr1_pg17.sh": "RUNTIME_TESTING",
     "sandbox/creative_factory/k_task_v2/test_image_format_similarity_v1.py": "RUNTIME_TESTING",
