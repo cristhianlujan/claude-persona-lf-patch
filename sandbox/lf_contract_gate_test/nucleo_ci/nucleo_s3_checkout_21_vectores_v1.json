@@ -1,0 +1,2885 @@
+{
+  "contrato": "LF_S3_21_CANDIDATAS_CHECKOUT_V1",
+  "fecha": "2026-11-23",
+  "criterio": "COBERTURA_INTENCION",
+  "juez_independiente": "PENDIENTE",
+  "candidatas": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C01",
+      "clave": "s3_offline_onb",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "titulo": "Bloquear pérdida de datos de onboarding durante desconexión",
+      "descripcion": "En Paso 1 y Paso 2 de onboarding, cuando el navegador pierde conexión, BLOQUEAR la pérdida de datos ingresados o la omisión del banner «Sin conexión. Tus datos están guardados.»; conservar los datos escritos sin afirmar persistencia remota. Esta regla cubre solo la intención de onboarding, no autoriza pagos offline.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c01_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c01_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c01_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/183",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": false,
+            "s3c01_contexto": false,
+            "s3c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": false,
+            "s3c01_contexto": false,
+            "s3c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": false,
+            "s3c01_contexto": true,
+            "s3c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": false,
+            "s3c01_contexto": true,
+            "s3c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": true,
+            "s3c01_contexto": false,
+            "s3c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": true,
+            "s3c01_contexto": false,
+            "s3c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": true,
+            "s3c01_contexto": true,
+            "s3c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c01_intento": true,
+            "s3c01_contexto": true,
+            "s3c01_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 183,
+      "legada_codigo": "REG_TEC_007",
+      "cobertura_esperada": "PARCIAL",
+      "diferencias": "Se requiere además el control independiente de pago deshabilitado en checkout offline.",
+      "hechos": [
+        "s3c01_intento",
+        "s3c01_contexto",
+        "s3c01_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C02",
+      "clave": "s3_offline_checkout",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Bloquear pago offline y comunicar conectividad requerida",
+      "descripcion": "Ante checkout sin conectividad, BLOQUEAR el envío de pago y habilitación del CTA, mostrando «Necesitas conexión para completar el pago.»; no se presupone resultado autoritativo ni se crea un segundo intento al reconectar. Esta regla complementa la conservación y banner del onboarding.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c02_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c02_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c02_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/183",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": false,
+            "s3c02_contexto": false,
+            "s3c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": false,
+            "s3c02_contexto": false,
+            "s3c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": false,
+            "s3c02_contexto": true,
+            "s3c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": false,
+            "s3c02_contexto": true,
+            "s3c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": true,
+            "s3c02_contexto": false,
+            "s3c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": true,
+            "s3c02_contexto": false,
+            "s3c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": true,
+            "s3c02_contexto": true,
+            "s3c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c02_intento": true,
+            "s3c02_contexto": true,
+            "s3c02_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 183,
+      "legada_codigo": "REG_TEC_007",
+      "cobertura_esperada": "PARCIAL",
+      "diferencias": "La intención mixta de la legada necesita también conservación de datos y banner en onboarding.",
+      "hechos": [
+        "s3c02_intento",
+        "s3c02_contexto",
+        "s3c02_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C03",
+      "clave": "s3_idempotency_onb",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Exigir idempotencia del submit inicial de onboarding",
+      "descripcion": "Cuando un submit inicial de onboarding se repite por doble clic o timeout con idempotency_key uuid_v4, usuario y mismo request_sha256, BLOQUEAR una nueva operación y exigir respuesta previa recuperable dentro de AUTH/IDEMPOTENCY_KEY_VALIDITY_MINUTES; el borde de caducidad requiere reconciliación segura, nunca duplicado. La clave debe generarse en el cliente y verificarse en servidor.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c03_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c03_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c03_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/185",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": false,
+            "s3c03_contexto": false,
+            "s3c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": false,
+            "s3c03_contexto": false,
+            "s3c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": false,
+            "s3c03_contexto": true,
+            "s3c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": false,
+            "s3c03_contexto": true,
+            "s3c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": true,
+            "s3c03_contexto": false,
+            "s3c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": true,
+            "s3c03_contexto": false,
+            "s3c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": true,
+            "s3c03_contexto": true,
+            "s3c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c03_intento": true,
+            "s3c03_contexto": true,
+            "s3c03_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 185,
+      "legada_codigo": "REG_TEC_009",
+      "cobertura_esperada": "PARCIAL",
+      "diferencias": "Para reemplazo integral de la legada también se necesita la misma garantía en checkout.",
+      "hechos": [
+        "s3c03_intento",
+        "s3c03_contexto",
+        "s3c03_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C04",
+      "clave": "s3_idempotency_checkout",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Exigir idempotencia del cobro checkout repetido",
+      "descripcion": "Cuando checkout recibe el mismo submit por doble clic o timeout, BLOQUEAR segundo cobro y reconciliar resultado por user_id, idempotency_key uuid_v4 y request_sha256, respetando AUTH/IDEMPOTENCY_KEY_VALIDITY_MINUTES y reserva/quote original. El cliente genera la clave, el servidor controla persistencia y coincidencia; los errores técnicos ambiguos no habilitan segundo intento.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c04_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c04_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c04_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/185",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": false,
+            "s3c04_contexto": false,
+            "s3c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": false,
+            "s3c04_contexto": false,
+            "s3c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": false,
+            "s3c04_contexto": true,
+            "s3c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": false,
+            "s3c04_contexto": true,
+            "s3c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": true,
+            "s3c04_contexto": false,
+            "s3c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": true,
+            "s3c04_contexto": false,
+            "s3c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": true,
+            "s3c04_contexto": true,
+            "s3c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c04_intento": true,
+            "s3c04_contexto": true,
+            "s3c04_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 185,
+      "legada_codigo": "REG_TEC_009",
+      "cobertura_esperada": "PARCIAL",
+      "diferencias": "Para reemplazo integral de la legada también se necesita idempotencia en onboarding.",
+      "hechos": [
+        "s3c04_intento",
+        "s3c04_contexto",
+        "s3c04_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C05",
+      "clave": "s3_cta_double_click",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Bloquear CTA inmediatamente tras primer intento de pago",
+      "descripcion": "En el primer clic de Pagar, bloquear de inmediato el CTA para impedir doble submit. Mantenerlo bloqueado ante PAYMENT_PENDING_CONFIRMATION, PAYMENT_CONFIRMED, error técnico o timeout sin reconciliar. Solo backend puede autorizar nuevo intento con outcome seguro normalizado, reserva y quote válidas; el cliente nunca lo rehabilita por sí mismo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c05_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c05_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c05_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/208",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": false,
+            "s3c05_contexto": false,
+            "s3c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": false,
+            "s3c05_contexto": false,
+            "s3c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": false,
+            "s3c05_contexto": true,
+            "s3c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": false,
+            "s3c05_contexto": true,
+            "s3c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": true,
+            "s3c05_contexto": false,
+            "s3c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": true,
+            "s3c05_contexto": false,
+            "s3c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": true,
+            "s3c05_contexto": true,
+            "s3c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c05_intento": true,
+            "s3c05_contexto": true,
+            "s3c05_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 208,
+      "legada_codigo": "REG_CHK_004",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "El bloqueo inmediato en UI se agrega a la regla backend de reintento seguro.",
+      "hechos": [
+        "s3c05_intento",
+        "s3c05_contexto",
+        "s3c05_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C06",
+      "clave": "s3_postpay_success",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Proteger estados de éxito y efectos postpago autoritativos",
+      "descripcion": "Solo después de PAYMENT_CONFIRMED autoritativo presentar éxito y ejecutar efectos postpago por oferta/deuda. Referencia, fecha y montos provienen del ledger/backend. Si es PAGO_UNICO saldar exclusivamente deuda satisfecha; si CUOTAS activar plan sin dar por cancelada deuda ni emitir carta. No modificar onboarding_completed en checkout.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c06_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c06_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c06_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/209",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": false,
+            "s3c06_contexto": false,
+            "s3c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": false,
+            "s3c06_contexto": false,
+            "s3c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": false,
+            "s3c06_contexto": true,
+            "s3c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": false,
+            "s3c06_contexto": true,
+            "s3c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": true,
+            "s3c06_contexto": false,
+            "s3c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": true,
+            "s3c06_contexto": false,
+            "s3c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": true,
+            "s3c06_contexto": true,
+            "s3c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c06_intento": true,
+            "s3c06_contexto": true,
+            "s3c06_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 209,
+      "legada_codigo": "REG_CHK_005",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "La regla hace explícitos efectos por deuda y diferencia pago inicial versus liquidación total.",
+      "hechos": [
+        "s3c06_intento",
+        "s3c06_contexto",
+        "s3c06_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C07",
+      "clave": "s3_fee_legibility",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Exigir visibilidad y legibilidad de comisiones antes del pago",
+      "descripcion": "Antes de confirmar el pago, la comisión LF y la del procesador Niubiz deben mostrarse por separado, de forma visible y legible, nunca ocultas ni en letra pequeña. Los porcentajes y montos se obtienen de la configuración vigente del aliado, no de cifras fijas del texto; el total debe conciliar con ambas.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c07_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c07_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c07_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/210",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": false,
+            "s3c07_contexto": false,
+            "s3c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": false,
+            "s3c07_contexto": false,
+            "s3c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": false,
+            "s3c07_contexto": true,
+            "s3c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": false,
+            "s3c07_contexto": true,
+            "s3c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": true,
+            "s3c07_contexto": false,
+            "s3c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": true,
+            "s3c07_contexto": false,
+            "s3c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": true,
+            "s3c07_contexto": true,
+            "s3c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c07_intento": true,
+            "s3c07_contexto": true,
+            "s3c07_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 210,
+      "legada_codigo": "REG_CHK_006",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Los porcentajes históricos del legado se reemplazan por configuración gobernada del aliado sin cambiar obligación de transparencia.",
+      "hechos": [
+        "s3c07_intento",
+        "s3c07_contexto",
+        "s3c07_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C08",
+      "clave": "s3_letter_lifecycle",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Bloquear emisión y descarga prematura de carta de no adeudo",
+      "descripcion": "PAYMENT_CONFIRMED aislado no habilita Carta de No Adeudo: exigir SETTLED_CONFIRMED por deuda para pasar de NOT_ELIGIBLE a ELIGIBLE, REQUESTED, PROCESSING y AVAILABLE según integración del aliado. Solo AVAILABLE habilita descarga del documento oficial, nunca el pago inicial de cuotas.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c08_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c08_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c08_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/212",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": false,
+            "s3c08_contexto": false,
+            "s3c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": false,
+            "s3c08_contexto": false,
+            "s3c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": false,
+            "s3c08_contexto": true,
+            "s3c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": false,
+            "s3c08_contexto": true,
+            "s3c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": true,
+            "s3c08_contexto": false,
+            "s3c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": true,
+            "s3c08_contexto": false,
+            "s3c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": true,
+            "s3c08_contexto": true,
+            "s3c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c08_intento": true,
+            "s3c08_contexto": true,
+            "s3c08_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 212,
+      "legada_codigo": "REG_CHK_008",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Declara ciclo documental completo además del inicio permitido tras liquidación; no presume soporte operativo del aliado.",
+      "hechos": [
+        "s3c08_intento",
+        "s3c08_contexto",
+        "s3c08_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C09",
+      "clave": "s3_fee_total",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Exigir total del checkout con ambas comisiones configuradas",
+      "descripcion": "El resumen de checkout muestra separadamente comisiones LF y Niubiz y calcula monto final incluyendo ambas, usando porcentajes autorizados de configuración del aliado, no valores embebidos; BLOQUEAR confirmación si el total no reconcilia o alguna comisión no está visible.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c09_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c09_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c09_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/226",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": false,
+            "s3c09_contexto": false,
+            "s3c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": false,
+            "s3c09_contexto": false,
+            "s3c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": false,
+            "s3c09_contexto": true,
+            "s3c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": false,
+            "s3c09_contexto": true,
+            "s3c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": true,
+            "s3c09_contexto": false,
+            "s3c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": true,
+            "s3c09_contexto": false,
+            "s3c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": true,
+            "s3c09_contexto": true,
+            "s3c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c09_intento": true,
+            "s3c09_contexto": true,
+            "s3c09_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 226,
+      "legada_codigo": "REG_NIU_002",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "El legado trae porcentajes históricos fijos; el núcleo usa referencias de pricing vigente y añade conciliación explícita.",
+      "hechos": [
+        "s3c09_intento",
+        "s3c09_contexto",
+        "s3c09_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C10",
+      "clave": "s3_payment_outcome_provider",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Normalizar outcomes crudos del proveedor antes de habilitar UI",
+      "descripcion": "El backend nunca entrega a la UI una respuesta cruda de Niubiz como estado financiero. Solo aprobación autoritativa produce PAYMENT_CONFIRMED y rechazo verificable PAYMENT_DECLINED_CONFIRMED. Error, timeout o callback perdido con intento posiblemente enviado exigen PAYMENT_PENDING_CONFIRMATION; fallo probado antes de envío puede ser PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT. BLOQUEAR reintentos ambiguos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c10_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c10_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c10_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/228",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": false,
+            "s3c10_contexto": false,
+            "s3c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": false,
+            "s3c10_contexto": false,
+            "s3c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": false,
+            "s3c10_contexto": true,
+            "s3c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": false,
+            "s3c10_contexto": true,
+            "s3c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": true,
+            "s3c10_contexto": false,
+            "s3c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": true,
+            "s3c10_contexto": false,
+            "s3c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": true,
+            "s3c10_contexto": true,
+            "s3c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c10_intento": true,
+            "s3c10_contexto": true,
+            "s3c10_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 228,
+      "legada_codigo": "REG_NIU_004",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Es la autoridad de normalización antes del control de reintentos ya publicado; no concede permisos frontend.",
+      "hechos": [
+        "s3c10_intento",
+        "s3c10_contexto",
+        "s3c10_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C11",
+      "clave": "s3_autodebit_consent_cta",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "PANTALLA-21",
+      "modo": "HEREDA",
+      "titulo": "Exigir texto y autorización explícita antes de pagar cuotas recurrentes",
+      "descripcion": "Cuando el medio requiere débito automático de cuotas, mostrar checkbox con texto «Autorizo el cobro automático de las cuotas según el cronograma del plan.» y mantener Pagar inhabilitado hasta aceptación explícita. Conservar evidencia server-side de versión del cronograma, medio y timestamp. No exigirlo a medios manuales.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c11_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c11_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c11_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/276",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": false,
+            "s3c11_contexto": false,
+            "s3c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": false,
+            "s3c11_contexto": false,
+            "s3c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": false,
+            "s3c11_contexto": true,
+            "s3c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": false,
+            "s3c11_contexto": true,
+            "s3c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": true,
+            "s3c11_contexto": false,
+            "s3c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": true,
+            "s3c11_contexto": false,
+            "s3c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": true,
+            "s3c11_contexto": true,
+            "s3c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c11_intento": true,
+            "s3c11_contexto": true,
+            "s3c11_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 276,
+      "legada_codigo": "REG_CHK_013",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "La legada extiende el checkbox a toda cuota; la nueva aplicación precisa solo medios que ejecutan débito automático, sin suprimir consentimiento requerido.",
+      "hechos": [
+        "s3c11_intento",
+        "s3c11_contexto",
+        "s3c11_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C12",
+      "clave": "s3_recurrence_cancel_letter",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Proteger cancelación de recurrencia y elegibilidad documental",
+      "descripcion": "En Mis operaciones permitir solicitar cancelar cobros recurrentes del plan sin penalidad; BLOQUEAR penalidades por cancelación. Cancelar recurrencia no es liquidar deuda: Carta de No Adeudo solo se solicita/emite si la deuda alcanza SETTLED_CONFIRMED, con evidencia del ledger y regla documental del aliado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c12_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c12_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c12_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/277",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": false,
+            "s3c12_contexto": false,
+            "s3c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": false,
+            "s3c12_contexto": false,
+            "s3c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": false,
+            "s3c12_contexto": true,
+            "s3c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": false,
+            "s3c12_contexto": true,
+            "s3c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": true,
+            "s3c12_contexto": false,
+            "s3c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": true,
+            "s3c12_contexto": false,
+            "s3c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": true,
+            "s3c12_contexto": true,
+            "s3c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c12_intento": true,
+            "s3c12_contexto": true,
+            "s3c12_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 277,
+      "legada_codigo": "REG_CHK_014",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Integra cancelación sin penalidad con elegibilidad de carta, sin equiparar cancelación de cobros a cancelación de deuda.",
+      "hechos": [
+        "s3c12_intento",
+        "s3c12_contexto",
+        "s3c12_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C13",
+      "clave": "s3_letter_quotas_copy",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Conservar condición y copy de carta al pagar cuotas",
+      "descripcion": "En resumen lateral de checkout de cuotas se muestra literalmente «Se emitirá al confirmar la cancelación total de tu deuda.» La carta no se emite con cuota inicial, sino después de SETTLED_CONFIRMED de la deuda; BLOQUEAR cualquier promesa, disponibilidad o descarga anterior.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c13_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c13_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c13_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/280",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": false,
+            "s3c13_contexto": false,
+            "s3c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": false,
+            "s3c13_contexto": false,
+            "s3c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": false,
+            "s3c13_contexto": true,
+            "s3c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": false,
+            "s3c13_contexto": true,
+            "s3c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": true,
+            "s3c13_contexto": false,
+            "s3c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": true,
+            "s3c13_contexto": false,
+            "s3c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": true,
+            "s3c13_contexto": true,
+            "s3c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c13_intento": true,
+            "s3c13_contexto": true,
+            "s3c13_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 280,
+      "legada_codigo": "REG_CHK_017",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Incorpora el copy específico de cuotas y no sustituye el ciclo documental del backend.",
+      "hechos": [
+        "s3c13_intento",
+        "s3c13_contexto",
+        "s3c13_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C14",
+      "clave": "s3_autodebit_copy",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "PANTALLA-21",
+      "modo": "HEREDA",
+      "titulo": "Bloquear pago recurrente sin checkbox literal de autorización",
+      "descripcion": "Antes de pagar mediante medio que efectúa cobro automático en cuotas, mostrar «Autorizo el cobro automático de las cuotas según el cronograma del plan.» y exigir check explícito: sin consentimiento el botón Pagar permanece deshabilitado; adjuntar versión del cronograma aceptada.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c14_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c14_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c14_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/288",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": false,
+            "s3c14_contexto": false,
+            "s3c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": false,
+            "s3c14_contexto": false,
+            "s3c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": false,
+            "s3c14_contexto": true,
+            "s3c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": false,
+            "s3c14_contexto": true,
+            "s3c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": true,
+            "s3c14_contexto": false,
+            "s3c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": true,
+            "s3c14_contexto": false,
+            "s3c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": true,
+            "s3c14_contexto": true,
+            "s3c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c14_intento": true,
+            "s3c14_contexto": true,
+            "s3c14_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 288,
+      "legada_codigo": "REG_CHK_CUO_005",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Comparte copy aprobado con S3 AUTODEBIT_CONSENT_CTA; especializa el control del botón sin agregar otro requisito de negocio.",
+      "hechos": [
+        "s3c14_intento",
+        "s3c14_contexto",
+        "s3c14_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C15",
+      "clave": "s3_cancel_rights_copy",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Informar cancelación de cobro recurrente sin penalidad en checkout",
+      "descripcion": "Antes del pago en checkout de cuotas recurrentes debe ser visible el derecho a cancelar cobros futuros en cualquier momento sin penalidad por cancelación anticipada; BLOQUEAR confirmación si el aviso no se presentó de manera legible. No afirmar que cancelar recurrencia extingue la deuda.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c15_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c15_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c15_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/289",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": false,
+            "s3c15_contexto": false,
+            "s3c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": false,
+            "s3c15_contexto": false,
+            "s3c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": false,
+            "s3c15_contexto": true,
+            "s3c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": false,
+            "s3c15_contexto": true,
+            "s3c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": true,
+            "s3c15_contexto": false,
+            "s3c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": true,
+            "s3c15_contexto": false,
+            "s3c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": true,
+            "s3c15_contexto": true,
+            "s3c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c15_intento": true,
+            "s3c15_contexto": true,
+            "s3c15_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 289,
+      "legada_codigo": "REG_CHK_CUO_006",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "La regla publicada de backend permite cancelar; la nueva regla asegura información previa visible en la pantalla.",
+      "hechos": [
+        "s3c15_intento",
+        "s3c15_contexto",
+        "s3c15_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C16",
+      "clave": "s3_last_installment_letter",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Prohibir carta por pago inicial y preservar copy al liquidar cuotas",
+      "descripcion": "En cuotas, la carta solo se emite después del último pago cuando el ledger confirma SETTLED_CONFIRMED; no al cubrir el inicial. La pantalla muestra literalmente «Se emitirá al confirmar la cancelación total de tu deuda.» y no habilita descarga anticipada.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c16_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c16_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c16_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/292",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": false,
+            "s3c16_contexto": false,
+            "s3c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": false,
+            "s3c16_contexto": false,
+            "s3c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": false,
+            "s3c16_contexto": true,
+            "s3c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": false,
+            "s3c16_contexto": true,
+            "s3c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": true,
+            "s3c16_contexto": false,
+            "s3c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": true,
+            "s3c16_contexto": false,
+            "s3c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": true,
+            "s3c16_contexto": true,
+            "s3c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c16_intento": true,
+            "s3c16_contexto": true,
+            "s3c16_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 292,
+      "legada_codigo": "REG_CHK_CUO_009",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "El criterio financiero se complementa con el texto visible de la interfaz cuotas.",
+      "hechos": [
+        "s3c16_intento",
+        "s3c16_contexto",
+        "s3c16_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C17",
+      "clave": "s3_yape_qr_ui",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "PANTALLA-28",
+      "modo": "HEREDA",
+      "titulo": "Exigir dos rutas de confirmación Yape QR y verificación del backend",
+      "descripcion": "En la pantalla Yape QR ofrecer escaneo desde la app Yape y CTA «Ya escaneé / Continuar» para quien escaneó sin detección automática. Ninguna ruta confirma pago por sí sola: consultar estado Yape en backend y solo pasar a CONFIRMANDO tras verificar estado correspondiente; bloquear éxito sin confirmación autoritativa.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c17_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c17_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c17_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/316",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": false,
+            "s3c17_contexto": false,
+            "s3c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": false,
+            "s3c17_contexto": false,
+            "s3c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": false,
+            "s3c17_contexto": true,
+            "s3c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": false,
+            "s3c17_contexto": true,
+            "s3c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": true,
+            "s3c17_contexto": false,
+            "s3c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": true,
+            "s3c17_contexto": false,
+            "s3c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": true,
+            "s3c17_contexto": true,
+            "s3c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c17_intento": true,
+            "s3c17_contexto": true,
+            "s3c17_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 316,
+      "legada_codigo": "REG_CHK_026",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Declara ambas rutas UX y el estado intermedio sin alterar el guard autoritativo existente.",
+      "hechos": [
+        "s3c17_intento",
+        "s3c17_contexto",
+        "s3c17_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C18",
+      "clave": "s3_letter_pending_documents",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "titulo": "Mantener carta pendiente sin descarga ni promesa prematura",
+      "descripcion": "Cuando una deuda no está SETTLED_CONFIRMED, mostrar Carta de No Adeudo en documentos con estado PENDIENTE y texto «Se emitirá cuando termines de cancelar tu deuda total.»; no ofrecer descarga hasta estado AVAILABLE respaldado por emisión del aliado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c18_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c18_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c18_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/327",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": false,
+            "s3c18_contexto": false,
+            "s3c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": false,
+            "s3c18_contexto": false,
+            "s3c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": false,
+            "s3c18_contexto": true,
+            "s3c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": false,
+            "s3c18_contexto": true,
+            "s3c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": true,
+            "s3c18_contexto": false,
+            "s3c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": true,
+            "s3c18_contexto": false,
+            "s3c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": true,
+            "s3c18_contexto": true,
+            "s3c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c18_intento": true,
+            "s3c18_contexto": true,
+            "s3c18_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 327,
+      "legada_codigo": "REG_SUC_004",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Distingue estado PENDIENTE en interfaz del estado documental backend NOT_ELIGIBLE/AVAILABLE.",
+      "hechos": [
+        "s3c18_intento",
+        "s3c18_contexto",
+        "s3c18_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C19",
+      "clave": "s3_payment_outcome_safety",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Reconciliar resultados de pago por evidencia autoritativa antes de nuevo intento",
+      "descripcion": "Normalizar server-side todo outcome del proveedor antes de afectar cliente: solo aprobación autoritativa confirma, solo rechazo autoritativo permite rechazo confirmado. Si pudo enviarse y falta resultado verificable por timeout, desconexión, callback perdido o ambigüedad, usar PAYMENT_PENDING_CONFIRMATION y bloquear intentos alternativos o equivalentes hasta reconciliar. Solo fallos probados antes del envío admiten PAYMENT_NOT_SUBMITTED; nunca inferir ausencia de cargo por error técnico.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c19_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c19_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c19_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/523",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": false,
+            "s3c19_contexto": false,
+            "s3c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": false,
+            "s3c19_contexto": false,
+            "s3c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": false,
+            "s3c19_contexto": true,
+            "s3c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": false,
+            "s3c19_contexto": true,
+            "s3c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": true,
+            "s3c19_contexto": false,
+            "s3c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": true,
+            "s3c19_contexto": false,
+            "s3c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": true,
+            "s3c19_contexto": true,
+            "s3c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c19_intento": true,
+            "s3c19_contexto": true,
+            "s3c19_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 523,
+      "legada_codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Especializa el contrato de reconciliación y reintento existente; diferencia entre fallo previo al envío y resultado ambiguo.",
+      "hechos": [
+        "s3c19_intento",
+        "s3c19_contexto",
+        "s3c19_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C20",
+      "clave": "s3_postpay_per_debt",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Ejecutar efectos postpago por deuda y modalidad con aislamiento",
+      "descripcion": "Solo PAYMENT_CONFIRMED permite efectos de backend por cada oferta/deuda independiente. Pago único que satisface total acordado habilita elegibilidad de Carta de No Adeudo; cuota inicial activa plan y registra pago del día pero no liquida deuda ni habilita carta. Una selección mixta puede tener deuda liquidada y otra en cuotas; checkout no modifica onboarding_completed.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c20_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c20_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c20_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/524",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": false,
+            "s3c20_contexto": false,
+            "s3c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": false,
+            "s3c20_contexto": false,
+            "s3c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": false,
+            "s3c20_contexto": true,
+            "s3c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": false,
+            "s3c20_contexto": true,
+            "s3c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": true,
+            "s3c20_contexto": false,
+            "s3c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": true,
+            "s3c20_contexto": false,
+            "s3c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": true,
+            "s3c20_contexto": true,
+            "s3c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c20_intento": true,
+            "s3c20_contexto": true,
+            "s3c20_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 524,
+      "legada_codigo": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "Desagrega efectos por deuda de la UI de éxito y no declara carta emitida sin integración del aliado.",
+      "hechos": [
+        "s3c20_intento",
+        "s3c20_contexto",
+        "s3c20_violacion"
+      ],
+      "dueno": "TECNICO"
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S3-C21",
+      "clave": "s3_receipt_real_mail",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "titulo": "Exigir recibo al correo real y aislar correo técnico Niubiz",
+      "descripcion": "Emitir recibo de PAYMENT_CONFIRMED exclusivamente a customer_email real registrado y validado por LF, nunca a niubiz_technical_email derivado de configuración PAGOS/NIUBIZ_EMAIL_TEMPLATE y PAGOS/NIUBIZ_EMAIL_DOMAIN. Preservar separación de identidades, no usar rebote ni aceptación técnica como pago confirmado, y registrar incidencia si falta correo real.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c21_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s3c21_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s3c21_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/13126",
+        "solicitante": "Cristhian/Claude LF S3 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": false,
+            "s3c21_contexto": false,
+            "s3c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": false,
+            "s3c21_contexto": false,
+            "s3c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": false,
+            "s3c21_contexto": true,
+            "s3c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": false,
+            "s3c21_contexto": true,
+            "s3c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": true,
+            "s3c21_contexto": false,
+            "s3c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": true,
+            "s3c21_contexto": false,
+            "s3c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": true,
+            "s3c21_contexto": true,
+            "s3c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s3c21_intento": true,
+            "s3c21_contexto": true,
+            "s3c21_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 13126,
+      "legada_codigo": "REG_CLIENT_PAYMENT_RECEIPT_REAL_EMAIL_001",
+      "cobertura_esperada": "REEMPLAZADA",
+      "diferencias": "La regla nueva cubre incidencia y origen de destinatario, sin sustituir dirección técnica Niubiz por correo ficticio.",
+      "hechos": [
+        "s3c21_intento",
+        "s3c21_contexto",
+        "s3c21_violacion"
+      ],
+      "dueno": "TECNICO"
+    }
+  ]
+}
