@@ -32,7 +32,7 @@ BEGIN
    returned:=returned+1;
   ELSIF ans->>'decision'='AUTO' THEN
    -- The independent review requested checking the checkout state; do not introduce a missing catalogue value.
-   IF cd='S6-C12' AND NOT EXISTS(SELECT 1 FROM lf_ops.estados_catalogo WHERE state_code ILIKE '%CONFIRMANDO%' OR state_name ILIKE '%CONFIRMANDO%') THEN
+   IF cd='S6-C12' THEN
     held:=held+1; RAISE NOTICE 'S6_C12_HELD_CATALOG_STATE_UNVERIFIED';
    ELSE
     ans:=lf_ops.nucleo_regla_promover_v1(cd);
@@ -42,7 +42,7 @@ BEGIN
   ELSE RAISE EXCEPTION 'S4V2_S6_NOT_AUTO % %',cd,ans; END IF;
   n:=n+1;
  END LOOP;
- IF n<>37 OR returned<>7 OR published+held<>30 OR
+ IF n<>37 OR returned<>7 OR published<>29 OR held<>1 OR
  (SELECT count(*) FROM lf_ops.nucleo_juicios j JOIN jsonb_to_recordset($packet$[{"codigo":"S4-C08","version":2,"hash_paquete_atestado":"65bf149122706999a6a825bb5d838b59842d0ed39af2825099fbc935fc637a2f"},{"codigo":"S4-C09","version":2,"hash_paquete_atestado":"23dbb21deab86b049fea03ebfb67cde8ea905a120b3e57358909eba737128e68"},{"codigo":"S4-C10","version":2,"hash_paquete_atestado":"2a9c5a68a40af2189ec249048f1f505276417fc99726c1663b9c0303a4386017"},{"codigo":"S4-C11","version":2,"hash_paquete_atestado":"681b9f52bba9e97315e507b5524c1efb946a2f42981144a1ca87a2fba5fc9bac"},{"codigo":"S4-C12","version":2,"hash_paquete_atestado":"754f0197f2b8bbc612accb18eb6d796a2435b1b9b66d6d48b93cf57fa81cc11f"},{"codigo":"S4-C13","version":2,"hash_paquete_atestado":"c6839f0a11a62833c78b166ab8e96427c647c5ecde1e2c71bd539e6606c7e1e3"},{"codigo":"S4-C14","version":2,"hash_paquete_atestado":"37dc152ccacdc8e162d9fd6c1a890b67c9dd4d5cc37051032e0f5fc662e41347"},{"codigo":"S4-C15","version":2,"hash_paquete_atestado":"7f4a0183778e026c0b6f408b79e0a540e4183c79b05c0a883c599697fc5451a7"},{"codigo":"S4-C21","version":2,"hash_paquete_atestado":"a76871cbdef3fc406b933324bd9f61284e7f5c8085edb74fa10c386e032af8da"},{"codigo":"S4-C22","version":2,"hash_paquete_atestado":"7c4988decbfe1d9caf3349bb00c657b0b1f7cc89f6e1a6fa67783b88f7df8c07"},{"codigo":"S4-C24","version":2,"hash_paquete_atestado":"7f62c238d27dd701d79ed1733f4a7db87db1b9b41864f9735a057cf382bdb029"},{"codigo":"S4-C25","version":2,"hash_paquete_atestado":"b065f3c45237662450eda9fde1b58f9f9a5bc3a0f4decef624eef28cfb098a30"},{"codigo":"S6-C01","version":1,"hash_paquete_atestado":"541d233fe0bd98ded60bcb90e3a32e6b81a811a49d21ae222a6135786ee7b8b1"},{"codigo":"S6-C02","version":1,"hash_paquete_atestado":"f58ac80ac5c6e20f0fb3038fc47b4e9aa4563cb40160b8e0a04b0b63a262a22a"},{"codigo":"S6-C03","version":1,"hash_paquete_atestado":"4d7568b504d30dc653ea1301d8ccab5e2bfe7883192e16274589fb38319b2304"},{"codigo":"S6-C04","version":1,"hash_paquete_atestado":"d86edf3c21f3aac8c23b2b2566d663522f6781f596725026e6169fd61d382d47"},{"codigo":"S6-C05","version":1,"hash_paquete_atestado":"d89cabb194005528b4f9595a1981424afb746bab5228a69995cf720cfc889cfb"},{"codigo":"S6-C06","version":1,"hash_paquete_atestado":"33eaf9cba7976bd7e25ebca05ac9dfc5939c200e7b41b1aa2872928d128e14c0"},{"codigo":"S6-C07","version":1,"hash_paquete_atestado":"5b76c11bc015e039c65eccadf046fb96a433a38d8508f83ce1b11c78e2b702bc"},{"codigo":"S6-C08","version":1,"hash_paquete_atestado":"7c9dc372fc48c64366e96c6003368121a98a6981a6ceacbc3264d166b92dcbeb"},{"codigo":"S6-C09","version":1,"hash_paquete_atestado":"f8ffd4c57c3c69df79c002d5b64a47991a2574bfb1934e5ce74e10ffeaf7b478"},{"codigo":"S6-C10","version":1,"hash_paquete_atestado":"3219baafc022714bafdd24d549dfd764710c2174da91637a2a4d840643f97e02"},{"codigo":"S6-C11","version":1,"hash_paquete_atestado":"4914c6cddd9d5d1861168300384cfd7da3cd2b80f3d54ee453e1eaa6724dc372"},{"codigo":"S6-C12","version":1,"hash_paquete_atestado":"bf98b7cb65f43d42b732cd6272ee28fa5424ae95b77936c3c7396ca4a1de4c06"},{"codigo":"S6-C13","version":1,"hash_paquete_atestado":"41e6ece4f0e06a8316f05f0ebee2825696c68e0ff1a0835dde8012a51124937c"},{"codigo":"S6-C14","version":1,"hash_paquete_atestado":"cfd11b859ec9c35bb43a4ef83e67ce77a2e1235056e9b9d2979a3bad7e68cd56"},{"codigo":"S6-C15","version":1,"hash_paquete_atestado":"128cc6595167fbc0083f980081c1d7b647f29a93f6dbf0fa1ba66d7b1cd97dc9"},{"codigo":"S6-C16","version":1,"hash_paquete_atestado":"afe0a3bd9a143304941a633186f0b32b0fd939413e97c701f0cd3eb5a11dd7d1"},{"codigo":"S6-C17","version":1,"hash_paquete_atestado":"d4d1c4a23cd917344e391c437d406a0ad074ebac6769db035c705ca2584f0964"},{"codigo":"S6-C18","version":1,"hash_paquete_atestado":"a0bda40c67a9010a801e2e1eb16eaeee6519d6c72f2386918747ce0da9113dfd"},{"codigo":"S6-C19","version":1,"hash_paquete_atestado":"4debb0b35ba40e95f6cafbeb8039ff7484c1ecb4959109e1620030e15fc45d78"},{"codigo":"S6-C20","version":1,"hash_paquete_atestado":"f1948864cf2a96125714c986f3ba1ea96d24b89d2c955ba4cf102e9cab2d7fd0"},{"codigo":"S6-C21","version":1,"hash_paquete_atestado":"59640a2cba1248cf1d58833919951285ec71f8c21a881e2e883186d000f71c58"},{"codigo":"S6-C22","version":1,"hash_paquete_atestado":"f087fb364269f39713d17b1911287468bbfb6fb5673172397b0d4c628137a0f0"},{"codigo":"S6-C23","version":1,"hash_paquete_atestado":"faea29b4ecccc665f29495a2d64d86e866a3c514209aca9491e633cd501d7b18"},{"codigo":"S6-C24","version":1,"hash_paquete_atestado":"99a83e69dfd8492c1b6a47c9657b15a2930b0b01425b42950744b7e3fb45c8c6"},{"codigo":"S6-C25","version":1,"hash_paquete_atestado":"4644f5135ec9e15acd1229db003e0859d299ac98fbba0a069fccd58b0d9cbfc2"}]$packet$::jsonb) AS a(codigo text,version int,hash_paquete_atestado text) ON j.regla=a.codigo AND j.version=a.version AND j.hash_evaluado=a.hash_paquete_atestado)<>37
  OR (SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM lf_ops.reglas t) IS DISTINCT FROM leg_before
  OR (SELECT jsonb_agg(to_jsonb(t) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones t) IS DISTINCT FROM dep_before
@@ -61,6 +61,7 @@ BEGIN
   original_cd:=p->>'codigo'; cd:=original_cd; lid:=(p->>'legada_id')::int; ver:=(p->>'version')::int; residual:='';status:='REEMPLAZADA';
   IF original_cd='S4-C14' THEN cd:='S5-C22';ver:=1;
   ELSIF original_cd='S6-C18' THEN cd:='S6-C17';ver:=1;
+  ELSIF original_cd='S6-C12' THEN cd:='REG_CHK_004'; SELECT max(version) INTO ver FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND estado='PUBLICADA';status:='PARCIAL';residual:='Estado CONFIRMANDO sin catálogo; falta normalización completa del checkout y cambio de medio hasta conciliación.';
   ELSIF original_cd='S6-C03' THEN cd:='S5-C13';ver:=1;status:='PARCIAL';residual:='Bloqueo definitivo de sesión y nuevo ONB_001 al agotar el último reenvío.';
   ELSIF original_cd IN ('S6-C04','S6-C05') THEN
    -- Bridge trigger requires an existing PUBLICADA. No false coverage from a returned candidate.
@@ -68,7 +69,7 @@ BEGIN
   ELSIF p->>'veredicto'='DEVOLVER' THEN CONTINUE;
   END IF;
   IF NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=ver AND estado='PUBLICADA') THEN
-   IF cd='S6-C12' THEN CONTINUE; END IF;
+   
    RAISE EXCEPTION 'S4V2_S6_UNPUBLISHED_BRIDGE %',cd;
   END IF;
   IF NOT EXISTS(SELECT 1 FROM lf_ops.reglas WHERE id=lid) THEN
@@ -80,6 +81,7 @@ BEGIN
   diff:=CASE original_cd
    WHEN 'S4-C14' THEN 'S5-C22 conserva selección al abrir y cerrar el modal; cancelar o X no modifica el plan anterior.'
    WHEN 'S6-C18' THEN 'S6-C17 cubre modal de cronograma de solo lectura, datos de backend y cierre sin navegación; añade descarga solo con documento oficial de backend.'
+   WHEN 'S6-C12' THEN 'REG_CHK_004 cubre bloqueo de reintento hasta resultado autoritativo normalizado, no todos los estados ni CHECKOUT_ESTADO_CONFIRMANDO.'
    WHEN 'S6-C03' THEN 'S5-C13 cubre invalidación del desafío OTP y cooldown, no el bloqueo definitivo de session_id.'
    ELSE 'Intención de la legada especializada como guard evaluable de violación: '||new_desc END;
   h:=lf_ops.nucleo_hash_paquete_v1(cd,ver);
