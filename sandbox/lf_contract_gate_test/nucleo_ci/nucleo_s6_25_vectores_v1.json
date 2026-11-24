@@ -1,0 +1,3406 @@
+{
+  "contrato": "LF_S6_25_CANDIDATAS_V1",
+  "fuente": "lf_ops.reglas / Inventario 586 MIGRAR",
+  "candidatas": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C01",
+      "clave": "s6_reg_atq_001",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "CAPTCHA invisible como primera línea",
+      "descripcion": "Antes de aceptar envío de ONB_001, exigir validación de Turnstile invisible según política aprobada. Un desafío visible solo corresponde a escalada de riesgo; BLOQUEAR avanzar sin resultado de protección autoritativo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c01_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c01_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c01_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/121",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": false,
+            "s6c01_contexto": false,
+            "s6c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": false,
+            "s6c01_contexto": false,
+            "s6c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": false,
+            "s6c01_contexto": true,
+            "s6c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": false,
+            "s6c01_contexto": true,
+            "s6c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": true,
+            "s6c01_contexto": false,
+            "s6c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": true,
+            "s6c01_contexto": false,
+            "s6c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": true,
+            "s6c01_contexto": true,
+            "s6c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c01_intento": true,
+            "s6c01_contexto": true,
+            "s6c01_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 121,
+      "legada_codigo": "REG_ATQ_001",
+      "hechos": [
+        "s6c01_intento",
+        "s6c01_contexto",
+        "s6c01_violacion"
+      ],
+      "source_text": "Se usa Cloudflare Turnstile en modo invisible como primera línea de protección en el formulario del Paso 1. No interrumpe al usuario humano. Solo muestra desafío visible si el score es sospechoso. RESUELTO 2026-07-04: Cloudflare Turnstile elegido sobre hCaptcha y reCAPTCHA v3. Razones: invisible ~95% del tiempo (vs puzzles de imagen que friccionan mobile/baja literacidad), touch-optimizado, WCAG compliant, gratis sin tope (reCAPTCHA v3 ahora requiere tarjeta de Google Cloud y tiene tope de 10,000/mes desde 2026). Consistente si se aprueba Cloudflare como proxy de produccion (REG_ATQ_013)."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C02",
+      "clave": "s6_reg_atq_002",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "CAPTCHA visible solo como escalada",
+      "descripcion": "El desafío CAPTCHA visible solo aparece cuando falla Turnstile invisible o el riesgo supera la política; las escaladas se limitan con AUTH/CAPTCHA_MAX_ESCALATIONS_BEFORE_BLOCK leído desde public.lf_global_config. BLOQUEAR escalada automática o exceso de intentos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c02_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c02_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c02_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/122",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": false,
+            "s6c02_contexto": false,
+            "s6c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": false,
+            "s6c02_contexto": false,
+            "s6c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": false,
+            "s6c02_contexto": true,
+            "s6c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": false,
+            "s6c02_contexto": true,
+            "s6c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": true,
+            "s6c02_contexto": false,
+            "s6c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": true,
+            "s6c02_contexto": false,
+            "s6c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": true,
+            "s6c02_contexto": true,
+            "s6c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c02_intento": true,
+            "s6c02_contexto": true,
+            "s6c02_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 122,
+      "legada_codigo": "REG_ATQ_002",
+      "hechos": [
+        "s6c02_intento",
+        "s6c02_contexto",
+        "s6c02_violacion"
+      ],
+      "source_text": "El CAPTCHA visible (desafío de imágenes o checkbox) solo se activa si Turnstile invisible falla o si el score supera el umbral de sospecha. No se muestra por defecto. El máximo de escaladas antes del bloqueo se obtiene exclusivamente desde public.lf_global_config, scope AUTH, config_key CAPTCHA_MAX_ESCALATIONS_BEFORE_BLOCK, por la función canónica public.lf_auth_config_integer_v1, sin constantes embebidas en la regla."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C03",
+      "clave": "s6_reg_atq_012",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Protección del session_id al agotar ciclos OTP",
+      "descripcion": "Agotar intentos invalida solo el desafío OTP actual y aplica cooldown desde variables AUTH de public.lf_global_config; no bloquear definitivamente session_id antes de agotarse también el último reenvío permitido. En la última recurrencia agotada, BLOQUEAR sesión y exigir nuevo ONB_001.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c03_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c03_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c03_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/132",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": false,
+            "s6c03_contexto": false,
+            "s6c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": false,
+            "s6c03_contexto": false,
+            "s6c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": false,
+            "s6c03_contexto": true,
+            "s6c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": false,
+            "s6c03_contexto": true,
+            "s6c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": true,
+            "s6c03_contexto": false,
+            "s6c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": true,
+            "s6c03_contexto": false,
+            "s6c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": true,
+            "s6c03_contexto": true,
+            "s6c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c03_intento": true,
+            "s6c03_contexto": true,
+            "s6c03_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 132,
+      "legada_codigo": "REG_ATQ_012",
+      "hechos": [
+        "s6c03_intento",
+        "s6c03_contexto",
+        "s6c03_violacion"
+      ],
+      "source_text": "El session_id no se bloquea permanentemente al agotar los intentos del OTP inicial: ese OTP se invalida y aplica el cooldown de seguridad. Cada OTP agotado se invalida y aplica el mismo cooldown. Solo cuando se agotan los intentos del OTP correspondiente al último reenvío permitido, el session_id queda BLOCKED y el usuario debe iniciar un nuevo onboarding desde ONB_001. Los límites de intentos por OTP, reenvíos permitidos y cooldown se obtienen exclusivamente de public.lf_global_config mediante public.lf_auth_config_integer_v1, usando AUTH/OTP_MAX_ATTEMPTS, AUTH/OTP_MAX_RESENDS y AUTH/OTP_EXHAUSTION_COOLDOWN_SECONDS; no hay constantes operativas embebidas."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C04",
+      "clave": "s6_reg_atq_014",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "WAF rules mínimas para el onboarding",
+      "descripcion": "Exigir controles WAF vigentes para injection, XSS, escaneo de rutas y señales de origen geográfico no operativo. BLOQUEAR la aceptación de tráfico clasificado por política activa como ataque, sin reemplazar el juicio de riesgo por una IP compartida.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c04_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c04_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c04_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/134",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": false,
+            "s6c04_contexto": false,
+            "s6c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": false,
+            "s6c04_contexto": false,
+            "s6c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": false,
+            "s6c04_contexto": true,
+            "s6c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": false,
+            "s6c04_contexto": true,
+            "s6c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": true,
+            "s6c04_contexto": false,
+            "s6c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": true,
+            "s6c04_contexto": false,
+            "s6c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": true,
+            "s6c04_contexto": true,
+            "s6c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c04_intento": true,
+            "s6c04_contexto": true,
+            "s6c04_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 134,
+      "legada_codigo": "REG_ATQ_014",
+      "hechos": [
+        "s6c04_intento",
+        "s6c04_contexto",
+        "s6c04_violacion"
+      ],
+      "source_text": "Cloudflare WAF debe tener reglas activas para: bloquear peticiones con payloads SQL injection, bloquear XSS en campos de formulario, bloquear escaneo de rutas, y desafiar IPs de países sin operación."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C05",
+      "clave": "s6_reg_atq_015",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Supabase no expuesto directamente a internet público",
+      "descripcion": "BLOQUEAR exposición de credenciales y URLs sensibles de Supabase en repositorios públicos, telemetría de terceros o configuración de cliente sin resguardo. La identidad de proyecto y llaves públicas autorizadas deben distinguirse de secretos reales antes de aplicar sanción.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c05_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c05_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c05_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/135",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": false,
+            "s6c05_contexto": false,
+            "s6c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": false,
+            "s6c05_contexto": false,
+            "s6c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": false,
+            "s6c05_contexto": true,
+            "s6c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": false,
+            "s6c05_contexto": true,
+            "s6c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": true,
+            "s6c05_contexto": false,
+            "s6c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": true,
+            "s6c05_contexto": false,
+            "s6c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": true,
+            "s6c05_contexto": true,
+            "s6c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c05_intento": true,
+            "s6c05_contexto": true,
+            "s6c05_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 135,
+      "legada_codigo": "REG_ATQ_015",
+      "hechos": [
+        "s6c05_intento",
+        "s6c05_contexto",
+        "s6c05_violacion"
+      ],
+      "source_text": "Las URLs de Supabase (proyecto y anon key) no deben publicarse en repositorios públicos, variables de entorno del cliente no protegidas ni herramientas de análisis de terceros."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C06",
+      "clave": "s6_reg_atq_016",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Detección de patrones de credential stuffing",
+      "descripcion": "Correlacionar múltiples documentos por IP y múltiples IP por documento como señales, con límites CLIENT/ATQ_DISTINCT_DNI_PER_IP_SIGNAL_LIMIT, CLIENT/ATQ_DISTINCT_IP_PER_DNI_SIGNAL_LIMIT y CLIENT/ATQ_SIGNAL_WINDOW_MINUTES. BLOQUEAR inferir culpabilidad de terceros por IP compartida sin corroboración.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c06_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c06_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c06_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/136",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": false,
+            "s6c06_contexto": false,
+            "s6c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": false,
+            "s6c06_contexto": false,
+            "s6c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": false,
+            "s6c06_contexto": true,
+            "s6c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": false,
+            "s6c06_contexto": true,
+            "s6c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": true,
+            "s6c06_contexto": false,
+            "s6c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": true,
+            "s6c06_contexto": false,
+            "s6c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": true,
+            "s6c06_contexto": true,
+            "s6c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c06_intento": true,
+            "s6c06_contexto": true,
+            "s6c06_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 136,
+      "legada_codigo": "REG_ATQ_016",
+      "hechos": [
+        "s6c06_intento",
+        "s6c06_contexto",
+        "s6c06_violacion"
+      ],
+      "source_text": "El sistema detecta patrones de múltiples documentos observados desde una IP y de una identidad observada desde distintas IP como señales preventivas, nunca como prueba suficiente para bloquear a todos los usuarios de una IP. Los umbrales se leen desde public.lf_global_config (scope CLIENT, config_key ATQ_DISTINCT_DNI_PER_IP_SIGNAL_LIMIT y ATQ_DISTINCT_IP_PER_DNI_SIGNAL_LIMIT) y la ventana desde CLIENT/ATQ_SIGNAL_WINDOW_MINUTES. Ante coincidencia se genera alerta de riesgo y evaluación con señal independiente; solo si el backend vincula de forma segura la conducta anómala con una cuenta/usuario específico y valida evidencia adicional puede aplicar restricción individual cuya duración proviene de CLIENT/ATQ_ACCOUNT_HOLD_MINUTES. Cuando no hay cuenta individual identificada, el resultado es escalado de riesgo/antibot sin bloqueo por IP; nunca revelar existencia de cuentas ni exponer DNI en logs. Las señales no equivalen a fraude confirmado; implementación y QA pendientes."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C07",
+      "clave": "s6_reg_atq_017",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Validación de consistencia DNI + celular",
+      "descripcion": "Si un DNI supera intentos fallidos con celulares distintos durante la ventana AUTH/FAILED_PHONE_PER_DNI_WINDOW_HOURS, conforme a AUTH/FAILED_PHONE_PER_DNI_LIMIT, BLOQUEAR nuevo registro automático hasta revisión manual, sin umbrales embebidos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c07_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c07_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c07_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/137",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": false,
+            "s6c07_contexto": false,
+            "s6c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": false,
+            "s6c07_contexto": false,
+            "s6c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": false,
+            "s6c07_contexto": true,
+            "s6c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": false,
+            "s6c07_contexto": true,
+            "s6c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": true,
+            "s6c07_contexto": false,
+            "s6c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": true,
+            "s6c07_contexto": false,
+            "s6c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": true,
+            "s6c07_contexto": true,
+            "s6c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c07_intento": true,
+            "s6c07_contexto": true,
+            "s6c07_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 137,
+      "legada_codigo": "REG_ATQ_017",
+      "hechos": [
+        "s6c07_intento",
+        "s6c07_contexto",
+        "s6c07_violacion"
+      ],
+      "source_text": "Si el mismo DNI supera el límite configurado de celulares distintos vinculados a intentos fallidos dentro de la ventana de observación configurada, el DNI se marca como sospechoso y requiere revisión manual antes de permitir un nuevo registro. El límite de celulares y la ventana en horas se obtienen exclusivamente de public.lf_global_config mediante public.lf_auth_config_integer_v1, con AUTH/FAILED_PHONE_PER_DNI_LIMIT y AUTH/FAILED_PHONE_PER_DNI_WINDOW_HOURS, sin umbrales operativos embebidos."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C08",
+      "clave": "s6_reg_atq_018",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Expiración de JWT post-onboarding",
+      "descripcion": "Separar vigencia de token, inactividad y duración absoluta de sesión Cliente mediante AUTH/SESSION_ACCESS_TOKEN_TTL_SECONDS, AUTH/SESSION_IDLE_TIMEOUT_SECONDS y AUTH/SESSION_ABSOLUTE_TIMEOUT_SECONDS; BLOQUEAR continuidad fuera de ventana y exigir reautenticación y rotación refresh server-side.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c08_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c08_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c08_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/138",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": false,
+            "s6c08_contexto": false,
+            "s6c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": false,
+            "s6c08_contexto": false,
+            "s6c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": false,
+            "s6c08_contexto": true,
+            "s6c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": false,
+            "s6c08_contexto": true,
+            "s6c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": true,
+            "s6c08_contexto": false,
+            "s6c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": true,
+            "s6c08_contexto": false,
+            "s6c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": true,
+            "s6c08_contexto": true,
+            "s6c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c08_intento": true,
+            "s6c08_contexto": true,
+            "s6c08_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 138,
+      "legada_codigo": "REG_ATQ_018",
+      "hechos": [
+        "s6c08_intento",
+        "s6c08_contexto",
+        "s6c08_violacion"
+      ],
+      "source_text": "La sesión Cliente separa el TTL de access token, el máximo de inactividad y la ventana absoluta de sesión, con rotación de refresh. Al superar inactividad o duración absoluta, se exige reautenticación. Los tres tiempos se leen exclusivamente de public.lf_global_config usando AUTH/SESSION_ACCESS_TOKEN_TTL_SECONDS, AUTH/SESSION_IDLE_TIMEOUT_SECONDS y AUTH/SESSION_ABSOLUTE_TIMEOUT_SECONDS mediante public.lf_auth_config_integer_v1. El límite de la cadena refresh se obtiene de lf_ops.politicas_sesion.cookie_policy.refresh_chain_max_days para la política vigente SESSION-CLIENT-DEFAULT, sin confundirlo con la ventana absoluta. La autoridad de sesión es Supabase Auth."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C09",
+      "clave": "s6_reg_atq_020",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Revocación de JWT al detectar actividad sospechosa",
+      "descripcion": "Al superar señales de ubicaciones geográficas distintas de un JWT en ventana AUTH/JWT_GEO_WINDOW_MINUTES y límite AUTH/JWT_DISTINCT_GEO_LIMIT, revocar sesión, requerir reautenticación y notificar al usuario conforme a política; BLOQUEAR reutilización del token revocado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c09_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c09_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c09_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/140",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": false,
+            "s6c09_contexto": false,
+            "s6c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": false,
+            "s6c09_contexto": false,
+            "s6c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": false,
+            "s6c09_contexto": true,
+            "s6c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": false,
+            "s6c09_contexto": true,
+            "s6c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": true,
+            "s6c09_contexto": false,
+            "s6c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": true,
+            "s6c09_contexto": false,
+            "s6c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": true,
+            "s6c09_contexto": true,
+            "s6c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c09_intento": true,
+            "s6c09_contexto": true,
+            "s6c09_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 140,
+      "legada_codigo": "REG_ATQ_020",
+      "hechos": [
+        "s6c09_intento",
+        "s6c09_contexto",
+        "s6c09_violacion"
+      ],
+      "source_text": "Si se detecta el uso del mismo JWT desde más ubicaciones geográficas distintas que el límite configurado, dentro de un intervalo estrictamente menor que la ventana configurada, el token se revoca, el usuario debe reautenticarse y se le notifica. El máximo de ubicaciones y la ventana en minutos se obtienen de public.lf_global_config, usando AUTH/JWT_DISTINCT_GEO_LIMIT y AUTH/JWT_GEO_WINDOW_MINUTES mediante public.lf_auth_config_integer_v1, sin umbrales operativos incrustados."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C10",
+      "clave": "s6_reg_onb003_session_binding_001",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "DNI ligado a la misma sesión OTP verificada",
+      "descripcion": "BLOQUEAR resolución de DNI en ONB_003 cuando session_id no pertenezca a la misma sesión server-side con OTP verificado y celular sin cambios; rechazar sesión ajena, expirada, bloqueada o sin OTP autoritativo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c10_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c10_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c10_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/491",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": false,
+            "s6c10_contexto": false,
+            "s6c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": false,
+            "s6c10_contexto": false,
+            "s6c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": false,
+            "s6c10_contexto": true,
+            "s6c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": false,
+            "s6c10_contexto": true,
+            "s6c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": true,
+            "s6c10_contexto": false,
+            "s6c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": true,
+            "s6c10_contexto": false,
+            "s6c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": true,
+            "s6c10_contexto": true,
+            "s6c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c10_intento": true,
+            "s6c10_contexto": true,
+            "s6c10_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 491,
+      "legada_codigo": "REG_ONB003_SESSION_BINDING_001",
+      "hechos": [
+        "s6c10_intento",
+        "s6c10_contexto",
+        "s6c10_violacion"
+      ],
+      "source_text": "ONB_003 solo acepta el DNI dentro de la misma sesión server-side que completó OTP. La verificación debe comprobar otp_verified=true y que el celular asociado a la sesión no cambió desde la verificación. Un session_id ajeno, expirado, bloqueado o sin OTP verificado no puede resolver DNI."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C11",
+      "clave": "s6_reg_onb003_dni_resolution_atomic_001",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resolución DNI atómica e idempotente por sesión OTP",
+      "descripcion": "BLOQUEAR resoluciones DNI concurrentes divergentes dentro de una misma sesión OTP; la resolución server-side es atómica e idempotente. Reintento equivalente reutiliza resultado neutral; DNI distinto tras consolidación exige sesión nueva.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c11_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c11_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c11_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/495",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": false,
+            "s6c11_contexto": false,
+            "s6c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": false,
+            "s6c11_contexto": false,
+            "s6c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": false,
+            "s6c11_contexto": true,
+            "s6c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": false,
+            "s6c11_contexto": true,
+            "s6c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": true,
+            "s6c11_contexto": false,
+            "s6c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": true,
+            "s6c11_contexto": false,
+            "s6c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": true,
+            "s6c11_contexto": true,
+            "s6c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c11_intento": true,
+            "s6c11_contexto": true,
+            "s6c11_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 495,
+      "legada_codigo": "REG_ONB003_DNI_RESOLUTION_ATOMIC_001",
+      "hechos": [
+        "s6c11_intento",
+        "s6c11_contexto",
+        "s6c11_violacion"
+      ],
+      "source_text": "La resolución de DNI de ONB_003 se ejecuta server-side de forma atómica dentro de la misma sesión OTP verificada. Solicitudes concurrentes no pueden producir dos resoluciones distintas ni dos transiciones de flujo. Un reintento equivalente debe reutilizar el resultado neutral ya resuelto; si una resolución ya fue consolidada y llega un DNI diferente para la misma sesión, se rechaza de forma genérica y requiere una nueva sesión de onboarding. Ningún mecanismo de idempotencia puede contener el DNI crudo ni exponer el resultado nuevo/existente al cliente."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C12",
+      "clave": "s6_reg_chk_003",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Estados normalizados del flujo de checkout",
+      "descripcion": "BLOQUEAR atribuir autoridad al estado crudo del proveedor; checkout distingue antes de envío, intento enviado, pendiente autoritativo, confirmado, rechazo confirmado y falla anterior al envío. PAYMENT_PENDING_CONFIRMATION lleva a CONFIRMANDO y bloquea reintentos hasta conciliación.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c12_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c12_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c12_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/207",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": false,
+            "s6c12_contexto": false,
+            "s6c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": false,
+            "s6c12_contexto": false,
+            "s6c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": false,
+            "s6c12_contexto": true,
+            "s6c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": false,
+            "s6c12_contexto": true,
+            "s6c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": true,
+            "s6c12_contexto": false,
+            "s6c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": true,
+            "s6c12_contexto": false,
+            "s6c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": true,
+            "s6c12_contexto": true,
+            "s6c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c12_intento": true,
+            "s6c12_contexto": true,
+            "s6c12_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 207,
+      "legada_codigo": "REG_CHK_003",
+      "hechos": [
+        "s6c12_intento",
+        "s6c12_contexto",
+        "s6c12_violacion"
+      ],
+      "source_text": "El checkout distingue preparación previa al envío, intento enviado esperando resultado autoritativo, pago confirmado, rechazo confirmado, estado pendiente de confirmación y fallas previas al envío. Los estados crudos o nombres de un proveedor no son autoridad del frontend. PAYMENT_PENDING_CONFIRMATION usa CHECKOUT_ESTADO_CONFIRMANDO y bloquea reintento/cambio de medio hasta reconciliación."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C13",
+      "clave": "s6_reg_niu_003",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Integración vía SDK de Niubiz",
+      "descripcion": "En integración Niubiz, exigir el SDK oficial y captura de datos de tarjeta en iframe o campos hospedados autorizados; BLOQUEAR captura PAN o CVV por servidores LF o llamadas que evadan contrato aprobado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c13_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c13_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c13_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/227",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": false,
+            "s6c13_contexto": false,
+            "s6c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": false,
+            "s6c13_contexto": false,
+            "s6c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": false,
+            "s6c13_contexto": true,
+            "s6c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": false,
+            "s6c13_contexto": true,
+            "s6c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": true,
+            "s6c13_contexto": false,
+            "s6c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": true,
+            "s6c13_contexto": false,
+            "s6c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": true,
+            "s6c13_contexto": true,
+            "s6c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c13_intento": true,
+            "s6c13_contexto": true,
+            "s6c13_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 227,
+      "legada_codigo": "REG_NIU_003",
+      "hechos": [
+        "s6c13_intento",
+        "s6c13_contexto",
+        "s6c13_violacion"
+      ],
+      "source_text": "La integración con Niubiz usa el SDK oficial, no llamadas directas a la API. El SDK maneja el formulario de tarjeta en un iframe seguro. Los datos de tarjeta nunca pasan por los servidores de LF."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C14",
+      "clave": "s6_reg_niu_006",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Logos Visa/Mastercard sujetos a lineamiento",
+      "descripcion": "BLOQUEAR logos Visa o Mastercard en checkout si no existe contrato o lineamiento de marca explícito y vigente. No inferir autorización del diseño o mockup.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c14_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c14_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c14_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/230",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": false,
+            "s6c14_contexto": false,
+            "s6c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": false,
+            "s6c14_contexto": false,
+            "s6c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": false,
+            "s6c14_contexto": true,
+            "s6c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": false,
+            "s6c14_contexto": true,
+            "s6c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": true,
+            "s6c14_contexto": false,
+            "s6c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": true,
+            "s6c14_contexto": false,
+            "s6c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": true,
+            "s6c14_contexto": true,
+            "s6c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c14_intento": true,
+            "s6c14_contexto": true,
+            "s6c14_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 230,
+      "legada_codigo": "REG_NIU_006",
+      "hechos": [
+        "s6c14_intento",
+        "s6c14_contexto",
+        "s6c14_violacion"
+      ],
+      "source_text": "Los logos de Visa y Mastercard solo se muestran si existe lineamiento o contrato que lo permita explícitamente. Documentado en REQ_HOME_07 sección 6."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C15",
+      "clave": "s6_reg_chk_009",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Pago inicial activa el plan en cuotas",
+      "descripcion": "En checkout de cuota inicial, BLOQUEAR copys que declaren deuda liquidada; debe comunicar que el pago inicial activa plan y no cancela la obligación total. El número de cuotas mostrado proviene del plan backend.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c15_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c15_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c15_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/272",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": false,
+            "s6c15_contexto": false,
+            "s6c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": false,
+            "s6c15_contexto": false,
+            "s6c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": false,
+            "s6c15_contexto": true,
+            "s6c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": false,
+            "s6c15_contexto": true,
+            "s6c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": true,
+            "s6c15_contexto": false,
+            "s6c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": true,
+            "s6c15_contexto": false,
+            "s6c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": true,
+            "s6c15_contexto": true,
+            "s6c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c15_intento": true,
+            "s6c15_contexto": true,
+            "s6c15_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 272,
+      "legada_codigo": "REG_CHK_009",
+      "hechos": [
+        "s6c15_intento",
+        "s6c15_contexto",
+        "s6c15_violacion"
+      ],
+      "source_text": "El pago del monto inicial no cancela la deuda. Activa el plan de cuotas. El copy siempre dice \"Paga tu monto inicial — Activa tu plan de N cuotas\". Nunca \"Cancela tu deuda\" ni \"Pago final\"."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C16",
+      "clave": "s6_reg_chk_010",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Tarjeta recomendada para planes en cuotas",
+      "descripcion": "En cuotas, la tarjeta puede mostrar badge Recomendada únicamente cuando backend confirma elegibilidad y débito automático aplicable; Yape se restringe al monto inicial según medio elegible. BLOQUEAR recomendación que contradiga capacidades y política del aliado.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c16_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c16_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c16_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/273",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": false,
+            "s6c16_contexto": false,
+            "s6c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": false,
+            "s6c16_contexto": false,
+            "s6c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": false,
+            "s6c16_contexto": true,
+            "s6c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": false,
+            "s6c16_contexto": true,
+            "s6c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": true,
+            "s6c16_contexto": false,
+            "s6c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": true,
+            "s6c16_contexto": false,
+            "s6c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": true,
+            "s6c16_contexto": true,
+            "s6c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c16_intento": true,
+            "s6c16_contexto": true,
+            "s6c16_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 273,
+      "legada_codigo": "REG_CHK_010",
+      "hechos": [
+        "s6c16_intento",
+        "s6c16_contexto",
+        "s6c16_violacion"
+      ],
+      "source_text": "La tarjeta de débito o crédito es el medio recomendado para planes en cuotas porque habilita el débito automático mensual. Yape está disponible solo para el monto inicial. El badge \"Recomendada\" aparece en la opción de tarjeta."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C17",
+      "clave": "s6_reg_chk_015",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Copy de cancelación en pantalla de checkout",
+      "descripcion": "Ver cronograma abre modal solo lectura con cuotas, fechas y montos calculados por backend; total visible al pie, Entendido cierra sin navegar y Descargar cronograma solo si backend dispone de documento oficial. BLOQUEAR datos inventados o documento inexistente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c17_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c17_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c17_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/278",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": false,
+            "s6c17_contexto": false,
+            "s6c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": false,
+            "s6c17_contexto": false,
+            "s6c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": false,
+            "s6c17_contexto": true,
+            "s6c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": false,
+            "s6c17_contexto": true,
+            "s6c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": true,
+            "s6c17_contexto": false,
+            "s6c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": true,
+            "s6c17_contexto": false,
+            "s6c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": true,
+            "s6c17_contexto": true,
+            "s6c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c17_intento": true,
+            "s6c17_contexto": true,
+            "s6c17_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 278,
+      "legada_codigo": "REG_CHK_015",
+      "hechos": [
+        "s6c17_intento",
+        "s6c17_contexto",
+        "s6c17_violacion"
+      ],
+      "source_text": "\"Ver cronograma\" abre un modal de solo lectura con el calendario de pagos mes a mes. Columnas: número de cuota, fecha de cobro y monto. Total del plan al pie. Botón \"Entendido\" cierra el modal. Incluye \"Descargar cronograma\" en PDF generado por el backend con formato oficial."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C18",
+      "clave": "s6_reg_chk_016",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Cronograma de pagos en modal",
+      "descripcion": "El modal Ver cronograma presenta todas las cuotas del plan con fecha, número, monto y estado real pendiente/pagado; se cierra con X o acción externa autorizada. BLOQUEAR marcar pagado sin PAYMENT_CONFIRMED.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c18_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c18_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c18_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/279",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": false,
+            "s6c18_contexto": false,
+            "s6c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": false,
+            "s6c18_contexto": false,
+            "s6c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": false,
+            "s6c18_contexto": true,
+            "s6c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": false,
+            "s6c18_contexto": true,
+            "s6c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": true,
+            "s6c18_contexto": false,
+            "s6c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": true,
+            "s6c18_contexto": false,
+            "s6c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": true,
+            "s6c18_contexto": true,
+            "s6c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c18_intento": true,
+            "s6c18_contexto": true,
+            "s6c18_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 279,
+      "legada_codigo": "REG_CHK_016",
+      "hechos": [
+        "s6c18_intento",
+        "s6c18_contexto",
+        "s6c18_violacion"
+      ],
+      "source_text": "\"Ver cronograma\" abre un modal con el calendario de pagos mes a mes: fecha, número de cuota, monto y estado (pendiente/pagado). El modal muestra todas las cuotas del plan. Se cierra con X o toque fuera del modal."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C19",
+      "clave": "s6_reg_chk_018",
+      "familia": "PAYMENTS_CHECKOUT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_PAYMENTS",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resumen lateral del plan visible durante el checkout",
+      "descripcion": "Durante checkout de cuotas mantener resumen lateral visible con número de cuotas, cuota periódica, total del plan, acceso al cronograma y estado real de carta; BLOQUEAR ocultamiento de ese contexto al cambiar medio de pago.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c19_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c19_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c19_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/281",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": false,
+            "s6c19_contexto": false,
+            "s6c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": false,
+            "s6c19_contexto": false,
+            "s6c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": false,
+            "s6c19_contexto": true,
+            "s6c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": false,
+            "s6c19_contexto": true,
+            "s6c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": true,
+            "s6c19_contexto": false,
+            "s6c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": true,
+            "s6c19_contexto": false,
+            "s6c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": true,
+            "s6c19_contexto": true,
+            "s6c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c19_intento": true,
+            "s6c19_contexto": true,
+            "s6c19_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 281,
+      "legada_codigo": "REG_CHK_018",
+      "hechos": [
+        "s6c19_intento",
+        "s6c19_contexto",
+        "s6c19_violacion"
+      ],
+      "source_text": "El resumen lateral muestra durante todo el checkout: tipo de plan (N cuotas), cuota mensual (S/ X), total del plan (S/ Y), link \"Ver cronograma\" y estado de la carta de no adeudo. El resumen no se oculta en ningún momento del flujo de pago."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C20",
+      "clave": "s6_reg_flu_001",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Transiciones válidas del onboarding",
+      "descripcion": "El avance de onboarding solo sigue pasos secuenciales válidos y positivos. BLOQUEAR salto de pasos o retroceso desde el último paso verificado, preservando separación entre navegación UI y estado real server-side.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c20_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c20_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c20_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/66",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": false,
+            "s6c20_contexto": false,
+            "s6c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": false,
+            "s6c20_contexto": false,
+            "s6c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": false,
+            "s6c20_contexto": true,
+            "s6c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": false,
+            "s6c20_contexto": true,
+            "s6c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": true,
+            "s6c20_contexto": false,
+            "s6c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": true,
+            "s6c20_contexto": false,
+            "s6c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": true,
+            "s6c20_contexto": true,
+            "s6c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c20_intento": true,
+            "s6c20_contexto": true,
+            "s6c20_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 66,
+      "legada_codigo": "REG_FLU_001",
+      "hechos": [
+        "s6c20_intento",
+        "s6c20_contexto",
+        "s6c20_violacion"
+      ],
+      "source_text": "Solo avanza en positivo: 1→2→3. No se puede saltar pasos ni retroceder desde el Paso 3."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C21",
+      "clave": "s6_reg_new_client_data_completion_001",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Datos obligatorios para alta de cliente nuevo post-DNI",
+      "descripcion": "Cuando ONB_003 resuelve NEW_CLIENT_DATA_COMPLETION, ONB_004 exige nombre completo, email válido y consentimiento de términos; marketing es opcional. BLOQUEAR volver a pedir celular, documento o consentimiento de datos ya verificados en la misma sesión.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c21_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c21_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c21_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/500",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": false,
+            "s6c21_contexto": false,
+            "s6c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": false,
+            "s6c21_contexto": false,
+            "s6c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": false,
+            "s6c21_contexto": true,
+            "s6c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": false,
+            "s6c21_contexto": true,
+            "s6c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": true,
+            "s6c21_contexto": false,
+            "s6c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": true,
+            "s6c21_contexto": false,
+            "s6c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": true,
+            "s6c21_contexto": true,
+            "s6c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c21_intento": true,
+            "s6c21_contexto": true,
+            "s6c21_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 500,
+      "legada_codigo": "REG_NEW_CLIENT_DATA_COMPLETION_001",
+      "hechos": [
+        "s6c21_intento",
+        "s6c21_contexto",
+        "s6c21_violacion"
+      ],
+      "source_text": "Cuando ONB_003 resuelve NEW_CLIENT_DATA_COMPLETION, ONB_004 solicita CAMPO_NOMBRE_COMPLETO, CAMPO_EMAIL y CAMPO_CONSENT_TERMS como obligatorios. CAMPO_CONSENT_MKT permanece opcional y no bloqueante. CAMPO_CELULAR, CAMPO_NRO_DOC y CAMPO_CONSENT_DATA no se solicitan nuevamente porque fueron capturados/verificados/aceptados en pasos previos."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C22",
+      "clave": "s6_reg_client_recovery_phone_control_001",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Recuperación Cliente reutiliza el celular actual ya verificado",
+      "descripcion": "En RECOVERY_FLOW, reutilizar celular actual ya verificado en ONB_002 y consultar control del número anterior. Si aún controla número previo, usar OTP_OP_RECUPERAR_CLAVE; si no, exigir step-up de identidad; BLOQUEAR reasignación sin evidencia reforzada.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c22_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c22_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c22_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/507",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": false,
+            "s6c22_contexto": false,
+            "s6c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": false,
+            "s6c22_contexto": false,
+            "s6c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": false,
+            "s6c22_contexto": true,
+            "s6c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": false,
+            "s6c22_contexto": true,
+            "s6c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": true,
+            "s6c22_contexto": false,
+            "s6c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": true,
+            "s6c22_contexto": false,
+            "s6c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": true,
+            "s6c22_contexto": true,
+            "s6c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c22_intento": true,
+            "s6c22_contexto": true,
+            "s6c22_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 507,
+      "legada_codigo": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001",
+      "hechos": [
+        "s6c22_intento",
+        "s6c22_contexto",
+        "s6c22_violacion"
+      ],
+      "source_text": "Cuando ONB_003 resuelve RECOVERY_FLOW porque el DNI corresponde a una cuenta existente y el celular actual no está vinculado a ella, el celular de la sesión ONB_001/ONB_002 se considera el nuevo celular candidato porque ya demostró control por OTP. No se vuelve a solicitar ni se repite OTP al mismo número mientras la sesión server-side siga válida y ligada al mismo celular. El sistema pregunta si el cliente todavía tiene acceso al celular anterior. Si responde que sí, se envía y verifica un OTP al celular anterior mediante OTP_OP_RECUPERAR_CLAVE. Si responde que no, se deriva al step-up reforzado de identidad definido por REG_IDV_PROGRESSIVE_001."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C23",
+      "clave": "s6_reg_client_recovery_idv_outcome_001",
+      "familia": "TRANSITIONS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resultados normalizados del step-up de recuperación Cliente",
+      "descripcion": "Normalizar resultados de verificación reforzada de identidad a VERIFIED, RETRYABLE_FAILURE, DENIED, RISK_BLOCKED y SERVICE_UNAVAILABLE. BLOQUEAR rebind o acceso salvo VERIFIED autoritativo; no enviar payload crudo del proveedor al cliente.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c23_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c23_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c23_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/511",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": false,
+            "s6c23_contexto": false,
+            "s6c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": false,
+            "s6c23_contexto": false,
+            "s6c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": false,
+            "s6c23_contexto": true,
+            "s6c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": false,
+            "s6c23_contexto": true,
+            "s6c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": true,
+            "s6c23_contexto": false,
+            "s6c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": true,
+            "s6c23_contexto": false,
+            "s6c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": true,
+            "s6c23_contexto": true,
+            "s6c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c23_intento": true,
+            "s6c23_contexto": true,
+            "s6c23_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 511,
+      "legada_codigo": "REG_CLIENT_RECOVERY_IDV_OUTCOME_001",
+      "hechos": [
+        "s6c23_intento",
+        "s6c23_contexto",
+        "s6c23_violacion"
+      ],
+      "source_text": "El mecanismo de identidad usado en recuperación se traduce en backend a resultados funcionales estables. VERIFIED habilita únicamente la reasignación atómica gobernada; RETRYABLE_FAILURE permite nuevo intento sujeto a la política del mecanismo; DENIED, RISK_BLOCKED y SERVICE_UNAVAILABLE no modifican la cuenta ni conceden acceso. La UI no consume códigos, razones ni payloads crudos del proveedor. La normalización nunca emite VERIFIED si el proveedor está deshabilitado; la respuesta de rama no disponible no reasigna cuentas ni autoriza acceso."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C24",
+      "clave": "s6_reg_client_checkout_pricing_quote_001",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Quote de checkout Cliente versionado y fail-closed",
+      "descripcion": "BLOQUEAR checkout sin quote server-side READY, vigente, de selección idéntica y versión APROBADO o VIGENTE de configuración de precios; public.fn_lf_my_checkout_pricing_quote no autoriza precio si expira, falta o no coincide selección. Frontend no recalcula.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c24_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c24_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c24_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/522",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": false,
+            "s6c24_contexto": false,
+            "s6c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": false,
+            "s6c24_contexto": false,
+            "s6c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": false,
+            "s6c24_contexto": true,
+            "s6c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": false,
+            "s6c24_contexto": true,
+            "s6c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": true,
+            "s6c24_contexto": false,
+            "s6c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": true,
+            "s6c24_contexto": false,
+            "s6c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": true,
+            "s6c24_contexto": true,
+            "s6c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c24_intento": true,
+            "s6c24_contexto": true,
+            "s6c24_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 522,
+      "legada_codigo": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+      "hechos": [
+        "s6c24_intento",
+        "s6c24_contexto",
+        "s6c24_violacion"
+      ],
+      "source_text": "El checkout debe consumir un quote server-side vigente para la selección exacta. La estructura existente lf_proto.checkout_pricing_quotes conserva selection_sha256, snapshot de selección, versión de configuración, componentes de precio, total final, ahorro, estado y expiración. La función pública fn_lf_my_checkout_pricing_quote solo devuelve READY cuando existe un quote VALID no expirado para auth.uid() y la configuración lf_b2b_pricing_config referenciada está APROBADO o VIGENTE y coincide exactamente en versión. Cualquier ausencia, expiración, configuración no autorizada o mismatch bloquea el checkout; el frontend no recalcula ni sustituye los valores."
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S6-C25",
+      "clave": "s6_reg_client_home_benefit_offer_presentation_001",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "HOME_002 presenta beneficios solo cuando afectan o explican la oferta vigente",
+      "descripcion": "En Home con oferta activa, incorporar beneficio comercial únicamente si modifica, explica o anticipa condiciones vigentes y backend entrega configuración aprobada. BLOQUEAR descuentos, acumulación o stacking calculados por la UI y no alterar precio ni ahorro autorizados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c25_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s6c25_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s6c25_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/598",
+        "solicitante": "Cristhian/Claude S6 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": false,
+            "s6c25_contexto": false,
+            "s6c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": false,
+            "s6c25_contexto": false,
+            "s6c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": false,
+            "s6c25_contexto": true,
+            "s6c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": false,
+            "s6c25_contexto": true,
+            "s6c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": true,
+            "s6c25_contexto": false,
+            "s6c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": true,
+            "s6c25_contexto": false,
+            "s6c25_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": true,
+            "s6c25_contexto": true,
+            "s6c25_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s6c25_intento": true,
+            "s6c25_contexto": true,
+            "s6c25_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 598,
+      "legada_codigo": "REG_CLIENT_HOME_BENEFIT_OFFER_PRESENTATION_001",
+      "hechos": [
+        "s6c25_intento",
+        "s6c25_contexto",
+        "s6c25_violacion"
+      ],
+      "source_text": "En HOME_002 y sus variantes de oferta activa, un beneficio comercial solo se incorpora a la superficie principal cuando modifica, explica o anticipa las condiciones de la oferta actual. Campañas B2B y beneficios de membresía aplicables se consumen ya resueltos por backend/configuración: el frontend no calcula descuentos, no suma beneficios, no decide stacking y no reescribe la oferta base. El precio final vigente y el ahorro resuelto mantienen la jerarquía principal. Un aviso anticipado de campaña futura puede mostrarse como información sin alterar el precio antes de su vigencia. Si el beneficio está apagado, vencido o no aplica, su UI desaparece y la pantalla refluye sin espacios reservados. Reporte crediticio, sorteo y referidos no se insertan en el cuerpo de decisión de pago; el reporte continúa sujeto al capability gating del shell. La aplicación de premios a deuda queda fuera de este contrato hasta que exista un estado canónico específico."
+    }
+  ]
+}
