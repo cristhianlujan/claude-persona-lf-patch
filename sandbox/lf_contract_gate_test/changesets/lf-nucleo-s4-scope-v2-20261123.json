@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-nucleo-s4-scope-v2-20261123",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s4_12_revision_alcance_home_v2.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-s4-scope-v2-20261123.json": "CHANGESET_MANIFEST"
+  }
+}
