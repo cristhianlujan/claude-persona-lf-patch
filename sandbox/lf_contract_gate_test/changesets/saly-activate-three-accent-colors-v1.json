@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-activate-three-accent-colors-v1",
+  "paths": {
+    "supabase/migrations/20261124153500_lf_saly_activate_three_accent_colors_v1.sql": "MIGRATION",
+    "supabase/tests/saly_activate_three_accent_colors_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/saly-activate-three-accent-colors-v1.json": "CHANGESET_MANIFEST"
+  }
+}
