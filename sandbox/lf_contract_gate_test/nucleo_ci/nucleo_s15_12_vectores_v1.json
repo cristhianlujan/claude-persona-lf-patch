@@ -1279,262 +1279,6 @@
         "ref": "lf_ops.reglas/197",
         "solicitante": "Cristhian / Claude S15 2026-11-24"
       }
-    },
-    {
-      "tipo": "NUEVA",
-      "codigo": "S15-C11",
-      "clave": "s15_reg_cuo_014",
-      "familia": "UI_MESSAGES",
-      "naturaleza": "CONDUCTA",
-      "clase": "PANTALLA",
-      "alcance": "CLIENT_HOME",
-      "modo": "HEREDA",
-      "dueno": "TECNICO",
-      "titulo": "Total estimado incluye cargos aplicables",
-      "descripcion": "BLOQUEAR presentación del total estimado de cuotas sin aclaración «Incluye servicios, impuestos y comisiones aplicables.»; no confundir con monto bruto de oferta ni calcular cargos en frontend.",
-      "condicion": {
-        "op": "y",
-        "izq": {
-          "op": "y",
-          "izq": {
-            "op": "=",
-            "izq": {
-              "hecho": "s15c11_plan_cuotas"
-            },
-            "der": {
-              "lit": true
-            }
-          },
-          "der": {
-            "op": "=",
-            "izq": {
-              "hecho": "s15c11_total_estimado_visible"
-            },
-            "der": {
-              "lit": true
-            }
-          }
-        },
-        "der": {
-          "op": "=",
-          "izq": {
-            "hecho": "s15c11_aclaracion_omitida"
-          },
-          "der": {
-            "lit": true
-          }
-        }
-      },
-      "pruebas": [
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": false,
-            "s15c11_total_estimado_visible": false,
-            "s15c11_aclaracion_omitida": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": false,
-            "s15c11_total_estimado_visible": false,
-            "s15c11_aclaracion_omitida": true
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": false,
-            "s15c11_total_estimado_visible": true,
-            "s15c11_aclaracion_omitida": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": false,
-            "s15c11_total_estimado_visible": true,
-            "s15c11_aclaracion_omitida": true
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": true,
-            "s15c11_total_estimado_visible": false,
-            "s15c11_aclaracion_omitida": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": true,
-            "s15c11_total_estimado_visible": false,
-            "s15c11_aclaracion_omitida": true
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": true,
-            "s15c11_total_estimado_visible": true,
-            "s15c11_aclaracion_omitida": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "SE_CUMPLE",
-          "entrada": {
-            "s15c11_plan_cuotas": true,
-            "s15c11_total_estimado_visible": true,
-            "s15c11_aclaracion_omitida": true
-          },
-          "esperado": true
-        }
-      ],
-      "efecto": "BLOQUEAR",
-      "autoridad": "LEG-TECNICO",
-      "impacto": "REVISAR",
-      "origen": {
-        "tipo": "MIGRACION",
-        "ref": "lf_ops.reglas/270",
-        "solicitante": "Cristhian / Claude S15 2026-11-24"
-      }
-    },
-    {
-      "tipo": "NUEVA",
-      "codigo": "S15-C12",
-      "clave": "s15_reg_chk_cuo_008",
-      "familia": "LOADING_EMPTY_ERROR_STATES",
-      "naturaleza": "CONDUCTA",
-      "clase": "PANTALLA",
-      "alcance": "CLIENT_PAYMENTS",
-      "modo": "HEREDA",
-      "dueno": "TECNICO",
-      "titulo": "Resumen de plan durante pago",
-      "descripcion": "BLOQUEAR checkout de cuotas que oculte resumen lateral al interactuar con formulario de pago o no conserve número de cuotas, cuota mensual, total, acceso a cronograma y bloque Carta de No Adeudo, sin inventar datos ni prometer emisión.",
-      "condicion": {
-        "op": "y",
-        "izq": {
-          "op": "y",
-          "izq": {
-            "op": "=",
-            "izq": {
-              "hecho": "s15c12_checkout_cuotas"
-            },
-            "der": {
-              "lit": true
-            }
-          },
-          "der": {
-            "op": "=",
-            "izq": {
-              "hecho": "s15c12_interaccion_pago"
-            },
-            "der": {
-              "lit": true
-            }
-          }
-        },
-        "der": {
-          "op": "=",
-          "izq": {
-            "hecho": "s15c12_resumen_oculto_o_incompleto"
-          },
-          "der": {
-            "lit": true
-          }
-        }
-      },
-      "pruebas": [
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": false,
-            "s15c12_interaccion_pago": false,
-            "s15c12_resumen_oculto_o_incompleto": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": false,
-            "s15c12_interaccion_pago": false,
-            "s15c12_resumen_oculto_o_incompleto": true
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": false,
-            "s15c12_interaccion_pago": true,
-            "s15c12_resumen_oculto_o_incompleto": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": false,
-            "s15c12_interaccion_pago": true,
-            "s15c12_resumen_oculto_o_incompleto": true
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": true,
-            "s15c12_interaccion_pago": false,
-            "s15c12_resumen_oculto_o_incompleto": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": true,
-            "s15c12_interaccion_pago": false,
-            "s15c12_resumen_oculto_o_incompleto": true
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "NO_SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": true,
-            "s15c12_interaccion_pago": true,
-            "s15c12_resumen_oculto_o_incompleto": false
-          },
-          "esperado": false
-        },
-        {
-          "casuistica": "SE_CUMPLE",
-          "entrada": {
-            "s15c12_checkout_cuotas": true,
-            "s15c12_interaccion_pago": true,
-            "s15c12_resumen_oculto_o_incompleto": true
-          },
-          "esperado": true
-        }
-      ],
-      "efecto": "BLOQUEAR",
-      "autoridad": "LEG-TECNICO",
-      "impacto": "REVISAR",
-      "origen": {
-        "tipo": "MIGRACION",
-        "ref": "lf_ops.reglas/291",
-        "solicitante": "Cristhian / Claude S15 2026-11-24"
-      }
     }
   ],
   "fuentes": [
@@ -1596,18 +1340,6 @@
       "id": 197,
       "codigo": "REG_ERR_009",
       "descripcion": "Si el aliado B2B no está disponible al momento del checkout: \"El servicio de [ALIADO] no está disponible en este momento. Tu selección fue guardada. Intenta en unos minutos.\" No cobrar al usuario.",
-      "estado": "VIGENTE"
-    },
-    {
-      "id": 270,
-      "codigo": "REG_CUO_014",
-      "descripcion": "El total estimado siempre va acompañado de: \"Incluye servicios, impuestos y comisiones aplicables.\" para que el usuario sepa que no es el monto bruto de la oferta.",
-      "estado": "VIGENTE"
-    },
-    {
-      "id": 291,
-      "codigo": "REG_CHK_CUO_008",
-      "descripcion": "El resumen lateral del plan siempre está visible durante el checkout de cuotas: número de cuotas, cuota mensual, total del plan, link \"Ver cronograma\" y bloque de carta de no adeudo. No se oculta al interactuar con el formulario de pago.",
       "estado": "VIGENTE"
     }
   ],
@@ -1681,20 +1413,16 @@
       "clase": "PANTALLA",
       "alcance": "CLIENT_PAYMENTS",
       "binding": "Runtime pendiente; cobertura por módulo a juzgar"
-    },
+    }
+  ],
+  "exclusiones": [
     {
-      "codigo": "S15-C11",
       "legacy_id": 270,
-      "clase": "PANTALLA",
-      "alcance": "CLIENT_HOME",
-      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+      "motivo": "Obligación ya cubierta por S11-C12"
     },
     {
-      "codigo": "S15-C12",
       "legacy_id": 291,
-      "clase": "PANTALLA",
-      "alcance": "CLIENT_PAYMENTS",
-      "binding": "Runtime pendiente; cobertura por módulo a juzgar"
+      "motivo": "Obligación ya cubierta por S6-C19"
     }
   ]
 }
