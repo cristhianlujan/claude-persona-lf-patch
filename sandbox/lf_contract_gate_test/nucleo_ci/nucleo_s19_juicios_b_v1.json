@@ -1,0 +1,55 @@
+{
+  "contrato": "LF_S19_JUICIOS_B",
+  "rubrica": [
+    "CAL_CLARIDAD",
+    "CAL_ACCIONABLE",
+    "CAL_ALCANCE",
+    "SEM_NO_DUPLICA",
+    "SEM_NO_CONTRADICE",
+    "COH_TEXTO_CONDICION",
+    "COH_EFECTO"
+  ],
+  "juicios": [
+    {
+      "codigo": "S19-C01",
+      "version": 1,
+      "eval_id": 1174,
+      "hash_version_atestado": "7848bd1aa07a31231401ab8d2e8030e3177eebe1aca83223e88fdb216ed9e9bd",
+      "hash_paquete_atestado": "19467d62d047e29ae6f9ea0b332c5f7eeeaed453641e875920f5bb00a3f2954e",
+      "veredicto": "PASS",
+      "juez": "Claude independiente 2026-11-24 15:50 Lima",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "legada_id": 46,
+      "familia": "UI_MESSAGES",
+      "diferencias": "Contraste funcional: BLOQUEAR mensaje de error visible fuera del onboarding que exponga códigos técnicos, referencias a base de datos, términos internos o mensajes crudos del sistema. Preservar mensajes de negocio autorizados no sensibles y precedencia anti-enumeración. Onboarding conserva S18-C01. Conserva mensajes de negocio autorizados y anti-enumeración; complemento S18-C01. ",
+      "residual": "",
+      "complementa": "S18-C01"
+    }
+  ],
+  "puentes": []
+}
