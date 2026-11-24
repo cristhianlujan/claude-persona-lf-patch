@@ -21,4 +21,17 @@ grep -F '"result_rows": 0' /tmp/saly_k_v2_sql.log >/dev/null
 grep -F '"preqa_rows": 0' /tmp/saly_k_v2_sql.log >/dev/null
 echo 'INPUT_WAIT|simulated ready at 20,100,never and expirer NOT_EXPIRED'
 PYTHONPATH=sandbox/creative_factory/k_task_v2 python3 -u -m unittest -v sandbox/creative_factory/k_task_v2/test_wait_after_dispatch_v2.py 2>&1 | tee /tmp/saly_k_v2_wait.log
+echo 'INPUT_ABC_FIXTURE|copy real order8 item11, order9 item13, historical 5..10, 55 tokens'
+psql -X -v ON_ERROR_STOP=1 -f sandbox/creative_factory/k_task_v2/abc_live_pending_fixture_pg17.sql >/dev/null
+echo 'OUTPUT_ABC_FIXTURE|COPY_READY_IN_ISOLATED_PG17'
+sed -e '/^BEGIN;$/d' -e '/^COMMIT;$/d' supabase/migrations/20261123234000_lf_saly_creative_owner_state_and_medium_v1.sql > /tmp/saly_abc_candidate_no_boundary.sql
+echo 'INPUT_ABC_ROLLBACK|BEGIN -> candidate functions and applies_to metadata -> item11 QA / delivery / TERMINADO / owner approve -> item11/13 medium -> ROLLBACK'
+psql -X -v ON_ERROR_STOP=1 -f sandbox/creative_factory/k_task_v2/abc_real_pending_rollback_pg17.sql 2>&1 | tee /tmp/saly_abc_v1.log
+grep -F 'ABC_PG17_ROLLBACK_TESTS_PASS' /tmp/saly_abc_v1.log >/dev/null
+grep -F '"item11": "PENDIENTE"' /tmp/saly_abc_v1.log >/dev/null
+grep -F '"context100_exists": 0' /tmp/saly_abc_v1.log >/dev/null
+grep -F '"owner_table_exists": false' /tmp/saly_abc_v1.log >/dev/null
+echo 'INPUT_A_FORMAT|decode actual PNG bytes and compare aspect ratio of IPHONE16PRO (3% relative tolerance)'
+PYTHONPATH=sandbox/creative_factory/k_task_v2 python3 -u -m unittest -v sandbox/creative_factory/k_task_v2/test_image_format_similarity_v1.py 2>&1 | tee /tmp/saly_image_ratio.log
+echo 'PASS_PG17_SALY_REAL_PENDING_ABC_ROLLBACK_AND_IMAGE_RATIO'
 echo 'PASS_PG17_K_TASK_ROLLBACK_AND_WAIT_TESTS'
