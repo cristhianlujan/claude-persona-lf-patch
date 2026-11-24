@@ -781,7 +781,7 @@ SET search_path TO 'pg_catalog','saly','pg_temp'
 AS $f$
 DECLARE
  i record; o record; media text;
- selections jsonb; omissions jsonb;
+ selections jsonb; omissions jsonb; v_palette jsonb;
 BEGIN
  SELECT id,order_id,context_json INTO i
  FROM saly.creative_order_items WHERE id=p_item_id;
@@ -823,13 +823,21 @@ BEGIN
    'code',code,'version_id',version_id,'approval_status',approval_status,
    'role',role,'value_json',value_json,
    'token_role',token_role,'applies_to_proposed',applies_to_proposed,
-   'effective_for_palette',token_role IS DISTINCT FROM 'DUPLICADO_DE_CTA',
+   'effective_for_palette',token_role IS DISTINCT FROM 'DUPLICADO_DE_CTA' AND COALESCE(token_kind,'')<>'ALIAS',
    'alias_target_code',alias_target_code,'duplicate_of_code',duplicate_of_code) ORDER BY code)
    FILTER(WHERE reason IS NULL),'[]'::jsonb),
   COALESCE(jsonb_agg(jsonb_build_object(
    'code',code,'version_id',version_id,'reason',reason) ORDER BY code)
    FILTER(WHERE reason IS NOT NULL),'[]'::jsonb)
  INTO selections,omissions FROM decision;
+ SELECT COALESCE(jsonb_object_agg(
+   CASE WHEN e->>'code'='color.action.primary.bg' THEN 'CTA' ELSE 'MARCA' END,
+   jsonb_build_object('code',e->>'code','hex',e#>>'{value_json,value}',
+      'version_id',(e->>'version_id')::bigint)
+ ),'{}'::jsonb) INTO v_palette
+ FROM jsonb_array_elements(selections) e
+ WHERE e->>'code' IN ('color.action.primary.bg','color.brand.primary')
+ AND e->>'approval_status'='APPROVED';
  RETURN jsonb_build_object(
  'schema_version','SALY_MEDIUM_TOKEN_SELECTION_V3',
  'item_id',p_item_id,'order_id',i.order_id,'output_medium',media,
@@ -837,11 +845,7 @@ BEGIN
  'selected_count',jsonb_array_length(selections),
  'omitted_count',jsonb_array_length(omissions),
  'candidates_promoted',false,
- 'effective_color_roles',jsonb_build_object(
-   'CTA',jsonb_build_object('code','color.action.primary.bg',
-         'hex','#008200','version_id',7),
-   'MARCA',jsonb_build_object('code','color.brand.primary',
-         'hex','#00C853','version_id',8)),
+ 'effective_color_roles',v_palette,
  'effective_palette_exclusions',
    COALESCE((SELECT jsonb_agg(jsonb_build_object(
        'code',e->>'code','reason','DUPLICADO_DE_CTA',
