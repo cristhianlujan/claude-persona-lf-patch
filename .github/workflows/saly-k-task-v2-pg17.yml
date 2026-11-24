@@ -1,0 +1,36 @@
+name: SALY K Task v2 PG17 ROLLBACK
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261123233000_lf_saly_creative_k_task_orchestration_v2.sql'
+      - 'sandbox/creative_factory/k_task_v2/**'
+      - '.github/workflows/saly-k-task-v2-pg17.yml'
+  workflow_dispatch:
+jobs:
+  pg17:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_k_task_v2_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_k_task_v2_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGDATABASE: saly_k_task_v2_test
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: 5432
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Verify original selector, 6 scenarios, independent QA and ROLLBACK
+        run: bash sandbox/creative_factory/k_task_v2/test_pg17.sh
