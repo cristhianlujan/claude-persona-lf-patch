@@ -145,6 +145,68 @@ DO $test$ BEGIN
  THEN RAISE EXCEPTION 'FAIL_REAL_EXPIRER'; END IF;
 END $test$;
 
+SELECT 'S0_INPUT|readback(run_id=601,item_id=101); no row';
+SELECT 'S0_OUTPUT|'||saly.creative_run_image_readback_v2(601,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(601,101)->>'status'<>'PENDING'
+ THEN RAISE EXCEPTION 'FAIL_S0_MISSING_RUN'; END IF;
+END $case$;
+
+SELECT 'S1_INPUT|creative_runs id601 EXITOSO; artifact_ref=chat-image; sha256=64a; width=1024; height=1536';
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,deadline_at,attempt_number,output_evidence)
+VALUES(601,9,101,'EXITOSO',now(),1,
+ jsonb_build_object('artifact_ref','chat-image-601.png',
+  'sha256',repeat('a',64),'width',1024,'height',1536));
+SELECT 'S1_OUTPUT|'||saly.creative_run_image_readback_v2(601,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(601,101)->>'status'<>'READY'
+ OR saly.creative_run_image_readback_v2(601,101)->>'width'<>'1024'
+ OR saly.creative_run_image_readback_v2(601,102)->>'status'<>'PENDING'
+ THEN RAISE EXCEPTION 'FAIL_S1_READY_WRONG_ITEM'; END IF;
+END $case$;
+
+SELECT 'S2_INPUT|creative_runs id602 EXITOSO; sha256=badsha; width=1024; height=1536';
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,deadline_at,attempt_number,output_evidence)
+VALUES(602,9,101,'EXITOSO',now(),1,
+ jsonb_build_object('artifact_ref','chat-image-602.png',
+  'sha256','badsha','width',1024,'height',1536));
+SELECT 'S2_OUTPUT|'||saly.creative_run_image_readback_v2(602,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(602,101)->>'status'<>'ERROR'
+ THEN RAISE EXCEPTION 'FAIL_S2_BAD_SHA_NOT_ERROR'; END IF;
+END $case$;
+
+SELECT 'S3_INPUT|creative_runs id603 EXITOSO; sha256=64b; width=0; height=1536';
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,deadline_at,attempt_number,output_evidence)
+VALUES(603,9,101,'EXITOSO',now(),1,
+ jsonb_build_object('artifact_ref','chat-image-603.png',
+  'sha256',repeat('b',64),'width',0,'height',1536));
+SELECT 'S3_OUTPUT|'||saly.creative_run_image_readback_v2(603,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(603,101)->>'status'<>'ERROR'
+ THEN RAISE EXCEPTION 'FAIL_S3_ZERO_WIDTH_NOT_ERROR'; END IF;
+END $case$;
+
+SELECT 'S4_INPUT|creative_runs id604 EJECUTANDO; no image';
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,deadline_at,attempt_number)
+VALUES(604,9,101,'EJECUTANDO',now()+interval '3 minutes',1);
+SELECT 'S4_OUTPUT|'||saly.creative_run_image_readback_v2(604,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(604,101)->>'status'<>'PENDING'
+ THEN RAISE EXCEPTION 'FAIL_S4_INFLIGHT'; END IF;
+END $case$;
+
+SELECT 'S5_INPUT|creative_runs id605 EXITOSO; sha256=64c; width string 1024; height=1536';
+INSERT INTO saly.creative_runs(id,order_id,item_id,state,deadline_at,attempt_number,output_evidence)
+VALUES(605,9,101,'EXITOSO',now(),1,
+ jsonb_build_object('artifact_ref','chat-image-605.png',
+  'sha256',repeat('c',64),'width','1024','height',1536));
+SELECT 'S5_OUTPUT|'||saly.creative_run_image_readback_v2(605,101)::text;
+DO $case$ BEGIN
+ IF saly.creative_run_image_readback_v2(605,101)->>'status'<>'ERROR'
+ THEN RAISE EXCEPTION 'FAIL_S5_STRING_WIDTH_NOT_ERROR'; END IF;
+END $case$;
+
 SELECT 'Z_INPUT|ROLLBACK all candidate changes and execution/QA records';
 ROLLBACK;
 SELECT 'Z_OUTPUT|'||jsonb_build_object(
