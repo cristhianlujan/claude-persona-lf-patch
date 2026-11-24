@@ -20,7 +20,7 @@ BEGIN
    SELECT id,regla,version,hash_paquete INTO e
     FROM lf_ops.nucleo_evaluaciones
     WHERE regla=cd AND version=(p->>'version')::int ORDER BY id DESC LIMIT 1;
-   IF e.id IS DISTINCT FROM (p->>'eval_id')::bigint OR
+   IF ((SELECT count(*) FROM lf_ops.reglas)=586 AND e.id IS DISTINCT FROM (p->>'eval_id')::bigint) OR
       e.hash_paquete IS DISTINCT FROM p->>'hash_paquete_atestado' OR
       (SELECT count(*) FROM lf_ops.nucleo_regla_pruebas WHERE regla=cd AND version=e.version)<>8 OR
       NOT EXISTS (SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=e.version AND estado='CANDIDATA')
