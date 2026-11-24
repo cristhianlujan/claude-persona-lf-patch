@@ -2,6 +2,8 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_solicitar_adelanto_11_intake_v1.sql'
+      - 'supabase/tests/saly_solicitar_adelanto_11_intake_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_creative_autonomous_skill_v1.sql'
       - 'supabase/tests/saly_creative_autonomous_skill_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_full_active_context_v1.sql'
@@ -539,3 +541,12 @@ jobs:
           test "${#files[@]}" -eq 1
           sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_autonomous_skill_body.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_autonomous_skill_v1_pg17_rollback.sql
+      - name: Eleven SALY orders intake rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_solicitar_adelanto_11_intake_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_11_intake_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_solicitar_adelanto_11_intake_v1_pg17_rollback.sql
