@@ -1,0 +1,3222 @@
+{
+  "contrato": "LF_S5_24_CANDIDATAS_V1",
+  "fuentes": "lf_ops.reglas + LF_INVENTARIO_586_OPERATIVAS_V2_20261123",
+  "candidatas": [
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C01",
+      "clave": "s5_conc_sesion_cuenta",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Limitar concurrencia de onboarding por cuenta, no IP",
+      "descripcion": "Al intentar crear o mantener otra sesión Cliente, BLOQUEAR solo cuando la cuenta resuelta exceda CLIENT/ONBOARDING_ACCOUNT_MAX_CONCURRENT_SESSIONS dentro de CLIENT/ONBOARDING_ACCOUNT_WINDOW_MINUTES leídas por public.lf_auth_config_integer_v1. Antes de resolver cuenta usar identificador provisional server-side aislado; nunca compartir cupos por IP ni dispositivo de terceros. Registrar motivo y referencia segura.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c01_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c01_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c01_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/16",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": false,
+            "s5c01_contexto": false,
+            "s5c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": false,
+            "s5c01_contexto": false,
+            "s5c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": false,
+            "s5c01_contexto": true,
+            "s5c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": false,
+            "s5c01_contexto": true,
+            "s5c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": true,
+            "s5c01_contexto": false,
+            "s5c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": true,
+            "s5c01_contexto": false,
+            "s5c01_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": true,
+            "s5c01_contexto": true,
+            "s5c01_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c01_intento": true,
+            "s5c01_contexto": true,
+            "s5c01_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 16,
+      "hechos": [
+        "s5c01_intento",
+        "s5c01_contexto",
+        "s5c01_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C02",
+      "clave": "s5_retorno_onb_otp",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Reanudar sesión activa conservando perfil pero reiniciando OTP",
+      "descripcion": "Cuando una sesión onboarding activa se reanuda antes de expirar, conservar nombre, DNI, email, documento y celular capturados de la misma sesión y BLOQUEAR la reutilización del OTP anterior. Reiniciar desafío OTP de seguridad sin transformar esa reanudación en una sesión nueva.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c02_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c02_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c02_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/17",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": false,
+            "s5c02_contexto": false,
+            "s5c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": false,
+            "s5c02_contexto": false,
+            "s5c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": false,
+            "s5c02_contexto": true,
+            "s5c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": false,
+            "s5c02_contexto": true,
+            "s5c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": true,
+            "s5c02_contexto": false,
+            "s5c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": true,
+            "s5c02_contexto": false,
+            "s5c02_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": true,
+            "s5c02_contexto": true,
+            "s5c02_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c02_intento": true,
+            "s5c02_contexto": true,
+            "s5c02_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 17,
+      "hechos": [
+        "s5c02_intento",
+        "s5c02_contexto",
+        "s5c02_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C03",
+      "clave": "s5_registro_por_ip",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Bloquear exceso de registros por IP según parámetros reales",
+      "descripcion": "Cuando el envío de formulario desde una IP supera AUTH/REGISTRATION_PER_IP_MAX_ATTEMPTS dentro de AUTH/REGISTRATION_PER_IP_WINDOW_MINUTES, BLOQUEAR temporalmente esa IP; ambos valores se leen en public.lf_global_config mediante public.lf_auth_config_integer_v1 y no se copian como constantes de runtime.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c03_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c03_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c03_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/26",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": false,
+            "s5c03_contexto": false,
+            "s5c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": false,
+            "s5c03_contexto": false,
+            "s5c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": false,
+            "s5c03_contexto": true,
+            "s5c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": false,
+            "s5c03_contexto": true,
+            "s5c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": true,
+            "s5c03_contexto": false,
+            "s5c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": true,
+            "s5c03_contexto": false,
+            "s5c03_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": true,
+            "s5c03_contexto": true,
+            "s5c03_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c03_intento": true,
+            "s5c03_contexto": true,
+            "s5c03_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 26,
+      "hechos": [
+        "s5c03_intento",
+        "s5c03_contexto",
+        "s5c03_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C04",
+      "clave": "s5_otp_validation_ip",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Limitar validaciones OTP entre sesiones de una misma IP",
+      "descripcion": "Al evaluar validaciones OTP desde la misma IP, BLOQUEAR si exceden AUTH/OTP_VALIDATION_PER_IP_MAX_ATTEMPTS durante AUTH/OTP_VALIDATION_PER_IP_WINDOW_MINUTES, independientemente de session_id. Leer los parámetros reales desde public.lf_global_config por public.lf_auth_config_integer_v1.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c04_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c04_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c04_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/27",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": false,
+            "s5c04_contexto": false,
+            "s5c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": false,
+            "s5c04_contexto": false,
+            "s5c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": false,
+            "s5c04_contexto": true,
+            "s5c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": false,
+            "s5c04_contexto": true,
+            "s5c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": true,
+            "s5c04_contexto": false,
+            "s5c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": true,
+            "s5c04_contexto": false,
+            "s5c04_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": true,
+            "s5c04_contexto": true,
+            "s5c04_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c04_intento": true,
+            "s5c04_contexto": true,
+            "s5c04_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 27,
+      "hechos": [
+        "s5c04_intento",
+        "s5c04_contexto",
+        "s5c04_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C05",
+      "clave": "s5_otp_celular_crosssession",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Limitar envíos OTP acumulados por celular entre sesiones",
+      "descripcion": "BLOQUEAR envío OTP a celular cuando el total entre todas sus sesiones excede lf_ops.politicas_rate_limit RATE-CLIENT-OTP-PHONE-CROSSSESSION, con config_refs a RATE_LIMIT/RATE_CLIENT_OTP_PHONE_CROSSSESSION.max_requests y .window_seconds. Reiniciar ONB_001 o generar nuevo session_id no reinicia límite por número.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c05_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c05_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c05_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/28",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": false,
+            "s5c05_contexto": false,
+            "s5c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": false,
+            "s5c05_contexto": false,
+            "s5c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": false,
+            "s5c05_contexto": true,
+            "s5c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": false,
+            "s5c05_contexto": true,
+            "s5c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": true,
+            "s5c05_contexto": false,
+            "s5c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": true,
+            "s5c05_contexto": false,
+            "s5c05_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": true,
+            "s5c05_contexto": true,
+            "s5c05_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c05_intento": true,
+            "s5c05_contexto": true,
+            "s5c05_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 28,
+      "hechos": [
+        "s5c05_intento",
+        "s5c05_contexto",
+        "s5c05_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C06",
+      "clave": "s5_onb_dni_limit",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Limitar inicios de onboarding por DNI y ventana configurada",
+      "descripcion": "BLOQUEAR nuevos flujos de onboarding con el mismo DNI al exceder AUTH/ONBOARDING_PER_DNI_MAX_ATTEMPTS dentro de AUTH/ONBOARDING_PER_DNI_WINDOW_HOURS; usar public.lf_auth_config_integer_v1 y evitar máximos o ventanas hardcodeados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c06_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c06_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c06_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/29",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": false,
+            "s5c06_contexto": false,
+            "s5c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": false,
+            "s5c06_contexto": false,
+            "s5c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": false,
+            "s5c06_contexto": true,
+            "s5c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": false,
+            "s5c06_contexto": true,
+            "s5c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": true,
+            "s5c06_contexto": false,
+            "s5c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": true,
+            "s5c06_contexto": false,
+            "s5c06_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": true,
+            "s5c06_contexto": true,
+            "s5c06_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c06_intento": true,
+            "s5c06_contexto": true,
+            "s5c06_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 29,
+      "hechos": [
+        "s5c06_intento",
+        "s5c06_contexto",
+        "s5c06_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C07",
+      "clave": "s5_b2b_idle_timeout",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Aplicar avisos y cierre por inactividad según política de sesión B2B",
+      "descripcion": "Ante inactividad en sesión B2B, BLOQUEAR advertencia u expiración fuera del contrato vigente de lf_ops.politicas_sesion. Leer tiempos, mensajes y referencias canónicas desde política central y no almacenar temporizadores operativos en el texto de la regla.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c07_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c07_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c07_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/399",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": false,
+            "s5c07_contexto": false,
+            "s5c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": false,
+            "s5c07_contexto": false,
+            "s5c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": false,
+            "s5c07_contexto": true,
+            "s5c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": false,
+            "s5c07_contexto": true,
+            "s5c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": true,
+            "s5c07_contexto": false,
+            "s5c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": true,
+            "s5c07_contexto": false,
+            "s5c07_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": true,
+            "s5c07_contexto": true,
+            "s5c07_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c07_intento": true,
+            "s5c07_contexto": true,
+            "s5c07_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 399,
+      "hechos": [
+        "s5c07_intento",
+        "s5c07_contexto",
+        "s5c07_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C08",
+      "clave": "s5_b2b_rotation_fixation",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Resguardar rotación, refresh y concurrencia de sesión B2B",
+      "descripcion": "En el backend B2B BLOQUEAR renovación, rotación o sesiones simultáneas que incumplan lf_ops.politicas_sesion y la protección de session fixation. Política central decide ventanas, concurrencia y revocación; no incrustar números en guard ni delegar en UI.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c08_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c08_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c08_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/400",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": false,
+            "s5c08_contexto": false,
+            "s5c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": false,
+            "s5c08_contexto": false,
+            "s5c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": false,
+            "s5c08_contexto": true,
+            "s5c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": false,
+            "s5c08_contexto": true,
+            "s5c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": true,
+            "s5c08_contexto": false,
+            "s5c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": true,
+            "s5c08_contexto": false,
+            "s5c08_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": true,
+            "s5c08_contexto": true,
+            "s5c08_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c08_intento": true,
+            "s5c08_contexto": true,
+            "s5c08_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 400,
+      "hechos": [
+        "s5c08_intento",
+        "s5c08_contexto",
+        "s5c08_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C09",
+      "clave": "s5_phone_passwordless",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Autenticar cuenta existente solo con OTP del celular vinculado",
+      "descripcion": "BLOQUEAR ACCESS_EXISTING_ACCOUNT si ONB_002 no verificó OTP en una sesión server-side o el celular no está previamente vinculado a cuenta activa verificada. La cuenta se resuelve exclusivamente desde asociación persistida backend; el cliente no aporta account_id ni evita ONB_003 por inferencia.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c09_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c09_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c09_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/512",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": false,
+            "s5c09_contexto": false,
+            "s5c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": false,
+            "s5c09_contexto": false,
+            "s5c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": false,
+            "s5c09_contexto": true,
+            "s5c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": false,
+            "s5c09_contexto": true,
+            "s5c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": true,
+            "s5c09_contexto": false,
+            "s5c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": true,
+            "s5c09_contexto": false,
+            "s5c09_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": true,
+            "s5c09_contexto": true,
+            "s5c09_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c09_intento": true,
+            "s5c09_contexto": true,
+            "s5c09_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 512,
+      "hechos": [
+        "s5c09_intento",
+        "s5c09_contexto",
+        "s5c09_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C10",
+      "clave": "s5_recovery_rebind_access",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Conceder acceso solo tras rebinding atómico y revocación previa",
+      "descripcion": "Tras recuperación válida, BLOQUEAR acceso si REG_CLIENT_RECOVERY_REBIND_ATOMIC_001 no confirmó asociación del celular actual y principal Supabase Auth de la misma sesión, o si antiguo principal conserva sesión de negocio. Revocar sesiones anteriores; no repetir OTP actual mientras su sesión sigue válida; recuperación parcial no autentica.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c10_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c10_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c10_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/513",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": false,
+            "s5c10_contexto": false,
+            "s5c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": false,
+            "s5c10_contexto": false,
+            "s5c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": false,
+            "s5c10_contexto": true,
+            "s5c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": false,
+            "s5c10_contexto": true,
+            "s5c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": true,
+            "s5c10_contexto": false,
+            "s5c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": true,
+            "s5c10_contexto": false,
+            "s5c10_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": true,
+            "s5c10_contexto": true,
+            "s5c10_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c10_intento": true,
+            "s5c10_contexto": true,
+            "s5c10_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 513,
+      "hechos": [
+        "s5c10_intento",
+        "s5c10_contexto",
+        "s5c10_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C11",
+      "clave": "s5_new_account_commit",
+      "familia": "MFA_OTP_SSO",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Crear sesión autenticada únicamente tras alta completa",
+      "descripcion": "BLOQUEAR sesión autenticada Cliente si REG_NEW_CLIENT_COMPLETION_SUBMIT_001 no completó commit atómico o si la sesión OTP previa expiró, fue bloqueada o cambió celular. Con alta completa y mismo celular verificado no exigir nuevo OTP ni DNI; con falla regresar a ONB_001.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c11_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c11_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c11_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/515",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": false,
+            "s5c11_contexto": false,
+            "s5c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": false,
+            "s5c11_contexto": false,
+            "s5c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": false,
+            "s5c11_contexto": true,
+            "s5c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": false,
+            "s5c11_contexto": true,
+            "s5c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": true,
+            "s5c11_contexto": false,
+            "s5c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": true,
+            "s5c11_contexto": false,
+            "s5c11_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": true,
+            "s5c11_contexto": true,
+            "s5c11_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c11_intento": true,
+            "s5c11_contexto": true,
+            "s5c11_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 515,
+      "hechos": [
+        "s5c11_intento",
+        "s5c11_contexto",
+        "s5c11_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C12",
+      "clave": "s5_session_expiry_abandoned",
+      "familia": "SESSION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Marcar abandono de sesión OTP no verificada al expirar",
+      "descripcion": "Cuando una sesión onboarding sin OTP verificado supera AUTH/ONBOARDING_UNVERIFIED_SESSION_EXPIRATION_MINUTES desde created_at, el backend debe marcar la sesión ABANDONED sin depender de un intento posterior de reanudación y BLOQUEAR toda continuación. Si la tabla canónica no tiene columna estado, el ejecutor debe registrar el evento equivalente autoritativo o dejar incidencia abierta; no fingir transición persistida.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c12_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c12_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c12_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/14",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": false,
+            "s5c12_contexto": false,
+            "s5c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": false,
+            "s5c12_contexto": false,
+            "s5c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": false,
+            "s5c12_contexto": true,
+            "s5c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": false,
+            "s5c12_contexto": true,
+            "s5c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": true,
+            "s5c12_contexto": false,
+            "s5c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": true,
+            "s5c12_contexto": false,
+            "s5c12_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": true,
+            "s5c12_contexto": true,
+            "s5c12_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c12_intento": true,
+            "s5c12_contexto": true,
+            "s5c12_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 14,
+      "hechos": [
+        "s5c12_intento",
+        "s5c12_contexto",
+        "s5c12_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C13",
+      "clave": "s5_otp_exhaustion_invalidate",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Invalidar OTP agotado y respetar cooldown sin bloqueo permanente",
+      "descripcion": "Al agotar AUTH/OTP_MAX_ATTEMPTS, invalidar inmediatamente el desafío actual y establecer cooldown de AUTH/OTP_EXHAUSTION_COOLDOWN_SECONDS antes de permitir otro código. BLOQUEAR uso del OTP agotado o nuevo envío durante cooldown; primer agotamiento no convierte la sesión en bloqueo definitivo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c13_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c13_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c13_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/19",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": false,
+            "s5c13_contexto": false,
+            "s5c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": false,
+            "s5c13_contexto": false,
+            "s5c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": false,
+            "s5c13_contexto": true,
+            "s5c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": false,
+            "s5c13_contexto": true,
+            "s5c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": true,
+            "s5c13_contexto": false,
+            "s5c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": true,
+            "s5c13_contexto": false,
+            "s5c13_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": true,
+            "s5c13_contexto": true,
+            "s5c13_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c13_intento": true,
+            "s5c13_contexto": true,
+            "s5c13_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 19,
+      "hechos": [
+        "s5c13_intento",
+        "s5c13_contexto",
+        "s5c13_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C14",
+      "clave": "s5_validate_backend_before_query",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Validar formato de todos los campos antes de consultar base",
+      "descripcion": "BLOQUEAR consultas backend de DNI, celular, correo u otros campos suministrados si no superan validación de formato server-side previa. Proteger consultas parametrizadas contra inyección; validación de cliente jamás sustituye control de servidor y se preserva registro de rechazo sin PII expuesta.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c14_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c14_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c14_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/25",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": false,
+            "s5c14_contexto": false,
+            "s5c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": false,
+            "s5c14_contexto": false,
+            "s5c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": false,
+            "s5c14_contexto": true,
+            "s5c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": false,
+            "s5c14_contexto": true,
+            "s5c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": true,
+            "s5c14_contexto": false,
+            "s5c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": true,
+            "s5c14_contexto": false,
+            "s5c14_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": true,
+            "s5c14_contexto": true,
+            "s5c14_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c14_intento": true,
+            "s5c14_contexto": true,
+            "s5c14_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 25,
+      "hechos": [
+        "s5c14_intento",
+        "s5c14_contexto",
+        "s5c14_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C15",
+      "clave": "s5_otp_timer_visible",
+      "familia": "RATE_LIMIT",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Mantener timer ordinario visible con precedencia del cooldown OTP",
+      "descripcion": "En UI de reenvío OTP, BLOQUEAR botón antes de vencer el timer ordinario visible AUTH/OTP_ORDINARY_RESEND_TIMER_SECONDS. Si se agotaron AUTH/OTP_MAX_ATTEMPTS, el cooldown AUTH/OTP_EXHAUSTION_COOLDOWN_SECONDS prevalece y debe mostrarse como restricción vigente. La vista no inventa una cuenta regresiva distinta a configuración.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c15_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c15_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c15_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/30",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": false,
+            "s5c15_contexto": false,
+            "s5c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": false,
+            "s5c15_contexto": false,
+            "s5c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": false,
+            "s5c15_contexto": true,
+            "s5c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": false,
+            "s5c15_contexto": true,
+            "s5c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": true,
+            "s5c15_contexto": false,
+            "s5c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": true,
+            "s5c15_contexto": false,
+            "s5c15_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": true,
+            "s5c15_contexto": true,
+            "s5c15_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c15_intento": true,
+            "s5c15_contexto": true,
+            "s5c15_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 30,
+      "hechos": [
+        "s5c15_intento",
+        "s5c15_contexto",
+        "s5c15_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C16",
+      "clave": "s5_otp_webhook_sign",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Firmar y verificar webhook OTP con HMAC y timestamp",
+      "descripcion": "Cada petición webhook OTP debe adjuntar firma HMAC-SHA256 del payload y timestamp, calculada con secreto configurable no incrustado. BLOQUEAR procesamiento cuando falte firma, timestamp o verificación, o se exceda AUTH/OTP_HMAC_TIMESTAMP_WINDOW_SECONDS consultado desde public.lf_global_config. Rechazo silencioso no filtra secretos.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c16_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c16_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c16_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/125",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": false,
+            "s5c16_contexto": false,
+            "s5c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": false,
+            "s5c16_contexto": false,
+            "s5c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": false,
+            "s5c16_contexto": true,
+            "s5c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": false,
+            "s5c16_contexto": true,
+            "s5c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": true,
+            "s5c16_contexto": false,
+            "s5c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": true,
+            "s5c16_contexto": false,
+            "s5c16_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": true,
+            "s5c16_contexto": true,
+            "s5c16_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c16_intento": true,
+            "s5c16_contexto": true,
+            "s5c16_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 125,
+      "hechos": [
+        "s5c16_intento",
+        "s5c16_contexto",
+        "s5c16_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C17",
+      "clave": "s5_otp_backend_policy",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Aplicar límite OTP de API/webhook independiente de frontend",
+      "descripcion": "Al intentar invocar endpoint OTP, verificar rate limit por session_id y por IP de forma independiente al frontend. BLOQUEAR al exceder ventanas y cuotas de lf_ops.politicas_rate_limit con valor REAL versionado en public.lf_global_config; las cantidades históricas del legado no se replican como literales.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c17_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c17_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c17_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/127",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": false,
+            "s5c17_contexto": false,
+            "s5c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": false,
+            "s5c17_contexto": false,
+            "s5c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": false,
+            "s5c17_contexto": true,
+            "s5c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": false,
+            "s5c17_contexto": true,
+            "s5c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": true,
+            "s5c17_contexto": false,
+            "s5c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": true,
+            "s5c17_contexto": false,
+            "s5c17_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": true,
+            "s5c17_contexto": true,
+            "s5c17_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c17_intento": true,
+            "s5c17_contexto": true,
+            "s5c17_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 127,
+      "hechos": [
+        "s5c17_intento",
+        "s5c17_contexto",
+        "s5c17_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C18",
+      "clave": "s5_canonical_ref_all",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Conservar referencia canónica de pago en notificaciones y overlays",
+      "descripcion": "BLOQUEAR UI, overlay, confirmación, documento o notificación que fabrique una referencia de operación. Solo backend/ledger emite o reserva referencia canónica; su ausencia en estado transitorio no impide mostrar el estado sin referencia. La misma identidad rige todos los canales.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c18_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c18_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c18_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/317",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": false,
+            "s5c18_contexto": false,
+            "s5c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": false,
+            "s5c18_contexto": false,
+            "s5c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": false,
+            "s5c18_contexto": true,
+            "s5c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": false,
+            "s5c18_contexto": true,
+            "s5c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": true,
+            "s5c18_contexto": false,
+            "s5c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": true,
+            "s5c18_contexto": false,
+            "s5c18_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": true,
+            "s5c18_contexto": true,
+            "s5c18_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c18_intento": true,
+            "s5c18_contexto": true,
+            "s5c18_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 317,
+      "hechos": [
+        "s5c18_intento",
+        "s5c18_contexto",
+        "s5c18_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C19",
+      "clave": "s5_dni_generic_copy",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_ONBOARDING",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Dar respuesta uniforme al DNI registrado, bloqueado o sospechoso",
+      "descripcion": "Ante DNI existente, bloqueado o sospechoso, BLOQUEAR exposición de motivo o copy alternativo; presentar exactamente «No pudimos procesar tu solicitud. Intenta nuevamente o contáctanos.» en la respuesta Cliente, sin revelar existencia ni naturaleza de bloqueo.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c19_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c19_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c19_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/128",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": false,
+            "s5c19_contexto": false,
+            "s5c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": false,
+            "s5c19_contexto": false,
+            "s5c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": false,
+            "s5c19_contexto": true,
+            "s5c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": false,
+            "s5c19_contexto": true,
+            "s5c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": true,
+            "s5c19_contexto": false,
+            "s5c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": true,
+            "s5c19_contexto": false,
+            "s5c19_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": true,
+            "s5c19_contexto": true,
+            "s5c19_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c19_intento": true,
+            "s5c19_contexto": true,
+            "s5c19_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 128,
+      "hechos": [
+        "s5c19_intento",
+        "s5c19_contexto",
+        "s5c19_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C20",
+      "clave": "s5_auth_timing_constant",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Evitar filtraciones temporales por validación DNI, celular y OTP",
+      "descripcion": "Ante errores de validación de DNI, celular u OTP, BLOQUEAR respuestas observables cuyo tiempo dependa del instante de detección o incumpla AUTH/ERROR_RESPONSE_MINIMUM_MS. Aplicar temporización desde un punto uniforme backend de la operación; un piso aislado sin uniformidad no basta.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c20_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c20_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c20_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/130",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": false,
+            "s5c20_contexto": false,
+            "s5c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": false,
+            "s5c20_contexto": false,
+            "s5c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": false,
+            "s5c20_contexto": true,
+            "s5c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": false,
+            "s5c20_contexto": true,
+            "s5c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": true,
+            "s5c20_contexto": false,
+            "s5c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": true,
+            "s5c20_contexto": false,
+            "s5c20_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": true,
+            "s5c20_contexto": true,
+            "s5c20_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c20_intento": true,
+            "s5c20_contexto": true,
+            "s5c20_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 130,
+      "hechos": [
+        "s5c20_intento",
+        "s5c20_contexto",
+        "s5c20_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C21",
+      "clave": "s5_visible_plans_count",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Mostrar planes iniciales y más planes solo cuando existan",
+      "descripcion": "En oferta con planes de cuotas, mostrar inicialmente la cantidad de planes aprobada por la legada y renderizar «Ver más planes» únicamente si existen planes adicionales válidos. No inventar un número operativo de planes si la configuración vigente difiere; requiere validación del contrato de presentación antes de publicar.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c21_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c21_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c21_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/157",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": false,
+            "s5c21_contexto": false,
+            "s5c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": false,
+            "s5c21_contexto": false,
+            "s5c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": false,
+            "s5c21_contexto": true,
+            "s5c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": false,
+            "s5c21_contexto": true,
+            "s5c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": true,
+            "s5c21_contexto": false,
+            "s5c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": true,
+            "s5c21_contexto": false,
+            "s5c21_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": true,
+            "s5c21_contexto": true,
+            "s5c21_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c21_intento": true,
+            "s5c21_contexto": true,
+            "s5c21_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 157,
+      "hechos": [
+        "s5c21_intento",
+        "s5c21_contexto",
+        "s5c21_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C22",
+      "clave": "s5_cuotas_modal_state",
+      "familia": "OFFERS_INSTALLMENTS",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "CLIENT_HOME",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Abrir modal de cuotas sin navegar ni perder selección",
+      "descripcion": "En multi oferta, abrir el modal de selección de cuotas sobre la misma pantalla sin navegar. BLOQUEAR cualquier mutación de selección anterior al cerrar con X o Cancelar; si no existía selección conservar card sin selección.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c22_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c22_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c22_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/238",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": false,
+            "s5c22_contexto": false,
+            "s5c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": false,
+            "s5c22_contexto": false,
+            "s5c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": false,
+            "s5c22_contexto": true,
+            "s5c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": false,
+            "s5c22_contexto": true,
+            "s5c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": true,
+            "s5c22_contexto": false,
+            "s5c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": true,
+            "s5c22_contexto": false,
+            "s5c22_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": true,
+            "s5c22_contexto": true,
+            "s5c22_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c22_intento": true,
+            "s5c22_contexto": true,
+            "s5c22_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 238,
+      "hechos": [
+        "s5c22_intento",
+        "s5c22_contexto",
+        "s5c22_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C23",
+      "clave": "s5_b2b_auth_indistinguishable",
+      "familia": "SECURITY",
+      "naturaleza": "CONDUCTA",
+      "clase": "PANTALLA",
+      "alcance": "B2B_AUTENTICACION",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Normalizar errores de credenciales B2B sin revelar existencia",
+      "descripcion": "En Login B2B, fallos de correo, cuenta restringida o credencial inválida producen respuesta externa indistinguible en mensaje y tiempo observable. BLOQUEAR diferencias que revelen existencia; MFA_REQUIRED, rate limit y servicio indisponible mantienen códigos funcionales distintos y autorizados.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c23_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c23_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c23_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/425",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": false,
+            "s5c23_contexto": false,
+            "s5c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": false,
+            "s5c23_contexto": false,
+            "s5c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": false,
+            "s5c23_contexto": true,
+            "s5c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": false,
+            "s5c23_contexto": true,
+            "s5c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": true,
+            "s5c23_contexto": false,
+            "s5c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": true,
+            "s5c23_contexto": false,
+            "s5c23_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": true,
+            "s5c23_contexto": true,
+            "s5c23_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c23_intento": true,
+            "s5c23_contexto": true,
+            "s5c23_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 425,
+      "hechos": [
+        "s5c23_intento",
+        "s5c23_contexto",
+        "s5c23_violacion"
+      ]
+    },
+    {
+      "tipo": "NUEVA",
+      "codigo": "S5-C24",
+      "clave": "s5_settlement_ledger_status",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+      "naturaleza": "CONDUCTA",
+      "clase": "BACKEND",
+      "alcance": "BACKEND",
+      "modo": "HEREDA",
+      "dueno": "TECNICO",
+      "titulo": "Derivar cancelación de deuda únicamente del ledger y del acuerdo",
+      "descripcion": "BLOQUEAR SETTLED_CONFIRMED si no están confirmados todos los importes exigibles del acuerdo y, cuando corresponda, settlement del aliado. PAYMENT_PENDING_CONFIRMATION del último pago no liquida deuda; transcurso de fecha ni pago inicial tampoco. El frontend nunca promueve el estado y cada vista lee fuente de verdad del ledger.",
+      "condicion": {
+        "op": "y",
+        "izq": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c24_intento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s5c24_contexto"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s5c24_violacion"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "efecto": "BLOQUEAR",
+      "autoridad": "LEG-TECNICO",
+      "impacto": "REVISAR",
+      "origen": {
+        "tipo": "MIGRACION",
+        "ref": "lf_ops.reglas/533",
+        "solicitante": "Cristhian/Claude LF S5 2026-11-23"
+      },
+      "pruebas": [
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": false,
+            "s5c24_contexto": false,
+            "s5c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": false,
+            "s5c24_contexto": false,
+            "s5c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": false,
+            "s5c24_contexto": true,
+            "s5c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": false,
+            "s5c24_contexto": true,
+            "s5c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": true,
+            "s5c24_contexto": false,
+            "s5c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": true,
+            "s5c24_contexto": false,
+            "s5c24_violacion": true
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "NO_SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": true,
+            "s5c24_contexto": true,
+            "s5c24_violacion": false
+          },
+          "esperado": false
+        },
+        {
+          "casuistica": "SE_CUMPLE",
+          "entrada": {
+            "s5c24_intento": true,
+            "s5c24_contexto": true,
+            "s5c24_violacion": true
+          },
+          "esperado": true
+        }
+      ],
+      "legada_id": 533,
+      "hechos": [
+        "s5c24_intento",
+        "s5c24_contexto",
+        "s5c24_violacion"
+      ]
+    }
+  ]
+}

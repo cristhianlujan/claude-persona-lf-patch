@@ -1,0 +1,161 @@
+{
+  "contrato": "LF_S5_C04_REVISION_V2",
+  "fuentes_verificadas": [
+    "lf_client.onboarding_sessions",
+    "lf_proto.proto_onboarding"
+  ],
+  "estado_mapeo": "PARCIAL_VERIFICADO",
+  "propuesta": {
+    "tipo": "REVISION",
+    "codigo": "S4-C04",
+    "clave": "s4_estados_onb_canon",
+    "familia": "TRANSITIONS",
+    "naturaleza": "CONDUCTA",
+    "clase": "BACKEND",
+    "alcance": "BACKEND",
+    "modo": "HEREDA",
+    "dueno": "TECNICO",
+    "titulo": "Validar representación de estados onboarding contra persistencia comprobada",
+    "descripcion": "El catálogo funcional legado incluye INICIADO, PASO1_COMPLETO, OTP_ENVIADO, OTP_VERIFICADO, COMPLETADO, ABANDONADO, BLOQUEADO y EXPIRADO. La tabla real lf_client.onboarding_sessions no tiene columna de estado ni enum: dispone de created_at, otp_verified_at, completed_at, blocked_at y expires_at, que aportan evidencia para inicio, OTP verificado, completado, bloqueo y expiración por tiempo; lf_proto.proto_onboarding solo registra onboarding_step, otp_verified y onboarding_completed, no equivalencia canónica. PASO1_COMPLETO, OTP_ENVIADO y ABANDONADO carecen de correspondencia persistida unívoca verificada: BLOQUEAR proyección de cualquiera de estos estados como dato confirmado sin evento o política formal vinculada. No inventar códigos ni afirmar mapeo completo; documentar residual para decisión posterior.",
+    "condicion": {
+      "op": "y",
+      "izq": {
+        "op": "y",
+        "izq": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c04_intento"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "der": {
+          "op": "=",
+          "izq": {
+            "hecho": "s4c04_contexto"
+          },
+          "der": {
+            "lit": true
+          }
+        }
+      },
+      "der": {
+        "op": "=",
+        "izq": {
+          "hecho": "s4c04_violacion"
+        },
+        "der": {
+          "lit": true
+        }
+      }
+    },
+    "efecto": "BLOQUEAR",
+    "autoridad": "LEG-TECNICO",
+    "impacto": "REVISAR",
+    "origen": {
+      "tipo": "MIGRACION",
+      "ref": "lf_ops.reglas/34",
+      "solicitante": "Cristhian/Claude S5 revisión 2026-11-23"
+    },
+    "pruebas": [
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": false,
+          "s4c04_contexto": false,
+          "s4c04_violacion": false
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": false,
+          "s4c04_contexto": false,
+          "s4c04_violacion": true
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": false,
+          "s4c04_contexto": true,
+          "s4c04_violacion": false
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": false,
+          "s4c04_contexto": true,
+          "s4c04_violacion": true
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": true,
+          "s4c04_contexto": false,
+          "s4c04_violacion": false
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": true,
+          "s4c04_contexto": false,
+          "s4c04_violacion": true
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "NO_SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": true,
+          "s4c04_contexto": true,
+          "s4c04_violacion": false
+        },
+        "esperado": false
+      },
+      {
+        "casuistica": "SE_CUMPLE",
+        "entrada": {
+          "s4c04_intento": true,
+          "s4c04_contexto": true,
+          "s4c04_violacion": true
+        },
+        "esperado": true
+      }
+    ],
+    "version_anterior": 1,
+    "hash_anterior": "ca6c604524be1dcc825a68248d1b5dbf0d6788569c0098f818ba130540b26c25",
+    "motivo_revision": "Juicio independiente DEVOLVER: reconciliar estados con esquema real lf_client.onboarding_sessions y lf_proto.proto_onboarding, sin inventar columna enum ni equivalencias no certificadas",
+    "mapping_evidence": {
+      "fuente_principal": "lf_client.onboarding_sessions (columnas verificadas por information_schema)",
+      "campos_comprobados": [
+        "created_at",
+        "otp_verified_at",
+        "completed_at",
+        "blocked_at",
+        "expires_at"
+      ],
+      "fuente_prototipo": "lf_proto.proto_onboarding",
+      "campos_prototipo": [
+        "onboarding_step",
+        "otp_verified",
+        "onboarding_completed"
+      ],
+      "no_mapeados": [
+        "PASO1_COMPLETO",
+        "OTP_ENVIADO",
+        "ABANDONADO"
+      ],
+      "nota": "No existe estado ni enum de onboarding en lf_client.onboarding_sessions; equivalencias requieren binding de runtime y nueva evidencia"
+    }
+  }
+}

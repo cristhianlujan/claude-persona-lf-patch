@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-nucleo-s5-20261123",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s5_24_vectores_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/nucleo_ci/nucleo_s5_c04_revision_v2.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-nucleo-s5-20261123.json": "CHANGESET_MANIFEST"
+  }
+}
