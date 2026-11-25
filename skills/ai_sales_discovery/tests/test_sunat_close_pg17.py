@@ -21,7 +21,11 @@ def main():
     assert os.getenv("PGHOST") == "127.0.0.1" and os.getenv("PGDATABASE") == DB, "DISPOSABLE_ONLY"
     assert sql("SHOW server_version_num").startswith("17"), "PG17_ONLY"
     sql("""
-CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN;
+DO $roles$ BEGIN
+  IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
+END $roles$;
 CREATE SCHEMA saly;
 CREATE TABLE public.lf_operation_execution (
  execution_id text PRIMARY KEY,operation_code text,status text,lease_owner text,
