@@ -1,0 +1,2463 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "775bc1c00a28182d06eafd2dea6341cfea2275d0",
+    "js_vectors": "54/54",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [],
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001",
+    "fuentes_legadas": [
+      {
+        "id": 568,
+        "codigo": "REG_ONB002_UI_STATES_001",
+        "descripcion": "Define los tres estados visuales aprobados de ONB_002: A normal, B contador agotado con reenvío y fallback SMS visible, C código incorrecto con borde rojo y mensaje exacto. La línea de error se reserva siempre para evitar layout shift; H1, CTA y trust row permanecen anclados.",
+        "valor_config": {
+          "title": "Te enviamos un código",
+          "state_A": {
+            "code": "NORMAL",
+            "timer_text": "(00:45)",
+            "resend_label": "Reenviar código",
+            "resend_muted": true,
+            "cta_visual_state": "ACTIVE_GREEN",
+            "timer_underlined": false,
+            "resend_underlined": true
+          },
+          "state_B": {
+            "code": "COUNTER_EXHAUSTED",
+            "resend_label": "Reenviar código",
+            "cta_visual_state": "ACTIVE_GREEN",
+            "sms_fallback_label": "¿No te llegó? Enviar por SMS",
+            "runtime_timing_status": "PENDING_RECONCILIATION"
+          },
+          "state_C": {
+            "code": "INVALID_CODE",
+            "error_copy": "Código incorrecto. Revisa e intenta de nuevo.",
+            "otp_border": "ERROR_RED",
+            "cta_visual_state": "ACTIVE_GREEN"
+          },
+          "otp_slots": 6,
+          "layout_shift": false,
+          "runtime_refs": [
+            "REG_RATE_005",
+            "REG_SEG_001",
+            "REG_SEG_002",
+            "OTP_POL_DEFAULT"
+          ],
+          "vertical_anchors": {
+            "h1": "MATCH_ONB001_H1",
+            "trust_row": "MATCH_ONB001_TRUST_ROW",
+            "primary_cta": "MATCH_ONB001_PRIMARY_CTA"
+          },
+          "error_line_reserved": true,
+          "source_visual_decision": "VD_CLIENT_ONB002_WEB_V06_20260820"
+        }
+      },
+      {
+        "id": 573,
+        "codigo": "REG_ONB003_CONSENT_DATA_001",
+        "descripcion": "ONB_003 muestra CAMPO_CONSENT_DATA desmarcado. El usuario debe autorizar antes del submit que valida/resuelve el documento. El texto visible usa enlace inline únicamente sobre tratamiento de mis datos personales; el enlace abre modal sobre la misma pantalla, no navega y no limpia los campos. Este consentimiento no incluye marketing ni aceptación de Términos.",
+        "valor_config": {
+          "screen": "ONB_003",
+          "required": true,
+          "field_code": "CAMPO_CONSENT_DATA",
+          "navigation": "DENY",
+          "prechecked": false,
+          "ip_evidence": "PENDING_PRIVACY_TECH_REVIEW",
+          "link_action": "OPEN_CONSENT_DETAIL_MODAL",
+          "blocks_continue": true,
+          "inline_link_text": "tratamiento de mis datos personales",
+          "evidence_required": [
+            "TIMESTAMP",
+            "TEXT_VERSION",
+            "SESSION_BINDING"
+          ],
+          "terms_in_this_screen": false,
+          "inline_link_component": "link_inline_default",
+          "source_decision_number": 108,
+          "canonical_consent_store": "PENDING_CANONICAL_REGISTRY",
+          "preserve_entered_fields": true,
+          "marketing_in_this_screen": false
+        }
+      },
+      {
+        "id": 575,
+        "codigo": "REG_ONB003_STEPPER_4_001",
+        "descripcion": "ONB_003 usa client_auth_stepper_4: etiqueta Paso 3 de 4, cuatro barras, las tres primeras en verde y la cuarta pendiente. Este contrato no modifica automáticamente los rasters aprobados de ONB_001/ONB_002; la discrepancia 3 pasos vs 4 pasos debe quedar visible hasta reconciliación source-bound.",
+        "valor_config": {
+          "ordinal_step": 3,
+          "visible_total": 4,
+          "component_token": "client_auth_stepper_4",
+          "pending_segments": 1,
+          "source_decision_number": 108,
+          "completed_or_active_segments": 3,
+          "legacy_reference_discrepancy": [
+            "ONB_001:1_de_3",
+            "ONB_002:2_de_3"
+          ]
+        }
+      },
+      {
+        "id": 582,
+        "codigo": "B2B-RULE-LOAD-REPROCESS-001",
+        "descripcion": "B2B-CARGA-003 expone el permiso B2B_LOAD_REPROCESS, pero lf_ops.estados_transiciones no contiene una transición UPLOAD_BATCH con required_permission_id=21. Mientras no se defina de forma explícita el/los estados origen y destino, el servidor debe denegar REPROCESS y la UI no puede inferir una transición. La configuración B2B_FLD_REPROCESS_ALLOWED tampoco puede establecerse en true mientras la transición REPROCESS permanezca sin definir.",
+        "valor_config": {
+          "screen_id": 45,
+          "permission_id": 21,
+          "server_action": "BLOCKED_UNTIL_TRANSITION_DEFINED",
+          "permission_code": "B2B_LOAD_REPROCESS",
+          "policy_field_id": 265,
+          "policy_screen_id": 50,
+          "policy_field_code": "B2B_FLD_REPROCESS_ALLOWED",
+          "transition_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "unregistered_transition": "DENY",
+          "policy_true_allowed_when": "REPROCESS_TRANSITION_DEFINED_AND_AUTHORIZED",
+          "policy_true_before_transition": "DENY"
+        }
+      },
+      {
+        "id": 583,
+        "codigo": "B2B-RULE-COMPANY-LIFECYCLE-001",
+        "descripcion": "lf_ops.empresas define valores válidos para authorization_status y operational_status, y B2B-ADMIN-001 expone permisos CREATE, UPDATE, ACTIVATE y SUSPEND. No existe todavía una matriz autoritativa de transiciones, guards y efectos laterales para activar o suspender una empresa. Hasta definirla, el cliente no puede imponer cambios de estado y las acciones ACTIVATE/SUSPEND permanecen bloqueadas server-side.",
+        "valor_config": {
+          "table": "lf_ops.empresas",
+          "screen_id": 48,
+          "permissions": [
+            25,
+            26,
+            27,
+            28
+          ],
+          "client_status_authority": "DENY",
+          "operational_status_values": [
+            "ACTIVE",
+            "SUSPENDED",
+            "INACTIVE"
+          ],
+          "authorization_status_values": [
+            "DRAFT",
+            "PENDING",
+            "APPROVED",
+            "REJECTED"
+          ],
+          "state_transition_registry_status": "PENDING_FUNCTIONAL_DEFINITION"
+        }
+      },
+      {
+        "id": 584,
+        "codigo": "B2B-RULE-USER-LIFECYCLE-001",
+        "descripcion": "lf_ops.empresa_usuarios define status INVITED/ACTIVE/DISABLED/LOCKED e invitation_status PENDING/SENT/ACCEPTED/EXPIRED/CANCELLED. B2B-ADMIN-002 expone INVITE, UPDATE, DISABLE y ASSIGN_ROLE, pero no existe una matriz autoritativa de transiciones y guards. DISABLE sí debe integrar el efecto de seguridad definido en B2B-RULE-AUTH-039 sobre sesiones y dispositivos confiables.",
+        "valor_config": {
+          "table": "lf_ops.empresa_usuarios",
+          "screen_id": 49,
+          "permissions": [
+            30,
+            31,
+            32,
+            33
+          ],
+          "user_status_values": [
+            "INVITED",
+            "ACTIVE",
+            "DISABLED",
+            "LOCKED"
+          ],
+          "client_status_authority": "DENY",
+          "canonical_disable_status": "DISABLED",
+          "disable_security_rule_id": 496,
+          "invitation_status_values": [
+            "PENDING",
+            "SENT",
+            "ACCEPTED",
+            "EXPIRED",
+            "CANCELLED"
+          ],
+          "transition_registry_status": "PENDING_FUNCTIONAL_DEFINITION"
+        }
+      },
+      {
+        "id": 585,
+        "codigo": "B2B-RULE-APPROVAL-POLICY-LIFECYCLE-001",
+        "descripcion": "lf_ops.politicas_aprobacion permite DRAFT/ACTIVE/REPLACED/EXPIRED/INACTIVE y B2B-ADMIN-003 expone CREATE, UPDATE y ACTIVATE. No existe todavía una matriz autoritativa que defina qué versión puede activarse, cómo reemplaza a la vigente, qué ocurre con lotes que conservan snapshot y qué estados admiten edición.",
+        "valor_config": {
+          "table": "lf_ops.politicas_aprobacion",
+          "screen_id": 50,
+          "permissions": [
+            35,
+            36,
+            37
+          ],
+          "status_values": [
+            "DRAFT",
+            "ACTIVE",
+            "REPLACED",
+            "EXPIRED",
+            "INACTIVE"
+          ],
+          "snapshot_rule_code": "B2B-RULE-APPROVAL-001",
+          "client_status_authority": "DENY",
+          "transition_registry_status": "PENDING_FUNCTIONAL_DEFINITION"
+        }
+      },
+      {
+        "id": 586,
+        "codigo": "B2B-RULE-SCOPE-001",
+        "descripcion": "Un cliente B2B puede pertenecer a un grupo o corporación compuesto por múltiples empresas legalmente diferenciadas, cada una con su propio RUC y registro independiente en lf_ops.empresas. La pertenencia al grupo no fusiona empresas ni datos. En B2B_APP_SHELL el selector de grupo se muestra exclusivamente al perfil B2B_ADMIN_LF cuando tenga múltiples grupos autorizados; para los demás perfiles el grupo, si aplica, es solo contexto fijo y nunca selector.",
+        "valor_config": {
+          "scope_type": "CORPORATE_GROUP",
+          "company_legal_key": "tax_id",
+          "data_model_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "group_change_effects": [
+            "REFRESH_AUTHORIZED_COMPANY_SET",
+            "REQUIRE_COMPANY_RESOLUTION",
+            "RECALCULATE_EFFECTIVE_PERMISSIONS",
+            "RECALCULATE_MENU_VISIBILITY"
+          ],
+          "scope_selector_modes": {
+            "SINGLE_COMPANY": {
+              "group_selector": "HIDE",
+              "company_identity": "SHOW_LOGO_NAME",
+              "company_selector": "HIDE_OR_FIXED_CONTEXT"
+            },
+            "MULTI_GROUP_GLOBAL_ADMIN": {
+              "profile_code": "B2B_ADMIN_LF",
+              "group_selector": "SHOW_SUPER_ADMIN_ONLY",
+              "company_identity": "SHOW_LOGO_NAME",
+              "company_selector": "SHOW_DEPENDENT_ON_GROUP"
+            },
+            "MULTI_COMPANY_SINGLE_GROUP": {
+              "group_selector": "HIDE_OR_FIXED_CONTEXT",
+              "company_identity": "SHOW_LOGO_NAME",
+              "company_selector": "SHOW"
+            }
+          },
+          "merge_company_records": false,
+          "company_change_effects": [
+            "RECALCULATE_EFFECTIVE_PERMISSIONS",
+            "RECALCULATE_MENU_VISIBILITY",
+            "REFRESH_ALERTS",
+            "REFRESH_SCOPE_DEPENDENT_DATA"
+          ],
+          "company_identity_source": "lf_ops.empresas",
+          "global_admin_profile_code": "B2B_ADMIN_LF",
+          "group_selection_authority": "SERVER_ONLY",
+          "global_admin_company_scope": "ALL_COMPANIES_SUBJECT_TO_EFFECTIVE_PERMISSION",
+          "implicit_cross_group_access": "DENY",
+          "group_selector_visibility_rule": "ONLY_B2B_ADMIN_LF_WHEN_MULTIPLE_GROUPS_AUTHORIZED",
+          "group_contains_multiple_companies": true,
+          "client_selected_group_authoritative": "DENY",
+          "scope_selector_presentation_owner_decision": "APPROVED",
+          "group_selector_required_when_multiple_groups_authorized": true
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22q01_render_onb002",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render onb002; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22q01_estado_normal_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado normal invalido; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22q01_estado_agotado_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado agotado invalido; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22q01_estado_error_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado error invalido; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22q01_anclaje_o_reserva_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "anclaje o reserva invalida; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22q01_timer_o_slots_no_canonicos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "timer o slots no canonicos; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22q02_evalua_consent_onb003",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua consent onb003; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22q02_premarcado_o_sin_autorizacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "premarcado o sin autorizacion; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22q02_submit_sin_consent",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "submit sin consent; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22q02_evidencia_incompleta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evidencia incompleta; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22q02_enlace_modal_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "enlace modal invalido; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22q02_mezcla_marketing_terminos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "mezcla marketing terminos; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22q03_render_stepper_onb003",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render stepper onb003; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22q03_componente_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "componente invalido; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22q03_segmentos_o_ordinal_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "segmentos o ordinal invalido; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22q03_discrepancia_oculta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "discrepancia oculta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22q03_modifica_rasters_sin_reconciliar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modifica rasters sin reconciliar; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22q04_evalua_reprocess_o_config",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua reprocess o config; hecho derivado, binding runtime pendiente",
+      "familia": "TRANSITIONS"
+    },
+    {
+      "codigo": "s22q04_transicion_no_definida_o_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "transicion no definida o autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "TRANSITIONS"
+    },
+    {
+      "codigo": "s22q04_permiso_no_corresponde",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso no corresponde; hecho derivado, binding runtime pendiente",
+      "familia": "TRANSITIONS"
+    },
+    {
+      "codigo": "s22q04_ui_infiere_transicion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ui infiere transicion; hecho derivado, binding runtime pendiente",
+      "familia": "TRANSITIONS"
+    },
+    {
+      "codigo": "s22q04_config_true_antes_de_transicion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "config true antes de transicion; hecho derivado, binding runtime pendiente",
+      "familia": "TRANSITIONS"
+    },
+    {
+      "codigo": "s22q05_evalua_ciclo_empresa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua ciclo empresa; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q05_estado_impuesto_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado impuesto cliente; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q05_activa_suspende_sin_matriz",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activa suspende sin matriz; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q05_estado_fuera_catalogo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado fuera catalogo; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q05_permiso_como_transicion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso como transicion; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q06_evalua_ciclo_usuario_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua ciclo usuario b2b; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q06_estado_impuesto_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado impuesto cliente; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q06_transicion_inferida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "transicion inferida; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q06_estado_fuera_catalogo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado fuera catalogo; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q06_disable_sin_efecto_seguridad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "disable sin efecto seguridad; hecho derivado, binding runtime pendiente",
+      "familia": "DOMAIN_LIFECYCLE"
+    },
+    {
+      "codigo": "s22q07_evalua_ciclo_politica_aprobacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua ciclo politica aprobacion; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22q07_estado_impuesto_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado impuesto cliente; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22q07_activacion_o_reemplazo_inferido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activacion o reemplazo inferido; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22q07_edicion_sin_guard",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "edicion sin guard; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22q07_snapshot_lote_alterado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "snapshot lote alterado; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22q07_estado_fuera_catalogo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado fuera catalogo; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22q08_evalua_scope_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua scope b2b; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_fusiona_empresas_o_datos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fusiona empresas o datos; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_identidad_no_canonica",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "identidad no canonica; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_selector_grupo_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "selector grupo invalido; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_selector_empresa_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "selector empresa invalido; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_scope_no_server_o_acceso_cruzado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "scope no server o acceso cruzado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_cambio_grupo_efectos_faltan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio grupo efectos faltan; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22q08_cambio_empresa_efectos_faltan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio empresa efectos faltan; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22Q-C01",
+      "legacy_id": 568,
+      "legacy_ids": [
+        568
+      ],
+      "relacionadas": [],
+      "residual": "Falta acreditar referencias canónicas de timer visual y cantidad de slots, y reconciliar momento y elegibilidad de fallback SMS con política OTP vigente; no activar fallback por raster.",
+      "coberturas": [
+        {
+          "legacy_id": 568,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar referencias canónicas de timer visual y cantidad de slots, y reconciliar momento y elegibilidad de fallback SMS con política OTP vigente; no activar fallback por raster.",
+          "diferencias": "En ONB_002 BLOQUEAR representación incompatible con VD_CLIENT_ONB002_WEB_V06_20260820: título Te enviamos un código, NORMAL con contador sin subrayar y Reenviar código muted/subrayado, COUNTER_EXHAUSTED con reenvío y ¿No te llegó? Enviar por SMS solo si política autoriza, INVALID_CODE con borde error rojo y texto Código incorrecto. Revisa e intenta de nuevo. En todos mantener CTA visual ACTIVE_GREEN, reservar línea de error y conservar H1, CTA y trust row alineados con ONB_001 sin layout shift. Contador y slots derivan de contrato OTP vigente, no cifras de raster; timing y fallback pendientes de reconciliación con REG_RATE_005, REG_SEG_001, REG_SEG_002 y OTP_POL_DEFAULT. No modificar políticas ni habilitar SMS. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q01_render_onb002",
+        "s22q01_estado_normal_invalido",
+        "s22q01_estado_agotado_invalido",
+        "s22q01_estado_error_invalido",
+        "s22q01_anclaje_o_reserva_invalida",
+        "s22q01_timer_o_slots_no_canonicos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C01",
+        "clave": "s22q_legacy_568",
+        "familia": "LOADING_EMPTY_ERROR_STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Estados visuales de OTP con anclaje estable",
+        "descripcion": "En ONB_002 BLOQUEAR representación incompatible con VD_CLIENT_ONB002_WEB_V06_20260820: título Te enviamos un código, NORMAL con contador sin subrayar y Reenviar código muted/subrayado, COUNTER_EXHAUSTED con reenvío y ¿No te llegó? Enviar por SMS solo si política autoriza, INVALID_CODE con borde error rojo y texto Código incorrecto. Revisa e intenta de nuevo. En todos mantener CTA visual ACTIVE_GREEN, reservar línea de error y conservar H1, CTA y trust row alineados con ONB_001 sin layout shift. Contador y slots derivan de contrato OTP vigente, no cifras de raster; timing y fallback pendientes de reconciliación con REG_RATE_005, REG_SEG_001, REG_SEG_002 y OTP_POL_DEFAULT. No modificar políticas ni habilitar SMS. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/568",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q01_render_onb002"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q01_estado_normal_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q01_estado_agotado_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q01_estado_error_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q01_anclaje_o_reserva_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q01_timer_o_slots_no_canonicos"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": true,
+              "s22q01_estado_normal_invalido": false,
+              "s22q01_estado_agotado_invalido": false,
+              "s22q01_estado_error_invalido": false,
+              "s22q01_anclaje_o_reserva_invalida": false,
+              "s22q01_timer_o_slots_no_canonicos": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": true,
+              "s22q01_estado_normal_invalido": true,
+              "s22q01_estado_agotado_invalido": false,
+              "s22q01_estado_error_invalido": false,
+              "s22q01_anclaje_o_reserva_invalida": false,
+              "s22q01_timer_o_slots_no_canonicos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": true,
+              "s22q01_estado_normal_invalido": false,
+              "s22q01_estado_agotado_invalido": true,
+              "s22q01_estado_error_invalido": false,
+              "s22q01_anclaje_o_reserva_invalida": false,
+              "s22q01_timer_o_slots_no_canonicos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": true,
+              "s22q01_estado_normal_invalido": false,
+              "s22q01_estado_agotado_invalido": false,
+              "s22q01_estado_error_invalido": true,
+              "s22q01_anclaje_o_reserva_invalida": false,
+              "s22q01_timer_o_slots_no_canonicos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": true,
+              "s22q01_estado_normal_invalido": false,
+              "s22q01_estado_agotado_invalido": false,
+              "s22q01_estado_error_invalido": false,
+              "s22q01_anclaje_o_reserva_invalida": true,
+              "s22q01_timer_o_slots_no_canonicos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": true,
+              "s22q01_estado_normal_invalido": false,
+              "s22q01_estado_agotado_invalido": false,
+              "s22q01_estado_error_invalido": false,
+              "s22q01_anclaje_o_reserva_invalida": false,
+              "s22q01_timer_o_slots_no_canonicos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q01_render_onb002": false,
+              "s22q01_estado_normal_invalido": true,
+              "s22q01_estado_agotado_invalido": true,
+              "s22q01_estado_error_invalido": true,
+              "s22q01_anclaje_o_reserva_invalida": true,
+              "s22q01_timer_o_slots_no_canonicos": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "e4df25f3ef72fbd339bd30d54e82f864b3e20f51bbd5fc21f03bca0ab0c3e606",
+      "hash_paquete": "2f5a593afd6d6fa5b4d546c81834a44c03bd5c513d9bb094ba6426d31448e7d8",
+      "hash_evaluado": "e4df25f3ef",
+      "hash_paquete_10": "2f5a593afd"
+    },
+    {
+      "codigo": "S22Q-C02",
+      "legacy_id": 573,
+      "legacy_ids": [
+        573
+      ],
+      "relacionadas": [
+        "S4-C18",
+        "S6-C21",
+        "S14-C12"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 573,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En ONB_003 BLOQUEAR submit de validación/resolución documental sin CAMPO_CONSENT_DATA requerido, desmarcado por defecto y autorizado expresamente por usuario antes de submit. Evidencia timestamp, versión texto y binding de sesión; IP pendiente revisión privacidad técnica y registro canónico pendiente. Enlace inline únicamente tratamiento de mis datos personales con link_inline_default, abre OPEN_CONSENT_DETAIL_MODAL sobre misma pantalla, sin navegación ni pérdida de campos. No incluye marketing ni aceptación de Términos. Preservar decisión fuente 108 sin crear registro ni inventar evidencia. Complementa S4-C18, S6-C21 y S14-C12; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q02_evalua_consent_onb003",
+        "s22q02_premarcado_o_sin_autorizacion",
+        "s22q02_submit_sin_consent",
+        "s22q02_evidencia_incompleta",
+        "s22q02_enlace_modal_invalido",
+        "s22q02_mezcla_marketing_terminos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C02",
+        "clave": "s22q_legacy_573",
+        "familia": "LEGAL_CONSENT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Consentimiento de datos separado antes de resolver documento",
+        "descripcion": "En ONB_003 BLOQUEAR submit de validación/resolución documental sin CAMPO_CONSENT_DATA requerido, desmarcado por defecto y autorizado expresamente por usuario antes de submit. Evidencia timestamp, versión texto y binding de sesión; IP pendiente revisión privacidad técnica y registro canónico pendiente. Enlace inline únicamente tratamiento de mis datos personales con link_inline_default, abre OPEN_CONSENT_DETAIL_MODAL sobre misma pantalla, sin navegación ni pérdida de campos. No incluye marketing ni aceptación de Términos. Preservar decisión fuente 108 sin crear registro ni inventar evidencia. Complementa S4-C18, S6-C21 y S14-C12; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/573",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q02_evalua_consent_onb003"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q02_premarcado_o_sin_autorizacion"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q02_submit_sin_consent"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q02_evidencia_incompleta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q02_enlace_modal_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q02_mezcla_marketing_terminos"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": true,
+              "s22q02_premarcado_o_sin_autorizacion": false,
+              "s22q02_submit_sin_consent": false,
+              "s22q02_evidencia_incompleta": false,
+              "s22q02_enlace_modal_invalido": false,
+              "s22q02_mezcla_marketing_terminos": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": true,
+              "s22q02_premarcado_o_sin_autorizacion": true,
+              "s22q02_submit_sin_consent": false,
+              "s22q02_evidencia_incompleta": false,
+              "s22q02_enlace_modal_invalido": false,
+              "s22q02_mezcla_marketing_terminos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": true,
+              "s22q02_premarcado_o_sin_autorizacion": false,
+              "s22q02_submit_sin_consent": true,
+              "s22q02_evidencia_incompleta": false,
+              "s22q02_enlace_modal_invalido": false,
+              "s22q02_mezcla_marketing_terminos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": true,
+              "s22q02_premarcado_o_sin_autorizacion": false,
+              "s22q02_submit_sin_consent": false,
+              "s22q02_evidencia_incompleta": true,
+              "s22q02_enlace_modal_invalido": false,
+              "s22q02_mezcla_marketing_terminos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": true,
+              "s22q02_premarcado_o_sin_autorizacion": false,
+              "s22q02_submit_sin_consent": false,
+              "s22q02_evidencia_incompleta": false,
+              "s22q02_enlace_modal_invalido": true,
+              "s22q02_mezcla_marketing_terminos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": true,
+              "s22q02_premarcado_o_sin_autorizacion": false,
+              "s22q02_submit_sin_consent": false,
+              "s22q02_evidencia_incompleta": false,
+              "s22q02_enlace_modal_invalido": false,
+              "s22q02_mezcla_marketing_terminos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q02_evalua_consent_onb003": false,
+              "s22q02_premarcado_o_sin_autorizacion": true,
+              "s22q02_submit_sin_consent": true,
+              "s22q02_evidencia_incompleta": true,
+              "s22q02_enlace_modal_invalido": true,
+              "s22q02_mezcla_marketing_terminos": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "40c688605747794f8b880869d1d64cd92538f7fcfe2f5691b8e07af2dbd2f16c",
+      "hash_paquete": "ec2e805f8515760bcb31887a7af01053cb29a0d4bf983a4b33656906888d6c51",
+      "hash_evaluado": "40c6886057",
+      "hash_paquete_10": "ec2e805f85"
+    },
+    {
+      "codigo": "S22Q-C03",
+      "legacy_id": 575,
+      "legacy_ids": [
+        575
+      ],
+      "relacionadas": [],
+      "residual": "Falta acreditar que el componente vigente resuelve exactamente el literal Paso 3 de 4 y el mapping de tres segmentos verdes y uno pendiente; la reconciliación con pasos previos continúa abierta.",
+      "coberturas": [
+        {
+          "legacy_id": 575,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar que el componente vigente resuelve exactamente el literal Paso 3 de 4 y el mapping de tres segmentos verdes y uno pendiente; la reconciliación con pasos previos continúa abierta.",
+          "diferencias": "En ONB_003 BLOQUEAR uso de componente distinto de client_auth_stepper_4 o presentación incompatible con su contrato canónico de ordinal, total y segmentos completados/activos verdes y pendientes. Preservar discrepancia documentada con rasters ONB_001 y ONB_002 de decisión fuente 108 hasta reconciliación source-bound; no modificar esos rasters automáticamente ni imponer nueva secuencia de onboarding. No duplicar valores numéricos del componente en regla. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q03_render_stepper_onb003",
+        "s22q03_componente_invalido",
+        "s22q03_segmentos_o_ordinal_invalido",
+        "s22q03_discrepancia_oculta",
+        "s22q03_modifica_rasters_sin_reconciliar"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C03",
+        "clave": "s22q_legacy_575",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Stepper ONB_003 con discrepancia visual explícita",
+        "descripcion": "En ONB_003 BLOQUEAR uso de componente distinto de client_auth_stepper_4 o presentación incompatible con su contrato canónico de ordinal, total y segmentos completados/activos verdes y pendientes. Preservar discrepancia documentada con rasters ONB_001 y ONB_002 de decisión fuente 108 hasta reconciliación source-bound; no modificar esos rasters automáticamente ni imponer nueva secuencia de onboarding. No duplicar valores numéricos del componente en regla. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/575",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q03_render_stepper_onb003"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q03_componente_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q03_segmentos_o_ordinal_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q03_discrepancia_oculta"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q03_modifica_rasters_sin_reconciliar"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q03_render_stepper_onb003": true,
+              "s22q03_componente_invalido": false,
+              "s22q03_segmentos_o_ordinal_invalido": false,
+              "s22q03_discrepancia_oculta": false,
+              "s22q03_modifica_rasters_sin_reconciliar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q03_render_stepper_onb003": true,
+              "s22q03_componente_invalido": true,
+              "s22q03_segmentos_o_ordinal_invalido": false,
+              "s22q03_discrepancia_oculta": false,
+              "s22q03_modifica_rasters_sin_reconciliar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q03_render_stepper_onb003": true,
+              "s22q03_componente_invalido": false,
+              "s22q03_segmentos_o_ordinal_invalido": true,
+              "s22q03_discrepancia_oculta": false,
+              "s22q03_modifica_rasters_sin_reconciliar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q03_render_stepper_onb003": true,
+              "s22q03_componente_invalido": false,
+              "s22q03_segmentos_o_ordinal_invalido": false,
+              "s22q03_discrepancia_oculta": true,
+              "s22q03_modifica_rasters_sin_reconciliar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q03_render_stepper_onb003": true,
+              "s22q03_componente_invalido": false,
+              "s22q03_segmentos_o_ordinal_invalido": false,
+              "s22q03_discrepancia_oculta": false,
+              "s22q03_modifica_rasters_sin_reconciliar": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q03_render_stepper_onb003": false,
+              "s22q03_componente_invalido": true,
+              "s22q03_segmentos_o_ordinal_invalido": true,
+              "s22q03_discrepancia_oculta": true,
+              "s22q03_modifica_rasters_sin_reconciliar": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "7083b6afab73eb13ca1fb31e6ed5c47c73ebd98563bc02b25c39166ddde56272",
+      "hash_paquete": "d586b5f44832484127b078c392b27ae11d043023373bf8121a02edbbd7a8dad4",
+      "hash_evaluado": "7083b6afab",
+      "hash_paquete_10": "d586b5f448"
+    },
+    {
+      "codigo": "S22Q-C04",
+      "legacy_id": 582,
+      "legacy_ids": [
+        582
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 582,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B-CARGA-003 BLOQUEAR acción REPROCESS de UPLOAD_BATCH mientras lf_ops.estados_transiciones no contenga transición autorizada vinculada al permiso B2B_LOAD_REPROCESS con origen y destino definidos explícitamente. UI no infiere transición ni permiso por visibilidad. B2B_FLD_REPROCESS_ALLOWED en B2B-ADMIN-003 no puede ser true antes de transición definida y autorizada; permiso por sí solo no habilita servidor. Mantener PENDING_FUNCTIONAL_DEFINITION mientras falte definición. No crear transición ni modificar política. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q04_evalua_reprocess_o_config",
+        "s22q04_transicion_no_definida_o_autorizada",
+        "s22q04_permiso_no_corresponde",
+        "s22q04_ui_infiere_transicion",
+        "s22q04_config_true_antes_de_transicion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C04",
+        "clave": "s22q_legacy_582",
+        "familia": "TRANSITIONS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Reproceso de lote bloqueado hasta transición autorizada",
+        "descripcion": "En B2B-CARGA-003 BLOQUEAR acción REPROCESS de UPLOAD_BATCH mientras lf_ops.estados_transiciones no contenga transición autorizada vinculada al permiso B2B_LOAD_REPROCESS con origen y destino definidos explícitamente. UI no infiere transición ni permiso por visibilidad. B2B_FLD_REPROCESS_ALLOWED en B2B-ADMIN-003 no puede ser true antes de transición definida y autorizada; permiso por sí solo no habilita servidor. Mantener PENDING_FUNCTIONAL_DEFINITION mientras falte definición. No crear transición ni modificar política. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/582",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q04_evalua_reprocess_o_config"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q04_transicion_no_definida_o_autorizada"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q04_permiso_no_corresponde"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q04_ui_infiere_transicion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q04_config_true_antes_de_transicion"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q04_evalua_reprocess_o_config": true,
+              "s22q04_transicion_no_definida_o_autorizada": false,
+              "s22q04_permiso_no_corresponde": false,
+              "s22q04_ui_infiere_transicion": false,
+              "s22q04_config_true_antes_de_transicion": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q04_evalua_reprocess_o_config": true,
+              "s22q04_transicion_no_definida_o_autorizada": true,
+              "s22q04_permiso_no_corresponde": false,
+              "s22q04_ui_infiere_transicion": false,
+              "s22q04_config_true_antes_de_transicion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q04_evalua_reprocess_o_config": true,
+              "s22q04_transicion_no_definida_o_autorizada": false,
+              "s22q04_permiso_no_corresponde": true,
+              "s22q04_ui_infiere_transicion": false,
+              "s22q04_config_true_antes_de_transicion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q04_evalua_reprocess_o_config": true,
+              "s22q04_transicion_no_definida_o_autorizada": false,
+              "s22q04_permiso_no_corresponde": false,
+              "s22q04_ui_infiere_transicion": true,
+              "s22q04_config_true_antes_de_transicion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q04_evalua_reprocess_o_config": true,
+              "s22q04_transicion_no_definida_o_autorizada": false,
+              "s22q04_permiso_no_corresponde": false,
+              "s22q04_ui_infiere_transicion": false,
+              "s22q04_config_true_antes_de_transicion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q04_evalua_reprocess_o_config": false,
+              "s22q04_transicion_no_definida_o_autorizada": true,
+              "s22q04_permiso_no_corresponde": true,
+              "s22q04_ui_infiere_transicion": true,
+              "s22q04_config_true_antes_de_transicion": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "4a75b4b51b4d26486f07fabc528dfcb8f76eb360bb4b642cd94f15c95d32daea",
+      "hash_paquete": "cf152ed10ff26cfba18e7d81c83c6063a4f83d8c2d9253c898012d3d24637976",
+      "hash_evaluado": "4a75b4b51b",
+      "hash_paquete_10": "cf152ed10f"
+    },
+    {
+      "codigo": "S22Q-C05",
+      "legacy_id": 583,
+      "legacy_ids": [
+        583
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 583,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B-ADMIN-001 BLOQUEAR imponer estados empresa desde cliente o ejecutar ACTIVATE/SUSPEND server-side mientras falte matriz autoritativa de transiciones, guards y efectos laterales. lf_ops.empresas mantiene authorization_status DRAFT/PENDING/APPROVED/REJECTED y operational_status ACTIVE/SUSPENDED/INACTIVE; permisos expuestos CREATE, UPDATE, ACTIVATE y SUSPEND no sustituyen matriz ni autorizan transición. Mantener PENDING_FUNCTIONAL_DEFINITION; no crear matriz, efectos, permisos ni estados. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q05_evalua_ciclo_empresa",
+        "s22q05_estado_impuesto_cliente",
+        "s22q05_activa_suspende_sin_matriz",
+        "s22q05_estado_fuera_catalogo",
+        "s22q05_permiso_como_transicion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C05",
+        "clave": "s22q_legacy_583",
+        "familia": "DOMAIN_LIFECYCLE",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Ciclo empresa sin activación ni suspensión inferida",
+        "descripcion": "En B2B-ADMIN-001 BLOQUEAR imponer estados empresa desde cliente o ejecutar ACTIVATE/SUSPEND server-side mientras falte matriz autoritativa de transiciones, guards y efectos laterales. lf_ops.empresas mantiene authorization_status DRAFT/PENDING/APPROVED/REJECTED y operational_status ACTIVE/SUSPENDED/INACTIVE; permisos expuestos CREATE, UPDATE, ACTIVATE y SUSPEND no sustituyen matriz ni autorizan transición. Mantener PENDING_FUNCTIONAL_DEFINITION; no crear matriz, efectos, permisos ni estados. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/583",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q05_evalua_ciclo_empresa"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q05_estado_impuesto_cliente"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q05_activa_suspende_sin_matriz"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q05_estado_fuera_catalogo"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q05_permiso_como_transicion"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q05_evalua_ciclo_empresa": true,
+              "s22q05_estado_impuesto_cliente": false,
+              "s22q05_activa_suspende_sin_matriz": false,
+              "s22q05_estado_fuera_catalogo": false,
+              "s22q05_permiso_como_transicion": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q05_evalua_ciclo_empresa": true,
+              "s22q05_estado_impuesto_cliente": true,
+              "s22q05_activa_suspende_sin_matriz": false,
+              "s22q05_estado_fuera_catalogo": false,
+              "s22q05_permiso_como_transicion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q05_evalua_ciclo_empresa": true,
+              "s22q05_estado_impuesto_cliente": false,
+              "s22q05_activa_suspende_sin_matriz": true,
+              "s22q05_estado_fuera_catalogo": false,
+              "s22q05_permiso_como_transicion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q05_evalua_ciclo_empresa": true,
+              "s22q05_estado_impuesto_cliente": false,
+              "s22q05_activa_suspende_sin_matriz": false,
+              "s22q05_estado_fuera_catalogo": true,
+              "s22q05_permiso_como_transicion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q05_evalua_ciclo_empresa": true,
+              "s22q05_estado_impuesto_cliente": false,
+              "s22q05_activa_suspende_sin_matriz": false,
+              "s22q05_estado_fuera_catalogo": false,
+              "s22q05_permiso_como_transicion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q05_evalua_ciclo_empresa": false,
+              "s22q05_estado_impuesto_cliente": true,
+              "s22q05_activa_suspende_sin_matriz": true,
+              "s22q05_estado_fuera_catalogo": true,
+              "s22q05_permiso_como_transicion": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b325e59e48f0cb6b4a82aa493de3f91de96ea23a81291b0cfa57d8cf5ff914e0",
+      "hash_paquete": "9f868d27de6090f2e2a8dcc5468b231e1434305b0a92a00847afc00c025ad979",
+      "hash_evaluado": "b325e59e48",
+      "hash_paquete_10": "9f868d27de"
+    },
+    {
+      "codigo": "S22Q-C06",
+      "legacy_id": 584,
+      "legacy_ids": [
+        584
+      ],
+      "relacionadas": [
+        "S21-C07"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 584,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B-ADMIN-002 BLOQUEAR cambio de estado impuesto por cliente o transición INVITE, UPDATE, DISABLE o ASSIGN_ROLE inferida sin matriz autoritativa y guards. lf_ops.empresa_usuarios conserva status INVITED/ACTIVE/DISABLED/LOCKED e invitation_status PENDING/SENT/ACCEPTED/EXPIRED/CANCELLED; permiso expuesto no equivale a transición definida. Cuando DISABLE sea autorizado y ejecutado, estado DISABLED e integrar efecto de seguridad B2B-RULE-AUTH-039 sobre sesiones y dispositivos confiables conforme S21-C07: terminar confianza y sesiones afectadas; no reactivar por cliente. Mantener PENDING_FUNCTIONAL_DEFINITION sin inventar matriz, permisos ni activar flujo. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q06_evalua_ciclo_usuario_b2b",
+        "s22q06_estado_impuesto_cliente",
+        "s22q06_transicion_inferida",
+        "s22q06_estado_fuera_catalogo",
+        "s22q06_disable_sin_efecto_seguridad"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C06",
+        "clave": "s22q_legacy_584",
+        "familia": "DOMAIN_LIFECYCLE",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Ciclo de usuario B2B con efecto de seguridad en deshabilitación",
+        "descripcion": "En B2B-ADMIN-002 BLOQUEAR cambio de estado impuesto por cliente o transición INVITE, UPDATE, DISABLE o ASSIGN_ROLE inferida sin matriz autoritativa y guards. lf_ops.empresa_usuarios conserva status INVITED/ACTIVE/DISABLED/LOCKED e invitation_status PENDING/SENT/ACCEPTED/EXPIRED/CANCELLED; permiso expuesto no equivale a transición definida. Cuando DISABLE sea autorizado y ejecutado, estado DISABLED e integrar efecto de seguridad B2B-RULE-AUTH-039 sobre sesiones y dispositivos confiables conforme S21-C07: terminar confianza y sesiones afectadas; no reactivar por cliente. Mantener PENDING_FUNCTIONAL_DEFINITION sin inventar matriz, permisos ni activar flujo. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/584",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q06_evalua_ciclo_usuario_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q06_estado_impuesto_cliente"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q06_transicion_inferida"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q06_estado_fuera_catalogo"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q06_disable_sin_efecto_seguridad"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q06_evalua_ciclo_usuario_b2b": true,
+              "s22q06_estado_impuesto_cliente": false,
+              "s22q06_transicion_inferida": false,
+              "s22q06_estado_fuera_catalogo": false,
+              "s22q06_disable_sin_efecto_seguridad": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q06_evalua_ciclo_usuario_b2b": true,
+              "s22q06_estado_impuesto_cliente": true,
+              "s22q06_transicion_inferida": false,
+              "s22q06_estado_fuera_catalogo": false,
+              "s22q06_disable_sin_efecto_seguridad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q06_evalua_ciclo_usuario_b2b": true,
+              "s22q06_estado_impuesto_cliente": false,
+              "s22q06_transicion_inferida": true,
+              "s22q06_estado_fuera_catalogo": false,
+              "s22q06_disable_sin_efecto_seguridad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q06_evalua_ciclo_usuario_b2b": true,
+              "s22q06_estado_impuesto_cliente": false,
+              "s22q06_transicion_inferida": false,
+              "s22q06_estado_fuera_catalogo": true,
+              "s22q06_disable_sin_efecto_seguridad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q06_evalua_ciclo_usuario_b2b": true,
+              "s22q06_estado_impuesto_cliente": false,
+              "s22q06_transicion_inferida": false,
+              "s22q06_estado_fuera_catalogo": false,
+              "s22q06_disable_sin_efecto_seguridad": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q06_evalua_ciclo_usuario_b2b": false,
+              "s22q06_estado_impuesto_cliente": true,
+              "s22q06_transicion_inferida": true,
+              "s22q06_estado_fuera_catalogo": true,
+              "s22q06_disable_sin_efecto_seguridad": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "c1bf3a9b48743203b67af10737515bbe88beb9fe17b2ebb2021bed021a75b819",
+      "hash_paquete": "0e658cf3352c36aafc026e7aba82428d5d694661b5cb4aa42ec0956339273a11",
+      "hash_evaluado": "c1bf3a9b48",
+      "hash_paquete_10": "0e658cf335"
+    },
+    {
+      "codigo": "S22Q-C07",
+      "legacy_id": 585,
+      "legacy_ids": [
+        585
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 585,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B-ADMIN-003 BLOQUEAR estado impuesto desde cliente o activación, reemplazo o edición de política inferidos sin matriz autoritativa. lf_ops.politicas_aprobacion conserva DRAFT/ACTIVE/REPLACED/EXPIRED/INACTIVE; permisos CREATE, UPDATE y ACTIVATE no determinan versiones activables, sustitución de vigente, estados editables ni tratamiento de lotes con snapshot. Respetar snapshot de B2B-RULE-APPROVAL-001 sin sobrescribirlo ni inferir efectos. Mantener PENDING_FUNCTIONAL_DEFINITION; no crear matriz, modificar políticas ni activar versiones. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q07_evalua_ciclo_politica_aprobacion",
+        "s22q07_estado_impuesto_cliente",
+        "s22q07_activacion_o_reemplazo_inferido",
+        "s22q07_edicion_sin_guard",
+        "s22q07_snapshot_lote_alterado",
+        "s22q07_estado_fuera_catalogo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C07",
+        "clave": "s22q_legacy_585",
+        "familia": "GOVERNANCE_APPROVAL",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Ciclo de política de aprobación sin transición implícita",
+        "descripcion": "En B2B-ADMIN-003 BLOQUEAR estado impuesto desde cliente o activación, reemplazo o edición de política inferidos sin matriz autoritativa. lf_ops.politicas_aprobacion conserva DRAFT/ACTIVE/REPLACED/EXPIRED/INACTIVE; permisos CREATE, UPDATE y ACTIVATE no determinan versiones activables, sustitución de vigente, estados editables ni tratamiento de lotes con snapshot. Respetar snapshot de B2B-RULE-APPROVAL-001 sin sobrescribirlo ni inferir efectos. Mantener PENDING_FUNCTIONAL_DEFINITION; no crear matriz, modificar políticas ni activar versiones. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/585",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q07_evalua_ciclo_politica_aprobacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q07_estado_impuesto_cliente"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q07_activacion_o_reemplazo_inferido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q07_edicion_sin_guard"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q07_snapshot_lote_alterado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q07_estado_fuera_catalogo"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": true,
+              "s22q07_estado_impuesto_cliente": false,
+              "s22q07_activacion_o_reemplazo_inferido": false,
+              "s22q07_edicion_sin_guard": false,
+              "s22q07_snapshot_lote_alterado": false,
+              "s22q07_estado_fuera_catalogo": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": true,
+              "s22q07_estado_impuesto_cliente": true,
+              "s22q07_activacion_o_reemplazo_inferido": false,
+              "s22q07_edicion_sin_guard": false,
+              "s22q07_snapshot_lote_alterado": false,
+              "s22q07_estado_fuera_catalogo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": true,
+              "s22q07_estado_impuesto_cliente": false,
+              "s22q07_activacion_o_reemplazo_inferido": true,
+              "s22q07_edicion_sin_guard": false,
+              "s22q07_snapshot_lote_alterado": false,
+              "s22q07_estado_fuera_catalogo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": true,
+              "s22q07_estado_impuesto_cliente": false,
+              "s22q07_activacion_o_reemplazo_inferido": false,
+              "s22q07_edicion_sin_guard": true,
+              "s22q07_snapshot_lote_alterado": false,
+              "s22q07_estado_fuera_catalogo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": true,
+              "s22q07_estado_impuesto_cliente": false,
+              "s22q07_activacion_o_reemplazo_inferido": false,
+              "s22q07_edicion_sin_guard": false,
+              "s22q07_snapshot_lote_alterado": true,
+              "s22q07_estado_fuera_catalogo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": true,
+              "s22q07_estado_impuesto_cliente": false,
+              "s22q07_activacion_o_reemplazo_inferido": false,
+              "s22q07_edicion_sin_guard": false,
+              "s22q07_snapshot_lote_alterado": false,
+              "s22q07_estado_fuera_catalogo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q07_evalua_ciclo_politica_aprobacion": false,
+              "s22q07_estado_impuesto_cliente": true,
+              "s22q07_activacion_o_reemplazo_inferido": true,
+              "s22q07_edicion_sin_guard": true,
+              "s22q07_snapshot_lote_alterado": true,
+              "s22q07_estado_fuera_catalogo": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "c125c820676f61d7331b9c23f3b46539ff1642c4009e3f384ca1f6d432c5cf18",
+      "hash_paquete": "0d5de4ecc1538415bd01813bf31406226a17055fabd8e0ad698f31e5d6eca7d7",
+      "hash_evaluado": "c125c82067",
+      "hash_paquete_10": "0d5de4ecc1"
+    },
+    {
+      "codigo": "S22Q-C08",
+      "legacy_id": 586,
+      "legacy_ids": [
+        586
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 586,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B_APP_SHELL BLOQUEAR fusionar empresas o datos por pertenencia a grupo CORPORATE_GROUP; cada empresa conserva tax_id/RUC y registro independiente en lf_ops.empresas, identidad logo/nombre de fuente canónica. Selector grupo exclusivamente B2B_ADMIN_LF con múltiples grupos autorizados, obligatorio en ese caso; empresa dependiente de grupo. SINGLE_COMPANY oculta selector grupo y empresa fija/oculta; MULTI_COMPANY_SINGLE_GROUP grupo fijo/oculto y selector empresa visible; otros perfiles nunca selector grupo. Autoridad de selección server-only, no confiar en grupo elegido por cliente ni acceso cruzado implícito; admin global alcance empresas sujeto a permiso efectivo. Cambio grupo refresca empresas autorizadas, exige resolver empresa, recalcula permisos y menú; cambio empresa recalcula permisos/menú, refresca alertas y datos dependientes. Presentación aprobada no equivale a modelo de datos definido; PENDING_FUNCTIONAL_DEFINITION, no crear tablas ni conceder acceso. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22q08_evalua_scope_b2b",
+        "s22q08_fusiona_empresas_o_datos",
+        "s22q08_identidad_no_canonica",
+        "s22q08_selector_grupo_invalido",
+        "s22q08_selector_empresa_invalido",
+        "s22q08_scope_no_server_o_acceso_cruzado",
+        "s22q08_cambio_grupo_efectos_faltan",
+        "s22q08_cambio_empresa_efectos_faltan"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22Q-C08",
+        "clave": "s22q_legacy_586",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Alcance corporativo B2B separado por empresa y permiso",
+        "descripcion": "En B2B_APP_SHELL BLOQUEAR fusionar empresas o datos por pertenencia a grupo CORPORATE_GROUP; cada empresa conserva tax_id/RUC y registro independiente en lf_ops.empresas, identidad logo/nombre de fuente canónica. Selector grupo exclusivamente B2B_ADMIN_LF con múltiples grupos autorizados, obligatorio en ese caso; empresa dependiente de grupo. SINGLE_COMPANY oculta selector grupo y empresa fija/oculta; MULTI_COMPANY_SINGLE_GROUP grupo fijo/oculto y selector empresa visible; otros perfiles nunca selector grupo. Autoridad de selección server-only, no confiar en grupo elegido por cliente ni acceso cruzado implícito; admin global alcance empresas sujeto a permiso efectivo. Cambio grupo refresca empresas autorizadas, exige resolver empresa, recalcula permisos y menú; cambio empresa recalcula permisos/menú, refresca alertas y datos dependientes. Presentación aprobada no equivale a modelo de datos definido; PENDING_FUNCTIONAL_DEFINITION, no crear tablas ni conceder acceso. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/586",
+          "solicitante": "Cristhian / Claude S22-Q 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22q08_evalua_scope_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22q08_fusiona_empresas_o_datos"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22q08_identidad_no_canonica"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22q08_selector_grupo_invalido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22q08_selector_empresa_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22q08_scope_no_server_o_acceso_cruzado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22q08_cambio_grupo_efectos_faltan"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22q08_cambio_empresa_efectos_faltan"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": true,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": true,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": true,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": true,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": true,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": true,
+              "s22q08_cambio_empresa_efectos_faltan": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": true,
+              "s22q08_fusiona_empresas_o_datos": false,
+              "s22q08_identidad_no_canonica": false,
+              "s22q08_selector_grupo_invalido": false,
+              "s22q08_selector_empresa_invalido": false,
+              "s22q08_scope_no_server_o_acceso_cruzado": false,
+              "s22q08_cambio_grupo_efectos_faltan": false,
+              "s22q08_cambio_empresa_efectos_faltan": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22q08_evalua_scope_b2b": false,
+              "s22q08_fusiona_empresas_o_datos": true,
+              "s22q08_identidad_no_canonica": true,
+              "s22q08_selector_grupo_invalido": true,
+              "s22q08_selector_empresa_invalido": true,
+              "s22q08_scope_no_server_o_acceso_cruzado": true,
+              "s22q08_cambio_grupo_efectos_faltan": true,
+              "s22q08_cambio_empresa_efectos_faltan": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "9f17ba16ecd9a5feea9a55dda1330077974d791d0b2ae4559d6ecb759222bff2",
+      "hash_paquete": "136ea724d18d562fdf9d7d3140ac18cfd60bec64b7dca0e1220affdd499b75dd",
+      "hash_evaluado": "9f17ba16ec",
+      "hash_paquete_10": "136ea724d1"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22Q-C01",
+      "hash_paquete": "2f5a593afd6d6fa5b4d546c81834a44c03bd5c513d9bb094ba6426d31448e7d8",
+      "hash_paquete_10": "2f5a593afd",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C01 / hash_paquete_10=2f5a593afd"
+    },
+    {
+      "codigo": "S22Q-C02",
+      "hash_paquete": "ec2e805f8515760bcb31887a7af01053cb29a0d4bf983a4b33656906888d6c51",
+      "hash_paquete_10": "ec2e805f85",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C02 / hash_paquete_10=ec2e805f85"
+    },
+    {
+      "codigo": "S22Q-C03",
+      "hash_paquete": "d586b5f44832484127b078c392b27ae11d043023373bf8121a02edbbd7a8dad4",
+      "hash_paquete_10": "d586b5f448",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C03 / hash_paquete_10=d586b5f448"
+    },
+    {
+      "codigo": "S22Q-C04",
+      "hash_paquete": "cf152ed10ff26cfba18e7d81c83c6063a4f83d8c2d9253c898012d3d24637976",
+      "hash_paquete_10": "cf152ed10f",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C04 / hash_paquete_10=cf152ed10f"
+    },
+    {
+      "codigo": "S22Q-C05",
+      "hash_paquete": "9f868d27de6090f2e2a8dcc5468b231e1434305b0a92a00847afc00c025ad979",
+      "hash_paquete_10": "9f868d27de",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C05 / hash_paquete_10=9f868d27de"
+    },
+    {
+      "codigo": "S22Q-C06",
+      "hash_paquete": "0e658cf3352c36aafc026e7aba82428d5d694661b5cb4aa42ec0956339273a11",
+      "hash_paquete_10": "0e658cf335",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C06 / hash_paquete_10=0e658cf335"
+    },
+    {
+      "codigo": "S22Q-C07",
+      "hash_paquete": "0d5de4ecc1538415bd01813bf31406226a17055fabd8e0ad698f31e5d6eca7d7",
+      "hash_paquete_10": "0d5de4ecc1",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C07 / hash_paquete_10=0d5de4ecc1"
+    },
+    {
+      "codigo": "S22Q-C08",
+      "hash_paquete": "136ea724d18d562fdf9d7d3140ac18cfd60bec64b7dca0e1220affdd499b75dd",
+      "hash_paquete_10": "136ea724d1",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C08 / hash_paquete_10=136ea724d1"
+    }
+  ],
+  "cobertura_directa": []
+}

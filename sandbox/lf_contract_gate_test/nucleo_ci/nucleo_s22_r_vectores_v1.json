@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "39c9506443dfba5afeb8f8e7ea8ee8df9cdc5fc4",
     "js_vectors": "51/51",
@@ -1751,7 +1751,7 @@
           "legacy_id": 535,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "En CHECKOUT_ESTADO_CONFIRMANDO BLOQUEAR uso sin intento entregado al circuito con PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT o PAYMENT_PENDING_CONFIRMATION, o interpretar navegador como autoridad. Monto de checkout/plan snapshot, referencia ledger/reserva; conciliación server-side continúa pese a cierre, recarga o abandono, sin cancelar intento ni exigir ventana abierta. Denegar reintento, cambio medio y operación equivalente/paralela hasta resultado autoritativo. Al regresar consultar ledger y derivar éxito, error confirmado o pendiente según estado real. Branding solo binding productivo canónico. Conservar deuda PEND-CLIENT-PAYMENT-LEDGER-001, PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001 y referencia CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826, Drive 1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc, CLOSED_OWNER_APPROVED_20260826 sin probar runtime. Complementa S3-C05, S3-C19, REG_TEC_007 v2 y S22O-C01; binding pendiente."
+          "diferencias": "En CHECKOUT_ESTADO_CONFIRMANDO BLOQUEAR uso sin intento entregado al circuito con PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT o PAYMENT_PENDING_CONFIRMATION, o interpretar navegador como autoridad. Monto de checkout/plan snapshot, referencia ledger/reserva; conciliación server-side continúa pese a cierre, recarga o abandono, sin cancelar intento ni exigir ventana abierta. Denegar reintento, cambio medio y operación equivalente/paralela hasta resultado autoritativo. Al regresar consultar ledger y derivar éxito, error confirmado o pendiente según estado real. Branding solo binding productivo canónico. Conservar deuda PEND-CLIENT-PAYMENT-LEDGER-001, PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001 y referencia CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826, Drive 1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc, CLOSED_OWNER_APPROVED_20260826 sin probar runtime. Complementa S3-C05, S3-C19, REG_TEC_007 v2 y S22O-C01; binding pendiente. Contrato de outcomes: REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001."
         }
       ],
       "hechos": [
@@ -1774,7 +1774,7 @@
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
         "titulo": "Confirmación de pago persistente independiente del navegador",
-        "descripcion": "En CHECKOUT_ESTADO_CONFIRMANDO BLOQUEAR uso sin intento entregado al circuito con PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT o PAYMENT_PENDING_CONFIRMATION, o interpretar navegador como autoridad. Monto de checkout/plan snapshot, referencia ledger/reserva; conciliación server-side continúa pese a cierre, recarga o abandono, sin cancelar intento ni exigir ventana abierta. Denegar reintento, cambio medio y operación equivalente/paralela hasta resultado autoritativo. Al regresar consultar ledger y derivar éxito, error confirmado o pendiente según estado real. Branding solo binding productivo canónico. Conservar deuda PEND-CLIENT-PAYMENT-LEDGER-001, PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001 y referencia CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826, Drive 1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc, CLOSED_OWNER_APPROVED_20260826 sin probar runtime. Complementa S3-C05, S3-C19, REG_TEC_007 v2 y S22O-C01; binding pendiente.",
+        "descripcion": "En CHECKOUT_ESTADO_CONFIRMANDO BLOQUEAR uso sin intento entregado al circuito con PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT o PAYMENT_PENDING_CONFIRMATION, o interpretar navegador como autoridad. Monto de checkout/plan snapshot, referencia ledger/reserva; conciliación server-side continúa pese a cierre, recarga o abandono, sin cancelar intento ni exigir ventana abierta. Denegar reintento, cambio medio y operación equivalente/paralela hasta resultado autoritativo. Al regresar consultar ledger y derivar éxito, error confirmado o pendiente según estado real. Branding solo binding productivo canónico. Conservar deuda PEND-CLIENT-PAYMENT-LEDGER-001, PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001 y referencia CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826, Drive 1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc, CLOSED_OWNER_APPROVED_20260826 sin probar runtime. Complementa S3-C05, S3-C19, REG_TEC_007 v2 y S22O-C01; binding pendiente. Contrato de outcomes: REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001.",
         "efecto": "BLOQUEAR",
         "autoridad": "LEG-PRODUCTO",
         "impacto": "REVISAR",
@@ -1971,10 +1971,10 @@
           }
         ]
       },
-      "hash": "8327db45d708d3d9cc2016d90a8b2eb40af3828d7dd89d1dd422faa2e5611090",
-      "hash_paquete": "463d5eeac2c9a869eeacf8473ea7533db33be4729437e10224f62e59806b510d",
-      "hash_evaluado": "8327db45d7",
-      "hash_paquete_10": "463d5eeac2"
+      "hash": "225aacb8719e6fe41aa063df47904c85a81d2731c910db4ede684336c1cc2956",
+      "hash_paquete": "a512634ebdcf7b9ed8b6ea518b70dd90db93472299d7a5f5cfbf880bccfa4bc5",
+      "hash_evaluado": "225aacb871",
+      "hash_paquete_10": "a512634ebd"
     },
     {
       "codigo": "S22R-C07",
@@ -1992,7 +1992,7 @@
           "legacy_id": 536,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "En CHECKOUT_ERROR_PAGO BLOQUEAR render para PAYMENT_PENDING_CONFIRMATION o PAYMENT_CONFIRMED; solo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED y PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT según normalización backend. Reintentar/cambiar medio únicamente flags server-side, soporte permitido. Claim no se realizó ningún cargo solo evidencia autoritativa; si falta usar copy neutral y conservar operación para consulta/reconciliación. Preservar selección/plan validado; no activar cuotas sin PAYMENT_CONFIRMED. Branding solo binding canónico. Referencias CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826 y CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826, Drive 1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv y 1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12, CLOSED_OWNER_APPROVED_20260826; deuda PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001. Complementa S22I-C01 y S3-C19; binding pendiente."
+          "diferencias": "En CHECKOUT_ERROR_PAGO BLOQUEAR render para PAYMENT_PENDING_CONFIRMATION o PAYMENT_CONFIRMED; solo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED y PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT según normalización backend. Reintentar/cambiar medio únicamente flags server-side, soporte permitido. Claim no se realizó ningún cargo solo evidencia autoritativa; si falta usar copy neutral y conservar operación para consulta/reconciliación. Preservar selección/plan validado; no activar cuotas sin PAYMENT_CONFIRMED. Branding solo binding canónico. Referencias CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826 y CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826, Drive 1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv y 1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12, CLOSED_OWNER_APPROVED_20260826; deuda PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001. Complementa S22I-C01 y S3-C19; binding pendiente. Contrato de outcomes: REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001."
         }
       ],
       "hechos": [
@@ -2015,7 +2015,7 @@
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
         "titulo": "Error de pago solo por resultado seguro y acciones autorizadas",
-        "descripcion": "En CHECKOUT_ERROR_PAGO BLOQUEAR render para PAYMENT_PENDING_CONFIRMATION o PAYMENT_CONFIRMED; solo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED y PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT según normalización backend. Reintentar/cambiar medio únicamente flags server-side, soporte permitido. Claim no se realizó ningún cargo solo evidencia autoritativa; si falta usar copy neutral y conservar operación para consulta/reconciliación. Preservar selección/plan validado; no activar cuotas sin PAYMENT_CONFIRMED. Branding solo binding canónico. Referencias CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826 y CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826, Drive 1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv y 1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12, CLOSED_OWNER_APPROVED_20260826; deuda PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001. Complementa S22I-C01 y S3-C19; binding pendiente.",
+        "descripcion": "En CHECKOUT_ERROR_PAGO BLOQUEAR render para PAYMENT_PENDING_CONFIRMATION o PAYMENT_CONFIRMED; solo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED y PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT según normalización backend. Reintentar/cambiar medio únicamente flags server-side, soporte permitido. Claim no se realizó ningún cargo solo evidencia autoritativa; si falta usar copy neutral y conservar operación para consulta/reconciliación. Preservar selección/plan validado; no activar cuotas sin PAYMENT_CONFIRMED. Branding solo binding canónico. Referencias CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826 y CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826, Drive 1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv y 1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12, CLOSED_OWNER_APPROVED_20260826; deuda PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001. Complementa S22I-C01 y S3-C19; binding pendiente. Contrato de outcomes: REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001.",
         "efecto": "BLOQUEAR",
         "autoridad": "LEG-PRODUCTO",
         "impacto": "REVISAR",
@@ -2212,13 +2212,252 @@
           }
         ]
       },
-      "hash": "548b3ce13bc2dacc64147a02fc33b2811a6123758e28f04a6b95f154fc8a6f63",
-      "hash_paquete": "f0559c1cb22c6a1c70c2adc16e3c7a7db206cc6712d0b43e1da0bd206f642609",
-      "hash_evaluado": "548b3ce13b",
-      "hash_paquete_10": "f0559c1cb2"
+      "hash": "dabcf781827d2f4d343d93b73a3d8546715ad556fb146828b87ed802d2f96744",
+      "hash_paquete": "bc0960c3e9a81d3600e06ca70fe9c92344009e7552136c438b10755cc34692f1",
+      "hash_evaluado": "dabcf78182",
+      "hash_paquete_10": "bc0960c3e9"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22R-C01",
+      "hash_paquete": "8ed0b011a4b9eb578900fc6f680e670da0a35b14677d6b8f40eb2024f8b16d44",
+      "hash_paquete_10": "8ed0b011a4",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C01 / hash_paquete_10=8ed0b011a4"
+    },
+    {
+      "codigo": "S22R-C02",
+      "hash_paquete": "f99b9fdc6239b36f31298027bd6e2367c70f22325d039a520335636bbd4d5d89",
+      "hash_paquete_10": "f99b9fdc62",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C02 / hash_paquete_10=f99b9fdc62"
+    },
+    {
+      "codigo": "S22R-C03",
+      "hash_paquete": "32b35d7242706a0c2d8572d0fdf695c429b5649b72b38621620764bfb3176d3e",
+      "hash_paquete_10": "32b35d7242",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C03 / hash_paquete_10=32b35d7242"
+    },
+    {
+      "codigo": "S22R-C04",
+      "hash_paquete": "9b514baa1baafc2c791b0ef4f799b65501ced8828d4e3dc4a6552def09a857c9",
+      "hash_paquete_10": "9b514baa1b",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C04 / hash_paquete_10=9b514baa1b"
+    },
+    {
+      "codigo": "S22R-C05",
+      "hash_paquete": "70a59f16db7422d141c3c286015c1246a0e9e2c313511d39a403075b88c69f10",
+      "hash_paquete_10": "70a59f16db",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C05 / hash_paquete_10=70a59f16db"
+    },
+    {
+      "codigo": "S22R-C06",
+      "hash_paquete": "a512634ebdcf7b9ed8b6ea518b70dd90db93472299d7a5f5cfbf880bccfa4bc5",
+      "hash_paquete_10": "a512634ebd",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C06 / hash_paquete_10=a512634ebd"
+    },
+    {
+      "codigo": "S22R-C07",
+      "hash_paquete": "bc0960c3e9a81d3600e06ca70fe9c92344009e7552136c438b10755cc34692f1",
+      "hash_paquete_10": "bc0960c3e9",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4774 / Claude 2026-11-25 16:49 Lima / S22R-C07 / hash_paquete_10=bc0960c3e9"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 534,
