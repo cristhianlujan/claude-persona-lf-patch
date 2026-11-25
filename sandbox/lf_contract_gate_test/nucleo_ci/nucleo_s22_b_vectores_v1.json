@@ -1,8 +1,8 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "2846b8ed1da580d9aa4c78ff3b2a0346deebe93d",
-    "js_vectors": "32/32",
+    "js_vectors": "28/28",
     "hash": "SQL RO canonical formula; PG17 pending"
   },
   "parametros_existentes": [],
@@ -97,27 +97,6 @@
       "tipo_dato": "boolean",
       "unidad": "ninguna",
       "descripcion": "fechas posteriores invalidas; hecho derivado, binding runtime pendiente",
-      "familia": "PAYMENTS_CHECKOUT"
-    },
-    {
-      "codigo": "s22b04_captura_tarjeta",
-      "tipo_dato": "boolean",
-      "unidad": "ninguna",
-      "descripcion": "captura tarjeta; hecho derivado, binding runtime pendiente",
-      "familia": "PAYMENTS_CHECKOUT"
-    },
-    {
-      "codigo": "s22b04_iframe_niubiz",
-      "tipo_dato": "boolean",
-      "unidad": "ninguna",
-      "descripcion": "iframe niubiz; hecho derivado, binding runtime pendiente",
-      "familia": "PAYMENTS_CHECKOUT"
-    },
-    {
-      "codigo": "s22b04_lf_accede_datos",
-      "tipo_dato": "boolean",
-      "unidad": "ninguna",
-      "descripcion": "lf accede datos; hecho derivado, binding runtime pendiente",
       "familia": "PAYMENTS_CHECKOUT"
     },
     {
@@ -678,124 +657,6 @@
       "hash_paquete_10": "1308dc0e07"
     },
     {
-      "codigo": "S22B-C04",
-      "legacy_id": 315,
-      "legacy_ids": [
-        315
-      ],
-      "relacionadas": [],
-      "residual": "",
-      "coberturas": [
-        {
-          "legacy_id": 315,
-          "estado_cobertura": "REEMPLAZADA",
-          "residual": "",
-          "diferencias": "En captura de tarjeta de checkout BLOQUEAR formulario fuera del iframe seguro de Niubiz o acceso LF a número, fecha, CVV o nombre del titular ingresados en el formulario. El proveedor renderiza los campos; LF no los captura ni conserva. Binding pendiente."
-        }
-      ],
-      "hechos": [
-        "s22b04_captura_tarjeta",
-        "s22b04_iframe_niubiz",
-        "s22b04_lf_accede_datos"
-      ],
-      "paquete": {
-        "tipo": "NUEVA",
-        "codigo": "S22B-C04",
-        "clave": "s22b_legacy_315",
-        "familia": "PAYMENTS_CHECKOUT",
-        "naturaleza": "CONDUCTA",
-        "clase": "PANTALLA",
-        "alcance": "CLIENT_PAYMENTS",
-        "modo": "HEREDA",
-        "dueno": "PRODUCTO",
-        "titulo": "Aislamiento de captura de datos de tarjeta",
-        "descripcion": "En captura de tarjeta de checkout BLOQUEAR formulario fuera del iframe seguro de Niubiz o acceso LF a número, fecha, CVV o nombre del titular ingresados en el formulario. El proveedor renderiza los campos; LF no los captura ni conserva. Binding pendiente.",
-        "efecto": "BLOQUEAR",
-        "autoridad": "LEG-PRODUCTO",
-        "impacto": "REVISAR",
-        "origen": {
-          "tipo": "MIGRACION",
-          "ref": "lf_ops.reglas/315",
-          "solicitante": "Cristhian / Claude S22-B 2026-11-24"
-        },
-        "condicion": {
-          "op": "y",
-          "izq": {
-            "op": "=",
-            "izq": {
-              "hecho": "s22b04_captura_tarjeta"
-            },
-            "der": {
-              "lit": true
-            }
-          },
-          "der": {
-            "op": "o",
-            "izq": {
-              "op": "=",
-              "izq": {
-                "hecho": "s22b04_iframe_niubiz"
-              },
-              "der": {
-                "lit": false
-              }
-            },
-            "der": {
-              "op": "=",
-              "izq": {
-                "hecho": "s22b04_lf_accede_datos"
-              },
-              "der": {
-                "lit": true
-              }
-            }
-          }
-        },
-        "pruebas": [
-          {
-            "casuistica": "NO_SE_CUMPLE",
-            "entrada": {
-              "s22b04_captura_tarjeta": true,
-              "s22b04_iframe_niubiz": true,
-              "s22b04_lf_accede_datos": false
-            },
-            "esperado": false
-          },
-          {
-            "casuistica": "SE_CUMPLE",
-            "entrada": {
-              "s22b04_captura_tarjeta": true,
-              "s22b04_iframe_niubiz": false,
-              "s22b04_lf_accede_datos": false
-            },
-            "esperado": true
-          },
-          {
-            "casuistica": "SE_CUMPLE",
-            "entrada": {
-              "s22b04_captura_tarjeta": true,
-              "s22b04_iframe_niubiz": true,
-              "s22b04_lf_accede_datos": true
-            },
-            "esperado": true
-          },
-          {
-            "casuistica": "NO_SE_CUMPLE",
-            "entrada": {
-              "s22b04_captura_tarjeta": false,
-              "s22b04_iframe_niubiz": false,
-              "s22b04_lf_accede_datos": true
-            },
-            "esperado": false
-          }
-        ]
-      },
-      "hash": "a684f802b0cd1089100cca2d44ea0be2bf71b62aff10e690d80123388b550cc9",
-      "hash_paquete": "f070701eabaee97a997f0ea5eb8535387d28aa1b0c0ee953e627ade98ae33f56",
-      "hash_evaluado": "a684f802b0",
-      "hash_paquete_10": "f070701eab"
-    },
-    {
       "codigo": "S22B-C05",
       "legacy_id": 464,
       "legacy_ids": [
@@ -1144,6 +1005,189 @@
       "hash_paquete_10": "adbf1767f0"
     }
   ],
-  "juicios": [],
-  "cobertura_directa": []
+  "juicios": [
+    {
+      "codigo": "S22B-C01",
+      "hash_paquete": "38757f01422ae985a2399f40217623fdf90b2e65c6eee385d601774ef57c994e",
+      "hash_paquete_10": "38757f0142",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C01 / hash_paquete_10=38757f0142"
+    },
+    {
+      "codigo": "S22B-C02",
+      "hash_paquete": "5283bdfcd0ebe817e71821a787d2adbdb9959c0d891b62c14353c33ce1fbb4bf",
+      "hash_paquete_10": "5283bdfcd0",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S6-C17/S21-C05, declarado."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C02 / hash_paquete_10=5283bdfcd0"
+    },
+    {
+      "codigo": "S22B-C03",
+      "hash_paquete": "1308dc0e07a26a5bac6b5717baa4e558e0f95b8b7c38fdd8542ab0ee58b0c684",
+      "hash_paquete_10": "1308dc0e07",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Adyacente a S6-C15."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C03 / hash_paquete_10=1308dc0e07"
+    },
+    {
+      "codigo": "S22B-C05",
+      "hash_paquete": "f6f1f80cbba4a27b64bdefb5abd859c0c62e1e2063ed3bdb7fd7c5975bfef734",
+      "hash_paquete_10": "f6f1f80cbb",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C05 / hash_paquete_10=f6f1f80cbb"
+    },
+    {
+      "codigo": "S22B-C06",
+      "hash_paquete": "adbf1767f0076ac1ebcd36a1155572bf27799eaa7a85b7f98b5ecf384dddeb3d",
+      "hash_paquete_10": "adbf1767f0",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Adyacente a S1-C03/S5-C16; Brevo eventos de entrega es distinto."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C06 / hash_paquete_10=adbf1767f0"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 315,
+      "nucleo_codigo": "S6-C13",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S6-C13 conserva captura en iframe SDK Niubiz y bloqueo de PAN/CVV en servidores LF; no explicita nombre del titular ni prohibición de formulario fuera del iframe.",
+      "residual": "El nombre del titular y la restricción de formulario fuera del iframe no están explícitos en S6-C13."
+    }
+  ]
 }
