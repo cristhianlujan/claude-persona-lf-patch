@@ -217,10 +217,15 @@ BEGIN
  IF v_min_workers IS NULL OR v_min_workers<1 THEN
    RAISE EXCEPTION 'SUNAT_CLOSE_MIN_WORKERS_POLICY_MISSING';
  END IF;
- SELECT count(*) INTO v_bad FROM saly.ventas_sunat_elegibilidad_v1
- WHERE run_ref=p_execution_id AND
-    (clasificacion_comercial IS DISTINCT FROM 'ELEGIBLE'
-     OR nrotrab IS NULL OR nrotrab<v_min_workers);
+ SELECT count(*),count(*) FILTER (
+    WHERE clasificacion_comercial IS DISTINCT FROM 'ELEGIBLE'
+       OR nrotrab IS NULL OR nrotrab<v_min_workers)
+ INTO v_missing,v_bad
+ FROM saly.ventas_sunat_elegibilidad_v1
+ WHERE run_ref=p_execution_id;
+ IF v_missing<>v_rows THEN
+   RAISE EXCEPTION 'SUNAT_CLOSE_ELIGIBILITY_COVERAGE';
+ END IF;
  IF v_bad<>0 THEN RAISE EXCEPTION 'SUNAT_CLOSE_INELIGIBLE'; END IF;
  SELECT count(DISTINCT h.ruc_candidato) INTO v_unique_ruc
  FROM saly.ventas_hallazgos h JOIN saly.ventas_discovery_ingestas i
