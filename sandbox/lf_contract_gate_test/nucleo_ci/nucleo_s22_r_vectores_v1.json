@@ -1,0 +1,2232 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "39c9506443dfba5afeb8f8e7ea8ee8df9cdc5fc4",
+    "js_vectors": "51/51",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "REG_CHK_008",
+        "version": 3,
+        "estado": "PUBLICADA",
+        "descripcion": "En BACKEND y para cada deuda, permitir iniciar automáticamente la solicitud o generación de Carta de No Adeudo solo cuando el ledger establece SETTLED_CONFIRMED, el estado documental es ELIGIBLE y la integración vigente del aliado permite el inicio automático. El frontend no exige una solicitud manual ni equipara pago inicial a liquidación, emisión o descarga. El ciclo NOT_ELIGIBLE a AVAILABLE y la descarga siguen gobernados por REG_CLIENT_NO_DEBT_LETTER_STATUS_001; la consolidación con esa regla se propone sin ejecutarse."
+      }
+    ],
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001",
+    "fuentes_legadas": [
+      {
+        "id": 459,
+        "codigo": "REG_RISK_ONB_TELEMETRY_001",
+        "descripcion": "Medir el funnel y señales agregadas de abuso para distinguir usuarios que rechazan una oferta de patrones de exploración automatizada o competencia.",
+        "valor_config": {
+          "thresholds": "PENDING_BASELINE",
+          "risk_outputs": [
+            "NORMAL",
+            "SUSPECT",
+            "HIGH"
+          ],
+          "risk_signals": [
+            "DISTINCT_DNI_PER_ORIGIN",
+            "DISTINCT_PHONE_PER_ORIGIN",
+            "REPEATED_QUERIES",
+            "RATE_LIMIT_HITS",
+            "SYSTEMATIC_MATCH_EXIT",
+            "DISTINCT_DNI_PER_VERIFIED_PHONE",
+            "DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE"
+          ],
+          "funnel_events": [
+            "HOME_CTA",
+            "PHONE_SUBMITTED",
+            "OTP_VERIFIED",
+            "DNI_SUBMITTED",
+            "MATCH_RESULT",
+            "OFFER_INTEREST",
+            "OFFER_VIEW",
+            "EXIT"
+          ],
+          "raw_pii_in_analytics": "DENY",
+          "source_decision_number": 71,
+          "phone_multi_dni_rule_code": "REG_RISK_PHONE_MULTI_DNI_001",
+          "identity_validation_rule_code": "REG_IDV_PROGRESSIVE_001"
+        }
+      },
+      {
+        "id": 460,
+        "codigo": "REG_REC_PHONE_001",
+        "descripcion": "Si el cliente conserva acceso al celular anterior, el celular actual ya verificado en ONB_002 satisface la prueba de control del nuevo número y se exige OTP adicional únicamente sobre el celular anterior. Si perdió acceso al anterior, el celular actual mantiene su prueba de control y se requiere validación adicional de identidad antes de reemplazar la asociación.",
+        "valor_config": {
+          "audit_rule_code": "REG_AUD_004",
+          "antifraud_rule_code": "REG_SEG_005",
+          "old_phone_available": "OTP_OLD_AND_NEW",
+          "new_phone_field_code": "CAMPO_CELULAR_NUEVO",
+          "rate_limit_rule_code": "REG_RL_003",
+          "old_phone_unavailable": "IDENTITY_VALIDATION_REQUIRED",
+          "target_screen_mapping": "PENDING_CANONICAL_SCREEN",
+          "new_phone_otp_required": true,
+          "source_decision_number": 71,
+          "atomic_rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+          "old_phone_otp_operation": "OTP_OP_RECUPERAR_CLAVE",
+          "repeat_current_phone_otp": false,
+          "recovery_control_rule_code": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001",
+          "clarified_by_decision_number": 103,
+          "current_verified_phone_source": "ONB_001_PLUS_ONB_002"
+        }
+      },
+      {
+        "id": 502,
+        "codigo": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+        "descripcion": "Una pantalla Cliente puede utilizar contenido o documento DEMO cuando el documento oficial aún no esté cerrado, exclusivamente para validar funcionalidad y UX. El DEMO debe distinguirse del contenido oficial y no puede usarse como consentimiento o documento legal válido en producción. La aplicación debe quedar preparada para resolver el contenido desde una versión publicada y trazable, no desde un archivo hardcodeado.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "demo_allowed": true,
+          "registry_status": "PENDING_CANONICAL_REGISTRY",
+          "demo_environments": [
+            "DEMO",
+            "DEV",
+            "QA",
+            "STAGING_REVIEW"
+          ],
+          "upload_traceability": "REQUIRED",
+          "source_decision_number": 102,
+          "production_demo_allowed": false,
+          "hardcoded_final_document": "DENY",
+          "demo_requires_clear_status": true,
+          "trace_screen_document_version": "REQUIRED",
+          "official_content_requires_version": true,
+          "screen_must_resolve_active_version": true,
+          "official_content_requires_publish_state": true
+        }
+      },
+      {
+        "id": 509,
+        "codigo": "REG_RISK_PHONE_MULTI_DNI_001",
+        "descripcion": "El backend debe medir cuántos DNI distintos y cuántas cuentas distintas de recuperación son exploradas desde el mismo celular que ya superó OTP. La correlación se realiza con claves derivadas server-side y no con PII crudo en analytics o logs. Un patrón creciente incrementa el nivel de riesgo. En nivel alto se pueden detener temporalmente nuevas resoluciones post-DNI o reasignaciones y exigir validación reforzada antes de continuar. La detección no modifica la regla de unicidad: un celular nunca puede quedar asociado simultáneamente a varias cuentas activas verificadas.",
+        "valor_config": {
+          "thresholds": "PENDING_BASELINE",
+          "high_action": "TEMPORARY_STOP_POST_DNI_OR_REBIND_AND_REQUIRE_STEP_UP",
+          "subject_key": "PRIVACY_PRESERVING_SERVER_DERIVED_KEY",
+          "risk_outputs": [
+            "NORMAL",
+            "SUSPECT",
+            "HIGH"
+          ],
+          "signal_codes": [
+            "DISTINCT_DNI_PER_VERIFIED_PHONE",
+            "DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE"
+          ],
+          "suspect_action": "RISK_SCORE_AND_OBSERVE",
+          "raw_dni_in_logs": "DENY",
+          "applicability_v1": {
+            "all": [],
+            "any": [],
+            "status": "UNRESOLVED",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "raw_phone_in_logs": "DENY",
+          "supporting_signals": [
+            "REPEATED_QUERIES",
+            "SYSTEMATIC_MATCH_EXIT",
+            "RATE_LIMIT_HITS",
+            "RECOVERY_ATTEMPTS_ACROSS_DISTINCT_ACCOUNTS"
+          ],
+          "raw_pii_in_analytics": "DENY",
+          "source_decision_number": 104,
+          "first_signal_hard_block": "DENY",
+          "phone_binding_rule_code": "REG_UNI_002",
+          "verified_phone_required": true,
+          "identity_step_up_rule_code": "REG_CLIENT_RECOVERY_IDV_STEPUP_001"
+        }
+      },
+      {
+        "id": 510,
+        "codigo": "REG_CLIENT_RECOVERY_IDV_STEPUP_001",
+        "descripcion": "La recuperación Cliente requiere validación reforzada de identidad cuando el usuario no controla el celular anterior o cuando el riesgo de exploración multi-DNI/multi-cuenta alcanza HIGH. El celular actual verificado en ONB_002 sigue siendo requisito de contexto, pero por sí solo no autoriza reasignar una cuenta existente. Conocer el DNI tampoco constituye prueba suficiente. Hasta obtener un resultado IDENTITY_VALIDATION_VERIFIED emitido y validado server-side, no se reasigna el celular, no se crea acceso operativo y no se promueve la sesión. Correo, soporte humano o preguntas de conocimiento no pueden actuar como bypass salvo decisión futura que los gobierne explícitamente como factor de recuperación. La obligación de step-up no autoriza llamar al proveedor deshabilitado ni conceder identidad verificada sin prueba; bloquear únicamente la recuperación que necesite esa prueba y no tenga otra prueba aprobada.",
+        "valor_config": {
+          "flow": "RECOVERY_FLOW",
+          "front": "CLIENTE",
+          "triggers": [
+            "OLD_PHONE_UNAVAILABLE",
+            "PHONE_MULTI_DNI_RISK_HIGH"
+          ],
+          "raw_pii_in_logs": "DENY",
+          "provider_binding": "PENDING_CANONICAL_IDV_PROVIDER",
+          "rebind_rule_code": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001",
+          "support_override": "DENY",
+          "idv_when_disabled": "BLOCK_ONLY_REQUIRING_IDV_STEPUP_NO_BYPASS",
+          "target_route_code": "CLIENT_RECOVERY",
+          "raw_pii_in_analytics": "DENY",
+          "target_screen_mapping": "REC_001",
+          "idv_provider_state_gate": "ENABLED_REQUIRED_BEFORE_EXTERNAL_CALL",
+          "source_decision_numbers": [
+            71,
+            103,
+            104
+          ],
+          "idv_provider_policy_code": "SEC-LF-IDV-FACEPHI-OPTIONAL",
+          "required_identity_outcome": "IDENTITY_VALIDATION_VERIFIED",
+          "provider_agnostic_contract": true,
+          "current_phone_control_source": "ONB_002_SAME_SERVER_SESSION",
+          "source_architecture_decision": "DEC-CLIENT-AUTH-SESSION-RUNTIME-001",
+          "account_rebind_before_verified": "DENY",
+          "current_phone_control_required": true,
+          "dni_knowledge_alone_sufficient": false,
+          "raw_provider_payload_to_client": "DENY",
+          "knowledge_based_questions_default": "DENY",
+          "operational_access_before_verified": "DENY",
+          "current_phone_control_alone_sufficient": false,
+          "idv_absence_does_not_block_normal_login": true,
+          "email_otp_approved_as_client_recovery_factor": false
+        }
+      },
+      {
+        "id": 534,
+        "codigo": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+        "descripcion": "La Carta de No Adeudo se gestiona por deuda y solo entra al flujo documental después de SETTLED_CONFIRMED. Para operaciones administradas por LF, el backend debe iniciar la solicitud/generación con el aliado sin exigir al cliente una segunda acción manual cuando la integración lo permita. Los estados del aliado se normalizan a NOT_ELIGIBLE, ELIGIBLE, REQUESTED, PROCESSING, AVAILABLE o FAILED_OR_DELAYED. Solo AVAILABLE habilita descarga de la versión oficial; un estado de pago confirmado que no liquide totalmente la deuda no habilita carta. La disponibilidad de la carta es distinta de la actualización posterior en SBS/centrales de riesgo. La explicación mostrada antes del pago es configurable por aliado/oferta dentro de límites de UX. La disponibilidad de firma electrónica y la política de liberación son independientes: una carta puede firmarse electrónicamente y aun requerir confirmación del aliado de que recibió el pago antes de solicitar/generar el documento. El frontend no infiere esta política. En HOME_002 no se muestra miniatura de la Carta porque duplica la acción. La única entrada al ejemplo es “Ver formato de carta”; el ejemplo debe estar marcado inequívocamente como EJEMPLO / COPIA NO VÁLIDA.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "scope": "PER_DEBT",
+          "issuer": "B2B_PARTNER_OR_CANONICAL_CREDITOR_ENTITY",
+          "states": [
+            "NOT_ELIGIBLE",
+            "ELIGIBLE",
+            "REQUESTED",
+            "PROCESSING",
+            "AVAILABLE",
+            "FAILED_OR_DELAYED"
+          ],
+          "lf_role": "REQUEST_HOST_TRACK_AND_DELIVER",
+          "generation_sla": "PENDING_PARTNER_CONTRACT_POLICY",
+          "client_surfaces": {
+            "CLIENT_PAYMENTS": {
+              "role": "CONTEXTUAL_PER_DEBT",
+              "show_status": true,
+              "actions_when_available": [
+                "VIEW",
+                "DOWNLOAD"
+              ]
+            },
+            "CLIENT_DOCUMENTS": {
+              "role": "PERMANENT_REPOSITORY",
+              "actions_when_available": [
+                "VIEW",
+                "DOWNLOAD"
+              ],
+              "retain_after_available": true
+            }
+          },
+          "available_actions": [
+            "VIEW",
+            "DOWNLOAD"
+          ],
+          "document_registry": "PENDING_CLIENT_DOCUMENT_REGISTRY",
+          "hardcoded_48h_sla": "DENY_UNTIL_CONTRACT_VALIDATED",
+          "persistent_ui_label": "Documentos",
+          "on_settled_confirmed": "ELIGIBLE_THEN_AUTO_REQUEST_WHEN_INTEGRATION_AVAILABLE",
+          "settlement_rule_code": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+          "document_record_policy": "SINGLE_CANONICAL_DOCUMENT_REFERENCED_FROM_MULTIPLE_SURFACES",
+          "download_allowed_state": "AVAILABLE",
+          "source_decision_number": 118,
+          "document_demo_rule_code": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+          "home_explanation_policy": {
+            "source": "GOVERNED_PARTNER_OR_OFFER_CONFIG",
+            "example_action": {
+              "label": "Ver formato de carta",
+              "opens": "NONPROD_OR_GOVERNED_SAMPLE_DOCUMENT",
+              "watermark_text": "EJEMPLO / COPIA NO VÁLIDA",
+              "watermark_required": true,
+              "must_not_look_official": true
+            },
+            "release_policy": {
+              "allowed_values": [
+                "AUTO_AFTER_CONFIRMED_FULL_SETTLEMENT",
+                "AFTER_PARTNER_FUNDS_CONFIRMATION"
+              ],
+              "field_semantic": "NO_DEBT_LETTER_RELEASE_POLICY",
+              "frontend_can_infer": false
+            },
+            "home_surface_preview": "DENY",
+            "signature_capability": {
+              "field_semantic": "ELECTRONIC_SIGNATURE_AVAILABLE",
+              "display_signature_claim_only_when_true": true
+            },
+            "configuration_binding": "PENDING_CANONICAL_PARTNER_DOCUMENT_CONFIG_RECONCILIATION",
+            "default_copy_by_policy": {
+              "AFTER_PARTNER_FUNDS_CONFIRMATION": "Se emitirá cuando la empresa confirme que recibió tu pago.",
+              "AUTO_AFTER_CONFIRMED_FULL_SETTLEMENT": "Se genera después de confirmar tu pago."
+            },
+            "custom_explanation_copy": {
+              "allowed": true,
+              "max_characters": 100,
+              "mobile_max_lines": 3,
+              "desktop_max_lines": 2,
+              "overflow_behavior": "REJECT_CONFIG_DO_NOT_TRUNCATE",
+              "must_match_real_release_policy": true,
+              "must_not_promise_immediate_availability": true
+            },
+            "inline_document_preview": "DENY"
+          },
+          "legacy_rules_to_reconcile": [
+            "REG_CHK_008",
+            "REG_B2B_005",
+            "REG_CHK_017",
+            "REG_CHK_CUO_009",
+            "REG_SUC_004"
+          ],
+          "notification_on_available": "OPERATIONAL_NOTIFICATION",
+          "persistent_client_surface": "CLIENT_DOCUMENTS",
+          "required_settlement_state": "SETTLED_CONFIRMED",
+          "marketing_consent_required": false,
+          "partner_raw_status_to_client": "DENY",
+          "external_education_context_rule": "EDU-NODO-04-CIERRA",
+          "initial_state_before_settlement": "NOT_ELIGIBLE",
+          "navigation_source_decision_number": 117,
+          "retain_available_letter_after_completion": true,
+          "credit_bureau_update_same_as_letter_available": "DENY",
+          "client_manual_request_required_for_lf_managed_operation": false
+        }
+      },
+      {
+        "id": 535,
+        "codigo": "REG_CLIENT_CHECKOUT_CONFIRMING_STATE_001",
+        "descripcion": "CHECKOUT_ESTADO_CONFIRMANDO representa un intento ya entregado al circuito de pago cuyo resultado autoritativo aún está siendo validado o reconciliado. La operación continúa server-side aunque el usuario cierre, recargue o abandone la ventana; el navegador no es autoridad del resultado. Mientras el intento esté en confirmación no se permite reintentar, cambiar de medio ni crear otra operación equivalente. Al volver, el Sistema Cliente consulta el ledger y deriva a éxito, error confirmado o continúa mostrando pendiente según el estado real. El nombre/logo del proveedor solo puede aparecer si existe binding productivo canónico.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_ESTADO_CONFIRMANDO",
+          "amount_source": "CHECKOUT_SNAPSHOT_OR_PLAN_SNAPSHOT",
+          "resume_behavior": "READ_AUTHORITATIVE_LEDGER_STATE",
+          "parallel_attempt": "DENY",
+          "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+          "payment_ledger_debt": "PEND-CLIENT-PAYMENT-LEDGER-001",
+          "visual_artifact_code": "CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826",
+          "retry_while_confirming": "DENY",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+          "visual_discrepancy_debt": "PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001",
+          "allowed_processing_states": [
+            "PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT",
+            "PAYMENT_PENDING_CONFIRMATION"
+          ],
+          "operation_reference_source": "PAYMENT_LEDGER_OR_RESERVED_OPERATION",
+          "server_side_reconciliation": "REQUIRED",
+          "canonical_drive_evidence_id": "1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc",
+          "change_method_while_confirming": "DENY",
+          "close_or_refresh_cancels_payment": "DENY",
+          "browser_window_must_remain_open_for_correctness": false
+        }
+      },
+      {
+        "id": 536,
+        "codigo": "REG_CLIENT_CHECKOUT_ERROR_STATE_001",
+        "descripcion": "CHECKOUT_ERROR_PAGO no puede usarse para PAYMENT_PENDING_CONFIRMATION. Solo representa resultados donde backend conoce suficientemente el estado para ofrecer acciones: PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT. Reintentar o cambiar medio se habilita exclusivamente según flags server-side del outcome. El claim “no se realizó ningún cargo” solo puede mostrarse cuando la evidencia autoritativa permita afirmarlo; en otro caso se usa copy neutral y se conserva la operación para consulta/reconciliación. La selección/plan previo se conserva, pero un plan de cuotas no se considera activado sin PAYMENT_CONFIRMED.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_ERROR_PAGO",
+          "retry_action": "SERVER_OUTCOME_GATED",
+          "support_action": "ALLOW",
+          "denied_outcomes": [
+            "PAYMENT_PENDING_CONFIRMATION",
+            "PAYMENT_CONFIRMED"
+          ],
+          "no_charge_claim": "ALLOW_ONLY_WITH_AUTHORITATIVE_EVIDENCE",
+          "allowed_outcomes": [
+            "PAYMENT_DECLINED_CONFIRMED",
+            "PAYMENT_NOT_SUBMITTED",
+            "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT"
+          ],
+          "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+          "change_method_action": "SERVER_OUTCOME_GATED",
+          "visual_artifact_codes": [
+            "CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826",
+            "CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826"
+          ],
+          "generic_no_charge_copy": "DENY",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+          "visual_discrepancy_debt": "PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001",
+          "canonical_drive_evidence_ids": [
+            "1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv",
+            "1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12"
+          ],
+          "preserve_validated_selection": true,
+          "installment_plan_activation_without_confirmed_payment": "DENY"
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22r01_evalua_telemetria_onb",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua telemetria onb; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22r01_evento_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evento falta; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22r01_senal_agregada_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "senal agregada falta; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22r01_pii_cruda",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pii cruda; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22r01_riesgo_o_umbral_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "riesgo o umbral inventado; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22r02_evalua_pruebas_recuperacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua pruebas recuperacion; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22r02_actual_no_verificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "actual no verificado; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22r02_anterior_disponible_sin_otp",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "anterior disponible sin otp; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22r02_repite_otp_actual",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "repite otp actual; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22r02_anterior_perdido_sin_idv",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "anterior perdido sin idv; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22r02_rebind_o_controles_invalidos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "rebind o controles invalidos; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22r03_consume_documento_pago",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "consume documento pago; hecho derivado, binding runtime pendiente",
+      "familia": "DOCUMENTS_CERTIFICATES"
+    },
+    {
+      "codigo": "s22r03_demo_en_prod_o_como_legal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "demo en prod o como legal; hecho derivado, binding runtime pendiente",
+      "familia": "DOCUMENTS_CERTIFICATES"
+    },
+    {
+      "codigo": "s22r03_demo_no_identificado_o_entorno_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "demo no identificado o entorno invalido; hecho derivado, binding runtime pendiente",
+      "familia": "DOCUMENTS_CERTIFICATES"
+    },
+    {
+      "codigo": "s22r03_oficial_sin_version_publicada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "oficial sin version publicada; hecho derivado, binding runtime pendiente",
+      "familia": "DOCUMENTS_CERTIFICATES"
+    },
+    {
+      "codigo": "s22r03_trazabilidad_falta_o_hardcode",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "trazabilidad falta o hardcode; hecho derivado, binding runtime pendiente",
+      "familia": "DOCUMENTS_CERTIFICATES"
+    },
+    {
+      "codigo": "s22r04_evalua_riesgo_multi_dni",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua riesgo multi dni; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r04_celular_no_verificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "celular no verificado; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r04_correlacion_o_pii_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "correlacion o pii invalida; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r04_senal_o_riesgo_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "senal o riesgo invalido; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r04_bloqueo_primera_senal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloqueo primera senal; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r04_high_sin_stepup_o_unicidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "high sin stepup o unicidad; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_evalua_recuperacion_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua recuperacion cliente; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_control_actual_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "control actual falta; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_stepup_requerido_sin_verificacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "stepup requerido sin verificacion; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_bypass_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bypass no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_llamada_idv_disabled",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "llamada idv disabled; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_bloquea_login_o_prueba_alternativa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloquea login o prueba alternativa; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_pii_o_payload_crudo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pii o payload crudo; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r05_rebind_acceso_sesion_anticipado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "rebind acceso sesion anticipado; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22r06_evalua_confirmacion_pago",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua confirmacion pago; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r06_estado_no_enviado_o_terminal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado no enviado o terminal; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r06_monto_o_referencia_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "monto o referencia invalida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r06_browser_autoridad_o_cancela",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "browser autoridad o cancela; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r06_intento_paralelo_o_cambio_medio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "intento paralelo o cambio medio; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r06_retorno_sin_ledger",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "retorno sin ledger; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r06_branding_sin_binding",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "branding sin binding; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_evalua_error_pago",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua error pago; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_outcome_no_permitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "outcome no permitido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_accion_sin_flag_server",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion sin flag server; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_claim_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim sin evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_no_preserva_operacion_o_seleccion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "no preserva operacion o seleccion; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_plan_activo_sin_confirmacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "plan activo sin confirmacion; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22r07_branding_sin_binding",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "branding sin binding; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22R-C01",
+      "legacy_id": 459,
+      "legacy_ids": [
+        459
+      ],
+      "relacionadas": [
+        "S15-C05"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 459,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En onboarding Cliente BLOQUEAR instrumentación de funnel que omita HOME_CTA, PHONE_SUBMITTED, OTP_VERIFIED, DNI_SUBMITTED, MATCH_RESULT, OFFER_INTEREST, OFFER_VIEW o EXIT cuando correspondan, o exponga PII cruda en analytics. Medir señales agregadas DISTINCT_DNI_PER_ORIGIN, DISTINCT_PHONE_PER_ORIGIN, REPEATED_QUERIES, RATE_LIMIT_HITS, SYSTEMATIC_MATCH_EXIT, DISTINCT_DNI_PER_VERIFIED_PHONE y DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE para distinguir rechazo de oferta de exploración automatizada/competencia. Outputs NORMAL/SUSPECT/HIGH, thresholds PENDING_BASELINE sin inventar límites ni activar IDV. Conservar referencias REG_RISK_PHONE_MULTI_DNI_001 y REG_IDV_PROGRESSIVE_001, decisión 71. Complementa S15-C05; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r01_evalua_telemetria_onb",
+        "s22r01_evento_falta",
+        "s22r01_senal_agregada_falta",
+        "s22r01_pii_cruda",
+        "s22r01_riesgo_o_umbral_inventado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C01",
+        "clave": "s22r_legacy_459",
+        "familia": "ANALYTICS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Telemetría de funnel y señales de abuso sin PII cruda",
+        "descripcion": "En onboarding Cliente BLOQUEAR instrumentación de funnel que omita HOME_CTA, PHONE_SUBMITTED, OTP_VERIFIED, DNI_SUBMITTED, MATCH_RESULT, OFFER_INTEREST, OFFER_VIEW o EXIT cuando correspondan, o exponga PII cruda en analytics. Medir señales agregadas DISTINCT_DNI_PER_ORIGIN, DISTINCT_PHONE_PER_ORIGIN, REPEATED_QUERIES, RATE_LIMIT_HITS, SYSTEMATIC_MATCH_EXIT, DISTINCT_DNI_PER_VERIFIED_PHONE y DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE para distinguir rechazo de oferta de exploración automatizada/competencia. Outputs NORMAL/SUSPECT/HIGH, thresholds PENDING_BASELINE sin inventar límites ni activar IDV. Conservar referencias REG_RISK_PHONE_MULTI_DNI_001 y REG_IDV_PROGRESSIVE_001, decisión 71. Complementa S15-C05; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/459",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r01_evalua_telemetria_onb"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r01_evento_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r01_senal_agregada_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r01_pii_cruda"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r01_riesgo_o_umbral_inventado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r01_evalua_telemetria_onb": true,
+              "s22r01_evento_falta": false,
+              "s22r01_senal_agregada_falta": false,
+              "s22r01_pii_cruda": false,
+              "s22r01_riesgo_o_umbral_inventado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r01_evalua_telemetria_onb": true,
+              "s22r01_evento_falta": true,
+              "s22r01_senal_agregada_falta": false,
+              "s22r01_pii_cruda": false,
+              "s22r01_riesgo_o_umbral_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r01_evalua_telemetria_onb": true,
+              "s22r01_evento_falta": false,
+              "s22r01_senal_agregada_falta": true,
+              "s22r01_pii_cruda": false,
+              "s22r01_riesgo_o_umbral_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r01_evalua_telemetria_onb": true,
+              "s22r01_evento_falta": false,
+              "s22r01_senal_agregada_falta": false,
+              "s22r01_pii_cruda": true,
+              "s22r01_riesgo_o_umbral_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r01_evalua_telemetria_onb": true,
+              "s22r01_evento_falta": false,
+              "s22r01_senal_agregada_falta": false,
+              "s22r01_pii_cruda": false,
+              "s22r01_riesgo_o_umbral_inventado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r01_evalua_telemetria_onb": false,
+              "s22r01_evento_falta": true,
+              "s22r01_senal_agregada_falta": true,
+              "s22r01_pii_cruda": true,
+              "s22r01_riesgo_o_umbral_inventado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "9772495503471718af0c3582a6bba7d2318e57fab766e0ceec2e08950e75e55f",
+      "hash_paquete": "8ed0b011a4b9eb578900fc6f680e670da0a35b14677d6b8f40eb2024f8b16d44",
+      "hash_evaluado": "9772495503",
+      "hash_paquete_10": "8ed0b011a4"
+    },
+    {
+      "codigo": "S22R-C02",
+      "legacy_id": 460,
+      "legacy_ids": [
+        460
+      ],
+      "relacionadas": [
+        "S19-C13"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 460,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En recuperación Cliente BLOQUEAR rebind sin control de celular actual acreditado por ONB_001 y ONB_002 de misma sesión, CAMPO_CELULAR_NUEVO; si conserva celular anterior exigir adicionalmente OTP_OP_RECUPERAR_CLAVE solo sobre anterior, no repetir OTP actual; si perdió anterior exigir validación adicional de identidad autorizada antes de reemplazo. Mantener controles REG_AUD_004, REG_SEG_005, REG_RL_003, REG_CLIENT_RECOVERY_PHONE_CONTROL_001 y rebind atómico REG_CLIENT_RECOVERY_REBIND_ATOMIC_001. Mapping pantalla PENDING_CANONICAL_SCREEN, decisiones 71/103; no inventar factor ni cambiar política. Complementa S19-C13; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r02_evalua_pruebas_recuperacion",
+        "s22r02_actual_no_verificado",
+        "s22r02_anterior_disponible_sin_otp",
+        "s22r02_repite_otp_actual",
+        "s22r02_anterior_perdido_sin_idv",
+        "s22r02_rebind_o_controles_invalidos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C02",
+        "clave": "s22r_legacy_460",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Prueba de control de celular anterior sin repetir OTP actual",
+        "descripcion": "En recuperación Cliente BLOQUEAR rebind sin control de celular actual acreditado por ONB_001 y ONB_002 de misma sesión, CAMPO_CELULAR_NUEVO; si conserva celular anterior exigir adicionalmente OTP_OP_RECUPERAR_CLAVE solo sobre anterior, no repetir OTP actual; si perdió anterior exigir validación adicional de identidad autorizada antes de reemplazo. Mantener controles REG_AUD_004, REG_SEG_005, REG_RL_003, REG_CLIENT_RECOVERY_PHONE_CONTROL_001 y rebind atómico REG_CLIENT_RECOVERY_REBIND_ATOMIC_001. Mapping pantalla PENDING_CANONICAL_SCREEN, decisiones 71/103; no inventar factor ni cambiar política. Complementa S19-C13; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/460",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r02_evalua_pruebas_recuperacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r02_actual_no_verificado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r02_anterior_disponible_sin_otp"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r02_repite_otp_actual"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r02_anterior_perdido_sin_idv"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r02_rebind_o_controles_invalidos"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": true,
+              "s22r02_actual_no_verificado": false,
+              "s22r02_anterior_disponible_sin_otp": false,
+              "s22r02_repite_otp_actual": false,
+              "s22r02_anterior_perdido_sin_idv": false,
+              "s22r02_rebind_o_controles_invalidos": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": true,
+              "s22r02_actual_no_verificado": true,
+              "s22r02_anterior_disponible_sin_otp": false,
+              "s22r02_repite_otp_actual": false,
+              "s22r02_anterior_perdido_sin_idv": false,
+              "s22r02_rebind_o_controles_invalidos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": true,
+              "s22r02_actual_no_verificado": false,
+              "s22r02_anterior_disponible_sin_otp": true,
+              "s22r02_repite_otp_actual": false,
+              "s22r02_anterior_perdido_sin_idv": false,
+              "s22r02_rebind_o_controles_invalidos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": true,
+              "s22r02_actual_no_verificado": false,
+              "s22r02_anterior_disponible_sin_otp": false,
+              "s22r02_repite_otp_actual": true,
+              "s22r02_anterior_perdido_sin_idv": false,
+              "s22r02_rebind_o_controles_invalidos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": true,
+              "s22r02_actual_no_verificado": false,
+              "s22r02_anterior_disponible_sin_otp": false,
+              "s22r02_repite_otp_actual": false,
+              "s22r02_anterior_perdido_sin_idv": true,
+              "s22r02_rebind_o_controles_invalidos": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": true,
+              "s22r02_actual_no_verificado": false,
+              "s22r02_anterior_disponible_sin_otp": false,
+              "s22r02_repite_otp_actual": false,
+              "s22r02_anterior_perdido_sin_idv": false,
+              "s22r02_rebind_o_controles_invalidos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r02_evalua_pruebas_recuperacion": false,
+              "s22r02_actual_no_verificado": true,
+              "s22r02_anterior_disponible_sin_otp": true,
+              "s22r02_repite_otp_actual": true,
+              "s22r02_anterior_perdido_sin_idv": true,
+              "s22r02_rebind_o_controles_invalidos": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "719344985e54f4dbf584a835800c988767351da9d5f8f20e529cdf49c3626585",
+      "hash_paquete": "f99b9fdc6239b36f31298027bd6e2367c70f22325d039a520335636bbd4d5d89",
+      "hash_evaluado": "719344985e",
+      "hash_paquete_10": "f99b9fdc62"
+    },
+    {
+      "codigo": "S22R-C03",
+      "legacy_id": 502,
+      "legacy_ids": [
+        502
+      ],
+      "relacionadas": [
+        "S22O-C03"
+      ],
+      "residual": "Falta cobertura de documentos y consentimientos Cliente fuera de CLIENT_PAYMENTS, incluidos legales/onboarding; no ampliar alcance a ancestro de P36.",
+      "coberturas": [
+        {
+          "legacy_id": 502,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta cobertura de documentos y consentimientos Cliente fuera de CLIENT_PAYMENTS, incluidos legales/onboarding; no ampliar alcance a ancestro de P36.",
+          "diferencias": "En contenido/documento Cliente BLOQUEAR DEMO como consentimiento o documento legal válido en producción. DEMO solo para validar UX/funcionalidad si oficial no cerrado, distinguible y con trazabilidad de carga en DEMO, DEV, QA y STAGING_REVIEW. Oficial debe resolver versión activa publicada y trazable por pantalla/documento, no archivo final hardcodeado. Registro PENDING_CANONICAL_REGISTRY, decisión 102; no crear registro ni certificar documento. Alcance CLIENT_PAYMENTS preserva cronograma/comprobante y ejemplos documentales de pagos; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r03_consume_documento_pago",
+        "s22r03_demo_en_prod_o_como_legal",
+        "s22r03_demo_no_identificado_o_entorno_invalido",
+        "s22r03_oficial_sin_version_publicada",
+        "s22r03_trazabilidad_falta_o_hardcode"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C03",
+        "clave": "s22r_legacy_502",
+        "familia": "DOCUMENTS_CERTIFICATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Contenido DEMO no productivo y versión documental trazable",
+        "descripcion": "En contenido/documento Cliente BLOQUEAR DEMO como consentimiento o documento legal válido en producción. DEMO solo para validar UX/funcionalidad si oficial no cerrado, distinguible y con trazabilidad de carga en DEMO, DEV, QA y STAGING_REVIEW. Oficial debe resolver versión activa publicada y trazable por pantalla/documento, no archivo final hardcodeado. Registro PENDING_CANONICAL_REGISTRY, decisión 102; no crear registro ni certificar documento. Alcance CLIENT_PAYMENTS preserva cronograma/comprobante y ejemplos documentales de pagos; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/502",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r03_consume_documento_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r03_demo_en_prod_o_como_legal"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r03_demo_no_identificado_o_entorno_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r03_oficial_sin_version_publicada"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r03_trazabilidad_falta_o_hardcode"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r03_consume_documento_pago": true,
+              "s22r03_demo_en_prod_o_como_legal": false,
+              "s22r03_demo_no_identificado_o_entorno_invalido": false,
+              "s22r03_oficial_sin_version_publicada": false,
+              "s22r03_trazabilidad_falta_o_hardcode": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r03_consume_documento_pago": true,
+              "s22r03_demo_en_prod_o_como_legal": true,
+              "s22r03_demo_no_identificado_o_entorno_invalido": false,
+              "s22r03_oficial_sin_version_publicada": false,
+              "s22r03_trazabilidad_falta_o_hardcode": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r03_consume_documento_pago": true,
+              "s22r03_demo_en_prod_o_como_legal": false,
+              "s22r03_demo_no_identificado_o_entorno_invalido": true,
+              "s22r03_oficial_sin_version_publicada": false,
+              "s22r03_trazabilidad_falta_o_hardcode": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r03_consume_documento_pago": true,
+              "s22r03_demo_en_prod_o_como_legal": false,
+              "s22r03_demo_no_identificado_o_entorno_invalido": false,
+              "s22r03_oficial_sin_version_publicada": true,
+              "s22r03_trazabilidad_falta_o_hardcode": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r03_consume_documento_pago": true,
+              "s22r03_demo_en_prod_o_como_legal": false,
+              "s22r03_demo_no_identificado_o_entorno_invalido": false,
+              "s22r03_oficial_sin_version_publicada": false,
+              "s22r03_trazabilidad_falta_o_hardcode": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r03_consume_documento_pago": false,
+              "s22r03_demo_en_prod_o_como_legal": true,
+              "s22r03_demo_no_identificado_o_entorno_invalido": true,
+              "s22r03_oficial_sin_version_publicada": true,
+              "s22r03_trazabilidad_falta_o_hardcode": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "2c4d88c707324a4e33923747eac69da1d31e7d66bc0d22bed2cde95506ca67a1",
+      "hash_paquete": "32b35d7242706a0c2d8572d0fdf695c429b5649b72b38621620764bfb3176d3e",
+      "hash_evaluado": "2c4d88c707",
+      "hash_paquete_10": "32b35d7242"
+    },
+    {
+      "codigo": "S22R-C04",
+      "legacy_id": 509,
+      "legacy_ids": [
+        509
+      ],
+      "relacionadas": [
+        "S19-C13"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 509,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En backend de onboarding/recuperación Cliente BLOQUEAR medición de riesgo por celular sin OTP verificado, correlación sin clave derivada server-side preservando privacidad o PII cruda en analytics/logs. Medir DISTINCT_DNI_PER_VERIFIED_PHONE y DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE, señales REPEATED_QUERIES, SYSTEMATIC_MATCH_EXIT, RATE_LIMIT_HITS, RECOVERY_ATTEMPTS_ACROSS_DISTINCT_ACCOUNTS; patrón creciente eleva riesgo NORMAL/SUSPECT/HIGH, SUSPECT observa y puntúa, primera señal no bloquea por sí sola. HIGH permite detener temporalmente post-DNI/rebind y exigir step-up según REG_CLIENT_RECOVERY_IDV_STEPUP_001. No alterar unicidad REG_UNI_002 ni permitir múltiples cuentas activas verificadas para mismo celular. Thresholds PENDING_BASELINE sin inventar valores; decisión 104, applicability_v1 UNRESOLVED se conserva sin editar IG. Complementa S19-C13; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r04_evalua_riesgo_multi_dni",
+        "s22r04_celular_no_verificado",
+        "s22r04_correlacion_o_pii_invalida",
+        "s22r04_senal_o_riesgo_invalido",
+        "s22r04_bloqueo_primera_senal",
+        "s22r04_high_sin_stepup_o_unicidad"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C04",
+        "clave": "s22r_legacy_509",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Riesgo de exploración multi-DNI por celular verificado",
+        "descripcion": "En backend de onboarding/recuperación Cliente BLOQUEAR medición de riesgo por celular sin OTP verificado, correlación sin clave derivada server-side preservando privacidad o PII cruda en analytics/logs. Medir DISTINCT_DNI_PER_VERIFIED_PHONE y DISTINCT_RECOVERY_ACCOUNTS_PER_VERIFIED_PHONE, señales REPEATED_QUERIES, SYSTEMATIC_MATCH_EXIT, RATE_LIMIT_HITS, RECOVERY_ATTEMPTS_ACROSS_DISTINCT_ACCOUNTS; patrón creciente eleva riesgo NORMAL/SUSPECT/HIGH, SUSPECT observa y puntúa, primera señal no bloquea por sí sola. HIGH permite detener temporalmente post-DNI/rebind y exigir step-up según REG_CLIENT_RECOVERY_IDV_STEPUP_001. No alterar unicidad REG_UNI_002 ni permitir múltiples cuentas activas verificadas para mismo celular. Thresholds PENDING_BASELINE sin inventar valores; decisión 104, applicability_v1 UNRESOLVED se conserva sin editar IG. Complementa S19-C13; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/509",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r04_evalua_riesgo_multi_dni"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r04_celular_no_verificado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r04_correlacion_o_pii_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r04_senal_o_riesgo_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r04_bloqueo_primera_senal"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r04_high_sin_stepup_o_unicidad"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": true,
+              "s22r04_celular_no_verificado": false,
+              "s22r04_correlacion_o_pii_invalida": false,
+              "s22r04_senal_o_riesgo_invalido": false,
+              "s22r04_bloqueo_primera_senal": false,
+              "s22r04_high_sin_stepup_o_unicidad": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": true,
+              "s22r04_celular_no_verificado": true,
+              "s22r04_correlacion_o_pii_invalida": false,
+              "s22r04_senal_o_riesgo_invalido": false,
+              "s22r04_bloqueo_primera_senal": false,
+              "s22r04_high_sin_stepup_o_unicidad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": true,
+              "s22r04_celular_no_verificado": false,
+              "s22r04_correlacion_o_pii_invalida": true,
+              "s22r04_senal_o_riesgo_invalido": false,
+              "s22r04_bloqueo_primera_senal": false,
+              "s22r04_high_sin_stepup_o_unicidad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": true,
+              "s22r04_celular_no_verificado": false,
+              "s22r04_correlacion_o_pii_invalida": false,
+              "s22r04_senal_o_riesgo_invalido": true,
+              "s22r04_bloqueo_primera_senal": false,
+              "s22r04_high_sin_stepup_o_unicidad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": true,
+              "s22r04_celular_no_verificado": false,
+              "s22r04_correlacion_o_pii_invalida": false,
+              "s22r04_senal_o_riesgo_invalido": false,
+              "s22r04_bloqueo_primera_senal": true,
+              "s22r04_high_sin_stepup_o_unicidad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": true,
+              "s22r04_celular_no_verificado": false,
+              "s22r04_correlacion_o_pii_invalida": false,
+              "s22r04_senal_o_riesgo_invalido": false,
+              "s22r04_bloqueo_primera_senal": false,
+              "s22r04_high_sin_stepup_o_unicidad": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r04_evalua_riesgo_multi_dni": false,
+              "s22r04_celular_no_verificado": true,
+              "s22r04_correlacion_o_pii_invalida": true,
+              "s22r04_senal_o_riesgo_invalido": true,
+              "s22r04_bloqueo_primera_senal": true,
+              "s22r04_high_sin_stepup_o_unicidad": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "a0854a808d3937611a0e2edb785236fc007dcca30a35fc414b2d53d3c08e8bd1",
+      "hash_paquete": "9b514baa1baafc2c791b0ef4f799b65501ced8828d4e3dc4a6552def09a857c9",
+      "hash_evaluado": "a0854a808d",
+      "hash_paquete_10": "9b514baa1b"
+    },
+    {
+      "codigo": "S22R-C05",
+      "legacy_id": 510,
+      "legacy_ids": [
+        510
+      ],
+      "relacionadas": [
+        "S19-C13"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 510,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En RECOVERY_FLOW Cliente BLOQUEAR rebind, acceso operativo o promoción de sesión cuando falta control actual ONB_002 misma sesión o, ante OLD_PHONE_UNAVAILABLE/PHONE_MULTI_DNI_RISK_HIGH, falta IDENTITY_VALIDATION_VERIFIED emitido y validado server-side. DNI conocido o celular actual solo no son suficientes; email OTP, soporte humano y preguntas de conocimiento no son bypass sin decisión futura. Contrato provider-agnostic, provider binding PENDING_CANONICAL_IDV_PROVIDER; respetar SEC-LF-IDV-FACEPHI-OPTIONAL sin modificar política, exigir ENABLED antes de llamada externa, no llamar deshabilitado ni simular prueba. Bloquear solo recuperación que exige step-up sin otra prueba aprobada; no bloquear login normal por ausencia de IDV. Denegar PII cruda en logs/analytics y payload proveedor crudo al cliente. Destino CLIENT_RECOVERY/REC_001 según mapping fuente, decisiones 71/103/104 y DEC-CLIENT-AUTH-SESSION-RUNTIME-001; rebind atómico REG_CLIENT_RECOVERY_REBIND_ATOMIC_001. Complementa S19-C13; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r05_evalua_recuperacion_cliente",
+        "s22r05_control_actual_falta",
+        "s22r05_stepup_requerido_sin_verificacion",
+        "s22r05_bypass_no_autorizado",
+        "s22r05_llamada_idv_disabled",
+        "s22r05_bloquea_login_o_prueba_alternativa",
+        "s22r05_pii_o_payload_crudo",
+        "s22r05_rebind_acceso_sesion_anticipado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C05",
+        "clave": "s22r_legacy_510",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Step-up de recuperación sin identidad ficticia",
+        "descripcion": "En RECOVERY_FLOW Cliente BLOQUEAR rebind, acceso operativo o promoción de sesión cuando falta control actual ONB_002 misma sesión o, ante OLD_PHONE_UNAVAILABLE/PHONE_MULTI_DNI_RISK_HIGH, falta IDENTITY_VALIDATION_VERIFIED emitido y validado server-side. DNI conocido o celular actual solo no son suficientes; email OTP, soporte humano y preguntas de conocimiento no son bypass sin decisión futura. Contrato provider-agnostic, provider binding PENDING_CANONICAL_IDV_PROVIDER; respetar SEC-LF-IDV-FACEPHI-OPTIONAL sin modificar política, exigir ENABLED antes de llamada externa, no llamar deshabilitado ni simular prueba. Bloquear solo recuperación que exige step-up sin otra prueba aprobada; no bloquear login normal por ausencia de IDV. Denegar PII cruda en logs/analytics y payload proveedor crudo al cliente. Destino CLIENT_RECOVERY/REC_001 según mapping fuente, decisiones 71/103/104 y DEC-CLIENT-AUTH-SESSION-RUNTIME-001; rebind atómico REG_CLIENT_RECOVERY_REBIND_ATOMIC_001. Complementa S19-C13; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/510",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r05_evalua_recuperacion_cliente"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22r05_control_actual_falta"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22r05_stepup_requerido_sin_verificacion"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22r05_bypass_no_autorizado"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r05_llamada_idv_disabled"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r05_bloquea_login_o_prueba_alternativa"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r05_pii_o_payload_crudo"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r05_rebind_acceso_sesion_anticipado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": true,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": true,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": true,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": true,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": true,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": true,
+              "s22r05_rebind_acceso_sesion_anticipado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": true,
+              "s22r05_control_actual_falta": false,
+              "s22r05_stepup_requerido_sin_verificacion": false,
+              "s22r05_bypass_no_autorizado": false,
+              "s22r05_llamada_idv_disabled": false,
+              "s22r05_bloquea_login_o_prueba_alternativa": false,
+              "s22r05_pii_o_payload_crudo": false,
+              "s22r05_rebind_acceso_sesion_anticipado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r05_evalua_recuperacion_cliente": false,
+              "s22r05_control_actual_falta": true,
+              "s22r05_stepup_requerido_sin_verificacion": true,
+              "s22r05_bypass_no_autorizado": true,
+              "s22r05_llamada_idv_disabled": true,
+              "s22r05_bloquea_login_o_prueba_alternativa": true,
+              "s22r05_pii_o_payload_crudo": true,
+              "s22r05_rebind_acceso_sesion_anticipado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "94eade8ee98222b42bf4b029e794483f00eb4e20b6049cad526422e3c8f7b138",
+      "hash_paquete": "70a59f16db7422d141c3c286015c1246a0e9e2c313511d39a403075b88c69f10",
+      "hash_evaluado": "94eade8ee9",
+      "hash_paquete_10": "70a59f16db"
+    },
+    {
+      "codigo": "S22R-C06",
+      "legacy_id": 535,
+      "legacy_ids": [
+        535
+      ],
+      "relacionadas": [
+        "S3-C05",
+        "S3-C19",
+        "REG_TEC_007",
+        "S22O-C01"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 535,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_ESTADO_CONFIRMANDO BLOQUEAR uso sin intento entregado al circuito con PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT o PAYMENT_PENDING_CONFIRMATION, o interpretar navegador como autoridad. Monto de checkout/plan snapshot, referencia ledger/reserva; conciliación server-side continúa pese a cierre, recarga o abandono, sin cancelar intento ni exigir ventana abierta. Denegar reintento, cambio medio y operación equivalente/paralela hasta resultado autoritativo. Al regresar consultar ledger y derivar éxito, error confirmado o pendiente según estado real. Branding solo binding productivo canónico. Conservar deuda PEND-CLIENT-PAYMENT-LEDGER-001, PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001 y referencia CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826, Drive 1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc, CLOSED_OWNER_APPROVED_20260826 sin probar runtime. Complementa S3-C05, S3-C19, REG_TEC_007 v2 y S22O-C01; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r06_evalua_confirmacion_pago",
+        "s22r06_estado_no_enviado_o_terminal",
+        "s22r06_monto_o_referencia_invalida",
+        "s22r06_browser_autoridad_o_cancela",
+        "s22r06_intento_paralelo_o_cambio_medio",
+        "s22r06_retorno_sin_ledger",
+        "s22r06_branding_sin_binding"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C06",
+        "clave": "s22r_legacy_535",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Confirmación de pago persistente independiente del navegador",
+        "descripcion": "En CHECKOUT_ESTADO_CONFIRMANDO BLOQUEAR uso sin intento entregado al circuito con PROVIDER_SUBMITTED_AWAITING_AUTHORITATIVE_RESULT o PAYMENT_PENDING_CONFIRMATION, o interpretar navegador como autoridad. Monto de checkout/plan snapshot, referencia ledger/reserva; conciliación server-side continúa pese a cierre, recarga o abandono, sin cancelar intento ni exigir ventana abierta. Denegar reintento, cambio medio y operación equivalente/paralela hasta resultado autoritativo. Al regresar consultar ledger y derivar éxito, error confirmado o pendiente según estado real. Branding solo binding productivo canónico. Conservar deuda PEND-CLIENT-PAYMENT-LEDGER-001, PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001 y referencia CHECKOUT-ESTADO-CONFIRMANDO-LEDGER-PENDING-20260826, Drive 1Y7f5e5rAUxwbw8fqy6LsQ72vjBq6bkTc, CLOSED_OWNER_APPROVED_20260826 sin probar runtime. Complementa S3-C05, S3-C19, REG_TEC_007 v2 y S22O-C01; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/535",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r06_evalua_confirmacion_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22r06_estado_no_enviado_o_terminal"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22r06_monto_o_referencia_invalida"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r06_browser_autoridad_o_cancela"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r06_intento_paralelo_o_cambio_medio"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r06_retorno_sin_ledger"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r06_branding_sin_binding"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": false,
+              "s22r06_monto_o_referencia_invalida": false,
+              "s22r06_browser_autoridad_o_cancela": false,
+              "s22r06_intento_paralelo_o_cambio_medio": false,
+              "s22r06_retorno_sin_ledger": false,
+              "s22r06_branding_sin_binding": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": true,
+              "s22r06_monto_o_referencia_invalida": false,
+              "s22r06_browser_autoridad_o_cancela": false,
+              "s22r06_intento_paralelo_o_cambio_medio": false,
+              "s22r06_retorno_sin_ledger": false,
+              "s22r06_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": false,
+              "s22r06_monto_o_referencia_invalida": true,
+              "s22r06_browser_autoridad_o_cancela": false,
+              "s22r06_intento_paralelo_o_cambio_medio": false,
+              "s22r06_retorno_sin_ledger": false,
+              "s22r06_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": false,
+              "s22r06_monto_o_referencia_invalida": false,
+              "s22r06_browser_autoridad_o_cancela": true,
+              "s22r06_intento_paralelo_o_cambio_medio": false,
+              "s22r06_retorno_sin_ledger": false,
+              "s22r06_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": false,
+              "s22r06_monto_o_referencia_invalida": false,
+              "s22r06_browser_autoridad_o_cancela": false,
+              "s22r06_intento_paralelo_o_cambio_medio": true,
+              "s22r06_retorno_sin_ledger": false,
+              "s22r06_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": false,
+              "s22r06_monto_o_referencia_invalida": false,
+              "s22r06_browser_autoridad_o_cancela": false,
+              "s22r06_intento_paralelo_o_cambio_medio": false,
+              "s22r06_retorno_sin_ledger": true,
+              "s22r06_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": true,
+              "s22r06_estado_no_enviado_o_terminal": false,
+              "s22r06_monto_o_referencia_invalida": false,
+              "s22r06_browser_autoridad_o_cancela": false,
+              "s22r06_intento_paralelo_o_cambio_medio": false,
+              "s22r06_retorno_sin_ledger": false,
+              "s22r06_branding_sin_binding": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r06_evalua_confirmacion_pago": false,
+              "s22r06_estado_no_enviado_o_terminal": true,
+              "s22r06_monto_o_referencia_invalida": true,
+              "s22r06_browser_autoridad_o_cancela": true,
+              "s22r06_intento_paralelo_o_cambio_medio": true,
+              "s22r06_retorno_sin_ledger": true,
+              "s22r06_branding_sin_binding": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "8327db45d708d3d9cc2016d90a8b2eb40af3828d7dd89d1dd422faa2e5611090",
+      "hash_paquete": "463d5eeac2c9a869eeacf8473ea7533db33be4729437e10224f62e59806b510d",
+      "hash_evaluado": "8327db45d7",
+      "hash_paquete_10": "463d5eeac2"
+    },
+    {
+      "codigo": "S22R-C07",
+      "legacy_id": 536,
+      "legacy_ids": [
+        536
+      ],
+      "relacionadas": [
+        "S22I-C01",
+        "S3-C19"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 536,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_ERROR_PAGO BLOQUEAR render para PAYMENT_PENDING_CONFIRMATION o PAYMENT_CONFIRMED; solo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED y PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT según normalización backend. Reintentar/cambiar medio únicamente flags server-side, soporte permitido. Claim no se realizó ningún cargo solo evidencia autoritativa; si falta usar copy neutral y conservar operación para consulta/reconciliación. Preservar selección/plan validado; no activar cuotas sin PAYMENT_CONFIRMED. Branding solo binding canónico. Referencias CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826 y CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826, Drive 1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv y 1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12, CLOSED_OWNER_APPROVED_20260826; deuda PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001. Complementa S22I-C01 y S3-C19; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22r07_evalua_error_pago",
+        "s22r07_outcome_no_permitido",
+        "s22r07_accion_sin_flag_server",
+        "s22r07_claim_sin_evidencia",
+        "s22r07_no_preserva_operacion_o_seleccion",
+        "s22r07_plan_activo_sin_confirmacion",
+        "s22r07_branding_sin_binding"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22R-C07",
+        "clave": "s22r_legacy_536",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Error de pago solo por resultado seguro y acciones autorizadas",
+        "descripcion": "En CHECKOUT_ERROR_PAGO BLOQUEAR render para PAYMENT_PENDING_CONFIRMATION o PAYMENT_CONFIRMED; solo PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED y PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT según normalización backend. Reintentar/cambiar medio únicamente flags server-side, soporte permitido. Claim no se realizó ningún cargo solo evidencia autoritativa; si falta usar copy neutral y conservar operación para consulta/reconciliación. Preservar selección/plan validado; no activar cuotas sin PAYMENT_CONFIRMED. Branding solo binding canónico. Referencias CHECKOUT-ERROR-PAGO-DECLINED-CONFIRMED-20260826 y CHECKOUT-ERROR-PAGO-NOT-SUBMITTED-20260826, Drive 1FpPQv8fhm4uU5hfDq1MMCbLqTf3PgoQv y 1W69-jrco-4dzuUf7nfdgYbBa0mTdmz12, CLOSED_OWNER_APPROVED_20260826; deuda PEND-CLIENT-CHECKOUT-OUTCOME-VISUAL-001. Complementa S22I-C01 y S3-C19; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/536",
+          "solicitante": "Cristhian / Claude S22-R 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22r07_evalua_error_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22r07_outcome_no_permitido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22r07_accion_sin_flag_server"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22r07_claim_sin_evidencia"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22r07_no_preserva_operacion_o_seleccion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22r07_plan_activo_sin_confirmacion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22r07_branding_sin_binding"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": false,
+              "s22r07_accion_sin_flag_server": false,
+              "s22r07_claim_sin_evidencia": false,
+              "s22r07_no_preserva_operacion_o_seleccion": false,
+              "s22r07_plan_activo_sin_confirmacion": false,
+              "s22r07_branding_sin_binding": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": true,
+              "s22r07_accion_sin_flag_server": false,
+              "s22r07_claim_sin_evidencia": false,
+              "s22r07_no_preserva_operacion_o_seleccion": false,
+              "s22r07_plan_activo_sin_confirmacion": false,
+              "s22r07_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": false,
+              "s22r07_accion_sin_flag_server": true,
+              "s22r07_claim_sin_evidencia": false,
+              "s22r07_no_preserva_operacion_o_seleccion": false,
+              "s22r07_plan_activo_sin_confirmacion": false,
+              "s22r07_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": false,
+              "s22r07_accion_sin_flag_server": false,
+              "s22r07_claim_sin_evidencia": true,
+              "s22r07_no_preserva_operacion_o_seleccion": false,
+              "s22r07_plan_activo_sin_confirmacion": false,
+              "s22r07_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": false,
+              "s22r07_accion_sin_flag_server": false,
+              "s22r07_claim_sin_evidencia": false,
+              "s22r07_no_preserva_operacion_o_seleccion": true,
+              "s22r07_plan_activo_sin_confirmacion": false,
+              "s22r07_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": false,
+              "s22r07_accion_sin_flag_server": false,
+              "s22r07_claim_sin_evidencia": false,
+              "s22r07_no_preserva_operacion_o_seleccion": false,
+              "s22r07_plan_activo_sin_confirmacion": true,
+              "s22r07_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": true,
+              "s22r07_outcome_no_permitido": false,
+              "s22r07_accion_sin_flag_server": false,
+              "s22r07_claim_sin_evidencia": false,
+              "s22r07_no_preserva_operacion_o_seleccion": false,
+              "s22r07_plan_activo_sin_confirmacion": false,
+              "s22r07_branding_sin_binding": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22r07_evalua_error_pago": false,
+              "s22r07_outcome_no_permitido": true,
+              "s22r07_accion_sin_flag_server": true,
+              "s22r07_claim_sin_evidencia": true,
+              "s22r07_no_preserva_operacion_o_seleccion": true,
+              "s22r07_plan_activo_sin_confirmacion": true,
+              "s22r07_branding_sin_binding": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "548b3ce13bc2dacc64147a02fc33b2811a6123758e28f04a6b95f154fc8a6f63",
+      "hash_paquete": "f0559c1cb22c6a1c70c2adc16e3c7a7db206cc6712d0b43e1da0bd206f642609",
+      "hash_evaluado": "548b3ce13b",
+      "hash_paquete_10": "f0559c1cb2"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": [
+    {
+      "legacy_id": 534,
+      "nucleo_codigo": "REG_CHK_008",
+      "version_nucleo": 3,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "REG_CHK_008 v3 cubre elegibilidad por deuda SETTLED_CONFIRMED e inicio automático con integración del aliado, sin segunda acción manual ni pago inicial como liquidación. S3-C08 cubre cadena de estados hasta AVAILABLE y descarga.",
+      "residual": "Faltan FAILED_OR_DELAYED, normalización de estado aliado y emisor/rol LF, repositorio CLIENT_DOCUMENTS persistente y documento único, notificación operativa sin marketing, firma y política de liberación independientes, copy condicionado con límites UX, ejemplo con watermark sin miniatura, SLA y registro pendientes y separación de actualización SBS."
+    }
+  ]
+}
