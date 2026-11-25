@@ -1,0 +1,1992 @@
+{
+  "estado": "PENDIENTE_REJUICIO_INDEPENDIENTE",
+  "preflight": {
+    "hash": "SELECT PostgreSQL reproduce 8/8 hashes anteriores y recalcula nuevos con fórmula vigente; readback función real pendiente de replay",
+    "vectores": "64/64 evaluación JS reproduciendo operadores del motor, NO ejecución PG17",
+    "motor": "42501 permission denied nucleo_eval_v1; prueba PG17 integral pendiente",
+    "alcance": "6 nodos sin ancestro P36"
+  },
+  "parametros_existentes": [
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_ATTEMPTS_1",
+      "hecho": "intentos_contrasena_fallidos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_ATTEMPTS_2",
+      "hecho": "intentos_contrasena_fallidos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_ATTEMPTS_3",
+      "hecho": "intentos_contrasena_fallidos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_MINUTES_1",
+      "hecho": "s21c02_duracion_minutos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_MINUTES_2",
+      "hecho": "s21c02_duracion_minutos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_MINUTES_3",
+      "hecho": "s21c02_duracion_minutos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES",
+      "hecho": "s21c02_ventana_minutos",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "LOGIN_LOCKOUT_RESET_MINUTES",
+      "hecho": "minutos_desde_ultimo_bloqueo",
+      "accion": "Registrar metadato nucleo_parametros; no modificar lf_global_config"
+    }
+  ],
+  "hechos_existentes": [
+    {
+      "codigo": "intentos_contrasena_fallidos",
+      "tipo_dato": "integer",
+      "unidad": "veces"
+    },
+    {
+      "codigo": "m2_pantalla_multi_oferta_en_presentacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna"
+    },
+    {
+      "codigo": "minutos_desde_ultimo_bloqueo",
+      "tipo_dato": "integer",
+      "unidad": "minutos"
+    },
+    {
+      "codigo": "s15c01_onb002",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna"
+    },
+    {
+      "codigo": "s1c02_intento_consulta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna"
+    },
+    {
+      "codigo": "s6c17_contexto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna"
+    },
+    {
+      "codigo": "s6c17_intento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna"
+    }
+  ],
+  "hechos_nuevos": [
+    {
+      "codigo": "s21c01_login_b2b",
+      "descripcion": "Evaluación de aviso en Login B2B",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c01_aviso_incongruente",
+      "descripcion": "Visibilidad del aviso no corresponde a foco y estado local Caps Lock",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c01_aviso_interfiere",
+      "descripcion": "El aviso bloquea envío, dispara envío, cambia contraseña o cuenta intento",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_login_b2b",
+      "descripcion": "Evaluación server-side de conteo y nuevo bloqueo por cuenta B2B",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_contrasena_no_coincide",
+      "descripcion": "Comparación efectiva de contraseña de la cuenta no coincide",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_evento_contado",
+      "descripcion": "Evento fue contado como fallo de contraseña",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_sujeto_invalido",
+      "descripcion": "Contador no es por cuenta o mezcla eventos sin comparación fallida",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_tramo_inicial",
+      "descripcion": "Tramo inicial después de resolver reinicio",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_tramo_intermedio",
+      "descripcion": "Tramo de fallos adicionales posterior al primer bloqueo",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_tramo_final",
+      "descripcion": "Tramo de fallos adicionales posterior al bloqueo intermedio",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_ventana_minutos",
+      "descripcion": "Ventana móvil real del contador por cuenta",
+      "unidad": "minutos",
+      "tipo_dato": "integer",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_nuevo_bloqueo",
+      "descripcion": "Decisión de crear nuevo bloqueo por fallo, no denegación durante bloqueo previo",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_duracion_minutos",
+      "descripcion": "Duración decidida del nuevo bloqueo",
+      "unidad": "minutos",
+      "tipo_dato": "integer",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_bloqueo_previo",
+      "descripcion": "Existe ancla de último bloqueo server-side",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c02_reinicio",
+      "descripcion": "Reinicio de escalonado antes de contar nuevo evento",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c03_link_visible",
+      "descripcion": "Render del enlace de corrección de número ONB_002",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c03_label_invalido",
+      "descripcion": "Texto del enlace distinto de Este no es mi número",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c04_unicidad_dni",
+      "descripcion": "Consulta de unicidad de DNI",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c04_formato_reniec_invalido",
+      "descripcion": "Formato numérico RENIEC no validado o inválido antes de consulta",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c05_estado_cuota_invalido",
+      "descripcion": "Fila de cronograma omite o falsea estado pendiente/pagado autoritativo",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c06_inicio_invalido",
+      "descripcion": "Inicialización sin confirmación backend de elegibilidad multi-oferta o con preselección no explícita",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c06_retomada_invalida",
+      "descripcion": "Oferta no seleccionada modificada, disponibilidad futura garantizada o retomada sin revalidación",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c07_ciclo_confianza",
+      "descripcion": "Evaluación de ciclo de vida de dispositivo confiable B2B",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c07_transicion_invalida",
+      "descripcion": "Logout destruye confianza válida; causal de terminación no la termina; o cliente concede/revoca/restaura confianza",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c07_revocacion_invalida",
+      "descripcion": "Revocación manual sin confirmación/permiso, no invalida sesiones afectadas o no exige OTP en acceso siguiente",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c08_modulo_auth",
+      "descripcion": "Evaluación de módulo B2B_AUTENTICACION",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c08_exclusion_invalida",
+      "descripcion": "Exigencia de flag excluido o I18N excluido mientras single-locale, o exclusión inferida por ausencia de tablas",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    },
+    {
+      "codigo": "s21c08_cambio_sin_revalidar",
+      "descripcion": "Nueva fuente canónica o ampliación de alcance sin reabrir y revalidar exclusión",
+      "unidad": "ninguna",
+      "tipo_dato": "boolean",
+      "motivo": "Sin equivalente específico identificado en catálogo revisado; binding runtime pendiente"
+    }
+  ],
+  "paquetes": [
+    {
+      "legacy_id": 577,
+      "relacionadas": [],
+      "residual": "",
+      "hechos": [
+        "s21c01_login_b2b",
+        "s21c01_aviso_incongruente",
+        "s21c01_aviso_interfiere"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C01",
+        "clave": "s21_legacy_577",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Aviso Bloq Mayús no bloqueante",
+        "descripcion": "En Login B2B mostrar aviso Bloq Mayús solo con foco del campo contraseña y Caps Lock activo detectado localmente. BLOQUEAR implementación que omita el aviso cuando corresponde, lo muestre fuera de esa condición, bloquee envío, dispare envío de contraseña, altere su valor o cuente un intento por sí misma. No sustituye contador de servidor.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-UX",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/577",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c01_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c01_aviso_incongruente"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c01_aviso_interfiere"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": false,
+              "s21c01_aviso_incongruente": false,
+              "s21c01_aviso_interfiere": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": false,
+              "s21c01_aviso_incongruente": false,
+              "s21c01_aviso_interfiere": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": false,
+              "s21c01_aviso_incongruente": true,
+              "s21c01_aviso_interfiere": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": false,
+              "s21c01_aviso_incongruente": true,
+              "s21c01_aviso_interfiere": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": true,
+              "s21c01_aviso_incongruente": false,
+              "s21c01_aviso_interfiere": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": true,
+              "s21c01_aviso_incongruente": false,
+              "s21c01_aviso_interfiere": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": true,
+              "s21c01_aviso_incongruente": true,
+              "s21c01_aviso_interfiere": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c01_login_b2b": true,
+              "s21c01_aviso_incongruente": true,
+              "s21c01_aviso_interfiere": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C01",
+      "hash": "e0472fc8b32ec80acc85374addc8e21050e4e9a8b29326c92cbc49ff78a1c948",
+      "hash_paquete": "5e427ce9228db0632c20317c39974ea22fa9547209ce0a4ec0fff03ac984d13d",
+      "hash_evaluado": "e0472fc8b3",
+      "hash_paquete_10": "5e427ce922"
+    },
+    {
+      "legacy_id": 13114,
+      "relacionadas": [
+        "S19-C11"
+      ],
+      "residual": "",
+      "hechos": [
+        "s21c02_login_b2b",
+        "s21c02_contrasena_no_coincide",
+        "s21c02_evento_contado",
+        "s21c02_sujeto_invalido",
+        "s21c02_tramo_inicial",
+        "s21c02_tramo_intermedio",
+        "s21c02_tramo_final",
+        "s21c02_ventana_minutos",
+        "s21c02_nuevo_bloqueo",
+        "s21c02_duracion_minutos",
+        "s21c02_bloqueo_previo",
+        "s21c02_reinicio",
+        "intentos_contrasena_fallidos",
+        "minutos_desde_ultimo_bloqueo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C02",
+        "clave": "s21_legacy_13114",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Conteo y bloqueo escalonado por cuenta",
+        "descripcion": "BLOQUEAR conteo B2B que no corresponda exactamente a comparación de contraseña incorrecta, sea cual sea el motivo; excluir eventos sin esa comparación. Contador por cuenta en ventana móvil AUTH/LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES de public.lf_global_config. Tramo inicial AUTH/LOGIN_LOCKOUT_ATTEMPTS_1 y AUTH/LOGIN_LOCKOUT_MINUTES_1; siguientes por fallos adicionales AUTH/LOGIN_LOCKOUT_ATTEMPTS_2 y AUTH/LOGIN_LOCKOUT_MINUTES_2, AUTH/LOGIN_LOCKOUT_ATTEMPTS_3 y AUTH/LOGIN_LOCKOUT_MINUTES_3. Reiniciar escalonado según AUTH/LOGIN_LOCKOUT_RESET_MINUTES desde último bloqueo registrado por servidor; cada nuevo bloqueo desplaza ancla. BLOQUEAR sujeto, ventana, tramo, conteo, decisión de nuevo bloqueo, duración o reinicio incongruentes. Preservar anti-enumeración y no almacenar contraseña. No altera MFA ni rate limit; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/13114",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c02_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "!=",
+                      "izq": {
+                        "hecho": "s21c02_contrasena_no_coincide"
+                      },
+                      "der": {
+                        "hecho": "s21c02_evento_contado"
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s21c02_sujeto_invalido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "!=",
+                    "izq": {
+                      "hecho": "s21c02_ventana_minutos"
+                    },
+                    "der": {
+                      "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+                    }
+                  }
+                },
+                "der": {
+                  "op": "y",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s21c02_bloqueo_previo"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "!=",
+                    "izq": {
+                      "hecho": "s21c02_reinicio"
+                    },
+                    "der": {
+                      "op": ">=",
+                      "izq": {
+                        "hecho": "minutos_desde_ultimo_bloqueo"
+                      },
+                      "der": {
+                        "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES"
+                      }
+                    }
+                  }
+                }
+              },
+              "der": {
+                "op": "y",
+                "izq": {
+                  "op": "no",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s21c02_contrasena_no_coincide"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s21c02_nuevo_bloqueo"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              }
+            },
+            "der": {
+              "op": "y",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s21c02_contrasena_no_coincide"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "o",
+                        "izq": {
+                          "op": "o",
+                          "izq": {
+                            "op": "no",
+                            "izq": {
+                              "op": "o",
+                              "izq": {
+                                "op": "o",
+                                "izq": {
+                                  "op": "=",
+                                  "izq": {
+                                    "hecho": "s21c02_tramo_inicial"
+                                  },
+                                  "der": {
+                                    "lit": true
+                                  }
+                                },
+                                "der": {
+                                  "op": "=",
+                                  "izq": {
+                                    "hecho": "s21c02_tramo_intermedio"
+                                  },
+                                  "der": {
+                                    "lit": true
+                                  }
+                                }
+                              },
+                              "der": {
+                                "op": "=",
+                                "izq": {
+                                  "hecho": "s21c02_tramo_final"
+                                },
+                                "der": {
+                                  "lit": true
+                                }
+                              }
+                            }
+                          },
+                          "der": {
+                            "op": "y",
+                            "izq": {
+                              "op": "=",
+                              "izq": {
+                                "hecho": "s21c02_tramo_inicial"
+                              },
+                              "der": {
+                                "lit": true
+                              }
+                            },
+                            "der": {
+                              "op": "=",
+                              "izq": {
+                                "hecho": "s21c02_tramo_intermedio"
+                              },
+                              "der": {
+                                "lit": true
+                              }
+                            }
+                          }
+                        },
+                        "der": {
+                          "op": "y",
+                          "izq": {
+                            "op": "=",
+                            "izq": {
+                              "hecho": "s21c02_tramo_inicial"
+                            },
+                            "der": {
+                              "lit": true
+                            }
+                          },
+                          "der": {
+                            "op": "=",
+                            "izq": {
+                              "hecho": "s21c02_tramo_final"
+                            },
+                            "der": {
+                              "lit": true
+                            }
+                          }
+                        }
+                      },
+                      "der": {
+                        "op": "y",
+                        "izq": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s21c02_tramo_intermedio"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        },
+                        "der": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s21c02_tramo_final"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "y",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s21c02_tramo_inicial"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "o",
+                        "izq": {
+                          "op": "!=",
+                          "izq": {
+                            "hecho": "s21c02_nuevo_bloqueo"
+                          },
+                          "der": {
+                            "op": ">=",
+                            "izq": {
+                              "hecho": "intentos_contrasena_fallidos"
+                            },
+                            "der": {
+                              "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1"
+                            }
+                          }
+                        },
+                        "der": {
+                          "op": "y",
+                          "izq": {
+                            "op": "=",
+                            "izq": {
+                              "hecho": "s21c02_nuevo_bloqueo"
+                            },
+                            "der": {
+                              "lit": true
+                            }
+                          },
+                          "der": {
+                            "op": "!=",
+                            "izq": {
+                              "hecho": "s21c02_duracion_minutos"
+                            },
+                            "der": {
+                              "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "y",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s21c02_tramo_intermedio"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "o",
+                      "izq": {
+                        "op": "!=",
+                        "izq": {
+                          "hecho": "s21c02_nuevo_bloqueo"
+                        },
+                        "der": {
+                          "op": ">=",
+                          "izq": {
+                            "hecho": "intentos_contrasena_fallidos"
+                          },
+                          "der": {
+                            "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_2"
+                          }
+                        }
+                      },
+                      "der": {
+                        "op": "y",
+                        "izq": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s21c02_nuevo_bloqueo"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        },
+                        "der": {
+                          "op": "!=",
+                          "izq": {
+                            "hecho": "s21c02_duracion_minutos"
+                          },
+                          "der": {
+                            "param": "AUTH.LOGIN_LOCKOUT_MINUTES_2"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "der": {
+                  "op": "y",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s21c02_tramo_final"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "o",
+                    "izq": {
+                      "op": "!=",
+                      "izq": {
+                        "hecho": "s21c02_nuevo_bloqueo"
+                      },
+                      "der": {
+                        "op": ">=",
+                        "izq": {
+                          "hecho": "intentos_contrasena_fallidos"
+                        },
+                        "der": {
+                          "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_3"
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "y",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s21c02_nuevo_bloqueo"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "!=",
+                        "izq": {
+                          "hecho": "s21c02_duracion_minutos"
+                        },
+                        "der": {
+                          "param": "AUTH.LOGIN_LOCKOUT_MINUTES_3"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": true,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": false,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1",
+                "mas": -1
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": false,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": true,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": false,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1",
+                "mas": -1
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": false,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": true,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": false,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1",
+                "mas": -1
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": true,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": false,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1"
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": false,
+              "s21c02_tramo_intermedio": true,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": true,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_2",
+                "mas": -1
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_2"
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": false,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": true,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": true,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_3"
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_3",
+                "mas": 1
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": true,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES",
+                "mas": -1
+              },
+              "s21c02_nuevo_bloqueo": false,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+              },
+              "s21c02_bloqueo_previo": false,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1",
+                "mas": -1
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c02_login_b2b": true,
+              "s21c02_contrasena_no_coincide": true,
+              "s21c02_evento_contado": true,
+              "s21c02_sujeto_invalido": false,
+              "s21c02_tramo_inicial": true,
+              "s21c02_tramo_intermedio": false,
+              "s21c02_tramo_final": false,
+              "s21c02_ventana_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES"
+              },
+              "s21c02_nuevo_bloqueo": false,
+              "s21c02_duracion_minutos": {
+                "param": "AUTH.LOGIN_LOCKOUT_MINUTES_1"
+              },
+              "s21c02_bloqueo_previo": true,
+              "s21c02_reinicio": false,
+              "intentos_contrasena_fallidos": {
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_1",
+                "mas": -1
+              },
+              "minutos_desde_ultimo_bloqueo": {
+                "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES"
+              }
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C02",
+      "hash": "2292281eb0dfecbbfd91a029894eafc4143ada5f36f6b8cd2a97e82c665b45d1",
+      "hash_paquete": "009090f554b92ab7e4dabd8a158104c4704da27ad9ef02a9c868d2bb665006fb",
+      "hash_evaluado": "2292281eb0",
+      "hash_paquete_10": "009090f554"
+    },
+    {
+      "legacy_id": 10,
+      "relacionadas": [
+        "S15-C01",
+        "S19-C02"
+      ],
+      "residual": "",
+      "hechos": [
+        "s15c01_onb002",
+        "s21c03_link_visible",
+        "s21c03_label_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C03",
+        "clave": "s21_legacy_10",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Copy enlace cambio de número",
+        "descripcion": "En ONB_002 BLOQUEAR render de enlace de corrección del número distinto de «Este no es mi número». No cambia OTP ni navegación.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-UX",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/10",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s15c01_onb002"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c03_link_visible"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c03_label_invalido"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": false,
+              "s21c03_link_visible": false,
+              "s21c03_label_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": false,
+              "s21c03_link_visible": false,
+              "s21c03_label_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": false,
+              "s21c03_link_visible": true,
+              "s21c03_label_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": false,
+              "s21c03_link_visible": true,
+              "s21c03_label_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": true,
+              "s21c03_link_visible": false,
+              "s21c03_label_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": true,
+              "s21c03_link_visible": false,
+              "s21c03_label_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": true,
+              "s21c03_link_visible": true,
+              "s21c03_label_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s15c01_onb002": true,
+              "s21c03_link_visible": true,
+              "s21c03_label_invalido": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C03",
+      "hash": "f9cfa7fd44f9974b2768715ed7582657e54342fc65bdb332fab803b10e69f29d",
+      "hash_paquete": "226931b12b5990f22e1406ad53318446a07d238c1f47ec1e2bab8e73f57507b2",
+      "hash_evaluado": "f9cfa7fd44",
+      "hash_paquete_10": "226931b12b"
+    },
+    {
+      "legacy_id": 44,
+      "relacionadas": [
+        "S1-C02",
+        "S5-C14"
+      ],
+      "residual": "Falta acreditar fuente canónica parametrizada de longitud DNI y binding de validación RENIEC.",
+      "hechos": [
+        "s1c02_intento_consulta",
+        "s21c04_unicidad_dni",
+        "s21c04_formato_reniec_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C04",
+        "clave": "s21_legacy_44",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Formato RENIEC antes de unicidad DNI",
+        "descripcion": "BLOQUEAR consulta backend de unicidad DNI sin validación server-side previa de su formato numérico RENIEC canónico o con formato inválido. Especializa S1-C02/S5-C14; no inventa clave de longitud ni acredita implementación.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/44",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s1c02_intento_consulta"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c04_unicidad_dni"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c04_formato_reniec_invalido"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": false,
+              "s21c04_unicidad_dni": false,
+              "s21c04_formato_reniec_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": false,
+              "s21c04_unicidad_dni": false,
+              "s21c04_formato_reniec_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": false,
+              "s21c04_unicidad_dni": true,
+              "s21c04_formato_reniec_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": false,
+              "s21c04_unicidad_dni": true,
+              "s21c04_formato_reniec_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": true,
+              "s21c04_unicidad_dni": false,
+              "s21c04_formato_reniec_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": true,
+              "s21c04_unicidad_dni": false,
+              "s21c04_formato_reniec_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": true,
+              "s21c04_unicidad_dni": true,
+              "s21c04_formato_reniec_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s1c02_intento_consulta": true,
+              "s21c04_unicidad_dni": true,
+              "s21c04_formato_reniec_invalido": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C04",
+      "hash": "04d26866692183096633a7e82de6f5e1b2456ddce23c74a4bea94b2d5b4fafb1",
+      "hash_paquete": "50952ec94a24c97901463eeba0d35c758a49ca57a49911f763504685f1937571",
+      "hash_evaluado": "04d2686669",
+      "hash_paquete_10": "50952ec94a"
+    },
+    {
+      "legacy_id": 290,
+      "relacionadas": [
+        "S6-C17",
+        "S6-C19"
+      ],
+      "residual": "",
+      "hechos": [
+        "s6c17_intento",
+        "s6c17_contexto",
+        "s21c05_estado_cuota_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C05",
+        "clave": "s21_legacy_290",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Estado autoritativo por cuota en cronograma",
+        "descripcion": "En Ver cronograma de checkout cuotas BLOQUEAR omitir estado pendiente/pagado por cuota o mostrarlo distinto del estado autoritativo. S6-C17 conserva solo lectura, número, fecha, monto, cierre y descarga documental autorizada; no añade acciones de pago.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/290",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s6c17_intento"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s6c17_contexto"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c05_estado_cuota_invalido"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": false,
+              "s6c17_contexto": false,
+              "s21c05_estado_cuota_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": false,
+              "s6c17_contexto": false,
+              "s21c05_estado_cuota_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": false,
+              "s6c17_contexto": true,
+              "s21c05_estado_cuota_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": false,
+              "s6c17_contexto": true,
+              "s21c05_estado_cuota_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": true,
+              "s6c17_contexto": false,
+              "s21c05_estado_cuota_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": true,
+              "s6c17_contexto": false,
+              "s21c05_estado_cuota_invalido": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": true,
+              "s6c17_contexto": true,
+              "s21c05_estado_cuota_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s6c17_intento": true,
+              "s6c17_contexto": true,
+              "s21c05_estado_cuota_invalido": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C05",
+      "hash": "8f2fe39a582b64e31e41dc31593269621fa476b4cb0679e43f1aa94ce2cf7db4",
+      "hash_paquete": "3c692dfc555e4093790b32abc53f5b89e6ec48e8568cfcdfc5a84abecef1b1c5",
+      "hash_evaluado": "8f2fe39a58",
+      "hash_paquete_10": "3c692dfc55"
+    },
+    {
+      "legacy_id": 564,
+      "relacionadas": [
+        "M2-C02",
+        "M2-C03",
+        "S4-C10",
+        "S18-C07",
+        "S19-C14"
+      ],
+      "residual": "",
+      "hechos": [
+        "m2_pantalla_multi_oferta_en_presentacion",
+        "s21c06_inicio_invalido",
+        "s21c06_retomada_invalida"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C06",
+        "clave": "s21_legacy_564",
+        "familia": "OFFERS_INSTALLMENTS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Inicio sin selección y retomada de oferta",
+        "descripcion": "En PASO3_MULTI_OFERTA BLOQUEAR inicialización sin confirmación backend de elegibilidad multi-oferta o con oferta preseleccionada sin acción explícita. BLOQUEAR mutación de ofertas no seleccionadas, garantía de disponibilidad futura o retomada sin revalidar. M2-C03 conserva selección independiente y subconjunto válido; M2-C02, S4-C10, S18-C07 y S19-C14 conservan modalidad, resumen y revalidación checkout.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/564",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "m2_pantalla_multi_oferta_en_presentacion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c06_inicio_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c06_retomada_invalida"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": false,
+              "s21c06_inicio_invalido": false,
+              "s21c06_retomada_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": false,
+              "s21c06_inicio_invalido": false,
+              "s21c06_retomada_invalida": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": false,
+              "s21c06_inicio_invalido": true,
+              "s21c06_retomada_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": false,
+              "s21c06_inicio_invalido": true,
+              "s21c06_retomada_invalida": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": true,
+              "s21c06_inicio_invalido": false,
+              "s21c06_retomada_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": true,
+              "s21c06_inicio_invalido": false,
+              "s21c06_retomada_invalida": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": true,
+              "s21c06_inicio_invalido": true,
+              "s21c06_retomada_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "m2_pantalla_multi_oferta_en_presentacion": true,
+              "s21c06_inicio_invalido": true,
+              "s21c06_retomada_invalida": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C06",
+      "hash": "811436ee26dcc3fdb26efaba2980cc6aeadc665365378ad31ce062be3f08f107",
+      "hash_paquete": "7e54f439f89a2386888f63215122bf172828f9d0f78e43afc160b10012cf9498",
+      "hash_evaluado": "811436ee26",
+      "hash_paquete_10": "7e54f439f8"
+    },
+    {
+      "legacy_id": 496,
+      "relacionadas": [
+        "S7-C07"
+      ],
+      "residual": "",
+      "hechos": [
+        "s21c07_ciclo_confianza",
+        "s21c07_transicion_invalida",
+        "s21c07_revocacion_invalida"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C07",
+        "clave": "s21_legacy_496",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Ciclo y revocación de confianza de dispositivo",
+        "descripcion": "BLOQUEAR transición de confianza B2B inválida: logout termina sesión pero conserva confianza válida; vencimiento, cambio de contraseña, usuario DISABLED o revocación autorizada terminan confianza. Revocación manual requiere confirmación y permiso B2B_USER_UPDATE, afecta dispositivo específico o todos los seleccionados, termina inmediatamente sesiones afectadas y exige OTP correo en acceso siguiente desde dispositivo revocado. Cliente no puede conceder, revocar ni restaurar confianza por sí mismo. S7-C07 conserva guard de reconocimiento de token.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/496",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c07_ciclo_confianza"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c07_transicion_invalida"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c07_revocacion_invalida"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": false,
+              "s21c07_transicion_invalida": false,
+              "s21c07_revocacion_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": false,
+              "s21c07_transicion_invalida": false,
+              "s21c07_revocacion_invalida": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": false,
+              "s21c07_transicion_invalida": true,
+              "s21c07_revocacion_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": false,
+              "s21c07_transicion_invalida": true,
+              "s21c07_revocacion_invalida": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": true,
+              "s21c07_transicion_invalida": false,
+              "s21c07_revocacion_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": true,
+              "s21c07_transicion_invalida": false,
+              "s21c07_revocacion_invalida": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": true,
+              "s21c07_transicion_invalida": true,
+              "s21c07_revocacion_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c07_ciclo_confianza": true,
+              "s21c07_transicion_invalida": true,
+              "s21c07_revocacion_invalida": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C07",
+      "hash": "3eacc8ec0aebe984b53e4e651c54562e5caf1c4fe6421648636c847296aaf879",
+      "hash_paquete": "735229cde25b7c206ed30448ed1174685c056862f8a7384d55b53901ef985379",
+      "hash_evaluado": "3eacc8ec0a",
+      "hash_paquete_10": "735229cde2"
+    },
+    {
+      "legacy_id": 622,
+      "relacionadas": [],
+      "residual": "",
+      "hechos": [
+        "s21c08_modulo_auth",
+        "s21c08_exclusion_invalida",
+        "s21c08_cambio_sin_revalidar"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S21-C08",
+        "clave": "s21_legacy_622",
+        "familia": "APPLICABILITY_READINESS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "B2B_AUTENTICACION",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Exclusiones funcionales en autenticación B2B",
+        "descripcion": "BLOQUEAR exigencia funcional de FEATURE_FLAGS excluido por decisión explícita del dueño e I18N_FORMATS excluido mientras single-locale; no inferir exclusión solo por ausencia de tablas. Reabrir y revalidar exclusión ante nueva fuente canónica, ampliación de autenticación o necesidad multi-locale. No altera IG ni activa funcionalidades.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/622",
+          "solicitante": "Cristhian / Claude S21 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s21c08_modulo_auth"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c08_exclusion_invalida"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s21c08_cambio_sin_revalidar"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": false,
+              "s21c08_exclusion_invalida": false,
+              "s21c08_cambio_sin_revalidar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": false,
+              "s21c08_exclusion_invalida": false,
+              "s21c08_cambio_sin_revalidar": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": false,
+              "s21c08_exclusion_invalida": true,
+              "s21c08_cambio_sin_revalidar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": false,
+              "s21c08_exclusion_invalida": true,
+              "s21c08_cambio_sin_revalidar": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": true,
+              "s21c08_exclusion_invalida": false,
+              "s21c08_cambio_sin_revalidar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": true,
+              "s21c08_exclusion_invalida": false,
+              "s21c08_cambio_sin_revalidar": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": true,
+              "s21c08_exclusion_invalida": true,
+              "s21c08_cambio_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s21c08_modulo_auth": true,
+              "s21c08_exclusion_invalida": true,
+              "s21c08_cambio_sin_revalidar": true
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "codigo": "S21-C08",
+      "hash": "e4ce5420b2d0f413fe52e24850d5ba2d3df79ac18826e9c378a9db616a902575",
+      "hash_paquete": "a9258bba946fefeffef7dd4b8d0d20cf76b98f000dfd7bb0d7ef36695653ae99",
+      "hash_evaluado": "e4ce5420b2",
+      "hash_paquete_10": "a9258bba94"
+    }
+  ],
+  "juicios": []
+}
