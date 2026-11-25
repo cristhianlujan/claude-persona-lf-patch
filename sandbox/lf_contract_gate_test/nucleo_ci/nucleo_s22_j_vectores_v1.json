@@ -1,0 +1,1283 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "c5d00bedd732be6979ce365cfffeb8c15235fc72",
+    "js_vectors": "35/35",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 364,
+        "nucleo_codigo": "S10-C07",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 364,
+        "nucleo_codigo": "S8-C22",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "S8-C22",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S17-C04",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22j01_claim_sin_compromiso",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim sin compromiso; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j01_interpreta_sin_costo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "interpreta sin costo; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j01_promete_reversion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "promete reversion; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j01_extincion_sin_politica",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "extincion sin politica; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j01_wording_sin_validacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "wording sin validacion; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j02_trust_card_hero_o_capacidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "trust card hero o capacidad; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j02_icono_con_circulo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "icono con circulo; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_promueve_dark_mode",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "promueve dark mode; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_tokens_no_vigentes",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "tokens no vigentes; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_qa_contraste_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "qa contraste falta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_qa_foco_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "qa foco falta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_qa_badges_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "qa badges falta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_qa_tablas_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "qa tablas falta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j03_qa_modales_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "qa modales falta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j04_manejo_archivos_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "manejo archivos b2b; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22j04_activo_propio_storage_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activo propio storage invalido; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22j04_copia_tercero_sin_autorizacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "copia tercero sin autorizacion; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22j04_referencia_sin_trazabilidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "referencia sin trazabilidad; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22j05_gamificacion_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "gamificacion cliente; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j05_no_desactivable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "no desactivable; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j05_penalizacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "penalizacion; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j05_racha_sin_congelamiento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "racha sin congelamiento; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22j06_contenido_recupera",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contenido recupera; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j06_promesa_universal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "promesa universal; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j06_dato_variable_sin_fuente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "dato variable sin fuente; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j06_confunde_sbs_score",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "confunde sbs score; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j06_orientacion_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "orientacion no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22j06_sin_revision_frescura",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sin revision frescura; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22J-C01",
+      "legacy_id": 357,
+      "legacy_ids": [
+        357
+      ],
+      "relacionadas": [
+        "S3-C19",
+        "S3-C12"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 357,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Ante publicación del claim sin compromiso BLOQUEAR interpretarlo como ausencia de costo, reversibilidad de intento enviado o pago confirmado, o extinción automática de deuda/plan al detener débito recurrente. Solo significa no obligación de continuar antes de autorizar/enviar pago; después del envío rige outcome autoritativo S3-C19 y tras PAYMENT_CONFIRMED obligaciones contractuales. Detener recurrencia no cancela deuda ni termina plan salvo política contractual expresa validada; preservar S3-C12. Wording final sujeto a validación Legal antes de publicación; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22j01_claim_sin_compromiso",
+        "s22j01_interpreta_sin_costo",
+        "s22j01_promete_reversion",
+        "s22j01_extincion_sin_politica",
+        "s22j01_wording_sin_validacion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22J-C01",
+        "clave": "s22j_legacy_357",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Límite semántico del claim sin compromiso",
+        "descripcion": "Ante publicación del claim sin compromiso BLOQUEAR interpretarlo como ausencia de costo, reversibilidad de intento enviado o pago confirmado, o extinción automática de deuda/plan al detener débito recurrente. Solo significa no obligación de continuar antes de autorizar/enviar pago; después del envío rige outcome autoritativo S3-C19 y tras PAYMENT_CONFIRMED obligaciones contractuales. Detener recurrencia no cancela deuda ni termina plan salvo política contractual expresa validada; preservar S3-C12. Wording final sujeto a validación Legal antes de publicación; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/357",
+          "solicitante": "Cristhian / Claude S22-J 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j01_claim_sin_compromiso"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22j01_interpreta_sin_costo"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22j01_promete_reversion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j01_extincion_sin_politica"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22j01_wording_sin_validacion"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j01_claim_sin_compromiso": true,
+              "s22j01_interpreta_sin_costo": false,
+              "s22j01_promete_reversion": false,
+              "s22j01_extincion_sin_politica": false,
+              "s22j01_wording_sin_validacion": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j01_claim_sin_compromiso": true,
+              "s22j01_interpreta_sin_costo": true,
+              "s22j01_promete_reversion": false,
+              "s22j01_extincion_sin_politica": false,
+              "s22j01_wording_sin_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j01_claim_sin_compromiso": true,
+              "s22j01_interpreta_sin_costo": false,
+              "s22j01_promete_reversion": true,
+              "s22j01_extincion_sin_politica": false,
+              "s22j01_wording_sin_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j01_claim_sin_compromiso": true,
+              "s22j01_interpreta_sin_costo": false,
+              "s22j01_promete_reversion": false,
+              "s22j01_extincion_sin_politica": true,
+              "s22j01_wording_sin_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j01_claim_sin_compromiso": true,
+              "s22j01_interpreta_sin_costo": false,
+              "s22j01_promete_reversion": false,
+              "s22j01_extincion_sin_politica": false,
+              "s22j01_wording_sin_validacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j01_claim_sin_compromiso": false,
+              "s22j01_interpreta_sin_costo": true,
+              "s22j01_promete_reversion": true,
+              "s22j01_extincion_sin_politica": true,
+              "s22j01_wording_sin_validacion": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "309338f2ef57a76314cc2bedd14a6045ee1ce7d9de596dcfac622a3238eeb2cb",
+      "hash_paquete": "1e95a395102b872a630b76d310068be435c586366511ef904b2f143f4029b37d",
+      "hash_evaluado": "309338f2ef",
+      "hash_paquete_10": "1e95a39510"
+    },
+    {
+      "codigo": "S22J-C02",
+      "legacy_id": 356,
+      "legacy_ids": [
+        356
+      ],
+      "relacionadas": [
+        "S17-C03"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 356,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En trust cards del Hero y bloque Qué podrás hacer BLOQUEAR icono con círculo coloreado detrás en lugar de icono suelto sobre fondo de tarjeta. Referencia legada hero_trust_card_compact VIGENTE y LF_HOME_HERO_PERSONA_A_MUJER_REFLEXIVA_SANDBOX_v0.1_PRINCIPAL.png; evidencia histórica no acredita render actual. No modifica asset ni introduce color. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22j02_trust_card_hero_o_capacidad",
+        "s22j02_icono_con_circulo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22J-C02",
+        "clave": "s22j_legacy_356",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Iconos de confianza sin contenedor circular",
+        "descripcion": "En trust cards del Hero y bloque Qué podrás hacer BLOQUEAR icono con círculo coloreado detrás en lugar de icono suelto sobre fondo de tarjeta. Referencia legada hero_trust_card_compact VIGENTE y LF_HOME_HERO_PERSONA_A_MUJER_REFLEXIVA_SANDBOX_v0.1_PRINCIPAL.png; evidencia histórica no acredita render actual. No modifica asset ni introduce color. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/356",
+          "solicitante": "Cristhian / Claude S22-J 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j02_trust_card_hero_o_capacidad"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j02_icono_con_circulo"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j02_trust_card_hero_o_capacidad": true,
+              "s22j02_icono_con_circulo": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j02_trust_card_hero_o_capacidad": true,
+              "s22j02_icono_con_circulo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j02_trust_card_hero_o_capacidad": false,
+              "s22j02_icono_con_circulo": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j02_trust_card_hero_o_capacidad": false,
+              "s22j02_icono_con_circulo": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "4ae457ea66b963b15824ca04299e9a8a890137ecbfd08cabce8f197df4da7ab3",
+      "hash_paquete": "40d2b20a5fdeb2f430c399052e5594fcc18a496bc901eca115f090454bcbbf16",
+      "hash_evaluado": "4ae457ea66",
+      "hash_paquete_10": "40d2b20a5f"
+    },
+    {
+      "codigo": "S22J-C03",
+      "legacy_id": 390,
+      "legacy_ids": [
+        390
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 390,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Ante promoción del tema nocturno B2B a vigente BLOQUEAR si tokens dark_mode no están vigentes o falta aprobación QA de contraste, foco, status badges, tablas o modales. No crea tokens ni habilita tema por defecto. Binding y evidencia real pendientes."
+        }
+      ],
+      "hechos": [
+        "s22j03_promueve_dark_mode",
+        "s22j03_tokens_no_vigentes",
+        "s22j03_qa_contraste_falta",
+        "s22j03_qa_foco_falta",
+        "s22j03_qa_badges_falta",
+        "s22j03_qa_tablas_falta",
+        "s22j03_qa_modales_falta"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22J-C03",
+        "clave": "s22j_legacy_390",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Gate de vigencia del tema nocturno B2B",
+        "descripcion": "Ante promoción del tema nocturno B2B a vigente BLOQUEAR si tokens dark_mode no están vigentes o falta aprobación QA de contraste, foco, status badges, tablas o modales. No crea tokens ni habilita tema por defecto. Binding y evidencia real pendientes.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/390",
+          "solicitante": "Cristhian / Claude S22-J 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j03_promueve_dark_mode"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22j03_tokens_no_vigentes"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22j03_qa_contraste_falta"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22j03_qa_foco_falta"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22j03_qa_badges_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j03_qa_tablas_falta"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22j03_qa_modales_falta"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": false,
+              "s22j03_qa_contraste_falta": false,
+              "s22j03_qa_foco_falta": false,
+              "s22j03_qa_badges_falta": false,
+              "s22j03_qa_tablas_falta": false,
+              "s22j03_qa_modales_falta": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": true,
+              "s22j03_qa_contraste_falta": false,
+              "s22j03_qa_foco_falta": false,
+              "s22j03_qa_badges_falta": false,
+              "s22j03_qa_tablas_falta": false,
+              "s22j03_qa_modales_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": false,
+              "s22j03_qa_contraste_falta": true,
+              "s22j03_qa_foco_falta": false,
+              "s22j03_qa_badges_falta": false,
+              "s22j03_qa_tablas_falta": false,
+              "s22j03_qa_modales_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": false,
+              "s22j03_qa_contraste_falta": false,
+              "s22j03_qa_foco_falta": true,
+              "s22j03_qa_badges_falta": false,
+              "s22j03_qa_tablas_falta": false,
+              "s22j03_qa_modales_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": false,
+              "s22j03_qa_contraste_falta": false,
+              "s22j03_qa_foco_falta": false,
+              "s22j03_qa_badges_falta": true,
+              "s22j03_qa_tablas_falta": false,
+              "s22j03_qa_modales_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": false,
+              "s22j03_qa_contraste_falta": false,
+              "s22j03_qa_foco_falta": false,
+              "s22j03_qa_badges_falta": false,
+              "s22j03_qa_tablas_falta": true,
+              "s22j03_qa_modales_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": true,
+              "s22j03_tokens_no_vigentes": false,
+              "s22j03_qa_contraste_falta": false,
+              "s22j03_qa_foco_falta": false,
+              "s22j03_qa_badges_falta": false,
+              "s22j03_qa_tablas_falta": false,
+              "s22j03_qa_modales_falta": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j03_promueve_dark_mode": false,
+              "s22j03_tokens_no_vigentes": true,
+              "s22j03_qa_contraste_falta": true,
+              "s22j03_qa_foco_falta": true,
+              "s22j03_qa_badges_falta": true,
+              "s22j03_qa_tablas_falta": true,
+              "s22j03_qa_modales_falta": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "a01e9b836f6a9389b499134b9c18d2b4cb92cdac14a47b0bfbefe34caff0100f",
+      "hash_paquete": "915aa56231efe37bfb0ec37eca4a80f983e35068ac6994fd4ed364196531a342",
+      "hash_evaluado": "a01e9b836f",
+      "hash_paquete_10": "915aa56231"
+    },
+    {
+      "codigo": "S22J-C04",
+      "legacy_id": 401,
+      "legacy_ids": [
+        401
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 401,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En manejo de archivos operativos B2B BLOQUEAR almacenar activos propios LF fuera de storage privado lf-operational-assets o copiar/custodiar por defecto documento de aliado/tercero, incluida Carta de Cesión, sin política o acuerdo específico autorizado. Permitir referencia externa gobernada y conservar solo trazabilidad necesaria. Respeta política de seguridad 6 y decisión APPROVED_2026-09-17_V2; registro documental físico canónico pendiente. No crear bucket ni permisos; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22j04_manejo_archivos_b2b",
+        "s22j04_activo_propio_storage_invalido",
+        "s22j04_copia_tercero_sin_autorizacion",
+        "s22j04_referencia_sin_trazabilidad"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22J-C04",
+        "clave": "s22j_legacy_401",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Custodia privada y referencia externa de documentos B2B",
+        "descripcion": "En manejo de archivos operativos B2B BLOQUEAR almacenar activos propios LF fuera de storage privado lf-operational-assets o copiar/custodiar por defecto documento de aliado/tercero, incluida Carta de Cesión, sin política o acuerdo específico autorizado. Permitir referencia externa gobernada y conservar solo trazabilidad necesaria. Respeta política de seguridad 6 y decisión APPROVED_2026-09-17_V2; registro documental físico canónico pendiente. No crear bucket ni permisos; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/401",
+          "solicitante": "Cristhian / Claude S22-J 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j04_manejo_archivos_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j04_activo_propio_storage_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j04_copia_tercero_sin_autorizacion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22j04_referencia_sin_trazabilidad"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j04_manejo_archivos_b2b": true,
+              "s22j04_activo_propio_storage_invalido": false,
+              "s22j04_copia_tercero_sin_autorizacion": false,
+              "s22j04_referencia_sin_trazabilidad": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j04_manejo_archivos_b2b": true,
+              "s22j04_activo_propio_storage_invalido": true,
+              "s22j04_copia_tercero_sin_autorizacion": false,
+              "s22j04_referencia_sin_trazabilidad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j04_manejo_archivos_b2b": true,
+              "s22j04_activo_propio_storage_invalido": false,
+              "s22j04_copia_tercero_sin_autorizacion": true,
+              "s22j04_referencia_sin_trazabilidad": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j04_manejo_archivos_b2b": true,
+              "s22j04_activo_propio_storage_invalido": false,
+              "s22j04_copia_tercero_sin_autorizacion": false,
+              "s22j04_referencia_sin_trazabilidad": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j04_manejo_archivos_b2b": false,
+              "s22j04_activo_propio_storage_invalido": true,
+              "s22j04_copia_tercero_sin_autorizacion": true,
+              "s22j04_referencia_sin_trazabilidad": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "55f781efa5b563b3f4d8a3f926d4974839be02d080e5348dc7286ca4767aed8e",
+      "hash_paquete": "a6ac81d371097f6d5f42558ad418f8d397f30236536a2265b5866b55b1a49e27",
+      "hash_evaluado": "55f781efa5",
+      "hash_paquete_10": "a6ac81d371"
+    },
+    {
+      "codigo": "S22J-C05",
+      "legacy_id": 358,
+      "legacy_ids": [
+        358
+      ],
+      "relacionadas": [],
+      "residual": "Falta definir referencia canónica de la política de congelamiento de emergencia por única vez sin introducir número duro ni extender mecánica.",
+      "coberturas": [
+        {
+          "legacy_id": 358,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta definir referencia canónica de la política de congelamiento de emergencia por única vez sin introducir número duro ni extender mecánica.",
+          "diferencias": "Ante gamificación de Cliente, incluido hito Recupera gold_reward, BLOQUEAR insignia, racha o hito que no pueda ocultarse/desactivarse por usuario, o que genere penalización financiera o funcional al hacerlo. Si existe racha, permitir congelamiento de emergencia por única vez conforme política autorizada; no crear rachas ni fijar nueva configuración. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22j05_gamificacion_cliente",
+        "s22j05_no_desactivable",
+        "s22j05_penalizacion",
+        "s22j05_racha_sin_congelamiento"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22J-C05",
+        "clave": "s22j_legacy_358",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Gamificación optativa sin penalización",
+        "descripcion": "Ante gamificación de Cliente, incluido hito Recupera gold_reward, BLOQUEAR insignia, racha o hito que no pueda ocultarse/desactivarse por usuario, o que genere penalización financiera o funcional al hacerlo. Si existe racha, permitir congelamiento de emergencia por única vez conforme política autorizada; no crear rachas ni fijar nueva configuración. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/358",
+          "solicitante": "Cristhian / Claude S22-J 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j05_gamificacion_cliente"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j05_no_desactivable"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j05_penalizacion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22j05_racha_sin_congelamiento"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j05_gamificacion_cliente": true,
+              "s22j05_no_desactivable": false,
+              "s22j05_penalizacion": false,
+              "s22j05_racha_sin_congelamiento": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j05_gamificacion_cliente": true,
+              "s22j05_no_desactivable": true,
+              "s22j05_penalizacion": false,
+              "s22j05_racha_sin_congelamiento": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j05_gamificacion_cliente": true,
+              "s22j05_no_desactivable": false,
+              "s22j05_penalizacion": true,
+              "s22j05_racha_sin_congelamiento": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j05_gamificacion_cliente": true,
+              "s22j05_no_desactivable": false,
+              "s22j05_penalizacion": false,
+              "s22j05_racha_sin_congelamiento": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j05_gamificacion_cliente": false,
+              "s22j05_no_desactivable": true,
+              "s22j05_penalizacion": true,
+              "s22j05_racha_sin_congelamiento": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "4cc59cebbe639cb4c98c9e4c3cb17722002da965ce000001a75285adaf04676f",
+      "hash_paquete": "28956b4fd20629de7cb33481e490ac7270698397e4c52e2cd4a58a4ee3ed646b",
+      "hash_evaluado": "4cc59cebbe",
+      "hash_paquete_10": "28956b4fd2"
+    },
+    {
+      "codigo": "S22J-C06",
+      "legacy_id": 378,
+      "legacy_ids": [
+        378
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 378,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En contenido educativo Recupera BLOQUEAR afirmar plazo universal de reconstrucción de historial/score o puntaje único, publicar plazos concretos, rangos de bureaus, límites de utilización o tasas sin fuente vigente y contexto. Distinguir información SBS de scores privados con ciclos y metodologías diferentes. Centrar orientación en pagos a tiempo, reportes oficiales y evitar obligaciones insostenibles. Mantener revisión de frescura y condición CANDIDATO_REQUIRES_FRESHNESS_REVIEW antes de publicación; no afirmar revisión actual completada. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22j06_contenido_recupera",
+        "s22j06_promesa_universal",
+        "s22j06_dato_variable_sin_fuente",
+        "s22j06_confunde_sbs_score",
+        "s22j06_orientacion_no_autorizada",
+        "s22j06_sin_revision_frescura"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22J-C06",
+        "clave": "s22j_legacy_378",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Contenido Recupera sin promesa universal de score",
+        "descripcion": "En contenido educativo Recupera BLOQUEAR afirmar plazo universal de reconstrucción de historial/score o puntaje único, publicar plazos concretos, rangos de bureaus, límites de utilización o tasas sin fuente vigente y contexto. Distinguir información SBS de scores privados con ciclos y metodologías diferentes. Centrar orientación en pagos a tiempo, reportes oficiales y evitar obligaciones insostenibles. Mantener revisión de frescura y condición CANDIDATO_REQUIRES_FRESHNESS_REVIEW antes de publicación; no afirmar revisión actual completada. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/378",
+          "solicitante": "Cristhian / Claude S22-J 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22j06_contenido_recupera"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22j06_promesa_universal"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22j06_dato_variable_sin_fuente"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22j06_confunde_sbs_score"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22j06_orientacion_no_autorizada"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22j06_sin_revision_frescura"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": true,
+              "s22j06_promesa_universal": false,
+              "s22j06_dato_variable_sin_fuente": false,
+              "s22j06_confunde_sbs_score": false,
+              "s22j06_orientacion_no_autorizada": false,
+              "s22j06_sin_revision_frescura": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": true,
+              "s22j06_promesa_universal": true,
+              "s22j06_dato_variable_sin_fuente": false,
+              "s22j06_confunde_sbs_score": false,
+              "s22j06_orientacion_no_autorizada": false,
+              "s22j06_sin_revision_frescura": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": true,
+              "s22j06_promesa_universal": false,
+              "s22j06_dato_variable_sin_fuente": true,
+              "s22j06_confunde_sbs_score": false,
+              "s22j06_orientacion_no_autorizada": false,
+              "s22j06_sin_revision_frescura": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": true,
+              "s22j06_promesa_universal": false,
+              "s22j06_dato_variable_sin_fuente": false,
+              "s22j06_confunde_sbs_score": true,
+              "s22j06_orientacion_no_autorizada": false,
+              "s22j06_sin_revision_frescura": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": true,
+              "s22j06_promesa_universal": false,
+              "s22j06_dato_variable_sin_fuente": false,
+              "s22j06_confunde_sbs_score": false,
+              "s22j06_orientacion_no_autorizada": true,
+              "s22j06_sin_revision_frescura": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": true,
+              "s22j06_promesa_universal": false,
+              "s22j06_dato_variable_sin_fuente": false,
+              "s22j06_confunde_sbs_score": false,
+              "s22j06_orientacion_no_autorizada": false,
+              "s22j06_sin_revision_frescura": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22j06_contenido_recupera": false,
+              "s22j06_promesa_universal": true,
+              "s22j06_dato_variable_sin_fuente": true,
+              "s22j06_confunde_sbs_score": true,
+              "s22j06_orientacion_no_autorizada": true,
+              "s22j06_sin_revision_frescura": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "e9103a18d190fb9f9c638c6ce5b6e3bc826e26a261a73ee34887f1f9f42c6c3b",
+      "hash_paquete": "14cd1943bd1e16319eda3983f9f282f335e3900f80c83833b674f49e99d12cde",
+      "hash_evaluado": "e9103a18d1",
+      "hash_paquete_10": "14cd1943bd"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": [
+    {
+      "legacy_id": 360,
+      "nucleo_codigo": "S17-C04",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S17-C04 exige slate_text_strong canónico para subtítulo, disclaimer y microcopy con margen de contraste, sin copiar hex.",
+      "residual": "Falta acreditar consolidación y deprecación histórica de hero_subtitle_text y referencias exactas de componentes Hero y hero_trust_card_compact."
+    },
+    {
+      "legacy_id": 364,
+      "nucleo_codigo": "S8-C22",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S8-C22 exige nav etiquetado, lista ordenada, enlaces/botones reales, aria-current y SVG decorativo oculto; S10-C07 conserva cardinalidad.",
+      "residual": "Falta acreditar nodos bloqueados focusables no deshabilitados y token/tamaño de texto de valor_config."
+    }
+  ]
+}
