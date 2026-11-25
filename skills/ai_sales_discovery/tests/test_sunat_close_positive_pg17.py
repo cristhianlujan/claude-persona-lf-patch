@@ -85,7 +85,12 @@ INSERT INTO public.lf_operation_execution(
  completed_at,manifest)
 VALUES('EXEC-SALY-SUNAT-COMMERCIAL-20261123-001','INGESTA_EMPRESARIAL_SALY',
        'IN_PROGRESS','SALY-SUNAT-COMMERCIAL-V3',2,
-       now()-interval '2 days',null,'{"source_id":"PE-SUNAT-RUC"}');
+       now()-interval '2 days',null,
+       '{"sunat_plan":{"business":"SALY","scope_key":"LIMA_ICA",
+          "source_id":"PE-SUNAT-RUC",
+          "manifest_digest_sha256":"40300fa68d60cf5d0147dc985cef6183694768f8798aa4ef1020bdc6180d5595",
+          "snapshot_sha256":["bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7",
+                             "2cea288655227dda03d3aaab30c7e63776f3cfb6cc68f75efd56e858865a17d7"]}}');
 INSERT INTO public.lf_operation_effect_guard(execution_id,effect_scope,dispatch_key,state,receipt)
 SELECT 'EXEC-SALY-SUNAT-COMMERCIAL-20261123-001','batch-'||n,'new-'||n,
        'SUCCEEDED',jsonb_build_object('success',true,'rows',
@@ -99,6 +104,8 @@ VALUES
      "old_manifest_replay_allowed":false,
      "commercial_run_ref":"EXEC-SALY-SUNAT-COMMERCIAL-20261123-001",
      "manifest_digest_sha256":"40300fa68d60cf5d0147dc985cef6183694768f8798aa4ef1020bdc6180d5595",
+     "snapshot_sha256":["bf875a7fdf80c16dfee03210759f497b50a5b9c69a4774ed6fbb92e6dceed0a7",
+                        "2cea288655227dda03d3aaab30c7e63776f3cfb6cc68f75efd56e858865a17d7"],
      "expected_batches":3,"expected_rows":2239}','JSON','REAL',now());
 """)
     assert_snapshot()
