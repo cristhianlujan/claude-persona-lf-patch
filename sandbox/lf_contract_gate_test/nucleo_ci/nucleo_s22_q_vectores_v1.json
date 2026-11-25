@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "775bc1c00a28182d06eafd2dea6341cfea2275d0",
     "js_vectors": "54/54",
@@ -2185,6 +2185,279 @@
       "hash_paquete_10": "136ea724d1"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22Q-C01",
+      "hash_paquete": "2f5a593afd6d6fa5b4d546c81834a44c03bd5c513d9bb094ba6426d31448e7d8",
+      "hash_paquete_10": "2f5a593afd",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C01 / hash_paquete_10=2f5a593afd"
+    },
+    {
+      "codigo": "S22Q-C02",
+      "hash_paquete": "ec2e805f8515760bcb31887a7af01053cb29a0d4bf983a4b33656906888d6c51",
+      "hash_paquete_10": "ec2e805f85",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C02 / hash_paquete_10=ec2e805f85"
+    },
+    {
+      "codigo": "S22Q-C03",
+      "hash_paquete": "d586b5f44832484127b078c392b27ae11d043023373bf8121a02edbbd7a8dad4",
+      "hash_paquete_10": "d586b5f448",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C03 / hash_paquete_10=d586b5f448"
+    },
+    {
+      "codigo": "S22Q-C04",
+      "hash_paquete": "cf152ed10ff26cfba18e7d81c83c6063a4f83d8c2d9253c898012d3d24637976",
+      "hash_paquete_10": "cf152ed10f",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C04 / hash_paquete_10=cf152ed10f"
+    },
+    {
+      "codigo": "S22Q-C05",
+      "hash_paquete": "9f868d27de6090f2e2a8dcc5468b231e1434305b0a92a00847afc00c025ad979",
+      "hash_paquete_10": "9f868d27de",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C05 / hash_paquete_10=9f868d27de"
+    },
+    {
+      "codigo": "S22Q-C06",
+      "hash_paquete": "0e658cf3352c36aafc026e7aba82428d5d694661b5cb4aa42ec0956339273a11",
+      "hash_paquete_10": "0e658cf335",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C06 / hash_paquete_10=0e658cf335"
+    },
+    {
+      "codigo": "S22Q-C07",
+      "hash_paquete": "0d5de4ecc1538415bd01813bf31406226a17055fabd8e0ad698f31e5d6eca7d7",
+      "hash_paquete_10": "0d5de4ecc1",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C07 / hash_paquete_10=0d5de4ecc1"
+    },
+    {
+      "codigo": "S22Q-C08",
+      "hash_paquete": "136ea724d18d562fdf9d7d3140ac18cfd60bec64b7dca0e1220affdd499b75dd",
+      "hash_paquete_10": "136ea724d1",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4773 / Claude 2026-11-25 16:41 Lima / S22Q-C08 / hash_paquete_10=136ea724d1"
+    }
+  ],
   "cobertura_directa": []
 }
