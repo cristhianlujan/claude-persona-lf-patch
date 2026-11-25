@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-procesos-lote1-pg17-20261123-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/procesos_saly/fixture_solicitud_seguimiento_lote1_pg17.sql": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/nucleo_ci/run_pg17.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/saly-procesos-lote1-pg17-20261123-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/nucleo_ci/procesos_saly/base_candidata.sql": "PASE_SUPPORT"
+  }
+}

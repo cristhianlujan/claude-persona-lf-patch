@@ -30,6 +30,7 @@ CREATE TABLE saly.procesos_pasos_versiones (
   version integer NOT NULL CHECK (version > 0),
   titulo text NOT NULL CHECK (btrim(titulo) <> ''),
   descripcion text NOT NULL CHECK (btrim(descripcion) <> ''),
+  nodo_codigo text REFERENCES saly.nucleo_nodos(codigo),
   PRIMARY KEY (proceso_id,paso_id,version),
   FOREIGN KEY (proceso_id,paso_id) REFERENCES saly.procesos_pasos(proceso_id,paso_id)
 );
@@ -72,6 +73,23 @@ BEGIN
   RETURN NEW;
 END; $$;
 CREATE TRIGGER procesos_nodo_guard BEFORE INSERT ON saly.procesos FOR EACH ROW EXECUTE FUNCTION saly.procesos_nodo_guard_v1();
+
+-- Referencia opcional de un paso a un modulo compartido (no canal).
+-- La FK valida existencia; el guard exige MODULO si la referencia no es NULL.
+-- Una version de paso conserva la inmutabilidad del trigger previo.
+CREATE FUNCTION saly.procesos_paso_nodo_guard_v1() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $paso_nodo$
+DECLARE v_nivel text;
+BEGIN
+  IF NEW.nodo_codigo IS NOT NULL THEN
+    SELECT nivel INTO v_nivel FROM saly.nucleo_nodos WHERE codigo=NEW.nodo_codigo;
+    IF FOUND AND v_nivel IS DISTINCT FROM 'MODULO' THEN
+      RAISE EXCEPTION 'SALY_PASO_NODO_NO_MODULO' USING ERRCODE='23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END; $paso_nodo$;
+CREATE TRIGGER procesos_paso_nodo_guard BEFORE INSERT ON saly.procesos_pasos_versiones FOR EACH ROW EXECUTE FUNCTION saly.procesos_paso_nodo_guard_v1();
+
 -- Serializa cambios de composición contra sellado y bloquea traslado entre versiones.
 CREATE FUNCTION saly.procesos_composicion_guard_v1() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $$
 DECLARE p bigint; v integer; e text;
