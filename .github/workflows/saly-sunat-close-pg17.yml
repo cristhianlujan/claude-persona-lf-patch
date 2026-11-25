@@ -1,10 +1,5 @@
 name: SALY SUNAT close PG17 candidate
 on:
-  pull_request:
-    paths:
-      - 'skills/ai_sales_discovery/tests/sunat_close_candidate_v1.sql'
-      - 'skills/ai_sales_discovery/tests/test_sunat_close_pg17.py'
-      - '.github/workflows/saly-sunat-close-pg17.yml'
   workflow_dispatch:
 permissions:
   contents: read
