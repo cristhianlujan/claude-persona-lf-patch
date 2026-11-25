@@ -1,0 +1,1140 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "88ddf40e96c07cdbdfed3b7e16183fb5a6b6e5ec",
+    "js_vectors": "30/30",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 414,
+        "nucleo_codigo": "S12-C09",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 415,
+        "nucleo_codigo": "S12-C10",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 423,
+        "nucleo_codigo": "S12-C13",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "S12-C09",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S12-C10",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S12-C13",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22k01_devuelve_o_rechaza",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "devuelve o rechaza; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k01_motivo_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "motivo falta; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k01_comentario_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "comentario falta; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k01_permiso_o_transicion_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso o transicion invalido; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k01_contrato_campos_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contrato campos invalido; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k02_importa_nombre_referencial",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "importa nombre referencial; hecho derivado, binding runtime pendiente",
+      "familia": "PRIVACY_PII"
+    },
+    {
+      "codigo": "s22k02_exige_campo_o_activa_defecto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "exige campo o activa defecto; hecho derivado, binding runtime pendiente",
+      "familia": "PRIVACY_PII"
+    },
+    {
+      "codigo": "s22k02_usa_como_identidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "usa como identidad; hecho derivado, binding runtime pendiente",
+      "familia": "PRIVACY_PII"
+    },
+    {
+      "codigo": "s22k02_escribe_maestro_o_sobrescribe",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "escribe maestro o sobrescribe; hecho derivado, binding runtime pendiente",
+      "familia": "PRIVACY_PII"
+    },
+    {
+      "codigo": "s22k02_produccion_sin_revision",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "produccion sin revision; hecho derivado, binding runtime pendiente",
+      "familia": "PRIVACY_PII"
+    },
+    {
+      "codigo": "s22k03_valida_cronograma_cuotas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "valida cronograma cuotas; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22k03_conciliacion_no_exacta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "conciliacion no exacta; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22k03_asistente_residuo_fuera_ultima",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "asistente residuo fuera ultima; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22k03_externo_modificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "externo modificado; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22k04_render_logo_login",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render logo login; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22k04_activo_no_actual",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activo no actual; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22k04_variante_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "variante invalida; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22k04_activo_deprecado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activo deprecado; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22k04_redibujado_o_generado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "redibujado o generado; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22k04_trazabilidad_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "trazabilidad falta; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22k05_valida_lote",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "valida lote; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k05_snapshot_falta_o_mutable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "snapshot falta o mutable; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k05_routing_contradice_snapshot",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "routing contradice snapshot; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k05_bypass_produccion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bypass produccion; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22k05_otro_perfil_alterado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "otro perfil alterado; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22K-C01",
+      "legacy_id": 407,
+      "legacy_ids": [
+        407
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 407,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En devolución o rechazo de lote B2B BLOQUEAR decisión sin reason_code o comentario obligatorio, sin permiso efectivo o transición válida. Conservar campos B2B_FLD_DECISION_ACTION, B2B_FLD_REASON_CODE, B2B_FLD_COMMENT y B2B_FLD_NOTIFY_UPLOADER de B2B-CARGA-005 y código LF-B2B-APR-003; la guía visual aprobada es referencia y UI/UX decide presentación, sin alterar semántica, permisos, transiciones, B2B_APP_SHELL ni LF_DS_V1. Nueva funcionalidad requiere definición funcional. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22k01_devuelve_o_rechaza",
+        "s22k01_motivo_falta",
+        "s22k01_comentario_falta",
+        "s22k01_permiso_o_transicion_invalido",
+        "s22k01_contrato_campos_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22K-C01",
+        "clave": "s22k_legacy_407",
+        "familia": "GOVERNANCE_APPROVAL",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Motivo y comentario obligatorios al devolver o rechazar lote",
+        "descripcion": "En devolución o rechazo de lote B2B BLOQUEAR decisión sin reason_code o comentario obligatorio, sin permiso efectivo o transición válida. Conservar campos B2B_FLD_DECISION_ACTION, B2B_FLD_REASON_CODE, B2B_FLD_COMMENT y B2B_FLD_NOTIFY_UPLOADER de B2B-CARGA-005 y código LF-B2B-APR-003; la guía visual aprobada es referencia y UI/UX decide presentación, sin alterar semántica, permisos, transiciones, B2B_APP_SHELL ni LF_DS_V1. Nueva funcionalidad requiere definición funcional. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/407",
+          "solicitante": "Cristhian / Claude S22-K 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22k01_devuelve_o_rechaza"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k01_motivo_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k01_comentario_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22k01_permiso_o_transicion_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22k01_contrato_campos_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k01_devuelve_o_rechaza": true,
+              "s22k01_motivo_falta": false,
+              "s22k01_comentario_falta": false,
+              "s22k01_permiso_o_transicion_invalido": false,
+              "s22k01_contrato_campos_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k01_devuelve_o_rechaza": true,
+              "s22k01_motivo_falta": true,
+              "s22k01_comentario_falta": false,
+              "s22k01_permiso_o_transicion_invalido": false,
+              "s22k01_contrato_campos_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k01_devuelve_o_rechaza": true,
+              "s22k01_motivo_falta": false,
+              "s22k01_comentario_falta": true,
+              "s22k01_permiso_o_transicion_invalido": false,
+              "s22k01_contrato_campos_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k01_devuelve_o_rechaza": true,
+              "s22k01_motivo_falta": false,
+              "s22k01_comentario_falta": false,
+              "s22k01_permiso_o_transicion_invalido": true,
+              "s22k01_contrato_campos_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k01_devuelve_o_rechaza": true,
+              "s22k01_motivo_falta": false,
+              "s22k01_comentario_falta": false,
+              "s22k01_permiso_o_transicion_invalido": false,
+              "s22k01_contrato_campos_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k01_devuelve_o_rechaza": false,
+              "s22k01_motivo_falta": true,
+              "s22k01_comentario_falta": true,
+              "s22k01_permiso_o_transicion_invalido": true,
+              "s22k01_contrato_campos_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "00172d9136f8c807ddeff976d5161b4838fe3f0d38a62440c5891caa3ec81368",
+      "hash_paquete": "fa28444e29a0bac5bd1e6540ad375ccdfd8e18943abf9b58d97ae7edc0f8ec88",
+      "hash_evaluado": "00172d9136",
+      "hash_paquete_10": "fa28444e29"
+    },
+    {
+      "codigo": "S22K-C02",
+      "legacy_id": 421,
+      "legacy_ids": [
+        421
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 421,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En importación B2B, B2B_IMP_CUSTOMER_FULL_NAME es opcional, admite blanco y queda desactivado por defecto como dato referencial de empresa. BLOQUEAR usarlo para matching/identidad, escribir entidad maestra Cliente o sobrescribir nombre enrolado. La autoridad es enrolamiento o dominio Cliente canónico autorizado; no crear tabla futura desde esta decisión. Revisión de privacidad requerida antes de uso productivo. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22k02_importa_nombre_referencial",
+        "s22k02_exige_campo_o_activa_defecto",
+        "s22k02_usa_como_identidad",
+        "s22k02_escribe_maestro_o_sobrescribe",
+        "s22k02_produccion_sin_revision"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22K-C02",
+        "clave": "s22k_legacy_421",
+        "familia": "PRIVACY_PII",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Nombre importado como referencia sin autoridad de identidad",
+        "descripcion": "En importación B2B, B2B_IMP_CUSTOMER_FULL_NAME es opcional, admite blanco y queda desactivado por defecto como dato referencial de empresa. BLOQUEAR usarlo para matching/identidad, escribir entidad maestra Cliente o sobrescribir nombre enrolado. La autoridad es enrolamiento o dominio Cliente canónico autorizado; no crear tabla futura desde esta decisión. Revisión de privacidad requerida antes de uso productivo. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/421",
+          "solicitante": "Cristhian / Claude S22-K 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22k02_importa_nombre_referencial"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k02_exige_campo_o_activa_defecto"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k02_usa_como_identidad"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22k02_escribe_maestro_o_sobrescribe"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22k02_produccion_sin_revision"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k02_importa_nombre_referencial": true,
+              "s22k02_exige_campo_o_activa_defecto": false,
+              "s22k02_usa_como_identidad": false,
+              "s22k02_escribe_maestro_o_sobrescribe": false,
+              "s22k02_produccion_sin_revision": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k02_importa_nombre_referencial": true,
+              "s22k02_exige_campo_o_activa_defecto": true,
+              "s22k02_usa_como_identidad": false,
+              "s22k02_escribe_maestro_o_sobrescribe": false,
+              "s22k02_produccion_sin_revision": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k02_importa_nombre_referencial": true,
+              "s22k02_exige_campo_o_activa_defecto": false,
+              "s22k02_usa_como_identidad": true,
+              "s22k02_escribe_maestro_o_sobrescribe": false,
+              "s22k02_produccion_sin_revision": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k02_importa_nombre_referencial": true,
+              "s22k02_exige_campo_o_activa_defecto": false,
+              "s22k02_usa_como_identidad": false,
+              "s22k02_escribe_maestro_o_sobrescribe": true,
+              "s22k02_produccion_sin_revision": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k02_importa_nombre_referencial": true,
+              "s22k02_exige_campo_o_activa_defecto": false,
+              "s22k02_usa_como_identidad": false,
+              "s22k02_escribe_maestro_o_sobrescribe": false,
+              "s22k02_produccion_sin_revision": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k02_importa_nombre_referencial": false,
+              "s22k02_exige_campo_o_activa_defecto": true,
+              "s22k02_usa_como_identidad": true,
+              "s22k02_escribe_maestro_o_sobrescribe": true,
+              "s22k02_produccion_sin_revision": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "ba161c54f8e3e4898a52511e1cd5ec6d69bf5ce60b84ab4702944e256c96aa07",
+      "hash_paquete": "9e9f23d80fe31866630d889e0cfdb2db4c35168720a20fb2562e2da27d66217a",
+      "hash_evaluado": "ba161c54f8",
+      "hash_paquete_10": "9e9f23d80f"
+    },
+    {
+      "codigo": "S22K-C03",
+      "legacy_id": 422,
+      "legacy_ids": [
+        422
+      ],
+      "relacionadas": [],
+      "residual": "Falta referencia canónica verificada de precisión monetaria de dos decimales y normalización exacta a 0.00; no se introduce valor numérico nuevo.",
+      "coberturas": [
+        {
+          "legacy_id": 422,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta referencia canónica verificada de precisión monetaria de dos decimales y normalización exacta a 0.00; no se introduce valor numérico nuevo.",
+          "diferencias": "En modalidad Cuotas B2B normalizar moneda conforme precisión monetaria canónica; BLOQUEAR cronograma que no concilie exactamente pago inicial más suma de cuotas con monto acordado después de normalizar. Si Asistente LF genera cronograma, ajustar residuo de división exclusivamente en última cuota; si proviene de Excel u otro origen de empresa, no modificar ni redistribuir importes y bloquear registro ante diferencia. Validación B2B_IMP_VAL_INSTALLMENT_SUM. No inventar tolerancia ni cambiar fórmula; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22k03_valida_cronograma_cuotas",
+        "s22k03_conciliacion_no_exacta",
+        "s22k03_asistente_residuo_fuera_ultima",
+        "s22k03_externo_modificado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22K-C03",
+        "clave": "s22k_legacy_422",
+        "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Conciliación exacta de cronograma según origen",
+        "descripcion": "En modalidad Cuotas B2B normalizar moneda conforme precisión monetaria canónica; BLOQUEAR cronograma que no concilie exactamente pago inicial más suma de cuotas con monto acordado después de normalizar. Si Asistente LF genera cronograma, ajustar residuo de división exclusivamente en última cuota; si proviene de Excel u otro origen de empresa, no modificar ni redistribuir importes y bloquear registro ante diferencia. Validación B2B_IMP_VAL_INSTALLMENT_SUM. No inventar tolerancia ni cambiar fórmula; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/422",
+          "solicitante": "Cristhian / Claude S22-K 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22k03_valida_cronograma_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22k03_conciliacion_no_exacta"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22k03_asistente_residuo_fuera_ultima"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22k03_externo_modificado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k03_valida_cronograma_cuotas": true,
+              "s22k03_conciliacion_no_exacta": false,
+              "s22k03_asistente_residuo_fuera_ultima": false,
+              "s22k03_externo_modificado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k03_valida_cronograma_cuotas": true,
+              "s22k03_conciliacion_no_exacta": true,
+              "s22k03_asistente_residuo_fuera_ultima": false,
+              "s22k03_externo_modificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k03_valida_cronograma_cuotas": true,
+              "s22k03_conciliacion_no_exacta": false,
+              "s22k03_asistente_residuo_fuera_ultima": true,
+              "s22k03_externo_modificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k03_valida_cronograma_cuotas": true,
+              "s22k03_conciliacion_no_exacta": false,
+              "s22k03_asistente_residuo_fuera_ultima": false,
+              "s22k03_externo_modificado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k03_valida_cronograma_cuotas": false,
+              "s22k03_conciliacion_no_exacta": true,
+              "s22k03_asistente_residuo_fuera_ultima": true,
+              "s22k03_externo_modificado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "9e96d0f482da741f46af154fbf3daa262c842f0a872ae9f137e6e8a75e2fe9a1",
+      "hash_paquete": "ecb052ae791f030c622cddeaeaa2194c28050ea2e28def8da8a28a6e1326118b",
+      "hash_evaluado": "9e96d0f482",
+      "hash_paquete_10": "ecb052ae79"
+    },
+    {
+      "codigo": "S22K-C04",
+      "legacy_id": 420,
+      "legacy_ids": [
+        420
+      ],
+      "relacionadas": [],
+      "residual": "Falta acreditar mapping literal de brand_asset_id 7 light y 6 dark, y exclusión de IDs deprecados 1, 2 y 3 contra catálogo actual.",
+      "coberturas": [
+        {
+          "legacy_id": 420,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar mapping literal de brand_asset_id 7 light y 6 dark, y exclusión de IDs deprecados 1, 2 y 3 contra catálogo actual.",
+          "diferencias": "En Login B2B-AUTH-001 BLOQUEAR logo no registrado como actual en lf_design.brand_assets, variante light distinta de LF_BRAND_LOGO_2L_LIGHT_TRANSPARENT o variante dark fuera de fondo oscuro autorizado, consumo de activo deprecado, redibujo o generación del logo. El binario canónico reside en Google Drive y catálogo operativo conserva ID de archivo, checksum, dimensiones, variante y estado mediante storage_object_path. No sustituir binario ni catálogo. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22k04_render_logo_login",
+        "s22k04_activo_no_actual",
+        "s22k04_variante_invalida",
+        "s22k04_activo_deprecado",
+        "s22k04_redibujado_o_generado",
+        "s22k04_trazabilidad_falta"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22K-C04",
+        "clave": "s22k_legacy_420",
+        "familia": "ASSETS_ICONS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Logo oficial de Login B2B con catálogo y binario trazables",
+        "descripcion": "En Login B2B-AUTH-001 BLOQUEAR logo no registrado como actual en lf_design.brand_assets, variante light distinta de LF_BRAND_LOGO_2L_LIGHT_TRANSPARENT o variante dark fuera de fondo oscuro autorizado, consumo de activo deprecado, redibujo o generación del logo. El binario canónico reside en Google Drive y catálogo operativo conserva ID de archivo, checksum, dimensiones, variante y estado mediante storage_object_path. No sustituir binario ni catálogo. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/420",
+          "solicitante": "Cristhian / Claude S22-K 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22k04_render_logo_login"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22k04_activo_no_actual"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22k04_variante_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k04_activo_deprecado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22k04_redibujado_o_generado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22k04_trazabilidad_falta"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": true,
+              "s22k04_activo_no_actual": false,
+              "s22k04_variante_invalida": false,
+              "s22k04_activo_deprecado": false,
+              "s22k04_redibujado_o_generado": false,
+              "s22k04_trazabilidad_falta": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": true,
+              "s22k04_activo_no_actual": true,
+              "s22k04_variante_invalida": false,
+              "s22k04_activo_deprecado": false,
+              "s22k04_redibujado_o_generado": false,
+              "s22k04_trazabilidad_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": true,
+              "s22k04_activo_no_actual": false,
+              "s22k04_variante_invalida": true,
+              "s22k04_activo_deprecado": false,
+              "s22k04_redibujado_o_generado": false,
+              "s22k04_trazabilidad_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": true,
+              "s22k04_activo_no_actual": false,
+              "s22k04_variante_invalida": false,
+              "s22k04_activo_deprecado": true,
+              "s22k04_redibujado_o_generado": false,
+              "s22k04_trazabilidad_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": true,
+              "s22k04_activo_no_actual": false,
+              "s22k04_variante_invalida": false,
+              "s22k04_activo_deprecado": false,
+              "s22k04_redibujado_o_generado": true,
+              "s22k04_trazabilidad_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": true,
+              "s22k04_activo_no_actual": false,
+              "s22k04_variante_invalida": false,
+              "s22k04_activo_deprecado": false,
+              "s22k04_redibujado_o_generado": false,
+              "s22k04_trazabilidad_falta": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k04_render_logo_login": false,
+              "s22k04_activo_no_actual": true,
+              "s22k04_variante_invalida": true,
+              "s22k04_activo_deprecado": true,
+              "s22k04_redibujado_o_generado": true,
+              "s22k04_trazabilidad_falta": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "beda0e3475c6db4cbc61942b1c8fd671efffe5c7df5443a112855534809b330c",
+      "hash_paquete": "557946a28690f2c916c9d7037905beccad640d701db652f2717225348257a9b9",
+      "hash_evaluado": "beda0e3475",
+      "hash_paquete_10": "557946a286"
+    },
+    {
+      "codigo": "S22K-C05",
+      "legacy_id": 405,
+      "legacy_ids": [
+        405
+      ],
+      "relacionadas": [],
+      "residual": "Falta cubrir contratos de alertas de revisión y umbrales pendientes, descarga, drill-down, filtros, acciones/entitlements y guía visual B2B-CARGA-004 de valor_config.",
+      "coberturas": [
+        {
+          "legacy_id": 405,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta cubrir contratos de alertas de revisión y umbrales pendientes, descarga, drill-down, filtros, acciones/entitlements y guía visual B2B-CARGA-004 de valor_config.",
+          "diferencias": "En lote B2B BLOQUEAR ausencia de policy_id o snapshot inmutable de política aplicada, o enrutamiento tras validación que contradiga perfil de carga del snapshot server-side: B2B_OPERADOR va a B2B_LOAD_PENDIENTE_APROBACION sin autoaprobación manual; B2B_OPERADOR_INTEGRAL va a B2B_LOAD_AUTOAPROBADO según política autorizada. Otros perfiles sin cambios. Simulación de camino aprobado solo diseño/prototipo, nunca bypass de producción. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22k05_valida_lote",
+        "s22k05_snapshot_falta_o_mutable",
+        "s22k05_routing_contradice_snapshot",
+        "s22k05_bypass_produccion",
+        "s22k05_otro_perfil_alterado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22K-C05",
+        "clave": "s22k_legacy_405",
+        "familia": "GOVERNANCE_APPROVAL",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Snapshot inmutable de política de aprobación de carga",
+        "descripcion": "En lote B2B BLOQUEAR ausencia de policy_id o snapshot inmutable de política aplicada, o enrutamiento tras validación que contradiga perfil de carga del snapshot server-side: B2B_OPERADOR va a B2B_LOAD_PENDIENTE_APROBACION sin autoaprobación manual; B2B_OPERADOR_INTEGRAL va a B2B_LOAD_AUTOAPROBADO según política autorizada. Otros perfiles sin cambios. Simulación de camino aprobado solo diseño/prototipo, nunca bypass de producción. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/405",
+          "solicitante": "Cristhian / Claude S22-K 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22k05_valida_lote"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k05_snapshot_falta_o_mutable"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22k05_routing_contradice_snapshot"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22k05_bypass_produccion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22k05_otro_perfil_alterado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k05_valida_lote": true,
+              "s22k05_snapshot_falta_o_mutable": false,
+              "s22k05_routing_contradice_snapshot": false,
+              "s22k05_bypass_produccion": false,
+              "s22k05_otro_perfil_alterado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k05_valida_lote": true,
+              "s22k05_snapshot_falta_o_mutable": true,
+              "s22k05_routing_contradice_snapshot": false,
+              "s22k05_bypass_produccion": false,
+              "s22k05_otro_perfil_alterado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k05_valida_lote": true,
+              "s22k05_snapshot_falta_o_mutable": false,
+              "s22k05_routing_contradice_snapshot": true,
+              "s22k05_bypass_produccion": false,
+              "s22k05_otro_perfil_alterado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k05_valida_lote": true,
+              "s22k05_snapshot_falta_o_mutable": false,
+              "s22k05_routing_contradice_snapshot": false,
+              "s22k05_bypass_produccion": true,
+              "s22k05_otro_perfil_alterado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22k05_valida_lote": true,
+              "s22k05_snapshot_falta_o_mutable": false,
+              "s22k05_routing_contradice_snapshot": false,
+              "s22k05_bypass_produccion": false,
+              "s22k05_otro_perfil_alterado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22k05_valida_lote": false,
+              "s22k05_snapshot_falta_o_mutable": true,
+              "s22k05_routing_contradice_snapshot": true,
+              "s22k05_bypass_produccion": true,
+              "s22k05_otro_perfil_alterado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "7c9dedb7a49104d20bbf582b7765b82ec69ccc0389eca33953f4b91a6f9d488b",
+      "hash_paquete": "0a7d4fd254856e4dcd537795259e50b53f9a75b59b7b341c2801c76857d2a655",
+      "hash_evaluado": "7c9dedb7a4",
+      "hash_paquete_10": "0a7d4fd254"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": [
+    {
+      "legacy_id": 414,
+      "nucleo_codigo": "S12-C09",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S12-C09 cubre allowlist dataLayer B2B y prohibición GTM de leer DOM.",
+      "residual": "Falta acreditar proveedores GA4/GTM y allowlist explícita de parámetros, no solo eventos."
+    },
+    {
+      "legacy_id": 415,
+      "nucleo_codigo": "S12-C10",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S12-C10 prohíbe Crashlytics sin aplicación móvil nativa acreditada.",
+      "residual": "Falta acreditar proveedor web SENTRY_WEB previsto en valor_config."
+    },
+    {
+      "legacy_id": 423,
+      "nucleo_codigo": "S12-C13",
+      "version_nucleo": 1,
+      "estado_cobertura": "REEMPLAZADA",
+      "diferencias": "S12-C13 exige política central validada legal y operativamente y bloquea plazos en regla/pantalla B2B y cantidades sin política; reutiliza destino central sin crear cantidades.",
+      "residual": ""
+    }
+  ]
+}
