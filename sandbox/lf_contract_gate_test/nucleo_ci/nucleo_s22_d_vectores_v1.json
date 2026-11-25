@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "3a738a87f6510dd462e09f01c2a9f23b696348de",
     "js_vectors": "15/15",
@@ -584,7 +584,77 @@
       "hash_paquete_10": "09182b1e7d"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22D-C01",
+      "hash_paquete": "0385f97967c884c7c4ffce038d17ccc84f3a3cb526677f6f71d60f793befbcfd",
+      "hash_paquete_10": "0385f97967",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S7-C10/S5-C17/S7-C06, declarado."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4759 / Claude 2026-11-24 23:38 Lima / S22D-C01 / hash_paquete_10=0385f97967"
+    },
+    {
+      "codigo": "S22D-C02",
+      "hash_paquete": "09182b1e7dcbacd839b26e5f1d58e5e68945f83d404d2bb8554fddb6983b8197",
+      "hash_paquete_10": "09182b1e7d",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4759 / Claude 2026-11-24 23:38 Lima / S22D-C02 / hash_paquete_10=09182b1e7d"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 160,
@@ -622,9 +692,9 @@
       "legacy_id": 589,
       "nucleo_codigo": "S14-C03",
       "version_nucleo": 1,
-      "estado_cobertura": "REEMPLAZADA",
+      "estado_cobertura": "PARCIAL",
       "diferencias": "S14-C03 conserva Inicio, Oferta, Pagos, Documentos y Ayuda con etiquetas visibles, Oferta aun sin oferta, habilitación por ruta y pantalla canónicas y carta disponible en Documentos.",
-      "residual": ""
+      "residual": "Falta lenguaje cotidiano en etiquetas, términos prohibidos al usuario (Mis operaciones, elegibilidad, estado normalizado), Pagos contextual y contraste minimo 4.5 de etiquetas."
     }
   ]
 }
