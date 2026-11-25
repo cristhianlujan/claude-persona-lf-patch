@@ -49,10 +49,109 @@ CREATE TABLE saly.ventas_discovery_plan_batches (
 CREATE TABLE saly.ventas_discovery_ingestas (
  id uuid,run_ref text,source_id text,batch_key text,scope_key text,
  estado text,archivo_sha256 text,filas_reportadas int);
-CREATE TABLE saly.ventas_hallazgos (id uuid,ingesta_id uuid,ruc_candidato text);
+CREATE TABLE saly.ventas_hallazgos (id uuid,ingesta_id uuid,ruc_candidato text,captura_empresarial jsonb);
 CREATE TABLE saly.ventas_sunat_bulk_delete_ledger_v1 (run_ref text);
-CREATE TABLE saly.ventas_sunat_elegibilidad_v1 (
- run_ref text,clasificacion_comercial text,nrotrab integer);
+CREATE VIEW saly.ventas_sunat_elegibilidad_v1 AS
+SELECT h.id AS hallazgo_id,h.ingesta_id,i.run_ref,i.batch_key,
+       h.ruc_candidato AS ruc,
+       h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}' AS nrotrab_literal,
+       s.nrotrab,s.estado_mensual,s.estado_reducido,s.condicion_mensual,s.condicion_reducida,
+       CASE WHEN s.nrotrab IS NULL THEN 'EXCLUIDA_SIN_DATO_EMPLEADOS'
+            WHEN s.nrotrab < threshold.min_workers THEN 'EXCLUIDA_MENOS_50_EMPLEADOS'
+            WHEN upper(btrim(coalesce(s.estado_mensual,''))) IS DISTINCT FROM 'ACTIVO'
+              OR upper(btrim(coalesce(s.estado_reducido,''))) IS DISTINCT FROM 'ACTIVO' THEN 'EXCLUIDA_ESTADO'
+            WHEN upper(btrim(coalesce(s.condicion_mensual,''))) IS DISTINCT FROM 'HABIDO'
+              OR upper(btrim(coalesce(s.condicion_reducida,''))) IS DISTINCT FROM 'HABIDO' THEN 'EXCLUIDA_CONDICION'
+            ELSE 'ELEGIBLE' END AS clasificacion_comercial
+FROM saly.ventas_hallazgos h
+JOIN saly.ventas_discovery_ingestas i ON i.id=h.ingesta_id
+CROSS JOIN LATERAL (
+ SELECT CASE WHEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}') ~ '^[0-9]{1,9}
+CREATE FUNCTION public.fn_lf_operation_acquire_lease_v1(
+ p_execution_id text,p_lease_owner text,p_ttl_seconds integer,p_actor_execution_id text)
+ RETURNS jsonb LANGUAGE plpgsql AS $fn$
+ DECLARE v_fence bigint;
+ BEGIN
+ UPDATE public.lf_operation_execution SET lease_owner=p_lease_owner,
+ lease_fence=lease_fence+1,lease_expires_at=clock_timestamp()+make_interval(secs=>p_ttl_seconds)
+ WHERE execution_id=p_execution_id RETURNING lease_fence INTO v_fence;
+ RETURN jsonb_build_object('result','LEASE_ACQUIRED','lease_owner',p_lease_owner,
+ 'lease_fence',v_fence,'lease_expires_at',clock_timestamp()+make_interval(secs=>p_ttl_seconds));
+ END $fn$;
+""")
+    sql(CANDIDATE.read_text())
+    assert sql("SELECT count(*) FROM pg_constraint WHERE conname='saly_l28_run_close_disabled'") == "0"
+    assert sql("SELECT count(*) FROM pg_trigger WHERE tgname='trg_saly_ventas_discovery_close_gate_v1'") == "1"
+    sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'bad','v1','{}','" + "0"*64 + "','CERRADO',now())", False, "SUNAT_CLOSE_INSERT_FORBIDDEN")
+    print("PASS_PG17_INSERT_CERRADO_FORBIDDEN")
+    sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'run-open','v1','{}','" + "0"*64 + "','EN_EJECUCION',null)")
+    sql("UPDATE saly.ventas_discovery_runs SET estado='CERRADO',finished_at=now() WHERE run_ref='run-open'", False, "SUNAT_CLOSE_GATE_REJECTED")
+    assert sql("SELECT estado FROM saly.ventas_discovery_runs WHERE run_ref='run-open'") == "EN_EJECUCION"
+    print("PASS_PG17_UPDATE_CERRADO_BLOCKED")
+    sql("INSERT INTO public.lf_operation_execution VALUES ('run-open','INGESTA_EMPRESARIAL_SALY','IN_PROGRESS',null,0,null,null,'{}',null,null)")
+    sql("SELECT saly.ventas_sunat_commercial_close_v1('run-open','actor','owner','" + "0"*64 + "')", False, "SUNAT_CLOSE_POLICY_OR_MANIFEST")
+    assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='run-open'") == "IN_PROGRESS"
+    print("PASS_PG17_MISSING_POLICY_BLOCKS_WITHOUT_MUTATION")
+    assert sql("SELECT has_function_privilege('authenticated','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
+    assert sql("SELECT has_function_privilege('service_role','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
+    print("PASS_PG17_CLIENT_ROLES_DENIED")
+    print("PASS_PG17_SUNAT_CLOSE_NEGATIVE_TRANCHE")
+    # Real PG17 full-size synthetic positive, dual session, and fault injection.
+    from test_sunat_close_positive_pg17 import main as positive_close
+    positive_close()
+
+if __name__ == "__main__": main()
+
+             THEN (h.captura_empresarial #>> '{capture,normalized,workers_integer_literal}')::integer
+             ELSE NULL::integer END AS nrotrab,
+        h.captura_empresarial #>> '{capture,observations,monthly,raw,Estado}' AS estado_mensual,
+        h.captura_empresarial #>> '{capture,observations,reduced,raw,estado}' AS estado_reducido,
+        h.captura_empresarial #>> '{capture,observations,monthly,raw,Condicion}' AS condicion_mensual,
+        h.captura_empresarial #>> '{capture,observations,reduced,raw,condicion}' AS condicion_reducida
+) s
+CROSS JOIN (
+ SELECT config_value::integer AS min_workers FROM public.lf_global_config
+ WHERE scope='SALY_DISCOVERY' AND config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'
+   AND value_type='INTEGER' AND value_status='REAL'
+   AND config_value ~ '^[1-9][0-9]{0,7}
+CREATE FUNCTION public.fn_lf_operation_acquire_lease_v1(
+ p_execution_id text,p_lease_owner text,p_ttl_seconds integer,p_actor_execution_id text)
+ RETURNS jsonb LANGUAGE plpgsql AS $fn$
+ DECLARE v_fence bigint;
+ BEGIN
+ UPDATE public.lf_operation_execution SET lease_owner=p_lease_owner,
+ lease_fence=lease_fence+1,lease_expires_at=clock_timestamp()+make_interval(secs=>p_ttl_seconds)
+ WHERE execution_id=p_execution_id RETURNING lease_fence INTO v_fence;
+ RETURN jsonb_build_object('result','LEASE_ACQUIRED','lease_owner',p_lease_owner,
+ 'lease_fence',v_fence,'lease_expires_at',clock_timestamp()+make_interval(secs=>p_ttl_seconds));
+ END $fn$;
+""")
+    sql(CANDIDATE.read_text())
+    assert sql("SELECT count(*) FROM pg_constraint WHERE conname='saly_l28_run_close_disabled'") == "0"
+    assert sql("SELECT count(*) FROM pg_trigger WHERE tgname='trg_saly_ventas_discovery_close_gate_v1'") == "1"
+    sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'bad','v1','{}','" + "0"*64 + "','CERRADO',now())", False, "SUNAT_CLOSE_INSERT_FORBIDDEN")
+    print("PASS_PG17_INSERT_CERRADO_FORBIDDEN")
+    sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'run-open','v1','{}','" + "0"*64 + "','EN_EJECUCION',null)")
+    sql("UPDATE saly.ventas_discovery_runs SET estado='CERRADO',finished_at=now() WHERE run_ref='run-open'", False, "SUNAT_CLOSE_GATE_REJECTED")
+    assert sql("SELECT estado FROM saly.ventas_discovery_runs WHERE run_ref='run-open'") == "EN_EJECUCION"
+    print("PASS_PG17_UPDATE_CERRADO_BLOCKED")
+    sql("INSERT INTO public.lf_operation_execution VALUES ('run-open','INGESTA_EMPRESARIAL_SALY','IN_PROGRESS',null,0,null,null,'{}',null,null)")
+    sql("SELECT saly.ventas_sunat_commercial_close_v1('run-open','actor','owner','" + "0"*64 + "')", False, "SUNAT_CLOSE_POLICY_OR_MANIFEST")
+    assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='run-open'") == "IN_PROGRESS"
+    print("PASS_PG17_MISSING_POLICY_BLOCKS_WITHOUT_MUTATION")
+    assert sql("SELECT has_function_privilege('authenticated','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
+    assert sql("SELECT has_function_privilege('service_role','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
+    print("PASS_PG17_CLIENT_ROLES_DENIED")
+    print("PASS_PG17_SUNAT_CLOSE_NEGATIVE_TRANCHE")
+    # Real PG17 full-size synthetic positive, dual session, and fault injection.
+    from test_sunat_close_positive_pg17 import main as positive_close
+    positive_close()
+
+if __name__ == "__main__": main()
+ AND valid_from<=now()
+ ORDER BY valid_from DESC LIMIT 1
+) threshold
+WHERE i.source_id='PE-SUNAT-RUC';
 CREATE FUNCTION public.fn_lf_operation_acquire_lease_v1(
  p_execution_id text,p_lease_owner text,p_ttl_seconds integer,p_actor_execution_id text)
  RETURNS jsonb LANGUAGE plpgsql AS $fn$
