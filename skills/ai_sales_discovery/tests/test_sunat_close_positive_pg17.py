@@ -134,6 +134,14 @@ SELECT encode(sha256(convert_to(jsonb_build_object(
 VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now());""")
     sql(call.replace(digest,'0'*64),False)
     print('PASS_PG17_BAD_DIGEST_FAILS_CLOSED')
+    # Coverage must be total, not merely "zero ineligible": missing classifications
+    # are unsafe even when every remaining row is eligible.
+    sql("DELETE FROM saly.ventas_sunat_elegibilidad_v1 WHERE ctid IN "
+        "(SELECT ctid FROM saly.ventas_sunat_elegibilidad_v1 LIMIT 1)")
+    sql(call,False)
+    assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
+    sql("INSERT INTO saly.ventas_sunat_elegibilidad_v1 VALUES ('"+COMMERCIAL+"','ELEGIBLE',50)")
+    print('PASS_PG17_MISSING_ELIGIBILITY_COVERAGE_BLOCKED')
     sql("""
 CREATE FUNCTION saly.synthetic_abort_close() RETURNS trigger LANGUAGE plpgsql AS $fn$
 BEGIN IF NEW.estado='CERRADO' THEN RAISE EXCEPTION 'SYNTHETIC_SECOND_UPDATE_ROLLBACK'; END IF;
