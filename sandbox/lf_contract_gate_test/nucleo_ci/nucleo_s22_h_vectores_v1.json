@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "57c051f66193c9c3b1c152374356f182fa579ba1",
     "js_vectors": "9/9",
@@ -407,7 +407,79 @@
       "hash_paquete_10": "6d1303bcc3"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22H-C01",
+      "hash_paquete": "73ead5ae785a840243e32da3506651409178257e69b5b304c765cd19178312d9",
+      "hash_paquete_10": "73ead5ae78",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "complementa S10-C14 y S10-C15, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4764 / Claude 2026-11-25 14:38 Lima / S22H-C01 / hash_paquete_10=73ead5ae78"
+    },
+    {
+      "codigo": "S22H-C02",
+      "hash_paquete": "6d1303bcc34eb6b06c6ebf54adf00e058fcbf3a665a524a9942b5d15db49f5a7",
+      "hash_paquete_10": "6d1303bcc3",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "contrato canónico y binding de rutas pendientes de Paulo"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "relacionada con S9-C21 CORS, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4764 / Claude 2026-11-25 14:38 Lima / S22H-C02 / hash_paquete_10=6d1303bcc3"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 206,
