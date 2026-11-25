@@ -74,5 +74,8 @@ CREATE FUNCTION public.fn_lf_operation_acquire_lease_v1(
     assert sql("SELECT has_function_privilege('service_role','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
     print("PASS_PG17_CLIENT_ROLES_DENIED")
     print("PASS_PG17_SUNAT_CLOSE_NEGATIVE_TRANCHE")
+    # Real PG17 full-size synthetic positive, dual session, and fault injection.
+    from test_sunat_close_positive_pg17 import main as positive_close
+    positive_close()
 
 if __name__ == "__main__": main()
