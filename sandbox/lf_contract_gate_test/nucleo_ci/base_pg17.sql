@@ -120,6 +120,10 @@ CREATE TABLE public.lf_error_knowledge (
 -- Source snapshots are only loaded in isolated PG17, never inserted by migration in LF.
 ALTER TABLE public.lf_b2b_pricing_config ADD COLUMN niubiz_fee_type text, ADD COLUMN show_niubiz_fee boolean, ADD COLUMN management_fee_type text, ADD COLUMN show_management_fee boolean;
 INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status,description,valid_from) VALUES ('AUTH','IDEMPOTENCY_KEY_VALIDITY_MINUTES','5','INTEGER','REAL','Observed production parameter for isolated replay','2026-11-19 04:52:25.537076+00');
+-- S22-A: observed production parameters for isolated replay only.
+INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status,description,valid_from) VALUES
+('AUTH','MFA_DEVICE_IDLE_DAYS','30','INTEGER','REAL','Observed production parameter for isolated replay','2026-11-18 07:39:14.76485+00'),
+('AUTH','MFA_PASSWORD_AGE_MONTHS','3','INTEGER','REAL','Observed production parameter for isolated replay','2026-11-18 07:39:14.76485+00');
 -- S21: production AUTH values observed for isolated replay only.
 INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status,description,valid_from) VALUES
 ('AUTH','LOGIN_LOCKOUT_ATTEMPT_WINDOW_MINUTES','30','INTEGER','REAL','Observed production parameter for isolated replay','2026-11-18 21:54:14.896066+00'),
