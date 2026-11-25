@@ -155,4 +155,12 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     # No public client execution paths.
     assert psql("SELECT has_function_privilege('service_role','saly.ventas_sunat_batch_execute_v1(text,text,bigint,text,text)','EXECUTE')")=='f'
     print('PASS_SUNAT_NATIVE_PLAN_BATCH_ATOMIC_ROLLBACK_READBACK_REPLAY_LEASE_2_BATCHES_2_COMPANIES')
+    # Execute SALY SUNAT closure candidate negative checks in an isolated PG17 database.
+    # Reuse existing authorized workflow, no new workflow and no SALY credentials.
+    subprocess.run(['createdb','saly_sunat_close_ci'],check=True,timeout=30)
+    close_env=os.environ.copy()
+    close_env['PGDATABASE']='saly_sunat_close_ci'
+    subprocess.run([sys.executable,str(Path(__file__).with_name('test_sunat_close_pg17.py'))],
+                   check=True,env=close_env,timeout=150)
+
 if __name__=='__main__': main()
