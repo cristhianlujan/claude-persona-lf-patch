@@ -1,0 +1,35 @@
+name: SALY creative issue executor
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: saly-creative-issue-executor
+  cancel-in-progress: false
+jobs:
+  execute:
+    if: github.event.issue.user.id == 259964988 && contains(github.event.issue.labels.*.name, 'saly-run')
+    environment: lf-merge-train
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - name: Execute fixed pilot contract
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload="$(jq -ce '.issue.body | fromjson | select((.action=="claim" or .action=="finish") and (.order_id|type=="number"))' "$GITHUB_EVENT_PATH")"
+          if docker run --rm -i -e PGPASSWORD -e PGSSLMODE=require postgres:17.6 psql 'host=aws-1-us-east-1.pooler.supabase.com port=5432 user=postgres.mhwmirqcgxxukpctffuv dbname=postgres sslmode=require' -X -qAt -v ON_ERROR_STOP=1 -v "payload=$payload" < sandbox/lf_contract_gate_test/saly_creative_issue_executor_v1.sql > /tmp/saly-result 2>/tmp/saly-error; then
+            tail -n 1 /tmp/saly-result | jq -c . > /tmp/saly-comment
+          else
+            printf '{"status":"BLOCKED","reason":"SQL_TRANSACTION_FAILED","workflow_run":%s}\n' "$GITHUB_RUN_ID" > /tmp/saly-comment
+          fi
+          gh issue comment "$(jq -r .issue.number "$GITHUB_EVENT_PATH")" --repo "$GITHUB_REPOSITORY" --body-file /tmp/saly-comment
