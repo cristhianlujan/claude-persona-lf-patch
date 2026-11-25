@@ -1,0 +1,700 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "3a738a87f6510dd462e09f01c2a9f23b696348de",
+    "js_vectors": "15/15",
+    "hash": "SQL RO canonical formula; PG17 pending"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22d01_operacion_otp_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "operacion otp b2b; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_contador_cruzado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contador cruzado; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_bloqueo_solo_ip",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloqueo solo ip; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_recuperacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "recuperacion; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_sujeto_hmac_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sujeto hmac invalido; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_consumo_depende_existencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "consumo depende existencia; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_segundo_control",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "segundo control; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d01_reenvio_o_emision_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reenvio o emision invalido; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22d02_devolucion_pago_confirmado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "devolucion pago confirmado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22d02_sustitucion_no_monetaria",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sustitucion no monetaria; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22d02_ruta_original_viable_reconciliada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta original viable reconciliada; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22d02_ruta_original_omitida_sin_justificacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta original omitida sin justificacion; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22d02_beneficio_no_separado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "beneficio no separado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22d02_frontend_decide",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "frontend decide; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22D-C01",
+      "legacy_id": 501,
+      "legacy_ids": [
+        501,
+        503
+      ],
+      "relacionadas": [
+        "S7-C10",
+        "S5-C17",
+        "S7-C06"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 501,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En solicitud inicial o reenvío OTP B2B de PASSWORD_RECOVERY o AUTH_NEW_DEVICE_OTP_SEND BLOQUEAR consumir o bloquear contadores de otra operación OTP o correo transaccional. La IP es señal preventiva de riesgo, no causa autónoma de bloqueo en estas operaciones. En recuperación, derivar sujeto mediante HMAC del correo canónico server-side con secreto runtime y consumir contador independientemente de existencia de cuenta. Para segundo control, conservar reenvío del mismo OTP vigente con intentos disponibles conforme S7-C06; nueva emisión solo conforme política de su operación. Complementa S7-C10 y S5-C17; no modifica cuotas, ventanas ni políticas existentes. Binding pendiente."
+        },
+        {
+          "legacy_id": 503,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En solicitud inicial o reenvío OTP B2B de PASSWORD_RECOVERY o AUTH_NEW_DEVICE_OTP_SEND BLOQUEAR consumir o bloquear contadores de otra operación OTP o correo transaccional. La IP es señal preventiva de riesgo, no causa autónoma de bloqueo en estas operaciones. En recuperación, derivar sujeto mediante HMAC del correo canónico server-side con secreto runtime y consumir contador independientemente de existencia de cuenta. Para segundo control, conservar reenvío del mismo OTP vigente con intentos disponibles conforme S7-C06; nueva emisión solo conforme política de su operación. Complementa S7-C10 y S5-C17; no modifica cuotas, ventanas ni políticas existentes. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22d01_operacion_otp_b2b",
+        "s22d01_contador_cruzado",
+        "s22d01_bloqueo_solo_ip",
+        "s22d01_recuperacion",
+        "s22d01_sujeto_hmac_invalido",
+        "s22d01_consumo_depende_existencia",
+        "s22d01_segundo_control",
+        "s22d01_reenvio_o_emision_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22D-C01",
+        "clave": "s22d_legacy_501",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Aislamiento de contadores OTP por operación B2B",
+        "descripcion": "En solicitud inicial o reenvío OTP B2B de PASSWORD_RECOVERY o AUTH_NEW_DEVICE_OTP_SEND BLOQUEAR consumir o bloquear contadores de otra operación OTP o correo transaccional. La IP es señal preventiva de riesgo, no causa autónoma de bloqueo en estas operaciones. En recuperación, derivar sujeto mediante HMAC del correo canónico server-side con secreto runtime y consumir contador independientemente de existencia de cuenta. Para segundo control, conservar reenvío del mismo OTP vigente con intentos disponibles conforme S7-C06; nueva emisión solo conforme política de su operación. Complementa S7-C10 y S5-C17; no modifica cuotas, ventanas ni políticas existentes. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/501;lf_ops.reglas/503",
+          "solicitante": "Cristhian / Claude S22-D 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22d01_operacion_otp_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22d01_contador_cruzado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22d01_bloqueo_solo_ip"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "y",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22d01_recuperacion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22d01_sujeto_hmac_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22d01_consumo_depende_existencia"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                }
+              }
+            },
+            "der": {
+              "op": "y",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22d01_segundo_control"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22d01_reenvio_o_emision_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": false,
+              "s22d01_bloqueo_solo_ip": false,
+              "s22d01_recuperacion": true,
+              "s22d01_sujeto_hmac_invalido": false,
+              "s22d01_consumo_depende_existencia": false,
+              "s22d01_segundo_control": false,
+              "s22d01_reenvio_o_emision_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": true,
+              "s22d01_bloqueo_solo_ip": false,
+              "s22d01_recuperacion": true,
+              "s22d01_sujeto_hmac_invalido": false,
+              "s22d01_consumo_depende_existencia": false,
+              "s22d01_segundo_control": false,
+              "s22d01_reenvio_o_emision_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": false,
+              "s22d01_bloqueo_solo_ip": true,
+              "s22d01_recuperacion": false,
+              "s22d01_sujeto_hmac_invalido": false,
+              "s22d01_consumo_depende_existencia": false,
+              "s22d01_segundo_control": true,
+              "s22d01_reenvio_o_emision_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": false,
+              "s22d01_bloqueo_solo_ip": false,
+              "s22d01_recuperacion": true,
+              "s22d01_sujeto_hmac_invalido": true,
+              "s22d01_consumo_depende_existencia": false,
+              "s22d01_segundo_control": false,
+              "s22d01_reenvio_o_emision_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": false,
+              "s22d01_bloqueo_solo_ip": false,
+              "s22d01_recuperacion": true,
+              "s22d01_sujeto_hmac_invalido": false,
+              "s22d01_consumo_depende_existencia": true,
+              "s22d01_segundo_control": false,
+              "s22d01_reenvio_o_emision_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": false,
+              "s22d01_bloqueo_solo_ip": false,
+              "s22d01_recuperacion": false,
+              "s22d01_sujeto_hmac_invalido": false,
+              "s22d01_consumo_depende_existencia": false,
+              "s22d01_segundo_control": true,
+              "s22d01_reenvio_o_emision_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": true,
+              "s22d01_contador_cruzado": false,
+              "s22d01_bloqueo_solo_ip": false,
+              "s22d01_recuperacion": false,
+              "s22d01_sujeto_hmac_invalido": false,
+              "s22d01_consumo_depende_existencia": false,
+              "s22d01_segundo_control": true,
+              "s22d01_reenvio_o_emision_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22d01_operacion_otp_b2b": false,
+              "s22d01_contador_cruzado": true,
+              "s22d01_bloqueo_solo_ip": true,
+              "s22d01_recuperacion": true,
+              "s22d01_sujeto_hmac_invalido": true,
+              "s22d01_consumo_depende_existencia": true,
+              "s22d01_segundo_control": true,
+              "s22d01_reenvio_o_emision_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "8e243d7a50740836abc41f736d62bcce26fbe7723392c03d5579924212de2f3e",
+      "hash_paquete": "0385f97967c884c7c4ffce038d17ccc84f3a3cb526677f6f71d60f793befbcfd",
+      "hash_evaluado": "8e243d7a50",
+      "hash_paquete_10": "0385f97967"
+    },
+    {
+      "codigo": "S22D-C02",
+      "legacy_id": 625,
+      "legacy_ids": [
+        625
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 625,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En devolución de pago confirmado BLOQUEAR sustituir retorno de dinero por billetera, saldo, crédito interno LF, bono o cupón obligatorio. Preferir ruta original cuando proveedor la soporte y exista reconciliación autoritativa. Beneficio comercial adicional se registra y presenta separado de devolución. Frontend no decide elegibilidad, monto, destino ni estado. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22d02_devolucion_pago_confirmado",
+        "s22d02_sustitucion_no_monetaria",
+        "s22d02_ruta_original_viable_reconciliada",
+        "s22d02_ruta_original_omitida_sin_justificacion",
+        "s22d02_beneficio_no_separado",
+        "s22d02_frontend_decide"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22D-C02",
+        "clave": "s22d_legacy_625",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Devolución monetaria sin saldo interno LF",
+        "descripcion": "En devolución de pago confirmado BLOQUEAR sustituir retorno de dinero por billetera, saldo, crédito interno LF, bono o cupón obligatorio. Preferir ruta original cuando proveedor la soporte y exista reconciliación autoritativa. Beneficio comercial adicional se registra y presenta separado de devolución. Frontend no decide elegibilidad, monto, destino ni estado. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/625",
+          "solicitante": "Cristhian / Claude S22-D 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22d02_devolucion_pago_confirmado"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22d02_sustitucion_no_monetaria"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "y",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22d02_ruta_original_viable_reconciliada"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22d02_ruta_original_omitida_sin_justificacion"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22d02_beneficio_no_separado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22d02_frontend_decide"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": true,
+              "s22d02_sustitucion_no_monetaria": false,
+              "s22d02_ruta_original_viable_reconciliada": true,
+              "s22d02_ruta_original_omitida_sin_justificacion": false,
+              "s22d02_beneficio_no_separado": false,
+              "s22d02_frontend_decide": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": true,
+              "s22d02_sustitucion_no_monetaria": true,
+              "s22d02_ruta_original_viable_reconciliada": true,
+              "s22d02_ruta_original_omitida_sin_justificacion": false,
+              "s22d02_beneficio_no_separado": false,
+              "s22d02_frontend_decide": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": true,
+              "s22d02_sustitucion_no_monetaria": false,
+              "s22d02_ruta_original_viable_reconciliada": true,
+              "s22d02_ruta_original_omitida_sin_justificacion": true,
+              "s22d02_beneficio_no_separado": false,
+              "s22d02_frontend_decide": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": true,
+              "s22d02_sustitucion_no_monetaria": false,
+              "s22d02_ruta_original_viable_reconciliada": false,
+              "s22d02_ruta_original_omitida_sin_justificacion": true,
+              "s22d02_beneficio_no_separado": false,
+              "s22d02_frontend_decide": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": true,
+              "s22d02_sustitucion_no_monetaria": false,
+              "s22d02_ruta_original_viable_reconciliada": false,
+              "s22d02_ruta_original_omitida_sin_justificacion": false,
+              "s22d02_beneficio_no_separado": true,
+              "s22d02_frontend_decide": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": true,
+              "s22d02_sustitucion_no_monetaria": false,
+              "s22d02_ruta_original_viable_reconciliada": false,
+              "s22d02_ruta_original_omitida_sin_justificacion": false,
+              "s22d02_beneficio_no_separado": false,
+              "s22d02_frontend_decide": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22d02_devolucion_pago_confirmado": false,
+              "s22d02_sustitucion_no_monetaria": true,
+              "s22d02_ruta_original_viable_reconciliada": true,
+              "s22d02_ruta_original_omitida_sin_justificacion": true,
+              "s22d02_beneficio_no_separado": true,
+              "s22d02_frontend_decide": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "67c6d6618a790d8364bae4119f764d1f8f220128bef667431c80564b5c5bc848",
+      "hash_paquete": "09182b1e7dcbacd839b26e5f1d58e5e68945f83d404d2bb8554fddb6983b8197",
+      "hash_evaluado": "67c6d6618a",
+      "hash_paquete_10": "09182b1e7d"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22D-C01",
+      "hash_paquete": "0385f97967c884c7c4ffce038d17ccc84f3a3cb526677f6f71d60f793befbcfd",
+      "hash_paquete_10": "0385f97967",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S7-C10/S5-C17/S7-C06, declarado."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4759 / Claude 2026-11-24 23:38 Lima / S22D-C01 / hash_paquete_10=0385f97967"
+    },
+    {
+      "codigo": "S22D-C02",
+      "hash_paquete": "09182b1e7dcbacd839b26e5f1d58e5e68945f83d404d2bb8554fddb6983b8197",
+      "hash_paquete_10": "09182b1e7d",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4759 / Claude 2026-11-24 23:38 Lima / S22D-C02 / hash_paquete_10=09182b1e7d"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 160,
+      "nucleo_codigo": "S15-C07",
+      "version_nucleo": 1,
+      "estado_cobertura": "REEMPLAZADA",
+      "diferencias": "S15-C07 exige elegir fecha de débito de cuotas posteriores a la inicial desde opciones del aliado en PASO3_CUOTAS_DESGLOSE_V2; excluye ejemplos históricos como defaults.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 452,
+      "nucleo_codigo": "S22A-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S22A-C02 exige OTP correo para dispositivo nuevo, desconocido o inactivo y reconocimiento gobernado por servidor; no sustituye S7-C07 ni reglas MFA.",
+      "residual": "Falta acreditar contexto MFA transitorio de B2B-AUTH-004, denegación de navegación directa y enrutamiento completo conforme política de perfiles."
+    },
+    {
+      "legacy_id": 493,
+      "nucleo_codigo": "S7-C10",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S7-C10 protege anti-enumeración en respuesta, navegación, falla del proveedor y rate limit independiente de existencia de cuenta.",
+      "residual": "Falta operación de verificación PASSWORD_RECOVERY separada de MFA, validación server-side y alcance exclusivo PASSWORD_UPDATE_ONLY sin exposición del código."
+    },
+    {
+      "legacy_id": 514,
+      "nucleo_codigo": "S4-C21",
+      "version_nucleo": 2,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S4-C21 exige Home sin oferta real confirmada, sin montos, modalidades ni CTA de pago y distingue error de consulta de ausencia de oferta.",
+      "residual": "Falta resolución autoritativa de ACTIVE_OFFER_HOME y especialización por cantidad/modalidad sin inferir códigos de pantalla, respetando S14-C14."
+    },
+    {
+      "legacy_id": 589,
+      "nucleo_codigo": "S14-C03",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S14-C03 conserva Inicio, Oferta, Pagos, Documentos y Ayuda con etiquetas visibles, Oferta aun sin oferta, habilitación por ruta y pantalla canónicas y carta disponible en Documentos.",
+      "residual": "Falta lenguaje cotidiano en etiquetas, términos prohibidos al usuario (Mis operaciones, elegibilidad, estado normalizado), Pagos contextual y contraste minimo 4.5 de etiquetas."
+    }
+  ]
+}
