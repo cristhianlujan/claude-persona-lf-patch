@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-creative-pilot-claim-11-v1",
+  "paths": {
+    "supabase/migrations/20261124222002_lf_saly_creative_pilot_claim_11_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-pilot-claim-11-v1.json": "CHANGESET_MANIFEST",
+    "supabase/tests/saly_creative_pilot_claim_11_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW"
+  }
+}
