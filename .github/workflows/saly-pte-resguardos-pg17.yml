@@ -9,6 +9,15 @@ on:
       - 'supabase/migrations/*_lf_saly_ventas_pte_writer_core_v1.sql'
       - 'supabase/migrations/*_lf_saly_ventas_pte_snapshot_unique_v1.sql'
       - 'skills/ai_sales_discovery/**'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '.github/workflows/saly-pte-resguardos-pg17.yml'
+      - 'skills/ai_sales_discovery/**'
+      - 'supabase/tests/saly_ventas_pte_writer_core_v1_concurrency.py'
+      - 'supabase/tests/saly_ventas_pte_crossrun_pg17_concurrency.py'
+      - 'supabase/migrations/*_lf_saly_ventas_pte_writer_core_v1.sql'
+      - 'supabase/migrations/*_lf_saly_ventas_pte_snapshot_unique_v1.sql'
   workflow_dispatch:
 permissions:
   contents: read
