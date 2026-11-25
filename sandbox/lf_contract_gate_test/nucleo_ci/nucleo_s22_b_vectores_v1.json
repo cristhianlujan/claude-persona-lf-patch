@@ -1,0 +1,1193 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "2846b8ed1da580d9aa4c78ff3b2a0346deebe93d",
+    "js_vectors": "28/28",
+    "hash": "SQL RO canonical formula; PG17 pending"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22b01_produccion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "produccion; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b01_marca_visible",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "marca visible; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b01_autorizacion_vigente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "autorizacion vigente; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b01_placeholder",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "placeholder; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b02_modal_cronograma",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modal cronograma; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b02_encabezado_correcto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "encabezado correcto; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b02_subtitulo_visible",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "subtitulo visible; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b02_plan_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "plan autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b02_pago_inicial_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pago inicial autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b03_activacion_plan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activacion plan; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b03_pago_inicial_diferido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pago inicial diferido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b03_pago_inicial_confirmado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pago inicial confirmado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b03_fechas_posteriores_invalidas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fechas posteriores invalidas; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22b05_login_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "login b2b; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b05_accesos_visibles",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accesos visibles; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b05_rutas_b2b_canonicas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "rutas b2b canonicas; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b05_acceso_sin_sesion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "acceso sin sesion; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b05_reuso_b2c_o_url_fija",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reuso b2c o url fija; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b06_webhook_brevo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "webhook brevo; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b06_https",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "https; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b06_bearer_valido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bearer valido; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b06_acepta_o_persiste_o_modifica",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "acepta o persiste o modifica; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22b06_secreto_persistido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "secreto persistido; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22B-C01",
+      "legacy_id": 230,
+      "legacy_ids": [
+        230,
+        275,
+        287
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 230,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "BLOQUEAR mostrar en producción logos o marcas de medios de pago sin contrato o lineamiento explícito vigente que autorice su uso; los placeholders de prototipo no acreditan autorización. No fijar lista de marcas ni habilitar Mastercard por defecto. La autorización de marca no sustituye elegibilidad del medio. Binding pendiente."
+        },
+        {
+          "legacy_id": 275,
+          "estado_cobertura": "PARCIAL",
+          "residual": "La composición histórica Visa/Amex/Diners sin Mastercard del prototipo no se conserva como obligación operativa.",
+          "diferencias": "BLOQUEAR mostrar en producción logos o marcas de medios de pago sin contrato o lineamiento explícito vigente que autorice su uso; los placeholders de prototipo no acreditan autorización. No fijar lista de marcas ni habilitar Mastercard por defecto. La autorización de marca no sustituye elegibilidad del medio. Binding pendiente."
+        },
+        {
+          "legacy_id": 287,
+          "estado_cobertura": "PARCIAL",
+          "residual": "La lista histórica de marcas del prototipo no se conserva; falta acreditar contrato real Niubiz.",
+          "diferencias": "BLOQUEAR mostrar en producción logos o marcas de medios de pago sin contrato o lineamiento explícito vigente que autorice su uso; los placeholders de prototipo no acreditan autorización. No fijar lista de marcas ni habilitar Mastercard por defecto. La autorización de marca no sustituye elegibilidad del medio. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22b01_produccion",
+        "s22b01_marca_visible",
+        "s22b01_autorizacion_vigente",
+        "s22b01_placeholder"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22B-C01",
+        "clave": "s22b_legacy_230",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Autorización de marcas de medios de pago",
+        "descripcion": "BLOQUEAR mostrar en producción logos o marcas de medios de pago sin contrato o lineamiento explícito vigente que autorice su uso; los placeholders de prototipo no acreditan autorización. No fijar lista de marcas ni habilitar Mastercard por defecto. La autorización de marca no sustituye elegibilidad del medio. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/230;lf_ops.reglas/275;lf_ops.reglas/287",
+          "solicitante": "Cristhian / Claude S22-B 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "y",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b01_produccion"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b01_marca_visible"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b01_autorizacion_vigente"
+              },
+              "der": {
+                "lit": false
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b01_placeholder"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b01_produccion": true,
+              "s22b01_marca_visible": true,
+              "s22b01_autorizacion_vigente": false,
+              "s22b01_placeholder": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b01_produccion": true,
+              "s22b01_marca_visible": true,
+              "s22b01_autorizacion_vigente": true,
+              "s22b01_placeholder": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b01_produccion": true,
+              "s22b01_marca_visible": true,
+              "s22b01_autorizacion_vigente": true,
+              "s22b01_placeholder": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b01_produccion": false,
+              "s22b01_marca_visible": true,
+              "s22b01_autorizacion_vigente": false,
+              "s22b01_placeholder": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b01_produccion": true,
+              "s22b01_marca_visible": false,
+              "s22b01_autorizacion_vigente": false,
+              "s22b01_placeholder": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "d4a2817e9b18b5ee4779367a6d30b9bef7bddf52a09d6d05eced608111ccc479",
+      "hash_paquete": "38757f01422ae985a2399f40217623fdf90b2e65c6eee385d601774ef57c994e",
+      "hash_evaluado": "d4a2817e9b",
+      "hash_paquete_10": "38757f0142"
+    },
+    {
+      "codigo": "S22B-C02",
+      "legacy_id": 308,
+      "legacy_ids": [
+        308
+      ],
+      "relacionadas": [
+        "S6-C17",
+        "S21-C05",
+        "S6-C15",
+        "S6-C19"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 308,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En modal Ver cronograma de checkout cuotas BLOQUEAR ausencia de encabezado Cronograma del plan, subtítulo, plan seleccionado con número de cuotas o pago inicial de hoy; estos datos corresponden al plan y quote autoritativos. Complementa S6-C17 y S21-C05 sin repetir tabla, estado por cuota, total, cierre o descarga. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22b02_modal_cronograma",
+        "s22b02_encabezado_correcto",
+        "s22b02_subtitulo_visible",
+        "s22b02_plan_autoritativo",
+        "s22b02_pago_inicial_autoritativo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22B-C02",
+        "clave": "s22b_legacy_308",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Contexto del encabezado de cronograma",
+        "descripcion": "En modal Ver cronograma de checkout cuotas BLOQUEAR ausencia de encabezado Cronograma del plan, subtítulo, plan seleccionado con número de cuotas o pago inicial de hoy; estos datos corresponden al plan y quote autoritativos. Complementa S6-C17 y S21-C05 sin repetir tabla, estado por cuota, total, cierre o descarga. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/308",
+          "solicitante": "Cristhian / Claude S22-B 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22b02_modal_cronograma"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22b02_encabezado_correcto"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22b02_subtitulo_visible"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22b02_plan_autoritativo"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b02_pago_inicial_autoritativo"
+              },
+              "der": {
+                "lit": false
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b02_modal_cronograma": true,
+              "s22b02_encabezado_correcto": true,
+              "s22b02_subtitulo_visible": true,
+              "s22b02_plan_autoritativo": true,
+              "s22b02_pago_inicial_autoritativo": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b02_modal_cronograma": true,
+              "s22b02_encabezado_correcto": false,
+              "s22b02_subtitulo_visible": true,
+              "s22b02_plan_autoritativo": true,
+              "s22b02_pago_inicial_autoritativo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b02_modal_cronograma": true,
+              "s22b02_encabezado_correcto": true,
+              "s22b02_subtitulo_visible": false,
+              "s22b02_plan_autoritativo": true,
+              "s22b02_pago_inicial_autoritativo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b02_modal_cronograma": true,
+              "s22b02_encabezado_correcto": true,
+              "s22b02_subtitulo_visible": true,
+              "s22b02_plan_autoritativo": false,
+              "s22b02_pago_inicial_autoritativo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b02_modal_cronograma": true,
+              "s22b02_encabezado_correcto": true,
+              "s22b02_subtitulo_visible": true,
+              "s22b02_plan_autoritativo": true,
+              "s22b02_pago_inicial_autoritativo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b02_modal_cronograma": false,
+              "s22b02_encabezado_correcto": false,
+              "s22b02_subtitulo_visible": false,
+              "s22b02_plan_autoritativo": false,
+              "s22b02_pago_inicial_autoritativo": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f25eb3ce1f879f2a226b2ed6c213d04773d9cc2d83ca782917bcf3bb03d6ea5d",
+      "hash_paquete": "5283bdfcd0ebe817e71821a787d2adbdb9959c0d891b62c14353c33ce1fbb4bf",
+      "hash_evaluado": "f25eb3ce1f",
+      "hash_paquete_10": "5283bdfcd0"
+    },
+    {
+      "codigo": "S22B-C03",
+      "legacy_id": 159,
+      "legacy_ids": [
+        159
+      ],
+      "relacionadas": [
+        "S6-C15"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 159,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En activación de plan en cuotas BLOQUEAR diferir la cuota inicial fuera del checkout o activar el plan sin confirmación autoritativa del pago inicial. Las fechas de cuotas posteriores se obtienen de configuración vigente del aliado; BLOQUEAR fechas inventadas. Complementa S6-C15 sin afirmar liquidación total. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22b03_activacion_plan",
+        "s22b03_pago_inicial_diferido",
+        "s22b03_pago_inicial_confirmado",
+        "s22b03_fechas_posteriores_invalidas"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22B-C03",
+        "clave": "s22b_legacy_159",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Pago inicial no diferible del plan",
+        "descripcion": "En activación de plan en cuotas BLOQUEAR diferir la cuota inicial fuera del checkout o activar el plan sin confirmación autoritativa del pago inicial. Las fechas de cuotas posteriores se obtienen de configuración vigente del aliado; BLOQUEAR fechas inventadas. Complementa S6-C15 sin afirmar liquidación total. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/159",
+          "solicitante": "Cristhian / Claude S22-B 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22b03_activacion_plan"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22b03_pago_inicial_diferido"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22b03_pago_inicial_confirmado"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b03_fechas_posteriores_invalidas"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b03_activacion_plan": true,
+              "s22b03_pago_inicial_diferido": false,
+              "s22b03_pago_inicial_confirmado": true,
+              "s22b03_fechas_posteriores_invalidas": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b03_activacion_plan": true,
+              "s22b03_pago_inicial_diferido": true,
+              "s22b03_pago_inicial_confirmado": true,
+              "s22b03_fechas_posteriores_invalidas": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b03_activacion_plan": true,
+              "s22b03_pago_inicial_diferido": false,
+              "s22b03_pago_inicial_confirmado": false,
+              "s22b03_fechas_posteriores_invalidas": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b03_activacion_plan": true,
+              "s22b03_pago_inicial_diferido": false,
+              "s22b03_pago_inicial_confirmado": true,
+              "s22b03_fechas_posteriores_invalidas": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b03_activacion_plan": false,
+              "s22b03_pago_inicial_diferido": true,
+              "s22b03_pago_inicial_confirmado": false,
+              "s22b03_fechas_posteriores_invalidas": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "178ab646bb7846e2d1c5df268765f2e460d66181b9299f0695620a7c28248956",
+      "hash_paquete": "1308dc0e07a26a5bac6b5717baa4e558e0f95b8b7c38fdd8542ab0ee58b0c684",
+      "hash_evaluado": "178ab646bb",
+      "hash_paquete_10": "1308dc0e07"
+    },
+    {
+      "codigo": "S22B-C05",
+      "legacy_id": 464,
+      "legacy_ids": [
+        464
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 464,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En Login B2B BLOQUEAR ocultar accesos a Términos y Condiciones, Política de Privacidad o Soporte, o resolverlos a rutas no canónicas B2B, protegidas por sesión, reutilizadas automáticamente del frente B2C o URLs externas hardcodeadas. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22b05_login_b2b",
+        "s22b05_accesos_visibles",
+        "s22b05_rutas_b2b_canonicas",
+        "s22b05_acceso_sin_sesion",
+        "s22b05_reuso_b2c_o_url_fija"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22B-C05",
+        "clave": "s22b_legacy_464",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Destinos legales y soporte del login B2B",
+        "descripcion": "En Login B2B BLOQUEAR ocultar accesos a Términos y Condiciones, Política de Privacidad o Soporte, o resolverlos a rutas no canónicas B2B, protegidas por sesión, reutilizadas automáticamente del frente B2C o URLs externas hardcodeadas. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/464",
+          "solicitante": "Cristhian / Claude S22-B 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22b05_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22b05_accesos_visibles"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22b05_rutas_b2b_canonicas"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22b05_acceso_sin_sesion"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b05_reuso_b2c_o_url_fija"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b05_login_b2b": true,
+              "s22b05_accesos_visibles": true,
+              "s22b05_rutas_b2b_canonicas": true,
+              "s22b05_acceso_sin_sesion": true,
+              "s22b05_reuso_b2c_o_url_fija": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b05_login_b2b": true,
+              "s22b05_accesos_visibles": false,
+              "s22b05_rutas_b2b_canonicas": true,
+              "s22b05_acceso_sin_sesion": true,
+              "s22b05_reuso_b2c_o_url_fija": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b05_login_b2b": true,
+              "s22b05_accesos_visibles": true,
+              "s22b05_rutas_b2b_canonicas": false,
+              "s22b05_acceso_sin_sesion": true,
+              "s22b05_reuso_b2c_o_url_fija": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b05_login_b2b": true,
+              "s22b05_accesos_visibles": true,
+              "s22b05_rutas_b2b_canonicas": true,
+              "s22b05_acceso_sin_sesion": false,
+              "s22b05_reuso_b2c_o_url_fija": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b05_login_b2b": true,
+              "s22b05_accesos_visibles": true,
+              "s22b05_rutas_b2b_canonicas": true,
+              "s22b05_acceso_sin_sesion": true,
+              "s22b05_reuso_b2c_o_url_fija": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b05_login_b2b": false,
+              "s22b05_accesos_visibles": false,
+              "s22b05_rutas_b2b_canonicas": false,
+              "s22b05_acceso_sin_sesion": false,
+              "s22b05_reuso_b2c_o_url_fija": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "82a67a7beddff384f623c0c70a333133641a30c0d82d17b78416709aac28bc8f",
+      "hash_paquete": "f6f1f80cbba4a27b64bdefb5abd859c0c62e1e2063ed3bdb7fd7c5975bfef734",
+      "hash_evaluado": "82a67a7bed",
+      "hash_paquete_10": "f6f1f80cbb"
+    },
+    {
+      "codigo": "S22B-C06",
+      "legacy_id": 506,
+      "legacy_ids": [
+        506
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 506,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En recepción server-side de webhook de entrega OTP Brevo BLOQUEAR aceptar o persistir eventos o modificar estado funcional sin HTTPS y Bearer válido. IP oficial es defensa secundaria, no sustituye autenticación. BLOQUEAR persistir el secreto en lf_ops. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22b06_webhook_brevo",
+        "s22b06_https",
+        "s22b06_bearer_valido",
+        "s22b06_acepta_o_persiste_o_modifica",
+        "s22b06_secreto_persistido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22B-C06",
+        "clave": "s22b_legacy_506",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Autenticación de eventos OTP de Brevo",
+        "descripcion": "En recepción server-side de webhook de entrega OTP Brevo BLOQUEAR aceptar o persistir eventos o modificar estado funcional sin HTTPS y Bearer válido. IP oficial es defensa secundaria, no sustituye autenticación. BLOQUEAR persistir el secreto en lf_ops. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/506",
+          "solicitante": "Cristhian / Claude S22-B 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22b06_webhook_brevo"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "y",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22b06_https"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22b06_bearer_valido"
+                  },
+                  "der": {
+                    "lit": false
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22b06_acepta_o_persiste_o_modifica"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22b06_secreto_persistido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b06_webhook_brevo": true,
+              "s22b06_https": true,
+              "s22b06_bearer_valido": true,
+              "s22b06_acepta_o_persiste_o_modifica": true,
+              "s22b06_secreto_persistido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b06_webhook_brevo": true,
+              "s22b06_https": false,
+              "s22b06_bearer_valido": true,
+              "s22b06_acepta_o_persiste_o_modifica": true,
+              "s22b06_secreto_persistido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b06_webhook_brevo": true,
+              "s22b06_https": true,
+              "s22b06_bearer_valido": false,
+              "s22b06_acepta_o_persiste_o_modifica": true,
+              "s22b06_secreto_persistido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b06_webhook_brevo": true,
+              "s22b06_https": true,
+              "s22b06_bearer_valido": false,
+              "s22b06_acepta_o_persiste_o_modifica": false,
+              "s22b06_secreto_persistido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22b06_webhook_brevo": true,
+              "s22b06_https": true,
+              "s22b06_bearer_valido": true,
+              "s22b06_acepta_o_persiste_o_modifica": false,
+              "s22b06_secreto_persistido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22b06_webhook_brevo": false,
+              "s22b06_https": false,
+              "s22b06_bearer_valido": false,
+              "s22b06_acepta_o_persiste_o_modifica": true,
+              "s22b06_secreto_persistido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "2e46ac683e2075c2b88d17b9fa5f94bbd97108cbc35eea5210e418874557b61e",
+      "hash_paquete": "adbf1767f0076ac1ebcd36a1155572bf27799eaa7a85b7f98b5ecf384dddeb3d",
+      "hash_evaluado": "2e46ac683e",
+      "hash_paquete_10": "adbf1767f0"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22B-C01",
+      "hash_paquete": "38757f01422ae985a2399f40217623fdf90b2e65c6eee385d601774ef57c994e",
+      "hash_paquete_10": "38757f0142",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C01 / hash_paquete_10=38757f0142"
+    },
+    {
+      "codigo": "S22B-C02",
+      "hash_paquete": "5283bdfcd0ebe817e71821a787d2adbdb9959c0d891b62c14353c33ce1fbb4bf",
+      "hash_paquete_10": "5283bdfcd0",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S6-C17/S21-C05, declarado."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C02 / hash_paquete_10=5283bdfcd0"
+    },
+    {
+      "codigo": "S22B-C03",
+      "hash_paquete": "1308dc0e07a26a5bac6b5717baa4e558e0f95b8b7c38fdd8542ab0ee58b0c684",
+      "hash_paquete_10": "1308dc0e07",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Adyacente a S6-C15."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C03 / hash_paquete_10=1308dc0e07"
+    },
+    {
+      "codigo": "S22B-C05",
+      "hash_paquete": "f6f1f80cbba4a27b64bdefb5abd859c0c62e1e2063ed3bdb7fd7c5975bfef734",
+      "hash_paquete_10": "f6f1f80cbb",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C05 / hash_paquete_10=f6f1f80cbb"
+    },
+    {
+      "codigo": "S22B-C06",
+      "hash_paquete": "adbf1767f0076ac1ebcd36a1155572bf27799eaa7a85b7f98b5ecf384dddeb3d",
+      "hash_paquete_10": "adbf1767f0",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Adyacente a S1-C03/S5-C16; Brevo eventos de entrega es distinto."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4757 / Claude 2026-11-24 22:51 Lima / S22B-C06 / hash_paquete_10=adbf1767f0"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 315,
+      "nucleo_codigo": "S6-C13",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S6-C13 conserva captura en iframe SDK Niubiz y bloqueo de PAN/CVV en servidores LF; no explicita nombre del titular ni prohibición de formulario fuera del iframe.",
+      "residual": "El nombre del titular y la restricción de formulario fuera del iframe no están explícitos en S6-C13."
+    }
+  ]
+}
