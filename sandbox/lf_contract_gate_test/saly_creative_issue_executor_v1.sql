@@ -7,6 +7,10 @@ BEGIN
  PERFORM pg_advisory_xact_lock(hashtextextended('saly:creative:serial:v1',0));
  SELECT min(id) INTO target FROM saly.creative_orders WHERE id BETWEEN 11 AND 21 AND project_id=2 AND status<>'TERMINADO';
  IF target IS NULL THEN PERFORM set_config('saly.pilot_result','{"status":"EMPTY"}',true); RETURN; END IF;
+ IF target>11 THEN
+   IF NOT EXISTS (SELECT 1 FROM saly.creative_order_items pi JOIN saly.creative_orders po ON po.id=pi.order_id WHERE po.id=target-1 AND po.status='TERMINADO' AND pi.status IN ('TERMINADO','APROBADO') AND pi.qa_receipt->>'review_mode'='GPT_SELF_QA' AND (SELECT count(*) FROM jsonb_each(pi.qa_receipt->'design_qa_v1') e WHERE e.value->>'score'='1')>=5 AND (SELECT count(*) FROM jsonb_each(pi.qa_receipt->'design_qa_v1') e WHERE e.value->>'score' IN ('0','1') AND nullif(btrim(e.value->>'evidence'),'') IS NOT NULL)=6) THEN RAISE EXCEPTION 'PILOT_PREVIOUS_DESIGN_QA_REQUIRED'; END IF;
+   IF NOT EXISTS (SELECT 1 FROM saly.creative_owner_decisions_v1 d WHERE d.item_id=15 AND d.decision='APROBADO') THEN RAISE EXCEPTION 'PILOT_OWNER_VALIDATION_REQUIRED'; END IF;
+ END IF;
  IF (p->>'order_id')::bigint IS DISTINCT FROM target THEN RAISE EXCEPTION 'PILOT_ORDER_NOT_NEXT'; END IF;
  SELECT * INTO STRICT o FROM saly.creative_orders WHERE id=target AND project_id=2 AND scope_json->>'queue_mode'='SERIAL_V1';
  SELECT * INTO STRICT i FROM saly.creative_order_items WHERE order_id=target AND required;
