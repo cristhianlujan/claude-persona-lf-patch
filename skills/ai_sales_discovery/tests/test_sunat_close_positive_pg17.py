@@ -142,6 +142,19 @@ VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now()
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
     sql("INSERT INTO saly.ventas_sunat_elegibilidad_v1 VALUES ('"+COMMERCIAL+"','ELEGIBLE',50)")
     print('PASS_PG17_MISSING_ELIGIBILITY_COVERAGE_BLOCKED')
+    # Do not accept a mutated receipt, historical pilot or one missing batch.
+    sql("UPDATE public.lf_operation_effect_guard SET receipt='{}'::jsonb WHERE dispatch_key='new-1'")
+    sql(call,False)  # persisted-receipt SHA no longer matches
+    sql("UPDATE public.lf_operation_effect_guard SET receipt='{\\"rows\\":1000,\\"success\\":true}'::jsonb WHERE dispatch_key='new-1'")
+    sql("UPDATE saly.ventas_discovery_runs SET estado='PARTIAL' WHERE run_ref='"+OLD+"'")
+    sql(call,False)
+    sql("UPDATE saly.ventas_discovery_runs SET estado='HOLD' WHERE run_ref='"+OLD+"'")
+    sql("UPDATE saly.ventas_discovery_plan_batches SET estado='NOT_RUN' WHERE batch_key='new-3'")
+    sql(call,False)
+    sql("UPDATE saly.ventas_discovery_plan_batches SET estado='FOUND' WHERE batch_key='new-3'")
+    assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
+    assert_snapshot()
+    print('PASS_PG17_TAMPERED_RECEIPT_HISTORICAL_HOLD_INCOMPLETE_BATCH_BLOCKED')
     sql("""
 CREATE FUNCTION saly.synthetic_abort_close() RETURNS trigger LANGUAGE plpgsql AS $fn$
 BEGIN IF NEW.estado='CERRADO' THEN RAISE EXCEPTION 'SYNTHETIC_SECOND_UPDATE_ROLLBACK'; END IF;
