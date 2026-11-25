@@ -1,0 +1,1079 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "4bbe04179c031f2beaa962c67d94d319623a8045",
+    "js_vectors": "28/28",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 452,
+        "nucleo_codigo": "S22A-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 453,
+        "nucleo_codigo": "S19-C09",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 455,
+        "nucleo_codigo": "S4-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 455,
+        "nucleo_codigo": "S4-C03",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "S4-C02",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S19-C09",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S22A-C02",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22l01_marca_nodo_completado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "marca nodo completado; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l01_contenido_no_abierto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contenido no abierto; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l01_resumen_no_visible",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "resumen no visible; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l01_sin_continuacion_explicita",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sin continuacion explicita; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l02_render_estados_ruta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render estados ruta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22l02_estado_no_corresponde",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado no corresponde; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22l02_futuro_no_navegable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "futuro no navegable; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22l02_hover_cambia_estado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "hover cambia estado; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22l02_token_o_accesibilidad_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "token o accesibilidad invalido; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22l03_cierre_qa_o_produccion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cierre qa o produccion; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22l03_fuente_frontend_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fuente frontend falta; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22l03_matriz_canonica_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "matriz canonica falta; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22l03_version_hardcodeada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "version hardcodeada; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22l04_modela_login_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modela login b2b; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l04_estado_efimero_en_catalogo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado efimero en catalogo; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l04_segunda_maquina",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "segunda maquina; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l04_derivacion_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "derivacion invalida; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l04_disclosure_red_anticipada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "disclosure red anticipada; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22l05_cierre_qa_historia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cierre qa historia; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22l05_test_contract_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "test contract falta; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22l05_familias_o_negativos_faltan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "familias o negativos faltan; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22l05_solo_exit_code",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "solo exit code; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22l05_verificacion_semantica_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "verificacion semantica falta; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22L-C01",
+      "legacy_id": 461,
+      "legacy_ids": [
+        461
+      ],
+      "relacionadas": [
+        "S10-C07",
+        "S8-C22"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 461,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En Ruta de Claridad BLOQUEAR marcar nodo COMPLETADO sin apertura de contenido educativo, resumen visible y acción explícita de cierre/continuación posterior al resumen. Apertura, inicio o reproducción parcial de video y cierre de popup sin continuar no completan por sí solos. No exigir reproducción íntegra del video; usuario puede navegar y omitir video sin penalización. Usar check o equivalente no-premio para completado; conservar estados future, active, completed y final. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22l01_marca_nodo_completado",
+        "s22l01_contenido_no_abierto",
+        "s22l01_resumen_no_visible",
+        "s22l01_sin_continuacion_explicita"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22L-C01",
+        "clave": "s22l_legacy_461",
+        "familia": "STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Finalización explícita de nodo educativo",
+        "descripcion": "En Ruta de Claridad BLOQUEAR marcar nodo COMPLETADO sin apertura de contenido educativo, resumen visible y acción explícita de cierre/continuación posterior al resumen. Apertura, inicio o reproducción parcial de video y cierre de popup sin continuar no completan por sí solos. No exigir reproducción íntegra del video; usuario puede navegar y omitir video sin penalización. Usar check o equivalente no-premio para completado; conservar estados future, active, completed y final. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/461",
+          "solicitante": "Cristhian / Claude S22-L 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22l01_marca_nodo_completado"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l01_contenido_no_abierto"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l01_resumen_no_visible"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22l01_sin_continuacion_explicita"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l01_marca_nodo_completado": true,
+              "s22l01_contenido_no_abierto": false,
+              "s22l01_resumen_no_visible": false,
+              "s22l01_sin_continuacion_explicita": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l01_marca_nodo_completado": true,
+              "s22l01_contenido_no_abierto": true,
+              "s22l01_resumen_no_visible": false,
+              "s22l01_sin_continuacion_explicita": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l01_marca_nodo_completado": true,
+              "s22l01_contenido_no_abierto": false,
+              "s22l01_resumen_no_visible": true,
+              "s22l01_sin_continuacion_explicita": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l01_marca_nodo_completado": true,
+              "s22l01_contenido_no_abierto": false,
+              "s22l01_resumen_no_visible": false,
+              "s22l01_sin_continuacion_explicita": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l01_marca_nodo_completado": false,
+              "s22l01_contenido_no_abierto": true,
+              "s22l01_resumen_no_visible": true,
+              "s22l01_sin_continuacion_explicita": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "0c3e8088ff62e8a97f058abf78cd1187433ddde181598c30b039ee95acc0672a",
+      "hash_paquete": "a272be940c2cd3a5b5cf17e40c5721fbc3f21b9bb9afef75da5385b6ad702622",
+      "hash_evaluado": "0c3e8088ff",
+      "hash_paquete_10": "a272be940c"
+    },
+    {
+      "codigo": "S22L-C02",
+      "legacy_id": 462,
+      "legacy_ids": [
+        462
+      ],
+      "relacionadas": [
+        "S10-C07",
+        "S8-C22",
+        "S22L-C01"
+      ],
+      "residual": "Falta acreditar conjunto canónico de cinco nodos y mapping visual completo de rellenos, bordes, segmentos, etiquetas y métricas de foco del valor_config contra tokens vigentes.",
+      "coberturas": [
+        {
+          "legacy_id": 462,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar conjunto canónico de cinco nodos y mapping visual completo de rellenos, bordes, segmentos, etiquetas y métricas de foco del valor_config contra tokens vigentes.",
+          "diferencias": "En Ruta de Claridad BLOQUEAR estado visual distinto de ACTIVE para paso actual, COMPLETED solo tras condición de finalización, FUTURE para no completado y FINAL para Recupera; los futuros permanecen navegables, focusables y no deshabilitados. Hover/focus no altera estado funcional; foco visible y aria-current en activo, path decorativo aria-hidden, check no-premio en completado y recompensa final sutil. Resolver colores y métricas desde tokens canónicos navy_core, gold_reward, green_action, warm_surface, text_muted_inactive y contrato visual vigente, sin replicar valores duros. Complementa S10-C07 y S8-C22; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22l02_render_estados_ruta",
+        "s22l02_estado_no_corresponde",
+        "s22l02_futuro_no_navegable",
+        "s22l02_hover_cambia_estado",
+        "s22l02_token_o_accesibilidad_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22L-C02",
+        "clave": "s22l_legacy_462",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Estados funcionales y visuales de Ruta de Claridad",
+        "descripcion": "En Ruta de Claridad BLOQUEAR estado visual distinto de ACTIVE para paso actual, COMPLETED solo tras condición de finalización, FUTURE para no completado y FINAL para Recupera; los futuros permanecen navegables, focusables y no deshabilitados. Hover/focus no altera estado funcional; foco visible y aria-current en activo, path decorativo aria-hidden, check no-premio en completado y recompensa final sutil. Resolver colores y métricas desde tokens canónicos navy_core, gold_reward, green_action, warm_surface, text_muted_inactive y contrato visual vigente, sin replicar valores duros. Complementa S10-C07 y S8-C22; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/462",
+          "solicitante": "Cristhian / Claude S22-L 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22l02_render_estados_ruta"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22l02_estado_no_corresponde"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22l02_futuro_no_navegable"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l02_hover_cambia_estado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22l02_token_o_accesibilidad_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l02_render_estados_ruta": true,
+              "s22l02_estado_no_corresponde": false,
+              "s22l02_futuro_no_navegable": false,
+              "s22l02_hover_cambia_estado": false,
+              "s22l02_token_o_accesibilidad_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l02_render_estados_ruta": true,
+              "s22l02_estado_no_corresponde": true,
+              "s22l02_futuro_no_navegable": false,
+              "s22l02_hover_cambia_estado": false,
+              "s22l02_token_o_accesibilidad_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l02_render_estados_ruta": true,
+              "s22l02_estado_no_corresponde": false,
+              "s22l02_futuro_no_navegable": true,
+              "s22l02_hover_cambia_estado": false,
+              "s22l02_token_o_accesibilidad_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l02_render_estados_ruta": true,
+              "s22l02_estado_no_corresponde": false,
+              "s22l02_futuro_no_navegable": false,
+              "s22l02_hover_cambia_estado": true,
+              "s22l02_token_o_accesibilidad_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l02_render_estados_ruta": true,
+              "s22l02_estado_no_corresponde": false,
+              "s22l02_futuro_no_navegable": false,
+              "s22l02_hover_cambia_estado": false,
+              "s22l02_token_o_accesibilidad_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l02_render_estados_ruta": false,
+              "s22l02_estado_no_corresponde": true,
+              "s22l02_futuro_no_navegable": true,
+              "s22l02_hover_cambia_estado": true,
+              "s22l02_token_o_accesibilidad_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "04283debe3ff7794cacefccca855084f38807b0a988aaa13cb371bbf2aa732f1",
+      "hash_paquete": "3b904fc55efa0452459871807a00c03a21bb560aa18c15d7e194300060adc4f0",
+      "hash_evaluado": "04283debe3",
+      "hash_paquete_10": "3b904fc55e"
+    },
+    {
+      "codigo": "S22L-C03",
+      "legacy_id": 467,
+      "legacy_ids": [
+        467
+      ],
+      "relacionadas": [],
+      "residual": "Falta controlar hardcode de versiones en pantalla fuera del gate de cierre QA/producción y binding de estados para permitir historia e implementación.",
+      "coberturas": [
+        {
+          "legacy_id": 467,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta controlar hardcode de versiones en pantalla fuera del gate de cierre QA/producción y binding de estados para permitir historia e implementación.",
+          "diferencias": "En Backoffice B2B BLOQUEAR cierre QA Browser/Platform o producción sin fuente de frontend/runtime identificada y matriz canónica compatible vinculada. Mientras falten, mantener PENDING_SOURCE_IDENTIFICATION; no bloquear historia ni implementación por esta causa. Las pantallas no hardcodean versiones de navegador. No afirmar compatibilidad ni cierre sin evidencia. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22l03_cierre_qa_o_produccion",
+        "s22l03_fuente_frontend_falta",
+        "s22l03_matriz_canonica_falta",
+        "s22l03_version_hardcodeada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22L-C03",
+        "clave": "s22l_legacy_467",
+        "familia": "BROWSER_PLATFORM",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "QA de compatibilidad B2B desde fuente real",
+        "descripcion": "En Backoffice B2B BLOQUEAR cierre QA Browser/Platform o producción sin fuente de frontend/runtime identificada y matriz canónica compatible vinculada. Mientras falten, mantener PENDING_SOURCE_IDENTIFICATION; no bloquear historia ni implementación por esta causa. Las pantallas no hardcodean versiones de navegador. No afirmar compatibilidad ni cierre sin evidencia. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/467",
+          "solicitante": "Cristhian / Claude S22-L 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22l03_cierre_qa_o_produccion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l03_fuente_frontend_falta"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l03_matriz_canonica_falta"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22l03_version_hardcodeada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l03_cierre_qa_o_produccion": true,
+              "s22l03_fuente_frontend_falta": false,
+              "s22l03_matriz_canonica_falta": false,
+              "s22l03_version_hardcodeada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l03_cierre_qa_o_produccion": true,
+              "s22l03_fuente_frontend_falta": true,
+              "s22l03_matriz_canonica_falta": false,
+              "s22l03_version_hardcodeada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l03_cierre_qa_o_produccion": true,
+              "s22l03_fuente_frontend_falta": false,
+              "s22l03_matriz_canonica_falta": true,
+              "s22l03_version_hardcodeada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l03_cierre_qa_o_produccion": true,
+              "s22l03_fuente_frontend_falta": false,
+              "s22l03_matriz_canonica_falta": false,
+              "s22l03_version_hardcodeada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l03_cierre_qa_o_produccion": false,
+              "s22l03_fuente_frontend_falta": true,
+              "s22l03_matriz_canonica_falta": true,
+              "s22l03_version_hardcodeada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "630ebf10545ed813110c4276c29de9790969604eb1e112d0c5fadc1dab81af4f",
+      "hash_paquete": "bb4a21f9e0f31e771a55e9c626d60b6f4e3049861aaa8a51d81308d63b65e851",
+      "hash_evaluado": "630ebf1054",
+      "hash_paquete_10": "bb4a21f9e0"
+    },
+    {
+      "codigo": "S22L-C04",
+      "legacy_id": 470,
+      "legacy_ids": [
+        470
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 470,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En Login B2B BLOQUEAR registrar estados efímeros UI en lf_ops.estados_catalogo o crear segunda máquina de negocio. Derivar INPUT_READY, PROCESSING_DISABLED, FIELD_VALIDATION_ERROR, AUTH_ERROR_RECOVERABLE, MFA_ROUTE_RESOLUTION de validaciones, solicitud en vuelo, outcomes y rutas vigentes; PROGRESSIVE_DISCLOSURE_LOCAL no tiene efecto de red antes del submit final ni es estado de dominio. Empty state no aplica. No modificar máquina canónica ni políticas MFA. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22l04_modela_login_b2b",
+        "s22l04_estado_efimero_en_catalogo",
+        "s22l04_segunda_maquina",
+        "s22l04_derivacion_invalida",
+        "s22l04_disclosure_red_anticipada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22L-C04",
+        "clave": "s22l_legacy_470",
+        "familia": "STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Estados efímeros del Login sin duplicar dominio",
+        "descripcion": "En Login B2B BLOQUEAR registrar estados efímeros UI en lf_ops.estados_catalogo o crear segunda máquina de negocio. Derivar INPUT_READY, PROCESSING_DISABLED, FIELD_VALIDATION_ERROR, AUTH_ERROR_RECOVERABLE, MFA_ROUTE_RESOLUTION de validaciones, solicitud en vuelo, outcomes y rutas vigentes; PROGRESSIVE_DISCLOSURE_LOCAL no tiene efecto de red antes del submit final ni es estado de dominio. Empty state no aplica. No modificar máquina canónica ni políticas MFA. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/470",
+          "solicitante": "Cristhian / Claude S22-L 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22l04_modela_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22l04_estado_efimero_en_catalogo"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22l04_segunda_maquina"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l04_derivacion_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22l04_disclosure_red_anticipada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l04_modela_login_b2b": true,
+              "s22l04_estado_efimero_en_catalogo": false,
+              "s22l04_segunda_maquina": false,
+              "s22l04_derivacion_invalida": false,
+              "s22l04_disclosure_red_anticipada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l04_modela_login_b2b": true,
+              "s22l04_estado_efimero_en_catalogo": true,
+              "s22l04_segunda_maquina": false,
+              "s22l04_derivacion_invalida": false,
+              "s22l04_disclosure_red_anticipada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l04_modela_login_b2b": true,
+              "s22l04_estado_efimero_en_catalogo": false,
+              "s22l04_segunda_maquina": true,
+              "s22l04_derivacion_invalida": false,
+              "s22l04_disclosure_red_anticipada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l04_modela_login_b2b": true,
+              "s22l04_estado_efimero_en_catalogo": false,
+              "s22l04_segunda_maquina": false,
+              "s22l04_derivacion_invalida": true,
+              "s22l04_disclosure_red_anticipada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l04_modela_login_b2b": true,
+              "s22l04_estado_efimero_en_catalogo": false,
+              "s22l04_segunda_maquina": false,
+              "s22l04_derivacion_invalida": false,
+              "s22l04_disclosure_red_anticipada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l04_modela_login_b2b": false,
+              "s22l04_estado_efimero_en_catalogo": true,
+              "s22l04_segunda_maquina": true,
+              "s22l04_derivacion_invalida": true,
+              "s22l04_disclosure_red_anticipada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "d09b824825dde3158bcb516d265f45dedea576b7dd69f63dc57cdb029f20de7b",
+      "hash_paquete": "cec25412018bb49ea7bffc6d88ea1d09d9c4b43c8b8500806f69b641de33c609",
+      "hash_evaluado": "d09b824825",
+      "hash_paquete_10": "cec2541201"
+    },
+    {
+      "codigo": "S22L-C05",
+      "legacy_id": 472,
+      "legacy_ids": [
+        472
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 472,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En cierre QA de historia ejecutable B2B BLOQUEAR PASS sin test_contracts en programacion.test_contracts derivados de reglas aplicables y negativos, o basado únicamente en exit code. Para Login cubrir AUTH_SUCCESS, INVALID_CREDENTIALS_NON_ENUMERATION, SINGLE_FLIGHT, FAIL_CLOSED, TIMEOUT, RATE_LIMIT_ANTIBOT, MFA_GATE, SESSION_CREATION, AUTHORIZED_ROUTING, NO_PII_TELEMETRY, KEYBOARD_FOCUS, FORCED_COLORS, REDUCED_MOTION y BROWSER_PLATFORM. Exigir verificación semántica; no crear tests ni declarar QA ejecutado por esta regla. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22l05_cierre_qa_historia",
+        "s22l05_test_contract_falta",
+        "s22l05_familias_o_negativos_faltan",
+        "s22l05_solo_exit_code",
+        "s22l05_verificacion_semantica_falta"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22L-C05",
+        "clave": "s22l_legacy_472",
+        "familia": "TESTING_OBLIGATIONS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Pruebas semánticas de historias B2B",
+        "descripcion": "En cierre QA de historia ejecutable B2B BLOQUEAR PASS sin test_contracts en programacion.test_contracts derivados de reglas aplicables y negativos, o basado únicamente en exit code. Para Login cubrir AUTH_SUCCESS, INVALID_CREDENTIALS_NON_ENUMERATION, SINGLE_FLIGHT, FAIL_CLOSED, TIMEOUT, RATE_LIMIT_ANTIBOT, MFA_GATE, SESSION_CREATION, AUTHORIZED_ROUTING, NO_PII_TELEMETRY, KEYBOARD_FOCUS, FORCED_COLORS, REDUCED_MOTION y BROWSER_PLATFORM. Exigir verificación semántica; no crear tests ni declarar QA ejecutado por esta regla. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/472",
+          "solicitante": "Cristhian / Claude S22-L 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22l05_cierre_qa_historia"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22l05_test_contract_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22l05_familias_o_negativos_faltan"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22l05_solo_exit_code"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22l05_verificacion_semantica_falta"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l05_cierre_qa_historia": true,
+              "s22l05_test_contract_falta": false,
+              "s22l05_familias_o_negativos_faltan": false,
+              "s22l05_solo_exit_code": false,
+              "s22l05_verificacion_semantica_falta": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l05_cierre_qa_historia": true,
+              "s22l05_test_contract_falta": true,
+              "s22l05_familias_o_negativos_faltan": false,
+              "s22l05_solo_exit_code": false,
+              "s22l05_verificacion_semantica_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l05_cierre_qa_historia": true,
+              "s22l05_test_contract_falta": false,
+              "s22l05_familias_o_negativos_faltan": true,
+              "s22l05_solo_exit_code": false,
+              "s22l05_verificacion_semantica_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l05_cierre_qa_historia": true,
+              "s22l05_test_contract_falta": false,
+              "s22l05_familias_o_negativos_faltan": false,
+              "s22l05_solo_exit_code": true,
+              "s22l05_verificacion_semantica_falta": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22l05_cierre_qa_historia": true,
+              "s22l05_test_contract_falta": false,
+              "s22l05_familias_o_negativos_faltan": false,
+              "s22l05_solo_exit_code": false,
+              "s22l05_verificacion_semantica_falta": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22l05_cierre_qa_historia": false,
+              "s22l05_test_contract_falta": true,
+              "s22l05_familias_o_negativos_faltan": true,
+              "s22l05_solo_exit_code": true,
+              "s22l05_verificacion_semantica_falta": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "978d258b384ecf14f65f33b39a7da3a61cd9ec15f0429a8cb70651dd77c378e8",
+      "hash_paquete": "ba09f6b80b501530e483a39526bfe552c78ff3961cefdc593b098d83123c38ec",
+      "hash_evaluado": "978d258b38",
+      "hash_paquete_10": "ba09f6b80b"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": [
+    {
+      "legacy_id": 452,
+      "nucleo_codigo": "S22A-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S22A-C02 gobierna confianza de dispositivo por servidor y OTP correo antes de sesión operativa ante dispositivo desconocido o vencido.",
+      "residual": "Falta acreditar ruta B2B-AUTH-004 con contexto MFA transitorio, no administrador reconocido sin desafío, precedencia de factores y arquitectura/runtime y restricciones de producción de valor_config."
+    },
+    {
+      "legacy_id": 453,
+      "nucleo_codigo": "S19-C09",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S19-C09 gobierna OTP correo registrado mediante Brevo cuando corresponde, sin atribuir AAL2 nativo ni implementación sin evidencia.",
+      "residual": "Falta generación y verificación server-side, prohibición de logs/analytics de código y credenciales/payload, semántica de aceptación versus entrega, señales y rate limit de nuevo dispositivo."
+    },
+    {
+      "legacy_id": 455,
+      "nucleo_codigo": "S4-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S4-C02 exige celular válido y desafío OTP para ONB_002 y excluye datos de perfil antes de OTP; S4-C03 gobierna acceso posterior.",
+      "residual": "Falta acreditar contrato explícito de ONB_001 con CAMPO_CELULAR como único dato operativo y transición por OTP_CHALLENGE."
+    }
+  ]
+}
