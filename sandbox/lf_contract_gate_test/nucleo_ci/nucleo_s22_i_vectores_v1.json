@@ -1,0 +1,758 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "9d1747cab1b1ce9dc5d5b059c00e6a5d50360116",
+    "js_vectors": "15/15",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 315,
+        "nucleo_codigo": "S6-C13",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "REG_CHK_005",
+        "version": 3,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "REG_CHK_008",
+        "version": 3,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S3-C19",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S6-C13",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S6-C17",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S5-C18",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22i01_render_error_pago",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render error pago; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i01_copy_no_corresponde_outcome",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "copy no corresponde outcome; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i01_claim_sin_cargo_no_acreditado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim sin cargo no acreditado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i01_pendiente_en_error",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pendiente en error; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i02_error_confirmado_o_previo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "error confirmado o previo; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i02_seleccion_vigente_perdida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "seleccion vigente perdida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i02_expirado_sin_revalidar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "expirado sin revalidar; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i02_activacion_sin_confirmar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activacion sin confirmar; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i03_soporte_error_pago",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "soporte error pago; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i03_referencia_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "referencia invalida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i03_bloquea_sin_referencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloquea sin referencia; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22i03_claim_disponibilidad_no_acreditado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim disponibilidad no acreditado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22I-C01",
+      "legacy_id": 333,
+      "legacy_ids": [
+        333
+      ],
+      "relacionadas": [
+        "S3-C19"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 333,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_ERROR_PAGO BLOQUEAR copy que no corresponda al outcome server-side. PAYMENT_DECLINED_CONFIRMED: Tu pago no fue aprobado; El intento terminó con un rechazo confirmado. Tu plan aún no fue activado. No afirmar ausencia de cargo sin evidencia. PAYMENT_NOT_SUBMITTED: No pudimos iniciar el pago; El intento no llegó al circuito de pago. Tu plan y tu selección se mantienen. PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT: No pudimos iniciar el pago; El servicio de pago no está disponible antes de enviar el intento. Tu selección se mantiene. PAYMENT_PENDING_CONFIRMATION dirige a CHECKOUT_ESTADO_CONFIRMANDO, nunca a error. Complementa S3-C19, sin redefinir outcome ni implementar binding."
+        }
+      ],
+      "hechos": [
+        "s22i01_render_error_pago",
+        "s22i01_copy_no_corresponde_outcome",
+        "s22i01_claim_sin_cargo_no_acreditado",
+        "s22i01_pendiente_en_error"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22I-C01",
+        "clave": "s22i_legacy_333",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Copy de error de pago por outcome autoritativo",
+        "descripcion": "En CHECKOUT_ERROR_PAGO BLOQUEAR copy que no corresponda al outcome server-side. PAYMENT_DECLINED_CONFIRMED: Tu pago no fue aprobado; El intento terminó con un rechazo confirmado. Tu plan aún no fue activado. No afirmar ausencia de cargo sin evidencia. PAYMENT_NOT_SUBMITTED: No pudimos iniciar el pago; El intento no llegó al circuito de pago. Tu plan y tu selección se mantienen. PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT: No pudimos iniciar el pago; El servicio de pago no está disponible antes de enviar el intento. Tu selección se mantiene. PAYMENT_PENDING_CONFIRMATION dirige a CHECKOUT_ESTADO_CONFIRMANDO, nunca a error. Complementa S3-C19, sin redefinir outcome ni implementar binding.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/333",
+          "solicitante": "Cristhian / Claude S22-I 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22i01_render_error_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22i01_copy_no_corresponde_outcome"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22i01_claim_sin_cargo_no_acreditado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22i01_pendiente_en_error"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22i01_render_error_pago": true,
+              "s22i01_copy_no_corresponde_outcome": false,
+              "s22i01_claim_sin_cargo_no_acreditado": false,
+              "s22i01_pendiente_en_error": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i01_render_error_pago": true,
+              "s22i01_copy_no_corresponde_outcome": true,
+              "s22i01_claim_sin_cargo_no_acreditado": false,
+              "s22i01_pendiente_en_error": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i01_render_error_pago": true,
+              "s22i01_copy_no_corresponde_outcome": false,
+              "s22i01_claim_sin_cargo_no_acreditado": true,
+              "s22i01_pendiente_en_error": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i01_render_error_pago": true,
+              "s22i01_copy_no_corresponde_outcome": false,
+              "s22i01_claim_sin_cargo_no_acreditado": false,
+              "s22i01_pendiente_en_error": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22i01_render_error_pago": false,
+              "s22i01_copy_no_corresponde_outcome": true,
+              "s22i01_claim_sin_cargo_no_acreditado": true,
+              "s22i01_pendiente_en_error": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "2fce2d50b506d07b623b45d18c726bf643a124831ad52ef9c25d6bc69e0ca585",
+      "hash_paquete": "118762154a8602048f4a549937ea48791b646327c7c02fae666d5f2298c1e8ff",
+      "hash_evaluado": "2fce2d50b5",
+      "hash_paquete_10": "118762154a"
+    },
+    {
+      "codigo": "S22I-C02",
+      "legacy_id": 336,
+      "legacy_ids": [
+        336
+      ],
+      "relacionadas": [
+        "S6-C24",
+        "S3-C20"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 336,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En error PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT BLOQUEAR pérdida de selección validada, plan y fecha mientras estén vigentes, reintento sin nueva validación backend al expirar quote u oferta, o presentación de plan activado sin PAYMENT_CONFIRMED. Complementa S6-C24 y S3-C20; no autoriza reintento por sí solo ni modifica outcomes. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22i02_error_confirmado_o_previo",
+        "s22i02_seleccion_vigente_perdida",
+        "s22i02_expirado_sin_revalidar",
+        "s22i02_activacion_sin_confirmar"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22I-C02",
+        "clave": "s22i_legacy_336",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Preservación de selección válida tras error de pago",
+        "descripcion": "En error PAYMENT_DECLINED_CONFIRMED, PAYMENT_NOT_SUBMITTED o PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT BLOQUEAR pérdida de selección validada, plan y fecha mientras estén vigentes, reintento sin nueva validación backend al expirar quote u oferta, o presentación de plan activado sin PAYMENT_CONFIRMED. Complementa S6-C24 y S3-C20; no autoriza reintento por sí solo ni modifica outcomes. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/336",
+          "solicitante": "Cristhian / Claude S22-I 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22i02_error_confirmado_o_previo"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22i02_seleccion_vigente_perdida"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22i02_expirado_sin_revalidar"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22i02_activacion_sin_confirmar"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22i02_error_confirmado_o_previo": true,
+              "s22i02_seleccion_vigente_perdida": false,
+              "s22i02_expirado_sin_revalidar": false,
+              "s22i02_activacion_sin_confirmar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i02_error_confirmado_o_previo": true,
+              "s22i02_seleccion_vigente_perdida": true,
+              "s22i02_expirado_sin_revalidar": false,
+              "s22i02_activacion_sin_confirmar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i02_error_confirmado_o_previo": true,
+              "s22i02_seleccion_vigente_perdida": false,
+              "s22i02_expirado_sin_revalidar": true,
+              "s22i02_activacion_sin_confirmar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i02_error_confirmado_o_previo": true,
+              "s22i02_seleccion_vigente_perdida": false,
+              "s22i02_expirado_sin_revalidar": false,
+              "s22i02_activacion_sin_confirmar": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22i02_error_confirmado_o_previo": false,
+              "s22i02_seleccion_vigente_perdida": true,
+              "s22i02_expirado_sin_revalidar": true,
+              "s22i02_activacion_sin_confirmar": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b38bd8d08ce7a7249255673ce1e252682899b8621ce0baf56f171b4673dc62c2",
+      "hash_paquete": "716b2056d0166e741019348b810b6460698294139b364d2164b13c2932abd5cf",
+      "hash_evaluado": "b38bd8d08c",
+      "hash_paquete_10": "716b2056d0"
+    },
+    {
+      "codigo": "S22I-C03",
+      "legacy_id": 338,
+      "legacy_ids": [
+        338
+      ],
+      "relacionadas": [
+        "S5-C18",
+        "S14-C02"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 338,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_ERROR_PAGO permitir soporte auxiliar. BLOQUEAR contexto de contacto que invente referencia o incluya una referencia sensible/no canónica; si no existe referencia, iniciar soporte sin identificador. BLOQUEAR afirmar soporte 24/7 sin evidencia operacional. Complementa S5-C18 y S14-C02; no habilita canales no autorizados. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22i03_soporte_error_pago",
+        "s22i03_referencia_invalida",
+        "s22i03_bloquea_sin_referencia",
+        "s22i03_claim_disponibilidad_no_acreditado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22I-C03",
+        "clave": "s22i_legacy_338",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Soporte contextual de error de pago",
+        "descripcion": "En CHECKOUT_ERROR_PAGO permitir soporte auxiliar. BLOQUEAR contexto de contacto que invente referencia o incluya una referencia sensible/no canónica; si no existe referencia, iniciar soporte sin identificador. BLOQUEAR afirmar soporte 24/7 sin evidencia operacional. Complementa S5-C18 y S14-C02; no habilita canales no autorizados. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/338",
+          "solicitante": "Cristhian / Claude S22-I 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22i03_soporte_error_pago"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22i03_referencia_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22i03_bloquea_sin_referencia"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22i03_claim_disponibilidad_no_acreditado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22i03_soporte_error_pago": true,
+              "s22i03_referencia_invalida": false,
+              "s22i03_bloquea_sin_referencia": false,
+              "s22i03_claim_disponibilidad_no_acreditado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i03_soporte_error_pago": true,
+              "s22i03_referencia_invalida": true,
+              "s22i03_bloquea_sin_referencia": false,
+              "s22i03_claim_disponibilidad_no_acreditado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i03_soporte_error_pago": true,
+              "s22i03_referencia_invalida": false,
+              "s22i03_bloquea_sin_referencia": true,
+              "s22i03_claim_disponibilidad_no_acreditado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22i03_soporte_error_pago": true,
+              "s22i03_referencia_invalida": false,
+              "s22i03_bloquea_sin_referencia": false,
+              "s22i03_claim_disponibilidad_no_acreditado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22i03_soporte_error_pago": false,
+              "s22i03_referencia_invalida": true,
+              "s22i03_bloquea_sin_referencia": true,
+              "s22i03_claim_disponibilidad_no_acreditado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "7ce5b2df285140e1193ef9d7d38b987be7352bfa18a0c59cc31ba1d90104cc97",
+      "hash_paquete": "9fb0dffefb093fe18f991722e74cebe454668d3dcb2fbfc21132105c1daf7770",
+      "hash_evaluado": "7ce5b2df28",
+      "hash_paquete_10": "9fb0dffefb"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22I-C01",
+      "hash_paquete": "118762154a8602048f4a549937ea48791b646327c7c02fae666d5f2298c1e8ff",
+      "hash_paquete_10": "118762154a",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4765 / Claude 2026-11-25 14:44 Lima / S22I-C01 / hash_paquete_10=118762154a"
+    },
+    {
+      "codigo": "S22I-C02",
+      "hash_paquete": "716b2056d0166e741019348b810b6460698294139b364d2164b13c2932abd5cf",
+      "hash_paquete_10": "716b2056d0",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4765 / Claude 2026-11-25 14:44 Lima / S22I-C02 / hash_paquete_10=716b2056d0"
+    },
+    {
+      "codigo": "S22I-C03",
+      "hash_paquete": "9fb0dffefb093fe18f991722e74cebe454668d3dcb2fbfc21132105c1daf7770",
+      "hash_paquete_10": "9fb0dffefb",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4765 / Claude 2026-11-25 14:44 Lima / S22I-C03 / hash_paquete_10=9fb0dffefb"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 315,
+      "nucleo_codigo": "S6-C13",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S6-C13 exige SDK oficial, iframe o campos hospedados autorizados y bloquea captura PAN/CVV por LF.",
+      "residual": "Falta fijar iframe Niubiz exclusivo con fecha, titular, número y CVV sin acceso LF en ningún momento."
+    },
+    {
+      "legacy_id": 324,
+      "nucleo_codigo": "REG_CHK_005",
+      "version_nucleo": 3,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "REG_CHK_005 protege render exitoso con confirmación, referencia, fecha y monto autoritativos.",
+      "residual": "Falta título, subtítulo y copy motivacional literales exclusivos de activación del plan de cuotas."
+    },
+    {
+      "legacy_id": 325,
+      "nucleo_codigo": "REG_CHK_005",
+      "version_nucleo": 3,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "REG_CHK_005 exige referencia, fecha y monto real verificados antes de éxito; S5-C18 prohíbe referencia inventada.",
+      "residual": "Falta formato de pedido LF-XXXX-XXXX validado, metadatos enmascarados autorizados, últimos cuatro dígitos, solo lectura y formato de fecha/hora."
+    },
+    {
+      "legacy_id": 326,
+      "nucleo_codigo": "S6-C17",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S6-C17 permite descarga de cronograma solo si backend dispone del documento oficial.",
+      "residual": "Falta generación backend de los tres PDF y evidencia de disponibilidad inmediata; no prometer documentos inexistentes."
+    },
+    {
+      "legacy_id": 334,
+      "nucleo_codigo": "S3-C19",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S3-C19 bloquea intentos alternativos o equivalentes mientras resultado sea pendiente de confirmación.",
+      "residual": "Falta contrato UI de flags server-side para mostrar/habilitar reintento y cambio de medio, y soporte auxiliar."
+    },
+    {
+      "legacy_id": 335,
+      "nucleo_codigo": "S5-C18",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S5-C18 exige referencia canónica emitida o reservada por backend y no la exige en estado transitorio.",
+      "residual": "Falta contrato explícito de CHECKOUT_ERROR_PAGO para monto autoritativo y ausencia de referencia ante falla previa al envío."
+    },
+    {
+      "legacy_id": 337,
+      "nucleo_codigo": "REG_CHK_008",
+      "version_nucleo": 3,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "REG_CHK_008 exige SETTLED_CONFIRMED y estado documental ELIGIBLE para iniciar generación de carta.",
+      "residual": "Falta estado NOT_ELIGIBLE explícito de plan no activado en pantalla de error y prohibición de usarlo como incentivo."
+    }
+  ]
+}
