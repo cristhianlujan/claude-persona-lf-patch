@@ -91,8 +91,7 @@ FOR p IN SELECT value FROM jsonb_array_elements(packs) LOOP
  IF lf_ops.nucleo_eval_v1(a->'condicion',t.entrada) IS DISTINCT FROM t.esperado THEN RAISE EXCEPTION 'S21_VECTOR_FAIL % %',cd,t.entrada; END IF;
  vectors:=vectors+1;
  END LOOP;
- RAISE EXCEPTION 'S21_REJUICIO_INDEPENDIENTE_REQUERIDO % %',cd,h;
- val:=jsonb_build_object('regla',cd,'hash_evaluado',h,'veredicto','PASS','puntajes',p->'puntajes','juez','Claude','modo','INDEPENDIENTE','revisor_es_productor',false,'llamadas_modelo',1,'evidencia_ref','PR #4752 / Claude 2026-11-24 19:05 Lima / '||cd||' / '||(p->>'hash_evaluado'));
+ val:=jsonb_build_object('regla',cd,'hash_evaluado',h,'veredicto','PASS','puntajes',p->'puntajes','juez','Claude','modo','INDEPENDIENTE','revisor_es_productor',false,'llamadas_modelo',1,'evidencia_ref','PR #4752 / Claude 2026-11-24 20:12 Lima (re-juicio tras cambio de casuísticas) / '||cd||' / hash_paquete_10='||(p->>'hash_paquete_10'));
  BEGIN
  PERFORM lf_ops.nucleo_juicio_registrar_v1(val||jsonb_build_object('hash_evaluado',repeat('0',64)));
  RAISE EXCEPTION 'S21_NEGATIVE_HASH_ACCEPTED %',cd;
@@ -112,7 +111,7 @@ FOR p IN SELECT value FROM jsonb_array_elements(packs) LOOP
  IF EXISTS(SELECT 1 FROM lf_ops.reglas WHERE id=lid) THEN
  SELECT descripcion INTO old_desc FROM lf_ops.reglas WHERE id=lid;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,CASE WHEN lid=44 THEN 'PARCIAL' ELSE 'REEMPLAZADA' END,diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||(p->'paquete'->>'descripcion')||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente S21 2026-11-24 19:05','limite_aceptacion','Cobertura funcional; binding runtime no certificado'),h,'GPT / Claude S21 independiente');
+ VALUES(lid,cd,1,CASE WHEN lid=44 THEN 'PARCIAL' ELSE 'REEMPLAZADA' END,diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||(p->'paquete'->>'descripcion')||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude 2026-11-24 20:12 Lima (re-juicio tras cambio de casuísticas)','limite_aceptacion','Cobertura funcional; binding runtime no certificado'),h,'GPT / Claude S21 independiente');
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S21_SOURCE_MISSING %',lid; END IF;
 END LOOP;
