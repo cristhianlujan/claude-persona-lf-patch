@@ -1,0 +1,37 @@
+name: SALY SUNAT close PG17 candidate
+on:
+  pull_request:
+    paths:
+      - 'skills/ai_sales_discovery/tests/sunat_close_candidate_v1.sql'
+      - 'skills/ai_sales_discovery/tests/test_sunat_close_pg17.py'
+      - '.github/workflows/saly-sunat-close-pg17.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pg17-close-negative:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: saly_sunat_close_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d saly_sunat_close_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: saly_sunat_close_ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Run isolated PostgreSQL 17 negative gates
+        run: python3 skills/ai_sales_discovery/tests/test_sunat_close_pg17.py
