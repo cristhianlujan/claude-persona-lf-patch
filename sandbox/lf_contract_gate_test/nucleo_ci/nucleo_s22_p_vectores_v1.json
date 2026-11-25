@@ -1,0 +1,2708 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "20f4e1ac5e3aeaa6a44ab3898b6de22edacaaf71",
+    "js_vectors": "56/56",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 562,
+        "nucleo_codigo": "S4-C16",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "S4-C16",
+        "version": 1,
+        "estado": "PUBLICADA",
+        "descripcion": "Al pulsar Continuar con este plan en PASO3_CUOTAS_DESGLOSE_V2, persistir plan elegido y fecha de débito válida y navegar a checkout. BLOQUEAR entrada sin ambos datos guardados o modificación del plan desde checkout; el precio se revalida según quote autorizado."
+      }
+    ],
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001",
+    "fuentes_legadas": [
+      {
+        "id": 552,
+        "codigo": "REG_CLIENT_HOME_LEARN_DECIDE_001",
+        "descripcion": "HOME_APRENDA_ANTES_DECIDIR conserva tres tarjetas de respuesta rápida, pero cada popup consume semántica de reglas fuente ya gobernadas en vez de mantener una verdad paralela. Card 1 “Tu deuda puede haber cambiado de manos” depende de EDU-NODO-02-EXPLORA y no publica detalles legales precisos mientras esa fuente permanezca CANDIDATO o con claims pendientes. Card 2 “¿Cómo funciona el simulador?” explica el flujo actual: iniciar en ONB_001, verificar control del celular por OTP, identificar por DNI cuando corresponda y dejar que backend resuelva si existe una oferta/cuenta; el nombre visual “simulador” puede mantenerse según decisión 46, pero no representa una simulación hipotética ni un lookup desde la card. Card 3 “¿Qué ocurre después de revisar tu opción?” reutiliza EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA: pago único/cuotas según oferta válida, confirmación de pago y gestión de constancia/carta según liquidación real; no promete 7–9 días para actualización SBS.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_APRENDA_ANTES_DECIDIR",
+          "card_count": 3,
+          "card_2_flow": [
+            "PHONE",
+            "OTP_PHONE_CONTROL",
+            "DNI_IF_REQUIRED",
+            "BACKEND_RESOLUTION"
+          ],
+          "visual_debt": "PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001",
+          "card_1_title": "Tu deuda puede haber cambiado de manos",
+          "card_2_title": "¿Cómo funciona el simulador?",
+          "card_3_title": "¿Qué ocurre después de revisar tu opción?",
+          "visual_mapping": "PENDING_CANONICAL_VISUAL",
+          "card_2_entry_rule": "REG_CLIENT_HOME_PUBLIC_ENTRY_001",
+          "card_1_source_rule": "EDU-NODO-02-EXPLORA",
+          "card_2_entry_target": "ONB_001",
+          "card_3_source_rules": [
+            "EDU-NODO-03-ELIGE",
+            "EDU-NODO-04-CIERRA"
+          ],
+          "card_3_letter_semantic": "PER_DEBT_AFTER_SETTLED_CONFIRMED",
+          "popup_content_strategy": "REFERENCE_SOURCE_RULES_NOT_PARALLEL_COPY",
+          "commercial_close_target": "ONB_001",
+          "card_2_naming_decision_number": 46,
+          "card_3_hardcoded_sbs_7_9_days": "DENY",
+          "external_claim_freshness_rule": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001",
+          "card_1_popup_publish_condition": "SOURCE_RULE_PUBLICABLE",
+          "legacy_simulator_direct_lookup": "DENY",
+          "card_2_hypothetical_simulation_semantic": "DENY",
+          "card_1_precise_legal_claims_when_source_candidate": "DENY"
+        }
+      },
+      {
+        "id": 554,
+        "codigo": "REG_CLIENT_HOME_FAQ_001",
+        "descripcion": "HOME_FAQ conserva seis temas, pero las respuestas se derivan de los contratos actuales y no de copy histórico. (1) Para empezar no se piden “datos personales básicos” completos: ONB_001 solicita celular, ONB_002 confirma control por OTP y solo después se solicita DNI cuando corresponde. (2) Si una consulta autoritativa confirma cero ofertas activas, el Home autenticado usa NO_ACTIVE_OFFER_HOME y Ruta de Claridad; una falla técnica no equivale a “sin oferta”. (3) Una oferta mostrada es una oferta disponible/versionada, pero antes del checkout se revalidan vigencia, versión, montos, modalidad y plan; cambios materiales exigen reconfirmación. (4) La identidad del gestor/aliado y datos de la deuda se muestran únicamente desde fuentes autoritativas; contenido educativo sobre cesión no sustituye esos datos. (5) La privacidad se explica conforme a políticas vigentes y los consentimientos aplicables; no se afirma que todo tratamiento dependa del mismo checkbox ni se usa la regla histórica de ubicación del consentimiento como verdad actual. (6) Antes de enviar un intento de pago el usuario puede abandonar sin crear un pago; después de un intento enviado o PAYMENT_CONFIRMED aplican los estados de pago y condiciones del acuerdo. Salir de la web o detener un débito automático no cancela una deuda ni un plan por sí mismo.",
+        "valor_config": {
+          "faq_1": {
+            "topic": "START_REQUIREMENTS",
+            "semantic": "PHONE_FIRST_OTP_THEN_DNI_IF_REQUIRED",
+            "source_rules": [
+              "REG_FLOW_CELL_FIRST_001",
+              "REG_FLUJO_003"
+            ],
+            "basic_profile_data_before_otp": "DENY"
+          },
+          "faq_2": {
+            "topic": "NO_OFFER",
+            "source_rules": [
+              "REG_CLIENT_HOME_NO_OFFER_001",
+              "REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001"
+            ],
+            "technical_failure_equals_no_offer": "DENY"
+          },
+          "faq_3": {
+            "topic": "OFFER_FINALITY",
+            "source_rules": [
+              "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001",
+              "REG_CLIENT_CHECKOUT_ENTRY_001"
+            ],
+            "material_change": "RECONFIRM",
+            "pre_checkout_revalidation": "REQUIRED"
+          },
+          "faq_4": {
+            "topic": "DEBT_MANAGER",
+            "education_source": "EDU-NODO-02-EXPLORA",
+            "authoritative_account_data_required": true,
+            "candidate_education_as_account_truth": "DENY"
+          },
+          "faq_5": {
+            "topic": "DATA_PROTECTION",
+            "source_rules": [
+              "REG_ANL_002",
+              "REG_SEG_003",
+              "LEGAL-CONSENTIMIENTO-DATOS-01"
+            ],
+            "consent_location_status": "PENDING_LEGAL_PRIVACY_VALIDATION",
+            "claim_all_processing_based_on_single_consent": "DENY"
+          },
+          "faq_6": {
+            "topic": "CAN_I_STOP",
+            "source_rules": [
+              "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+              "REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001"
+            ],
+            "before_payment_submit": "ALLOW_ABANDON_WITHOUT_PAYMENT_ATTEMPT",
+            "after_payment_confirmed": "CONTRACTUAL_OBLIGATIONS_APPLY",
+            "stop_autodebit_cancels_debt": "DENY",
+            "payment_pending_confirmation": "NO_NEW_ATTEMPT_UNTIL_RECONCILED",
+            "after_possible_provider_submit": "FOLLOW_PAYMENT_OUTCOME_STATE"
+          },
+          "front": "CLIENTE",
+          "screen": "HOME_FAQ",
+          "visual_debt": "PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001",
+          "question_count": 6,
+          "public_boundary_rule": "REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001"
+        }
+      },
+      {
+        "id": 555,
+        "codigo": "REG_CLIENT_HOME_FOOTER_001",
+        "descripcion": "HOME_S9_FOOTER se compone dinámicamente con bloques que tengan fuente y destino canónicos. El disclaimer del simulador puede conservar el naming aprobado por decisión 46, pero la continuidad real inicia ONB_001 y no un simulador hipotético. Aliados, prensa/noticias y otras pruebas de confianza se muestran solo si existen fuentes publicadas y verificadas; no se renderizan placeholders vacíos. Los links legales y Libro de Reclamaciones se muestran cuando exista su ruta canónica y no requieren autenticación. El contacto se muestra únicamente desde configuración corporativa Cliente vigente; no se hardcodean datos personales del owner. Claims de disponibilidad, proveedor o seguridad requieren evidencia propia.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_S9_FOOTER",
+          "visual_debt": "PEND-CLIENT-HOME-FOOTER-CANONICAL-VISUAL-001",
+          "contact_debt": "PEND-CLIENT-CONTACT-CONFIG-001",
+          "contact_source": "PENDING_CANONICAL_CLIENT_CONTACT_CONFIG",
+          "public_content": true,
+          "public_nav_debt": "PEND-CLIENT-PUBLIC-NAV-001",
+          "trust_render_when": "VERIFIED_PUBLISHED_SOURCES_EXIST",
+          "legal_destinations": [
+            "LEGAL_POLITICA_PRIVACIDAD",
+            "LEGAL_TERMINOS_CONDICIONES",
+            "LEGAL_POLITICA_COOKIES",
+            "PANT_LIBRO_RECLAMACIONES"
+          ],
+          "legal_route_status": "PENDING_CANONICAL_CLIENT_ROUTES",
+          "trust_source_screen": "PANT_RESPALDO_CONFIANZA",
+          "owner_personal_contact": "DENY",
+          "trust_empty_placeholders": "DENY",
+          "contact_availability_claim": "DYNAMIC_ONLY",
+          "disclaimer_functional_entry": "ONB_001",
+          "legal_authentication_required": false,
+          "disclaimer_naming_decision_number": 46,
+          "disclaimer_hypothetical_simulation": "DENY"
+        }
+      },
+      {
+        "id": 556,
+        "codigo": "REG_CLIENT_PUBLIC_LEGAL_NAV_001",
+        "descripcion": "Política de Privacidad, Términos y Condiciones, Política de Cookies y Libro de Reclamaciones son destinos públicos del frente Cliente. El frontend no reutiliza rutas B2B ni inventa URLs. Cuando las rutas Cliente existan, el footer y cualquier link legal resuelven contra lf_ops.rutas. El Libro de Reclamaciones debe conservar visibilidad permanente, fácil acceso y registro sin autenticación conforme a las reglas legales vigentes.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "destinations": [
+            "LEGAL_POLITICA_PRIVACIDAD",
+            "LEGAL_TERMINOS_CONDICIONES",
+            "LEGAL_POLITICA_COOKIES",
+            "PANT_LIBRO_RECLAMACIONES"
+          ],
+          "hardcoded_url": "DENY",
+          "current_status": "PENDING_CANONICAL_CLIENT_ROUTES",
+          "route_registry": "lf_ops.rutas",
+          "b2b_route_reuse": "DENY",
+          "public_nav_debt": "PEND-CLIENT-PUBLIC-NAV-001",
+          "applicability_v1": {
+            "all": [],
+            "any": [
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "screen",
+                  "id"
+                ],
+                "values": [
+                  38,
+                  57
+                ]
+              }
+            ],
+            "status": "ACTIVE",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "book_visibility_rule": "LEGAL-RECLAMOS-05",
+          "authentication_required": false
+        }
+      },
+      {
+        "id": 557,
+        "codigo": "REG_CLIENT_HOME_TRUST_SOURCE_GATING_001",
+        "descripcion": "PANT_RESPALDO_CONFIANZA se evalúa server-side/configuración antes de renderizar. Los aliados se obtienen de una fuente canónica y solo se muestran si cumplen autorización vigente y disponen de identidad visual autorizada. La prensa/noticias se obtiene de un registry canónico con fuente verificable, fecha y visibilidad vigente. Si no existe ningún aliado ni mención de prensa publicable, el bloque completo se oculta y la Home refluye sin reservar espacio. La cantidad real de fuentes decide la variante visual A/B/C; el frontend no inventa logos, slots ni notas. DEMO fuera de producción puede usar fixtures marcados como DEMO, pero nunca se promueven implícitamente a producción.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "PANT_RESPALDO_CONFIANZA",
+          "press_gate": "SOURCE_VERIFIED_AND_VISIBLE",
+          "source_debt": "PEND-CLIENT-HOME-TRUST-SOURCES-001",
+          "visual_debt": "PEND-CLIENT-HOME-TRUST-CANONICAL-VISUAL-001",
+          "partner_gate": "authorization_status=approved AND operational_status_compatible AND logo_authorized",
+          "press_registry": "PENDING_CANONICAL_PRESS_REGISTRY",
+          "variant_rule_code": "UX-RESPALDO-VARIANTES-01",
+          "reserve_empty_space": "DENY",
+          "empty_slot_rule_code": "NEG-RESPALDO-SIN-CAJAS-VACIAS-01",
+          "demo_policy_rule_code": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+          "current_production_state": "HIDDEN_NO_DATA",
+          "zero_publishable_sources": "HIDE_ENTIRE_BLOCK",
+          "partner_registry_candidate": "lf_ops.empresas"
+        }
+      },
+      {
+        "id": 558,
+        "codigo": "REG_CLIENT_HOME_PRICE_DETAIL_MODAL_001",
+        "descripcion": "PASO3_MODAL_DETALLE_PRECIO explica cómo se compone el monto vigente de una selección/oferta, pero nunca calcula precio ni fija comisiones. El precio final visible proviene del backend y permanece visible. Cada línea del desglose se renderiza únicamente si la configuración de pricing aplicable está autorizada/vigente, corresponde a la versión de la oferta/selección y marca ese componente como visible para el cliente. El pagador real de cada concepto también proviene de configuración: un cargo asumido por B2B/LF no se traslada al cliente aunque exista para auditoría. Ocultar o mostrar una línea no cambia el cálculo. Valores cero pueden ocultarse según configuración. El nombre de un proveedor, tasa porcentual o claim de servicio solo se muestra cuando la configuración y binding canónicos lo autorizan. El CTA de pago del modal no ejecuta el cobro: inicia el mismo flujo seguro REG_CLIENT_CHECKOUT_ENTRY_001, que vuelve a revalidar oferta, versión, modalidad, plan y precio antes de cualquier intento.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "PASO3_MODAL_DETALLE_PRECIO",
+          "context": "HOME_ACTIVE_OFFER_PRICE_DETAIL",
+          "pay_cta": "START_REG_CLIENT_CHECKOUT_ENTRY_001",
+          "sealed_spec": "HU-HMO-002",
+          "breakdown_mode": "SUMMARY_WITH_EXPANDABLE_DETAIL",
+          "caller_contexts": [
+            "MULTI_OFFER",
+            "SINGLE_OFFER_PAY_ONLY",
+            "INSTALLMENT_PLAN_COMMITTED_READY_QUOTE"
+          ],
+          "component_payer": "CONFIG_DRIVEN",
+          "visual_decision": "VD_CLIENT_HOME002_PRICE_TRANSPARENCY_20260824",
+          "component_labels": "CONFIG_DRIVEN",
+          "pricing_authority": "BACKEND_PLUS_VERSIONED_B2B_CONFIG",
+          "checkout_rule_code": "REG_CLIENT_CHECKOUT_ENTRY_001",
+          "percentage_display": "ONLY_IF_GOVERNED_CONFIG_EXPOSES",
+          "service_scope_copy": "PENDING_GOVERNED_CONTENT_IF_COMPONENT_VISIBLE",
+          "visual_values_role": "DEMO_RECONCILED_EVIDENCE_ONLY",
+          "management_fee_copy": "CONFIG_DRIVEN",
+          "component_visibility": "CONFIG_DRIVEN",
+          "display_order_source": "public.lf_b2b_pricing_config.display_order",
+          "frontend_calculation": "DENY",
+          "pricing_config_table": "public.lf_b2b_pricing_config",
+          "provider_binding_debt": "PEND-CLIENT-PAYMENT-PROVIDER-BINDING-001",
+          "provider_name_or_rate": "ONLY_IF_CANONICAL_PRICING_CONFIG_AND_PROVIDER_BINDING_AUTHORIZE",
+          "zero_value_visibility": "CONFIG_DRIVEN",
+          "commercial_adjustments": {
+            "source": "READY_QUOTE_SELECTION_SNAPSHOT_PLUS_VERSIONED_PRICING_CONFIG",
+            "visibility": "ONLY_IF_APPLIED_AND_CUSTOMER_VISIBLE",
+            "label_source": "CONFIG_DRIVEN",
+            "snapshot_path": "selection_snapshot.applied_commercial_adjustments",
+            "refund_semantic": "DENY",
+            "render_semantic": "NEGATIVE_COMMERCIAL_ADJUSTMENT_BEFORE_FINAL_PRICE",
+            "wallet_semantic": "DENY",
+            "frontend_calculation": "DENY"
+          },
+          "current_runtime_status": "BLOCKED_NO_APPROVED_OR_VIGENTE_CONFIG",
+          "canonical_parent_screen": "HOME_002",
+          "installments_visibility": "ONLY_AFTER_COMMITTED_PLAN_AND_READY_QUOTE",
+          "visual_discrepancy_debt": "PEND-CLIENT-HOME-PRICE-DETAIL-VISUAL-001",
+          "visual_hardcoded_values": "DENY_AS_AUTHORITY",
+          "checkout_quote_rule_code": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "visual_discrepancy_status": "RESOLVED",
+          "final_customer_price_source": "AUTHORITATIVE_BACKEND_PRICING_QUOTE",
+          "visual_reconciliation_status": "RESOLVED_HOME002_PRICE_DETAIL_20260824",
+          "frontend_commission_inference": "DENY",
+          "single_offer_savings_semantic": "ORIGINAL_DEBT_MINUS_FINAL_CUSTOMER_PRICE",
+          "canonical_visual_artifact_code": "HOME_002-PRICE-DETAIL-MODAL-FINAL-20260824",
+          "pay_cta_direct_provider_submit": "DENY",
+          "allowed_pricing_config_statuses": [
+            "APROBADO",
+            "VIGENTE"
+          ],
+          "customer_visible_components_only": true,
+          "final_customer_price_always_visible": true,
+          "final_customer_price_reconciliation": "SUM_APPLICABLE_CUSTOMER_COMPONENTS_EQUALS_FINAL_CUSTOMER_PRICE",
+          "internal_b2b_fees_visible_to_client": "DENY",
+          "hidden_component_removed_from_calculation": "DENY"
+        }
+      },
+      {
+        "id": 562,
+        "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_DETAIL_001",
+        "descripcion": "PASO3_CUOTAS_DESGLOSE_V2 muestra un plan seleccionado aún no activado. Plan, oferta y versión deben seguir vigentes. Importes y opciones de fecha provienen de backend/configuración versionada; el frontend no calcula ni usa defaults 5/15/30. Si configuración exige fecha, Continuar queda bloqueado hasta una opción válida. Elegir fecha no autoriza débito automático. Si hay cobro recurrente automático, el consentimiento se obtiene explícito según REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001. Continuar confirma la selección pre-checkout y entra por REG_CLIENT_CHECKOUT_ENTRY_001; no invoca proveedor directamente.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "PASO3_CUOTAS_DESGLOSE_V2",
+          "context": "PREPAY_SELECTED_INSTALLMENT_PLAN_DETAIL",
+          "plan_state": "NOT_ACTIVATED_PREPAY",
+          "continue_action": "COMMIT_PRECHECKOUT_SELECTION_THEN_START_REG_CLIENT_CHECKOUT_ENTRY_001",
+          "visual_evidence": {
+            "status": "VIGENTE",
+            "artifact_code": "PASO3-CUOTAS-DESGLOSE-BC-FINAL-20260825",
+            "drive_file_id": "16R4lQkuh_YZKRQaVd0TSKG46TDDN0oug",
+            "owner_approved": true,
+            "checksum_sha256": "fa401940d47743809039ea42d871d1b8085e8567ec373436cdbeb304938a7882",
+            "drive_byte_parity": true
+          },
+          "schedule_context": "PREPAY_PROPOSED_SCHEDULE",
+          "checkout_rule_code": "REG_CLIENT_CHECKOUT_ENTRY_001",
+          "shell_module_route": {
+            "shell": "CLIENT_APP_SHELL",
+            "module": "CLIENT_HOME",
+            "route_code": "CLIENT_HOME_ENTRY",
+            "canonical_parent": "HOME_002"
+          },
+          "autodebit_rule_code": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+          "date_options_source": "CANONICAL_PARTNER_OR_PLAN_CONFIGURATION",
+          "apply_date_semantics": "UPDATE_PREPAY_SCHEDULE_DRAFT_ONLY",
+          "frontend_calculation": "DENY",
+          "legacy_rule_mappings": "PRESERVE_AS_LEGACY_EVIDENCE_NOT_LOCAL_AUTHORITY",
+          "display_values_source": "BACKEND_PLUS_VERSIONED_B2B_CONFIG",
+          "source_selection_rule": "REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001",
+          "direct_provider_submit": "DENY",
+          "requires_selected_plan": true,
+          "letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+          "plan_inclusions_content": "GOVERNED_CONFIG_ONLY",
+          "prepayment_letter_state": "NOT_ELIGIBLE",
+          "pricing_quote_rule_code": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "visual_discrepancy_debt": "PEND-CLIENT-HOME-INSTALLMENT-DETAIL-VISUAL-001",
+          "visual_hardcoded_values": "DEMO_EVIDENCE_ONLY",
+          "canonical_parent_surface": "HOME_002",
+          "customer_language_policy": {
+            "audience": "B_MINUS_C",
+            "after_label": "Después pagarás",
+            "today_label": "Hoy pagas",
+            "summary_label": "Resumen de tu plan",
+            "continue_cta_label": "Continuar con este plan",
+            "schedule_action_label": "Ver fechas de pago",
+            "owner_conformance_date": "2026-08-25",
+            "legacy_cronograma_label": "DENY_IN_PRIMARY_COPY",
+            "price_detail_action_label": "Ver cómo se calcula",
+            "initial_payment_explanation": "El pago inicial es adicional a las cuotas.",
+            "initial_payment_primary_label": "Pago inicial",
+            "primary_information_hierarchy": [
+              "TODAY",
+              "AFTER",
+              "SUMMARY",
+              "CONTINUE"
+            ],
+            "legacy_cuota_zero_primary_label": "DENY",
+            "plan_label_when_initial_payment_gt_zero": "Pago inicial + {installment_count} cuotas"
+          },
+          "date_selector_visibility": "ONLY_IF_USER_DATE_SELECTION_CONFIGURED",
+          "autodebit_copy_visibility": "NOT_IN_PRIMARY_DETAIL_MOVE_TO_CHECKOUT_COLLECTION_SETUP_IF_APPLICABLE",
+          "plan_validation_authority": "SERVER_ONLY",
+          "visual_discrepancy_status": "RESOLVED_BC_PANEL_20260825",
+          "date_selection_requirement": "SERVER_CONFIG_DRIVEN",
+          "schedule_context_rule_code": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+          "legacy_default_dates_5_15_30": "DENY",
+          "current_pricing_runtime_status": "BLOCKED_NO_APPROVED_OR_VIGENTE_CONFIG",
+          "date_selection_is_autodebit_consent": "DENY"
+        }
+      },
+      {
+        "id": 563,
+        "codigo": "REG_CLIENT_HOME_SINGLE_OFFER_BOTH_001",
+        "descripcion": "PASO3_OFERTA_UNICA_AMBAS aplica solo cuando existe una oferta elegible activa y backend confirma PAGO_UNICO y CUOTAS vigentes. La oferta no queda preseleccionada por cargar la pantalla y ninguna modalidad se asume por defecto. El usuario elige explícitamente: Pagar selecciona PAGO_UNICO e inicia REG_CLIENT_CHECKOUT_ENTRY_001; elegir cuotas abre la selección de planes y todavía exige un plan válido. Montos, ahorro, vencimiento y precio provienen de backend/configuración versionada. Header, soporte, Reporte crediticio, seguridad y Carta se rigen por capacidades y estados Cliente, no por el mockup.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "PASO3_OFERTA_UNICA_AMBAS",
+          "context": "HOME_ACTIVE_OFFER_SINGLE_OFFER_BOTH",
+          "pay_only_action": "USER_EXPLICIT_SELECT_PAGO_UNICO_THEN_START_REG_CLIENT_CHECKOUT_ENTRY_001",
+          "header_rule_code": "REG_CLIENT_AUTH_HEADER_CAPABILITY_GATING_001",
+          "pricing_authority": "BACKEND_PLUS_VERSIONED_B2B_CONFIG",
+          "variant_condition": "eligible_active_offer_count=1 AND modalities include PAGO_UNICO AND CUOTAS",
+          "checkout_rule_code": "REG_CLIENT_CHECKOUT_ENTRY_001",
+          "shell_module_route": "PENDING_CANONICAL_CLIENT_MAPPING",
+          "installments_action": "USER_EXPLICIT_SELECT_CUOTAS_THEN_OPEN_PLAN_SELECTION",
+          "frontend_calculation": "DENY",
+          "legacy_rule_mappings": "PRESERVE_AS_LEGACY_EVIDENCE_NOT_LOCAL_AUTHORITY",
+          "installment_plan_rule": "REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001",
+          "canonical_mapping_debt": "PEND-CLIENT-HOME-CANONICAL-001",
+          "home_variant_rule_code": "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001",
+          "letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+          "prepayment_letter_state": "NOT_ELIGIBLE",
+          "visual_discrepancy_debt": "PEND-CLIENT-HOME-SINGLE-BOTH-VISUAL-001",
+          "visual_hardcoded_values": "DEMO_EVIDENCE_ONLY",
+          "offer_preselected_on_load": "DENY",
+          "modality_default_selection": "DENY"
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22p01_render_aprendizaje",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render aprendizaje; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p01_fuente_paralela_o_no_publicable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fuente paralela o no publicable; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p01_flujo_simulador_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "flujo simulador invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p01_pago_carta_o_plazo_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pago carta o plazo invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p01_cierre_comercial_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cierre comercial invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_render_faq",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render faq; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_inicio_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "inicio invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_sin_oferta_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sin oferta invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_oferta_sin_revalidacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "oferta sin revalidacion; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_gestor_no_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "gestor no autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_privacidad_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "privacidad invalida; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_abandono_o_pago_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "abandono o pago invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p02_frontera_publica_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "frontera publica invalida; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22p03_render_footer",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render footer; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p03_bloque_sin_fuente_destino",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloque sin fuente destino; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p03_disclaimer_destino_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "disclaimer destino invalido; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p03_trust_no_verificado_o_vacio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "trust no verificado o vacio; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p03_legal_ruta_o_auth_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "legal ruta o auth invalida; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p03_contacto_no_canonico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contacto no canonico; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p03_claim_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim sin evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p04_evalua_link_legal_publico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua link legal publico; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p04_requiere_auth",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "requiere auth; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p04_ruta_b2b_o_url_inventada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta b2b o url inventada; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p04_ruta_no_canonica",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta no canonica; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p04_libro_oculto_o_acceso_bloqueado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "libro oculto o acceso bloqueado; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22p05_evalua_bloque_confianza",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua bloque confianza; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p05_evaluacion_no_server",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evaluacion no server; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p05_aliado_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "aliado no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p05_prensa_no_verificada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "prensa no verificada; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p05_bloque_vacio_o_slots_ficticios",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloque vacio o slots ficticios; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p05_variante_no_derivada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "variante no derivada; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p05_demo_en_prod",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "demo en prod; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22p06_render_detalle_precio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render detalle precio; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_calculo_o_precio_no_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "calculo o precio no autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_config_version_o_linea_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "config version o linea invalida; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_orden_pagador_o_fee_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "orden pagador o fee invalido; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_conciliacion_o_ahorro_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "conciliacion o ahorro invalido; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_contexto_o_quote_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contexto o quote invalido; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_ajuste_comercial_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ajuste comercial invalido; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_claim_proveedor_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim proveedor no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p06_cta_envio_directo_o_sin_revalidar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cta envio directo o sin revalidar; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22p07_render_oferta_unica_ambas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render oferta unica ambas; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_variante_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "variante invalida; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_preseleccion_implicita",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "preseleccion implicita; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_accion_pago_unico_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion pago unico invalida; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_accion_cuotas_sin_plan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion cuotas sin plan; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_precio_no_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "precio no autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_capacidad_o_carta_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "capacidad o carta invalida; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22p07_mapping_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "mapping inventado; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22P-C01",
+      "legacy_id": 552,
+      "legacy_ids": [
+        552
+      ],
+      "relacionadas": [
+        "S13-C07"
+      ],
+      "residual": "Falta referencia canónica del número de tarjetas y reconciliación visual exacta; no fijar cardinalidad desde mockup.",
+      "coberturas": [
+        {
+          "legacy_id": 552,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta referencia canónica del número de tarjetas y reconciliación visual exacta; no fijar cardinalidad desde mockup.",
+          "diferencias": "En HOME_APRENDA_ANTES_DECIDIR BLOQUEAR popup que mantenga semántica paralela a reglas fuente. Tu deuda puede haber cambiado de manos consume EDU-NODO-02-EXPLORA y no publica detalle legal preciso si candidato o claims pendientes; fuente PUBLICABLE requerida. ¿Cómo funciona el simulador? conserva naming decisión 46, explica celular ONB_001, OTP, DNI si corresponde y resolución backend, sin simulación hipotética ni lookup directo. ¿Qué ocurre después de revisar tu opción? consume EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA, oferta válida pago único/cuotas, confirmación y constancia/carta por deuda tras SETTLED_CONFIRMED, sin plazos SBS históricos no verificados. Cierres comerciales ONB_001; aplicar frescura de claims. Visual mapping PENDING_CANONICAL_VISUAL, PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001. Complementa S13-C07; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p01_render_aprendizaje",
+        "s22p01_fuente_paralela_o_no_publicable",
+        "s22p01_flujo_simulador_invalido",
+        "s22p01_pago_carta_o_plazo_invalido",
+        "s22p01_cierre_comercial_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C01",
+        "clave": "s22p_legacy_552",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Contenido de aprendizaje derivado de fuentes gobernadas",
+        "descripcion": "En HOME_APRENDA_ANTES_DECIDIR BLOQUEAR popup que mantenga semántica paralela a reglas fuente. Tu deuda puede haber cambiado de manos consume EDU-NODO-02-EXPLORA y no publica detalle legal preciso si candidato o claims pendientes; fuente PUBLICABLE requerida. ¿Cómo funciona el simulador? conserva naming decisión 46, explica celular ONB_001, OTP, DNI si corresponde y resolución backend, sin simulación hipotética ni lookup directo. ¿Qué ocurre después de revisar tu opción? consume EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA, oferta válida pago único/cuotas, confirmación y constancia/carta por deuda tras SETTLED_CONFIRMED, sin plazos SBS históricos no verificados. Cierres comerciales ONB_001; aplicar frescura de claims. Visual mapping PENDING_CANONICAL_VISUAL, PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001. Complementa S13-C07; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/552",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p01_render_aprendizaje"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p01_fuente_paralela_o_no_publicable"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p01_flujo_simulador_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p01_pago_carta_o_plazo_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p01_cierre_comercial_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p01_render_aprendizaje": true,
+              "s22p01_fuente_paralela_o_no_publicable": false,
+              "s22p01_flujo_simulador_invalido": false,
+              "s22p01_pago_carta_o_plazo_invalido": false,
+              "s22p01_cierre_comercial_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p01_render_aprendizaje": true,
+              "s22p01_fuente_paralela_o_no_publicable": true,
+              "s22p01_flujo_simulador_invalido": false,
+              "s22p01_pago_carta_o_plazo_invalido": false,
+              "s22p01_cierre_comercial_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p01_render_aprendizaje": true,
+              "s22p01_fuente_paralela_o_no_publicable": false,
+              "s22p01_flujo_simulador_invalido": true,
+              "s22p01_pago_carta_o_plazo_invalido": false,
+              "s22p01_cierre_comercial_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p01_render_aprendizaje": true,
+              "s22p01_fuente_paralela_o_no_publicable": false,
+              "s22p01_flujo_simulador_invalido": false,
+              "s22p01_pago_carta_o_plazo_invalido": true,
+              "s22p01_cierre_comercial_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p01_render_aprendizaje": true,
+              "s22p01_fuente_paralela_o_no_publicable": false,
+              "s22p01_flujo_simulador_invalido": false,
+              "s22p01_pago_carta_o_plazo_invalido": false,
+              "s22p01_cierre_comercial_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p01_render_aprendizaje": false,
+              "s22p01_fuente_paralela_o_no_publicable": true,
+              "s22p01_flujo_simulador_invalido": true,
+              "s22p01_pago_carta_o_plazo_invalido": true,
+              "s22p01_cierre_comercial_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "d573d874b9fb049320c533b180666e99ab26b359064edab698ce4fa6514044fc",
+      "hash_paquete": "1f994dcc89e5d243e0d5256097e4c5fe81868b4d0ca7774f0e9bce1c6628337a",
+      "hash_evaluado": "d573d874b9",
+      "hash_paquete_10": "1f994dcc89"
+    },
+    {
+      "codigo": "S22P-C02",
+      "legacy_id": 554,
+      "legacy_ids": [
+        554
+      ],
+      "relacionadas": [
+        "S22J-C01",
+        "S4-C21",
+        "S3-C12"
+      ],
+      "residual": "Falta referencia canónica de cardinalidad exacta de preguntas y mapping visual pendiente; se preservan todos los temas nombrados.",
+      "coberturas": [
+        {
+          "legacy_id": 554,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta referencia canónica de cardinalidad exacta de preguntas y mapping visual pendiente; se preservan todos los temas nombrados.",
+          "diferencias": "En HOME_FAQ BLOQUEAR respuestas contradictorias con contratos fuente: START_REQUIREMENTS celular, OTP y DNI si corresponde sin perfil completo previo (REG_FLOW_CELL_FIRST_001, REG_FLUJO_003); NO_OFFER solo cero autoritativo, no fallo técnico (REG_CLIENT_HOME_NO_OFFER_001, REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001); OFFER_FINALITY exige revalidar vigencia, versión, montos, modalidad y plan, reconfirmar cambio material (REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001, REG_CLIENT_CHECKOUT_ENTRY_001); DEBT_MANAGER solo identidad y deuda autoritativas, no educación candidata EDU-NODO-02-EXPLORA; DATA_PROTECTION según REG_ANL_002, REG_SEG_003 y LEGAL-CONSENTIMIENTO-DATOS-01, no checkbox universal ni ubicación histórica, revisión legal pendiente; CAN_I_STOP permite abandonar antes de envío, después aplica outcome, pendiente sin nuevo intento hasta conciliar, confirmado obliga conforme contrato y salir/cancelar débito no extingue deuda/plan (REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001, REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001). Respetar frontera pública REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001; visual pendiente PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p02_render_faq",
+        "s22p02_inicio_invalido",
+        "s22p02_sin_oferta_invalido",
+        "s22p02_oferta_sin_revalidacion",
+        "s22p02_gestor_no_autoritativo",
+        "s22p02_privacidad_invalida",
+        "s22p02_abandono_o_pago_invalido",
+        "s22p02_frontera_publica_invalida"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C02",
+        "clave": "s22p_legacy_554",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "FAQ pública coherente con contratos actuales",
+        "descripcion": "En HOME_FAQ BLOQUEAR respuestas contradictorias con contratos fuente: START_REQUIREMENTS celular, OTP y DNI si corresponde sin perfil completo previo (REG_FLOW_CELL_FIRST_001, REG_FLUJO_003); NO_OFFER solo cero autoritativo, no fallo técnico (REG_CLIENT_HOME_NO_OFFER_001, REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001); OFFER_FINALITY exige revalidar vigencia, versión, montos, modalidad y plan, reconfirmar cambio material (REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001, REG_CLIENT_CHECKOUT_ENTRY_001); DEBT_MANAGER solo identidad y deuda autoritativas, no educación candidata EDU-NODO-02-EXPLORA; DATA_PROTECTION según REG_ANL_002, REG_SEG_003 y LEGAL-CONSENTIMIENTO-DATOS-01, no checkbox universal ni ubicación histórica, revisión legal pendiente; CAN_I_STOP permite abandonar antes de envío, después aplica outcome, pendiente sin nuevo intento hasta conciliar, confirmado obliga conforme contrato y salir/cancelar débito no extingue deuda/plan (REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001, REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001). Respetar frontera pública REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001; visual pendiente PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/554",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p02_render_faq"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22p02_inicio_invalido"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22p02_sin_oferta_invalido"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p02_oferta_sin_revalidacion"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22p02_gestor_no_autoritativo"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p02_privacidad_invalida"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p02_abandono_o_pago_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p02_frontera_publica_invalida"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": true,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": true,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": true,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": true,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": true,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": true,
+              "s22p02_frontera_publica_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": true,
+              "s22p02_inicio_invalido": false,
+              "s22p02_sin_oferta_invalido": false,
+              "s22p02_oferta_sin_revalidacion": false,
+              "s22p02_gestor_no_autoritativo": false,
+              "s22p02_privacidad_invalida": false,
+              "s22p02_abandono_o_pago_invalido": false,
+              "s22p02_frontera_publica_invalida": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p02_render_faq": false,
+              "s22p02_inicio_invalido": true,
+              "s22p02_sin_oferta_invalido": true,
+              "s22p02_oferta_sin_revalidacion": true,
+              "s22p02_gestor_no_autoritativo": true,
+              "s22p02_privacidad_invalida": true,
+              "s22p02_abandono_o_pago_invalido": true,
+              "s22p02_frontera_publica_invalida": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "29b5c61e83f24226c7517120c3a8bef67683ad14fa2367cb8ffb13f36a15f219",
+      "hash_paquete": "8b79f5d968bdad00781b4c8eac9d92a1d7aa5dae3415916d05873644a371ae1f",
+      "hash_evaluado": "29b5c61e83",
+      "hash_paquete_10": "8b79f5d968"
+    },
+    {
+      "codigo": "S22P-C03",
+      "legacy_id": 555,
+      "legacy_ids": [
+        555
+      ],
+      "relacionadas": [
+        "S13-C07"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 555,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En HOME_S9_FOOTER BLOQUEAR bloque sin fuente y destino canónicos. Disclaimer conserva naming simulador decisión 46 pero destino ONB_001, no simulación hipotética. Aliados y prensa/noticias solo fuentes publicadas verificadas, PANT_RESPALDO_CONFIANZA, sin placeholders vacíos. Links LEGAL_POLITICA_PRIVACIDAD, LEGAL_TERMINOS_CONDICIONES, LEGAL_POLITICA_COOKIES y PANT_LIBRO_RECLAMACIONES públicos sin autenticación, solo rutas Cliente canónicas existentes. Contacto desde configuración corporativa Cliente vigente, nunca datos personales owner; disponibilidad dinámica, claims proveedor/seguridad con evidencia propia. Mantener pendientes PEND-CLIENT-HOME-FOOTER-CANONICAL-VISUAL-001, PEND-CLIENT-CONTACT-CONFIG-001, PEND-CLIENT-PUBLIC-NAV-001; no inventar fuentes/rutas ni datos. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p03_render_footer",
+        "s22p03_bloque_sin_fuente_destino",
+        "s22p03_disclaimer_destino_invalido",
+        "s22p03_trust_no_verificado_o_vacio",
+        "s22p03_legal_ruta_o_auth_invalida",
+        "s22p03_contacto_no_canonico",
+        "s22p03_claim_sin_evidencia"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C03",
+        "clave": "s22p_legacy_555",
+        "familia": "ROUTING_NAVIGATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Footer público desde fuentes y destinos canónicos",
+        "descripcion": "En HOME_S9_FOOTER BLOQUEAR bloque sin fuente y destino canónicos. Disclaimer conserva naming simulador decisión 46 pero destino ONB_001, no simulación hipotética. Aliados y prensa/noticias solo fuentes publicadas verificadas, PANT_RESPALDO_CONFIANZA, sin placeholders vacíos. Links LEGAL_POLITICA_PRIVACIDAD, LEGAL_TERMINOS_CONDICIONES, LEGAL_POLITICA_COOKIES y PANT_LIBRO_RECLAMACIONES públicos sin autenticación, solo rutas Cliente canónicas existentes. Contacto desde configuración corporativa Cliente vigente, nunca datos personales owner; disponibilidad dinámica, claims proveedor/seguridad con evidencia propia. Mantener pendientes PEND-CLIENT-HOME-FOOTER-CANONICAL-VISUAL-001, PEND-CLIENT-CONTACT-CONFIG-001, PEND-CLIENT-PUBLIC-NAV-001; no inventar fuentes/rutas ni datos. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/555",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p03_render_footer"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p03_bloque_sin_fuente_destino"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p03_disclaimer_destino_invalido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22p03_trust_no_verificado_o_vacio"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p03_legal_ruta_o_auth_invalida"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p03_contacto_no_canonico"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p03_claim_sin_evidencia"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": false,
+              "s22p03_disclaimer_destino_invalido": false,
+              "s22p03_trust_no_verificado_o_vacio": false,
+              "s22p03_legal_ruta_o_auth_invalida": false,
+              "s22p03_contacto_no_canonico": false,
+              "s22p03_claim_sin_evidencia": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": true,
+              "s22p03_disclaimer_destino_invalido": false,
+              "s22p03_trust_no_verificado_o_vacio": false,
+              "s22p03_legal_ruta_o_auth_invalida": false,
+              "s22p03_contacto_no_canonico": false,
+              "s22p03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": false,
+              "s22p03_disclaimer_destino_invalido": true,
+              "s22p03_trust_no_verificado_o_vacio": false,
+              "s22p03_legal_ruta_o_auth_invalida": false,
+              "s22p03_contacto_no_canonico": false,
+              "s22p03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": false,
+              "s22p03_disclaimer_destino_invalido": false,
+              "s22p03_trust_no_verificado_o_vacio": true,
+              "s22p03_legal_ruta_o_auth_invalida": false,
+              "s22p03_contacto_no_canonico": false,
+              "s22p03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": false,
+              "s22p03_disclaimer_destino_invalido": false,
+              "s22p03_trust_no_verificado_o_vacio": false,
+              "s22p03_legal_ruta_o_auth_invalida": true,
+              "s22p03_contacto_no_canonico": false,
+              "s22p03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": false,
+              "s22p03_disclaimer_destino_invalido": false,
+              "s22p03_trust_no_verificado_o_vacio": false,
+              "s22p03_legal_ruta_o_auth_invalida": false,
+              "s22p03_contacto_no_canonico": true,
+              "s22p03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": true,
+              "s22p03_bloque_sin_fuente_destino": false,
+              "s22p03_disclaimer_destino_invalido": false,
+              "s22p03_trust_no_verificado_o_vacio": false,
+              "s22p03_legal_ruta_o_auth_invalida": false,
+              "s22p03_contacto_no_canonico": false,
+              "s22p03_claim_sin_evidencia": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p03_render_footer": false,
+              "s22p03_bloque_sin_fuente_destino": true,
+              "s22p03_disclaimer_destino_invalido": true,
+              "s22p03_trust_no_verificado_o_vacio": true,
+              "s22p03_legal_ruta_o_auth_invalida": true,
+              "s22p03_contacto_no_canonico": true,
+              "s22p03_claim_sin_evidencia": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "7e5d7dac67ea987b6690a8469d6bf9bc050f6236f1a7b4d222643c4443992935",
+      "hash_paquete": "ba1998ea3d592e411646ae090d13bfe996880af0251945ae6b4fd364414886fd",
+      "hash_evaluado": "7e5d7dac67",
+      "hash_paquete_10": "ba1998ea3d"
+    },
+    {
+      "codigo": "S22P-C04",
+      "legacy_id": 556,
+      "legacy_ids": [
+        556
+      ],
+      "relacionadas": [],
+      "residual": "Falta cubrir todos los links legales Cliente fuera del alcance CLIENT_HOME sin afectar P36; applicability histórica pantallas 38 y 57 no se modifica.",
+      "coberturas": [
+        {
+          "legacy_id": 556,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta cubrir todos los links legales Cliente fuera del alcance CLIENT_HOME sin afectar P36; applicability histórica pantallas 38 y 57 no se modifica.",
+          "diferencias": "En footer y links legales Cliente BLOQUEAR destino LEGAL_POLITICA_PRIVACIDAD, LEGAL_TERMINOS_CONDICIONES, LEGAL_POLITICA_COOKIES o PANT_LIBRO_RECLAMACIONES que requiera autenticación, reutilice ruta B2B, URL hardcodeada/inventada o no resuelva lf_ops.rutas Cliente cuando exista. Libro de Reclamaciones debe conservar visibilidad permanente, acceso fácil y registro público conforme LEGAL-RECLAMOS-05. PENDING_CANONICAL_CLIENT_ROUTES y PEND-CLIENT-PUBLIC-NAV-001 permanecen; no inventar rutas ni modificar IG/applicability_v1. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p04_evalua_link_legal_publico",
+        "s22p04_requiere_auth",
+        "s22p04_ruta_b2b_o_url_inventada",
+        "s22p04_ruta_no_canonica",
+        "s22p04_libro_oculto_o_acceso_bloqueado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C04",
+        "clave": "s22p_legacy_556",
+        "familia": "ROUTING_NAVIGATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Navegación legal pública sin rutas inventadas",
+        "descripcion": "En footer y links legales Cliente BLOQUEAR destino LEGAL_POLITICA_PRIVACIDAD, LEGAL_TERMINOS_CONDICIONES, LEGAL_POLITICA_COOKIES o PANT_LIBRO_RECLAMACIONES que requiera autenticación, reutilice ruta B2B, URL hardcodeada/inventada o no resuelva lf_ops.rutas Cliente cuando exista. Libro de Reclamaciones debe conservar visibilidad permanente, acceso fácil y registro público conforme LEGAL-RECLAMOS-05. PENDING_CANONICAL_CLIENT_ROUTES y PEND-CLIENT-PUBLIC-NAV-001 permanecen; no inventar rutas ni modificar IG/applicability_v1. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/556",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p04_evalua_link_legal_publico"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p04_requiere_auth"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p04_ruta_b2b_o_url_inventada"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p04_ruta_no_canonica"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p04_libro_oculto_o_acceso_bloqueado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p04_evalua_link_legal_publico": true,
+              "s22p04_requiere_auth": false,
+              "s22p04_ruta_b2b_o_url_inventada": false,
+              "s22p04_ruta_no_canonica": false,
+              "s22p04_libro_oculto_o_acceso_bloqueado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p04_evalua_link_legal_publico": true,
+              "s22p04_requiere_auth": true,
+              "s22p04_ruta_b2b_o_url_inventada": false,
+              "s22p04_ruta_no_canonica": false,
+              "s22p04_libro_oculto_o_acceso_bloqueado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p04_evalua_link_legal_publico": true,
+              "s22p04_requiere_auth": false,
+              "s22p04_ruta_b2b_o_url_inventada": true,
+              "s22p04_ruta_no_canonica": false,
+              "s22p04_libro_oculto_o_acceso_bloqueado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p04_evalua_link_legal_publico": true,
+              "s22p04_requiere_auth": false,
+              "s22p04_ruta_b2b_o_url_inventada": false,
+              "s22p04_ruta_no_canonica": true,
+              "s22p04_libro_oculto_o_acceso_bloqueado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p04_evalua_link_legal_publico": true,
+              "s22p04_requiere_auth": false,
+              "s22p04_ruta_b2b_o_url_inventada": false,
+              "s22p04_ruta_no_canonica": false,
+              "s22p04_libro_oculto_o_acceso_bloqueado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p04_evalua_link_legal_publico": false,
+              "s22p04_requiere_auth": true,
+              "s22p04_ruta_b2b_o_url_inventada": true,
+              "s22p04_ruta_no_canonica": true,
+              "s22p04_libro_oculto_o_acceso_bloqueado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "cb8572df1151e488eaf69385b91d73da26cb82e9033a9caedcd1b322c77f3dc6",
+      "hash_paquete": "68046627af02071b6315360d8a6e4c55fbf1afff4550c1db1ac7d2bbdfe9f75d",
+      "hash_evaluado": "cb8572df11",
+      "hash_paquete_10": "68046627af"
+    },
+    {
+      "codigo": "S22P-C05",
+      "legacy_id": 557,
+      "legacy_ids": [
+        557
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 557,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En PANT_RESPALDO_CONFIANZA BLOQUEAR render sin evaluación server-side/configuración. Aliado solo de fuente canónica, autorización approved, estado operativo compatible y logo autorizado; lf_ops.empresas es candidato, no autoridad confirmada. Prensa/noticias solo registry canónico, fuente verificable, fecha y visibilidad vigente. Sin fuentes publicables ocultar bloque completo y refluir sin reservar espacio; variante A/B/C según cantidad real y UX-RESPALDO-VARIANTES-01, no inventar logos, slots o notas ni cajas vacías NEG-RESPALDO-SIN-CAJAS-VACIAS-01. DEMO fixtures marcados solo no producción conforme política documental; nunca promoción implícita. Mantener HIDDEN_NO_DATA mientras no existan datos publicables y pendientes PEND-CLIENT-HOME-TRUST-SOURCES-001, PEND-CLIENT-HOME-TRUST-CANONICAL-VISUAL-001. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p05_evalua_bloque_confianza",
+        "s22p05_evaluacion_no_server",
+        "s22p05_aliado_no_autorizado",
+        "s22p05_prensa_no_verificada",
+        "s22p05_bloque_vacio_o_slots_ficticios",
+        "s22p05_variante_no_derivada",
+        "s22p05_demo_en_prod"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C05",
+        "clave": "s22p_legacy_557",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Respaldo y confianza solo con fuentes publicables",
+        "descripcion": "En PANT_RESPALDO_CONFIANZA BLOQUEAR render sin evaluación server-side/configuración. Aliado solo de fuente canónica, autorización approved, estado operativo compatible y logo autorizado; lf_ops.empresas es candidato, no autoridad confirmada. Prensa/noticias solo registry canónico, fuente verificable, fecha y visibilidad vigente. Sin fuentes publicables ocultar bloque completo y refluir sin reservar espacio; variante A/B/C según cantidad real y UX-RESPALDO-VARIANTES-01, no inventar logos, slots o notas ni cajas vacías NEG-RESPALDO-SIN-CAJAS-VACIAS-01. DEMO fixtures marcados solo no producción conforme política documental; nunca promoción implícita. Mantener HIDDEN_NO_DATA mientras no existan datos publicables y pendientes PEND-CLIENT-HOME-TRUST-SOURCES-001, PEND-CLIENT-HOME-TRUST-CANONICAL-VISUAL-001. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/557",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p05_evalua_bloque_confianza"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p05_evaluacion_no_server"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p05_aliado_no_autorizado"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22p05_prensa_no_verificada"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p05_bloque_vacio_o_slots_ficticios"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p05_variante_no_derivada"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p05_demo_en_prod"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": false,
+              "s22p05_aliado_no_autorizado": false,
+              "s22p05_prensa_no_verificada": false,
+              "s22p05_bloque_vacio_o_slots_ficticios": false,
+              "s22p05_variante_no_derivada": false,
+              "s22p05_demo_en_prod": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": true,
+              "s22p05_aliado_no_autorizado": false,
+              "s22p05_prensa_no_verificada": false,
+              "s22p05_bloque_vacio_o_slots_ficticios": false,
+              "s22p05_variante_no_derivada": false,
+              "s22p05_demo_en_prod": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": false,
+              "s22p05_aliado_no_autorizado": true,
+              "s22p05_prensa_no_verificada": false,
+              "s22p05_bloque_vacio_o_slots_ficticios": false,
+              "s22p05_variante_no_derivada": false,
+              "s22p05_demo_en_prod": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": false,
+              "s22p05_aliado_no_autorizado": false,
+              "s22p05_prensa_no_verificada": true,
+              "s22p05_bloque_vacio_o_slots_ficticios": false,
+              "s22p05_variante_no_derivada": false,
+              "s22p05_demo_en_prod": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": false,
+              "s22p05_aliado_no_autorizado": false,
+              "s22p05_prensa_no_verificada": false,
+              "s22p05_bloque_vacio_o_slots_ficticios": true,
+              "s22p05_variante_no_derivada": false,
+              "s22p05_demo_en_prod": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": false,
+              "s22p05_aliado_no_autorizado": false,
+              "s22p05_prensa_no_verificada": false,
+              "s22p05_bloque_vacio_o_slots_ficticios": false,
+              "s22p05_variante_no_derivada": true,
+              "s22p05_demo_en_prod": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": true,
+              "s22p05_evaluacion_no_server": false,
+              "s22p05_aliado_no_autorizado": false,
+              "s22p05_prensa_no_verificada": false,
+              "s22p05_bloque_vacio_o_slots_ficticios": false,
+              "s22p05_variante_no_derivada": false,
+              "s22p05_demo_en_prod": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p05_evalua_bloque_confianza": false,
+              "s22p05_evaluacion_no_server": true,
+              "s22p05_aliado_no_autorizado": true,
+              "s22p05_prensa_no_verificada": true,
+              "s22p05_bloque_vacio_o_slots_ficticios": true,
+              "s22p05_variante_no_derivada": true,
+              "s22p05_demo_en_prod": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f1ac0df32591691a86567253ae2500109fe1f0837c32c7518845c0c71f0c2fcb",
+      "hash_paquete": "2c26c9b3f742627e9ebcbd60a3566b5a63125f41f5201d79f6712f307b874752",
+      "hash_evaluado": "f1ac0df325",
+      "hash_paquete_10": "2c26c9b3f7"
+    },
+    {
+      "codigo": "S22P-C06",
+      "legacy_id": 558,
+      "legacy_ids": [
+        558
+      ],
+      "relacionadas": [
+        "S11-C08",
+        "S11-C10",
+        "S19-C07"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 558,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En PASO3_MODAL_DETALLE_PRECIO para HOME_002 BLOQUEAR cálculo frontend, comisión inferida o precio final distinto de quote backend. Precio final siempre visible; resumen con detalle expandible, líneas solo de public.lf_b2b_pricing_config APROBADO/VIGENTE, versión oferta/selección aplicable y customer visible; orden display_order, etiquetas, pagador y ceros según config. No trasladar cargos B2B/LF ni revelar fees internos; ocultar línea no altera cálculo; suma componentes cliente reconcilia precio final, ahorro deuda original menos precio final solo backend. MULTI_OFFER, SINGLE_OFFER_PAY_ONLY y cuotas con plan comprometido/READY_QUOTE; ajuste comercial aplicado desde selection_snapshot.applied_commercial_adjustments y quote/config versionada, negativo antes de precio final, no wallet ni devolución. Proveedor/tasa/claim solo configuración y binding autorizados; copy de alcance servicio pendiente. CTA inicia REG_CLIENT_CHECKOUT_ENTRY_001 y revalida selección, versión, modalidad, plan y precio, nunca submit proveedor. HU-HMO-002, VD_CLIENT_HOME002_PRICE_TRANSPARENCY_20260824 y HOME_002-PRICE-DETAIL-MODAL-FINAL-20260824 son referencias, cifras DEMO no autoridad; visual RESOLVED, runtime BLOCKED_NO_APPROVED_OR_VIGENTE_CONFIG y deuda de binding pendiente. Complementa S11-C08/C10 y S19-C07. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p06_render_detalle_precio",
+        "s22p06_calculo_o_precio_no_autoritativo",
+        "s22p06_config_version_o_linea_invalida",
+        "s22p06_orden_pagador_o_fee_invalido",
+        "s22p06_conciliacion_o_ahorro_invalido",
+        "s22p06_contexto_o_quote_invalido",
+        "s22p06_ajuste_comercial_invalido",
+        "s22p06_claim_proveedor_no_autorizado",
+        "s22p06_cta_envio_directo_o_sin_revalidar"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C06",
+        "clave": "s22p_legacy_558",
+        "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Detalle de precio autoritativo sin cálculo en frontend",
+        "descripcion": "En PASO3_MODAL_DETALLE_PRECIO para HOME_002 BLOQUEAR cálculo frontend, comisión inferida o precio final distinto de quote backend. Precio final siempre visible; resumen con detalle expandible, líneas solo de public.lf_b2b_pricing_config APROBADO/VIGENTE, versión oferta/selección aplicable y customer visible; orden display_order, etiquetas, pagador y ceros según config. No trasladar cargos B2B/LF ni revelar fees internos; ocultar línea no altera cálculo; suma componentes cliente reconcilia precio final, ahorro deuda original menos precio final solo backend. MULTI_OFFER, SINGLE_OFFER_PAY_ONLY y cuotas con plan comprometido/READY_QUOTE; ajuste comercial aplicado desde selection_snapshot.applied_commercial_adjustments y quote/config versionada, negativo antes de precio final, no wallet ni devolución. Proveedor/tasa/claim solo configuración y binding autorizados; copy de alcance servicio pendiente. CTA inicia REG_CLIENT_CHECKOUT_ENTRY_001 y revalida selección, versión, modalidad, plan y precio, nunca submit proveedor. HU-HMO-002, VD_CLIENT_HOME002_PRICE_TRANSPARENCY_20260824 y HOME_002-PRICE-DETAIL-MODAL-FINAL-20260824 son referencias, cifras DEMO no autoridad; visual RESOLVED, runtime BLOCKED_NO_APPROVED_OR_VIGENTE_CONFIG y deuda de binding pendiente. Complementa S11-C08/C10 y S19-C07. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/558",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p06_render_detalle_precio"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "o",
+                        "izq": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s22p06_calculo_o_precio_no_autoritativo"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        },
+                        "der": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s22p06_config_version_o_linea_invalida"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22p06_orden_pagador_o_fee_invalido"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p06_conciliacion_o_ahorro_invalido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22p06_contexto_o_quote_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p06_ajuste_comercial_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p06_claim_proveedor_no_autorizado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p06_cta_envio_directo_o_sin_revalidar"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": true,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": true,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": true,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": true,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": true,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": true,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": true,
+              "s22p06_cta_envio_directo_o_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": true,
+              "s22p06_calculo_o_precio_no_autoritativo": false,
+              "s22p06_config_version_o_linea_invalida": false,
+              "s22p06_orden_pagador_o_fee_invalido": false,
+              "s22p06_conciliacion_o_ahorro_invalido": false,
+              "s22p06_contexto_o_quote_invalido": false,
+              "s22p06_ajuste_comercial_invalido": false,
+              "s22p06_claim_proveedor_no_autorizado": false,
+              "s22p06_cta_envio_directo_o_sin_revalidar": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p06_render_detalle_precio": false,
+              "s22p06_calculo_o_precio_no_autoritativo": true,
+              "s22p06_config_version_o_linea_invalida": true,
+              "s22p06_orden_pagador_o_fee_invalido": true,
+              "s22p06_conciliacion_o_ahorro_invalido": true,
+              "s22p06_contexto_o_quote_invalido": true,
+              "s22p06_ajuste_comercial_invalido": true,
+              "s22p06_claim_proveedor_no_autorizado": true,
+              "s22p06_cta_envio_directo_o_sin_revalidar": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "7f486e0bd68293c53e63d9cef3f895fcb54d8ada81a2b55ee157f78e7091a346",
+      "hash_paquete": "2fb82fa78041072e0057df485ab51e51c0a27476156f4dfb761adea537caeeca",
+      "hash_evaluado": "7f486e0bd6",
+      "hash_paquete_10": "2fb82fa780"
+    },
+    {
+      "codigo": "S22P-C07",
+      "legacy_id": 563,
+      "legacy_ids": [
+        563
+      ],
+      "relacionadas": [
+        "S4-C12"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 563,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En PASO3_OFERTA_UNICA_AMBAS BLOQUEAR aplicar variante sin una oferta elegible activa con PAGO_UNICO y CUOTAS vigentes confirmados backend. No preseleccionar oferta al cargar ni modalidad por defecto. Pagar selecciona explícitamente PAGO_UNICO e inicia REG_CLIENT_CHECKOUT_ENTRY_001; elegir CUOTAS abre selección de plan y exige plan válido conforme REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001. Montos, ahorro, vencimiento y precio desde backend/config versionada, no cálculo frontend ni valores DEMO como autoridad. Header, soporte, reporte crediticio, seguridad y Carta según capacidades y estados Cliente; carta NOT_ELIGIBLE pre-pago. Mapping shell/ruta pendiente PEND-CLIENT-HOME-CANONICAL-001 y PEND-CLIENT-HOME-SINGLE-BOTH-VISUAL-001; referencias visuales legadas solo evidencia. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22p07_render_oferta_unica_ambas",
+        "s22p07_variante_invalida",
+        "s22p07_preseleccion_implicita",
+        "s22p07_accion_pago_unico_invalida",
+        "s22p07_accion_cuotas_sin_plan",
+        "s22p07_precio_no_autoritativo",
+        "s22p07_capacidad_o_carta_invalida",
+        "s22p07_mapping_inventado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22P-C07",
+        "clave": "s22p_legacy_563",
+        "familia": "OFFERS_INSTALLMENTS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Oferta única con ambas modalidades sin selección implícita",
+        "descripcion": "En PASO3_OFERTA_UNICA_AMBAS BLOQUEAR aplicar variante sin una oferta elegible activa con PAGO_UNICO y CUOTAS vigentes confirmados backend. No preseleccionar oferta al cargar ni modalidad por defecto. Pagar selecciona explícitamente PAGO_UNICO e inicia REG_CLIENT_CHECKOUT_ENTRY_001; elegir CUOTAS abre selección de plan y exige plan válido conforme REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001. Montos, ahorro, vencimiento y precio desde backend/config versionada, no cálculo frontend ni valores DEMO como autoridad. Header, soporte, reporte crediticio, seguridad y Carta según capacidades y estados Cliente; carta NOT_ELIGIBLE pre-pago. Mapping shell/ruta pendiente PEND-CLIENT-HOME-CANONICAL-001 y PEND-CLIENT-HOME-SINGLE-BOTH-VISUAL-001; referencias visuales legadas solo evidencia. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/563",
+          "solicitante": "Cristhian / Claude S22-P 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22p07_render_oferta_unica_ambas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22p07_variante_invalida"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22p07_preseleccion_implicita"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22p07_accion_pago_unico_invalida"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22p07_accion_cuotas_sin_plan"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22p07_precio_no_autoritativo"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22p07_capacidad_o_carta_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22p07_mapping_inventado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": true,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": true,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": true,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": true,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": true,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": true,
+              "s22p07_mapping_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": true,
+              "s22p07_variante_invalida": false,
+              "s22p07_preseleccion_implicita": false,
+              "s22p07_accion_pago_unico_invalida": false,
+              "s22p07_accion_cuotas_sin_plan": false,
+              "s22p07_precio_no_autoritativo": false,
+              "s22p07_capacidad_o_carta_invalida": false,
+              "s22p07_mapping_inventado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22p07_render_oferta_unica_ambas": false,
+              "s22p07_variante_invalida": true,
+              "s22p07_preseleccion_implicita": true,
+              "s22p07_accion_pago_unico_invalida": true,
+              "s22p07_accion_cuotas_sin_plan": true,
+              "s22p07_precio_no_autoritativo": true,
+              "s22p07_capacidad_o_carta_invalida": true,
+              "s22p07_mapping_inventado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "bad1a6523ea2bd5cde1280196ee92a4dd6128b119ddb65a23db74efac3030c77",
+      "hash_paquete": "f3002f719db2ffb37be6186b78487223e3555e1ade670e1a32320fc7880aaf62",
+      "hash_evaluado": "bad1a6523e",
+      "hash_paquete_10": "f3002f719d"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22P-C01",
+      "hash_paquete": "1f994dcc89e5d243e0d5256097e4c5fe81868b4d0ca7774f0e9bce1c6628337a",
+      "hash_paquete_10": "1f994dcc89",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C01 / hash_paquete_10=1f994dcc89"
+    },
+    {
+      "codigo": "S22P-C02",
+      "hash_paquete": "8b79f5d968bdad00781b4c8eac9d92a1d7aa5dae3415916d05873644a371ae1f",
+      "hash_paquete_10": "8b79f5d968",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C02 / hash_paquete_10=8b79f5d968"
+    },
+    {
+      "codigo": "S22P-C03",
+      "hash_paquete": "ba1998ea3d592e411646ae090d13bfe996880af0251945ae6b4fd364414886fd",
+      "hash_paquete_10": "ba1998ea3d",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C03 / hash_paquete_10=ba1998ea3d"
+    },
+    {
+      "codigo": "S22P-C04",
+      "hash_paquete": "68046627af02071b6315360d8a6e4c55fbf1afff4550c1db1ac7d2bbdfe9f75d",
+      "hash_paquete_10": "68046627af",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C04 / hash_paquete_10=68046627af"
+    },
+    {
+      "codigo": "S22P-C05",
+      "hash_paquete": "2c26c9b3f742627e9ebcbd60a3566b5a63125f41f5201d79f6712f307b874752",
+      "hash_paquete_10": "2c26c9b3f7",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C05 / hash_paquete_10=2c26c9b3f7"
+    },
+    {
+      "codigo": "S22P-C06",
+      "hash_paquete": "2fb82fa78041072e0057df485ab51e51c0a27476156f4dfb761adea537caeeca",
+      "hash_paquete_10": "2fb82fa780",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C06 / hash_paquete_10=2fb82fa780"
+    },
+    {
+      "codigo": "S22P-C07",
+      "hash_paquete": "f3002f719db2ffb37be6186b78487223e3555e1ade670e1a32320fc7880aaf62",
+      "hash_paquete_10": "f3002f719d",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4772 / Claude 2026-11-25 16:28 Lima / S22P-C07 / hash_paquete_10=f3002f719d"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 562,
+      "nucleo_codigo": "S4-C16",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S4-C16 cubre persistencia de plan elegido y fecha válida antes de checkout y revalidación quote; S15-C07 y M2-C06 cubren selección de fecha configurada, no defaults.",
+      "residual": "Falta conciliar exigencia de fecha siempre versus selector condicional por configuración; falta contrato prepay no activado, selección de fecha no es consentimiento, detalle de copy B-/C, evidencia visual y gates de pricing, carta, configuración de inclusiones y prohibición submit proveedor. No modificar reglas publicadas."
+    }
+  ]
+}
