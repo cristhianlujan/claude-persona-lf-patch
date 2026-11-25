@@ -1,0 +1,589 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "b3ff334e4220ad043c1f36fd78c5e3c32af5291f",
+    "js_vectors": "10/10",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 41,
+        "nucleo_codigo": "S4-C18",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 43,
+        "nucleo_codigo": "S5-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 180,
+        "nucleo_codigo": "S11-C04",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 537,
+        "nucleo_codigo": "S14-C01",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 537,
+        "nucleo_codigo": "S14-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "REG_CHK_005",
+        "version": 3,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S5-C02",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S4-C16",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S4-C18",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S11-C04",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S8-C20",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S14-C01",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22g01_publicacion_referencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "publicacion referencia; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22g01_repositorio_publico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "repositorio publico; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22g01_variable_cliente_no_protegida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "variable cliente no protegida; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22g01_analitica_tercero",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "analitica tercero; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22g02_instrumentacion_paso1",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "instrumentacion paso1; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22g02_evento_accion_omitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evento accion omitido; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22g02_evento_sin_accion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evento sin accion; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22g02_evento_con_pii",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evento con pii; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22G-C01",
+      "legacy_id": 135,
+      "legacy_ids": [
+        135
+      ],
+      "relacionadas": [
+        "S2-C05"
+      ],
+      "residual": "rls_obligatorio de la legada no cubierto por el paquete",
+      "coberturas": [
+        {
+          "legacy_id": 135,
+          "estado_cobertura": "PARCIAL",
+          "residual": "rls_obligatorio de la legada no cubierto por el paquete",
+          "diferencias": "Ante publicación de referencias de proyecto Supabase o anon key BLOQUEAR exposición en repositorios públicos, variables cliente sin protección o herramientas de análisis de terceros. No equiparar anon key autorizada a credencial privilegiada ni prohibir su uso legítimo por adaptador cliente autorizado; no inventar mecanismo de protección. Binding pendiente.; rls_obligatorio=true en valor_config de la legada no cubierto por el paquete."
+        }
+      ],
+      "hechos": [
+        "s22g01_publicacion_referencia",
+        "s22g01_repositorio_publico",
+        "s22g01_variable_cliente_no_protegida",
+        "s22g01_analitica_tercero"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22G-C01",
+        "clave": "s22g_legacy_135",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Protección de referencias de infraestructura Supabase",
+        "descripcion": "Ante publicación de referencias de proyecto Supabase o anon key BLOQUEAR exposición en repositorios públicos, variables cliente sin protección o herramientas de análisis de terceros. No equiparar anon key autorizada a credencial privilegiada ni prohibir su uso legítimo por adaptador cliente autorizado; no inventar mecanismo de protección. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/135",
+          "solicitante": "Cristhian / Claude S22-G 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22g01_publicacion_referencia"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22g01_repositorio_publico"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22g01_variable_cliente_no_protegida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22g01_analitica_tercero"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22g01_publicacion_referencia": true,
+              "s22g01_repositorio_publico": false,
+              "s22g01_variable_cliente_no_protegida": false,
+              "s22g01_analitica_tercero": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22g01_publicacion_referencia": true,
+              "s22g01_repositorio_publico": true,
+              "s22g01_variable_cliente_no_protegida": false,
+              "s22g01_analitica_tercero": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22g01_publicacion_referencia": true,
+              "s22g01_repositorio_publico": false,
+              "s22g01_variable_cliente_no_protegida": true,
+              "s22g01_analitica_tercero": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22g01_publicacion_referencia": true,
+              "s22g01_repositorio_publico": false,
+              "s22g01_variable_cliente_no_protegida": false,
+              "s22g01_analitica_tercero": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22g01_publicacion_referencia": false,
+              "s22g01_repositorio_publico": true,
+              "s22g01_variable_cliente_no_protegida": true,
+              "s22g01_analitica_tercero": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "1c9a0a6c88436fe2720f0376b88067c59838591eea877af65fc4510f90e6711c",
+      "hash_paquete": "88aa8caa0b3d4a1356b7d92e869d3e17824f5684a7a2787fcc13c3006e0311aa",
+      "hash_evaluado": "1c9a0a6c88",
+      "hash_paquete_10": "88aa8caa0b"
+    },
+    {
+      "codigo": "S22G-C02",
+      "legacy_id": 88,
+      "legacy_ids": [
+        88
+      ],
+      "relacionadas": [
+        "S9-C06",
+        "S9-C07",
+        "S15-C05",
+        "S8-C07"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 88,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En instrumentación del Paso 1 de onboarding BLOQUEAR omitir eventos onboarding_started, tipo_documento_seleccionado, paso1_form_submit_attempt, paso1_form_submit_success, paso1_form_submit_error, consent_terms_checked, consent_data_checked o consent_marketing_checked cuando ocurra su acción correspondiente. No emitir eventos por acciones inexistentes ni incluir PII; respetar dataLayer y semántica del embudo S15-C05. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22g02_instrumentacion_paso1",
+        "s22g02_evento_accion_omitido",
+        "s22g02_evento_sin_accion",
+        "s22g02_evento_con_pii"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22G-C02",
+        "clave": "s22g_legacy_88",
+        "familia": "ANALYTICS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Eventos funcionales autorizados del primer paso",
+        "descripcion": "En instrumentación del Paso 1 de onboarding BLOQUEAR omitir eventos onboarding_started, tipo_documento_seleccionado, paso1_form_submit_attempt, paso1_form_submit_success, paso1_form_submit_error, consent_terms_checked, consent_data_checked o consent_marketing_checked cuando ocurra su acción correspondiente. No emitir eventos por acciones inexistentes ni incluir PII; respetar dataLayer y semántica del embudo S15-C05. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/88",
+          "solicitante": "Cristhian / Claude S22-G 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22g02_instrumentacion_paso1"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22g02_evento_accion_omitido"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22g02_evento_sin_accion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22g02_evento_con_pii"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22g02_instrumentacion_paso1": true,
+              "s22g02_evento_accion_omitido": false,
+              "s22g02_evento_sin_accion": false,
+              "s22g02_evento_con_pii": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22g02_instrumentacion_paso1": true,
+              "s22g02_evento_accion_omitido": true,
+              "s22g02_evento_sin_accion": false,
+              "s22g02_evento_con_pii": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22g02_instrumentacion_paso1": true,
+              "s22g02_evento_accion_omitido": false,
+              "s22g02_evento_sin_accion": true,
+              "s22g02_evento_con_pii": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22g02_instrumentacion_paso1": true,
+              "s22g02_evento_accion_omitido": false,
+              "s22g02_evento_sin_accion": false,
+              "s22g02_evento_con_pii": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22g02_instrumentacion_paso1": false,
+              "s22g02_evento_accion_omitido": true,
+              "s22g02_evento_sin_accion": true,
+              "s22g02_evento_con_pii": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "4ef525e3c06a34bed1e36a3c4386c5d45460a7876bca2a8b6f53ddd4c8c5be69",
+      "hash_paquete": "c9a0debe94a8d7d1daebe8f31efa6f083307f522450915fbe9b7055996463dbf",
+      "hash_evaluado": "4ef525e3c0",
+      "hash_paquete_10": "c9a0debe94"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22G-C01",
+      "hash_paquete": "88aa8caa0b3d4a1356b7d92e869d3e17824f5684a7a2787fcc13c3006e0311aa",
+      "hash_paquete_10": "88aa8caa0b",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "RLS obligatorio de la legada y binding pendientes"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4762 / Claude 2026-11-25 01:19 Lima / S22G-C01 / hash_paquete_10=88aa8caa0b"
+    },
+    {
+      "codigo": "S22G-C02",
+      "hash_paquete": "c9a0debe94a8d7d1daebe8f31efa6f083307f522450915fbe9b7055996463dbf",
+      "hash_paquete_10": "c9a0debe94",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "relacionada con S15-C05 y S22F-C01, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4762 / Claude 2026-11-25 01:19 Lima / S22G-C02 / hash_paquete_10=c9a0debe94"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 13,
+      "nucleo_codigo": "S8-C20",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S8-C20 regula resolución de Home con skeleton contextual y fallback funcional, sin spinner genérico.",
+      "residual": "Falta acreditar cruce DNI tras OTP y resolución autoritativa de las variantes con_oferta, sin_oferta y pendiente_cruce antes del render."
+    },
+    {
+      "legacy_id": 35,
+      "nucleo_codigo": "S8-C20",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S8-C20 regula espera de resolución de Home y fallback sin oferta.",
+      "residual": "Falta acreditar transición histórica onboarding_step=3 con home_variant definido y reconciliación de pasos canónicos actuales."
+    },
+    {
+      "legacy_id": 41,
+      "nucleo_codigo": "S4-C18",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S4-C18 gobierna recuperación posterior a OTP sin revelar existencia de cuenta, con asociación de celular y documento autorizado.",
+      "residual": "Falta restricción de unicidad de cuenta completada por DNI y resolución de recuperación por DNI sin crear duplicado."
+    },
+    {
+      "legacy_id": 43,
+      "nucleo_codigo": "S5-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S5-C02 conserva la misma sesión activa no expirada y datos capturados al reanudar, reiniciando desafío OTP.",
+      "residual": "Falta acreditar detección por mismo DNI de sesión activa no completada antes de crear una sesión nueva."
+    },
+    {
+      "legacy_id": 180,
+      "nucleo_codigo": "S11-C04",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S11-C04 exige código funcional LF_ autorizado por catálogo y mensaje amigable en errores no sensibles, preservando anti-enumeración.",
+      "residual": "Falta acreditar disponibilidad de cada código mínimo legado y conciliación de los códigos sensibles con respuesta externa no reveladora."
+    },
+    {
+      "legacy_id": 537,
+      "nucleo_codigo": "S14-C01",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S14-C01 cubre header de Home autenticado y S14-C02 Pagos, con destinos, capacidades, soporte, nombre y badges autorizados.",
+      "residual": "Falta acreditar cobertura de las restantes superficies autenticadas y restricción explícita de claim de soporte permanente sin evidencia."
+    },
+    {
+      "legacy_id": 541,
+      "nucleo_codigo": "REG_CHK_005",
+      "version_nucleo": 3,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "REG_CHK_005 v3 protege render de éxito con confirmación, referencia, fecha y monto autoritativos; S3-C20 protege efectos postpago.",
+      "residual": "Falta contrato visual exclusivo de activación de cuotas, metadatos enmascarados, cronograma, documentos reales o DEMO identificado y exclusión de pago único."
+    },
+    {
+      "legacy_id": 562,
+      "nucleo_codigo": "S4-C16",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S4-C16 gobierna persistir plan y fecha válida antes de checkout y revalidar quote; S3-C11 conserva consentimiento recurrente.",
+      "residual": "Falta acreditar plan aún no activado, vigencia de versión/oferta, fecha condicional según configuración y prohibición de invocar proveedor desde detalle."
+    }
+  ]
+}
