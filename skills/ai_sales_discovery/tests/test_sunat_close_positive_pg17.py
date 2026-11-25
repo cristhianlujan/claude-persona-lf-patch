@@ -146,7 +146,7 @@ VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now()
     # Real VIEW must lose all rows if its governed threshold is invalidated.
     sql("UPDATE public.lf_global_config SET config_value='0' WHERE config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'")
     assert sql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE run_ref='"+COMMERCIAL+"'")=="0"
-    sql(call,False,"SUNAT_CLOSE_ELIGIBILITY_COVERAGE")
+    sql(call,False,"SUNAT_CLOSE_MIN_WORKERS_POLICY_MISSING")
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
     sql("UPDATE public.lf_global_config SET config_value='50' WHERE config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'")
     assert sql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE run_ref='"+COMMERCIAL+"'")=="2239"
