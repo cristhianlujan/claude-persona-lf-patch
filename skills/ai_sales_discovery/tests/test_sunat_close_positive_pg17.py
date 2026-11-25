@@ -77,9 +77,16 @@ JOIN commercial ON commercial.ord =
  CASE WHEN n<=1000 THEN 1 WHEN n<=2000 THEN 2 ELSE 3 END;
 INSERT INTO saly.ventas_sunat_bulk_delete_ledger_v1
 SELECT 'EXEC-SALY-SUNAT-PILOT-20261122-001' FROM generate_series(1,130725);
-INSERT INTO saly.ventas_sunat_elegibilidad_v1(run_ref,clasificacion_comercial,nrotrab)
-SELECT 'EXEC-SALY-SUNAT-COMMERCIAL-20261123-001','ELEGIBLE',50
-FROM generate_series(1,2239);
+-- Eligibility is a real VIEW over captured fields, not a writable table.
+UPDATE saly.ventas_hallazgos h
+SET captura_empresarial=jsonb_build_object(
+  'capture',jsonb_build_object(
+   'normalized',jsonb_build_object('workers_integer_literal','50'),
+   'observations',jsonb_build_object(
+     'monthly',jsonb_build_object('raw',jsonb_build_object('Estado','ACTIVO','Condicion','HABIDO')),
+     'reduced',jsonb_build_object('raw',jsonb_build_object('estado','ACTIVO','condicion','HABIDO')))))
+FROM saly.ventas_discovery_ingestas i
+WHERE i.id=h.ingesta_id AND i.run_ref='EXEC-SALY-SUNAT-COMMERCIAL-20261123-001';
 INSERT INTO public.lf_operation_execution(
  execution_id,operation_code,status,lease_owner,lease_fence,lease_expires_at,
  completed_at,manifest)
@@ -136,11 +143,13 @@ VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now()
     print('PASS_PG17_BAD_DIGEST_FAILS_CLOSED')
     # Coverage must be total, not merely "zero ineligible": missing classifications
     # are unsafe even when every remaining row is eligible.
-    sql("DELETE FROM saly.ventas_sunat_elegibilidad_v1 WHERE ctid IN "
-        "(SELECT ctid FROM saly.ventas_sunat_elegibilidad_v1 LIMIT 1)")
+    # Real VIEW must lose all rows if its governed threshold is invalidated.
+    sql("UPDATE public.lf_global_config SET config_value='0' WHERE config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'")
+    assert sql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE run_ref='"+COMMERCIAL+"'")=="0"
     sql(call,False,"SUNAT_CLOSE_ELIGIBILITY_COVERAGE")
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
-    sql("INSERT INTO saly.ventas_sunat_elegibilidad_v1 VALUES ('"+COMMERCIAL+"','ELEGIBLE',50)")
+    sql("UPDATE public.lf_global_config SET config_value='50' WHERE config_key='SUNAT_COMMERCIAL_MIN_WORKERS_V1'")
+    assert sql("SELECT count(*) FROM saly.ventas_sunat_elegibilidad_v1 WHERE run_ref='"+COMMERCIAL+"'")=="2239"
     print('PASS_PG17_MISSING_ELIGIBILITY_COVERAGE_BLOCKED')
     # Do not accept a mutated receipt, historical pilot or one missing batch.
     sql("UPDATE public.lf_operation_effect_guard SET receipt='{}'::jsonb WHERE dispatch_key='new-1'")
