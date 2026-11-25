@@ -110,15 +110,15 @@ BEGIN
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  cd:='S4-C21'; lid:=514;
- direct_hash:=lf_ops.nucleo_hash_paquete_v1(cd,1);
- IF direct_hash IS NULL OR NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=1 AND estado='PUBLICADA') THEN RAISE EXCEPTION 'S22D_DIRECT_ATTESTATION_MISSING %',cd; END IF;
+ direct_hash:=lf_ops.nucleo_hash_paquete_v1(cd,2);
+ IF direct_hash IS NULL OR NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=2 AND estado='PUBLICADA') THEN RAISE EXCEPTION 'S22D_DIRECT_ATTESTATION_MISSING %',cd; END IF;
  IF EXISTS(SELECT 1 FROM lf_ops.reglas WHERE id=lid) THEN
  SELECT descripcion INTO old_desc FROM lf_ops.reglas WHERE id=lid;
- SELECT descripcion INTO new_desc FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=1;
+ SELECT descripcion INTO new_desc FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=2;
  diff:='S4-C21 exige Home sin oferta real confirmada, sin montos, modalidades ni CTA de pago y distingue error de consulta de ausencia de oferta.'; residual:='Falta resolución autoritativa de ACTIVE_OFFER_HOME y especialización por cantidad/modalidad sin inferir códigos de pantalla, respetando S14-C14.';
  IF length(diff)<30 OR length(residual)<15 THEN RAISE EXCEPTION 'S22D_DIRECT_CONTRACT %',lid; END IF;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,2,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  cd:='S14-C03'; lid:=589;

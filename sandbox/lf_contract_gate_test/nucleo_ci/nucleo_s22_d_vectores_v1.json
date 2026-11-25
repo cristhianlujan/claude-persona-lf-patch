@@ -683,7 +683,7 @@
     {
       "legacy_id": 514,
       "nucleo_codigo": "S4-C21",
-      "version_nucleo": 1,
+      "version_nucleo": 2,
       "estado_cobertura": "PARCIAL",
       "diferencias": "S4-C21 exige Home sin oferta real confirmada, sin montos, modalidades ni CTA de pago y distingue error de consulta de ausencia de oferta.",
       "residual": "Falta resolución autoritativa de ACTIVE_OFFER_HOME y especialización por cantidad/modalidad sin inferir códigos de pantalla, respetando S14-C14."
