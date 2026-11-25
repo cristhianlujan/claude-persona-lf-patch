@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "b3ff334e4220ad043c1f36fd78c5e3c32af5291f",
     "js_vectors": "10/10",
@@ -159,13 +159,13 @@
       "relacionadas": [
         "S2-C05"
       ],
-      "residual": "",
+      "residual": "rls_obligatorio de la legada no cubierto por el paquete",
       "coberturas": [
         {
           "legacy_id": 135,
-          "estado_cobertura": "REEMPLAZADA",
-          "residual": "",
-          "diferencias": "Ante publicación de referencias de proyecto Supabase o anon key BLOQUEAR exposición en repositorios públicos, variables cliente sin protección o herramientas de análisis de terceros. No equiparar anon key autorizada a credencial privilegiada ni prohibir su uso legítimo por adaptador cliente autorizado; no inventar mecanismo de protección. Binding pendiente."
+          "estado_cobertura": "PARCIAL",
+          "residual": "rls_obligatorio de la legada no cubierto por el paquete",
+          "diferencias": "Ante publicación de referencias de proyecto Supabase o anon key BLOQUEAR exposición en repositorios públicos, variables cliente sin protección o herramientas de análisis de terceros. No equiparar anon key autorizada a credencial privilegiada ni prohibir su uso legítimo por adaptador cliente autorizado; no inventar mecanismo de protección. Binding pendiente.; rls_obligatorio=true en valor_config de la legada no cubierto por el paquete."
         }
       ],
       "hechos": [
@@ -448,7 +448,78 @@
       "hash_paquete_10": "c9a0debe94"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22G-C01",
+      "hash_paquete": "88aa8caa0b3d4a1356b7d92e869d3e17824f5684a7a2787fcc13c3006e0311aa",
+      "hash_paquete_10": "88aa8caa0b",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "RLS obligatorio de la legada y binding pendientes"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4762 / Claude 2026-11-25 01:19 Lima / S22G-C01 / hash_paquete_10=88aa8caa0b"
+    },
+    {
+      "codigo": "S22G-C02",
+      "hash_paquete": "c9a0debe94a8d7d1daebe8f31efa6f083307f522450915fbe9b7055996463dbf",
+      "hash_paquete_10": "c9a0debe94",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "relacionada con S15-C05 y S22F-C01, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4762 / Claude 2026-11-25 01:19 Lima / S22G-C02 / hash_paquete_10=c9a0debe94"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 13,
