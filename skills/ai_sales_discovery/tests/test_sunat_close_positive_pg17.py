@@ -145,7 +145,7 @@ VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now()
     # Do not accept a mutated receipt, historical pilot or one missing batch.
     sql("UPDATE public.lf_operation_effect_guard SET receipt='{}'::jsonb WHERE dispatch_key='new-1'")
     sql(call,False)  # persisted-receipt SHA no longer matches
-    sql("UPDATE public.lf_operation_effect_guard SET receipt='{\\"rows\\":1000,\\"success\\":true}'::jsonb WHERE dispatch_key='new-1'")
+    sql("""UPDATE public.lf_operation_effect_guard SET receipt='{"rows":1000,"success":true}'::jsonb WHERE dispatch_key='new-1'""")
     sql("UPDATE saly.ventas_discovery_runs SET estado='PARTIAL' WHERE run_ref='"+OLD+"'")
     sql(call,False)
     sql("UPDATE saly.ventas_discovery_runs SET estado='HOLD' WHERE run_ref='"+OLD+"'")
