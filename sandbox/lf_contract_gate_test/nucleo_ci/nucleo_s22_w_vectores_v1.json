@@ -1,7 +1,7 @@
 {
   "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
   "preflight": {
-    "base": "525e99475a00fb767b875aea629dbb75bb43d1e4",
+    "base": "0c377dee5cea9355dcf9ba40efc6570a93b6e5b5",
     "js_vectors": "63/63",
     "hash": "SQL RO canonical formula; PG17 pending",
     "existing_coverage": [],
@@ -205,6 +205,18 @@
       "independent_judgment": "PENDING",
       "pg17": "PENDING_CI",
       "scope": "B2B outside P36 ancestors"
+    },
+    "literal_reconciliation": {
+      "review": "Claude 2026-11-25 18:58 Lima",
+      "corrected": [
+        "S22W-C01",
+        "S22W-C02",
+        "S22W-C08",
+        "S22W-C09"
+      ],
+      "vectors": "63/63",
+      "pg17": "PENDING_CI",
+      "independent_judgment": "PENDING_NEW_HASHES"
     }
   },
   "parametros_existentes": [],
@@ -603,7 +615,7 @@
           "legacy_id": 628,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "En LF Simula V1 NEW_PORTFOLIO_FILE BLOQUEAR registro sin ninguna fecha entre CHARGEOFF_DATE, LAST_PAYMENT_DATE, DELINQUENCY_START_DATE, opcionales individualmente. Preservar todas disponibles; derivar REFERENCE_DATE y REFERENCE_DATE_TYPE internamente, precedencia PENDING_FUNCTIONAL_DEFINITION sin inventarla. ONE_LOAD_ID, bases mixtas DERIVED_ANALYTICAL_SUBGROUPS_WITHIN_SAME_LOAD, no nueva carga ni duplicación de registro por subgrupo. Owner APPROVED; binding pendiente."
+          "diferencias": "En LF Simula V1 NEW_PORTFOLIO_FILE BLOQUEAR registro sin ninguna fecha entre CHARGEOFF_DATE, LAST_PAYMENT_DATE, DELINQUENCY_START_DATE, opcionales individualmente. Preservar todas disponibles; derivar REFERENCE_DATE y REFERENCE_DATE_TYPE internamente, precedencia PENDING_FUNCTIONAL_DEFINITION sin inventarla. ONE_LOAD_ID, bases mixtas DERIVED_ANALYTICAL_SUBGROUPS_WITHIN_SAME_LOAD, no nueva carga ni duplicación de registro por subgrupo. Owner APPROVED; binding pendiente. Contrato literal: minimum_date_requirement=AT_LEAST_ONE_PER_RECORD; new_load_per_temporal_basis=DENY; duplicate_source_record_for_subgroup=DENY."
         }
       ],
       "hechos": [
@@ -625,7 +637,7 @@
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
         "titulo": "Base temporal analítica de Simula",
-        "descripcion": "En LF Simula V1 NEW_PORTFOLIO_FILE BLOQUEAR registro sin ninguna fecha entre CHARGEOFF_DATE, LAST_PAYMENT_DATE, DELINQUENCY_START_DATE, opcionales individualmente. Preservar todas disponibles; derivar REFERENCE_DATE y REFERENCE_DATE_TYPE internamente, precedencia PENDING_FUNCTIONAL_DEFINITION sin inventarla. ONE_LOAD_ID, bases mixtas DERIVED_ANALYTICAL_SUBGROUPS_WITHIN_SAME_LOAD, no nueva carga ni duplicación de registro por subgrupo. Owner APPROVED; binding pendiente.",
+        "descripcion": "En LF Simula V1 NEW_PORTFOLIO_FILE BLOQUEAR registro sin ninguna fecha entre CHARGEOFF_DATE, LAST_PAYMENT_DATE, DELINQUENCY_START_DATE, opcionales individualmente. Preservar todas disponibles; derivar REFERENCE_DATE y REFERENCE_DATE_TYPE internamente, precedencia PENDING_FUNCTIONAL_DEFINITION sin inventarla. ONE_LOAD_ID, bases mixtas DERIVED_ANALYTICAL_SUBGROUPS_WITHIN_SAME_LOAD, no nueva carga ni duplicación de registro por subgrupo. Owner APPROVED; binding pendiente. Contrato literal: minimum_date_requirement=AT_LEAST_ONE_PER_RECORD; new_load_per_temporal_basis=DENY; duplicate_source_record_for_subgroup=DENY.",
         "efecto": "BLOQUEAR",
         "autoridad": "LEG-PRODUCTO",
         "impacto": "REVISAR",
@@ -790,10 +802,10 @@
           }
         ]
       },
-      "hash": "4582467b719ccc4f3d51812261ab45493d64eda252a219006b2051427b19ee09",
-      "hash_paquete": "e955f61cdf7fadf83182e69f37645ed931dfe4e9f73a53aedfba5476b71ff629",
-      "hash_evaluado": "4582467b71",
-      "hash_paquete_10": "e955f61cdf"
+      "hash": "00dbb04f7eb6d1a3d9d139cabceb1e9e2beb3217d1cea254b975a9ad8b8e33d8",
+      "hash_paquete": "600d4f971a30ce8ce87a01b29392d7777283aa2072937ea6e307b6da7eb6af44",
+      "hash_evaluado": "00dbb04f7e",
+      "hash_paquete_10": "600d4f971a"
     },
     {
       "codigo": "S22W-C02",
@@ -808,7 +820,7 @@
           "legacy_id": 629,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "En NEW_PORTFOLIO_FILE V1 BLOQUEAR ausencia de DOCUMENT_TYPE, DOCUMENT_NUMBER, CURRENT_DEBT_AMOUNT, CUT_OFF_DATE o de toda fecha LAST_PAYMENT_DATE/DELINQUENCY_START_DATE/CHARGEOFF_DATE. EXTERNAL_DEBT_ID, ORIGINAL_DEBT_AMOUNT y ORIGINAL_CREDITOR opcionales; fechas opcionales individualmente. Denegar OFFER_AMOUNT, DISCOUNT, MODALITY, INITIAL_PAYMENT, INSTALLMENT_COUNT, INSTALLMENT_AMOUNT, FIRST_INSTALLMENT_DATE, SCHEDULE en archivo base. Sin ID externo GENERATE_SIMULATION_TEMP_ID_PER_RECORD, no documento como identidad de deuda ni promoción automática operativa; snapshot no muta cartera. Owner APPROVED. Binding pendiente."
+          "diferencias": "En NEW_PORTFOLIO_FILE V1 BLOQUEAR ausencia de DOCUMENT_TYPE, DOCUMENT_NUMBER, CURRENT_DEBT_AMOUNT, CUT_OFF_DATE o de toda fecha LAST_PAYMENT_DATE/DELINQUENCY_START_DATE/CHARGEOFF_DATE. EXTERNAL_DEBT_ID, ORIGINAL_DEBT_AMOUNT y ORIGINAL_CREDITOR opcionales; fechas opcionales individualmente. Denegar OFFER_AMOUNT, DISCOUNT, MODALITY, INITIAL_PAYMENT, INSTALLMENT_COUNT, INSTALLMENT_AMOUNT, FIRST_INSTALLMENT_DATE, SCHEDULE en archivo base. Sin ID externo GENERATE_SIMULATION_TEMP_ID_PER_RECORD, no documento como identidad de deuda ni promoción automática operativa; snapshot no muta cartera. Owner APPROVED. Binding pendiente. Contrato literal: temporary_id_operational_promotion=DENY_AUTOMATIC; simulation_mutates_operational_portfolio=DENY; document_as_debt_identity=DENY; external_debt_id_policy=OPTIONAL."
         }
       ],
       "hechos": [
@@ -830,7 +842,7 @@
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
         "titulo": "Contrato de archivo de cartera nueva Simula",
-        "descripcion": "En NEW_PORTFOLIO_FILE V1 BLOQUEAR ausencia de DOCUMENT_TYPE, DOCUMENT_NUMBER, CURRENT_DEBT_AMOUNT, CUT_OFF_DATE o de toda fecha LAST_PAYMENT_DATE/DELINQUENCY_START_DATE/CHARGEOFF_DATE. EXTERNAL_DEBT_ID, ORIGINAL_DEBT_AMOUNT y ORIGINAL_CREDITOR opcionales; fechas opcionales individualmente. Denegar OFFER_AMOUNT, DISCOUNT, MODALITY, INITIAL_PAYMENT, INSTALLMENT_COUNT, INSTALLMENT_AMOUNT, FIRST_INSTALLMENT_DATE, SCHEDULE en archivo base. Sin ID externo GENERATE_SIMULATION_TEMP_ID_PER_RECORD, no documento como identidad de deuda ni promoción automática operativa; snapshot no muta cartera. Owner APPROVED. Binding pendiente.",
+        "descripcion": "En NEW_PORTFOLIO_FILE V1 BLOQUEAR ausencia de DOCUMENT_TYPE, DOCUMENT_NUMBER, CURRENT_DEBT_AMOUNT, CUT_OFF_DATE o de toda fecha LAST_PAYMENT_DATE/DELINQUENCY_START_DATE/CHARGEOFF_DATE. EXTERNAL_DEBT_ID, ORIGINAL_DEBT_AMOUNT y ORIGINAL_CREDITOR opcionales; fechas opcionales individualmente. Denegar OFFER_AMOUNT, DISCOUNT, MODALITY, INITIAL_PAYMENT, INSTALLMENT_COUNT, INSTALLMENT_AMOUNT, FIRST_INSTALLMENT_DATE, SCHEDULE en archivo base. Sin ID externo GENERATE_SIMULATION_TEMP_ID_PER_RECORD, no documento como identidad de deuda ni promoción automática operativa; snapshot no muta cartera. Owner APPROVED. Binding pendiente. Contrato literal: temporary_id_operational_promotion=DENY_AUTOMATIC; simulation_mutates_operational_portfolio=DENY; document_as_debt_identity=DENY; external_debt_id_policy=OPTIONAL.",
         "efecto": "BLOQUEAR",
         "autoridad": "LEG-PRODUCTO",
         "impacto": "REVISAR",
@@ -995,10 +1007,10 @@
           }
         ]
       },
-      "hash": "840f21a1563ac7f9ec9cc88a0684de567817ca0172a6f9d21781e3b74126c544",
-      "hash_paquete": "7c8fcb90511a3a7ba0a02a133c26c4a0bd80e69f0353cf7f239b0d57858d3890",
-      "hash_evaluado": "840f21a156",
-      "hash_paquete_10": "7c8fcb9051"
+      "hash": "1016013eaa71b3c82ee4fc15539003896fcd7d2290224ed5b99f73b97aa94645",
+      "hash_paquete": "7cdde3569e350d4989d36c4b4d29f4a5c9165e6a5f8f86d2acb097a89e97d773",
+      "hash_evaluado": "1016013eaa",
+      "hash_paquete_10": "7cdde3569e"
     },
     {
       "codigo": "S22W-C03",
@@ -1976,7 +1988,7 @@
           "legacy_id": 651,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "En PLUS_PREMIUM BLOQUEAR recomendación de bandas sin COMPANY_DEFINED_NEGOTIATION_BANDS y evidencia suficiente, REUSE_PLUS_DATA_READINESS_LIFECYCLE; inputs ORIGINAL_OFFER, CLIENT_PROPOSAL, NEGOTIATION_BAND, HUMAN_DECISION, FINAL_OFFER_VERSION, PAYMENT_OUTCOME, RECOVERY_AMOUNT, TIME_TO_DECISION. EVIDENCE_BASED_NEGOTIATION_BAND_RECOMMENDATION puede proponer MIN_HUMAN_REVIEW_AMOUNT, MIN_AUTO_ACCEPT_AMOUNT, HUMAN_REVIEW_VOLUME_REDUCTION y EXPECTED_RECOVERY_TRADEOFF para conversión, recaudación y eficiencia. Sin evidencia LEARNING_NO_RECOMMENDATION. B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001 y B2B-RULE-SIMULA-PLUS-MOTORS-001; empresa aprobación explícita gobernada, no cambio automático de política/oferta. APPROVED_2026-09-17_V1, BLOCKED_UNTIL_BASE_NEGOTIATION_TELEMETRY_AND_EVIDENCE_MODEL_EXISTS, sin crear runtime. Binding pendiente."
+          "diferencias": "En PLUS_PREMIUM BLOQUEAR recomendación de bandas sin COMPANY_DEFINED_NEGOTIATION_BANDS y evidencia suficiente, REUSE_PLUS_DATA_READINESS_LIFECYCLE; inputs ORIGINAL_OFFER, CLIENT_PROPOSAL, NEGOTIATION_BAND, HUMAN_DECISION, FINAL_OFFER_VERSION, PAYMENT_OUTCOME, RECOVERY_AMOUNT, TIME_TO_DECISION. EVIDENCE_BASED_NEGOTIATION_BAND_RECOMMENDATION puede proponer MIN_HUMAN_REVIEW_AMOUNT, MIN_AUTO_ACCEPT_AMOUNT, HUMAN_REVIEW_VOLUME_REDUCTION y EXPECTED_RECOVERY_TRADEOFF para conversión, recaudación y eficiencia. Sin evidencia LEARNING_NO_RECOMMENDATION. B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001 y B2B-RULE-SIMULA-PLUS-MOTORS-001; empresa aprobación explícita gobernada, no cambio automático de política/oferta. APPROVED_2026-09-17_V1, BLOCKED_UNTIL_BASE_NEGOTIATION_TELEMETRY_AND_EVIDENCE_MODEL_EXISTS, sin crear runtime. Binding pendiente. Contrato literal: operational_auto_change=DENY."
         }
       ],
       "hechos": [
@@ -1999,7 +2011,7 @@
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
         "titulo": "Recomendación Plus de bandas de negociación",
-        "descripcion": "En PLUS_PREMIUM BLOQUEAR recomendación de bandas sin COMPANY_DEFINED_NEGOTIATION_BANDS y evidencia suficiente, REUSE_PLUS_DATA_READINESS_LIFECYCLE; inputs ORIGINAL_OFFER, CLIENT_PROPOSAL, NEGOTIATION_BAND, HUMAN_DECISION, FINAL_OFFER_VERSION, PAYMENT_OUTCOME, RECOVERY_AMOUNT, TIME_TO_DECISION. EVIDENCE_BASED_NEGOTIATION_BAND_RECOMMENDATION puede proponer MIN_HUMAN_REVIEW_AMOUNT, MIN_AUTO_ACCEPT_AMOUNT, HUMAN_REVIEW_VOLUME_REDUCTION y EXPECTED_RECOVERY_TRADEOFF para conversión, recaudación y eficiencia. Sin evidencia LEARNING_NO_RECOMMENDATION. B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001 y B2B-RULE-SIMULA-PLUS-MOTORS-001; empresa aprobación explícita gobernada, no cambio automático de política/oferta. APPROVED_2026-09-17_V1, BLOCKED_UNTIL_BASE_NEGOTIATION_TELEMETRY_AND_EVIDENCE_MODEL_EXISTS, sin crear runtime. Binding pendiente.",
+        "descripcion": "En PLUS_PREMIUM BLOQUEAR recomendación de bandas sin COMPANY_DEFINED_NEGOTIATION_BANDS y evidencia suficiente, REUSE_PLUS_DATA_READINESS_LIFECYCLE; inputs ORIGINAL_OFFER, CLIENT_PROPOSAL, NEGOTIATION_BAND, HUMAN_DECISION, FINAL_OFFER_VERSION, PAYMENT_OUTCOME, RECOVERY_AMOUNT, TIME_TO_DECISION. EVIDENCE_BASED_NEGOTIATION_BAND_RECOMMENDATION puede proponer MIN_HUMAN_REVIEW_AMOUNT, MIN_AUTO_ACCEPT_AMOUNT, HUMAN_REVIEW_VOLUME_REDUCTION y EXPECTED_RECOVERY_TRADEOFF para conversión, recaudación y eficiencia. Sin evidencia LEARNING_NO_RECOMMENDATION. B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001 y B2B-RULE-SIMULA-PLUS-MOTORS-001; empresa aprobación explícita gobernada, no cambio automático de política/oferta. APPROVED_2026-09-17_V1, BLOCKED_UNTIL_BASE_NEGOTIATION_TELEMETRY_AND_EVIDENCE_MODEL_EXISTS, sin crear runtime. Binding pendiente. Contrato literal: operational_auto_change=DENY.",
         "efecto": "BLOQUEAR",
         "autoridad": "LEG-PRODUCTO",
         "impacto": "REVISAR",
@@ -2196,10 +2208,10 @@
           }
         ]
       },
-      "hash": "366f9d1257286199fc19d866d01bd7998d4e59fe67d6b86fe2f9abd80155cdb0",
-      "hash_paquete": "5f50406736f83fdee1cb014f8b16d9f33ab3fbfb8c7b0a71f3c20f9a80c6b2db",
-      "hash_evaluado": "366f9d1257",
-      "hash_paquete_10": "5f50406736"
+      "hash": "b8bb22dafae7f184884cb5ecff206e90413b5d17930eaa737e0b84d1b4c9d64a",
+      "hash_paquete": "0b53d2003dfe3572270bd307a33769529af1e63511a15af19f824352c2f850c4",
+      "hash_evaluado": "b8bb22dafa",
+      "hash_paquete_10": "0b53d2003d"
     },
     {
       "codigo": "S22W-C09",
@@ -2214,7 +2226,7 @@
           "legacy_id": 654,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "En AUTHORIZED_COMPLETE_LOAD_WITH_PARTNER_DEFINED_OFFER_OR_PLAN_TERMS BLOQUEAR reconstrucción forzada de segmentos o reasignación manual. REFERENCIA_EMPRESA + PLAN solo FILE_JOIN_ONLY_NOT_CANONICAL_IDENTITY para oferta/plan/cronograma; LF_GENERATED_INTERNAL_ID, múltiples planes por referencia con PLAN distintos. Agrupación DERIVED_PRESENTATION_ONLY, agregados primero detalle bajo demanda, QUICK_CONFIRMATION_NOT_ROW_BY_ROW_RECONFIGURATION; no fusionar identidad, cambiar monto/vigencia/términos ni crear segmentos. Sin patrón KEEP_AS_INDIVIDUAL_VALID_OFFERS_OR_PLANS; modalidad mixta derivada de modalidades disponibles no tipo carga MIXED elegido. VALID_ONLY excluye inválidos y continúa válidos. Reutilizar B2B-RULE-OFFER-UPDATE-001, B2B-RULE-VALIDATION-VALID-ONLY-002, B2B-RULE-INSTALLMENT-PLAN-001, B2B-RULE-LOW-FRICTION-LOAD-001 y B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001. APPROVED_CONCEPT_2026-09-22. Binding pendiente."
+          "diferencias": "En AUTHORIZED_COMPLETE_LOAD_WITH_PARTNER_DEFINED_OFFER_OR_PLAN_TERMS BLOQUEAR reconstrucción forzada de segmentos o reasignación manual. REFERENCIA_EMPRESA + PLAN solo FILE_JOIN_ONLY_NOT_CANONICAL_IDENTITY para oferta/plan/cronograma; LF_GENERATED_INTERNAL_ID, múltiples planes por referencia con PLAN distintos. Agrupación DERIVED_PRESENTATION_ONLY, agregados primero detalle bajo demanda, QUICK_CONFIRMATION_NOT_ROW_BY_ROW_RECONFIGURATION; no fusionar identidad, cambiar monto/vigencia/términos ni crear segmentos. Sin patrón KEEP_AS_INDIVIDUAL_VALID_OFFERS_OR_PLANS; modalidad mixta derivada de modalidades disponibles no tipo carga MIXED elegido. VALID_ONLY excluye inválidos y continúa válidos. Reutilizar B2B-RULE-OFFER-UPDATE-001, B2B-RULE-VALIDATION-VALID-ONLY-002, B2B-RULE-INSTALLMENT-PLAN-001, B2B-RULE-LOW-FRICTION-LOAD-001 y B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001. APPROVED_CONCEPT_2026-09-22. Binding pendiente. Contrato literal: detail_behavior=SHOW_AGGREGATES_FIRST_DETAIL_ON_DEMAND; mixed_modalities=DERIVED_FROM_AVAILABLE_MODALITIES_NOT_USER_SELECTED_MIXED_UPLOAD_TYPE; force_segmentation=DENY; force_segment_level_reassignment=DENY."
         }
       ],
       "hechos": [
@@ -2237,7 +2249,7 @@
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
         "titulo": "Carga completa conserva ofertas y planes individuales",
-        "descripcion": "En AUTHORIZED_COMPLETE_LOAD_WITH_PARTNER_DEFINED_OFFER_OR_PLAN_TERMS BLOQUEAR reconstrucción forzada de segmentos o reasignación manual. REFERENCIA_EMPRESA + PLAN solo FILE_JOIN_ONLY_NOT_CANONICAL_IDENTITY para oferta/plan/cronograma; LF_GENERATED_INTERNAL_ID, múltiples planes por referencia con PLAN distintos. Agrupación DERIVED_PRESENTATION_ONLY, agregados primero detalle bajo demanda, QUICK_CONFIRMATION_NOT_ROW_BY_ROW_RECONFIGURATION; no fusionar identidad, cambiar monto/vigencia/términos ni crear segmentos. Sin patrón KEEP_AS_INDIVIDUAL_VALID_OFFERS_OR_PLANS; modalidad mixta derivada de modalidades disponibles no tipo carga MIXED elegido. VALID_ONLY excluye inválidos y continúa válidos. Reutilizar B2B-RULE-OFFER-UPDATE-001, B2B-RULE-VALIDATION-VALID-ONLY-002, B2B-RULE-INSTALLMENT-PLAN-001, B2B-RULE-LOW-FRICTION-LOAD-001 y B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001. APPROVED_CONCEPT_2026-09-22. Binding pendiente.",
+        "descripcion": "En AUTHORIZED_COMPLETE_LOAD_WITH_PARTNER_DEFINED_OFFER_OR_PLAN_TERMS BLOQUEAR reconstrucción forzada de segmentos o reasignación manual. REFERENCIA_EMPRESA + PLAN solo FILE_JOIN_ONLY_NOT_CANONICAL_IDENTITY para oferta/plan/cronograma; LF_GENERATED_INTERNAL_ID, múltiples planes por referencia con PLAN distintos. Agrupación DERIVED_PRESENTATION_ONLY, agregados primero detalle bajo demanda, QUICK_CONFIRMATION_NOT_ROW_BY_ROW_RECONFIGURATION; no fusionar identidad, cambiar monto/vigencia/términos ni crear segmentos. Sin patrón KEEP_AS_INDIVIDUAL_VALID_OFFERS_OR_PLANS; modalidad mixta derivada de modalidades disponibles no tipo carga MIXED elegido. VALID_ONLY excluye inválidos y continúa válidos. Reutilizar B2B-RULE-OFFER-UPDATE-001, B2B-RULE-VALIDATION-VALID-ONLY-002, B2B-RULE-INSTALLMENT-PLAN-001, B2B-RULE-LOW-FRICTION-LOAD-001 y B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001. APPROVED_CONCEPT_2026-09-22. Binding pendiente. Contrato literal: detail_behavior=SHOW_AGGREGATES_FIRST_DETAIL_ON_DEMAND; mixed_modalities=DERIVED_FROM_AVAILABLE_MODALITIES_NOT_USER_SELECTED_MIXED_UPLOAD_TYPE; force_segmentation=DENY; force_segment_level_reassignment=DENY.",
         "efecto": "BLOQUEAR",
         "autoridad": "LEG-PRODUCTO",
         "impacto": "REVISAR",
@@ -2434,10 +2446,10 @@
           }
         ]
       },
-      "hash": "04ffba6a8ec87a2a5e293e5fe7a101da5cb8d018cda3644ae4a749ac0f714bb6",
-      "hash_paquete": "c748b1bcb18254091e96d45154b8a1f91d32dfd9da664013a02397a020b3ecb1",
-      "hash_evaluado": "04ffba6a8e",
-      "hash_paquete_10": "c748b1bcb1"
+      "hash": "49f55094e4368be8e4f14c5b044d9d6c4d5596fef67b385705c798d10a892f31",
+      "hash_paquete": "36c1b9987b84b0e690d1e090e93f1218bd0043bd99b94817fd6c495c07b6bfd4",
+      "hash_evaluado": "49f55094e4",
+      "hash_paquete_10": "36c1b9987b"
     }
   ],
   "juicios": [],

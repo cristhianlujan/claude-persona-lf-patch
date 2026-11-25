@@ -1,0 +1,2664 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "525e99475a00fb767b875aea629dbb75bb43d1e4",
+    "js_vectors": "60/60",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [],
+    "published_related": [],
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001",
+    "assert_links": {
+      "leccion": "LF-NUCLEO-ASSERT-LINKS-001",
+      "expected_links": 9,
+      "expected_replacements": 9,
+      "sql_future": "links<>(SELECT coalesce(sum(jsonb_array_length(value->'coberturas')),0) FROM jsonb_array_elements(packs)); delta derived from distinct REEMPLAZADA legacy_id in packages not already replaced before writes",
+      "executed_sql": "links and expected_delta derived from packages; delta excludes already replaced before writes",
+      "alias_fix": "pk(package), cv(coverage), existing_cov; qualified references avoid PL/pgSQL variable collisions"
+    },
+    "fuentes_legadas": [
+      {
+        "id": 590,
+        "codigo": "B2B-RULE-SCOPE-003",
+        "descripcion": "Las rutas canónicas del Backoffice permanecen orientadas a pantalla/recurso y no convierten grupo_id o company_id enviados por navegador en autoridad de tenant. Grupo corporativo y empresa activa son contexto operativo resuelto y validado server-side. Un parámetro, header, body o URL de cliente nunca puede ampliar ni cambiar el scope por sí mismo. El cambio de grupo/empresa requiere validación contra el scope efectivo y revalidación de permisos, menú y recurso antes de continuar.",
+        "valor_config": {
+          "bookmark_semantic": "SCREEN_ROUTE_REQUIRES_SERVER_SCOPE_RESOLUTION",
+          "url_scope_authority": "DENY",
+          "body_scope_authority": "DENY",
+          "active_scope_contract": {
+            "logical_fields": [
+              "user",
+              "corporate_group",
+              "company",
+              "effective_permissions"
+            ],
+            "physical_storage": "PENDING_FUNCTIONAL_DEFINITION",
+            "server_authoritative": true,
+            "switch_requires_server_confirmation_before_dependent_actions": true,
+            "frontend_must_not_depend_on_current_empresa_usuarios_company_id": true
+          },
+          "current_route_registry": "lf_ops.rutas",
+          "header_scope_authority": "DENY",
+          "server_scope_authority": "REQUIRED",
+          "initial_scope_resolution": "PENDING_FUNCTIONAL_DEFINITION",
+          "current_route_scope_model": "SCOPE_AGNOSTIC",
+          "physical_active_scope_store": "PENDING_FUNCTIONAL_DEFINITION",
+          "future_scope_identifier_in_url": "ALLOW_ONLY_AS_NON_AUTHORITATIVE_ASSERTION_WITH_SERVER_VALIDATION",
+          "scope_switch_menu_recalculation": "REQUIRED",
+          "current_company_or_group_in_route": "DENY",
+          "implementation_preparation_status": "INTERFACE_READY_STORAGE_PENDING",
+          "scope_switch_authorization_recheck": "REQUIRED"
+        }
+      },
+      {
+        "id": 602,
+        "codigo": "B2B-RULE-PORTAL-BOUNDARY-001",
+        "descripcion": "El usuario de empresa consume capacidades operativas y financieras de su propia empresa o conjunto autorizado de empresas. La creación de empresas, creación/invitación/desactivación de usuarios, asignación de perfiles/permisos y operaciones privilegiadas de MFA/seguridad son funciones de Administración LF y no forman parte del Portal Empresa. La visibilidad y ejecución final continúan sujetas a permisos efectivos server-side.",
+        "valor_config": {
+          "admin_lf_authority": "REQUIRED_FOR_EXCLUDED_CAPABILITIES",
+          "portal_empresa_focus": [
+            "DASHBOARD",
+            "LOADS_OR_PORTFOLIO",
+            "PAYMENTS",
+            "SETTLEMENTS",
+            "CONTROVERSIES",
+            "APPROVALS_IF_APPLICABLE"
+          ],
+          "portal_empresa_excludes": [
+            "COMPANY_CREATE",
+            "COMPANY_ACTIVATE",
+            "COMPANY_SUSPEND",
+            "USER_INVITE",
+            "USER_DISABLE",
+            "USER_ASSIGN_ROLE",
+            "AUTH_FACTOR_RESET",
+            "TRUSTED_DEVICE_ADMIN"
+          ],
+          "current_profile_matrix_conflict": "B2B_ADMIN_EMPRESA_HAS_CANDIDATE_ADMIN_PERMISSIONS_REQUIRES_RECONCILIATION_BEFORE_FREEZE",
+          "server_side_effective_permission_required": true
+        }
+      },
+      {
+        "id": 606,
+        "codigo": "B2B-RULE-SETTLEMENT-001",
+        "descripcion": "Toda liquidación o abono mostrado a una empresa debe poder explicarse desde las asignaciones financieras de pagos confirmados que la componen y, cuando existan, ajustes autorizados. La empresa debe poder navegar desde una liquidación hacia sus operaciones componentes y desde un pago hacia la liquidación asociada. El total neto no puede inferirse en frontend y debe provenir de la fuente financiera canónica.",
+        "valor_config": {
+          "scope": "COMPANY",
+          "drilldown": "BIDIRECTIONAL_PAYMENT_AND_SETTLEMENT",
+          "relationship": "SETTLEMENT_1_TO_N_PAYMENT_ALLOCATIONS_PLUS_AUTHORIZED_ADJUSTMENTS",
+          "bank_account_source": "PENDING_FUNCTIONAL_DEFINITION",
+          "settlement_schedule": "PENDING_FUNCTIONAL_DEFINITION",
+          "net_amount_authority": "SERVER_FINANCIAL_SOURCE_ONLY",
+          "settlement_recipient": "PENDING_FUNCTIONAL_DEFINITION",
+          "frontend_recalculation": "DENY",
+          "settlement_status_model": "PENDING_FUNCTIONAL_DEFINITION",
+          "fee_and_adjustment_policy": "PENDING_FUNCTIONAL_DEFINITION"
+        }
+      },
+      {
+        "id": 610,
+        "codigo": "B2B-RULE-PAGE-HEADER-001",
+        "descripcion": "La cabecera de contenido del Portal Empresa separa navegación de acciones. Debe soportar título, descripción, acciones primarias/secundarias y tabs cuando correspondan. Acciones como Nueva carga no se colocan en el sidebar cuando su naturaleza es crear/ejecutar sobre el destino actual.",
+        "valor_config": {
+          "slots": [
+            "TITLE",
+            "DESCRIPTION",
+            "PRIMARY_ACTIONS",
+            "SECONDARY_ACTIONS",
+            "TABS_IF_APPLICABLE"
+          ],
+          "shell_code": "B2B_APP_SHELL",
+          "first_binding": {
+            "label": "Nueva carga",
+            "action": "NEW_LOAD",
+            "screen_code": "B2B-CARGA-001"
+          },
+          "sidebar_action_policy": "DO_NOT_USE_SIDEBAR_FOR_CONTEXTUAL_PRIMARY_ACTIONS"
+        }
+      },
+      {
+        "id": 611,
+        "codigo": "B2B-RULE-PORTFOLIO-BAJAS-001",
+        "descripcion": "Se detecta una capacidad faltante candidata en Portal Empresa: Bajas de cartera. Por taxonomía pertenece a Cartera y no al menú raíz. Si se confirma, Bajas será un destino/listado y la creación de una nueva baja será una acción primaria de su cabecera, siguiendo el contrato B2B-RULE-PAGE-HEADER-001.",
+        "valor_config": {
+          "owner_decision": "PENDING",
+          "label_candidate": "Bajas",
+          "physical_creation": "BLOCKED_UNTIL_FUNCTIONAL_DEFINITION",
+          "navigation_candidate": "PORTFOLIO_CHILD",
+          "current_source_status": "NO_CANONICAL_RULE_SCREEN_OR_FIELD_FOUND",
+          "primary_action_candidate": "NUEVA_BAJA_IN_PAGE_HEADER"
+        }
+      },
+      {
+        "id": 614,
+        "codigo": "B2B-RULE-SHELL-SCROLL-001",
+        "descripcion": "Define propietario del scroll y comportamiento base del shell web.",
+        "valor_config": {
+          "shell_code": "B2B_APP_SHELL",
+          "desktop_topbar": "FIXED",
+          "desktop_sidebar": "FIXED",
+          "page_header_sticky": "ALLOW_ONLY_BY_EXPLICIT_SCREEN_CONTRACT",
+          "overlay_scroll_lock": "REQUIRED_FOR_BLOCKING_MODAL_OR_DRAWER",
+          "page_header_default": "NORMAL_FLOW",
+          "sidebar_collapsible": "REQUIRED_REUSE_APP_SHELL_SETTING",
+          "table_header_sticky": "OWNED_BY_TABLE_COMPONENT_WHEN_APPLICABLE",
+          "document_body_scroll": "DENY_WHEN_APP_SHELL_ACTIVE",
+          "persist_sidebar_preference": "REQUIRED_REUSE_APP_SHELL_SETTING",
+          "content_region_scroll_owner": "MAIN_CONTENT_VIEWPORT"
+        }
+      },
+      {
+        "id": 615,
+        "codigo": "B2B-RULE-SHELL-OVERLAY-001",
+        "descripcion": "Define un único punto de montaje para modales, drawers, toasts y backdrops.",
+        "valor_config": {
+          "shell_code": "B2B_APP_SHELL",
+          "mount_owner": "APP_SHELL_ROOT",
+          "focus_management": "REQUIRED_FOR_BLOCKING_OVERLAYS",
+          "supported_surfaces": [
+            "MODAL",
+            "DRAWER",
+            "TOAST",
+            "BACKDROP"
+          ],
+          "stacking_order_source": "LF_DESIGN_TOKENS_OR_COMPONENT_CONTRACT_NO_NUMERIC_HARDCODE",
+          "toast_background_scroll": "ALLOW",
+          "escape_and_dismiss_behavior": "OWNED_BY_OVERLAY_COMPONENT_CONTRACT",
+          "blocking_overlay_background_scroll": "LOCK",
+          "mount_inside_screen_scroll_container": "DENY",
+          "screen_may_create_independent_overlay_root": "DENY"
+        }
+      },
+      {
+        "id": 623,
+        "codigo": "B2B-RULE-LOAD-NAMING-001",
+        "descripcion": "El B2B no debe ingresar manualmente el nombre del lote. LF genera un nombre visible para facilitar reconocimiento, mientras B2B_FLD_LOAD_ID conserva la identidad técnica única y autoritativa de cada carga.",
+        "valor_config": {
+          "load_id_field": "B2B_FLD_LOAD_ID",
+          "user_editable": false,
+          "owner_decision": "APPROVED",
+          "load_name_field": "B2B_FLD_LOAD_NAME",
+          "technical_identity": "LOAD_ID_UUID",
+          "same_filename_reuse": "ALLOW",
+          "collision_resolution": "LOAD_ID_REMAINS_AUTHORITATIVE",
+          "display_name_generation": "MODALITY_LABEL + ORIGINAL_FILENAME + CREATED_AT_LOCAL_TIME",
+          "multiple_same_day_loads": "ALLOW",
+          "display_name_uniqueness_required": false
+        }
+      },
+      {
+        "id": 626,
+        "codigo": "B2B-RULE-SIMULA-SOURCE-001",
+        "descripcion": "LF Simula V1 admite únicamente dos fuentes de análisis: (1) una cartera nueva aportada por archivo para probar condiciones antes de llevarlas a operación y (2) una carga existente seleccionada para evaluar ajustes sobre esa población. Se excluye en V1 la simulación de toda la cartera consolidada de la empresa por el riesgo de mezclar cargas, modalidades, condiciones y versiones heterogéneas. Una carga existente identifica la población a revisar, pero la simulación debe resolver el estado vigente disponible de esos registros antes de calcular; el archivo histórico no se convierte en la verdad actual y last-upload-wins permanece prohibido. Toda simulación trabaja sobre un snapshot aislado y no modifica cartera, ofertas ni condiciones reales.",
+        "valor_config": {
+          "version_scope": "V1",
+          "owner_decision": "APPROVED",
+          "allowed_sources": [
+            "NEW_PORTFOLIO_FILE",
+            "EXISTING_LOAD_FOR_UPDATE"
+          ],
+          "future_candidate": "CONSOLIDATED_CURRENT_PORTFOLIO_V2_OR_LATER",
+          "new_portfolio_file": {
+            "purpose": "PRE_OPERATION_SCENARIO_ANALYSIS",
+            "analysis_snapshot": "REQUIRED",
+            "offer_creation_or_update": "DENY_AUTOMATIC",
+            "operational_portfolio_mutation": "DENY"
+          },
+          "existing_load_for_update": {
+            "purpose": "UPDATE_SCENARIO_FOR_SELECTED_POPULATION",
+            "last_upload_wins": "DENY",
+            "analysis_snapshot": "REQUIRED",
+            "population_anchor": "SELECTED_LOAD",
+            "baseline_resolution": "CURRENT_RESOLVABLE_STATE_BY_BUSINESS_IDENTITY",
+            "historical_file_as_current_truth": "DENY"
+          },
+          "simulation_mutates_source": "DENY",
+          "consolidated_current_portfolio": "DENY_IN_V1"
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22v01_evalua_scope_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua scope b2b; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22v01_cliente_autoridad_tenant",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cliente autoridad tenant; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22v01_ruta_scope_no_validada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta scope no validada; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22v01_cambio_sin_confirmacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio sin confirmacion; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22v01_menu_permiso_recurso_no_revalidado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "menu permiso recurso no revalidado; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22v01_depende_company_id_o_inventa_storage",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "depende company id o inventa storage; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22v02_evalua_capacidad_portal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua capacidad portal; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v02_empresa_fuera_scope",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "empresa fuera scope; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v02_permiso_efectivo_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso efectivo falta; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v02_capacidad_admin_en_portal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "capacidad admin en portal; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v02_congela_matriz_en_conflicto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "congela matriz en conflicto; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v03_evalua_liquidacion_empresa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua liquidacion empresa; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22v03_total_no_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "total no autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22v03_asignacion_no_confirmada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "asignacion no confirmada; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22v03_ajuste_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ajuste no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22v03_drilldown_no_bidireccional",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "drilldown no bidireccional; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22v03_inventa_definicion_pendiente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "inventa definicion pendiente; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22v04_evalua_header_portal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua header portal; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v04_slots_no_soportados",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "slots no soportados; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v04_accion_contextual_en_sidebar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion contextual en sidebar; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v04_nueva_carga_binding_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "nueva carga binding invalido; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v05_evalua_bajas_portal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua bajas portal; hecho derivado, binding runtime pendiente",
+      "familia": "APPLICABILITY_READINESS"
+    },
+    {
+      "codigo": "s22v05_nodo_raiz",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "nodo raiz; hecho derivado, binding runtime pendiente",
+      "familia": "APPLICABILITY_READINESS"
+    },
+    {
+      "codigo": "s22v05_activa_sin_owner",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activa sin owner; hecho derivado, binding runtime pendiente",
+      "familia": "APPLICABILITY_READINESS"
+    },
+    {
+      "codigo": "s22v05_crea_sin_definicion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "crea sin definicion; hecho derivado, binding runtime pendiente",
+      "familia": "APPLICABILITY_READINESS"
+    },
+    {
+      "codigo": "s22v05_accion_fuera_header",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion fuera header; hecho derivado, binding runtime pendiente",
+      "familia": "APPLICABILITY_READINESS"
+    },
+    {
+      "codigo": "s22v06_evalua_scroll_shell",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua scroll shell; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v06_body_scroll_activo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "body scroll activo; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v06_viewport_no_propietario",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "viewport no propietario; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v06_topbar_sidebar_no_fixed",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "topbar sidebar no fixed; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v06_sidebar_setting_no_reusado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sidebar setting no reusado; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v06_sticky_sin_contrato",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sticky sin contrato; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v06_overlay_sin_lock",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "overlay sin lock; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v07_evalua_overlay_shell",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua overlay shell; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v07_root_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "root invalido; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v07_stacking_hardcode",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "stacking hardcode; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v07_focus_o_lock_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "focus o lock falta; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v07_toast_scroll_bloqueado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "toast scroll bloqueado; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v07_dismiss_fuera_contrato",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "dismiss fuera contrato; hecho derivado, binding runtime pendiente",
+      "familia": "DESIGN_SYSTEM"
+    },
+    {
+      "codigo": "s22v08_evalua_nombre_carga",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua nombre carga; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22v08_nombre_editable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "nombre editable; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22v08_nombre_no_generado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "nombre no generado; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22v08_identidad_no_uuid_autoritativa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "identidad no uuid autoritativa; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22v08_bloquea_reuso_o_mismo_dia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloquea reuso o mismo dia; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22v08_exige_nombre_unico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "exige nombre unico; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22v09_evalua_simula_v1",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua simula v1; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v09_fuente_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fuente no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v09_snapshot_no_aislado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "snapshot no aislado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v09_mutacion_operacional",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "mutacion operacional; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v09_baseline_historico_o_last_upload",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "baseline historico o last upload; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22v09_poblacion_no_anclada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "poblacion no anclada; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22V-C01",
+      "legacy_id": 590,
+      "legacy_ids": [
+        590
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 590,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B BLOQUEAR ruta o cambio de scope que tome grupo_id/company_id de URL, header, body o parámetro como autoridad. lf_ops.rutas SCOPE_AGNOSTIC; bookmark resuelve contexto servidor user, corporate_group, company, effective_permissions. Identificador futuro URL solo aserción no autoritativa validada. Cambio requiere confirmación servidor contra scope efectivo, recálculo menú y revalidación autorización y recurso antes de acciones dependientes; frontend no depende de empresa_usuarios.company_id actual. Preservar INTERFACE_READY_STORAGE_PENDING y PENDING_FUNCTIONAL_DEFINITION de resolución inicial y almacenamiento físico; no materializar ni conceder permiso. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v01_evalua_scope_b2b",
+        "s22v01_cliente_autoridad_tenant",
+        "s22v01_ruta_scope_no_validada",
+        "s22v01_cambio_sin_confirmacion",
+        "s22v01_menu_permiso_recurso_no_revalidado",
+        "s22v01_depende_company_id_o_inventa_storage"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C01",
+        "clave": "s22v_legacy_590",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Scope de empresa autoritativo en servidor",
+        "descripcion": "En B2B BLOQUEAR ruta o cambio de scope que tome grupo_id/company_id de URL, header, body o parámetro como autoridad. lf_ops.rutas SCOPE_AGNOSTIC; bookmark resuelve contexto servidor user, corporate_group, company, effective_permissions. Identificador futuro URL solo aserción no autoritativa validada. Cambio requiere confirmación servidor contra scope efectivo, recálculo menú y revalidación autorización y recurso antes de acciones dependientes; frontend no depende de empresa_usuarios.company_id actual. Preservar INTERFACE_READY_STORAGE_PENDING y PENDING_FUNCTIONAL_DEFINITION de resolución inicial y almacenamiento físico; no materializar ni conceder permiso. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/590",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v01_evalua_scope_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v01_cliente_autoridad_tenant"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v01_ruta_scope_no_validada"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v01_cambio_sin_confirmacion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v01_menu_permiso_recurso_no_revalidado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v01_depende_company_id_o_inventa_storage"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": true,
+              "s22v01_cliente_autoridad_tenant": false,
+              "s22v01_ruta_scope_no_validada": false,
+              "s22v01_cambio_sin_confirmacion": false,
+              "s22v01_menu_permiso_recurso_no_revalidado": false,
+              "s22v01_depende_company_id_o_inventa_storage": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": true,
+              "s22v01_cliente_autoridad_tenant": true,
+              "s22v01_ruta_scope_no_validada": false,
+              "s22v01_cambio_sin_confirmacion": false,
+              "s22v01_menu_permiso_recurso_no_revalidado": false,
+              "s22v01_depende_company_id_o_inventa_storage": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": true,
+              "s22v01_cliente_autoridad_tenant": false,
+              "s22v01_ruta_scope_no_validada": true,
+              "s22v01_cambio_sin_confirmacion": false,
+              "s22v01_menu_permiso_recurso_no_revalidado": false,
+              "s22v01_depende_company_id_o_inventa_storage": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": true,
+              "s22v01_cliente_autoridad_tenant": false,
+              "s22v01_ruta_scope_no_validada": false,
+              "s22v01_cambio_sin_confirmacion": true,
+              "s22v01_menu_permiso_recurso_no_revalidado": false,
+              "s22v01_depende_company_id_o_inventa_storage": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": true,
+              "s22v01_cliente_autoridad_tenant": false,
+              "s22v01_ruta_scope_no_validada": false,
+              "s22v01_cambio_sin_confirmacion": false,
+              "s22v01_menu_permiso_recurso_no_revalidado": true,
+              "s22v01_depende_company_id_o_inventa_storage": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": true,
+              "s22v01_cliente_autoridad_tenant": false,
+              "s22v01_ruta_scope_no_validada": false,
+              "s22v01_cambio_sin_confirmacion": false,
+              "s22v01_menu_permiso_recurso_no_revalidado": false,
+              "s22v01_depende_company_id_o_inventa_storage": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v01_evalua_scope_b2b": false,
+              "s22v01_cliente_autoridad_tenant": true,
+              "s22v01_ruta_scope_no_validada": true,
+              "s22v01_cambio_sin_confirmacion": true,
+              "s22v01_menu_permiso_recurso_no_revalidado": true,
+              "s22v01_depende_company_id_o_inventa_storage": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "15d28153a6b30dd3e61d37633abc33ddf68cd04b1927747a6c784ce9897dd86a",
+      "hash_paquete": "28ea8d4f4036aad5d0fbd193c1e0a5c9bb2332cd2034b2ecbebd07e093bf1a0f",
+      "hash_evaluado": "15d28153a6",
+      "hash_paquete_10": "28ea8d4f40"
+    },
+    {
+      "codigo": "S22V-C02",
+      "legacy_id": 602,
+      "legacy_ids": [
+        602
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 602,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En Portal Empresa BLOQUEAR acceso fuera de empresas autorizadas o capacidad operativa sin permiso efectivo server-side. Foco DASHBOARD, LOADS_OR_PORTFOLIO, PAYMENTS, SETTLEMENTS, CONTROVERSIES, APPROVALS_IF_APPLICABLE. COMPANY_CREATE, COMPANY_ACTIVATE, COMPANY_SUSPEND, USER_INVITE, USER_DISABLE, USER_ASSIGN_ROLE, AUTH_FACTOR_RESET, TRUSTED_DEVICE_ADMIN y administración privilegiada MFA/seguridad son de Administración LF, no Portal. Preservar conflicto B2B_ADMIN_EMPRESA_HAS_CANDIDATE_ADMIN_PERMISSIONS_REQUIRES_RECONCILIATION_BEFORE_FREEZE; no conceder ni revocar permisos ni congelar matriz. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v02_evalua_capacidad_portal",
+        "s22v02_empresa_fuera_scope",
+        "s22v02_permiso_efectivo_falta",
+        "s22v02_capacidad_admin_en_portal",
+        "s22v02_congela_matriz_en_conflicto"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C02",
+        "clave": "s22v_legacy_602",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Frontera Portal Empresa y Administración LF",
+        "descripcion": "En Portal Empresa BLOQUEAR acceso fuera de empresas autorizadas o capacidad operativa sin permiso efectivo server-side. Foco DASHBOARD, LOADS_OR_PORTFOLIO, PAYMENTS, SETTLEMENTS, CONTROVERSIES, APPROVALS_IF_APPLICABLE. COMPANY_CREATE, COMPANY_ACTIVATE, COMPANY_SUSPEND, USER_INVITE, USER_DISABLE, USER_ASSIGN_ROLE, AUTH_FACTOR_RESET, TRUSTED_DEVICE_ADMIN y administración privilegiada MFA/seguridad son de Administración LF, no Portal. Preservar conflicto B2B_ADMIN_EMPRESA_HAS_CANDIDATE_ADMIN_PERMISSIONS_REQUIRES_RECONCILIATION_BEFORE_FREEZE; no conceder ni revocar permisos ni congelar matriz. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/602",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v02_evalua_capacidad_portal"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v02_empresa_fuera_scope"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v02_permiso_efectivo_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v02_capacidad_admin_en_portal"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v02_congela_matriz_en_conflicto"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v02_evalua_capacidad_portal": true,
+              "s22v02_empresa_fuera_scope": false,
+              "s22v02_permiso_efectivo_falta": false,
+              "s22v02_capacidad_admin_en_portal": false,
+              "s22v02_congela_matriz_en_conflicto": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v02_evalua_capacidad_portal": true,
+              "s22v02_empresa_fuera_scope": true,
+              "s22v02_permiso_efectivo_falta": false,
+              "s22v02_capacidad_admin_en_portal": false,
+              "s22v02_congela_matriz_en_conflicto": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v02_evalua_capacidad_portal": true,
+              "s22v02_empresa_fuera_scope": false,
+              "s22v02_permiso_efectivo_falta": true,
+              "s22v02_capacidad_admin_en_portal": false,
+              "s22v02_congela_matriz_en_conflicto": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v02_evalua_capacidad_portal": true,
+              "s22v02_empresa_fuera_scope": false,
+              "s22v02_permiso_efectivo_falta": false,
+              "s22v02_capacidad_admin_en_portal": true,
+              "s22v02_congela_matriz_en_conflicto": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v02_evalua_capacidad_portal": true,
+              "s22v02_empresa_fuera_scope": false,
+              "s22v02_permiso_efectivo_falta": false,
+              "s22v02_capacidad_admin_en_portal": false,
+              "s22v02_congela_matriz_en_conflicto": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v02_evalua_capacidad_portal": false,
+              "s22v02_empresa_fuera_scope": true,
+              "s22v02_permiso_efectivo_falta": true,
+              "s22v02_capacidad_admin_en_portal": true,
+              "s22v02_congela_matriz_en_conflicto": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "6a8ebe051bb697d7727b791fcdd775828ffab656773a04b9ce9915637b535555",
+      "hash_paquete": "8df8303df91ebe091afb8b979704031337dfdd939d417037d2bb0cc34a1e5f37",
+      "hash_evaluado": "6a8ebe051b",
+      "hash_paquete_10": "8df8303df9"
+    },
+    {
+      "codigo": "S22V-C03",
+      "legacy_id": 606,
+      "legacy_ids": [
+        606
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 606,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En liquidación o abono B2B BLOQUEAR mostrar total neto sin fuente financiera canónica server-side, inferencia frontend, componentes sin pago confirmado o ajuste sin autorización. Scope COMPANY; relación SETTLEMENT_1_TO_N_PAYMENT_ALLOCATIONS_PLUS_AUTHORIZED_ADJUSTMENTS; drilldown BIDIRECTIONAL_PAYMENT_AND_SETTLEMENT entre liquidación y operaciones componentes. Banco, destinatario, calendario, estados, fees y ajustes permanecen PENDING_FUNCTIONAL_DEFINITION; no inventar destinos ni ejecutar liquidación. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v03_evalua_liquidacion_empresa",
+        "s22v03_total_no_autoritativo",
+        "s22v03_asignacion_no_confirmada",
+        "s22v03_ajuste_no_autorizado",
+        "s22v03_drilldown_no_bidireccional",
+        "s22v03_inventa_definicion_pendiente"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C03",
+        "clave": "s22v_legacy_606",
+        "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Liquidación explicable por asignaciones financieras",
+        "descripcion": "En liquidación o abono B2B BLOQUEAR mostrar total neto sin fuente financiera canónica server-side, inferencia frontend, componentes sin pago confirmado o ajuste sin autorización. Scope COMPANY; relación SETTLEMENT_1_TO_N_PAYMENT_ALLOCATIONS_PLUS_AUTHORIZED_ADJUSTMENTS; drilldown BIDIRECTIONAL_PAYMENT_AND_SETTLEMENT entre liquidación y operaciones componentes. Banco, destinatario, calendario, estados, fees y ajustes permanecen PENDING_FUNCTIONAL_DEFINITION; no inventar destinos ni ejecutar liquidación. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/606",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v03_evalua_liquidacion_empresa"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v03_total_no_autoritativo"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v03_asignacion_no_confirmada"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v03_ajuste_no_autorizado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v03_drilldown_no_bidireccional"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v03_inventa_definicion_pendiente"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": true,
+              "s22v03_total_no_autoritativo": false,
+              "s22v03_asignacion_no_confirmada": false,
+              "s22v03_ajuste_no_autorizado": false,
+              "s22v03_drilldown_no_bidireccional": false,
+              "s22v03_inventa_definicion_pendiente": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": true,
+              "s22v03_total_no_autoritativo": true,
+              "s22v03_asignacion_no_confirmada": false,
+              "s22v03_ajuste_no_autorizado": false,
+              "s22v03_drilldown_no_bidireccional": false,
+              "s22v03_inventa_definicion_pendiente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": true,
+              "s22v03_total_no_autoritativo": false,
+              "s22v03_asignacion_no_confirmada": true,
+              "s22v03_ajuste_no_autorizado": false,
+              "s22v03_drilldown_no_bidireccional": false,
+              "s22v03_inventa_definicion_pendiente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": true,
+              "s22v03_total_no_autoritativo": false,
+              "s22v03_asignacion_no_confirmada": false,
+              "s22v03_ajuste_no_autorizado": true,
+              "s22v03_drilldown_no_bidireccional": false,
+              "s22v03_inventa_definicion_pendiente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": true,
+              "s22v03_total_no_autoritativo": false,
+              "s22v03_asignacion_no_confirmada": false,
+              "s22v03_ajuste_no_autorizado": false,
+              "s22v03_drilldown_no_bidireccional": true,
+              "s22v03_inventa_definicion_pendiente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": true,
+              "s22v03_total_no_autoritativo": false,
+              "s22v03_asignacion_no_confirmada": false,
+              "s22v03_ajuste_no_autorizado": false,
+              "s22v03_drilldown_no_bidireccional": false,
+              "s22v03_inventa_definicion_pendiente": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v03_evalua_liquidacion_empresa": false,
+              "s22v03_total_no_autoritativo": true,
+              "s22v03_asignacion_no_confirmada": true,
+              "s22v03_ajuste_no_autorizado": true,
+              "s22v03_drilldown_no_bidireccional": true,
+              "s22v03_inventa_definicion_pendiente": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f7cb69e5aee0bcf9e911e46e4fb6a8be57c64e0f90e5ec9b95e3f7b434dd1b7d",
+      "hash_paquete": "82639e9f40f271e1f5e18f5df31f259858f3aa086565a3eabf987ac79cd4327b",
+      "hash_evaluado": "f7cb69e5ae",
+      "hash_paquete_10": "82639e9f40"
+    },
+    {
+      "codigo": "S22V-C04",
+      "legacy_id": 610,
+      "legacy_ids": [
+        610
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 610,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B_APP_SHELL BLOQUEAR cabecera de contenido que confunda navegación con acción contextual. Soportar TITLE, DESCRIPTION, PRIMARY_ACTIONS, SECONDARY_ACTIONS, TABS_IF_APPLICABLE. Nueva carga NEW_LOAD de B2B-CARGA-001 pertenece a cabecera del destino, no sidebar; DO_NOT_USE_SIDEBAR_FOR_CONTEXTUAL_PRIMARY_ACTIONS. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v04_evalua_header_portal",
+        "s22v04_slots_no_soportados",
+        "s22v04_accion_contextual_en_sidebar",
+        "s22v04_nueva_carga_binding_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C04",
+        "clave": "s22v_legacy_610",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Cabecera contextual del Portal Empresa",
+        "descripcion": "En B2B_APP_SHELL BLOQUEAR cabecera de contenido que confunda navegación con acción contextual. Soportar TITLE, DESCRIPTION, PRIMARY_ACTIONS, SECONDARY_ACTIONS, TABS_IF_APPLICABLE. Nueva carga NEW_LOAD de B2B-CARGA-001 pertenece a cabecera del destino, no sidebar; DO_NOT_USE_SIDEBAR_FOR_CONTEXTUAL_PRIMARY_ACTIONS. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/610",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v04_evalua_header_portal"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v04_slots_no_soportados"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v04_accion_contextual_en_sidebar"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v04_nueva_carga_binding_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v04_evalua_header_portal": true,
+              "s22v04_slots_no_soportados": false,
+              "s22v04_accion_contextual_en_sidebar": false,
+              "s22v04_nueva_carga_binding_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v04_evalua_header_portal": true,
+              "s22v04_slots_no_soportados": true,
+              "s22v04_accion_contextual_en_sidebar": false,
+              "s22v04_nueva_carga_binding_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v04_evalua_header_portal": true,
+              "s22v04_slots_no_soportados": false,
+              "s22v04_accion_contextual_en_sidebar": true,
+              "s22v04_nueva_carga_binding_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v04_evalua_header_portal": true,
+              "s22v04_slots_no_soportados": false,
+              "s22v04_accion_contextual_en_sidebar": false,
+              "s22v04_nueva_carga_binding_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v04_evalua_header_portal": false,
+              "s22v04_slots_no_soportados": true,
+              "s22v04_accion_contextual_en_sidebar": true,
+              "s22v04_nueva_carga_binding_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "c167fa1958de6f606556fd583b95f9e017e4484db83c557ecc903f6e2ef9d48b",
+      "hash_paquete": "dd6b9b451dfef051e8899834c5451eb14965428273c4391808d643d02a94252b",
+      "hash_evaluado": "c167fa1958",
+      "hash_paquete_10": "dd6b9b451d"
+    },
+    {
+      "codigo": "S22V-C05",
+      "legacy_id": 611,
+      "legacy_ids": [
+        611
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 611,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En definición Portal Empresa BLOQUEAR tratar Bajas como nodo raíz, destino vigente o capacidad implementable mientras owner_decision=PENDING y NO_CANONICAL_RULE_SCREEN_OR_FIELD_FOUND. Si se confirma, PORTFOLIO_CHILD con listado Bajas y NUEVA_BAJA_IN_PAGE_HEADER conforme B2B-RULE-PAGE-HEADER-001. Mantener BLOCKED_UNTIL_FUNCTIONAL_DEFINITION; no crear pantalla, campos, ruta ni permiso. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v05_evalua_bajas_portal",
+        "s22v05_nodo_raiz",
+        "s22v05_activa_sin_owner",
+        "s22v05_crea_sin_definicion",
+        "s22v05_accion_fuera_header"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C05",
+        "clave": "s22v_legacy_611",
+        "familia": "APPLICABILITY_READINESS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Bajas de cartera como capacidad candidata",
+        "descripcion": "En definición Portal Empresa BLOQUEAR tratar Bajas como nodo raíz, destino vigente o capacidad implementable mientras owner_decision=PENDING y NO_CANONICAL_RULE_SCREEN_OR_FIELD_FOUND. Si se confirma, PORTFOLIO_CHILD con listado Bajas y NUEVA_BAJA_IN_PAGE_HEADER conforme B2B-RULE-PAGE-HEADER-001. Mantener BLOCKED_UNTIL_FUNCTIONAL_DEFINITION; no crear pantalla, campos, ruta ni permiso. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/611",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v05_evalua_bajas_portal"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v05_nodo_raiz"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v05_activa_sin_owner"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v05_crea_sin_definicion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v05_accion_fuera_header"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v05_evalua_bajas_portal": true,
+              "s22v05_nodo_raiz": false,
+              "s22v05_activa_sin_owner": false,
+              "s22v05_crea_sin_definicion": false,
+              "s22v05_accion_fuera_header": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v05_evalua_bajas_portal": true,
+              "s22v05_nodo_raiz": true,
+              "s22v05_activa_sin_owner": false,
+              "s22v05_crea_sin_definicion": false,
+              "s22v05_accion_fuera_header": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v05_evalua_bajas_portal": true,
+              "s22v05_nodo_raiz": false,
+              "s22v05_activa_sin_owner": true,
+              "s22v05_crea_sin_definicion": false,
+              "s22v05_accion_fuera_header": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v05_evalua_bajas_portal": true,
+              "s22v05_nodo_raiz": false,
+              "s22v05_activa_sin_owner": false,
+              "s22v05_crea_sin_definicion": true,
+              "s22v05_accion_fuera_header": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v05_evalua_bajas_portal": true,
+              "s22v05_nodo_raiz": false,
+              "s22v05_activa_sin_owner": false,
+              "s22v05_crea_sin_definicion": false,
+              "s22v05_accion_fuera_header": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v05_evalua_bajas_portal": false,
+              "s22v05_nodo_raiz": true,
+              "s22v05_activa_sin_owner": true,
+              "s22v05_crea_sin_definicion": true,
+              "s22v05_accion_fuera_header": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "9ce993c2d62f73eed1ee865405c46cbc992ef19c20125f2eabb47c407897bee8",
+      "hash_paquete": "ecbc3011d385f5620bc48c064e973b112c5ba7e2b7584b6ff92249d9f7ff7711",
+      "hash_evaluado": "9ce993c2d6",
+      "hash_paquete_10": "ecbc3011d3"
+    },
+    {
+      "codigo": "S22V-C06",
+      "legacy_id": 614,
+      "legacy_ids": [
+        614
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 614,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B_APP_SHELL BLOQUEAR scroll document body cuando shell activo; MAIN_CONTENT_VIEWPORT es propietario del scroll. Topbar y sidebar desktop FIXED, sidebar colapsable y preferencia persistida reutilizando setting shell; page header NORMAL_FLOW salvo sticky por contrato explícito pantalla. Sticky de tabla lo gobierna componente tabla cuando aplica; overlay bloqueante modal/drawer exige scroll lock. No crear segundo setting. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v06_evalua_scroll_shell",
+        "s22v06_body_scroll_activo",
+        "s22v06_viewport_no_propietario",
+        "s22v06_topbar_sidebar_no_fixed",
+        "s22v06_sidebar_setting_no_reusado",
+        "s22v06_sticky_sin_contrato",
+        "s22v06_overlay_sin_lock"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C06",
+        "clave": "s22v_legacy_614",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Propietario de scroll del shell B2B",
+        "descripcion": "En B2B_APP_SHELL BLOQUEAR scroll document body cuando shell activo; MAIN_CONTENT_VIEWPORT es propietario del scroll. Topbar y sidebar desktop FIXED, sidebar colapsable y preferencia persistida reutilizando setting shell; page header NORMAL_FLOW salvo sticky por contrato explícito pantalla. Sticky de tabla lo gobierna componente tabla cuando aplica; overlay bloqueante modal/drawer exige scroll lock. No crear segundo setting. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/614",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v06_evalua_scroll_shell"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22v06_body_scroll_activo"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22v06_viewport_no_propietario"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v06_topbar_sidebar_no_fixed"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v06_sidebar_setting_no_reusado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v06_sticky_sin_contrato"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v06_overlay_sin_lock"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": false,
+              "s22v06_viewport_no_propietario": false,
+              "s22v06_topbar_sidebar_no_fixed": false,
+              "s22v06_sidebar_setting_no_reusado": false,
+              "s22v06_sticky_sin_contrato": false,
+              "s22v06_overlay_sin_lock": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": true,
+              "s22v06_viewport_no_propietario": false,
+              "s22v06_topbar_sidebar_no_fixed": false,
+              "s22v06_sidebar_setting_no_reusado": false,
+              "s22v06_sticky_sin_contrato": false,
+              "s22v06_overlay_sin_lock": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": false,
+              "s22v06_viewport_no_propietario": true,
+              "s22v06_topbar_sidebar_no_fixed": false,
+              "s22v06_sidebar_setting_no_reusado": false,
+              "s22v06_sticky_sin_contrato": false,
+              "s22v06_overlay_sin_lock": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": false,
+              "s22v06_viewport_no_propietario": false,
+              "s22v06_topbar_sidebar_no_fixed": true,
+              "s22v06_sidebar_setting_no_reusado": false,
+              "s22v06_sticky_sin_contrato": false,
+              "s22v06_overlay_sin_lock": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": false,
+              "s22v06_viewport_no_propietario": false,
+              "s22v06_topbar_sidebar_no_fixed": false,
+              "s22v06_sidebar_setting_no_reusado": true,
+              "s22v06_sticky_sin_contrato": false,
+              "s22v06_overlay_sin_lock": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": false,
+              "s22v06_viewport_no_propietario": false,
+              "s22v06_topbar_sidebar_no_fixed": false,
+              "s22v06_sidebar_setting_no_reusado": false,
+              "s22v06_sticky_sin_contrato": true,
+              "s22v06_overlay_sin_lock": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": true,
+              "s22v06_body_scroll_activo": false,
+              "s22v06_viewport_no_propietario": false,
+              "s22v06_topbar_sidebar_no_fixed": false,
+              "s22v06_sidebar_setting_no_reusado": false,
+              "s22v06_sticky_sin_contrato": false,
+              "s22v06_overlay_sin_lock": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v06_evalua_scroll_shell": false,
+              "s22v06_body_scroll_activo": true,
+              "s22v06_viewport_no_propietario": true,
+              "s22v06_topbar_sidebar_no_fixed": true,
+              "s22v06_sidebar_setting_no_reusado": true,
+              "s22v06_sticky_sin_contrato": true,
+              "s22v06_overlay_sin_lock": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "3ae71aee13aa6f1b7b2f1e6be1f77d3095cecee1a3fc3b74a1d2326f196c0d60",
+      "hash_paquete": "3aaa78835787bc4220e0ae5d4e920b332eb39cfab3568c52cadee446eb45c7d4",
+      "hash_evaluado": "3ae71aee13",
+      "hash_paquete_10": "3aaa788357"
+    },
+    {
+      "codigo": "S22V-C07",
+      "legacy_id": 615,
+      "legacy_ids": [
+        615
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 615,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En B2B_APP_SHELL BLOQUEAR MODAL, DRAWER, TOAST o BACKDROP montados fuera APP_SHELL_ROOT, dentro scroll container o root independiente de pantalla. Stacking por LF_DESIGN_TOKENS_OR_COMPONENT_CONTRACT_NO_NUMERIC_HARDCODE; modal/drawer bloqueante requiere focus management y background LOCK, toast permite scroll; escape/dismiss por contrato componente. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v07_evalua_overlay_shell",
+        "s22v07_root_invalido",
+        "s22v07_stacking_hardcode",
+        "s22v07_focus_o_lock_falta",
+        "s22v07_toast_scroll_bloqueado",
+        "s22v07_dismiss_fuera_contrato"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C07",
+        "clave": "s22v_legacy_615",
+        "familia": "DESIGN_SYSTEM",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Raíz única de overlays B2B",
+        "descripcion": "En B2B_APP_SHELL BLOQUEAR MODAL, DRAWER, TOAST o BACKDROP montados fuera APP_SHELL_ROOT, dentro scroll container o root independiente de pantalla. Stacking por LF_DESIGN_TOKENS_OR_COMPONENT_CONTRACT_NO_NUMERIC_HARDCODE; modal/drawer bloqueante requiere focus management y background LOCK, toast permite scroll; escape/dismiss por contrato componente. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/615",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v07_evalua_overlay_shell"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v07_root_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v07_stacking_hardcode"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v07_focus_o_lock_falta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v07_toast_scroll_bloqueado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v07_dismiss_fuera_contrato"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": true,
+              "s22v07_root_invalido": false,
+              "s22v07_stacking_hardcode": false,
+              "s22v07_focus_o_lock_falta": false,
+              "s22v07_toast_scroll_bloqueado": false,
+              "s22v07_dismiss_fuera_contrato": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": true,
+              "s22v07_root_invalido": true,
+              "s22v07_stacking_hardcode": false,
+              "s22v07_focus_o_lock_falta": false,
+              "s22v07_toast_scroll_bloqueado": false,
+              "s22v07_dismiss_fuera_contrato": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": true,
+              "s22v07_root_invalido": false,
+              "s22v07_stacking_hardcode": true,
+              "s22v07_focus_o_lock_falta": false,
+              "s22v07_toast_scroll_bloqueado": false,
+              "s22v07_dismiss_fuera_contrato": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": true,
+              "s22v07_root_invalido": false,
+              "s22v07_stacking_hardcode": false,
+              "s22v07_focus_o_lock_falta": true,
+              "s22v07_toast_scroll_bloqueado": false,
+              "s22v07_dismiss_fuera_contrato": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": true,
+              "s22v07_root_invalido": false,
+              "s22v07_stacking_hardcode": false,
+              "s22v07_focus_o_lock_falta": false,
+              "s22v07_toast_scroll_bloqueado": true,
+              "s22v07_dismiss_fuera_contrato": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": true,
+              "s22v07_root_invalido": false,
+              "s22v07_stacking_hardcode": false,
+              "s22v07_focus_o_lock_falta": false,
+              "s22v07_toast_scroll_bloqueado": false,
+              "s22v07_dismiss_fuera_contrato": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v07_evalua_overlay_shell": false,
+              "s22v07_root_invalido": true,
+              "s22v07_stacking_hardcode": true,
+              "s22v07_focus_o_lock_falta": true,
+              "s22v07_toast_scroll_bloqueado": true,
+              "s22v07_dismiss_fuera_contrato": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "2effeb0e83fafa70684450b3d2f12498b804b37068dc874e4702398a4b1d4317",
+      "hash_paquete": "931eebb1b220e1bb1710507540aa755380804fe0fead717208484bb93816fd17",
+      "hash_evaluado": "2effeb0e83",
+      "hash_paquete_10": "931eebb1b2"
+    },
+    {
+      "codigo": "S22V-C08",
+      "legacy_id": 623,
+      "legacy_ids": [
+        623
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 623,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En carga B2B BLOQUEAR edición manual de B2B_FLD_LOAD_NAME o uso de nombre como identidad única. Generación LF MODALITY_LABEL + ORIGINAL_FILENAME + CREATED_AT_LOCAL_TIME; B2B_FLD_LOAD_ID con LOAD_ID_UUID autoritativo único resuelve colisiones. Permitir mismo archivo y múltiples cargas mismo día; nombre visible no requiere unicidad. Owner APPROVED; no crear identidad frontend. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v08_evalua_nombre_carga",
+        "s22v08_nombre_editable",
+        "s22v08_nombre_no_generado",
+        "s22v08_identidad_no_uuid_autoritativa",
+        "s22v08_bloquea_reuso_o_mismo_dia",
+        "s22v08_exige_nombre_unico"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C08",
+        "clave": "s22v_legacy_623",
+        "familia": "FIELDS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Identidad y nombre visible de carga B2B",
+        "descripcion": "En carga B2B BLOQUEAR edición manual de B2B_FLD_LOAD_NAME o uso de nombre como identidad única. Generación LF MODALITY_LABEL + ORIGINAL_FILENAME + CREATED_AT_LOCAL_TIME; B2B_FLD_LOAD_ID con LOAD_ID_UUID autoritativo único resuelve colisiones. Permitir mismo archivo y múltiples cargas mismo día; nombre visible no requiere unicidad. Owner APPROVED; no crear identidad frontend. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/623",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v08_evalua_nombre_carga"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v08_nombre_editable"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v08_nombre_no_generado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v08_identidad_no_uuid_autoritativa"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v08_bloquea_reuso_o_mismo_dia"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v08_exige_nombre_unico"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": true,
+              "s22v08_nombre_editable": false,
+              "s22v08_nombre_no_generado": false,
+              "s22v08_identidad_no_uuid_autoritativa": false,
+              "s22v08_bloquea_reuso_o_mismo_dia": false,
+              "s22v08_exige_nombre_unico": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": true,
+              "s22v08_nombre_editable": true,
+              "s22v08_nombre_no_generado": false,
+              "s22v08_identidad_no_uuid_autoritativa": false,
+              "s22v08_bloquea_reuso_o_mismo_dia": false,
+              "s22v08_exige_nombre_unico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": true,
+              "s22v08_nombre_editable": false,
+              "s22v08_nombre_no_generado": true,
+              "s22v08_identidad_no_uuid_autoritativa": false,
+              "s22v08_bloquea_reuso_o_mismo_dia": false,
+              "s22v08_exige_nombre_unico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": true,
+              "s22v08_nombre_editable": false,
+              "s22v08_nombre_no_generado": false,
+              "s22v08_identidad_no_uuid_autoritativa": true,
+              "s22v08_bloquea_reuso_o_mismo_dia": false,
+              "s22v08_exige_nombre_unico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": true,
+              "s22v08_nombre_editable": false,
+              "s22v08_nombre_no_generado": false,
+              "s22v08_identidad_no_uuid_autoritativa": false,
+              "s22v08_bloquea_reuso_o_mismo_dia": true,
+              "s22v08_exige_nombre_unico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": true,
+              "s22v08_nombre_editable": false,
+              "s22v08_nombre_no_generado": false,
+              "s22v08_identidad_no_uuid_autoritativa": false,
+              "s22v08_bloquea_reuso_o_mismo_dia": false,
+              "s22v08_exige_nombre_unico": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v08_evalua_nombre_carga": false,
+              "s22v08_nombre_editable": true,
+              "s22v08_nombre_no_generado": true,
+              "s22v08_identidad_no_uuid_autoritativa": true,
+              "s22v08_bloquea_reuso_o_mismo_dia": true,
+              "s22v08_exige_nombre_unico": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "254dfdac78731c639774304aefeeeed950c55680a5b34acc8be18ecbac20e73c",
+      "hash_paquete": "98315d23217f71e6d93503c761c1c93953061095223ed4b975c663efcfe0285d",
+      "hash_evaluado": "254dfdac78",
+      "hash_paquete_10": "98315d2321"
+    },
+    {
+      "codigo": "S22V-C09",
+      "legacy_id": 626,
+      "legacy_ids": [
+        626
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 626,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En LF Simula V1 BLOQUEAR fuente fuera NEW_PORTFOLIO_FILE o EXISTING_LOAD_FOR_UPDATE. Archivo nuevo para PRE_OPERATION_SCENARIO_ANALYSIS sobre snapshot sin crear/modificar oferta automáticamente ni cartera operacional. Carga existente SELECTED_LOAD ancla población UPDATE_SCENARIO_FOR_SELECTED_POPULATION, baseline CURRENT_RESOLVABLE_STATE_BY_BUSINESS_IDENTITY, no archivo histórico como verdad actual ni last-upload-wins. Toda simulación snapshot aislado, sin mutación de cartera, ofertas, condiciones o fuente. CONSOLIDATED_CURRENT_PORTFOLIO_V2_OR_LATER solo candidato futuro, DENY_IN_V1; owner APPROVED. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22v09_evalua_simula_v1",
+        "s22v09_fuente_no_autorizada",
+        "s22v09_snapshot_no_aislado",
+        "s22v09_mutacion_operacional",
+        "s22v09_baseline_historico_o_last_upload",
+        "s22v09_poblacion_no_anclada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22V-C09",
+        "clave": "s22v_legacy_626",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Fuentes y aislamiento de LF Simula V1",
+        "descripcion": "En LF Simula V1 BLOQUEAR fuente fuera NEW_PORTFOLIO_FILE o EXISTING_LOAD_FOR_UPDATE. Archivo nuevo para PRE_OPERATION_SCENARIO_ANALYSIS sobre snapshot sin crear/modificar oferta automáticamente ni cartera operacional. Carga existente SELECTED_LOAD ancla población UPDATE_SCENARIO_FOR_SELECTED_POPULATION, baseline CURRENT_RESOLVABLE_STATE_BY_BUSINESS_IDENTITY, no archivo histórico como verdad actual ni last-upload-wins. Toda simulación snapshot aislado, sin mutación de cartera, ofertas, condiciones o fuente. CONSOLIDATED_CURRENT_PORTFOLIO_V2_OR_LATER solo candidato futuro, DENY_IN_V1; owner APPROVED. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/626",
+          "solicitante": "Cristhian / Claude S22-V 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22v09_evalua_simula_v1"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v09_fuente_no_autorizada"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22v09_snapshot_no_aislado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22v09_mutacion_operacional"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22v09_baseline_historico_o_last_upload"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22v09_poblacion_no_anclada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": true,
+              "s22v09_fuente_no_autorizada": false,
+              "s22v09_snapshot_no_aislado": false,
+              "s22v09_mutacion_operacional": false,
+              "s22v09_baseline_historico_o_last_upload": false,
+              "s22v09_poblacion_no_anclada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": true,
+              "s22v09_fuente_no_autorizada": true,
+              "s22v09_snapshot_no_aislado": false,
+              "s22v09_mutacion_operacional": false,
+              "s22v09_baseline_historico_o_last_upload": false,
+              "s22v09_poblacion_no_anclada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": true,
+              "s22v09_fuente_no_autorizada": false,
+              "s22v09_snapshot_no_aislado": true,
+              "s22v09_mutacion_operacional": false,
+              "s22v09_baseline_historico_o_last_upload": false,
+              "s22v09_poblacion_no_anclada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": true,
+              "s22v09_fuente_no_autorizada": false,
+              "s22v09_snapshot_no_aislado": false,
+              "s22v09_mutacion_operacional": true,
+              "s22v09_baseline_historico_o_last_upload": false,
+              "s22v09_poblacion_no_anclada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": true,
+              "s22v09_fuente_no_autorizada": false,
+              "s22v09_snapshot_no_aislado": false,
+              "s22v09_mutacion_operacional": false,
+              "s22v09_baseline_historico_o_last_upload": true,
+              "s22v09_poblacion_no_anclada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": true,
+              "s22v09_fuente_no_autorizada": false,
+              "s22v09_snapshot_no_aislado": false,
+              "s22v09_mutacion_operacional": false,
+              "s22v09_baseline_historico_o_last_upload": false,
+              "s22v09_poblacion_no_anclada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22v09_evalua_simula_v1": false,
+              "s22v09_fuente_no_autorizada": true,
+              "s22v09_snapshot_no_aislado": true,
+              "s22v09_mutacion_operacional": true,
+              "s22v09_baseline_historico_o_last_upload": true,
+              "s22v09_poblacion_no_anclada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "136846228f641077558f16882f622879a7a9349df6316d4046435f0b811834c5",
+      "hash_paquete": "00c5617a04a7a7fbcad2b8a159193cf26cf66aef3f36989baa28af0ac701fdb1",
+      "hash_evaluado": "136846228f",
+      "hash_paquete_10": "00c5617a04"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22V-C01",
+      "hash_paquete": "28ea8d4f4036aad5d0fbd193c1e0a5c9bb2332cd2034b2ecbebd07e093bf1a0f",
+      "hash_paquete_10": "28ea8d4f40",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C01 / hash_paquete_10=28ea8d4f40"
+    },
+    {
+      "codigo": "S22V-C02",
+      "hash_paquete": "8df8303df91ebe091afb8b979704031337dfdd939d417037d2bb0cc34a1e5f37",
+      "hash_paquete_10": "8df8303df9",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C02 / hash_paquete_10=8df8303df9"
+    },
+    {
+      "codigo": "S22V-C03",
+      "hash_paquete": "82639e9f40f271e1f5e18f5df31f259858f3aa086565a3eabf987ac79cd4327b",
+      "hash_paquete_10": "82639e9f40",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C03 / hash_paquete_10=82639e9f40"
+    },
+    {
+      "codigo": "S22V-C04",
+      "hash_paquete": "dd6b9b451dfef051e8899834c5451eb14965428273c4391808d643d02a94252b",
+      "hash_paquete_10": "dd6b9b451d",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C04 / hash_paquete_10=dd6b9b451d"
+    },
+    {
+      "codigo": "S22V-C05",
+      "hash_paquete": "ecbc3011d385f5620bc48c064e973b112c5ba7e2b7584b6ff92249d9f7ff7711",
+      "hash_paquete_10": "ecbc3011d3",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C05 / hash_paquete_10=ecbc3011d3"
+    },
+    {
+      "codigo": "S22V-C06",
+      "hash_paquete": "3aaa78835787bc4220e0ae5d4e920b332eb39cfab3568c52cadee446eb45c7d4",
+      "hash_paquete_10": "3aaa788357",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C06 / hash_paquete_10=3aaa788357"
+    },
+    {
+      "codigo": "S22V-C07",
+      "hash_paquete": "931eebb1b220e1bb1710507540aa755380804fe0fead717208484bb93816fd17",
+      "hash_paquete_10": "931eebb1b2",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C07 / hash_paquete_10=931eebb1b2"
+    },
+    {
+      "codigo": "S22V-C08",
+      "hash_paquete": "98315d23217f71e6d93503c761c1c93953061095223ed4b975c663efcfe0285d",
+      "hash_paquete_10": "98315d2321",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C08 / hash_paquete_10=98315d2321"
+    },
+    {
+      "codigo": "S22V-C09",
+      "hash_paquete": "00c5617a04a7a7fbcad2b8a159193cf26cf66aef3f36989baa28af0ac701fdb1",
+      "hash_paquete_10": "00c5617a04",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4778 / Claude 2026-11-25 18:24 Lima / S22V-C09 / hash_paquete_10=00c5617a04"
+    }
+  ],
+  "cobertura_directa": []
+}
