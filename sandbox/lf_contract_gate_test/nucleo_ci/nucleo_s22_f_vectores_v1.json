@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "b3ff334e4220ad043c1f36fd78c5e3c32af5291f",
     "js_vectors": "21/21",
@@ -808,15 +808,157 @@
       "hash_paquete_10": "7a8b404648"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22F-C01",
+      "hash_paquete": "72aedad8349b2c7241261e2fa0f0488a3269f207079ab7abea2c7dfc9eb81fd0",
+      "hash_paquete_10": "72aedad834",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "residual de 100 sobre tags autorizados"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "complementa S9-C06 y S11-C02, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4761 / Claude 2026-11-25 01:04 Lima / S22F-C01 / hash_paquete_10=72aedad834"
+    },
+    {
+      "codigo": "S22F-C02",
+      "hash_paquete": "a6c550abf1f82f69b3fd02afcc4db149ae8acd659e4eeb6f444f6821ca1b243b",
+      "hash_paquete_10": "a6c550abf1",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "storage canónico de flags pendiente"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4761 / Claude 2026-11-25 01:04 Lima / S22F-C02 / hash_paquete_10=a6c550abf1"
+    },
+    {
+      "codigo": "S22F-C03",
+      "hash_paquete": "b7cb74a8a95a07790babc529b83461c70e1f71828eb874b2046d659aed18a7ec",
+      "hash_paquete_10": "b7cb74a8a9",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "modo block sin log-only y geo-challenge sin lista de países no fijados"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4761 / Claude 2026-11-25 01:04 Lima / S22F-C03 / hash_paquete_10=b7cb74a8a9"
+    },
+    {
+      "codigo": "S22F-C04",
+      "hash_paquete": "7a8b40464867d0ac28e6fd5782bf12d65abf313f0ebda03e8cf3c479ee23bcb9",
+      "hash_paquete_10": "7a8b404648",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "relacionada con S22B-C03, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4761 / Claude 2026-11-25 01:04 Lima / S22F-C04 / hash_paquete_10=7a8b404648"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 44,
       "nucleo_codigo": "S21-C04",
       "version_nucleo": 1,
-      "estado_cobertura": "REEMPLAZADA",
+      "estado_cobertura": "PARCIAL",
       "diferencias": "S21-C04 exige validación server-side previa del formato numérico RENIEC canónico y bloquea consulta de unicidad con formato inválido; no fija longitud literal.",
-      "residual": ""
+      "residual": "Falta fijar el literal de 8 dígitos solo numéricos del formato RENIEC canónico"
     },
     {
       "legacy_id": 101,
