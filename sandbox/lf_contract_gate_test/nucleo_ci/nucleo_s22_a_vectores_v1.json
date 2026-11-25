@@ -1,0 +1,815 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "e7974ebc7fe996e0f3dff67af318fbcd98beeabb",
+    "js_vectors": "19/19",
+    "hash": "SQL RO canonical formula; PG17 replay pending"
+  },
+  "parametros_existentes": [
+    {
+      "scope": "AUTH",
+      "config_key": "MFA_DEVICE_IDLE_DAYS",
+      "hecho": "dias_sin_uso_dispositivo"
+    },
+    {
+      "scope": "AUTH",
+      "config_key": "MFA_PASSWORD_AGE_MONTHS",
+      "hecho": "meses_desde_cambio_contrasena"
+    }
+  ],
+  "hechos_existentes": [
+    "dias_sin_uso_dispositivo",
+    "meses_desde_cambio_contrasena"
+  ],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22a01_login_humano_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a01_login_humano_b2b; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a01_primer_factor_valido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a01_primer_factor_valido; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a01_otp_correo_completo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a01_otp_correo_completo; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a01_sesion_operativa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a01_sesion_operativa; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a01_otp_exigido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a01_otp_exigido; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_login_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_login_b2b; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_nuevo_desconocido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_nuevo_desconocido; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_reconocido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_reconocido; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_renovacion_ajena",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_renovacion_ajena; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_riesgo_revocacion_omitida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_riesgo_revocacion_omitida; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_otp_correo_completo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_otp_correo_completo; derivado server-side, binding pendiente"
+    },
+    {
+      "codigo": "s22a02_sesion_operativa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "s22a02_sesion_operativa; derivado server-side, binding pendiente"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22A-C01",
+      "legacy_id": 13116,
+      "relacionadas": [
+        "S7-C07",
+        "S21-C07"
+      ],
+      "residual": "",
+      "hechos": [
+        "s22a01_login_humano_b2b",
+        "s22a01_primer_factor_valido",
+        "s22a01_otp_correo_completo",
+        "s22a01_sesion_operativa",
+        "s22a01_otp_exigido",
+        "dias_sin_uso_dispositivo",
+        "meses_desde_cambio_contrasena"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22A-C01",
+        "clave": "s22a_legacy_13116",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "MFA condicional por inactividad y antigüedad de credencial",
+        "descripcion": "BLOQUEAR sesión operativa de perfiles humanos B2B (perfiles autorizados del 1 al 6, clasificación server-side) sin primer factor válido. Tras primer factor válido, exigir OTP al correo registrado si días sin uso alcanzan AUTH/MFA_DEVICE_IDLE_DAYS o meses desde cambio de contraseña alcanzan AUTH/MFA_PASSWORD_AGE_MONTHS de public.lf_global_config; BLOQUEAR omitir desafío exigido o conceder sesión antes de verificarlo. No exime otros controles MFA. Binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/13116",
+          "solicitante": "Cristhian / Claude S22-A 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22a01_login_humano_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "y",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22a01_sesion_operativa"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22a01_primer_factor_valido"
+                },
+                "der": {
+                  "lit": false
+                }
+              }
+            },
+            "der": {
+              "op": "y",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22a01_primer_factor_valido"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "y",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": ">=",
+                    "izq": {
+                      "hecho": "dias_sin_uso_dispositivo"
+                    },
+                    "der": {
+                      "param": "AUTH.MFA_DEVICE_IDLE_DAYS"
+                    }
+                  },
+                  "der": {
+                    "op": ">=",
+                    "izq": {
+                      "hecho": "meses_desde_cambio_contrasena"
+                    },
+                    "der": {
+                      "param": "AUTH.MFA_PASSWORD_AGE_MONTHS"
+                    }
+                  }
+                },
+                "der": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22a01_otp_exigido"
+                    },
+                    "der": {
+                      "lit": false
+                    }
+                  },
+                  "der": {
+                    "op": "y",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22a01_sesion_operativa"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22a01_otp_correo_completo"
+                      },
+                      "der": {
+                        "lit": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 1
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": 0
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": 1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": true,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": 0
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": false,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22a01_login_humano_b2b": false,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": true,
+              "s22a01_otp_exigido": false,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": 0
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22a01_login_humano_b2b": true,
+              "s22a01_primer_factor_valido": true,
+              "s22a01_otp_correo_completo": false,
+              "s22a01_sesion_operativa": false,
+              "s22a01_otp_exigido": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              },
+              "meses_desde_cambio_contrasena": {
+                "param": "AUTH.MFA_PASSWORD_AGE_MONTHS",
+                "mas": 0
+              }
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "43af1f46410c2a9d6f6a65ff9a8a63f4ba6aae7148c477f9adfa563709fdf0bc",
+      "hash_paquete": "e67cf9f5ca856ee6505b2951f3527c70b1688dd29c4f06f5fbbdcb95a32eb7f0",
+      "hash_evaluado": "43af1f4641",
+      "hash_paquete_10": "e67cf9f5ca"
+    },
+    {
+      "codigo": "S22A-C02",
+      "legacy_id": 13118,
+      "relacionadas": [
+        "S7-C07",
+        "S21-C07"
+      ],
+      "residual": "No se acredita escritura real del último uso por usuario y dispositivo; binding runtime pendiente.",
+      "hechos": [
+        "s22a02_login_b2b",
+        "s22a02_nuevo_desconocido",
+        "s22a02_reconocido",
+        "s22a02_renovacion_ajena",
+        "s22a02_riesgo_revocacion_omitida",
+        "s22a02_otp_correo_completo",
+        "s22a02_sesion_operativa",
+        "dias_sin_uso_dispositivo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22A-C02",
+        "clave": "s22a_legacy_13118",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Inactividad y reconocimiento de dispositivo B2B",
+        "descripcion": "BLOQUEAR reconocer como confiable dispositivo nuevo, desconocido o cuya inactividad alcance AUTH/MFA_DEVICE_IDLE_DAYS de public.lf_global_config; exigir OTP correo antes de sesión operativa. El último uso autenticado se registra por usuario y dispositivo; BLOQUEAR renovar confianza por actividad ajena y omitir revocación ante señales de seguridad. Complementa S7-C07 y S21-C07, sin sustituir validación de token ni ciclo de revocación. Binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/13118",
+          "solicitante": "Cristhian / Claude S22-A 2026-11-24"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22a02_login_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22a02_renovacion_ajena"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22a02_riesgo_revocacion_omitida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "y",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22a02_nuevo_desconocido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": ">=",
+                  "izq": {
+                    "hecho": "dias_sin_uso_dispositivo"
+                  },
+                  "der": {
+                    "param": "AUTH.MFA_DEVICE_IDLE_DAYS"
+                  }
+                }
+              },
+              "der": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22a02_reconocido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "y",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22a02_sesion_operativa"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22a02_otp_correo_completo"
+                    },
+                    "der": {
+                      "lit": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "BAJO_EL_LIMITE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "EN_EL_LIMITE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SOBRE_EL_LIMITE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": true,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": true,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": true,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": -1
+              }
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": false,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": true,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22a02_login_b2b": false,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": true,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              }
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22a02_login_b2b": true,
+              "s22a02_nuevo_desconocido": false,
+              "s22a02_reconocido": false,
+              "s22a02_renovacion_ajena": false,
+              "s22a02_riesgo_revocacion_omitida": false,
+              "s22a02_otp_correo_completo": false,
+              "s22a02_sesion_operativa": true,
+              "dias_sin_uso_dispositivo": {
+                "param": "AUTH.MFA_DEVICE_IDLE_DAYS",
+                "mas": 0
+              }
+            },
+            "esperado": true
+          }
+        ]
+      },
+      "hash": "e7f98c38e4ac187ad95e08f25004398750832d6215ad718018c0b5bf3c106af3",
+      "hash_paquete": "acab96713c19d770ac7a95822baa8cfa2aa7e72b857e414a1a84f3282e60d851",
+      "hash_evaluado": "e7f98c38e4",
+      "hash_paquete_10": "acab96713c"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22A-C01",
+      "hash_paquete": "e67cf9f5ca856ee6505b2951f3527c70b1688dd29c4f06f5fbbdcb95a32eb7f0",
+      "hash_paquete_10": "e67cf9f5ca",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Solapa parcialmente con 13118/S7-C07 en el disparador de inactividad."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4756 / Claude 2026-11-24 22:21 Lima / S22A-C01 / hash_paquete_10=e67cf9f5ca"
+    },
+    {
+      "codigo": "S22A-C02",
+      "hash_paquete": "acab96713c19d770ac7a95822baa8cfa2aa7e72b857e414a1a84f3282e60d851",
+      "hash_paquete_10": "acab96713c",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Mismo solape con 13116/S7-C07; no duplica S21-C07 que cubre revocación."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4756 / Claude 2026-11-24 22:21 Lima / S22A-C02 / hash_paquete_10=acab96713c"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 13122,
+      "nucleo_codigo": "S21-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "REEMPLAZADA",
+      "diferencias": "S21-C02 conserva contador por cuenta, ventana móvil, tramos parametrizados, duraciones, reinicio anclado al último bloqueo y excluye eventos sin comparación de contraseña incorrecta; no acredita binding runtime.",
+      "residual": "",
+      "hash_paquete": "009090f554b92ab7e4dabd8a158104c4704da27ad9ef02a9c868d2bb665006fb"
+    }
+  ]
+}
