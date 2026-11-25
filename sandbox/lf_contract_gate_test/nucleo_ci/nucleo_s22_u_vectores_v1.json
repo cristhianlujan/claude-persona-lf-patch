@@ -187,7 +187,17 @@
         "descripcion": "DETECTADO 2026-07-11 al integrar el logo en el prototipo React. El archivo Logo_Normal.png (VD_LOGO_LF_20260630_001, carpeta Drive 1g9Yig1uagfFNXabAJnMbhanOG_-s4x50) esta guardado en modo RGB, no RGBA -- el fondo \"transparente\" que se ve en el visor es en realidad un patron de cuadros gris claro (~246-253) pintado directamente en los pixeles, no transparencia real. Esto genera artefactos visuales (pixelado/discordancia) al componer sobre cualquier fondo que no sea ese gris exacto. FIX aplicado en el prototipo: chroma-key por umbral de blancura para generar alpha real. PENDIENTE REAL: re-exportar el archivo original en Drive con transparencia real (RGBA), para que futuras integraciones no repitan este problema. Logo_Dark.png SI esta correcto (relleno solido navy, no necesita fix).",
         "valor_config": null
       }
-    ]
+    ],
+    "assert_links": {
+      "leccion": "LF-NUCLEO-ASSERT-LINKS-001",
+      "expected_links": 6,
+      "expected_replacements": 1,
+      "expected_packages": 6,
+      "expected_vectors": 33,
+      "source": "embedded SQL packages and JSON vectors",
+      "previous_train": "45717256475",
+      "assert_links": "derived from packs.coberturas"
+    }
   },
   "parametros_existentes": [],
   "hechos_existentes": [],

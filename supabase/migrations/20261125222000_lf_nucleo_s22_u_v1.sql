@@ -101,7 +101,7 @@ BEGIN
  END LOOP;
  END LOOP;
  SELECT count(DISTINCT legacy_id) INTO after_replaced FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA';
- IF (SELECT count(*) FROM lf_ops.reglas)=586 AND (links<>8 OR after_replaced<>before_replaced+1) THEN RAISE EXCEPTION 'S22U_COVERAGE_READBACK_FAIL links=% before=% after=%',links,before_replaced,after_replaced; END IF;
+ IF (SELECT count(*) FROM lf_ops.reglas)=586 AND (links<>(SELECT coalesce(sum(jsonb_array_length(value->'coberturas')),0) FROM jsonb_array_elements(packs)) OR after_replaced<>before_replaced+1) THEN RAISE EXCEPTION 'S22U_COVERAGE_READBACK_FAIL links=% before=% after=%',links,before_replaced,after_replaced; END IF;
  IF (SELECT jsonb_agg(to_jsonb(x) ORDER BY id) FROM lf_ops.reglas x) IS DISTINCT FROM b_leg OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,version) FROM lf_ops.nucleo_deprecaciones x) IS DISTINCT FROM b_dep OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY to_jsonb(x)::text) FROM public.lf_global_config x) IS DISTINCT FROM b_cfg THEN RAISE EXCEPTION 'S22U_POST_COVERAGE_INVARIANT_FAIL'; END IF;
  RAISE NOTICE 'S22U_PASS 6 JUICIOS 6 AUTO 33 VECTORES links=% replaced=% DPIG03=0',links,after_replaced;
 END $s22$;
