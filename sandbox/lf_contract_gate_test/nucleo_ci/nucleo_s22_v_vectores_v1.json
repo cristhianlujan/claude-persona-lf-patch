@@ -28,7 +28,8 @@
       "expected_links": 9,
       "expected_replacements": 9,
       "sql_future": "links<>(SELECT coalesce(sum(jsonb_array_length(value->'coberturas')),0) FROM jsonb_array_elements(packs)); delta derived from distinct REEMPLAZADA legacy_id in packages not already replaced before writes",
-      "executed_sql": "links and expected_delta derived from packages; delta excludes already replaced before writes"
+      "executed_sql": "links and expected_delta derived from packages; delta excludes already replaced before writes",
+      "alias_fix": "pk(package), cv(coverage), existing_cov; qualified references avoid PL/pgSQL variable collisions"
     },
     "fuentes_legadas": [
       {
