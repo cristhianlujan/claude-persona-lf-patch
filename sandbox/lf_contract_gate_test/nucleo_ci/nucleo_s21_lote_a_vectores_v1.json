@@ -1,7 +1,7 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "PENDIENTE_REJUICIO_INDEPENDIENTE",
   "preflight": {
-    "hash": "SELECT PostgreSQL, algoritmo real de trigger y nucleo_hash_paquete_v1",
+    "hash": "SELECT PostgreSQL reproduce 8/8 hashes anteriores y recalcula nuevos con fórmula vigente; readback función real pendiente de replay",
     "vectores": "64/64 evaluación JS reproduciendo operadores del motor, NO ejecución PG17",
     "motor": "42501 permission denied nucleo_eval_v1; prueba PG17 integral pendiente",
     "alcance": "6 nodos sin ancestro P36"
@@ -356,7 +356,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": false,
               "s21c01_aviso_incongruente": false,
@@ -365,7 +365,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": false,
               "s21c01_aviso_incongruente": false,
@@ -374,7 +374,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": false,
               "s21c01_aviso_incongruente": true,
@@ -383,7 +383,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": false,
               "s21c01_aviso_incongruente": true,
@@ -392,7 +392,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": true,
               "s21c01_aviso_incongruente": false,
@@ -401,7 +401,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": true,
               "s21c01_aviso_incongruente": false,
@@ -410,7 +410,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": true,
               "s21c01_aviso_incongruente": true,
@@ -419,7 +419,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c01_login_b2b": true,
               "s21c01_aviso_incongruente": true,
@@ -431,9 +431,9 @@
       },
       "codigo": "S21-C01",
       "hash": "e0472fc8b32ec80acc85374addc8e21050e4e9a8b29326c92cbc49ff78a1c948",
-      "hash_paquete": "38e9f5e05f849aaeb6064933bf12aab90abf75e9501bc5926435ab4b0653e8c0",
+      "hash_paquete": "5e427ce9228db0632c20317c39974ea22fa9547209ce0a4ec0fff03ac984d13d",
       "hash_evaluado": "e0472fc8b3",
-      "hash_paquete_10": "38e9f5e05f"
+      "hash_paquete_10": "5e427ce922"
     },
     {
       "legacy_id": 13114,
@@ -866,7 +866,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Bajo umbral",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -896,7 +896,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Clave correcta contada",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": false,
@@ -926,7 +926,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Clave incorrecta omitida",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -956,7 +956,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Umbral inicial sin bloqueo",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -985,7 +985,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Duración intermedia errada",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -1015,7 +1015,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Tramo final correcto",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -1044,7 +1044,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Ventana errada",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -1075,7 +1075,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Reinicio omitido",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -1107,9 +1107,9 @@
       },
       "codigo": "S21-C02",
       "hash": "2292281eb0dfecbbfd91a029894eafc4143ada5f36f6b8cd2a97e82c665b45d1",
-      "hash_paquete": "7bb28763de1e91afe596d9c65d16514eff7f990215330bcc0b39bdc83aac880b",
+      "hash_paquete": "666b513f196128d82782466203bcf8fb2d77097ad9ae00d6f71cc25d7818767b",
       "hash_evaluado": "2292281eb0",
-      "hash_paquete_10": "7bb28763de"
+      "hash_paquete_10": "666b513f19"
     },
     {
       "legacy_id": 10,
@@ -1178,7 +1178,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": false,
               "s21c03_link_visible": false,
@@ -1187,7 +1187,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": false,
               "s21c03_link_visible": false,
@@ -1196,7 +1196,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": false,
               "s21c03_link_visible": true,
@@ -1205,7 +1205,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": false,
               "s21c03_link_visible": true,
@@ -1214,7 +1214,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": true,
               "s21c03_link_visible": false,
@@ -1223,7 +1223,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": true,
               "s21c03_link_visible": false,
@@ -1232,7 +1232,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": true,
               "s21c03_link_visible": true,
@@ -1241,7 +1241,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s15c01_onb002": true,
               "s21c03_link_visible": true,
@@ -1253,9 +1253,9 @@
       },
       "codigo": "S21-C03",
       "hash": "f9cfa7fd44f9974b2768715ed7582657e54342fc65bdb332fab803b10e69f29d",
-      "hash_paquete": "af8722567bfa3bb624fa25b281189a8cc2aaa10bea8b7fa5a38d038294231f15",
+      "hash_paquete": "226931b12b5990f22e1406ad53318446a07d238c1f47ec1e2bab8e73f57507b2",
       "hash_evaluado": "f9cfa7fd44",
-      "hash_paquete_10": "af8722567b"
+      "hash_paquete_10": "226931b12b"
     },
     {
       "legacy_id": 44,
@@ -1324,7 +1324,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": false,
               "s21c04_unicidad_dni": false,
@@ -1333,7 +1333,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": false,
               "s21c04_unicidad_dni": false,
@@ -1342,7 +1342,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": false,
               "s21c04_unicidad_dni": true,
@@ -1351,7 +1351,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": false,
               "s21c04_unicidad_dni": true,
@@ -1360,7 +1360,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": true,
               "s21c04_unicidad_dni": false,
@@ -1369,7 +1369,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": true,
               "s21c04_unicidad_dni": false,
@@ -1378,7 +1378,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": true,
               "s21c04_unicidad_dni": true,
@@ -1387,7 +1387,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s1c02_intento_consulta": true,
               "s21c04_unicidad_dni": true,
@@ -1399,9 +1399,9 @@
       },
       "codigo": "S21-C04",
       "hash": "04d26866692183096633a7e82de6f5e1b2456ddce23c74a4bea94b2d5b4fafb1",
-      "hash_paquete": "b691cbb23a3b6067e7c211a19715e0f06314d7965895da0d316a011d6e38143c",
+      "hash_paquete": "50952ec94a24c97901463eeba0d35c758a49ca57a49911f763504685f1937571",
       "hash_evaluado": "04d2686669",
-      "hash_paquete_10": "b691cbb23a"
+      "hash_paquete_10": "50952ec94a"
     },
     {
       "legacy_id": 290,
@@ -1470,7 +1470,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": false,
               "s6c17_contexto": false,
@@ -1479,7 +1479,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": false,
               "s6c17_contexto": false,
@@ -1488,7 +1488,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": false,
               "s6c17_contexto": true,
@@ -1497,7 +1497,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": false,
               "s6c17_contexto": true,
@@ -1506,7 +1506,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": true,
               "s6c17_contexto": false,
@@ -1515,7 +1515,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": true,
               "s6c17_contexto": false,
@@ -1524,7 +1524,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s6c17_intento": true,
               "s6c17_contexto": true,
@@ -1533,7 +1533,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s6c17_intento": true,
               "s6c17_contexto": true,
@@ -1545,9 +1545,9 @@
       },
       "codigo": "S21-C05",
       "hash": "8f2fe39a582b64e31e41dc31593269621fa476b4cb0679e43f1aa94ce2cf7db4",
-      "hash_paquete": "46574a171a9a39c9aa6c4fb6fa484dd026e6070430a581887fdf164a7b5d5536",
+      "hash_paquete": "3c692dfc555e4093790b32abc53f5b89e6ec48e8568cfcdfc5a84abecef1b1c5",
       "hash_evaluado": "8f2fe39a58",
-      "hash_paquete_10": "46574a171a"
+      "hash_paquete_10": "3c692dfc55"
     },
     {
       "legacy_id": 564,
@@ -1619,7 +1619,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": false,
               "s21c06_inicio_invalido": false,
@@ -1628,7 +1628,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": false,
               "s21c06_inicio_invalido": false,
@@ -1637,7 +1637,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": false,
               "s21c06_inicio_invalido": true,
@@ -1646,7 +1646,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": false,
               "s21c06_inicio_invalido": true,
@@ -1655,7 +1655,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": true,
               "s21c06_inicio_invalido": false,
@@ -1664,7 +1664,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": true,
               "s21c06_inicio_invalido": false,
@@ -1673,7 +1673,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": true,
               "s21c06_inicio_invalido": true,
@@ -1682,7 +1682,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "m2_pantalla_multi_oferta_en_presentacion": true,
               "s21c06_inicio_invalido": true,
@@ -1694,9 +1694,9 @@
       },
       "codigo": "S21-C06",
       "hash": "811436ee26dcc3fdb26efaba2980cc6aeadc665365378ad31ce062be3f08f107",
-      "hash_paquete": "455600ecc028a4f263f2437d91766a3c96d4df0206ad79c26f065e2d925087a6",
+      "hash_paquete": "7e54f439f89a2386888f63215122bf172828f9d0f78e43afc160b10012cf9498",
       "hash_evaluado": "811436ee26",
-      "hash_paquete_10": "455600ecc0"
+      "hash_paquete_10": "7e54f439f8"
     },
     {
       "legacy_id": 496,
@@ -1764,7 +1764,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": false,
               "s21c07_transicion_invalida": false,
@@ -1773,7 +1773,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": false,
               "s21c07_transicion_invalida": false,
@@ -1782,7 +1782,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": false,
               "s21c07_transicion_invalida": true,
@@ -1791,7 +1791,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": false,
               "s21c07_transicion_invalida": true,
@@ -1800,7 +1800,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": true,
               "s21c07_transicion_invalida": false,
@@ -1809,7 +1809,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": true,
               "s21c07_transicion_invalida": false,
@@ -1818,7 +1818,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": true,
               "s21c07_transicion_invalida": true,
@@ -1827,7 +1827,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c07_ciclo_confianza": true,
               "s21c07_transicion_invalida": true,
@@ -1839,9 +1839,9 @@
       },
       "codigo": "S21-C07",
       "hash": "3eacc8ec0aebe984b53e4e651c54562e5caf1c4fe6421648636c847296aaf879",
-      "hash_paquete": "83f5f78a585496ff0ad09bcdd2440d62858621b851c14ae39c1b01eec27fd76d",
+      "hash_paquete": "735229cde25b7c206ed30448ed1174685c056862f8a7384d55b53901ef985379",
       "hash_evaluado": "3eacc8ec0a",
-      "hash_paquete_10": "83f5f78a58"
+      "hash_paquete_10": "735229cde2"
     },
     {
       "legacy_id": 622,
@@ -1907,7 +1907,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "Vector 1",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": false,
               "s21c08_exclusion_invalida": false,
@@ -1916,7 +1916,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 2",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": false,
               "s21c08_exclusion_invalida": false,
@@ -1925,7 +1925,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 3",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": false,
               "s21c08_exclusion_invalida": true,
@@ -1934,7 +1934,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 4",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": false,
               "s21c08_exclusion_invalida": true,
@@ -1943,7 +1943,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 5",
+            "casuistica": "NO_SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": true,
               "s21c08_exclusion_invalida": false,
@@ -1952,7 +1952,7 @@
             "esperado": false
           },
           {
-            "casuistica": "Vector 6",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": true,
               "s21c08_exclusion_invalida": false,
@@ -1961,7 +1961,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 7",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": true,
               "s21c08_exclusion_invalida": true,
@@ -1970,7 +1970,7 @@
             "esperado": true
           },
           {
-            "casuistica": "Vector 8",
+            "casuistica": "SE_CUMPLE",
             "entrada": {
               "s21c08_modulo_auth": true,
               "s21c08_exclusion_invalida": true,
@@ -1982,9 +1982,9 @@
       },
       "codigo": "S21-C08",
       "hash": "e4ce5420b2d0f413fe52e24850d5ba2d3df79ac18826e9c378a9db616a902575",
-      "hash_paquete": "61d6d2ca5f3eccf99153e5ae33d7ebb45edfbca0bc91af7fadbe7fa99db68e8e",
+      "hash_paquete": "a9258bba946fefeffef7dd4b8d0d20cf76b98f000dfd7bb0d7ef36695653ae99",
       "hash_evaluado": "e4ce5420b2",
-      "hash_paquete_10": "61d6d2ca5f"
+      "hash_paquete_10": "a9258bba94"
     }
   ],
   "juicios": []
