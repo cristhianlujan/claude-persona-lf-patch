@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "cf1390b29abdce27000f411aaad27a20b66f1e8d",
     "js_vectors": "30/30",
@@ -1136,7 +1136,184 @@
       "hash_paquete_10": "6ebc52860d"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22E-C01",
+      "hash_paquete": "f02f1da04a86fe8f33ff7bfbee930e98cf4fbef6f413c623a11009587a187a4c",
+      "hash_paquete_10": "f02f1da04a",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "binding OIDC pendiente y guia UI queda en S22C-C03"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "complementa S22C-C03 y S7-C09, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4760 / Claude 2026-11-25 00:39 Lima / S22E-C01 / hash_paquete_10=f02f1da04a"
+    },
+    {
+      "codigo": "S22E-C02",
+      "hash_paquete": "a91842fe6ffdb87c6c3cb3ab8a7e08263351de5f0980c4d2bfc778fc3c6a0188",
+      "hash_paquete_10": "a91842fe6f",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "binding proveedor pendiente"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "comparte elegibilidad con reglas de checkout publicadas, 627 absorbido sin duplicar integracion"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4760 / Claude 2026-11-25 00:39 Lima / S22E-C02 / hash_paquete_10=a91842fe6f"
+    },
+    {
+      "codigo": "S22E-C03",
+      "hash_paquete": "6d5e2b920e93955f87cc1a616afd425e983e24ff09781a7022f67f799f24662f",
+      "hash_paquete_10": "6d5e2b920e",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "ventana payable pendiente de politica del plan"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4760 / Claude 2026-11-25 00:39 Lima / S22E-C03 / hash_paquete_10=6d5e2b920e"
+    },
+    {
+      "codigo": "S22E-C04",
+      "hash_paquete": "51927f9e3a49a2b1b8726104543747865fb2e8bd15e3fa36fc6810d2ba6252a5",
+      "hash_paquete_10": "51927f9e3a",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "complementa M3-C04 y M3-C05, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4760 / Claude 2026-11-25 00:39 Lima / S22E-C04 / hash_paquete_10=51927f9e3a"
+    },
+    {
+      "codigo": "S22E-C05",
+      "hash_paquete": "6ebc52860dcf7e01627fec8379fd3f0694556b5c2b6e34ff1ca1fc1d5ee92408",
+      "hash_paquete_10": "6ebc52860d",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4760 / Claude 2026-11-25 00:39 Lima / S22E-C05 / hash_paquete_10=6ebc52860d"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 494,
