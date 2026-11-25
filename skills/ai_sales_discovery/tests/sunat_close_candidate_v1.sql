@@ -133,8 +133,17 @@ BEGIN
    OR v_policy->>'old_manifest_replay_allowed' IS DISTINCT FROM 'false'
    OR v_policy->>'enabled' IS DISTINCT FROM 'true'
    OR v_run.plan_hash IS DISTINCT FROM v_policy->>'manifest_digest_sha256'
-   OR v_exec.manifest->>'source_id' IS NOT NULL
-      AND v_exec.manifest->>'source_id' IS DISTINCT FROM 'PE-SUNAT-RUC' THEN
+   OR jsonb_typeof(v_policy->'expected_batches') IS DISTINCT FROM 'number'
+   OR jsonb_typeof(v_policy->'expected_rows') IS DISTINCT FROM 'number'
+   OR (v_policy->>'expected_batches')::integer < 1
+   OR (v_policy->>'expected_rows')::bigint < 1
+   OR v_exec.manifest->'sunat_plan'->>'source_id' IS DISTINCT FROM 'PE-SUNAT-RUC'
+   OR v_exec.manifest->'sunat_plan'->>'business' IS DISTINCT FROM 'SALY'
+   OR v_exec.manifest->'sunat_plan'->>'scope_key' IS DISTINCT FROM 'LIMA_ICA'
+   OR v_exec.manifest->'sunat_plan'->>'manifest_digest_sha256'
+      IS DISTINCT FROM v_run.plan_hash
+   OR v_exec.manifest->'sunat_plan'->'snapshot_sha256'
+      IS DISTINCT FROM v_policy->'snapshot_sha256' THEN
     RAISE EXCEPTION 'SUNAT_CLOSE_POLICY_OR_MANIFEST';
  END IF;
  -- Explicitly configured TTL is not present in current SALY: fail closed.
