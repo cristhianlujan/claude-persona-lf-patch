@@ -117,7 +117,7 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     assert psql("SELECT count(*) FROM public.lf_operation_effect_guard WHERE execution_id='EXEC-SUNAT-FIXTURE' AND state='SUCCEEDED'")=='2'
     assert psql("SELECT count(*) FROM saly.ventas_discovery_plan_batches WHERE run_id="+lit(run)+"::uuid AND estado='FOUND'")=='2'
     # Verify EXACT commercial view DDL on PG17, with one config key (B13).
-    migration_path=ROOT/'supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql'
+    migration_path=ROOT/'supabase/migrations/20261123000336_lf_saly_sunat_commercial_filter_v1.sql'
     migration=migration_path.read_text()
     ddl=migration[migration.index('CREATE VIEW saly.ventas_sunat_elegibilidad_v1'):
                   migration.index('REVOKE ALL ON saly.ventas_sunat_elegibilidad_v1')]
