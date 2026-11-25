@@ -1,0 +1,2574 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "f5f5d866d446087816145377f4745a05c60d60c7",
+    "js_vectors": "59/59",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 541,
+        "nucleo_codigo": "REG_CHK_005",
+        "version_nucleo": 3,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 548,
+        "nucleo_codigo": "M3-C03",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "M3-C03",
+        "version": 1,
+        "estado": "PUBLICADA",
+        "descripcion": "En HOME_001 o comunicación de una oferta, BLOQUEAR un intento de afirmar disponibilidad inmediata de Carta de No Adeudo sin deuda en SETTLED_CONFIRMED o sin gestión de carta elegible. El título visual «Carta de No Adeudo incluida» no autoriza promesa universal de emisión; su reconciliación de copy sigue pendiente de aprobación. Estos hechos lógicos no implementan emisión ni validan estado real sin Paulo."
+      }
+    ],
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001",
+    "fuentes_legadas": [
+      {
+        "id": 540,
+        "codigo": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+        "descripcion": "CHECKOUT_ESTADO_ABRIENDO representa únicamente la preparación server-side de la sesión/handoff del proveedor después de que checkout, quote y medio de pago hayan sido validados. En este estado todavía no se considera enviado un intento de cobro ni existe PAYMENT_PENDING_CONFIRMATION. El backend crea u obtiene la referencia opaca necesaria para abrir hosted fields, iframe, SDK o redirección autorizada según el proveedor canónico. El cliente no construye URLs del proveedor, return_url ni callback_url arbitrarios. Si la preparación falla antes de que el proveedor acepte una sesión de pago, el resultado es PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT o PAYMENT_NOT_SUBMITTED según la causa y puede reintentarse de forma controlada; nunca se afirma que hubo un intento de cobro. La transición a un estado de pago enviado/confirmando ocurre solo cuando el backend/adaptador posee evidencia de que el intento entró al circuito de pago.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_ESTADO_ABRIENDO",
+          "amount_source": "CHECKOUT_PRICING_QUOTE_OR_CHECKOUT_SNAPSHOT",
+          "requires_rules": [
+            "REG_CLIENT_CHECKOUT_ENTRY_001",
+            "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+            "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001"
+          ],
+          "state_semantic": "PROVIDER_HANDOFF_PREPARING",
+          "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER",
+          "handoff_authority": "SERVER_SIDE_PAYMENT_ADAPTER",
+          "outcome_rule_code": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+          "arbitrary_return_url": "DENY",
+          "visual_artifact_code": "CHECKOUT-ESTADO-ABRIENDO-PROVIDER-HANDOFF-PREPARING-20260826",
+          "allowed_handoff_modes": [
+            "HOSTED_FIELDS_OR_IFRAME",
+            "AUTHORIZED_SDK",
+            "AUTHORIZED_REDIRECT"
+          ],
+          "provider_binding_debt": "PEND-CLIENT-PAYMENT-PROVIDER-BINDING-001",
+          "arbitrary_callback_url": "DENY",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+          "payment_attempt_submitted": false,
+          "operation_reference_source": "RESERVED_OPERATION_OR_CANONICAL_PAYMENT_LEDGER",
+          "canonical_drive_evidence_id": "1nFzL3_ty2SZ-d2MjBRURwqsjcEcibMKF",
+          "handoff_failure_claims_charge": "DENY",
+          "provider_origin_or_destination": "CANONICAL_PROVIDER_CONFIGURATION_ONLY",
+          "client_constructed_provider_url": "DENY",
+          "transition_to_submitted_requires": "SERVER_EVIDENCE_PROVIDER_PAYMENT_ATTEMPT_ACCEPTED_OR_EQUIVALENT",
+          "opaque_provider_session_reference": "ALLOW_IF_SERVER_GENERATED_OR_PROVIDER_ISSUED",
+          "browser_window_required_for_integrity": false,
+          "payment_pending_confirmation_at_entry": false,
+          "handoff_failure_before_provider_acceptance": [
+            "PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT",
+            "PAYMENT_NOT_SUBMITTED"
+          ]
+        }
+      },
+      {
+        "id": 541,
+        "codigo": "REG_CLIENT_PAYMENT_SUCCESS_INSTALLMENTS_001",
+        "descripcion": "CHECKOUT_PAGO_EXITOSO representa únicamente el caso en que PAYMENT_CONFIRMED corresponde al pago inicial de un plan en cuotas y REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001 confirma que el plan quedó activado. En esta variante puede mostrarse el monto inicial confirmado, referencia de operación, fecha/hora, metadatos enmascarados del medio si el proveedor los entrega de forma autorizada, resumen del plan y cronograma contractual. La Carta de No Adeudo permanece NOT_ELIGIBLE hasta SETTLED_CONFIRMED. Comprobante, cronograma o resumen de operación solo se marcan disponibles cuando el registro documental real lo confirme; fuera de producción pueden renderizarse versiones DEMO claramente identificadas. Esta pantalla no se reutiliza automáticamente para un pago único totalmente liquidado, cuyo copy/estado visual canónico sigue pendiente.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_PAGO_EXITOSO",
+          "context": "INSTALLMENTS_INITIAL_PAYMENT_SUCCESS",
+          "pay_only_reuse": "DISTINCT_PAY_ONLY_VARIANT_EXISTS_DO_NOT_REUSE_INSTALLMENTS_COPY",
+          "allowed_display": [
+            "CONFIRMED_INITIAL_AMOUNT",
+            "OPERATION_REFERENCE",
+            "CONFIRMED_AT",
+            "AUTHORIZED_MASKED_PAYMENT_METADATA",
+            "ACTIVATED_PLAN_SUMMARY",
+            "CONTRACTUAL_SCHEDULE"
+          ],
+          "required_outcome": "PAYMENT_CONFIRMED",
+          "credit_report_nav": "DENY_UNTIL_CANONICAL_CAPABILITY",
+          "my_operations_cta": "ALLOW_ONLY_WHEN_CANONICAL_ROUTE_EXISTS",
+          "support_24_7_claim": "DENY_UNTIL_VERIFIED",
+          "payment_method_last4": "ALLOW_ONLY_IF_AUTHORIZED_PROVIDER_METADATA",
+          "required_post_action": "INSTALLMENT_PLAN_ACTIVATED",
+          "visual_artifact_code": "CHECKOUT-PAGO-EXITOSO-INSTALLMENTS-CONFIRMED-20260826",
+          "nonprod_demo_documents": "ALLOW_PER_REG_CLIENT_DOC_DEMO_VERSIONING_001",
+          "post_actions_rule_code": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001",
+          "provider_or_pci_claims": "ONLY_WITH_CANONICAL_BINDING_AND_EVIDENCE",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_20260826",
+          "documents_available_now": "ONLY_IF_DOCUMENT_REGISTRY_STATE_AVAILABLE",
+          "letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+          "plan_snapshot_rule_code": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+          "visual_discrepancy_debt": "PEND-CLIENT-CHECKOUT-SUCCESS-VISUAL-001",
+          "debt_settlement_rule_code": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+          "general_success_rule_code": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001",
+          "production_demo_documents": "DENY",
+          "schedule_context_rule_code": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+          "canonical_drive_evidence_id": "1RZi_HOtb5b552Xa2j8KBJZYmHI-zQM8U",
+          "letter_expected_state_after_initial_payment": "NOT_ELIGIBLE"
+        }
+      },
+      {
+        "id": 542,
+        "codigo": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+        "descripcion": "CHECKOUT_MODAL_CRONOGRAMA soporta dos contextos gobernados. PREPAY_PROPOSED_SCHEDULE se usa durante checkout antes de PAYMENT_CONFIRMED: muestra el plan seleccionado y un cronograma calculado server-side a partir de la selección/quote y configuración vigente; debe comunicar que el plan aún no está activado y puede requerir revalidación antes del pago. No puede usar fechas o montos hardcodeados ni defaults no gobernados. POSTPAY_CONTRACTUAL_SCHEDULE se usa después de la activación del plan y obtiene fechas/montos exclusivamente del snapshot contractual inmutable REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001. En ambos contextos el frontend es solo renderizador. Un documento descargable pre-pago, si se ofrece, se identifica como propuesta/simulación y no sustituye el cronograma contractual; el documento contractual post-pago depende del registro documental real.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_MODAL_CRONOGRAMA",
+          "contexts": {
+            "PREPAY_PROPOSED_SCHEDULE": {
+              "source": "SERVER_VALIDATED_SELECTION_PLUS_READY_QUOTE_PLUS_CANONICAL_PLAN_DATE_CONFIG",
+              "download": "ALLOW_ONLY_AS_PROPOSED_SCHEDULE_DOCUMENT_IF_GENERATED_AND_LABELED",
+              "copy_semantic": "PROPOSED_OR_SELECTED_PLAN_NOT_ACTIVATED",
+              "hardcoded_dates": "DENY",
+              "activation_state": "NOT_ACTIVATED",
+              "hardcoded_amounts": "DENY",
+              "requires_ready_quote": true,
+              "legacy_default_dates_5_15_30": "DENY_UNTIL_CANONICAL_PARTNER_CONFIG",
+              "may_require_checkout_revalidation": true
+            },
+            "POSTPAY_CONTRACTUAL_SCHEDULE": {
+              "source": "IMMUTABLE_ACTIVATED_PLAN_SNAPSHOT",
+              "download": "ONLY_IF_REAL_DOCUMENT_STATUS_AVAILABLE_OR_NONPROD_DEMO",
+              "activation_state": "ACTIVATED_AFTER_PAYMENT_CONFIRMED",
+              "source_rule_code": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+              "live_offer_repricing": "DENY",
+              "live_pricing_repricing": "DENY"
+            }
+          },
+          "document_rule_code": "REG_CLIENT_DOC_DEMO_VERSIONING_001",
+          "plan_snapshot_rule_code": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+          "pricing_quote_rule_code": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "visual_candidate_status": "OWNER_REVIEW_PENDING",
+          "visual_discrepancy_debt": "PEND-CLIENT-CHECKOUT-SCHEDULE-VISUAL-001",
+          "visual_candidate_drive_id": "13TCUJ3Cy22oERng6p2SGPiAOYBBHq30U",
+          "frontend_calculation_authority": "DENY",
+          "missing_authoritative_schedule": "DO_NOT_RENDER_SCHEDULE_DATA",
+          "visual_candidate_artifact_code": "CHECKOUT-MODAL-FECHAS-PAGO-PREPAY-PROPOSED-CANDIDATE-20260826"
+        }
+      },
+      {
+        "id": 543,
+        "codigo": "REG_CLIENT_CHECKOUT_INSTALLMENTS_VIEW_001",
+        "descripcion": "CHECKOUT_CUOTAS_MEDIO_PAGO es la variante de checkout para una selección en modalidad CUOTAS con plan vigente y revalidado. El backend entrega el monto inicial de hoy, resumen del plan y cronograma propuesto desde el quote/selección autoritativos. La UI muestra únicamente medios de pago elegibles resueltos server-side y no fija tarjeta, Yape ni una recomendación por defecto. Si el medio/plan requiere cobro recurrente automático, el consentimiento se presenta desmarcado y el CTA permanece bloqueado hasta opt-in explícito; si no requiere cobro automático, ese consentimiento no se exige. La Carta de No Adeudo se muestra con estado NOT_ELIGIBLE antes de la cancelación total. El CTA de pago solo se habilita si quote, selección, plan, medio, proveedor y consentimientos requeridos siguen válidos. El proveedor, logos, claims de seguridad, soporte y navegación del header se renderizan únicamente cuando están canónicamente habilitados.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "CHECKOUT_CUOTAS_MEDIO_PAGO",
+          "context": "INSTALLMENTS_CHECKOUT",
+          "shell_module": {
+            "shell": "CLIENT_APP_SHELL",
+            "module": "CLIENT_PAYMENTS",
+            "module_id": 7
+          },
+          "pay_only_reuse": "DENY_SEPARATE_CANONICAL_PAY_ONLY_CHECKOUT_EXISTS",
+          "yape_visibility": "DENY_FOR_INSTALLMENTS",
+          "header_rule_code": "REG_CLIENT_AUTH_HEADER_CAPABILITY_GATING_001",
+          "schedule_context": "PREPAY_PROPOSED_SCHEDULE",
+          "single_method_ui": "NO_SELECTION_AFFORDANCE",
+          "spacing_contract": {
+            "consent": "client_checkout_consent_default",
+            "summary": "client_checkout_summary_default",
+            "base_scale": [
+              "space_4",
+              "space_8",
+              "space_12",
+              "space_16",
+              "space_24",
+              "space_32",
+              "space_48",
+              "space_64"
+            ],
+            "generic_card": "client_card_default",
+            "design_system": "LF_DS_V1",
+            "visual_decision": "VD_CLIENT_SPACING_COMPONENT_BINDINGS_20260825",
+            "payment_method_default": "client_payment_method_option_default",
+            "payment_method_selected": "client_payment_method_option_selected",
+            "raw_px_spacing_override": "DENY_WHEN_TOKEN_EXISTS",
+            "screen_specific_spacing_adjustment": "DENY_WITHOUT_NEW_COMPONENT_CONTRACT"
+          },
+          "visual_artifacts": {
+            "autodebit_consented": "CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-CONSENTED-20260826",
+            "autodebit_required_empty": "CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-REQUIRED-EMPTY-20260826"
+          },
+          "cancel_plan_claim": "DENY_UNTIL_PEND_CLIENT_PLAN_CANCELLATION_SEMANTICS_RESOLVED",
+          "cta_amount_source": "READY_CHECKOUT_QUOTE",
+          "provider_branding": "ONLY_IF_CANONICALLY_BOUND",
+          "autodebit_required": true,
+          "schedule_rule_code": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001",
+          "amount_today_source": "READY_CHECKOUT_QUOTE",
+          "autodebit_rule_code": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+          "pay_cta_enable_when": [
+            "CHECKOUT_ENTRY_VALID",
+            "READY_QUOTE",
+            "PLAN_STILL_VALID",
+            "PAYMENT_METHOD_ELIGIBLE",
+            "PROVIDER_AVAILABLE",
+            "AUTODEBIT_CONSENT_TRUE",
+            "NO_DUPLICATE_OR_PENDING_OPERATION"
+          ],
+          "plan_summary_source": "SERVER_VALIDATED_SELECTION_AND_QUOTE",
+          "autodebit_prechecked": "DENY",
+          "autodebit_visibility": "ALWAYS_FOR_INSTALLMENTS_CHECKOUT",
+          "cta_state_transition": "ENABLE_ONLY_AFTER_EXPLICIT_AUTODEBIT_CONSENT",
+          "support_availability": "DYNAMIC_CANONICAL_CONFIG_ONLY",
+          "production_authorized": false,
+          "initial_checkout_state": "AUTODEBIT_REQUIRED_EMPTY_CTA_DISABLED",
+          "visual_contract_status": "CLOSED_OWNER_APPROVED_CARD_ONLY_20260826",
+          "allowed_payment_methods": [
+            "CARD"
+          ],
+          "letter_example_document": "NONPROD_DEMO_OR_VERSIONED_CONTENT_ONLY",
+          "letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+          "prepayment_letter_state": "NOT_ELIGIBLE",
+          "visual_discrepancy_debt": "RESOLVED_20260826",
+          "consented_checkout_state": "AUTODEBIT_CONSENTED_CTA_ENABLED",
+          "pay_only_checkout_screen": "CHECKOUT_PAGO_UNICO_MEDIO_PAGO",
+          "provider_security_claims": "ONLY_WITH_EVIDENCE_AND_AUTHORIZED_COPY",
+          "payment_methods_rule_code": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001",
+          "requires_ready_quote_rule": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001",
+          "provider_handoff_rule_code": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001",
+          "hardcoded_yape_availability": "DENY",
+          "requires_checkout_entry_rule": "REG_CLIENT_CHECKOUT_ENTRY_001",
+          "hardcoded_card_recommendation": "DENY",
+          "owner_policy_conformance_date": "2026-08-26",
+          "owner_visual_conformance_date": "2026-08-26",
+          "payment_method_recommendation": "SERVER_CONFIG_ONLY_IF_GOVERNED",
+          "canonical_payment_happy_path_method": "CARD"
+        }
+      },
+      {
+        "id": 546,
+        "codigo": "REG_CLIENT_HOME_PUBLIC_ENTRY_001",
+        "descripcion": "Los CTA de entrada del Home público que expresan intención de revisar una oferta o comenzar deben llevar al mismo punto funcional ONB_001. HOME_001 no decide si el visitante es cliente existente o nuevo, no pide que el usuario elija “registrarse” versus “iniciar sesión” y no necesita un formulario de login separado. ONB_001 solicita celular; ONB_002 verifica control del número; el backend resuelve posteriormente cuenta existente o continuidad del onboarding según las reglas vigentes. El route_pattern permanece pendiente hasta que exista arquitectura Cliente canónica.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_001",
+          "client_shell": "PENDING_CANONICAL_APP_SHELL",
+          "entry_actions": [
+            "HEADER_CTA",
+            "HERO_PRIMARY_CTA"
+          ],
+          "route_pattern": "PENDING_CANONICAL_CLIENT_ROUTE",
+          "post_dni_branch_rule": "REG_FLOW_PHONE_BRANCH_001",
+          "functional_target_rule": "REG_FLOW_CELL_FIRST_001",
+          "current_locked_cta_copy": "Ver si tengo una oferta",
+          "source_decision_numbers": [
+            31,
+            71,
+            100
+          ],
+          "functional_target_screen": "ONB_001",
+          "account_resolution_authority": "BACKEND",
+          "existing_account_access_rule": "REG_CLIENT_PHONE_PASSWORDLESS_ACCESS_001",
+          "separate_login_form_from_home": "DENY",
+          "ask_existing_or_new_before_phone": "DENY"
+        }
+      },
+      {
+        "id": 548,
+        "codigo": "REG_CLIENT_HOME_PUBLIC_LETTER_CLAIM_001",
+        "descripcion": "La trust card visual “Carta de No Adeudo incluida” no puede interpretarse como que todo visitante, toda oferta o todo pago genera una carta inmediatamente. En el Sistema Cliente, la Carta de No Adeudo solo es elegible por deuda cuando REG_CLIENT_DEBT_SETTLEMENT_STATUS_001 alcanza SETTLED_CONFIRMED y su gestión sigue REG_CLIENT_NO_DEBT_LETTER_STATUS_001. Mientras el copy visual bloqueado no sea reconciliado, el backend y cualquier microcopy complementario deben preservar esta condición y no prometer disponibilidad inmediata, universal ni previa al pago.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_001",
+          "visual_copy": "Carta de No Adeudo incluida",
+          "visual_debt": "PEND-CLIENT-HOME001-VISUAL-FLOW-001",
+          "eligibility_scope": "PER_DEBT",
+          "visual_copy_status": "LOCKED_REQUIRES_RECONCILIATION_FOR_SEMANTIC_PRECISION",
+          "settlement_rule_code": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+          "before_eligible_state": "NOT_ELIGIBLE",
+          "letter_status_rule_code": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001",
+          "required_settlement_state": "SETTLED_CONFIRMED",
+          "universal_immediate_letter": "DENY",
+          "claim_copy_change_authority": "PENDING_OWNER_CONTENT_RECONCILIATION"
+        }
+      },
+      {
+        "id": 550,
+        "codigo": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001",
+        "descripcion": "Los nodos pueden combinar contenido educativo estable con datos externos variables. Precios comerciales, canales de contacto, rangos de score, plazos de actualización, tasas, descuentos, horarios legales y cualquier cifra susceptible de cambio no se publican como valores permanentes del mockup. Para mostrarlos con precisión deben conservar fuente autoritativa, fecha/versión de verificación y estado PUBLICABLE. Si la fuente está ausente, desactualizada, comercialmente variable o en conflicto, el contenido usa una formulación descriptiva sin la cifra precisa o se oculta. Las referencias oficiales actuales prevalecen sobre investigación histórica para hechos cambiantes.",
+        "valor_config": {
+          "mode": "SOURCE_VERSIONED_PUBLIC_CONTENT",
+          "front": "CLIENTE",
+          "screen": "HOME_RUTA_CLARIDAD",
+          "applicability_v1": {
+            "all": [],
+            "any": [
+              {
+                "op": "IN",
+                "path": [
+                  "target",
+                  "screen",
+                  "id"
+                ],
+                "values": [
+                  39,
+                  41
+                ]
+              }
+            ],
+            "status": "ACTIVE",
+            "provenance": {
+              "authority": "OWNER_AUTHORIZED_GOVERNED_MIGRATION",
+              "r14_event_id": 19951,
+              "migration_source": "LEGACY_POSITIVE_BINDINGS_FOR_EQUIVALENCE_ONLY",
+              "decision_event_id": 19948,
+              "migration_version": "20261002173000"
+            },
+            "consumer_roles": [
+              "INPUT_GOVERNANCE"
+            ],
+            "schema_version": "lf-rule-applicability/v1"
+          },
+          "precision_requires": [
+            "SOURCE_REF",
+            "VERIFIED_AT_OR_VERSION",
+            "PUBLISH_STATUS"
+          ],
+          "variable_claim_families": [
+            "COMMERCIAL_PRICE",
+            "CONTACT_CHANNEL",
+            "CREDIT_SCORE_RANGE",
+            "UPDATE_TIMING",
+            "INTEREST_RATE",
+            "DISCOUNT_RANGE",
+            "LEGAL_TIME_WINDOW",
+            "PRODUCT_AVAILABILITY"
+          ],
+          "hardcoded_discount_ranges": "DENY_WITHOUT_GOVERNED_EVIDENCE",
+          "current_sbs_report_semantic": "MONTHLY_DEBT_REPORT_WITH_CHANNEL_SPECIFIC_AVAILABILITY",
+          "stale_or_unverified_behavior": "FALLBACK_DESCRIPTIVE_COPY_OR_HIDE_PRECISE_VALUE",
+          "hardcoded_private_bureau_prices": "DENY_WITHOUT_CURRENT_COMMERCIAL_SOURCE",
+          "hardcoded_score_recovery_timing": "DENY_WITHOUT_CURRENT_SOURCE",
+          "hardcoded_sbs_update_7_9_business_days": "DENY",
+          "raw_external_claim_hardcode_as_permanent": "DENY",
+          "historical_research_overrides_current_official_source": "DENY"
+        }
+      },
+      {
+        "id": 551,
+        "codigo": "REG_CLIENT_HOME_CLARITY_CTA_001",
+        "descripcion": "Los nodos pueden abrir contenido educativo sin autenticación. Cuando un popup o nodo ofrece continuar con LF —por ejemplo “Ver mi primer paso” o el cierre comercial históricamente rotulado “Calcular mi deuda”— la acción funcional no ejecuta un simulador ni consulta deudas/ofertas desde la Ruta. Todos esos cierres comerciales conducen a ONB_001; desde ahí celular → OTP → DNI y el backend resuelve alta, acceso o recuperación. El copy visible puede conservar la variante aprobada/candidata de cada nodo hasta revisión de contenido, pero el destino funcional es único.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_RUTA_CLARIDAD",
+          "route_pattern": "PENDING_CANONICAL_CLIENT_ROUTE",
+          "visible_copy_change": "PENDING_CONTENT_REVIEW",
+          "node_01_candidate_copy": "Ver mi primer paso →",
+          "educational_node_action": "OPEN_EDUCATIONAL_CONTENT",
+          "legacy_simulator_target": "DENY",
+          "legacy_popup_closing_copy": "Calcular mi deuda",
+          "commercial_continuation_rule": "REG_FLOW_CELL_FIRST_001",
+          "commercial_continuation_target": "ONB_001",
+          "offer_or_debt_lookup_before_onb_001": "DENY"
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22o01_prepara_handoff",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "prepara handoff; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_entrada_quote_medio_invalidos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "entrada quote medio invalidos; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_monto_o_referencia_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "monto o referencia invalida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_handoff_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "handoff no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_url_cliente_arbitraria",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "url cliente arbitraria; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_preparacion_como_envio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "preparacion como envio; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_fallo_previo_outcome_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fallo previo outcome invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_envio_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "envio sin evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_integridad_depende_ventana",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "integridad depende ventana; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o01_branding_sin_binding",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "branding sin binding; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_render_exito_cuotas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render exito cuotas; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_sin_pago_confirmado_o_plan_activo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sin pago confirmado o plan activo; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_reutiliza_pago_unico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reutiliza pago unico; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_datos_no_autoritativos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "datos no autoritativos; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_carta_elegible_antes_liquidacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "carta elegible antes liquidacion; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_documento_no_disponible_o_demo_prod",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "documento no disponible o demo prod; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_navegacion_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "navegacion no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o02_claim_no_verificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim no verificado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_render_cronograma",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render cronograma; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_contexto_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contexto invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_prepay_fuente_o_quote_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "prepay fuente o quote invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_prepay_copy_o_descarga_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "prepay copy o descarga invalida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_postpay_fuente_o_repricing_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "postpay fuente o repricing invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_postpay_documento_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "postpay documento invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o03_calculo_cliente_o_datos_sin_fuente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "calculo cliente o datos sin fuente; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_render_o_habilita_checkout_cuotas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render o habilita checkout cuotas; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_quote_o_seleccion_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "quote o seleccion invalida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_medio_o_recomendacion_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "medio o recomendacion invalida; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_consentimiento_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "consentimiento invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_cta_precondiciones_invalidas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cta precondiciones invalidas; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_carta_o_ejemplo_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "carta o ejemplo invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_header_claim_o_cancelacion_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "header claim o cancelacion invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_reutiliza_pago_unico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reutiliza pago unico; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o04_contrato_visual_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contrato visual invalido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22o05_cta_entrada_publica",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cta entrada publica; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o05_destino_no_onb001",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "destino no onb001; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o05_copy_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "copy no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o05_elige_registro_login_o_login_separado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "elige registro login o login separado; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o05_resuelve_cuenta_en_home",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "resuelve cuenta en home; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o05_ruta_o_shell_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta o shell inventado; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o06_publica_dato_variable_ruta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "publica dato variable ruta; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22o06_falta_fuente_version_publicable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "falta fuente version publicable; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22o06_fuente_stale_o_conflicto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fuente stale o conflicto; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22o06_valor_mockup_permanente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "valor mockup permanente; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22o06_sbs_semantica_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sbs semantica invalida; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22o06_investigacion_historica_domina",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "investigacion historica domina; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22o07_accion_ruta_claridad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion ruta claridad; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o07_educacion_exige_identidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "educacion exige identidad; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o07_cierre_no_onb001",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cierre no onb001; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o07_simulador_o_lookup_anticipado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "simulador o lookup anticipado; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o07_ruta_o_copy_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta o copy inventado; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22o07_resolucion_no_backend",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "resolucion no backend; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22O-C01",
+      "legacy_id": 540,
+      "legacy_ids": [
+        540
+      ],
+      "relacionadas": [
+        "S22E-C02",
+        "S3-C19"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 540,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_ESTADO_ABRIENDO BLOQUEAR preparar handoff sin entrada checkout, quote y elegibilidad validados; monto desde CHECKOUT_PRICING_QUOTE_OR_CHECKOUT_SNAPSHOT, referencia de operación reservada o ledger canónico. Preparación server-side por adaptador autorizado, referencia opaca emitida por servidor/proveedor y destino de configuración canónica; hosted fields/iframe, SDK o redirección autorizada. Denegar URL de proveedor, return_url o callback_url arbitraria construida por cliente. Preparación no es envío ni PAYMENT_PENDING_CONFIRMATION; fallo previo a aceptación produce PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT o PAYMENT_NOT_SUBMITTED según causa, permite reintento controlado sin afirmar cargo ni envío. Transición a enviado solo con evidencia server-side de entrada al circuito; integridad independiente de ventana del navegador. Branding solo con binding canónico, pendiente PEND-CLIENT-PAYMENT-PROVIDER-BINDING-001. Referencia visual histórica CHECKOUT-ESTADO-ABRIENDO-PROVIDER-HANDOFF-PREPARING-20260826, Drive 1nFzL3_ty2SZ-d2MjBRURwqsjcEcibMKF, CLOSED_OWNER_APPROVED_20260826, no prueba runtime. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o01_prepara_handoff",
+        "s22o01_entrada_quote_medio_invalidos",
+        "s22o01_monto_o_referencia_invalida",
+        "s22o01_handoff_no_autorizado",
+        "s22o01_url_cliente_arbitraria",
+        "s22o01_preparacion_como_envio",
+        "s22o01_fallo_previo_outcome_invalido",
+        "s22o01_envio_sin_evidencia",
+        "s22o01_integridad_depende_ventana",
+        "s22o01_branding_sin_binding"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C01",
+        "clave": "s22o_legacy_540",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Handoff de proveedor antes del envío de pago",
+        "descripcion": "En CHECKOUT_ESTADO_ABRIENDO BLOQUEAR preparar handoff sin entrada checkout, quote y elegibilidad validados; monto desde CHECKOUT_PRICING_QUOTE_OR_CHECKOUT_SNAPSHOT, referencia de operación reservada o ledger canónico. Preparación server-side por adaptador autorizado, referencia opaca emitida por servidor/proveedor y destino de configuración canónica; hosted fields/iframe, SDK o redirección autorizada. Denegar URL de proveedor, return_url o callback_url arbitraria construida por cliente. Preparación no es envío ni PAYMENT_PENDING_CONFIRMATION; fallo previo a aceptación produce PAYMENT_PROVIDER_UNAVAILABLE_BEFORE_SUBMIT o PAYMENT_NOT_SUBMITTED según causa, permite reintento controlado sin afirmar cargo ni envío. Transición a enviado solo con evidencia server-side de entrada al circuito; integridad independiente de ventana del navegador. Branding solo con binding canónico, pendiente PEND-CLIENT-PAYMENT-PROVIDER-BINDING-001. Referencia visual histórica CHECKOUT-ESTADO-ABRIENDO-PROVIDER-HANDOFF-PREPARING-20260826, Drive 1nFzL3_ty2SZ-d2MjBRURwqsjcEcibMKF, CLOSED_OWNER_APPROVED_20260826, no prueba runtime. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/540",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o01_prepara_handoff"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "o",
+                        "izq": {
+                          "op": "o",
+                          "izq": {
+                            "op": "=",
+                            "izq": {
+                              "hecho": "s22o01_entrada_quote_medio_invalidos"
+                            },
+                            "der": {
+                              "lit": true
+                            }
+                          },
+                          "der": {
+                            "op": "=",
+                            "izq": {
+                              "hecho": "s22o01_monto_o_referencia_invalida"
+                            },
+                            "der": {
+                              "lit": true
+                            }
+                          }
+                        },
+                        "der": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s22o01_handoff_no_autorizado"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22o01_url_cliente_arbitraria"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22o01_preparacion_como_envio"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o01_fallo_previo_outcome_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o01_envio_sin_evidencia"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o01_integridad_depende_ventana"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o01_branding_sin_binding"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": true,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": true,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": true,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": true,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": true,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": true,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": true,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": true,
+              "s22o01_branding_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": true,
+              "s22o01_entrada_quote_medio_invalidos": false,
+              "s22o01_monto_o_referencia_invalida": false,
+              "s22o01_handoff_no_autorizado": false,
+              "s22o01_url_cliente_arbitraria": false,
+              "s22o01_preparacion_como_envio": false,
+              "s22o01_fallo_previo_outcome_invalido": false,
+              "s22o01_envio_sin_evidencia": false,
+              "s22o01_integridad_depende_ventana": false,
+              "s22o01_branding_sin_binding": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o01_prepara_handoff": false,
+              "s22o01_entrada_quote_medio_invalidos": true,
+              "s22o01_monto_o_referencia_invalida": true,
+              "s22o01_handoff_no_autorizado": true,
+              "s22o01_url_cliente_arbitraria": true,
+              "s22o01_preparacion_como_envio": true,
+              "s22o01_fallo_previo_outcome_invalido": true,
+              "s22o01_envio_sin_evidencia": true,
+              "s22o01_integridad_depende_ventana": true,
+              "s22o01_branding_sin_binding": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "5009af1bf9fb41b7738ba6fab7e65a687113c762232ed9882001da08a0020b43",
+      "hash_paquete": "66883c93e15b992c6cb83fb227860e0fb5c702af167f1f26867931cd30461baf",
+      "hash_evaluado": "5009af1bf9",
+      "hash_paquete_10": "66883c93e1"
+    },
+    {
+      "codigo": "S22O-C02",
+      "legacy_id": 541,
+      "legacy_ids": [
+        541
+      ],
+      "relacionadas": [
+        "REG_CHK_005",
+        "S3-C12"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 541,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_PAGO_EXITOSO de cuotas BLOQUEAR render sin PAYMENT_CONFIRMED del pago inicial y postacción INSTALLMENT_PLAN_ACTIVATED; no reutilizar copy para pago único, que tiene variante distinta y copy canónico pendiente. Solo mostrar monto inicial confirmado, referencia no sensible, fecha/hora autoritativa, metadatos enmascarados autorizados por proveedor (incluidos últimos dígitos si autorizados), resumen activado y cronograma contractual. Carta NOT_ELIGIBLE hasta SETTLED_CONFIRMED; comprobante, cronograma o resumen disponible solo con registro documental AVAILABLE; DEMO claramente marcado solo no producción conforme política documental. CTA Mis operaciones solo con ruta canónica, reporte crediticio oculto sin capacidad, soporte sin 24/7 no verificado, claims proveedor/PCI solo con binding y evidencia. Referencia visual CHECKOUT-PAGO-EXITOSO-INSTALLMENTS-CONFIRMED-20260826, Drive 1RZi_HOtb5b552Xa2j8KBJZYmHI-zQM8U, CLOSED_OWNER_APPROVED_20260826; PEND-CLIENT-CHECKOUT-SUCCESS-VISUAL-001 conserva discrepancia. Complementa REG_CHK_005 v3; no ejecuta postacciones. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o02_render_exito_cuotas",
+        "s22o02_sin_pago_confirmado_o_plan_activo",
+        "s22o02_reutiliza_pago_unico",
+        "s22o02_datos_no_autoritativos",
+        "s22o02_carta_elegible_antes_liquidacion",
+        "s22o02_documento_no_disponible_o_demo_prod",
+        "s22o02_navegacion_no_autorizada",
+        "s22o02_claim_no_verificado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C02",
+        "clave": "s22o_legacy_541",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Éxito de pago inicial con plan activado y documentos reales",
+        "descripcion": "En CHECKOUT_PAGO_EXITOSO de cuotas BLOQUEAR render sin PAYMENT_CONFIRMED del pago inicial y postacción INSTALLMENT_PLAN_ACTIVATED; no reutilizar copy para pago único, que tiene variante distinta y copy canónico pendiente. Solo mostrar monto inicial confirmado, referencia no sensible, fecha/hora autoritativa, metadatos enmascarados autorizados por proveedor (incluidos últimos dígitos si autorizados), resumen activado y cronograma contractual. Carta NOT_ELIGIBLE hasta SETTLED_CONFIRMED; comprobante, cronograma o resumen disponible solo con registro documental AVAILABLE; DEMO claramente marcado solo no producción conforme política documental. CTA Mis operaciones solo con ruta canónica, reporte crediticio oculto sin capacidad, soporte sin 24/7 no verificado, claims proveedor/PCI solo con binding y evidencia. Referencia visual CHECKOUT-PAGO-EXITOSO-INSTALLMENTS-CONFIRMED-20260826, Drive 1RZi_HOtb5b552Xa2j8KBJZYmHI-zQM8U, CLOSED_OWNER_APPROVED_20260826; PEND-CLIENT-CHECKOUT-SUCCESS-VISUAL-001 conserva discrepancia. Complementa REG_CHK_005 v3; no ejecuta postacciones. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/541",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o02_render_exito_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22o02_sin_pago_confirmado_o_plan_activo"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22o02_reutiliza_pago_unico"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22o02_datos_no_autoritativos"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o02_carta_elegible_antes_liquidacion"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o02_documento_no_disponible_o_demo_prod"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o02_navegacion_no_autorizada"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o02_claim_no_verificado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": true,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": true,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": true,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": true,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": true,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": true,
+              "s22o02_claim_no_verificado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": true,
+              "s22o02_sin_pago_confirmado_o_plan_activo": false,
+              "s22o02_reutiliza_pago_unico": false,
+              "s22o02_datos_no_autoritativos": false,
+              "s22o02_carta_elegible_antes_liquidacion": false,
+              "s22o02_documento_no_disponible_o_demo_prod": false,
+              "s22o02_navegacion_no_autorizada": false,
+              "s22o02_claim_no_verificado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o02_render_exito_cuotas": false,
+              "s22o02_sin_pago_confirmado_o_plan_activo": true,
+              "s22o02_reutiliza_pago_unico": true,
+              "s22o02_datos_no_autoritativos": true,
+              "s22o02_carta_elegible_antes_liquidacion": true,
+              "s22o02_documento_no_disponible_o_demo_prod": true,
+              "s22o02_navegacion_no_autorizada": true,
+              "s22o02_claim_no_verificado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "fabf238e93979e5c557f92f98b0724fc0b702070616ce43d5eecb568c8c6757b",
+      "hash_paquete": "1bdc2c88b420d68435eca8ed2640eefdd777627fbe79ec226d653a87987def7f",
+      "hash_evaluado": "fabf238e93",
+      "hash_paquete_10": "1bdc2c88b4"
+    },
+    {
+      "codigo": "S22O-C03",
+      "legacy_id": 542,
+      "legacy_ids": [
+        542
+      ],
+      "relacionadas": [
+        "S22E-C03"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 542,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En CHECKOUT_MODAL_CRONOGRAMA BLOQUEAR datos sin contexto PREPAY_PROPOSED_SCHEDULE o POSTPAY_CONTRACTUAL_SCHEDULE. PREPAY antes de PAYMENT_CONFIRMED obtiene plan seleccionado, fechas y montos server-side de selección validada, READY_QUOTE y configuración canónica de fechas; comunicar NOT_ACTIVATED y posible revalidación, no fechas/montos hardcodeados ni defaults antiguos sin configuración de aliado. Descarga prepay solo si documento generado y etiquetado propuesta/simulación, nunca contrato. POSTPAY tras activación confirmada consume exclusivamente snapshot contractual inmutable; no repricing desde oferta/config vigente; descarga solo documento real AVAILABLE o DEMO no productivo claramente marcado conforme política documental. Frontend solo renderiza y omite datos cuando falta cronograma autoritativo. Referencia visual CHECKOUT-MODAL-FECHAS-PAGO-PREPAY-PROPOSED-CANDIDATE-20260826, Drive 13TCUJ3Cy22oERng6p2SGPiAOYBBHq30U, OWNER_REVIEW_PENDING; PEND-CLIENT-CHECKOUT-SCHEDULE-VISUAL-001 no cerrado. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o03_render_cronograma",
+        "s22o03_contexto_invalido",
+        "s22o03_prepay_fuente_o_quote_invalido",
+        "s22o03_prepay_copy_o_descarga_invalida",
+        "s22o03_postpay_fuente_o_repricing_invalido",
+        "s22o03_postpay_documento_invalido",
+        "s22o03_calculo_cliente_o_datos_sin_fuente"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C03",
+        "clave": "s22o_legacy_542",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Cronograma propuesto y contractual sin cálculo cliente",
+        "descripcion": "En CHECKOUT_MODAL_CRONOGRAMA BLOQUEAR datos sin contexto PREPAY_PROPOSED_SCHEDULE o POSTPAY_CONTRACTUAL_SCHEDULE. PREPAY antes de PAYMENT_CONFIRMED obtiene plan seleccionado, fechas y montos server-side de selección validada, READY_QUOTE y configuración canónica de fechas; comunicar NOT_ACTIVATED y posible revalidación, no fechas/montos hardcodeados ni defaults antiguos sin configuración de aliado. Descarga prepay solo si documento generado y etiquetado propuesta/simulación, nunca contrato. POSTPAY tras activación confirmada consume exclusivamente snapshot contractual inmutable; no repricing desde oferta/config vigente; descarga solo documento real AVAILABLE o DEMO no productivo claramente marcado conforme política documental. Frontend solo renderiza y omite datos cuando falta cronograma autoritativo. Referencia visual CHECKOUT-MODAL-FECHAS-PAGO-PREPAY-PROPOSED-CANDIDATE-20260826, Drive 13TCUJ3Cy22oERng6p2SGPiAOYBBHq30U, OWNER_REVIEW_PENDING; PEND-CLIENT-CHECKOUT-SCHEDULE-VISUAL-001 no cerrado. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/542",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o03_render_cronograma"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22o03_contexto_invalido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22o03_prepay_fuente_o_quote_invalido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o03_prepay_copy_o_descarga_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o03_postpay_fuente_o_repricing_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o03_postpay_documento_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o03_calculo_cliente_o_datos_sin_fuente"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": false,
+              "s22o03_prepay_fuente_o_quote_invalido": false,
+              "s22o03_prepay_copy_o_descarga_invalida": false,
+              "s22o03_postpay_fuente_o_repricing_invalido": false,
+              "s22o03_postpay_documento_invalido": false,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": true,
+              "s22o03_prepay_fuente_o_quote_invalido": false,
+              "s22o03_prepay_copy_o_descarga_invalida": false,
+              "s22o03_postpay_fuente_o_repricing_invalido": false,
+              "s22o03_postpay_documento_invalido": false,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": false,
+              "s22o03_prepay_fuente_o_quote_invalido": true,
+              "s22o03_prepay_copy_o_descarga_invalida": false,
+              "s22o03_postpay_fuente_o_repricing_invalido": false,
+              "s22o03_postpay_documento_invalido": false,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": false,
+              "s22o03_prepay_fuente_o_quote_invalido": false,
+              "s22o03_prepay_copy_o_descarga_invalida": true,
+              "s22o03_postpay_fuente_o_repricing_invalido": false,
+              "s22o03_postpay_documento_invalido": false,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": false,
+              "s22o03_prepay_fuente_o_quote_invalido": false,
+              "s22o03_prepay_copy_o_descarga_invalida": false,
+              "s22o03_postpay_fuente_o_repricing_invalido": true,
+              "s22o03_postpay_documento_invalido": false,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": false,
+              "s22o03_prepay_fuente_o_quote_invalido": false,
+              "s22o03_prepay_copy_o_descarga_invalida": false,
+              "s22o03_postpay_fuente_o_repricing_invalido": false,
+              "s22o03_postpay_documento_invalido": true,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": true,
+              "s22o03_contexto_invalido": false,
+              "s22o03_prepay_fuente_o_quote_invalido": false,
+              "s22o03_prepay_copy_o_descarga_invalida": false,
+              "s22o03_postpay_fuente_o_repricing_invalido": false,
+              "s22o03_postpay_documento_invalido": false,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o03_render_cronograma": false,
+              "s22o03_contexto_invalido": true,
+              "s22o03_prepay_fuente_o_quote_invalido": true,
+              "s22o03_prepay_copy_o_descarga_invalida": true,
+              "s22o03_postpay_fuente_o_repricing_invalido": true,
+              "s22o03_postpay_documento_invalido": true,
+              "s22o03_calculo_cliente_o_datos_sin_fuente": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "ecce938403ec1ab34983769589fe541b31b9f2f6419ea5a0932e60149958a688",
+      "hash_paquete": "4452dbc845c991c30f2e11e7df9afd02d06f23ddb8d7e619015033b38a299fbc",
+      "hash_evaluado": "ecce938403",
+      "hash_paquete_10": "4452dbc845"
+    },
+    {
+      "codigo": "S22O-C04",
+      "legacy_id": 543,
+      "legacy_ids": [
+        543
+      ],
+      "relacionadas": [
+        "REG_CHK_013",
+        "S22E-C02"
+      ],
+      "residual": "Falta acreditar correspondencia de escala completa de spacing y transiciones visuales aprobadas con artefactos vigentes, y reconciliar el estado actual CARD_ONLY/autodebit obligatorio con la rama condicional sin automático sin ampliar política.",
+      "coberturas": [
+        {
+          "legacy_id": 543,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar correspondencia de escala completa de spacing y transiciones visuales aprobadas con artefactos vigentes, y reconciliar el estado actual CARD_ONLY/autodebit obligatorio con la rama condicional sin automático sin ampliar política.",
+          "diferencias": "En CHECKOUT_CUOTAS_MEDIO_PAGO BLOQUEAR render/CTA que no derive monto inicial de READY_CHECKOUT_QUOTE y resumen/cronograma PREPAY_PROPOSED_SCHEDULE de selección validada; medios solo elegibles server-side, sin tarjeta/Yape/recomendación hardcodeada. Preservar política actual CARD_ONLY y Yape denegado para cuotas sin ampliar medios ni habilitar cobro manual; método único sin affordance de selección y recomendación solo configuración gobernada. Para automático, opt-in explícito desmarcado y CTA bloqueado hasta autorización; no exigir consentimiento si futuro contrato autoriza modalidad sin automático. CTA solo con entrada válida, quote ready, plan vigente, medio elegible, proveedor disponible, consentimientos requeridos y ausencia de duplicado/pendiente. Carta NOT_ELIGIBLE antes liquidación; ejemplo solo DEMO no productivo o versionado. Header CLIENT_APP_SHELL/CLIENT_PAYMENTS, branding, claims, soporte y navegación solo capacidades autorizadas; no prometer cancelar plan. No reutilizar como checkout pago único. Respetar componentes client_checkout_consent_default, client_checkout_summary_default, client_card_default, client_payment_method_option_default/selected, escala canónica LF_DS_V1 y decisión VD_CLIENT_SPACING_COMPONENT_BINDINGS_20260825, sin override px si token existe ni ajuste específico sin contrato. Referencias visuales CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-REQUIRED-EMPTY-20260826 y CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-CONSENTED-20260826, CLOSED_OWNER_APPROVED_CARD_ONLY_20260826, no autorización producción. Complementa REG_CHK_013 v3 y S22E-C02; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o04_render_o_habilita_checkout_cuotas",
+        "s22o04_quote_o_seleccion_invalida",
+        "s22o04_medio_o_recomendacion_invalida",
+        "s22o04_consentimiento_invalido",
+        "s22o04_cta_precondiciones_invalidas",
+        "s22o04_carta_o_ejemplo_invalido",
+        "s22o04_header_claim_o_cancelacion_invalido",
+        "s22o04_reutiliza_pago_unico",
+        "s22o04_contrato_visual_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C04",
+        "clave": "s22o_legacy_543",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Checkout cuotas con elegibilidad y consentimiento server-side",
+        "descripcion": "En CHECKOUT_CUOTAS_MEDIO_PAGO BLOQUEAR render/CTA que no derive monto inicial de READY_CHECKOUT_QUOTE y resumen/cronograma PREPAY_PROPOSED_SCHEDULE de selección validada; medios solo elegibles server-side, sin tarjeta/Yape/recomendación hardcodeada. Preservar política actual CARD_ONLY y Yape denegado para cuotas sin ampliar medios ni habilitar cobro manual; método único sin affordance de selección y recomendación solo configuración gobernada. Para automático, opt-in explícito desmarcado y CTA bloqueado hasta autorización; no exigir consentimiento si futuro contrato autoriza modalidad sin automático. CTA solo con entrada válida, quote ready, plan vigente, medio elegible, proveedor disponible, consentimientos requeridos y ausencia de duplicado/pendiente. Carta NOT_ELIGIBLE antes liquidación; ejemplo solo DEMO no productivo o versionado. Header CLIENT_APP_SHELL/CLIENT_PAYMENTS, branding, claims, soporte y navegación solo capacidades autorizadas; no prometer cancelar plan. No reutilizar como checkout pago único. Respetar componentes client_checkout_consent_default, client_checkout_summary_default, client_card_default, client_payment_method_option_default/selected, escala canónica LF_DS_V1 y decisión VD_CLIENT_SPACING_COMPONENT_BINDINGS_20260825, sin override px si token existe ni ajuste específico sin contrato. Referencias visuales CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-REQUIRED-EMPTY-20260826 y CHECKOUT-CUOTAS-CARD-ONLY-AUTODEBIT-CONSENTED-20260826, CLOSED_OWNER_APPROVED_CARD_ONLY_20260826, no autorización producción. Complementa REG_CHK_013 v3 y S22E-C02; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/543",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o04_render_o_habilita_checkout_cuotas"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "o",
+                      "izq": {
+                        "op": "o",
+                        "izq": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s22o04_quote_o_seleccion_invalida"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        },
+                        "der": {
+                          "op": "=",
+                          "izq": {
+                            "hecho": "s22o04_medio_o_recomendacion_invalida"
+                          },
+                          "der": {
+                            "lit": true
+                          }
+                        }
+                      },
+                      "der": {
+                        "op": "=",
+                        "izq": {
+                          "hecho": "s22o04_consentimiento_invalido"
+                        },
+                        "der": {
+                          "lit": true
+                        }
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22o04_cta_precondiciones_invalidas"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o04_carta_o_ejemplo_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o04_header_claim_o_cancelacion_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o04_reutiliza_pago_unico"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o04_contrato_visual_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": true,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": true,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": true,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": true,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": true,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": true,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": true,
+              "s22o04_contrato_visual_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": true,
+              "s22o04_quote_o_seleccion_invalida": false,
+              "s22o04_medio_o_recomendacion_invalida": false,
+              "s22o04_consentimiento_invalido": false,
+              "s22o04_cta_precondiciones_invalidas": false,
+              "s22o04_carta_o_ejemplo_invalido": false,
+              "s22o04_header_claim_o_cancelacion_invalido": false,
+              "s22o04_reutiliza_pago_unico": false,
+              "s22o04_contrato_visual_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o04_render_o_habilita_checkout_cuotas": false,
+              "s22o04_quote_o_seleccion_invalida": true,
+              "s22o04_medio_o_recomendacion_invalida": true,
+              "s22o04_consentimiento_invalido": true,
+              "s22o04_cta_precondiciones_invalidas": true,
+              "s22o04_carta_o_ejemplo_invalido": true,
+              "s22o04_header_claim_o_cancelacion_invalido": true,
+              "s22o04_reutiliza_pago_unico": true,
+              "s22o04_contrato_visual_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "dbcbbe887a64989c18bb57b4bd60025bf0a02d4b2c8bb95a33df9eeda435f55e",
+      "hash_paquete": "0d7a891610278c7ff38c447aa1631e52d2e0bf1575b85e192006428352121e55",
+      "hash_evaluado": "dbcbbe887a",
+      "hash_paquete_10": "0d7a891610"
+    },
+    {
+      "codigo": "S22O-C05",
+      "legacy_id": 546,
+      "legacy_ids": [
+        546
+      ],
+      "relacionadas": [
+        "S4-C02",
+        "S4-C03",
+        "S11-C19"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 546,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En HOME_001 BLOQUEAR HEADER_CTA o HERO_PRIMARY_CTA de intención revisar oferta/comenzar que no conduzcan funcionalmente a ONB_001; mantener copy bloqueado Ver si tengo una oferta. No decidir en Home cliente nuevo/existente, pedir elegir registro/login ni crear login separado. ONB_001 celular, ONB_002 verifica control OTP y backend resuelve cuenta existente o continuidad según reglas vigentes, incluida rama post-DNI y acceso passwordless. route_pattern y client shell pendientes de arquitectura canónica; no inventar ruta ni dar acceso antes de backend. Referencias decisiones 31,71,100 en fuente legada; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o05_cta_entrada_publica",
+        "s22o05_destino_no_onb001",
+        "s22o05_copy_no_autorizado",
+        "s22o05_elige_registro_login_o_login_separado",
+        "s22o05_resuelve_cuenta_en_home",
+        "s22o05_ruta_o_shell_inventado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C05",
+        "clave": "s22o_legacy_546",
+        "familia": "ROUTING_NAVIGATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Entrada única de Home público hacia celular",
+        "descripcion": "En HOME_001 BLOQUEAR HEADER_CTA o HERO_PRIMARY_CTA de intención revisar oferta/comenzar que no conduzcan funcionalmente a ONB_001; mantener copy bloqueado Ver si tengo una oferta. No decidir en Home cliente nuevo/existente, pedir elegir registro/login ni crear login separado. ONB_001 celular, ONB_002 verifica control OTP y backend resuelve cuenta existente o continuidad según reglas vigentes, incluida rama post-DNI y acceso passwordless. route_pattern y client shell pendientes de arquitectura canónica; no inventar ruta ni dar acceso antes de backend. Referencias decisiones 31,71,100 en fuente legada; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/546",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o05_cta_entrada_publica"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o05_destino_no_onb001"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o05_copy_no_autorizado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o05_elige_registro_login_o_login_separado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o05_resuelve_cuenta_en_home"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o05_ruta_o_shell_inventado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": true,
+              "s22o05_destino_no_onb001": false,
+              "s22o05_copy_no_autorizado": false,
+              "s22o05_elige_registro_login_o_login_separado": false,
+              "s22o05_resuelve_cuenta_en_home": false,
+              "s22o05_ruta_o_shell_inventado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": true,
+              "s22o05_destino_no_onb001": true,
+              "s22o05_copy_no_autorizado": false,
+              "s22o05_elige_registro_login_o_login_separado": false,
+              "s22o05_resuelve_cuenta_en_home": false,
+              "s22o05_ruta_o_shell_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": true,
+              "s22o05_destino_no_onb001": false,
+              "s22o05_copy_no_autorizado": true,
+              "s22o05_elige_registro_login_o_login_separado": false,
+              "s22o05_resuelve_cuenta_en_home": false,
+              "s22o05_ruta_o_shell_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": true,
+              "s22o05_destino_no_onb001": false,
+              "s22o05_copy_no_autorizado": false,
+              "s22o05_elige_registro_login_o_login_separado": true,
+              "s22o05_resuelve_cuenta_en_home": false,
+              "s22o05_ruta_o_shell_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": true,
+              "s22o05_destino_no_onb001": false,
+              "s22o05_copy_no_autorizado": false,
+              "s22o05_elige_registro_login_o_login_separado": false,
+              "s22o05_resuelve_cuenta_en_home": true,
+              "s22o05_ruta_o_shell_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": true,
+              "s22o05_destino_no_onb001": false,
+              "s22o05_copy_no_autorizado": false,
+              "s22o05_elige_registro_login_o_login_separado": false,
+              "s22o05_resuelve_cuenta_en_home": false,
+              "s22o05_ruta_o_shell_inventado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o05_cta_entrada_publica": false,
+              "s22o05_destino_no_onb001": true,
+              "s22o05_copy_no_autorizado": true,
+              "s22o05_elige_registro_login_o_login_separado": true,
+              "s22o05_resuelve_cuenta_en_home": true,
+              "s22o05_ruta_o_shell_inventado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "5cf0d98158d347ca8b76853f3dcd7f5439bf7b8772c62ae8a58ad0e752595031",
+      "hash_paquete": "ba2f063b6c47b90c57229d6ebf55773103ef2167d0cc781eeda68306e71508cd",
+      "hash_evaluado": "5cf0d98158",
+      "hash_paquete_10": "ba2f063b6c"
+    },
+    {
+      "codigo": "S22O-C06",
+      "legacy_id": 550,
+      "legacy_ids": [
+        550
+      ],
+      "relacionadas": [
+        "S22J-C06"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 550,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En HOME_RUTA_CLARIDAD BLOQUEAR publicación precisa de dato externo variable sin fuente autoritativa, fecha de verificación o versión y estado PUBLICABLE, o si fuente ausente, stale, comercialmente variable sin evidencia vigente o en conflicto; usar formulación descriptiva sin cifra u ocultarla. Incluye precios, contactos, score, plazos de actualización, tasas, descuentos, horarios legales y disponibilidad; no convertir mockup en valor permanente ni publicar plazos históricos SBS sin fuente vigente. Reporte SBS es mensual con disponibilidad específica por canal, no generalizar; referencias oficiales actuales prevalecen sobre investigación histórica. Permitir educación estable sin exigir precisión externa falsa. Alcance funcional de Ruta de Claridad según fuente, sin modificar applicability_v1 ni Input Governance. Complementa S22J-C06; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o06_publica_dato_variable_ruta",
+        "s22o06_falta_fuente_version_publicable",
+        "s22o06_fuente_stale_o_conflicto",
+        "s22o06_valor_mockup_permanente",
+        "s22o06_sbs_semantica_invalida",
+        "s22o06_investigacion_historica_domina"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C06",
+        "clave": "s22o_legacy_550",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Frescura de hechos variables en educación pública",
+        "descripcion": "En HOME_RUTA_CLARIDAD BLOQUEAR publicación precisa de dato externo variable sin fuente autoritativa, fecha de verificación o versión y estado PUBLICABLE, o si fuente ausente, stale, comercialmente variable sin evidencia vigente o en conflicto; usar formulación descriptiva sin cifra u ocultarla. Incluye precios, contactos, score, plazos de actualización, tasas, descuentos, horarios legales y disponibilidad; no convertir mockup en valor permanente ni publicar plazos históricos SBS sin fuente vigente. Reporte SBS es mensual con disponibilidad específica por canal, no generalizar; referencias oficiales actuales prevalecen sobre investigación histórica. Permitir educación estable sin exigir precisión externa falsa. Alcance funcional de Ruta de Claridad según fuente, sin modificar applicability_v1 ni Input Governance. Complementa S22J-C06; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/550",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o06_publica_dato_variable_ruta"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o06_falta_fuente_version_publicable"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o06_fuente_stale_o_conflicto"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o06_valor_mockup_permanente"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o06_sbs_semantica_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o06_investigacion_historica_domina"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": true,
+              "s22o06_falta_fuente_version_publicable": false,
+              "s22o06_fuente_stale_o_conflicto": false,
+              "s22o06_valor_mockup_permanente": false,
+              "s22o06_sbs_semantica_invalida": false,
+              "s22o06_investigacion_historica_domina": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": true,
+              "s22o06_falta_fuente_version_publicable": true,
+              "s22o06_fuente_stale_o_conflicto": false,
+              "s22o06_valor_mockup_permanente": false,
+              "s22o06_sbs_semantica_invalida": false,
+              "s22o06_investigacion_historica_domina": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": true,
+              "s22o06_falta_fuente_version_publicable": false,
+              "s22o06_fuente_stale_o_conflicto": true,
+              "s22o06_valor_mockup_permanente": false,
+              "s22o06_sbs_semantica_invalida": false,
+              "s22o06_investigacion_historica_domina": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": true,
+              "s22o06_falta_fuente_version_publicable": false,
+              "s22o06_fuente_stale_o_conflicto": false,
+              "s22o06_valor_mockup_permanente": true,
+              "s22o06_sbs_semantica_invalida": false,
+              "s22o06_investigacion_historica_domina": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": true,
+              "s22o06_falta_fuente_version_publicable": false,
+              "s22o06_fuente_stale_o_conflicto": false,
+              "s22o06_valor_mockup_permanente": false,
+              "s22o06_sbs_semantica_invalida": true,
+              "s22o06_investigacion_historica_domina": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": true,
+              "s22o06_falta_fuente_version_publicable": false,
+              "s22o06_fuente_stale_o_conflicto": false,
+              "s22o06_valor_mockup_permanente": false,
+              "s22o06_sbs_semantica_invalida": false,
+              "s22o06_investigacion_historica_domina": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o06_publica_dato_variable_ruta": false,
+              "s22o06_falta_fuente_version_publicable": true,
+              "s22o06_fuente_stale_o_conflicto": true,
+              "s22o06_valor_mockup_permanente": true,
+              "s22o06_sbs_semantica_invalida": true,
+              "s22o06_investigacion_historica_domina": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "839140dda487f5077445006925ac7c96f78dea51080aa6cc353484ca1c24d73d",
+      "hash_paquete": "06db20e2145687b4a0feee73ed53532cc5a5572c652b9dc90b89bcf6926c9294",
+      "hash_evaluado": "839140dda4",
+      "hash_paquete_10": "06db20e214"
+    },
+    {
+      "codigo": "S22O-C07",
+      "legacy_id": 551,
+      "legacy_ids": [
+        551
+      ],
+      "relacionadas": [
+        "S11-C19",
+        "S4-C02",
+        "S4-C03"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 551,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En HOME_RUTA_CLARIDAD permitir apertura de contenido educativo sin autenticación. BLOQUEAR cierre comercial de popup/nodo (Ver mi primer paso o Calcular mi deuda u otra variante de copy aprobada/candidata) que no dirija a ONB_001, ejecute simulador/lookup de deuda u oferta antes de esa entrada o exija identidad para educación. Continuidad celular, OTP, DNI cuando corresponda y backend resuelve alta/acceso/recuperación. Copy visible pendiente revisión de contenido y route_pattern pendiente arquitectura; no inventar ruta ni cambiar wording por esta regla. Complementa S11-C19, S4-C02 y S4-C03; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22o07_accion_ruta_claridad",
+        "s22o07_educacion_exige_identidad",
+        "s22o07_cierre_no_onb001",
+        "s22o07_simulador_o_lookup_anticipado",
+        "s22o07_ruta_o_copy_inventado",
+        "s22o07_resolucion_no_backend"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22O-C07",
+        "clave": "s22o_legacy_551",
+        "familia": "ROUTING_NAVIGATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Cierre comercial de Ruta sin simulación ni consulta",
+        "descripcion": "En HOME_RUTA_CLARIDAD permitir apertura de contenido educativo sin autenticación. BLOQUEAR cierre comercial de popup/nodo (Ver mi primer paso o Calcular mi deuda u otra variante de copy aprobada/candidata) que no dirija a ONB_001, ejecute simulador/lookup de deuda u oferta antes de esa entrada o exija identidad para educación. Continuidad celular, OTP, DNI cuando corresponda y backend resuelve alta/acceso/recuperación. Copy visible pendiente revisión de contenido y route_pattern pendiente arquitectura; no inventar ruta ni cambiar wording por esta regla. Complementa S11-C19, S4-C02 y S4-C03; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/551",
+          "solicitante": "Cristhian / Claude S22-O 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22o07_accion_ruta_claridad"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o07_educacion_exige_identidad"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22o07_cierre_no_onb001"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22o07_simulador_o_lookup_anticipado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22o07_ruta_o_copy_inventado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22o07_resolucion_no_backend"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": true,
+              "s22o07_educacion_exige_identidad": false,
+              "s22o07_cierre_no_onb001": false,
+              "s22o07_simulador_o_lookup_anticipado": false,
+              "s22o07_ruta_o_copy_inventado": false,
+              "s22o07_resolucion_no_backend": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": true,
+              "s22o07_educacion_exige_identidad": true,
+              "s22o07_cierre_no_onb001": false,
+              "s22o07_simulador_o_lookup_anticipado": false,
+              "s22o07_ruta_o_copy_inventado": false,
+              "s22o07_resolucion_no_backend": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": true,
+              "s22o07_educacion_exige_identidad": false,
+              "s22o07_cierre_no_onb001": true,
+              "s22o07_simulador_o_lookup_anticipado": false,
+              "s22o07_ruta_o_copy_inventado": false,
+              "s22o07_resolucion_no_backend": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": true,
+              "s22o07_educacion_exige_identidad": false,
+              "s22o07_cierre_no_onb001": false,
+              "s22o07_simulador_o_lookup_anticipado": true,
+              "s22o07_ruta_o_copy_inventado": false,
+              "s22o07_resolucion_no_backend": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": true,
+              "s22o07_educacion_exige_identidad": false,
+              "s22o07_cierre_no_onb001": false,
+              "s22o07_simulador_o_lookup_anticipado": false,
+              "s22o07_ruta_o_copy_inventado": true,
+              "s22o07_resolucion_no_backend": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": true,
+              "s22o07_educacion_exige_identidad": false,
+              "s22o07_cierre_no_onb001": false,
+              "s22o07_simulador_o_lookup_anticipado": false,
+              "s22o07_ruta_o_copy_inventado": false,
+              "s22o07_resolucion_no_backend": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22o07_accion_ruta_claridad": false,
+              "s22o07_educacion_exige_identidad": true,
+              "s22o07_cierre_no_onb001": true,
+              "s22o07_simulador_o_lookup_anticipado": true,
+              "s22o07_ruta_o_copy_inventado": true,
+              "s22o07_resolucion_no_backend": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "432b3012a78fe80dcf87fdef9d7d5f4ea017a321455839719c26f3d0a5f35a05",
+      "hash_paquete": "d1f195e4b4fe8a79abcc11def4262eaa18fa4a788c88777276c7fc68e73da929",
+      "hash_evaluado": "432b3012a7",
+      "hash_paquete_10": "d1f195e4b4"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": [
+    {
+      "legacy_id": 548,
+      "nucleo_codigo": "M3-C03",
+      "version_nucleo": 1,
+      "estado_cobertura": "REEMPLAZADA",
+      "diferencias": "M3-C03 cubre HOME_001, claim Carta de No Adeudo incluida, elegibilidad por deuda SETTLED_CONFIRMED, gestión elegible y ausencia de promesa universal/inmediata; reconciliación de copy pendiente de aprobación, no ejecuta emisión. Coincide con valor_config de copy bloqueado y autoridad pendiente.",
+      "residual": ""
+    }
+  ]
+}
