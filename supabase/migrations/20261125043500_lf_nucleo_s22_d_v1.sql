@@ -68,7 +68,8 @@ BEGIN
  IF EXISTS(SELECT 1 FROM lf_ops.reglas WHERE id=lid) THEN
  SELECT descripcion INTO old_desc FROM lf_ops.reglas WHERE id=lid;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,'REEMPLAZADA',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||(p->'paquete'->>'descripcion')||' DIFERENCIA: '||diff,'residual','','juicio','Claude independiente 2026-11-24 23:38 Lima'),h,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,1,'REEMPLAZADA',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||(p->'paquete'->>'descripcion')||' DIFERENCIA: '||diff,'residual','','juicio','Claude independiente 2026-11-24 23:38 Lima'),h,'GPT / Claude S22-D independiente')
+ ON CONFLICT (legacy_id,nucleo_codigo,version_nucleo) DO UPDATE SET estado_cobertura=EXCLUDED.estado_cobertura, diferencias=EXCLUDED.diferencias, evidencia=EXCLUDED.evidencia, hash_paquete=EXCLUDED.hash_paquete, revisado_por=EXCLUDED.revisado_por;
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  END LOOP;
@@ -82,7 +83,8 @@ BEGIN
  diff:='S15-C07 exige elegir fecha de débito de cuotas posteriores a la inicial desde opciones del aliado en PASO3_CUOTAS_DESGLOSE_V2; excluye ejemplos históricos como defaults.'; residual:='';
  IF length(diff)<30 OR residual IS DISTINCT FROM '' THEN RAISE EXCEPTION 'S22D_DIRECT_CONTRACT %',lid; END IF;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,'REEMPLAZADA',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,1,'REEMPLAZADA',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente')
+ ON CONFLICT (legacy_id,nucleo_codigo,version_nucleo) DO UPDATE SET estado_cobertura=EXCLUDED.estado_cobertura, diferencias=EXCLUDED.diferencias, evidencia=EXCLUDED.evidencia, hash_paquete=EXCLUDED.hash_paquete, revisado_por=EXCLUDED.revisado_por;
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  cd:='S22A-C02'; lid:=452;
@@ -94,7 +96,8 @@ BEGIN
  diff:='S22A-C02 exige OTP correo para dispositivo nuevo, desconocido o inactivo y reconocimiento gobernado por servidor; no sustituye S7-C07 ni reglas MFA.'; residual:='Falta acreditar contexto MFA transitorio de B2B-AUTH-004, denegación de navegación directa y enrutamiento completo conforme política de perfiles.';
  IF length(diff)<30 OR length(residual)<15 THEN RAISE EXCEPTION 'S22D_DIRECT_CONTRACT %',lid; END IF;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente')
+ ON CONFLICT (legacy_id,nucleo_codigo,version_nucleo) DO UPDATE SET estado_cobertura=EXCLUDED.estado_cobertura, diferencias=EXCLUDED.diferencias, evidencia=EXCLUDED.evidencia, hash_paquete=EXCLUDED.hash_paquete, revisado_por=EXCLUDED.revisado_por;
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  cd:='S7-C10'; lid:=493;
@@ -106,7 +109,8 @@ BEGIN
  diff:='S7-C10 protege anti-enumeración en respuesta, navegación, falla del proveedor y rate limit independiente de existencia de cuenta.'; residual:='Falta operación de verificación PASSWORD_RECOVERY separada de MFA, validación server-side y alcance exclusivo PASSWORD_UPDATE_ONLY sin exposición del código.';
  IF length(diff)<30 OR length(residual)<15 THEN RAISE EXCEPTION 'S22D_DIRECT_CONTRACT %',lid; END IF;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente')
+ ON CONFLICT (legacy_id,nucleo_codigo,version_nucleo) DO UPDATE SET estado_cobertura=EXCLUDED.estado_cobertura, diferencias=EXCLUDED.diferencias, evidencia=EXCLUDED.evidencia, hash_paquete=EXCLUDED.hash_paquete, revisado_por=EXCLUDED.revisado_por;
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  cd:='S4-C21'; lid:=514;
@@ -118,7 +122,8 @@ BEGIN
  diff:='S4-C21 exige Home sin oferta real confirmada, sin montos, modalidades ni CTA de pago y distingue error de consulta de ausencia de oferta.'; residual:='Falta resolución autoritativa de ACTIVE_OFFER_HOME y especialización por cantidad/modalidad sin inferir códigos de pantalla, respetando S14-C14.';
  IF length(diff)<30 OR length(residual)<15 THEN RAISE EXCEPTION 'S22D_DIRECT_CONTRACT %',lid; END IF;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,2,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,2,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente')
+ ON CONFLICT (legacy_id,nucleo_codigo,version_nucleo) DO UPDATE SET estado_cobertura=EXCLUDED.estado_cobertura, diferencias=EXCLUDED.diferencias, evidencia=EXCLUDED.evidencia, hash_paquete=EXCLUDED.hash_paquete, revisado_por=EXCLUDED.revisado_por;
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  cd:='S14-C03'; lid:=589;
@@ -130,7 +135,8 @@ BEGIN
  diff:='S14-C03 conserva Inicio, Oferta, Pagos, Documentos y Ayuda con etiquetas visibles, Oferta aun sin oferta, habilitación por ruta y pantalla canónicas y carta disponible en Documentos.'; residual:='Falta lenguaje cotidiano en etiquetas, términos prohibidos al usuario (Mis operaciones, elegibilidad, estado normalizado), Pagos contextual y contraste minimo 4.5 de etiquetas.';
  IF length(diff)<30 OR length(residual)<15 THEN RAISE EXCEPTION 'S22D_DIRECT_CONTRACT %',lid; END IF;
  INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
- VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente');
+ VALUES(lid,cd,1,'PARCIAL',diff,jsonb_build_object('fuente','lf_ops.reglas/'||lid,'contraste','LEGADA: '||old_desc||' NUCLEO: '||new_desc||' DIFERENCIA: '||diff,'residual',residual,'juicio','Claude independiente 2026-11-24 23:38 Lima'),direct_hash,'GPT / Claude S22-D independiente')
+ ON CONFLICT (legacy_id,nucleo_codigo,version_nucleo) DO UPDATE SET estado_cobertura=EXCLUDED.estado_cobertura, diferencias=EXCLUDED.diferencias, evidencia=EXCLUDED.evidencia, hash_paquete=EXCLUDED.hash_paquete, revisado_por=EXCLUDED.revisado_por;
  links:=links+1;
  ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22D_SOURCE_MISSING %',lid; END IF;
  SELECT count(DISTINCT legacy_id) INTO after_replaced FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA';
