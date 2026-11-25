@@ -2,6 +2,8 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_creative_pilot_claim_11_v1.sql'
+      - 'supabase/tests/saly_creative_pilot_claim_11_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_creative_serial_loop_v1.sql'
       - 'supabase/tests/saly_creative_serial_loop_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_creative_self_qa_v1.sql'
@@ -576,3 +578,14 @@ jobs:
           test "${#files[@]}" -eq 1
           sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_serial_loop_body.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_serial_loop_v1_pg17_rollback.sql
+      - name: Pilot invocation contract rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb saly_pilot_claim_ci
+          export PGDATABASE=saly_pilot_claim_ci
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_pilot_claim_11_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_pilot_claim_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_pilot_claim_11_v1_pg17_rollback.sql
