@@ -1,0 +1,830 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "b3ff334e4220ad043c1f36fd78c5e3c32af5291f",
+    "js_vectors": "21/21",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 44,
+        "nucleo_codigo": "S21-C04",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 101,
+        "nucleo_codigo": "S11-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 101,
+        "nucleo_codigo": "S15-C06",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 101,
+        "nucleo_codigo": "S9-C06",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22f01_instrumentacion_onboarding",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "instrumentacion onboarding; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22f01_script_directo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "script directo; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22f01_contenedor_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contenedor no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22f01_ga4_sin_gtm",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ga4 sin gtm; hecho derivado, binding runtime pendiente",
+      "familia": "ANALYTICS"
+    },
+    {
+      "codigo": "s22f02_despliegue_o_experimento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "despliegue o experimento; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22f02_flag_no_gobernado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "flag no gobernado; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22f02_variante_hardcodeada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "variante hardcodeada; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22f02_modo_flag_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modo flag invalido; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22f02_consulta_inicio_omitida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "consulta inicio omitida; hecho derivado, binding runtime pendiente",
+      "familia": "TESTING_OBLIGATIONS"
+    },
+    {
+      "codigo": "s22f03_trafico_o_config_produccion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "trafico o config produccion; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22f03_elude_perimetro",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "elude perimetro; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22f03_proteccion_o_cache_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "proteccion o cache invalida; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22f03_control_waf_ausente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "control waf ausente; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22f04_presenta_fecha_primera_cuota",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "presenta fecha primera cuota; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22f04_fecha_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fecha no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22f04_campo_nulo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "campo nulo; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    },
+    {
+      "codigo": "s22f04_mensaje_nulo_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "mensaje nulo invalido; hecho derivado, binding runtime pendiente",
+      "familia": "OFFERS_INSTALLMENTS"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22F-C01",
+      "legacy_id": 86,
+      "legacy_ids": [
+        86,
+        100
+      ],
+      "relacionadas": [
+        "S9-C06",
+        "S8-C07",
+        "S9-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 86,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En instrumentación de comportamiento del onboarding BLOQUEAR instalación directa en código de scripts de analytics, heatmaps o tracking de terceros fuera del contenedor autorizado GTM, o instrumentación GA4 que no utilice GTM como medio de implementación. GA4 es herramienta principal de medición de comportamiento; no concede permiso de datos ni de tags nuevos. S9-C06 conserva dataLayer y prohibición de lectura DOM; S8-C07 conserva privacidad. Binding pendiente. La exclusividad general fuera del onboarding queda residual para 100."
+        },
+        {
+          "legacy_id": 100,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar aplicación exclusiva del contenedor GTM a las demás superficies Cliente, B2B y terceros, no solo onboarding.",
+          "diferencias": "En instrumentación de comportamiento del onboarding BLOQUEAR instalación directa en código de scripts de analytics, heatmaps o tracking de terceros fuera del contenedor autorizado GTM, o instrumentación GA4 que no utilice GTM como medio de implementación. GA4 es herramienta principal de medición de comportamiento; no concede permiso de datos ni de tags nuevos. S9-C06 conserva dataLayer y prohibición de lectura DOM; S8-C07 conserva privacidad. Binding pendiente. La exclusividad general fuera del onboarding queda residual para 100."
+        }
+      ],
+      "hechos": [
+        "s22f01_instrumentacion_onboarding",
+        "s22f01_script_directo",
+        "s22f01_contenedor_no_autorizado",
+        "s22f01_ga4_sin_gtm"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22F-C01",
+        "clave": "s22f_legacy_86",
+        "familia": "ANALYTICS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Instrumentación onboarding a través de GTM autorizado",
+        "descripcion": "En instrumentación de comportamiento del onboarding BLOQUEAR instalación directa en código de scripts de analytics, heatmaps o tracking de terceros fuera del contenedor autorizado GTM, o instrumentación GA4 que no utilice GTM como medio de implementación. GA4 es herramienta principal de medición de comportamiento; no concede permiso de datos ni de tags nuevos. S9-C06 conserva dataLayer y prohibición de lectura DOM; S8-C07 conserva privacidad. Binding pendiente. La exclusividad general fuera del onboarding queda residual para 100.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/86;lf_ops.reglas/100",
+          "solicitante": "Cristhian / Claude S22-F 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22f01_instrumentacion_onboarding"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f01_script_directo"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f01_contenedor_no_autorizado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22f01_ga4_sin_gtm"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f01_instrumentacion_onboarding": true,
+              "s22f01_script_directo": false,
+              "s22f01_contenedor_no_autorizado": false,
+              "s22f01_ga4_sin_gtm": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f01_instrumentacion_onboarding": true,
+              "s22f01_script_directo": true,
+              "s22f01_contenedor_no_autorizado": false,
+              "s22f01_ga4_sin_gtm": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f01_instrumentacion_onboarding": true,
+              "s22f01_script_directo": false,
+              "s22f01_contenedor_no_autorizado": true,
+              "s22f01_ga4_sin_gtm": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f01_instrumentacion_onboarding": true,
+              "s22f01_script_directo": false,
+              "s22f01_contenedor_no_autorizado": false,
+              "s22f01_ga4_sin_gtm": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f01_instrumentacion_onboarding": false,
+              "s22f01_script_directo": true,
+              "s22f01_contenedor_no_autorizado": true,
+              "s22f01_ga4_sin_gtm": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "6dfb7e8b84e31f56bb4699016b960987afe15397f9a6f919063b666b4b706eb2",
+      "hash_paquete": "72aedad8349b2c7241261e2fa0f0488a3269f207079ab7abea2c7dfc9eb81fd0",
+      "hash_evaluado": "6dfb7e8b84",
+      "hash_paquete_10": "72aedad834"
+    },
+    {
+      "codigo": "S22F-C02",
+      "legacy_id": 116,
+      "legacy_ids": [
+        116,
+        187
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 116,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En despliegue de funcionalidad nueva o experimento A/B BLOQUEAR activación sin feature flag gobernado en lf_ops o asignación de variante hardcodeada en código. El flag admite activación general, por proporción de usuarios, solo internos o desactivación; frontend consulta flags al iniciar sesión. No fija porcentaje ni crea política de asignación nueva. Binding pendiente."
+        },
+        {
+          "legacy_id": 187,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En despliegue de funcionalidad nueva o experimento A/B BLOQUEAR activación sin feature flag gobernado en lf_ops o asignación de variante hardcodeada en código. El flag admite activación general, por proporción de usuarios, solo internos o desactivación; frontend consulta flags al iniciar sesión. No fija porcentaje ni crea política de asignación nueva. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22f02_despliegue_o_experimento",
+        "s22f02_flag_no_gobernado",
+        "s22f02_variante_hardcodeada",
+        "s22f02_modo_flag_invalido",
+        "s22f02_consulta_inicio_omitida"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22F-C02",
+        "clave": "s22f_legacy_116",
+        "familia": "TESTING_OBLIGATIONS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Activación de experimentos y funcionalidades con feature flags",
+        "descripcion": "En despliegue de funcionalidad nueva o experimento A/B BLOQUEAR activación sin feature flag gobernado en lf_ops o asignación de variante hardcodeada en código. El flag admite activación general, por proporción de usuarios, solo internos o desactivación; frontend consulta flags al iniciar sesión. No fija porcentaje ni crea política de asignación nueva. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/116;lf_ops.reglas/187",
+          "solicitante": "Cristhian / Claude S22-F 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22f02_despliegue_o_experimento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22f02_flag_no_gobernado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22f02_variante_hardcodeada"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f02_modo_flag_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22f02_consulta_inicio_omitida"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f02_despliegue_o_experimento": true,
+              "s22f02_flag_no_gobernado": false,
+              "s22f02_variante_hardcodeada": false,
+              "s22f02_modo_flag_invalido": false,
+              "s22f02_consulta_inicio_omitida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f02_despliegue_o_experimento": true,
+              "s22f02_flag_no_gobernado": true,
+              "s22f02_variante_hardcodeada": false,
+              "s22f02_modo_flag_invalido": false,
+              "s22f02_consulta_inicio_omitida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f02_despliegue_o_experimento": true,
+              "s22f02_flag_no_gobernado": false,
+              "s22f02_variante_hardcodeada": true,
+              "s22f02_modo_flag_invalido": false,
+              "s22f02_consulta_inicio_omitida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f02_despliegue_o_experimento": true,
+              "s22f02_flag_no_gobernado": false,
+              "s22f02_variante_hardcodeada": false,
+              "s22f02_modo_flag_invalido": true,
+              "s22f02_consulta_inicio_omitida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f02_despliegue_o_experimento": true,
+              "s22f02_flag_no_gobernado": false,
+              "s22f02_variante_hardcodeada": false,
+              "s22f02_modo_flag_invalido": false,
+              "s22f02_consulta_inicio_omitida": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f02_despliegue_o_experimento": false,
+              "s22f02_flag_no_gobernado": true,
+              "s22f02_variante_hardcodeada": true,
+              "s22f02_modo_flag_invalido": true,
+              "s22f02_consulta_inicio_omitida": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "cb620234fcc222875b93d8cc227cc6ee5caf0602a5f0a9ae41cfa3e3dca2e26d",
+      "hash_paquete": "a6c550abf1f82f69b3fd02afcc4db149ae8acd659e4eeb6f444f6821ca1b243b",
+      "hash_evaluado": "cb620234fc",
+      "hash_paquete_10": "a6c550abf1"
+    },
+    {
+      "codigo": "S22F-C03",
+      "legacy_id": 133,
+      "legacy_ids": [
+        133,
+        134
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 133,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Ante tráfico de producción dirigido a Supabase o n8n BLOQUEAR acceso que eluda Cloudflare como perímetro WAF y protección DDoS; conservar caché de assets estáticos donde corresponda. BLOQUEAR configuración WAF que carezca de controles activos de inyección SQL, XSS en formularios, escaneo de rutas o desafío de IP de países sin operación. No inventar países, umbrales ni afirmar que infraestructura está desplegada. Binding pendiente."
+        },
+        {
+          "legacy_id": 134,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Ante tráfico de producción dirigido a Supabase o n8n BLOQUEAR acceso que eluda Cloudflare como perímetro WAF y protección DDoS; conservar caché de assets estáticos donde corresponda. BLOQUEAR configuración WAF que carezca de controles activos de inyección SQL, XSS en formularios, escaneo de rutas o desafío de IP de países sin operación. No inventar países, umbrales ni afirmar que infraestructura está desplegada. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22f03_trafico_o_config_produccion",
+        "s22f03_elude_perimetro",
+        "s22f03_proteccion_o_cache_invalida",
+        "s22f03_control_waf_ausente"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22F-C03",
+        "clave": "s22f_legacy_133",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Protección perimetral del tráfico de producción",
+        "descripcion": "Ante tráfico de producción dirigido a Supabase o n8n BLOQUEAR acceso que eluda Cloudflare como perímetro WAF y protección DDoS; conservar caché de assets estáticos donde corresponda. BLOQUEAR configuración WAF que carezca de controles activos de inyección SQL, XSS en formularios, escaneo de rutas o desafío de IP de países sin operación. No inventar países, umbrales ni afirmar que infraestructura está desplegada. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/133;lf_ops.reglas/134",
+          "solicitante": "Cristhian / Claude S22-F 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22f03_trafico_o_config_produccion"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f03_elude_perimetro"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f03_proteccion_o_cache_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22f03_control_waf_ausente"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f03_trafico_o_config_produccion": true,
+              "s22f03_elude_perimetro": false,
+              "s22f03_proteccion_o_cache_invalida": false,
+              "s22f03_control_waf_ausente": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f03_trafico_o_config_produccion": true,
+              "s22f03_elude_perimetro": true,
+              "s22f03_proteccion_o_cache_invalida": false,
+              "s22f03_control_waf_ausente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f03_trafico_o_config_produccion": true,
+              "s22f03_elude_perimetro": false,
+              "s22f03_proteccion_o_cache_invalida": true,
+              "s22f03_control_waf_ausente": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f03_trafico_o_config_produccion": true,
+              "s22f03_elude_perimetro": false,
+              "s22f03_proteccion_o_cache_invalida": false,
+              "s22f03_control_waf_ausente": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f03_trafico_o_config_produccion": false,
+              "s22f03_elude_perimetro": true,
+              "s22f03_proteccion_o_cache_invalida": true,
+              "s22f03_control_waf_ausente": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "9cbe6574b76634774b14535cb48dec7b4252678bc4769e9e908e31423d44e077",
+      "hash_paquete": "b7cb74a8a95a07790babc529b83461c70e1f71828eb874b2046d659aed18a7ec",
+      "hash_evaluado": "9cbe6574b7",
+      "hash_paquete_10": "b7cb74a8a9"
+    },
+    {
+      "codigo": "S22F-C04",
+      "legacy_id": 158,
+      "legacy_ids": [
+        158
+      ],
+      "relacionadas": [
+        "S22B-C03",
+        "M2L2-C06"
+      ],
+      "residual": "Falta reconciliar la fecha histórica de primera cuota cargada por aliado con la obligación vigente de pago inicial inmediato en checkout; no modifica esa obligación.",
+      "coberturas": [
+        {
+          "legacy_id": 158,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta reconciliar la fecha histórica de primera cuota cargada por aliado con la obligación vigente de pago inicial inmediato en checkout; no modifica esa obligación.",
+          "diferencias": "Al presentar fecha de primera cuota de oferta en cuotas BLOQUEAR fecha calculada o inventada por LF en lugar de campo autorizado por aliado B2B. Si campo es nulo, presentar A coordinar con el aliado, no inferir fecha. No cambia exigencia de pago inicial en checkout de S22B-C03; la fecha presentada no autoriza diferir ese pago. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22f04_presenta_fecha_primera_cuota",
+        "s22f04_fecha_no_autorizada",
+        "s22f04_campo_nulo",
+        "s22f04_mensaje_nulo_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22F-C04",
+        "clave": "s22f_legacy_158",
+        "familia": "OFFERS_INSTALLMENTS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Origen de fecha contractual de primera cuota",
+        "descripcion": "Al presentar fecha de primera cuota de oferta en cuotas BLOQUEAR fecha calculada o inventada por LF en lugar de campo autorizado por aliado B2B. Si campo es nulo, presentar A coordinar con el aliado, no inferir fecha. No cambia exigencia de pago inicial en checkout de S22B-C03; la fecha presentada no autoriza diferir ese pago. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/158",
+          "solicitante": "Cristhian / Claude S22-F 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22f04_presenta_fecha_primera_cuota"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22f04_fecha_no_autorizada"
+              },
+              "der": {
+                "lit": true
+              }
+            },
+            "der": {
+              "op": "y",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f04_campo_nulo"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22f04_mensaje_nulo_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f04_presenta_fecha_primera_cuota": true,
+              "s22f04_fecha_no_autorizada": false,
+              "s22f04_campo_nulo": false,
+              "s22f04_mensaje_nulo_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f04_presenta_fecha_primera_cuota": true,
+              "s22f04_fecha_no_autorizada": true,
+              "s22f04_campo_nulo": false,
+              "s22f04_mensaje_nulo_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22f04_presenta_fecha_primera_cuota": true,
+              "s22f04_fecha_no_autorizada": false,
+              "s22f04_campo_nulo": true,
+              "s22f04_mensaje_nulo_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f04_presenta_fecha_primera_cuota": true,
+              "s22f04_fecha_no_autorizada": false,
+              "s22f04_campo_nulo": true,
+              "s22f04_mensaje_nulo_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22f04_presenta_fecha_primera_cuota": false,
+              "s22f04_fecha_no_autorizada": true,
+              "s22f04_campo_nulo": true,
+              "s22f04_mensaje_nulo_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "2b4e9c6829ead5cbc5b04d039ef48572a7543f60760e4ba94e98cbdb3b8cf716",
+      "hash_paquete": "7a8b40464867d0ac28e6fd5782bf12d65abf313f0ebda03e8cf3c479ee23bcb9",
+      "hash_evaluado": "2b4e9c6829",
+      "hash_paquete_10": "7a8b404648"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": [
+    {
+      "legacy_id": 44,
+      "nucleo_codigo": "S21-C04",
+      "version_nucleo": 1,
+      "estado_cobertura": "REEMPLAZADA",
+      "diferencias": "S21-C04 exige validación server-side previa del formato numérico RENIEC canónico y bloquea consulta de unicidad con formato inválido; no fija longitud literal.",
+      "residual": ""
+    },
+    {
+      "legacy_id": 101,
+      "nucleo_codigo": "S11-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S11-C02 cubre Home, S9-C06 onboarding, S15-C06 pagos y S12-C09 B2B; no lectura directa DOM.",
+      "residual": "Falta acreditar cobertura universal para eventos de todas las superficies restantes y todos los tags autorizados."
+    }
+  ]
+}
