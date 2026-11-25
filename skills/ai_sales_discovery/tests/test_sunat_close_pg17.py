@@ -10,11 +10,15 @@ DB = "saly_sunat_close_ci"
 ROOT = Path(__file__).resolve().parents[3]
 CANDIDATE = ROOT / "skills/ai_sales_discovery/tests/sunat_close_candidate_v1.sql"
 
-def sql(source, success=True):
+def sql(source, success=True, error_code=None):
     p = subprocess.run(["psql","-X","-qAt","-v","ON_ERROR_STOP=1","-d",DB],
                        input=source,text=True,capture_output=True,check=False)
     if success and p.returncode: raise AssertionError(p.stderr[-2500:])
     if not success and not p.returncode: raise AssertionError("EXPECTED_SQL_REJECTION")
+    if error_code is not None:
+        assert not success, "ERROR_CODE_ONLY_FOR_NEGATIVE_CASES"
+        if error_code not in p.stderr:
+            raise AssertionError("WRONG_SQL_ERROR_EXPECTED_" + error_code + ": " + p.stderr[-2500:])
     return p.stdout.strip()
 
 def main():
@@ -64,14 +68,14 @@ CREATE FUNCTION public.fn_lf_operation_acquire_lease_v1(
     sql(CANDIDATE.read_text())
     assert sql("SELECT count(*) FROM pg_constraint WHERE conname='saly_l28_run_close_disabled'") == "0"
     assert sql("SELECT count(*) FROM pg_trigger WHERE tgname='trg_saly_ventas_discovery_close_gate_v1'") == "1"
-    sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'bad','v1','{}','" + "0"*64 + "','CERRADO',now())", False)
+    sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'bad','v1','{}','" + "0"*64 + "','CERRADO',now())", False, "SUNAT_CLOSE_INSERT_FORBIDDEN")
     print("PASS_PG17_INSERT_CERRADO_FORBIDDEN")
     sql("INSERT INTO saly.ventas_discovery_runs VALUES (gen_random_uuid(),'run-open','v1','{}','" + "0"*64 + "','EN_EJECUCION',null)")
-    sql("UPDATE saly.ventas_discovery_runs SET estado='CERRADO',finished_at=now() WHERE run_ref='run-open'", False)
+    sql("UPDATE saly.ventas_discovery_runs SET estado='CERRADO',finished_at=now() WHERE run_ref='run-open'", False, "SUNAT_CLOSE_GATE_REJECTED")
     assert sql("SELECT estado FROM saly.ventas_discovery_runs WHERE run_ref='run-open'") == "EN_EJECUCION"
     print("PASS_PG17_UPDATE_CERRADO_BLOCKED")
     sql("INSERT INTO public.lf_operation_execution VALUES ('run-open','INGESTA_EMPRESARIAL_SALY','IN_PROGRESS',null,0,null,null,'{}',null,null)")
-    sql("SELECT saly.ventas_sunat_commercial_close_v1('run-open','actor','owner','" + "0"*64 + "')", False)
+    sql("SELECT saly.ventas_sunat_commercial_close_v1('run-open','actor','owner','" + "0"*64 + "')", False, "SUNAT_CLOSE_POLICY_OR_MANIFEST")
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='run-open'") == "IN_PROGRESS"
     print("PASS_PG17_MISSING_POLICY_BLOCKS_WITHOUT_MUTATION")
     assert sql("SELECT has_function_privilege('authenticated','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
