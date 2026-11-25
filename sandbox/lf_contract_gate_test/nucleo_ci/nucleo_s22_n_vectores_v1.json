@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "fa05a5fc331b53ee927486ec158341be605607f4",
     "js_vectors": "54/54",
@@ -50,7 +50,8 @@
       }
     ],
     "published_direct_versions": [],
-    "coverage_write": "future UPSERT all links"
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001: contrastar descripcion y valor_config completo antes de REEMPLAZADA."
   },
   "parametros_existentes": [],
   "hechos_existentes": [],
@@ -597,13 +598,13 @@
         "S8-C22",
         "S4-C21"
       ],
-      "residual": "",
+      "residual": "Falta acción avisarme nueva oferta PENDING_CANONICAL_SUBSCRIPTION_ACTION, sin inscripción automática, con acción explícita y consentimiento marketing REG_NOT_003/CAMPO_CONSENT_MKT.",
       "coberturas": [
         {
           "legacy_id": 518,
-          "estado_cobertura": "REEMPLAZADA",
-          "residual": "",
-          "diferencias": "En NO_ACTIVE_OFFER_HOME BLOQUEAR alcanzar estado sin consulta autoritativa exitosa que confirme cero ofertas elegibles activas, tratarlo como error, mostrar montos, modalidades, acreedores como oferta LF o CTA de pago. Habilitar orientación Ruta de Claridad reutilizando conjunto canónico de hitos y modelo educativo, accesibilidad y progreso existentes; permitir orientar acciones externas sin afirmar alternativa activa LF ni convertir educación en promesa comercial. Complementa S10-C07, S8-C22 y S4-C21; binding pendiente."
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acción avisarme nueva oferta PENDING_CANONICAL_SUBSCRIPTION_ACTION, sin inscripción automática, con acción explícita y consentimiento marketing REG_NOT_003/CAMPO_CONSENT_MKT.",
+          "diferencias": "En NO_ACTIVE_OFFER_HOME BLOQUEAR alcanzar estado sin consulta autoritativa exitosa que confirme cero ofertas elegibles activas, tratarlo como error, mostrar montos, modalidades, acreedores como oferta LF o CTA de pago. Habilitar orientación Ruta de Claridad reutilizando conjunto canónico de hitos y modelo educativo, accesibilidad y progreso existentes; permitir orientar acciones externas sin afirmar alternativa activa LF ni convertir educación en promesa comercial. Complementa S10-C07, S8-C22 y S4-C21; binding pendiente. Residual: Falta acción avisarme nueva oferta PENDING_CANONICAL_SUBSCRIPTION_ACTION, sin inscripción automática, con acción explícita y consentimiento marketing REG_NOT_003/CAMPO_CONSENT_MKT."
         }
       ],
       "hechos": [
@@ -805,13 +806,13 @@
         "S22E-C02",
         "S22E-C03"
       ],
-      "residual": "",
+      "residual": "Falta no premarcado, consentimiento previo al pago inicial, evidencia timestamp, versión y contexto de medio, pago inicial de cuotas solo CARD y Yape denegado en cuotas.",
       "coberturas": [
         {
           "legacy_id": 521,
-          "estado_cobertura": "REEMPLAZADA",
-          "residual": "",
-          "diferencias": "En checkout Cliente BLOQUEAR intento con cobro recurrente automático sin autorización explícita, demostrable y ligada a versión de cronograma/condiciones aceptadas antes del primer cobro automático. No solicitar ni exigir autorización recurrente en pago único o cuotas futuras manuales. El backend determina requisito conforme modalidad y medio seleccionados; frontend no infiere por nombre del medio. Complementa S22E-C02 y S22E-C03; no crea recurrencia ni habilita medios. Binding pendiente."
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta no premarcado, consentimiento previo al pago inicial, evidencia timestamp, versión y contexto de medio, pago inicial de cuotas solo CARD y Yape denegado en cuotas.",
+          "diferencias": "En checkout Cliente BLOQUEAR intento con cobro recurrente automático sin autorización explícita, demostrable y ligada a versión de cronograma/condiciones aceptadas antes del primer cobro automático. No solicitar ni exigir autorización recurrente en pago único o cuotas futuras manuales. El backend determina requisito conforme modalidad y medio seleccionados; frontend no infiere por nombre del medio. Complementa S22E-C02 y S22E-C03; no crea recurrencia ni habilita medios. Binding pendiente. Residual: Falta no premarcado, consentimiento previo al pago inicial, evidencia timestamp, versión y contexto de medio, pago inicial de cuotas solo CARD y Yape denegado en cuotas."
         }
       ],
       "hechos": [
@@ -1809,13 +1810,13 @@
       "relacionadas": [
         "S6-C13"
       ],
-      "residual": "",
+      "residual": "Faltan estados visuales CARD_FIELDS_EMPTY_CTA_DISABLED y VALID_CTA_ENABLED, componente client_secure_payment_modal, branding solo con binding canónico y logos de esquema solo autorizados.",
       "coberturas": [
         {
           "legacy_id": 538,
-          "estado_cobertura": "REEMPLAZADA",
-          "residual": "",
-          "diferencias": "Cuando CARD sea elegible BLOQUEAR captura de PAN, vencimiento o CVV en campos propios LF o envío a servidores LF, Supabase, logs, analytics o session replay. Captura solo en componentes alojados/controlados por proveedor autorizado, hosted fields, iframe o equivalente que impida recibir datos crudos; LF consume únicamente referencias opacas/tokens y metadatos enmascarados permitidos por contrato. No fijar Niubiz sin binding productivo canónico ni debilitar frontera si técnica distinta de iframe. Complementa S6-C13 para integración específica Niubiz. Binding pendiente."
+          "estado_cobertura": "PARCIAL",
+          "residual": "Faltan estados visuales CARD_FIELDS_EMPTY_CTA_DISABLED y VALID_CTA_ENABLED, componente client_secure_payment_modal, branding solo con binding canónico y logos de esquema solo autorizados.",
+          "diferencias": "Cuando CARD sea elegible BLOQUEAR captura de PAN, vencimiento o CVV en campos propios LF o envío a servidores LF, Supabase, logs, analytics o session replay. Captura solo en componentes alojados/controlados por proveedor autorizado, hosted fields, iframe o equivalente que impida recibir datos crudos; LF consume únicamente referencias opacas/tokens y metadatos enmascarados permitidos por contrato. No fijar Niubiz sin binding productivo canónico ni debilitar frontera si técnica distinta de iframe. Complementa S6-C13 para integración específica Niubiz. Binding pendiente. Residual: Faltan estados visuales CARD_FIELDS_EMPTY_CTA_DISABLED y VALID_CTA_ENABLED, componente client_secure_payment_modal, branding solo con binding canónico y logos de esquema solo autorizados."
         }
       ],
       "hechos": [
@@ -1977,6 +1978,279 @@
       "hash_paquete_10": "2e91eb0835"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22N-C01",
+      "hash_paquete": "5fea2cdd157d4f11c00821a2b9e6a5e65e332dc1ae6878b69d134132fdfcb608",
+      "hash_paquete_10": "5fea2cdd15",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C01 / hash_paquete_10=5fea2cdd15"
+    },
+    {
+      "codigo": "S22N-C02",
+      "hash_paquete": "b3810c7944fafe963d622577548a66e5d547939e1567e9a3a896b1cfa07af4b9",
+      "hash_paquete_10": "b3810c7944",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C02 / hash_paquete_10=b3810c7944"
+    },
+    {
+      "codigo": "S22N-C03",
+      "hash_paquete": "8243d7790f462d585d4c0c568a8dfaefab53dff1623d3def8a367ea06eef3b95",
+      "hash_paquete_10": "8243d7790f",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C03 / hash_paquete_10=8243d7790f"
+    },
+    {
+      "codigo": "S22N-C04",
+      "hash_paquete": "085937c6bd5ef4d86ff1fbbe1b83f54f5002c6809f02f9e664fde077c370295d",
+      "hash_paquete_10": "085937c6bd",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C04 / hash_paquete_10=085937c6bd"
+    },
+    {
+      "codigo": "S22N-C05",
+      "hash_paquete": "7520a4c8985d5e12b128e08dc18fa8ad042aaf624499a2a95ce105c54d91c8fc",
+      "hash_paquete_10": "7520a4c898",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C05 / hash_paquete_10=7520a4c898"
+    },
+    {
+      "codigo": "S22N-C06",
+      "hash_paquete": "57a6e4833a80760c7d72e3842d75227854521eda91fd6674cbbfa5fc445ec86e",
+      "hash_paquete_10": "57a6e4833a",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C06 / hash_paquete_10=57a6e4833a"
+    },
+    {
+      "codigo": "S22N-C07",
+      "hash_paquete": "93eec1f3c180874fec2cee8198a5eded2d2a874ce8f8a7e5938ff5185df32f25",
+      "hash_paquete_10": "93eec1f3c1",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C07 / hash_paquete_10=93eec1f3c1"
+    },
+    {
+      "codigo": "S22N-C08",
+      "hash_paquete": "2e91eb08359904ee7b94cd8bd21eb0c08b10f85ba54d3a0c25db7e70d00d5abd",
+      "hash_paquete_10": "2e91eb0835",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4770 / Claude 2026-11-25 16:05 Lima / S22N-C08 / hash_paquete_10=2e91eb0835"
+    }
+  ],
   "cobertura_directa": []
 }

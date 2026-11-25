@@ -1,0 +1,1311 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "4d47e3d18459634abf4f7ee23cd852bb5c54589b",
+    "js_vectors": "30/30",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 483,
+        "nucleo_codigo": "S16-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 494,
+        "nucleo_codigo": "M4-B05",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "M4-B05",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S14-C11",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S16-C02",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22m01_consumo_evidencia_actual",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "consumo evidencia actual; hecho derivado, binding runtime pendiente",
+      "familia": "VISUAL_EVIDENCE"
+    },
+    {
+      "codigo": "s22m01_no_current",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "no current; hecho derivado, binding runtime pendiente",
+      "familia": "VISUAL_EVIDENCE"
+    },
+    {
+      "codigo": "s22m01_binario_no_resoluble",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "binario no resoluble; hecho derivado, binding runtime pendiente",
+      "familia": "VISUAL_EVIDENCE"
+    },
+    {
+      "codigo": "s22m01_checksum_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "checksum invalido; hecho derivado, binding runtime pendiente",
+      "familia": "VISUAL_EVIDENCE"
+    },
+    {
+      "codigo": "s22m01_candidato_como_final",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "candidato como final; hecho derivado, binding runtime pendiente",
+      "familia": "VISUAL_EVIDENCE"
+    },
+    {
+      "codigo": "s22m01_historico_no_preservado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "historico no preservado; hecho derivado, binding runtime pendiente",
+      "familia": "VISUAL_EVIDENCE"
+    },
+    {
+      "codigo": "s22m02_evalua_regla_runtime",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua regla runtime; hecho derivado, binding runtime pendiente",
+      "familia": "RUNTIME_CONFIG"
+    },
+    {
+      "codigo": "s22m02_credencial_o_valor_en_regla",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "credencial o valor en regla; hecho derivado, binding runtime pendiente",
+      "familia": "RUNTIME_CONFIG"
+    },
+    {
+      "codigo": "s22m02_fuente_estado_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fuente estado invalida; hecho derivado, binding runtime pendiente",
+      "familia": "RUNTIME_CONFIG"
+    },
+    {
+      "codigo": "s22m02_activo_sin_config",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activo sin config; hecho derivado, binding runtime pendiente",
+      "familia": "RUNTIME_CONFIG"
+    },
+    {
+      "codigo": "s22m02_activo_sin_implementacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activo sin implementacion; hecho derivado, binding runtime pendiente",
+      "familia": "RUNTIME_CONFIG"
+    },
+    {
+      "codigo": "s22m02_activo_sin_qa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activo sin qa; hecho derivado, binding runtime pendiente",
+      "familia": "RUNTIME_CONFIG"
+    },
+    {
+      "codigo": "s22m03_render_onb001_web",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render onb001 web; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m03_copy_o_label_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "copy o label invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m03_cta_estado_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cta estado invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m03_tipografia_o_anclaje_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "tipografia o anclaje invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m03_claim_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "claim sin evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m04_render_prefijo_onb001",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render prefijo onb001; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22m04_pais_prefijo_no_canonico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pais prefijo no canonico; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22m04_chevron_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "chevron invalido; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22m04_interaccion_sin_catalogo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "interaccion sin catalogo; hecho derivado, binding runtime pendiente",
+      "familia": "FIELDS"
+    },
+    {
+      "codigo": "s22m05_render_claim_onb002",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render claim onb002; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m05_regulacion_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "regulacion sin evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m05_seguridad_sin_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "seguridad sin evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22m05_captura_como_prueba_regulatoria",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "captura como prueba regulatoria; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22M-C01",
+      "legacy_id": 475,
+      "legacy_ids": [
+        475
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 475,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En consumo de evidencia visual actual de pantalla B2B o cierre QA BLOQUEAR artefacto sin marca current en lf_ops.pantalla_artefactos, binario no resoluble en proveedor de almacenamiento o checksum no coincidente. CANDIDATO_VISUAL o aprobación de composición no equivalen a VIGENTE/FINAL; preservar evidencias sustituidas como histórico sin consumirlas como actuales. No modificar archivos ni certificar evidencia no verificada. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22m01_consumo_evidencia_actual",
+        "s22m01_no_current",
+        "s22m01_binario_no_resoluble",
+        "s22m01_checksum_invalido",
+        "s22m01_candidato_como_final",
+        "s22m01_historico_no_preservado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22M-C01",
+        "clave": "s22m_legacy_475",
+        "familia": "VISUAL_EVIDENCE",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Evidencia visual actual resoluble y verificable",
+        "descripcion": "En consumo de evidencia visual actual de pantalla B2B o cierre QA BLOQUEAR artefacto sin marca current en lf_ops.pantalla_artefactos, binario no resoluble en proveedor de almacenamiento o checksum no coincidente. CANDIDATO_VISUAL o aprobación de composición no equivalen a VIGENTE/FINAL; preservar evidencias sustituidas como histórico sin consumirlas como actuales. No modificar archivos ni certificar evidencia no verificada. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/475",
+          "solicitante": "Cristhian / Claude S22-M 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22m01_consumo_evidencia_actual"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22m01_no_current"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22m01_binario_no_resoluble"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22m01_checksum_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m01_candidato_como_final"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22m01_historico_no_preservado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": true,
+              "s22m01_no_current": false,
+              "s22m01_binario_no_resoluble": false,
+              "s22m01_checksum_invalido": false,
+              "s22m01_candidato_como_final": false,
+              "s22m01_historico_no_preservado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": true,
+              "s22m01_no_current": true,
+              "s22m01_binario_no_resoluble": false,
+              "s22m01_checksum_invalido": false,
+              "s22m01_candidato_como_final": false,
+              "s22m01_historico_no_preservado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": true,
+              "s22m01_no_current": false,
+              "s22m01_binario_no_resoluble": true,
+              "s22m01_checksum_invalido": false,
+              "s22m01_candidato_como_final": false,
+              "s22m01_historico_no_preservado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": true,
+              "s22m01_no_current": false,
+              "s22m01_binario_no_resoluble": false,
+              "s22m01_checksum_invalido": true,
+              "s22m01_candidato_como_final": false,
+              "s22m01_historico_no_preservado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": true,
+              "s22m01_no_current": false,
+              "s22m01_binario_no_resoluble": false,
+              "s22m01_checksum_invalido": false,
+              "s22m01_candidato_como_final": true,
+              "s22m01_historico_no_preservado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": true,
+              "s22m01_no_current": false,
+              "s22m01_binario_no_resoluble": false,
+              "s22m01_checksum_invalido": false,
+              "s22m01_candidato_como_final": false,
+              "s22m01_historico_no_preservado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m01_consumo_evidencia_actual": false,
+              "s22m01_no_current": true,
+              "s22m01_binario_no_resoluble": true,
+              "s22m01_checksum_invalido": true,
+              "s22m01_candidato_como_final": true,
+              "s22m01_historico_no_preservado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "00d837a6c9e82fc3a46353c4a74b60f69e2242db0864a78f38266f175dd1cf6c",
+      "hash_paquete": "369e9e10438177f8dbb08b33e6af82ca57cd01bee8d34e6a4d750f6e1543f5c4",
+      "hash_evaluado": "00d837a6c9",
+      "hash_paquete_10": "369e9e1043"
+    },
+    {
+      "codigo": "S22M-C02",
+      "legacy_id": 476,
+      "legacy_ids": [
+        476
+      ],
+      "relacionadas": [
+        "S12-C08"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 476,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En reglas funcionales B2B BLOQUEAR almacenar credenciales, secretos o valores de proveedor en vez de referencias de capacidad. El estado operativo de analytics, observabilidad, autenticación y performance procede de registros especializados, incluidos lf_ops.observabilidad_proveedores y lf_ops.politicas_seguridad; mantener pendiente mientras falte CONFIGURED, IMPLEMENTED o QA_VERIFIED. No cambiar políticas ni activar proveedores. Complementa S12-C08. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22m02_evalua_regla_runtime",
+        "s22m02_credencial_o_valor_en_regla",
+        "s22m02_fuente_estado_invalida",
+        "s22m02_activo_sin_config",
+        "s22m02_activo_sin_implementacion",
+        "s22m02_activo_sin_qa"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22M-C02",
+        "clave": "s22m_legacy_476",
+        "familia": "RUNTIME_CONFIG",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Referencias funcionales sin secretos y estado operativo acreditado",
+        "descripcion": "En reglas funcionales B2B BLOQUEAR almacenar credenciales, secretos o valores de proveedor en vez de referencias de capacidad. El estado operativo de analytics, observabilidad, autenticación y performance procede de registros especializados, incluidos lf_ops.observabilidad_proveedores y lf_ops.politicas_seguridad; mantener pendiente mientras falte CONFIGURED, IMPLEMENTED o QA_VERIFIED. No cambiar políticas ni activar proveedores. Complementa S12-C08. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/476",
+          "solicitante": "Cristhian / Claude S22-M 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22m02_evalua_regla_runtime"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22m02_credencial_o_valor_en_regla"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22m02_fuente_estado_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22m02_activo_sin_config"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m02_activo_sin_implementacion"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22m02_activo_sin_qa"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": true,
+              "s22m02_credencial_o_valor_en_regla": false,
+              "s22m02_fuente_estado_invalida": false,
+              "s22m02_activo_sin_config": false,
+              "s22m02_activo_sin_implementacion": false,
+              "s22m02_activo_sin_qa": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": true,
+              "s22m02_credencial_o_valor_en_regla": true,
+              "s22m02_fuente_estado_invalida": false,
+              "s22m02_activo_sin_config": false,
+              "s22m02_activo_sin_implementacion": false,
+              "s22m02_activo_sin_qa": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": true,
+              "s22m02_credencial_o_valor_en_regla": false,
+              "s22m02_fuente_estado_invalida": true,
+              "s22m02_activo_sin_config": false,
+              "s22m02_activo_sin_implementacion": false,
+              "s22m02_activo_sin_qa": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": true,
+              "s22m02_credencial_o_valor_en_regla": false,
+              "s22m02_fuente_estado_invalida": false,
+              "s22m02_activo_sin_config": true,
+              "s22m02_activo_sin_implementacion": false,
+              "s22m02_activo_sin_qa": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": true,
+              "s22m02_credencial_o_valor_en_regla": false,
+              "s22m02_fuente_estado_invalida": false,
+              "s22m02_activo_sin_config": false,
+              "s22m02_activo_sin_implementacion": true,
+              "s22m02_activo_sin_qa": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": true,
+              "s22m02_credencial_o_valor_en_regla": false,
+              "s22m02_fuente_estado_invalida": false,
+              "s22m02_activo_sin_config": false,
+              "s22m02_activo_sin_implementacion": false,
+              "s22m02_activo_sin_qa": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m02_evalua_regla_runtime": false,
+              "s22m02_credencial_o_valor_en_regla": true,
+              "s22m02_fuente_estado_invalida": true,
+              "s22m02_activo_sin_config": true,
+              "s22m02_activo_sin_implementacion": true,
+              "s22m02_activo_sin_qa": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "976005ad0f4c81429eca8a530d2ae4a98e2c6a7908c138afc3b2f532cf4fee34",
+      "hash_paquete": "c897d4fff0f536906e2e63b0ec2ab4c00a23cb2096e5eafadcf4f8a31bed303b",
+      "hash_evaluado": "976005ad0f",
+      "hash_paquete_10": "c897d4fff0"
+    },
+    {
+      "codigo": "S22M-C03",
+      "legacy_id": 482,
+      "legacy_ids": [
+        482
+      ],
+      "relacionadas": [
+        "S16-C02"
+      ],
+      "residual": "Falta acreditar literalidad de indicador Paso 1 de 3 mediante contrato vigente, ajuste a una línea del subtítulo y evidencia para afirmar que no se comparte el número con terceros.",
+      "coberturas": [
+        {
+          "legacy_id": 482,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar literalidad de indicador Paso 1 de 3 mediante contrato vigente, ajuste a una línea del subtítulo y evidencia para afirmar que no se comparte el número con terceros.",
+          "diferencias": "En ONB_001 WEB BLOQUEAR copy distinto del aprobado v1.6: ¿Cuál es tu número de celular? con separación visual ¿Cuál es tu / número de celular?; Te enviaremos un código por WhatsApp para verificar tu número. con WhatsApp semibold y mismo navy_muted, label Número de celular, CTA Continuar activo incluso vacío conforme validación al intento, mensaje No compartimos tu número con terceros únicamente con evidencia legal/técnica suficiente. Mantener Ayuda, Términos y Condiciones, Política de Privacidad, icono lock green_action, text_section_h2, text_body y anclaje de título respecto ONB_002. No aprobar claim sin evidencia ni alterar canal operativo. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22m03_render_onb001_web",
+        "s22m03_copy_o_label_invalido",
+        "s22m03_cta_estado_invalido",
+        "s22m03_tipografia_o_anclaje_invalido",
+        "s22m03_claim_sin_evidencia"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22M-C03",
+        "clave": "s22m_legacy_482",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Copy aprobado de ingreso de celular WEB",
+        "descripcion": "En ONB_001 WEB BLOQUEAR copy distinto del aprobado v1.6: ¿Cuál es tu número de celular? con separación visual ¿Cuál es tu / número de celular?; Te enviaremos un código por WhatsApp para verificar tu número. con WhatsApp semibold y mismo navy_muted, label Número de celular, CTA Continuar activo incluso vacío conforme validación al intento, mensaje No compartimos tu número con terceros únicamente con evidencia legal/técnica suficiente. Mantener Ayuda, Términos y Condiciones, Política de Privacidad, icono lock green_action, text_section_h2, text_body y anclaje de título respecto ONB_002. No aprobar claim sin evidencia ni alterar canal operativo. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/482",
+          "solicitante": "Cristhian / Claude S22-M 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22m03_render_onb001_web"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22m03_copy_o_label_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22m03_cta_estado_invalido"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m03_tipografia_o_anclaje_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22m03_claim_sin_evidencia"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m03_render_onb001_web": true,
+              "s22m03_copy_o_label_invalido": false,
+              "s22m03_cta_estado_invalido": false,
+              "s22m03_tipografia_o_anclaje_invalido": false,
+              "s22m03_claim_sin_evidencia": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m03_render_onb001_web": true,
+              "s22m03_copy_o_label_invalido": true,
+              "s22m03_cta_estado_invalido": false,
+              "s22m03_tipografia_o_anclaje_invalido": false,
+              "s22m03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m03_render_onb001_web": true,
+              "s22m03_copy_o_label_invalido": false,
+              "s22m03_cta_estado_invalido": true,
+              "s22m03_tipografia_o_anclaje_invalido": false,
+              "s22m03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m03_render_onb001_web": true,
+              "s22m03_copy_o_label_invalido": false,
+              "s22m03_cta_estado_invalido": false,
+              "s22m03_tipografia_o_anclaje_invalido": true,
+              "s22m03_claim_sin_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m03_render_onb001_web": true,
+              "s22m03_copy_o_label_invalido": false,
+              "s22m03_cta_estado_invalido": false,
+              "s22m03_tipografia_o_anclaje_invalido": false,
+              "s22m03_claim_sin_evidencia": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m03_render_onb001_web": false,
+              "s22m03_copy_o_label_invalido": true,
+              "s22m03_cta_estado_invalido": true,
+              "s22m03_tipografia_o_anclaje_invalido": true,
+              "s22m03_claim_sin_evidencia": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "4e4f19979a7901c390da67ea653789b40887723b015ffe8a7d7ea45ce2fe44b1",
+      "hash_paquete": "0ca7ebb53274b347e7d0b896e4b0c894548fd90360db61387c10a4f91f676bf0",
+      "hash_evaluado": "4e4f19979a",
+      "hash_paquete_10": "0ca7ebb532"
+    },
+    {
+      "codigo": "S22M-C04",
+      "legacy_id": 484,
+      "legacy_ids": [
+        484
+      ],
+      "relacionadas": [],
+      "residual": "Falta acreditar referencia canónica que resuelva el prefijo literal +51 y el mapping de presentación Perú; no crear configuración nueva.",
+      "coberturas": [
+        {
+          "legacy_id": 484,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar referencia canónica que resuelva el prefijo literal +51 y el mapping de presentación Perú; no crear configuración nueva.",
+          "diferencias": "En ONB_001 BLOQUEAR presentación de país/prefijo que no corresponda al valor por defecto PE del catálogo canónico o chevron que no use navy_muted, o interacción productiva de selector sin opciones canónicas registradas. Chevron pequeño comunica intención dropdown, no habilita catálogo no definido ni inventa opciones; no usar azul. Mantener selector deshabilitado hasta contrato autorizado. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22m04_render_prefijo_onb001",
+        "s22m04_pais_prefijo_no_canonico",
+        "s22m04_chevron_invalido",
+        "s22m04_interaccion_sin_catalogo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22M-C04",
+        "clave": "s22m_legacy_484",
+        "familia": "FIELDS",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Prefijo de Perú y selector de país no habilitado",
+        "descripcion": "En ONB_001 BLOQUEAR presentación de país/prefijo que no corresponda al valor por defecto PE del catálogo canónico o chevron que no use navy_muted, o interacción productiva de selector sin opciones canónicas registradas. Chevron pequeño comunica intención dropdown, no habilita catálogo no definido ni inventa opciones; no usar azul. Mantener selector deshabilitado hasta contrato autorizado. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/484",
+          "solicitante": "Cristhian / Claude S22-M 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22m04_render_prefijo_onb001"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m04_pais_prefijo_no_canonico"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m04_chevron_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22m04_interaccion_sin_catalogo"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m04_render_prefijo_onb001": true,
+              "s22m04_pais_prefijo_no_canonico": false,
+              "s22m04_chevron_invalido": false,
+              "s22m04_interaccion_sin_catalogo": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m04_render_prefijo_onb001": true,
+              "s22m04_pais_prefijo_no_canonico": true,
+              "s22m04_chevron_invalido": false,
+              "s22m04_interaccion_sin_catalogo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m04_render_prefijo_onb001": true,
+              "s22m04_pais_prefijo_no_canonico": false,
+              "s22m04_chevron_invalido": true,
+              "s22m04_interaccion_sin_catalogo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m04_render_prefijo_onb001": true,
+              "s22m04_pais_prefijo_no_canonico": false,
+              "s22m04_chevron_invalido": false,
+              "s22m04_interaccion_sin_catalogo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m04_render_prefijo_onb001": false,
+              "s22m04_pais_prefijo_no_canonico": true,
+              "s22m04_chevron_invalido": true,
+              "s22m04_interaccion_sin_catalogo": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "7f8e578ef974c0147825d2cacf2173622e7ca064d43001bba8b37dbe7cc64f47",
+      "hash_paquete": "24765be6bbeb0043f7ee0cec2feefd43db049cd62da5b08eda7801b44e925bd5",
+      "hash_evaluado": "7f8e578ef9",
+      "hash_paquete_10": "24765be6bb"
+    },
+    {
+      "codigo": "S22M-C05",
+      "legacy_id": 489,
+      "legacy_ids": [
+        489
+      ],
+      "relacionadas": [],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 489,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En ONB_002 BLOQUEAR publicar Entidad regulada sin evidencia canónica regulatoria verificable o claims absolutos de seguridad sin evidencia técnica vigente, incluidos Tu información está segura, Datos encriptados y Registro seguro cuando se presenten como garantías no acreditadas. Captura Drive 1K7PdA_jOWMzwKTUkP7PGDQIWsNx6hbjI y decisión DEC-CLIENT-ONB002-VISUAL-COPY-NORMALIZATION-001 son evidencia visual, no prueba regulatoria. No afirmar regulación ni seguridad implementada. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22m05_render_claim_onb002",
+        "s22m05_regulacion_sin_evidencia",
+        "s22m05_seguridad_sin_evidencia",
+        "s22m05_captura_como_prueba_regulatoria"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22M-C05",
+        "clave": "s22m_legacy_489",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_ONBOARDING",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Claims regulatorios y de seguridad con evidencia",
+        "descripcion": "En ONB_002 BLOQUEAR publicar Entidad regulada sin evidencia canónica regulatoria verificable o claims absolutos de seguridad sin evidencia técnica vigente, incluidos Tu información está segura, Datos encriptados y Registro seguro cuando se presenten como garantías no acreditadas. Captura Drive 1K7PdA_jOWMzwKTUkP7PGDQIWsNx6hbjI y decisión DEC-CLIENT-ONB002-VISUAL-COPY-NORMALIZATION-001 son evidencia visual, no prueba regulatoria. No afirmar regulación ni seguridad implementada. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/489",
+          "solicitante": "Cristhian / Claude S22-M 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22m05_render_claim_onb002"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m05_regulacion_sin_evidencia"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22m05_seguridad_sin_evidencia"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22m05_captura_como_prueba_regulatoria"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m05_render_claim_onb002": true,
+              "s22m05_regulacion_sin_evidencia": false,
+              "s22m05_seguridad_sin_evidencia": false,
+              "s22m05_captura_como_prueba_regulatoria": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m05_render_claim_onb002": true,
+              "s22m05_regulacion_sin_evidencia": true,
+              "s22m05_seguridad_sin_evidencia": false,
+              "s22m05_captura_como_prueba_regulatoria": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m05_render_claim_onb002": true,
+              "s22m05_regulacion_sin_evidencia": false,
+              "s22m05_seguridad_sin_evidencia": true,
+              "s22m05_captura_como_prueba_regulatoria": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22m05_render_claim_onb002": true,
+              "s22m05_regulacion_sin_evidencia": false,
+              "s22m05_seguridad_sin_evidencia": false,
+              "s22m05_captura_como_prueba_regulatoria": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22m05_render_claim_onb002": false,
+              "s22m05_regulacion_sin_evidencia": true,
+              "s22m05_seguridad_sin_evidencia": true,
+              "s22m05_captura_como_prueba_regulatoria": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b95627a32168a8a190af2ac9e06e3c9dbe6c6d67c320c2e27c1a7503c5d7538f",
+      "hash_paquete": "48f46e655a162e061b23aba8d472dd10e348e985a3d0c751df09b9f0d4956f05",
+      "hash_evaluado": "b95627a321",
+      "hash_paquete_10": "48f46e655a"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22M-C01",
+      "hash_paquete": "369e9e10438177f8dbb08b33e6af82ca57cd01bee8d34e6a4d750f6e1543f5c4",
+      "hash_paquete_10": "369e9e1043",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4769 / Claude 2026-11-25 15:48 Lima / S22M-C01 / hash_paquete_10=369e9e1043"
+    },
+    {
+      "codigo": "S22M-C02",
+      "hash_paquete": "c897d4fff0f536906e2e63b0ec2ab4c00a23cb2096e5eafadcf4f8a31bed303b",
+      "hash_paquete_10": "c897d4fff0",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4769 / Claude 2026-11-25 15:48 Lima / S22M-C02 / hash_paquete_10=c897d4fff0"
+    },
+    {
+      "codigo": "S22M-C03",
+      "hash_paquete": "0ca7ebb53274b347e7d0b896e4b0c894548fd90360db61387c10a4f91f676bf0",
+      "hash_paquete_10": "0ca7ebb532",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4769 / Claude 2026-11-25 15:48 Lima / S22M-C03 / hash_paquete_10=0ca7ebb532"
+    },
+    {
+      "codigo": "S22M-C04",
+      "hash_paquete": "24765be6bbeb0043f7ee0cec2feefd43db049cd62da5b08eda7801b44e925bd5",
+      "hash_paquete_10": "24765be6bb",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4769 / Claude 2026-11-25 15:48 Lima / S22M-C04 / hash_paquete_10=24765be6bb"
+    },
+    {
+      "codigo": "S22M-C05",
+      "hash_paquete": "48f46e655a162e061b23aba8d472dd10e348e985a3d0c751df09b9f0d4956f05",
+      "hash_paquete_10": "48f46e655a",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4769 / Claude 2026-11-25 15:48 Lima / S22M-C05 / hash_paquete_10=48f46e655a"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 483,
+      "nucleo_codigo": "S16-C02",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S16-C02 conserva placeholder aprobado, error_text y anclajes invariantes de CTA y confianza.",
+      "residual": "Falta acreditar contrato canónico de nueve dígitos iniciados en nueve, mensaje literal y reserva de línea en NORMAL."
+    },
+    {
+      "legacy_id": 490,
+      "nucleo_codigo": "S14-C11",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S14-C11 conserva CAMPO_NRO_DOC y DNI por defecto, pero exige selector y permite CE y PASAPORTE bajo contrato vigente; no reinstala DNI_ONLY.",
+      "residual": "La prohibición histórica de selector y otros documentos contradice la regla publicada; falta decisión explícita sobre intención legada y referencia de longitud DNI."
+    },
+    {
+      "legacy_id": 494,
+      "nucleo_codigo": "M4-B05",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "M4-B05 gobierna habilitación visual de reenvío OTP a partir de timer AUTH/OTP_ORDINARY_RESEND_TIMER_SECONDS y tiempo server-side.",
+      "residual": "Falta acreditar política OTP_POL_B2B_AUTH_EMAIL_BREVO y desafío PASSWORD_RECOVERY, expiración del código y anti-enumeración en B2B-AUTH-006."
+    }
+  ]
+}
