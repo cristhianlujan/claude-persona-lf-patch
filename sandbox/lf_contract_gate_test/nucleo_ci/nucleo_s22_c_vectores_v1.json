@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "12a644ea00d7da0851170f75141631b9ca33a5e6",
     "js_vectors": "28/28",
@@ -1013,7 +1013,147 @@
       "hash_paquete_10": "93fc82bdd2"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22C-C01",
+      "hash_paquete": "303d980b7c2f0816f4e1f89fb0c35d6a09b75ad2aa775dbb750e92f923ca5669",
+      "hash_paquete_10": "303d980b7c",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4758 / Claude 2026-11-24 23:12 Lima / S22C-C01 / hash_paquete_10=303d980b7c"
+    },
+    {
+      "codigo": "S22C-C02",
+      "hash_paquete": "f1438ac9380666cef44d3f1653d5428dbd210b4d14a22940998e59f2f793a789",
+      "hash_paquete_10": "f1438ac938",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S7-C10, declarado."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4758 / Claude 2026-11-24 23:12 Lima / S22C-C02 / hash_paquete_10=f1438ac938"
+    },
+    {
+      "codigo": "S22C-C03",
+      "hash_paquete": "bf4544a6559bf494a42d3297e84ce43b4a40d9c6ed15d830138032dda8bbe33b",
+      "hash_paquete_10": "bf4544a655",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Adyacente a M4C-C06/C07, que son Login inicial."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4758 / Claude 2026-11-24 23:12 Lima / S22C-C03 / hash_paquete_10=bf4544a655"
+    },
+    {
+      "codigo": "S22C-C04",
+      "hash_paquete": "93fc82bdd29ae8e7458911295bda67607541f75d39d4e36a2f8ea5acf6c8f913",
+      "hash_paquete_10": "93fc82bdd2",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "Complementa S22B-C06."
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4758 / Claude 2026-11-24 23:12 Lima / S22C-C04 / hash_paquete_10=93fc82bdd2"
+    }
+  ],
   "cobertura_directa": [
     {
       "legacy_id": 207,
