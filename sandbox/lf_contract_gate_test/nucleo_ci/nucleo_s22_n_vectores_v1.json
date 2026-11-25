@@ -1,0 +1,1982 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "fa05a5fc331b53ee927486ec158341be605607f4",
+    "js_vectors": "54/54",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_related": [
+      {
+        "regla": "S10-C07",
+        "version": 1
+      },
+      {
+        "regla": "S22E-C02",
+        "version": 1
+      },
+      {
+        "regla": "S22E-C03",
+        "version": 1
+      },
+      {
+        "regla": "S3-C12",
+        "version": 1
+      },
+      {
+        "regla": "S4-C21",
+        "version": 2
+      },
+      {
+        "regla": "S6-C13",
+        "version": 1
+      },
+      {
+        "regla": "S8-C22",
+        "version": 1
+      }
+    ],
+    "published_direct_versions": [],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22n01_resuelve_home_autenticado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "resuelve home autenticado; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22n01_falla_como_sin_ofertas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "falla como sin ofertas; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22n01_cero_sin_consulta_exitosa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cero sin consulta exitosa; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22n01_falla_sin_estado_indisponible",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "falla sin estado indisponible; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22n01_pago_o_reintento_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pago o reintento invalido; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22n01_restaura_sin_revalidar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "restaura sin revalidar; hecho derivado, binding runtime pendiente",
+      "familia": "LOADING_EMPTY_ERROR_STATES"
+    },
+    {
+      "codigo": "s22n02_home_sin_oferta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "home sin oferta; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22n02_cero_no_acreditado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cero no acreditado; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22n02_trata_como_error",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "trata como error; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22n02_muestra_oferta_o_pago",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "muestra oferta o pago; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22n02_ruta_educativa_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta educativa invalida; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22n02_promesa_comercial",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "promesa comercial; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22n03_evalua_intento_checkout",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua intento checkout; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22n03_recurrente_sin_autorizacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "recurrente sin autorizacion; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22n03_autorizacion_sin_version_o_prueba",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "autorizacion sin version o prueba; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22n03_exige_en_unico_o_manual",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "exige en unico o manual; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22n03_frontend_infiere_requisito",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "frontend infiere requisito; hecho derivado, binding runtime pendiente",
+      "familia": "LEGAL_CONSENT"
+    },
+    {
+      "codigo": "s22n04_accede_mis_operaciones",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accede mis operaciones; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22n04_sin_autenticacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sin autenticacion; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22n04_pertenencia_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pertenencia invalida; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22n04_consulta_tercero_por_id",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "consulta tercero por id; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22n04_clasificacion_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "clasificacion invalida; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22n04_datos_o_documentos_inventados",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "datos o documentos inventados; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22n05_activa_o_modifica_plan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activa o modifica plan; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22n05_activacion_sin_pago_confirmado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "activacion sin pago confirmado; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22n05_snapshot_falta_o_mutable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "snapshot falta o mutable; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22n05_campos_snapshot_faltan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "campos snapshot faltan; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22n05_recalculo_desde_fuente_no_contractual",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "recalculo desde fuente no contractual; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22n05_cambio_sin_flujo_evidencia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio sin flujo evidencia; hecho derivado, binding runtime pendiente",
+      "familia": "FINANCIAL_INTEGRITY_RECONCILIATION"
+    },
+    {
+      "codigo": "s22n06_render_plan_activo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "render plan activo; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n06_fuente_no_snapshot_ledger",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fuente no snapshot ledger; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n06_campos_vista_faltan",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "campos vista faltan; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n06_pagada_sin_confirmacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pagada sin confirmacion; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n06_estado_desde_oferta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado desde oferta; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n06_montos_fechas_inconsistentes",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "montos fechas inconsistentes; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n07_genera_recordatorio_cuota",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "genera recordatorio cuota; hecho derivado, binding runtime pendiente",
+      "familia": "NOTIFICATIONS_DELIVERY"
+    },
+    {
+      "codigo": "s22n07_plan_o_cuota_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "plan o cuota invalida; hecho derivado, binding runtime pendiente",
+      "familia": "NOTIFICATIONS_DELIVERY"
+    },
+    {
+      "codigo": "s22n07_marketing_o_consent_exigido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "marketing o consent exigido; hecho derivado, binding runtime pendiente",
+      "familia": "NOTIFICATIONS_DELIVERY"
+    },
+    {
+      "codigo": "s22n07_politica_ausente_o_incorrecta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "politica ausente o incorrecta; hecho derivado, binding runtime pendiente",
+      "familia": "NOTIFICATIONS_DELIVERY"
+    },
+    {
+      "codigo": "s22n07_monto_fecha_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "monto fecha inventado; hecho derivado, binding runtime pendiente",
+      "familia": "NOTIFICATIONS_DELIVERY"
+    },
+    {
+      "codigo": "s22n07_divulgacion_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "divulgacion no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "NOTIFICATIONS_DELIVERY"
+    },
+    {
+      "codigo": "s22n08_captura_o_consume_tarjeta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "captura o consume tarjeta; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n08_componente_no_controlado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "componente no controlado; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n08_datos_crudos_a_lf",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "datos crudos a lf; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n08_referencia_o_metadato_no_permitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "referencia o metadato no permitido; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    },
+    {
+      "codigo": "s22n08_proveedor_sin_binding",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "proveedor sin binding; hecho derivado, binding runtime pendiente",
+      "familia": "PAYMENTS_CHECKOUT"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22N-C01",
+      "legacy_id": 516,
+      "legacy_ids": [
+        516
+      ],
+      "relacionadas": [
+        "S4-C21"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 516,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En resolución de Home autenticado BLOQUEAR mapear falla técnica, timeout o indisponibilidad de consulta de ofertas a NO_ACTIVE_OFFER_HOME o mostrar ofertas inexistentes. Solo consulta autoritativa exitosa con cero elegibles permite ese estado; ante falla usar OFFER_DATA_UNAVAILABLE, impedir pago y permitir reintento idempotente de carga. Restaurar oferta/selección anterior solo tras revalidar versión y vigencia según especificaciones HMO selladas. Complementa S4-C21; no inventar oferta ni resolver pantalla física. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n01_resuelve_home_autenticado",
+        "s22n01_falla_como_sin_ofertas",
+        "s22n01_cero_sin_consulta_exitosa",
+        "s22n01_falla_sin_estado_indisponible",
+        "s22n01_pago_o_reintento_invalido",
+        "s22n01_restaura_sin_revalidar"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C01",
+        "clave": "s22n_legacy_516",
+        "familia": "LOADING_EMPTY_ERROR_STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Indisponibilidad de ofertas no equivale a ausencia",
+        "descripcion": "En resolución de Home autenticado BLOQUEAR mapear falla técnica, timeout o indisponibilidad de consulta de ofertas a NO_ACTIVE_OFFER_HOME o mostrar ofertas inexistentes. Solo consulta autoritativa exitosa con cero elegibles permite ese estado; ante falla usar OFFER_DATA_UNAVAILABLE, impedir pago y permitir reintento idempotente de carga. Restaurar oferta/selección anterior solo tras revalidar versión y vigencia según especificaciones HMO selladas. Complementa S4-C21; no inventar oferta ni resolver pantalla física. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/516",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n01_resuelve_home_autenticado"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n01_falla_como_sin_ofertas"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n01_cero_sin_consulta_exitosa"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n01_falla_sin_estado_indisponible"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n01_pago_o_reintento_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n01_restaura_sin_revalidar"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": true,
+              "s22n01_falla_como_sin_ofertas": false,
+              "s22n01_cero_sin_consulta_exitosa": false,
+              "s22n01_falla_sin_estado_indisponible": false,
+              "s22n01_pago_o_reintento_invalido": false,
+              "s22n01_restaura_sin_revalidar": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": true,
+              "s22n01_falla_como_sin_ofertas": true,
+              "s22n01_cero_sin_consulta_exitosa": false,
+              "s22n01_falla_sin_estado_indisponible": false,
+              "s22n01_pago_o_reintento_invalido": false,
+              "s22n01_restaura_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": true,
+              "s22n01_falla_como_sin_ofertas": false,
+              "s22n01_cero_sin_consulta_exitosa": true,
+              "s22n01_falla_sin_estado_indisponible": false,
+              "s22n01_pago_o_reintento_invalido": false,
+              "s22n01_restaura_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": true,
+              "s22n01_falla_como_sin_ofertas": false,
+              "s22n01_cero_sin_consulta_exitosa": false,
+              "s22n01_falla_sin_estado_indisponible": true,
+              "s22n01_pago_o_reintento_invalido": false,
+              "s22n01_restaura_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": true,
+              "s22n01_falla_como_sin_ofertas": false,
+              "s22n01_cero_sin_consulta_exitosa": false,
+              "s22n01_falla_sin_estado_indisponible": false,
+              "s22n01_pago_o_reintento_invalido": true,
+              "s22n01_restaura_sin_revalidar": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": true,
+              "s22n01_falla_como_sin_ofertas": false,
+              "s22n01_cero_sin_consulta_exitosa": false,
+              "s22n01_falla_sin_estado_indisponible": false,
+              "s22n01_pago_o_reintento_invalido": false,
+              "s22n01_restaura_sin_revalidar": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n01_resuelve_home_autenticado": false,
+              "s22n01_falla_como_sin_ofertas": true,
+              "s22n01_cero_sin_consulta_exitosa": true,
+              "s22n01_falla_sin_estado_indisponible": true,
+              "s22n01_pago_o_reintento_invalido": true,
+              "s22n01_restaura_sin_revalidar": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "0c0c00df07b8064d068764ee8b99b95c811a16554796b9f521ab7930edd3cd82",
+      "hash_paquete": "5fea2cdd157d4f11c00821a2b9e6a5e65e332dc1ae6878b69d134132fdfcb608",
+      "hash_evaluado": "0c0c00df07",
+      "hash_paquete_10": "5fea2cdd15"
+    },
+    {
+      "codigo": "S22N-C02",
+      "legacy_id": 518,
+      "legacy_ids": [
+        518
+      ],
+      "relacionadas": [
+        "S10-C07",
+        "S8-C22",
+        "S4-C21"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 518,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En NO_ACTIVE_OFFER_HOME BLOQUEAR alcanzar estado sin consulta autoritativa exitosa que confirme cero ofertas elegibles activas, tratarlo como error, mostrar montos, modalidades, acreedores como oferta LF o CTA de pago. Habilitar orientación Ruta de Claridad reutilizando conjunto canónico de hitos y modelo educativo, accesibilidad y progreso existentes; permitir orientar acciones externas sin afirmar alternativa activa LF ni convertir educación en promesa comercial. Complementa S10-C07, S8-C22 y S4-C21; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n02_home_sin_oferta",
+        "s22n02_cero_no_acreditado",
+        "s22n02_trata_como_error",
+        "s22n02_muestra_oferta_o_pago",
+        "s22n02_ruta_educativa_invalida",
+        "s22n02_promesa_comercial"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C02",
+        "clave": "s22n_legacy_518",
+        "familia": "STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Home autenticado sin oferta como estado válido",
+        "descripcion": "En NO_ACTIVE_OFFER_HOME BLOQUEAR alcanzar estado sin consulta autoritativa exitosa que confirme cero ofertas elegibles activas, tratarlo como error, mostrar montos, modalidades, acreedores como oferta LF o CTA de pago. Habilitar orientación Ruta de Claridad reutilizando conjunto canónico de hitos y modelo educativo, accesibilidad y progreso existentes; permitir orientar acciones externas sin afirmar alternativa activa LF ni convertir educación en promesa comercial. Complementa S10-C07, S8-C22 y S4-C21; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/518",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n02_home_sin_oferta"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n02_cero_no_acreditado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n02_trata_como_error"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n02_muestra_oferta_o_pago"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n02_ruta_educativa_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n02_promesa_comercial"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": true,
+              "s22n02_cero_no_acreditado": false,
+              "s22n02_trata_como_error": false,
+              "s22n02_muestra_oferta_o_pago": false,
+              "s22n02_ruta_educativa_invalida": false,
+              "s22n02_promesa_comercial": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": true,
+              "s22n02_cero_no_acreditado": true,
+              "s22n02_trata_como_error": false,
+              "s22n02_muestra_oferta_o_pago": false,
+              "s22n02_ruta_educativa_invalida": false,
+              "s22n02_promesa_comercial": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": true,
+              "s22n02_cero_no_acreditado": false,
+              "s22n02_trata_como_error": true,
+              "s22n02_muestra_oferta_o_pago": false,
+              "s22n02_ruta_educativa_invalida": false,
+              "s22n02_promesa_comercial": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": true,
+              "s22n02_cero_no_acreditado": false,
+              "s22n02_trata_como_error": false,
+              "s22n02_muestra_oferta_o_pago": true,
+              "s22n02_ruta_educativa_invalida": false,
+              "s22n02_promesa_comercial": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": true,
+              "s22n02_cero_no_acreditado": false,
+              "s22n02_trata_como_error": false,
+              "s22n02_muestra_oferta_o_pago": false,
+              "s22n02_ruta_educativa_invalida": true,
+              "s22n02_promesa_comercial": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": true,
+              "s22n02_cero_no_acreditado": false,
+              "s22n02_trata_como_error": false,
+              "s22n02_muestra_oferta_o_pago": false,
+              "s22n02_ruta_educativa_invalida": false,
+              "s22n02_promesa_comercial": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n02_home_sin_oferta": false,
+              "s22n02_cero_no_acreditado": true,
+              "s22n02_trata_como_error": true,
+              "s22n02_muestra_oferta_o_pago": true,
+              "s22n02_ruta_educativa_invalida": true,
+              "s22n02_promesa_comercial": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "541214dc0c0627e9c8329229d0c18fc3dfea39c7d924a0b3ae05fd20902edec2",
+      "hash_paquete": "b3810c7944fafe963d622577548a66e5d547939e1567e9a3a896b1cfa07af4b9",
+      "hash_evaluado": "541214dc0c",
+      "hash_paquete_10": "b3810c7944"
+    },
+    {
+      "codigo": "S22N-C03",
+      "legacy_id": 521,
+      "legacy_ids": [
+        521
+      ],
+      "relacionadas": [
+        "S22E-C02",
+        "S22E-C03"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 521,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En checkout Cliente BLOQUEAR intento con cobro recurrente automático sin autorización explícita, demostrable y ligada a versión de cronograma/condiciones aceptadas antes del primer cobro automático. No solicitar ni exigir autorización recurrente en pago único o cuotas futuras manuales. El backend determina requisito conforme modalidad y medio seleccionados; frontend no infiere por nombre del medio. Complementa S22E-C02 y S22E-C03; no crea recurrencia ni habilita medios. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n03_evalua_intento_checkout",
+        "s22n03_recurrente_sin_autorizacion",
+        "s22n03_autorizacion_sin_version_o_prueba",
+        "s22n03_exige_en_unico_o_manual",
+        "s22n03_frontend_infiere_requisito"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C03",
+        "clave": "s22n_legacy_521",
+        "familia": "LEGAL_CONSENT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Consentimiento recurrente condicionado por backend",
+        "descripcion": "En checkout Cliente BLOQUEAR intento con cobro recurrente automático sin autorización explícita, demostrable y ligada a versión de cronograma/condiciones aceptadas antes del primer cobro automático. No solicitar ni exigir autorización recurrente en pago único o cuotas futuras manuales. El backend determina requisito conforme modalidad y medio seleccionados; frontend no infiere por nombre del medio. Complementa S22E-C02 y S22E-C03; no crea recurrencia ni habilita medios. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/521",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n03_evalua_intento_checkout"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n03_recurrente_sin_autorizacion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n03_autorizacion_sin_version_o_prueba"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n03_exige_en_unico_o_manual"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n03_frontend_infiere_requisito"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n03_evalua_intento_checkout": true,
+              "s22n03_recurrente_sin_autorizacion": false,
+              "s22n03_autorizacion_sin_version_o_prueba": false,
+              "s22n03_exige_en_unico_o_manual": false,
+              "s22n03_frontend_infiere_requisito": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n03_evalua_intento_checkout": true,
+              "s22n03_recurrente_sin_autorizacion": true,
+              "s22n03_autorizacion_sin_version_o_prueba": false,
+              "s22n03_exige_en_unico_o_manual": false,
+              "s22n03_frontend_infiere_requisito": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n03_evalua_intento_checkout": true,
+              "s22n03_recurrente_sin_autorizacion": false,
+              "s22n03_autorizacion_sin_version_o_prueba": true,
+              "s22n03_exige_en_unico_o_manual": false,
+              "s22n03_frontend_infiere_requisito": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n03_evalua_intento_checkout": true,
+              "s22n03_recurrente_sin_autorizacion": false,
+              "s22n03_autorizacion_sin_version_o_prueba": false,
+              "s22n03_exige_en_unico_o_manual": true,
+              "s22n03_frontend_infiere_requisito": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n03_evalua_intento_checkout": true,
+              "s22n03_recurrente_sin_autorizacion": false,
+              "s22n03_autorizacion_sin_version_o_prueba": false,
+              "s22n03_exige_en_unico_o_manual": false,
+              "s22n03_frontend_infiere_requisito": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n03_evalua_intento_checkout": false,
+              "s22n03_recurrente_sin_autorizacion": true,
+              "s22n03_autorizacion_sin_version_o_prueba": true,
+              "s22n03_exige_en_unico_o_manual": true,
+              "s22n03_frontend_infiere_requisito": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "2e76ff348c718152138f3e122801d42c527a7e2a59f155c43f7ca0fe2a3feb28",
+      "hash_paquete": "8243d7790f462d585d4c0c568a8dfaefab53dff1623d3def8a367ea06eef3b95",
+      "hash_evaluado": "2e76ff348c",
+      "hash_paquete_10": "8243d7790f"
+    },
+    {
+      "codigo": "S22N-C04",
+      "legacy_id": 526,
+      "legacy_ids": [
+        526
+      ],
+      "relacionadas": [
+        "S22E-C03",
+        "S3-C12"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 526,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En Mis operaciones Cliente BLOQUEAR acceso sin autenticación, operación/plan/pago/documento ajeno a cuenta autenticada o consulta de terceros por user_id, account_id o DNI suministrado por frontend. Backend resuelve pertenencia. Distinguir planes activos en cuotas, liquidaciones/pagos únicos completados y estados no terminales existentes. Mostrar historial real, próxima obligación, cronograma, estado Carta de No Adeudo y documentos publicados solo cuando fuente autoritativa los disponga; no inventar datos transaccionales. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n04_accede_mis_operaciones",
+        "s22n04_sin_autenticacion",
+        "s22n04_pertenencia_invalida",
+        "s22n04_consulta_tercero_por_id",
+        "s22n04_clasificacion_invalida",
+        "s22n04_datos_o_documentos_inventados"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C04",
+        "clave": "s22n_legacy_526",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Mis operaciones restringido a cuenta autenticada",
+        "descripcion": "En Mis operaciones Cliente BLOQUEAR acceso sin autenticación, operación/plan/pago/documento ajeno a cuenta autenticada o consulta de terceros por user_id, account_id o DNI suministrado por frontend. Backend resuelve pertenencia. Distinguir planes activos en cuotas, liquidaciones/pagos únicos completados y estados no terminales existentes. Mostrar historial real, próxima obligación, cronograma, estado Carta de No Adeudo y documentos publicados solo cuando fuente autoritativa los disponga; no inventar datos transaccionales. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/526",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n04_accede_mis_operaciones"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n04_sin_autenticacion"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n04_pertenencia_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n04_consulta_tercero_por_id"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n04_clasificacion_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n04_datos_o_documentos_inventados"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": true,
+              "s22n04_sin_autenticacion": false,
+              "s22n04_pertenencia_invalida": false,
+              "s22n04_consulta_tercero_por_id": false,
+              "s22n04_clasificacion_invalida": false,
+              "s22n04_datos_o_documentos_inventados": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": true,
+              "s22n04_sin_autenticacion": true,
+              "s22n04_pertenencia_invalida": false,
+              "s22n04_consulta_tercero_por_id": false,
+              "s22n04_clasificacion_invalida": false,
+              "s22n04_datos_o_documentos_inventados": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": true,
+              "s22n04_sin_autenticacion": false,
+              "s22n04_pertenencia_invalida": true,
+              "s22n04_consulta_tercero_por_id": false,
+              "s22n04_clasificacion_invalida": false,
+              "s22n04_datos_o_documentos_inventados": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": true,
+              "s22n04_sin_autenticacion": false,
+              "s22n04_pertenencia_invalida": false,
+              "s22n04_consulta_tercero_por_id": true,
+              "s22n04_clasificacion_invalida": false,
+              "s22n04_datos_o_documentos_inventados": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": true,
+              "s22n04_sin_autenticacion": false,
+              "s22n04_pertenencia_invalida": false,
+              "s22n04_consulta_tercero_por_id": false,
+              "s22n04_clasificacion_invalida": true,
+              "s22n04_datos_o_documentos_inventados": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": true,
+              "s22n04_sin_autenticacion": false,
+              "s22n04_pertenencia_invalida": false,
+              "s22n04_consulta_tercero_por_id": false,
+              "s22n04_clasificacion_invalida": false,
+              "s22n04_datos_o_documentos_inventados": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n04_accede_mis_operaciones": false,
+              "s22n04_sin_autenticacion": true,
+              "s22n04_pertenencia_invalida": true,
+              "s22n04_consulta_tercero_por_id": true,
+              "s22n04_clasificacion_invalida": true,
+              "s22n04_datos_o_documentos_inventados": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "61d36ef27be66ac9561fe1cbc2eeff583ff8a4f16b2586714ba60c73d8133310",
+      "hash_paquete": "085937c6bd5ef4d86ff1fbbe1b83f54f5002c6809f02f9e664fde077c370295d",
+      "hash_evaluado": "61d36ef27b",
+      "hash_paquete_10": "085937c6bd"
+    },
+    {
+      "codigo": "S22N-C05",
+      "legacy_id": 528,
+      "legacy_ids": [
+        528
+      ],
+      "relacionadas": [
+        "S22E-C03"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 528,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Al activar plan de cuotas por pago inicial confirmado BLOQUEAR ausencia de snapshot contractual inmutable que preserve deuda/oferta, versión aceptada, plan, cronograma, montos y fechas acordados, modalidad de cobro por cuota, condiciones/versiones aceptadas y referencia al pago inicial confirmado. Cuotas futuras no se recalculan desde oferta vigente, selección temporal ni pricing actual. Modificación posterior requiere flujo gobernado y nueva evidencia, nunca sobrescritura silenciosa de snapshot original. Complementa S22E-C03; no crea esquema ni activa plan. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n05_activa_o_modifica_plan",
+        "s22n05_activacion_sin_pago_confirmado",
+        "s22n05_snapshot_falta_o_mutable",
+        "s22n05_campos_snapshot_faltan",
+        "s22n05_recalculo_desde_fuente_no_contractual",
+        "s22n05_cambio_sin_flujo_evidencia"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C05",
+        "clave": "s22n_legacy_528",
+        "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Snapshot contractual inmutable al activar cuotas",
+        "descripcion": "Al activar plan de cuotas por pago inicial confirmado BLOQUEAR ausencia de snapshot contractual inmutable que preserve deuda/oferta, versión aceptada, plan, cronograma, montos y fechas acordados, modalidad de cobro por cuota, condiciones/versiones aceptadas y referencia al pago inicial confirmado. Cuotas futuras no se recalculan desde oferta vigente, selección temporal ni pricing actual. Modificación posterior requiere flujo gobernado y nueva evidencia, nunca sobrescritura silenciosa de snapshot original. Complementa S22E-C03; no crea esquema ni activa plan. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/528",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n05_activa_o_modifica_plan"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n05_activacion_sin_pago_confirmado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n05_snapshot_falta_o_mutable"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n05_campos_snapshot_faltan"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n05_recalculo_desde_fuente_no_contractual"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n05_cambio_sin_flujo_evidencia"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": true,
+              "s22n05_activacion_sin_pago_confirmado": false,
+              "s22n05_snapshot_falta_o_mutable": false,
+              "s22n05_campos_snapshot_faltan": false,
+              "s22n05_recalculo_desde_fuente_no_contractual": false,
+              "s22n05_cambio_sin_flujo_evidencia": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": true,
+              "s22n05_activacion_sin_pago_confirmado": true,
+              "s22n05_snapshot_falta_o_mutable": false,
+              "s22n05_campos_snapshot_faltan": false,
+              "s22n05_recalculo_desde_fuente_no_contractual": false,
+              "s22n05_cambio_sin_flujo_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": true,
+              "s22n05_activacion_sin_pago_confirmado": false,
+              "s22n05_snapshot_falta_o_mutable": true,
+              "s22n05_campos_snapshot_faltan": false,
+              "s22n05_recalculo_desde_fuente_no_contractual": false,
+              "s22n05_cambio_sin_flujo_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": true,
+              "s22n05_activacion_sin_pago_confirmado": false,
+              "s22n05_snapshot_falta_o_mutable": false,
+              "s22n05_campos_snapshot_faltan": true,
+              "s22n05_recalculo_desde_fuente_no_contractual": false,
+              "s22n05_cambio_sin_flujo_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": true,
+              "s22n05_activacion_sin_pago_confirmado": false,
+              "s22n05_snapshot_falta_o_mutable": false,
+              "s22n05_campos_snapshot_faltan": false,
+              "s22n05_recalculo_desde_fuente_no_contractual": true,
+              "s22n05_cambio_sin_flujo_evidencia": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": true,
+              "s22n05_activacion_sin_pago_confirmado": false,
+              "s22n05_snapshot_falta_o_mutable": false,
+              "s22n05_campos_snapshot_faltan": false,
+              "s22n05_recalculo_desde_fuente_no_contractual": false,
+              "s22n05_cambio_sin_flujo_evidencia": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n05_activa_o_modifica_plan": false,
+              "s22n05_activacion_sin_pago_confirmado": true,
+              "s22n05_snapshot_falta_o_mutable": true,
+              "s22n05_campos_snapshot_faltan": true,
+              "s22n05_recalculo_desde_fuente_no_contractual": true,
+              "s22n05_cambio_sin_flujo_evidencia": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "0975e2da90ecc76446a9570afe8574d5828d7377780bcf81bf5aed74db8394a2",
+      "hash_paquete": "7520a4c8985d5e12b128e08dc18fa8ad042aaf624499a2a95ce105c54d91c8fc",
+      "hash_evaluado": "0975e2da90",
+      "hash_paquete_10": "7520a4c898"
+    },
+    {
+      "codigo": "S22N-C06",
+      "legacy_id": 529,
+      "legacy_ids": [
+        529
+      ],
+      "relacionadas": [
+        "S22E-C03",
+        "S22N-C05"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 529,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "En Mis operaciones para plan activo de cuotas BLOQUEAR mostrar datos no obtenidos del snapshot contractual vigente y ledger autoritativo, omitir estado real del plan, cuotas pagadas/pendientes, próxima cuota si existe, cronograma, modalidad actual de cobro, historial de pagos o estado Carta de No Adeudo cuando corresponda. No marcar cuota pagada sin PAYMENT_CONFIRMED ni derivar estado desde oferta original; importes y fechas corresponden al snapshot y eventos autoritativos. Complementa S22E-C03 y S22N-C05; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n06_render_plan_activo",
+        "s22n06_fuente_no_snapshot_ledger",
+        "s22n06_campos_vista_faltan",
+        "s22n06_pagada_sin_confirmacion",
+        "s22n06_estado_desde_oferta",
+        "s22n06_montos_fechas_inconsistentes"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C06",
+        "clave": "s22n_legacy_529",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Vista de plan activo desde snapshot y ledger",
+        "descripcion": "En Mis operaciones para plan activo de cuotas BLOQUEAR mostrar datos no obtenidos del snapshot contractual vigente y ledger autoritativo, omitir estado real del plan, cuotas pagadas/pendientes, próxima cuota si existe, cronograma, modalidad actual de cobro, historial de pagos o estado Carta de No Adeudo cuando corresponda. No marcar cuota pagada sin PAYMENT_CONFIRMED ni derivar estado desde oferta original; importes y fechas corresponden al snapshot y eventos autoritativos. Complementa S22E-C03 y S22N-C05; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/529",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n06_render_plan_activo"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n06_fuente_no_snapshot_ledger"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n06_campos_vista_faltan"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n06_pagada_sin_confirmacion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n06_estado_desde_oferta"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n06_montos_fechas_inconsistentes"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": true,
+              "s22n06_fuente_no_snapshot_ledger": false,
+              "s22n06_campos_vista_faltan": false,
+              "s22n06_pagada_sin_confirmacion": false,
+              "s22n06_estado_desde_oferta": false,
+              "s22n06_montos_fechas_inconsistentes": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": true,
+              "s22n06_fuente_no_snapshot_ledger": true,
+              "s22n06_campos_vista_faltan": false,
+              "s22n06_pagada_sin_confirmacion": false,
+              "s22n06_estado_desde_oferta": false,
+              "s22n06_montos_fechas_inconsistentes": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": true,
+              "s22n06_fuente_no_snapshot_ledger": false,
+              "s22n06_campos_vista_faltan": true,
+              "s22n06_pagada_sin_confirmacion": false,
+              "s22n06_estado_desde_oferta": false,
+              "s22n06_montos_fechas_inconsistentes": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": true,
+              "s22n06_fuente_no_snapshot_ledger": false,
+              "s22n06_campos_vista_faltan": false,
+              "s22n06_pagada_sin_confirmacion": true,
+              "s22n06_estado_desde_oferta": false,
+              "s22n06_montos_fechas_inconsistentes": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": true,
+              "s22n06_fuente_no_snapshot_ledger": false,
+              "s22n06_campos_vista_faltan": false,
+              "s22n06_pagada_sin_confirmacion": false,
+              "s22n06_estado_desde_oferta": true,
+              "s22n06_montos_fechas_inconsistentes": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": true,
+              "s22n06_fuente_no_snapshot_ledger": false,
+              "s22n06_campos_vista_faltan": false,
+              "s22n06_pagada_sin_confirmacion": false,
+              "s22n06_estado_desde_oferta": false,
+              "s22n06_montos_fechas_inconsistentes": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n06_render_plan_activo": false,
+              "s22n06_fuente_no_snapshot_ledger": true,
+              "s22n06_campos_vista_faltan": true,
+              "s22n06_pagada_sin_confirmacion": true,
+              "s22n06_estado_desde_oferta": true,
+              "s22n06_montos_fechas_inconsistentes": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f558782634f72fd7679c404f3154247cd83007c9457c13bdf83e27f13a1613a9",
+      "hash_paquete": "57a6e4833a80760c7d72e3842d75227854521eda91fd6674cbbfa5fc445ec86e",
+      "hash_evaluado": "f558782634",
+      "hash_paquete_10": "57a6e4833a"
+    },
+    {
+      "codigo": "S22N-C07",
+      "legacy_id": 531,
+      "legacy_ids": [
+        531
+      ],
+      "relacionadas": [],
+      "residual": "Falta política canónica de anticipación, frecuencia, canales y detalle sensible autorizado; no se define ni presume configuración operativa.",
+      "coberturas": [
+        {
+          "legacy_id": 531,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta política canónica de anticipación, frecuencia, canales y detalle sensible autorizado; no se define ni presume configuración operativa.",
+          "diferencias": "Al generar recordatorio de cuota pendiente BLOQUEAR fuente distinta de plan activo y cronograma contractual, tratamiento como marketing o exigencia de consent_marketing. Anticipación, frecuencia y canales se resuelven exclusivamente por política configurable autorizada de comunicación, no reglas antiguas de vencimiento de oferta. No inventar montos ni fechas ni divulgar detalles financieros sensibles en superficies no autenticadas más allá de autorización de política. No crear valores ni enviar mensajes; binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n07_genera_recordatorio_cuota",
+        "s22n07_plan_o_cuota_invalida",
+        "s22n07_marketing_o_consent_exigido",
+        "s22n07_politica_ausente_o_incorrecta",
+        "s22n07_monto_fecha_inventado",
+        "s22n07_divulgacion_no_autorizada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C07",
+        "clave": "s22n_legacy_531",
+        "familia": "NOTIFICATIONS_DELIVERY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Recordatorio operativo de cuota desde contrato",
+        "descripcion": "Al generar recordatorio de cuota pendiente BLOQUEAR fuente distinta de plan activo y cronograma contractual, tratamiento como marketing o exigencia de consent_marketing. Anticipación, frecuencia y canales se resuelven exclusivamente por política configurable autorizada de comunicación, no reglas antiguas de vencimiento de oferta. No inventar montos ni fechas ni divulgar detalles financieros sensibles en superficies no autenticadas más allá de autorización de política. No crear valores ni enviar mensajes; binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/531",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n07_genera_recordatorio_cuota"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n07_plan_o_cuota_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22n07_marketing_o_consent_exigido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n07_politica_ausente_o_incorrecta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n07_monto_fecha_inventado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n07_divulgacion_no_autorizada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": true,
+              "s22n07_plan_o_cuota_invalida": false,
+              "s22n07_marketing_o_consent_exigido": false,
+              "s22n07_politica_ausente_o_incorrecta": false,
+              "s22n07_monto_fecha_inventado": false,
+              "s22n07_divulgacion_no_autorizada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": true,
+              "s22n07_plan_o_cuota_invalida": true,
+              "s22n07_marketing_o_consent_exigido": false,
+              "s22n07_politica_ausente_o_incorrecta": false,
+              "s22n07_monto_fecha_inventado": false,
+              "s22n07_divulgacion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": true,
+              "s22n07_plan_o_cuota_invalida": false,
+              "s22n07_marketing_o_consent_exigido": true,
+              "s22n07_politica_ausente_o_incorrecta": false,
+              "s22n07_monto_fecha_inventado": false,
+              "s22n07_divulgacion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": true,
+              "s22n07_plan_o_cuota_invalida": false,
+              "s22n07_marketing_o_consent_exigido": false,
+              "s22n07_politica_ausente_o_incorrecta": true,
+              "s22n07_monto_fecha_inventado": false,
+              "s22n07_divulgacion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": true,
+              "s22n07_plan_o_cuota_invalida": false,
+              "s22n07_marketing_o_consent_exigido": false,
+              "s22n07_politica_ausente_o_incorrecta": false,
+              "s22n07_monto_fecha_inventado": true,
+              "s22n07_divulgacion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": true,
+              "s22n07_plan_o_cuota_invalida": false,
+              "s22n07_marketing_o_consent_exigido": false,
+              "s22n07_politica_ausente_o_incorrecta": false,
+              "s22n07_monto_fecha_inventado": false,
+              "s22n07_divulgacion_no_autorizada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n07_genera_recordatorio_cuota": false,
+              "s22n07_plan_o_cuota_invalida": true,
+              "s22n07_marketing_o_consent_exigido": true,
+              "s22n07_politica_ausente_o_incorrecta": true,
+              "s22n07_monto_fecha_inventado": true,
+              "s22n07_divulgacion_no_autorizada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "def3eadd2bbefb99ea6ca4c9926c3686627b0dd39d6b433bd0489060e0d049ad",
+      "hash_paquete": "93eec1f3c180874fec2cee8198a5eded2d2a874ce8f8a7e5938ff5185df32f25",
+      "hash_evaluado": "def3eadd2b",
+      "hash_paquete_10": "93eec1f3c1"
+    },
+    {
+      "codigo": "S22N-C08",
+      "legacy_id": 538,
+      "legacy_ids": [
+        538
+      ],
+      "relacionadas": [
+        "S6-C13"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 538,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Cuando CARD sea elegible BLOQUEAR captura de PAN, vencimiento o CVV en campos propios LF o envío a servidores LF, Supabase, logs, analytics o session replay. Captura solo en componentes alojados/controlados por proveedor autorizado, hosted fields, iframe o equivalente que impida recibir datos crudos; LF consume únicamente referencias opacas/tokens y metadatos enmascarados permitidos por contrato. No fijar Niubiz sin binding productivo canónico ni debilitar frontera si técnica distinta de iframe. Complementa S6-C13 para integración específica Niubiz. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22n08_captura_o_consume_tarjeta",
+        "s22n08_componente_no_controlado",
+        "s22n08_datos_crudos_a_lf",
+        "s22n08_referencia_o_metadato_no_permitido",
+        "s22n08_proveedor_sin_binding"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22N-C08",
+        "clave": "s22n_legacy_538",
+        "familia": "PAYMENTS_CHECKOUT",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_PAYMENTS",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Frontera de captura de tarjeta independiente del proveedor",
+        "descripcion": "Cuando CARD sea elegible BLOQUEAR captura de PAN, vencimiento o CVV en campos propios LF o envío a servidores LF, Supabase, logs, analytics o session replay. Captura solo en componentes alojados/controlados por proveedor autorizado, hosted fields, iframe o equivalente que impida recibir datos crudos; LF consume únicamente referencias opacas/tokens y metadatos enmascarados permitidos por contrato. No fijar Niubiz sin binding productivo canónico ni debilitar frontera si técnica distinta de iframe. Complementa S6-C13 para integración específica Niubiz. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/538",
+          "solicitante": "Cristhian / Claude S22-N 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22n08_captura_o_consume_tarjeta"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n08_componente_no_controlado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22n08_datos_crudos_a_lf"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22n08_referencia_o_metadato_no_permitido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22n08_proveedor_sin_binding"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n08_captura_o_consume_tarjeta": true,
+              "s22n08_componente_no_controlado": false,
+              "s22n08_datos_crudos_a_lf": false,
+              "s22n08_referencia_o_metadato_no_permitido": false,
+              "s22n08_proveedor_sin_binding": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n08_captura_o_consume_tarjeta": true,
+              "s22n08_componente_no_controlado": true,
+              "s22n08_datos_crudos_a_lf": false,
+              "s22n08_referencia_o_metadato_no_permitido": false,
+              "s22n08_proveedor_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n08_captura_o_consume_tarjeta": true,
+              "s22n08_componente_no_controlado": false,
+              "s22n08_datos_crudos_a_lf": true,
+              "s22n08_referencia_o_metadato_no_permitido": false,
+              "s22n08_proveedor_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n08_captura_o_consume_tarjeta": true,
+              "s22n08_componente_no_controlado": false,
+              "s22n08_datos_crudos_a_lf": false,
+              "s22n08_referencia_o_metadato_no_permitido": true,
+              "s22n08_proveedor_sin_binding": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22n08_captura_o_consume_tarjeta": true,
+              "s22n08_componente_no_controlado": false,
+              "s22n08_datos_crudos_a_lf": false,
+              "s22n08_referencia_o_metadato_no_permitido": false,
+              "s22n08_proveedor_sin_binding": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22n08_captura_o_consume_tarjeta": false,
+              "s22n08_componente_no_controlado": true,
+              "s22n08_datos_crudos_a_lf": true,
+              "s22n08_referencia_o_metadato_no_permitido": true,
+              "s22n08_proveedor_sin_binding": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "fffe8d89a5e2d69e6078af96d32613d050923f441781dabe125b542ef36eac1d",
+      "hash_paquete": "2e91eb08359904ee7b94cd8bd21eb0c08b10f85ba54d3a0c25db7e70d00d5abd",
+      "hash_evaluado": "fffe8d89a5",
+      "hash_paquete_10": "2e91eb0835"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": []
+}
