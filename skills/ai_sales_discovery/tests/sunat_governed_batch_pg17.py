@@ -117,7 +117,7 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     assert psql("SELECT count(*) FROM public.lf_operation_effect_guard WHERE execution_id='EXEC-SUNAT-FIXTURE' AND state='SUCCEEDED'")=='2'
     assert psql("SELECT count(*) FROM saly.ventas_discovery_plan_batches WHERE run_id="+lit(run)+"::uuid AND estado='FOUND'")=='2'
     # Verify EXACT commercial view DDL on PG17, with one config key (B13).
-    migration_path=ROOT/'supabase/migrations/20261122191500_lf_saly_sunat_commercial_filter_v1.sql'
+    migration_path=ROOT/'supabase/migrations/20261123000336_lf_saly_sunat_commercial_filter_v1.sql'
     migration=migration_path.read_text()
     ddl=migration[migration.index('CREATE VIEW saly.ventas_sunat_elegibilidad_v1'):
                   migration.index('REVOKE ALL ON saly.ventas_sunat_elegibilidad_v1')]
@@ -155,4 +155,12 @@ INSERT INTO public.lf_operation_contracts VALUES('INGESTA_EMPRESARIAL_SALY','SAL
     # No public client execution paths.
     assert psql("SELECT has_function_privilege('service_role','saly.ventas_sunat_batch_execute_v1(text,text,bigint,text,text)','EXECUTE')")=='f'
     print('PASS_SUNAT_NATIVE_PLAN_BATCH_ATOMIC_ROLLBACK_READBACK_REPLAY_LEASE_2_BATCHES_2_COMPANIES')
+    # Execute SALY SUNAT closure candidate negative checks in an isolated PG17 database.
+    # Reuse existing authorized workflow, no new workflow and no SALY credentials.
+    subprocess.run(['createdb','saly_sunat_close_ci'],check=True,timeout=30)
+    close_env=os.environ.copy()
+    close_env['PGDATABASE']='saly_sunat_close_ci'
+    subprocess.run([sys.executable,str(Path(__file__).with_name('test_sunat_close_pg17.py'))],
+                   check=True,env=close_env,timeout=150)
+
 if __name__=='__main__': main()
