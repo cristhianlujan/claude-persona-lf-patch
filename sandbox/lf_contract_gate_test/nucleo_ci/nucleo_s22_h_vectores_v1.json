@@ -1,0 +1,533 @@
+{
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
+  "preflight": {
+    "base": "57c051f66193c9c3b1c152374356f182fa579ba1",
+    "js_vectors": "9/9",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 206,
+        "nucleo_codigo": "S10-C06",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 206,
+        "nucleo_codigo": "S8-C21",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 218,
+        "nucleo_codigo": "S9-C21",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 246,
+        "nucleo_codigo": "S11-C10",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 248,
+        "nucleo_codigo": "S4-C25",
+        "version_nucleo": 2,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 275,
+        "nucleo_codigo": "S22B-C01",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 282,
+        "nucleo_codigo": "S11-C14",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [
+      {
+        "regla": "S4-C25",
+        "version": 2,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S11-C10",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S11-C14",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S9-C21",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S10-C06",
+        "version": 1,
+        "estado": "PUBLICADA"
+      },
+      {
+        "regla": "S22B-C01",
+        "version": 1,
+        "estado": "PUBLICADA"
+      }
+    ],
+    "coverage_write": "future UPSERT all links"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22h01_presentacion_aliado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "presentacion aliado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22h01_estado_no_aprobado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado no aprobado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22h02_exposicion_api",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "exposicion api; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22h02_contrato_o_binding_no_verificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contrato o binding no verificado; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22h02_ruta_o_metodo_no_autorizado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta o metodo no autorizado; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    },
+    {
+      "codigo": "s22h02_contexto_autorizacion_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contexto autorizacion invalido; hecho derivado, binding runtime pendiente",
+      "familia": "SECURITY"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22H-C01",
+      "legacy_id": 232,
+      "legacy_ids": [
+        232
+      ],
+      "relacionadas": [
+        "S10-C15",
+        "S10-C14"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 232,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Ante presentación de aliado B2B mediante logo, nombre u oferta en producto BLOQUEAR cuando authorization_status no sea approved, incluyendo pending, draft, rejected, unknown o ausencia de evidencia. No inventar estado ni autorización. S10-C15 conserva autorización documentada para prototipos; S10-C14 conserva condiciones de oferta autorizadas. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22h01_presentacion_aliado",
+        "s22h01_estado_no_aprobado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22H-C01",
+        "clave": "s22h_legacy_232",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Visibilidad de aliados autorizados",
+        "descripcion": "Ante presentación de aliado B2B mediante logo, nombre u oferta en producto BLOQUEAR cuando authorization_status no sea approved, incluyendo pending, draft, rejected, unknown o ausencia de evidencia. No inventar estado ni autorización. S10-C15 conserva autorización documentada para prototipos; S10-C14 conserva condiciones de oferta autorizadas. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/232",
+          "solicitante": "Cristhian / Claude S22-H 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22h01_presentacion_aliado"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22h01_estado_no_aprobado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22h01_presentacion_aliado": true,
+              "s22h01_estado_no_aprobado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22h01_presentacion_aliado": true,
+              "s22h01_estado_no_aprobado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22h01_presentacion_aliado": false,
+              "s22h01_estado_no_aprobado": true
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22h01_presentacion_aliado": false,
+              "s22h01_estado_no_aprobado": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "19efdde10de4c4597b3c00b7f8b1f56713e85efa4cc239a722bf7ee6c6881bc3",
+      "hash_paquete": "73ead5ae785a840243e32da3506651409178257e69b5b304c765cd19178312d9",
+      "hash_evaluado": "19efdde10d",
+      "hash_paquete_10": "73ead5ae78"
+    },
+    {
+      "codigo": "S22H-C02",
+      "legacy_id": 214,
+      "legacy_ids": [
+        214,
+        215,
+        216
+      ],
+      "relacionadas": [],
+      "residual": "Falta acreditar que las rutas y métodos históricos coincidan con el contrato canónico vigente de onboarding.",
+      "coberturas": [
+        {
+          "legacy_id": 214,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar que las rutas y métodos históricos coincidan con el contrato canónico vigente de onboarding.",
+          "diferencias": "Ante exposición de rutas API de onboarding, ofertas o pagos BLOQUEAR declarar disponibles endpoints históricos sin contrato vigente y binding verificado. En contrato autorizado exigir POST start, verify-otp, resend-otp; PATCH update-phone; GET home-variant de /api/v1/onboarding; GET /api/v1/offers; POST /api/v1/checkout/initiate y confirm; GET /api/v1/checkout/status/{id} y /api/v1/carta-no-adeudo/{offer_id}, únicamente si corresponden a rutas canónicas aprobadas. Start público; verify-otp, resend-otp y update-phone requieren contexto session_id validado server-side; ofertas, checkout y carta requieren autenticación JWT y autorización efectiva de recurso. No convierte session_id aislado en autorización ni certifica endpoints existentes. Binding pendiente."
+        },
+        {
+          "legacy_id": 215,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta acreditar que las rutas y métodos históricos coincidan con el contrato canónico vigente de ofertas, pagos y documentos.",
+          "diferencias": "Ante exposición de rutas API de onboarding, ofertas o pagos BLOQUEAR declarar disponibles endpoints históricos sin contrato vigente y binding verificado. En contrato autorizado exigir POST start, verify-otp, resend-otp; PATCH update-phone; GET home-variant de /api/v1/onboarding; GET /api/v1/offers; POST /api/v1/checkout/initiate y confirm; GET /api/v1/checkout/status/{id} y /api/v1/carta-no-adeudo/{offer_id}, únicamente si corresponden a rutas canónicas aprobadas. Start público; verify-otp, resend-otp y update-phone requieren contexto session_id validado server-side; ofertas, checkout y carta requieren autenticación JWT y autorización efectiva de recurso. No convierte session_id aislado en autorización ni certifica endpoints existentes. Binding pendiente."
+        },
+        {
+          "legacy_id": 216,
+          "estado_cobertura": "PARCIAL",
+          "residual": "Falta verificar contrato runtime de autenticación y autorización de todas las rutas históricas; no se afirma equivalencia física.",
+          "diferencias": "Ante exposición de rutas API de onboarding, ofertas o pagos BLOQUEAR declarar disponibles endpoints históricos sin contrato vigente y binding verificado. En contrato autorizado exigir POST start, verify-otp, resend-otp; PATCH update-phone; GET home-variant de /api/v1/onboarding; GET /api/v1/offers; POST /api/v1/checkout/initiate y confirm; GET /api/v1/checkout/status/{id} y /api/v1/carta-no-adeudo/{offer_id}, únicamente si corresponden a rutas canónicas aprobadas. Start público; verify-otp, resend-otp y update-phone requieren contexto session_id validado server-side; ofertas, checkout y carta requieren autenticación JWT y autorización efectiva de recurso. No convierte session_id aislado en autorización ni certifica endpoints existentes. Binding pendiente."
+        }
+      ],
+      "hechos": [
+        "s22h02_exposicion_api",
+        "s22h02_contrato_o_binding_no_verificado",
+        "s22h02_ruta_o_metodo_no_autorizado",
+        "s22h02_contexto_autorizacion_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22H-C02",
+        "clave": "s22h_legacy_214",
+        "familia": "SECURITY",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "BACKEND",
+        "modo": "HEREDA",
+        "dueno": "TECNICO",
+        "titulo": "Contratos históricos de rutas API con autorización por contexto",
+        "descripcion": "Ante exposición de rutas API de onboarding, ofertas o pagos BLOQUEAR declarar disponibles endpoints históricos sin contrato vigente y binding verificado. En contrato autorizado exigir POST start, verify-otp, resend-otp; PATCH update-phone; GET home-variant de /api/v1/onboarding; GET /api/v1/offers; POST /api/v1/checkout/initiate y confirm; GET /api/v1/checkout/status/{id} y /api/v1/carta-no-adeudo/{offer_id}, únicamente si corresponden a rutas canónicas aprobadas. Start público; verify-otp, resend-otp y update-phone requieren contexto session_id validado server-side; ofertas, checkout y carta requieren autenticación JWT y autorización efectiva de recurso. No convierte session_id aislado en autorización ni certifica endpoints existentes. Binding pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-TECNICO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/214;lf_ops.reglas/215;lf_ops.reglas/216",
+          "solicitante": "Cristhian / Claude S22-H 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22h02_exposicion_api"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22h02_contrato_o_binding_no_verificado"
+                },
+                "der": {
+                  "lit": true
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22h02_ruta_o_metodo_no_autorizado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22h02_contexto_autorizacion_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22h02_exposicion_api": true,
+              "s22h02_contrato_o_binding_no_verificado": false,
+              "s22h02_ruta_o_metodo_no_autorizado": false,
+              "s22h02_contexto_autorizacion_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22h02_exposicion_api": true,
+              "s22h02_contrato_o_binding_no_verificado": true,
+              "s22h02_ruta_o_metodo_no_autorizado": false,
+              "s22h02_contexto_autorizacion_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22h02_exposicion_api": true,
+              "s22h02_contrato_o_binding_no_verificado": false,
+              "s22h02_ruta_o_metodo_no_autorizado": true,
+              "s22h02_contexto_autorizacion_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22h02_exposicion_api": true,
+              "s22h02_contrato_o_binding_no_verificado": false,
+              "s22h02_ruta_o_metodo_no_autorizado": false,
+              "s22h02_contexto_autorizacion_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22h02_exposicion_api": false,
+              "s22h02_contrato_o_binding_no_verificado": true,
+              "s22h02_ruta_o_metodo_no_autorizado": true,
+              "s22h02_contexto_autorizacion_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b4a666d4601e41f6bc10dcf9cac392d1292a3e946a62d463b3f18d47bb5381e1",
+      "hash_paquete": "6d1303bcc34eb6b06c6ebf54adf00e058fcbf3a665a524a9942b5d15db49f5a7",
+      "hash_evaluado": "b4a666d460",
+      "hash_paquete_10": "6d1303bcc3"
+    }
+  ],
+  "juicios": [
+    {
+      "codigo": "S22H-C01",
+      "hash_paquete": "73ead5ae785a840243e32da3506651409178257e69b5b304c765cd19178312d9",
+      "hash_paquete_10": "73ead5ae78",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "complementa S10-C14 y S10-C15, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4764 / Claude 2026-11-25 14:38 Lima / S22H-C01 / hash_paquete_10=73ead5ae78"
+    },
+    {
+      "codigo": "S22H-C02",
+      "hash_paquete": "6d1303bcc34eb6b06c6ebf54adf00e058fcbf3a665a524a9942b5d15db49f5a7",
+      "hash_paquete_10": "6d1303bcc3",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 0.9,
+          "observacion": "contrato canónico y binding de rutas pendientes de Paulo"
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 0.9,
+          "observacion": "relacionada con S9-C21 CORS, declarado"
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "PR #4764 / Claude 2026-11-25 14:38 Lima / S22H-C02 / hash_paquete_10=6d1303bcc3"
+    }
+  ],
+  "cobertura_directa": [
+    {
+      "legacy_id": 206,
+      "nucleo_codigo": "S10-C06",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S10-C06 gobierna transiciones de onboarding con referencias de configuración y movimiento reducido; S8-C21 gobierna Home.",
+      "residual": "Falta acreditar aplicación a componentes y pantallas restantes fuera del alcance de ambas reglas."
+    },
+    {
+      "legacy_id": 218,
+      "nucleo_codigo": "S9-C21",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S9-C21 prohíbe wildcard productivo y orígenes no autorizados, y exige métodos y headers del contrato vigente.",
+      "residual": "Falta acreditar allowlist exacta de dominios producción y staging, métodos GET POST PATCH y headers Content-Type Authorization X-Idempotency-Key."
+    },
+    {
+      "legacy_id": 246,
+      "nucleo_codigo": "S11-C10",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S11-C10 exige precio final de backend y mismo checkout desde el modal de detalle.",
+      "residual": "Falta acreditar todos los componentes del precio final, referencias vigentes de comisiones e impuestos y ausencia de costos sorpresa en checkout."
+    },
+    {
+      "legacy_id": 248,
+      "nucleo_codigo": "S4-C25",
+      "version_nucleo": 2,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S4-C25 gobierna ahorro monetario y porcentual de plan con datos autoritativos y bloquea descuento inexistente.",
+      "residual": "Falta fórmula sobre precio final de oferta y copy Ahorras realmente; no equivale necesariamente a monto_total_plan."
+    },
+    {
+      "legacy_id": 275,
+      "nucleo_codigo": "S22B-C01",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S22B-C01 exige autorización contractual de marcas de medios de pago en producción y no habilita Mastercard por defecto.",
+      "residual": "Falta acreditar lista de placeholders Visa Amex Diners de versión prototipo y exclusión específica de Mastercard de esa versión."
+    },
+    {
+      "legacy_id": 282,
+      "nucleo_codigo": "S11-C14",
+      "version_nucleo": 1,
+      "estado_cobertura": "PARCIAL",
+      "diferencias": "S11-C14 exige identificación Procesado de forma segura por Niubiz junto al CTA cuando integración autorizada.",
+      "residual": "Falta texto bajo opciones de tarjeta y logo Niubiz en footer de seguridad con autorización vigente."
+    }
+  ]
+}
