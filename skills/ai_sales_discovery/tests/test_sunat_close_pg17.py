@@ -94,6 +94,8 @@ CREATE FUNCTION public.fn_lf_operation_acquire_lease_v1(
     print("PASS_PG17_MISSING_POLICY_BLOCKS_WITHOUT_MUTATION")
     assert sql("SELECT has_function_privilege('authenticated','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
     assert sql("SELECT has_function_privilege('service_role','saly.ventas_sunat_commercial_close_v1(text,text,text,text)','EXECUTE')") == "f"
+    sql("SELECT saly.ventas_sunat_commercial_close_v1('run-open','actor','owner',NULL)",False,"SUNAT_CLOSE_INVALID_INPUT")
+    print("PASS_PG17_NULL_EVIDENCE_INPUT_REJECTED")
     print("PASS_PG17_CLIENT_ROLES_DENIED")
     print("PASS_PG17_SUNAT_CLOSE_NEGATIVE_TRANCHE")
     # Real PG17 full-size synthetic positive, dual session, and fault injection.
