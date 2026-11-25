@@ -845,7 +845,7 @@
         "familia": "FINANCIAL_INTEGRITY_RECONCILIATION",
         "naturaleza": "CONDUCTA",
         "clase": "TRANSVERSAL",
-        "alcance": "GLOBAL",
+        "alcance": "BACKEND",
         "modo": "HEREDA",
         "dueno": "TECNICO",
         "titulo": "Fuente financiera compartida antes de exposición productiva",
