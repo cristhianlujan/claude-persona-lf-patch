@@ -866,7 +866,7 @@
         },
         "pruebas": [
           {
-            "casuistica": "NO_SE_CUMPLE",
+            "casuistica": "BAJO_EL_LIMITE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -956,7 +956,7 @@
             "esperado": true
           },
           {
-            "casuistica": "SE_CUMPLE",
+            "casuistica": "EN_EL_LIMITE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -1015,7 +1015,7 @@
             "esperado": true
           },
           {
-            "casuistica": "NO_SE_CUMPLE",
+            "casuistica": "SOBRE_EL_LIMITE",
             "entrada": {
               "s21c02_login_b2b": true,
               "s21c02_contrasena_no_coincide": true,
@@ -1034,7 +1034,8 @@
               "s21c02_bloqueo_previo": false,
               "s21c02_reinicio": false,
               "intentos_contrasena_fallidos": {
-                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_3"
+                "param": "AUTH.LOGIN_LOCKOUT_ATTEMPTS_3",
+                "mas": 1
               },
               "minutos_desde_ultimo_bloqueo": {
                 "param": "AUTH.LOGIN_LOCKOUT_RESET_MINUTES",
@@ -1107,9 +1108,9 @@
       },
       "codigo": "S21-C02",
       "hash": "2292281eb0dfecbbfd91a029894eafc4143ada5f36f6b8cd2a97e82c665b45d1",
-      "hash_paquete": "666b513f196128d82782466203bcf8fb2d77097ad9ae00d6f71cc25d7818767b",
+      "hash_paquete": "009090f554b92ab7e4dabd8a158104c4704da27ad9ef02a9c868d2bb665006fb",
       "hash_evaluado": "2292281eb0",
-      "hash_paquete_10": "666b513f19"
+      "hash_paquete_10": "009090f554"
     },
     {
       "legacy_id": 10,
