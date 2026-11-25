@@ -127,30 +127,30 @@ SELECT encode(sha256(convert_to(jsonb_build_object(
     call=("SELECT saly.ventas_sunat_commercial_close_v1("
       "'EXEC-SALY-SUNAT-COMMERCIAL-20261123-001','synthetic-actor',"
       "'synthetic-close-worker','"+digest+"')")
-    sql(call,False)
+    sql(call,False,"SUNAT_CLOSE_TTL_POLICY_MISSING")
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
     print('PASS_PG17_MISSING_TTL_FAILS_CLOSED')
     sql("""INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status,valid_from)
 VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now());""")
-    sql(call.replace(digest,'0'*64),False)
+    sql(call.replace(digest,'0'*64),False,"SUNAT_CLOSE_EVIDENCE_HASH_MISMATCH")
     print('PASS_PG17_BAD_DIGEST_FAILS_CLOSED')
     # Coverage must be total, not merely "zero ineligible": missing classifications
     # are unsafe even when every remaining row is eligible.
     sql("DELETE FROM saly.ventas_sunat_elegibilidad_v1 WHERE ctid IN "
         "(SELECT ctid FROM saly.ventas_sunat_elegibilidad_v1 LIMIT 1)")
-    sql(call,False)
+    sql(call,False,"SUNAT_CLOSE_ELIGIBILITY_COVERAGE")
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
     sql("INSERT INTO saly.ventas_sunat_elegibilidad_v1 VALUES ('"+COMMERCIAL+"','ELEGIBLE',50)")
     print('PASS_PG17_MISSING_ELIGIBILITY_COVERAGE_BLOCKED')
     # Do not accept a mutated receipt, historical pilot or one missing batch.
     sql("UPDATE public.lf_operation_effect_guard SET receipt='{}'::jsonb WHERE dispatch_key='new-1'")
-    sql(call,False)  # persisted-receipt SHA no longer matches
+    sql(call,False,"SUNAT_CLOSE_EVIDENCE_HASH_MISMATCH")  # persisted-receipt SHA no longer matches
     sql("""UPDATE public.lf_operation_effect_guard SET receipt='{"rows":1000,"success":true}'::jsonb WHERE dispatch_key='new-1'""")
     sql("UPDATE saly.ventas_discovery_runs SET estado='PARTIAL' WHERE run_ref='"+OLD+"'")
-    sql(call,False)
+    sql(call,False,"SUNAT_CLOSE_HISTORICAL_HOLD")
     sql("UPDATE saly.ventas_discovery_runs SET estado='HOLD' WHERE run_ref='"+OLD+"'")
     sql("UPDATE saly.ventas_discovery_plan_batches SET estado='NOT_RUN' WHERE batch_key='new-3'")
-    sql(call,False)
+    sql(call,False,"SUNAT_CLOSE_PLAN_INCOMPLETE")
     sql("UPDATE saly.ventas_discovery_plan_batches SET estado='FOUND' WHERE batch_key='new-3'")
     assert sql("SELECT status FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS"
     assert_snapshot()
@@ -161,7 +161,7 @@ BEGIN IF NEW.estado='CERRADO' THEN RAISE EXCEPTION 'SYNTHETIC_SECOND_UPDATE_ROLL
 RETURN NEW; END $fn$;
 CREATE TRIGGER trg_saly_synthetic_abort_close BEFORE UPDATE ON saly.ventas_discovery_runs
 FOR EACH ROW EXECUTE FUNCTION saly.synthetic_abort_close();""")
-    sql(call,False)
+    sql(call,False,"SYNTHETIC_SECOND_UPDATE_ROLLBACK")
     assert sql("SELECT status||':'||lease_fence FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS:2"
     assert sql("SELECT estado FROM saly.ventas_discovery_runs WHERE run_ref='"+COMMERCIAL+"'")=="EN_EJECUCION"
     assert_snapshot()
@@ -183,8 +183,8 @@ FOR EACH ROW EXECUTE FUNCTION saly.synthetic_abort_close();""")
     assert_snapshot()
     print('PASS_PG17_CONCURRENT_CLOSE_SERIALIZED')
     assert 'ALREADY_CLOSED_SAME_EVIDENCE' in sql(call)
-    sql(call.replace(digest,'0'*64),False)
-    sql("UPDATE saly.ventas_discovery_runs SET estado='HOLD' WHERE run_ref='"+COMMERCIAL+"'",False)
+    sql(call.replace(digest,'0'*64),False,"SUNAT_CLOSE_REPLAY_CONFLICT")
+    sql("UPDATE saly.ventas_discovery_runs SET estado='HOLD' WHERE run_ref='"+COMMERCIAL+"'",False,"SUNAT_CLOSE_TERMINAL_IMMUTABLE")
     assert sql("SELECT estado FROM saly.ventas_discovery_runs WHERE run_ref='"+OLD+"'")=="HOLD"
     assert_snapshot()
     print('PASS_PG17_IDEMPOTENCY_HISTORICAL_PRESERVATION_TERMINAL')
