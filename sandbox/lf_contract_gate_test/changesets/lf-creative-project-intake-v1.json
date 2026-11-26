@@ -2,6 +2,8 @@
   "solution_ref": "lf-creative-project-intake-v1",
   "paths": {
     "supabase/migrations/20261126011001_lf_saly_creative_project_lf_v1.sql": "MIGRATION",
-    "sandbox/lf_contract_gate_test/changesets/lf-creative-project-intake-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/lf-creative-project-intake-v1.json": "CHANGESET_MANIFEST",
+    "supabase/tests/saly_creative_project_lf_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW"
   }
 }
