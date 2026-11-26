@@ -1,0 +1,1440 @@
+{
+  "estado": "BORRADOR_SIN_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "021f4333e196cdc6f21a2ca66ce1b63b49b16cdc",
+    "js_vectors": 46,
+    "pg17": "PENDIENTE"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "onb_001_estado_colaborador",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se distingue ACTIVO habilitado de ACTIVO no habilitado; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_002_carga_dni",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Nacional sin DNI cargado por empresa; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_003_validacion_reniec",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se omite validación RENIEC del nacional; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_005_escaneo_excepcion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Extranjero o excepción sin escaneo o sin video corto; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_006_bandeja_rrhh",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Bandeja de extranjero o excepción omite evidencia requerida; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_007_aprobacion_checker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Aprobación por usuario sin CHECKER o no disponible en un clic; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_008_no_copias_documentos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se guardan copias de documentos; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_009_rechazo_baja",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Rechazo no genera baja con motivo rechazo de onboarding; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_010_baja_no_enrolar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se admite nuevo enrolamiento estando de baja; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_011_limite_match",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Parámetro inicial distinto de cinco o falta bloqueo al agotarlo; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_012_desbloqueo_soporte",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Desbloqueo por actor distinto de soporte SALY; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_013_canales_reactivacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Se omite alguno de los tres canales definidos de reactivación; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_014_reactivacion_maker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Reactivación por MAKER sin autorización CHECKER; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_015_reactivacion_checker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Reactivación por CHECKER no autoaprobada; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_017_cierre_contrato",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Contrato anterior no cerrado con fecha de baja; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_018_revalidacion_propia",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Reactivación sin revalidación contra base propia; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_019_capitulo_biometrico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Protección de Datos omite capítulo biométrico obligatorio; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_020_bloqueo_produccion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Texto legal pendiente permite producción o bloquea desarrollo; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_021_consentimiento_rechazado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Sin consentimiento se continúa o se da de baja o se impide reintento; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_023_base_identidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Registro no exitoso ingresa a base de identidad; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_024_retencion_contrato",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Retención documental contractual distinta de diez años; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_025_retencion_incompleta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Retención biometría incompleta distinta de treinta días; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    },
+    {
+      "codigo": "onb_026_retencion_exitosa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "Retención biometría exitosa fuera de vigencia contractual o superior a diez años; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "ONBOARDING"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "SALY-ONB-001",
+      "hechos": [
+        "onb_001_estado_colaborador"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-001",
+        "clave": "onb_estado_colaborador",
+        "familia": "ONBOARDING",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Estado del colaborador",
+        "descripcion": "Distinguir habilitado y no habilitado. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-001",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_001_estado_colaborador"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "onb_001_estado_colaborador": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "onb_001_estado_colaborador": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 1",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Se distingue ACTIVO habilitado de ACTIVO no habilitado; Negativa (incumplimiento): No se distinguen ambos estados (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-002",
+      "hechos": [
+        "onb_002_carga_dni"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-002",
+        "clave": "onb_carga_dni",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Carga de DNI nacional",
+        "descripcion": "La empresa carga el DNI del colaborador. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-002",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_002_carga_dni"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_002_carga_dni": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_002_carga_dni": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 2",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Empresa carga DNI del nacional; Negativa (incumplimiento): Nacional sin DNI cargado por empresa (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-003",
+      "hechos": [
+        "onb_003_validacion_reniec"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-003",
+        "clave": "onb_validacion_reniec",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Validación RENIEC",
+        "descripcion": "Validar DNI contra RENIEC. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-003",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_003_validacion_reniec"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_003_validacion_reniec": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_003_validacion_reniec": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 2",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): DNI nacional validado contra RENIEC; Negativa (incumplimiento): Se omite validación RENIEC del nacional (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-005",
+      "hechos": [
+        "onb_005_escaneo_excepcion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-005",
+        "clave": "onb_escaneo_excepcion",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Escaneo y video",
+        "descripcion": "Escanear documento y capturar video corto. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-005",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_005_escaneo_excepcion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_005_escaneo_excepcion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_005_escaneo_excepcion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 3",
+      "dependencia": "SALY-ONB-032 ABIERTA, mecanismo sin copias no definido",
+      "casos_documentales": "Positiva (cumplimiento): Extranjero o excepción con escaneo y video corto; Negativa (incumplimiento): Extranjero o excepción sin escaneo o sin video corto (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-006",
+      "hechos": [
+        "onb_006_bandeja_rrhh"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-006",
+        "clave": "onb_bandeja_rrhh",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Bandeja RR.HH.",
+        "descripcion": "Mostrar datos cargados, documento escaneado, video corto y plantilla de origen en bandeja Aprobación de extranjeros y/o excepciones. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-006",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_006_bandeja_rrhh"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_006_bandeja_rrhh": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_006_bandeja_rrhh": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 4",
+      "dependencia": "SALY-ONB-032 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Bandeja muestra datos cargados documento escaneado video corto y plantilla de origen; Negativa (incumplimiento): Bandeja de extranjero o excepción omite evidencia requerida (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-007",
+      "hechos": [
+        "onb_007_aprobacion_checker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-007",
+        "clave": "onb_aprobacion_checker",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Aprobación CHECKER",
+        "descripcion": "Solo CHECKER aprueba con un clic. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-007",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_007_aprobacion_checker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_007_aprobacion_checker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_007_aprobacion_checker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 4",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): CHECKER aprueba en un clic; Negativa (incumplimiento): Aprobación por usuario sin CHECKER o no disponible en un clic (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-008",
+      "hechos": [
+        "onb_008_no_copias_documentos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-008",
+        "clave": "onb_no_copias_documentos",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "No guardar copias",
+        "descripcion": "Nunca guardar copias de documentos. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-008",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_008_no_copias_documentos"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_008_no_copias_documentos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_008_no_copias_documentos": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 4",
+      "dependencia": "SALY-ONB-032 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): No se guardan copias de documentos; Negativa (incumplimiento): Se guardan copias de documentos (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-009",
+      "hechos": [
+        "onb_009_rechazo_baja"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-009",
+        "clave": "onb_rechazo_baja",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Baja por rechazo",
+        "descripcion": "Dar de baja con motivo rechazo de onboarding. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-009",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_009_rechazo_baja"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_009_rechazo_baja": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_009_rechazo_baja": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 5",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Rechazo produce baja con motivo rechazo de onboarding; Negativa (incumplimiento): Rechazo no genera baja con motivo rechazo de onboarding (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-010",
+      "hechos": [
+        "onb_010_baja_no_enrolar"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-010",
+        "clave": "onb_baja_no_enrolar",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Restricción de reenrolamiento",
+        "descripcion": "No permitir nuevo enrolamiento; solo ACTIVOS. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-010",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_010_baja_no_enrolar"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_010_baja_no_enrolar": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_010_baja_no_enrolar": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 5",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Solo ACTIVOS se enrolan; Negativa (incumplimiento): Se admite nuevo enrolamiento estando de baja (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-011",
+      "hechos": [
+        "onb_011_limite_match"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-011",
+        "clave": "onb_limite_match",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Límite de reintentos",
+        "descripcion": "Parámetro inicial de cinco reintentos; bloquear al agotar el parámetro. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-011",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_011_limite_match"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_011_limite_match": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_011_limite_match": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 6",
+      "dependencia": "SALY-ONB-030 ABIERTA, ubicación del parámetro no decidida",
+      "casos_documentales": "Positiva (cumplimiento): Parámetro inicial cinco reintentos y bloqueo al agotarlo; Negativa (incumplimiento): Parámetro inicial distinto de cinco o falta bloqueo al agotarlo (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-012",
+      "hechos": [
+        "onb_012_desbloqueo_soporte"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-012",
+        "clave": "onb_desbloqueo_soporte",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Desbloqueo por soporte",
+        "descripcion": "Soporte SALY realiza el desbloqueo. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-012",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_012_desbloqueo_soporte"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_012_desbloqueo_soporte": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_012_desbloqueo_soporte": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 6",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Soporte SALY desbloquea tras bloqueo; Negativa (incumplimiento): Desbloqueo por actor distinto de soporte SALY (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-013",
+      "hechos": [
+        "onb_013_canales_reactivacion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-013",
+        "clave": "onb_canales_reactivacion",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Canales de reactivación",
+        "descripcion": "Permitir alta individual, carga masiva o botón Activar, sujeto a aclaración de elegibilidad. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-013",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_013_canales_reactivacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_013_canales_reactivacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_013_canales_reactivacion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 7",
+      "dependencia": "Elegibilidad SALY-ONB-031 ABIERTA, no incorporada",
+      "casos_documentales": "Positiva (cumplimiento): Reactivación disponible por alta individual carga masiva o Activar, elegibilidad pendiente; Negativa (incumplimiento): Se omite alguno de los tres canales definidos de reactivación (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-014",
+      "hechos": [
+        "onb_014_reactivacion_maker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-014",
+        "clave": "onb_reactivacion_maker",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Autorización de reactivación",
+        "descripcion": "Enviar reactivación a CHECKER. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-014",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_014_reactivacion_maker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_014_reactivacion_maker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_014_reactivacion_maker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 7",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Reactivación iniciada por MAKER enviada a CHECKER; Negativa (incumplimiento): Reactivación por MAKER sin autorización CHECKER (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-015",
+      "hechos": [
+        "onb_015_reactivacion_checker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-015",
+        "clave": "onb_reactivacion_checker",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Autoaprobación CHECKER",
+        "descripcion": "Autoaprobar reactivación iniciada por CHECKER. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-015",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_015_reactivacion_checker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_015_reactivacion_checker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_015_reactivacion_checker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 7",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Reactivación iniciada por CHECKER autoaprobada; Negativa (incumplimiento): Reactivación por CHECKER no autoaprobada (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-017",
+      "hechos": [
+        "onb_017_cierre_contrato"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-017",
+        "clave": "onb_cierre_contrato",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Cierre de contrato previo",
+        "descripcion": "Cerrar contrato anterior con fecha de baja según D-23. Referencia D-23 citada por dueño, no cotejada. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-017",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_017_cierre_contrato"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_017_cierre_contrato": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_017_cierre_contrato": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; D-23 citada; 2026-11-25 punto 7",
+      "dependencia": "D-23 citada en fuente, no cotejada; SALY-ONB-016 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Contrato anterior cerrado con fecha de baja; Negativa (incumplimiento): Contrato anterior no cerrado con fecha de baja (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-018",
+      "hechos": [
+        "onb_018_revalidacion_propia"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-018",
+        "clave": "onb_revalidacion_propia",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Revalidación de identidad",
+        "descripcion": "Revalidar contra la base propia. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-018",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_018_revalidacion_propia"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_018_revalidacion_propia": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_018_revalidacion_propia": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 7",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Reactivación revalidada contra base propia; Negativa (incumplimiento): Reactivación sin revalidación contra base propia (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-019",
+      "hechos": [
+        "onb_019_capitulo_biometrico"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-019",
+        "clave": "onb_capitulo_biometrico",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Capítulo biométrico obligatorio",
+        "descripcion": "Incluir capítulo biométrico obligatorio. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-019",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_019_capitulo_biometrico"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_019_capitulo_biometrico": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_019_capitulo_biometrico": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 8",
+      "dependencia": "SALY-ONB-029 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Protección de Datos incluye capítulo biométrico obligatorio; Negativa (incumplimiento): Protección de Datos omite capítulo biométrico obligatorio (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-020",
+      "hechos": [
+        "onb_020_bloqueo_produccion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-020",
+        "clave": "onb_bloqueo_produccion",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Bloqueo de producción",
+        "descripcion": "Bloquear producción, no desarrollo. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-020",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_020_bloqueo_produccion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_020_bloqueo_produccion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_020_bloqueo_produccion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 8",
+      "dependencia": "SALY-ONB-029 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Texto legal pendiente bloquea producción y no desarrollo; Negativa (incumplimiento): Texto legal pendiente permite producción o bloquea desarrollo (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-021",
+      "hechos": [
+        "onb_021_consentimiento_rechazado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-021",
+        "clave": "onb_consentimiento_rechazado",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "No aceptación del consentimiento",
+        "descripcion": "No continuar, no dar de baja y permitir reintento. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-021",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_021_consentimiento_rechazado"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_021_consentimiento_rechazado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_021_consentimiento_rechazado": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 8",
+      "dependencia": "SALY-ONB-022 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Sin consentimiento se detiene sin baja y permite reintento; Negativa (incumplimiento): Sin consentimiento se continúa o se da de baja o se impide reintento (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-023",
+      "hechos": [
+        "onb_023_base_identidad"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-023",
+        "clave": "onb_base_identidad",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Ingreso a base de identidad",
+        "descripcion": "Solo registros exitosos ingresan a base de identidad. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-023",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_023_base_identidad"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_023_base_identidad": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_023_base_identidad": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 9",
+      "dependencia": "—",
+      "casos_documentales": "Positiva (cumplimiento): Solo registros exitosos ingresan a base de identidad; Negativa (incumplimiento): Registro no exitoso ingresa a base de identidad (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-024",
+      "hechos": [
+        "onb_024_retencion_contrato"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-024",
+        "clave": "onb_retencion_contrato",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Retención documental contractual",
+        "descripcion": "Retener 10 años. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-024",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_024_retencion_contrato"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_024_retencion_contrato": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_024_retencion_contrato": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 10",
+      "dependencia": "SALY-ONB-033 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Retención documental contractual de diez años; Negativa (incumplimiento): Retención documental contractual distinta de diez años (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-025",
+      "hechos": [
+        "onb_025_retencion_incompleta"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-025",
+        "clave": "onb_retencion_incompleta",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Retención biométrica incompleta",
+        "descripcion": "Retener 30 días. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-025",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_025_retencion_incompleta"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_025_retencion_incompleta": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_025_retencion_incompleta": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 10",
+      "dependencia": "SALY-ONB-033 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Retención biometría de enrolamiento incompleto de treinta días; Negativa (incumplimiento): Retención biometría incompleta distinta de treinta días (diseño; no ejecución runtime)"
+    },
+    {
+      "codigo": "SALY-ONB-026",
+      "hechos": [
+        "onb_026_retencion_exitosa"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-ONB-026",
+        "clave": "onb_retencion_exitosa",
+        "familia": "ONBOARDING",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "ONBOARDING",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Retención biométrica exitosa",
+        "descripcion": "Retener mientras exista contrato, máximo 10 años. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "ONB-20261125",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/ONB/SALY-ONB-026",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "onb_026_retencion_exitosa"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "onb_026_retencion_exitosa": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "onb_026_retencion_exitosa": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 03_Reglas_CERRADAS.md; DECISION_DUENO; 2026-11-25 punto 10",
+      "dependencia": "SALY-ONB-033 ABIERTA",
+      "casos_documentales": "Positiva (cumplimiento): Retención biometría exitosa mientras exista contrato máximo diez años; Negativa (incumplimiento): Retención biometría exitosa fuera de vigencia contractual o superior a diez años (diseño; no ejecución runtime)"
+    }
+  ]
+}

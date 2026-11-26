@@ -1,0 +1,9 @@
+{
+  "business_code": "LF",
+  "project_code": "LF",
+  "title": "Tu oferta",
+  "request_kind": "APP_SCREEN_SINGLE",
+  "literal_request": "Pantalla de app móvil (390 x 844) de Libertad Financiera, plataforma peruana de negociación de deuda castigada. Pantalla Tu oferta: título Tu oferta; la cuota mensual como elemento visualmente dominante (marcadores literales S/ [CUOTA], por [N] meses, total S/ [TOTAL]; no inventar cifras) y el total con menos peso; explicación visual del traslado de la deuda de BBVA a Finanty con la frase Tu deuda de BBVA pasa a Finanty; la carta de no adeudo como algo tangible y visible antes del botón, con el texto Te la entregamos al cerrar tu deuda; botón principal con el texto exacto Cerrar mi deuda y recibir mi carta ahora.",
+  "operational_instruction": "Registrar por ruta gobernada después del alta LF. Una imagen. Ejecutar skill completa. No reutilizar identidad SALY.",
+  "status": "PREPARED_NOT_REGISTERED"
+}
