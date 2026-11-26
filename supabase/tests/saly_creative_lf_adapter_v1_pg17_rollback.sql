@@ -1,3 +1,4 @@
+-- LF adapter regression: isolated PG17, no production writes.
 \set ON_ERROR_STOP on
 BEGIN;
 CREATE SCHEMA saly; CREATE SCHEMA lf_design; CREATE SCHEMA extensions;
