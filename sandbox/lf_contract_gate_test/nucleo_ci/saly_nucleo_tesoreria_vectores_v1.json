@@ -426,26 +426,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "permiso_modulo"
-              },
-              "der": {
-                "lit": false
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "permiso_modulo"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "superadministrador"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": false
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "superadministrador"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
@@ -733,26 +731,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "perfil_jefe"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "perfil_jefe"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "consulta_saldo"
-              },
-              "der": {
-                "lit": true
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "consulta_saldo"
+            },
+            "der": {
+              "lit": true
+            }
+          }
         },
         "pruebas": [
           {
@@ -1214,26 +1210,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "cruce_valido"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "cruce_valido"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "linea_abono_ya_cerrada"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "linea_abono_ya_cerrada"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
@@ -2043,26 +2037,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "solicitud_rechazada"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "solicitud_rechazada"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "abono_realizado"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "abono_realizado"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
@@ -2582,26 +2574,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "solicitud_enviada_rechazo"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "solicitud_enviada_rechazo"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "abono_realizado"
-              },
-              "der": {
-                "lit": true
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "abono_realizado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
         },
         "pruebas": [
           {
@@ -2657,26 +2647,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "abono_realizado"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "abono_realizado"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "transaccion_en_cierre"
-              },
-              "der": {
-                "lit": true
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "transaccion_en_cierre"
+            },
+            "der": {
+              "lit": true
+            }
+          }
         },
         "pruebas": [
           {
@@ -2732,26 +2720,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "baja_trabajador"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "baja_trabajador"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "abono_realizado"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "abono_realizado"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
@@ -2807,26 +2793,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "baja_trabajador"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "baja_trabajador"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "abono_realizado"
-              },
-              "der": {
-                "lit": true
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "abono_realizado"
+            },
+            "der": {
+              "lit": true
+            }
+          }
         },
         "pruebas": [
           {
@@ -3056,26 +3040,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "fallo_canal"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "fallo_canal"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "abono_manual_confirmado"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "abono_manual_confirmado"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
@@ -3711,26 +3693,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "baja_trabajador"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "baja_trabajador"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "flujo_reconciliacion_rechazo"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "flujo_reconciliacion_rechazo"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
@@ -3786,26 +3766,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "flujo_reconciliacion_rechazo"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "flujo_reconciliacion_rechazo"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "baja_trabajador"
-              },
-              "der": {
-                "lit": true
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "baja_trabajador"
+            },
+            "der": {
+              "lit": true
+            }
+          }
         },
         "pruebas": [
           {
@@ -3861,26 +3839,24 @@
         },
         "condicion": {
           "op": "y",
-          "args": [
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "configuracion_notificaciones_empresa"
-              },
-              "der": {
-                "lit": true
-              }
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "configuracion_notificaciones_empresa"
             },
-            {
-              "op": "=",
-              "izq": {
-                "hecho": "actor_saly"
-              },
-              "der": {
-                "lit": false
-              }
+            "der": {
+              "lit": true
             }
-          ]
+          },
+          "der": {
+            "op": "=",
+            "izq": {
+              "hecho": "actor_saly"
+            },
+            "der": {
+              "lit": false
+            }
+          }
         },
         "pruebas": [
           {
