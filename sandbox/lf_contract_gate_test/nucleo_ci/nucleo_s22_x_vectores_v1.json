@@ -1,0 +1,3026 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "e18d1c5278a74aed54b83f5b4a090aa9c13b4f6a",
+    "js_vectors": "65/65",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [],
+    "published_related": [
+      {
+        "regla": "S22Q-C04",
+        "version": 1,
+        "descripcion": "En B2B-CARGA-003 BLOQUEAR acción REPROCESS de UPLOAD_BATCH mientras lf_ops.estados_transiciones no contenga transición autorizada vinculada al permiso B2B_LOAD_REPROCESS con origen y destino definidos explícitamente. UI no infiere transición ni permiso por visibilidad. B2B_FLD_REPROCESS_ALLOWED en B2B-ADMIN-003 no puede ser true antes de transición definida y autorizada; permiso por sí solo no habilita servidor. Mantener PENDING_FUNCTIONAL_DEFINITION mientras falte definición. No crear transición ni modificar política. Binding pendiente."
+      },
+      {
+        "regla": "S22W-C09",
+        "version": 1,
+        "descripcion": "En AUTHORIZED_COMPLETE_LOAD_WITH_PARTNER_DEFINED_OFFER_OR_PLAN_TERMS BLOQUEAR reconstrucción forzada de segmentos o reasignación manual. REFERENCIA_EMPRESA + PLAN solo FILE_JOIN_ONLY_NOT_CANONICAL_IDENTITY para oferta/plan/cronograma; LF_GENERATED_INTERNAL_ID, múltiples planes por referencia con PLAN distintos. Agrupación DERIVED_PRESENTATION_ONLY, agregados primero detalle bajo demanda, QUICK_CONFIRMATION_NOT_ROW_BY_ROW_RECONFIGURATION; no fusionar identidad, cambiar monto/vigencia/términos ni crear segmentos. Sin patrón KEEP_AS_INDIVIDUAL_VALID_OFFERS_OR_PLANS; modalidad mixta derivada de modalidades disponibles no tipo carga MIXED elegido. VALID_ONLY excluye inválidos y continúa válidos. Reutilizar B2B-RULE-OFFER-UPDATE-001, B2B-RULE-VALIDATION-VALID-ONLY-002, B2B-RULE-INSTALLMENT-PLAN-001, B2B-RULE-LOW-FRICTION-LOAD-001 y B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001. APPROVED_CONCEPT_2026-09-22. Binding pendiente. Contrato literal: detail_behavior=SHOW_AGGREGATES_FIRST_DETAIL_ON_DEMAND; mixed_modalities=DERIVED_FROM_AVAILABLE_MODALITIES_NOT_USER_SELECTED_MIXED_UPLOAD_TYPE; force_segmentation=DENY; force_segment_level_reassignment=DENY."
+      }
+    ],
+    "coverage_write": "future UPSERT all links",
+    "leccion": "LF-NUCLEO-COBERTURA-VALORCONFIG-001",
+    "assert_links": {
+      "leccion": "LF-NUCLEO-ASSERT-LINKS-001",
+      "expected_links": 9,
+      "expected_replacements": 9,
+      "sql_future": "links and expected_delta derived from packages, prewrite exclusion of already replaced"
+    },
+    "fuentes_legadas": [
+      {
+        "id": 616,
+        "codigo": "B2B-RULE-SHELL-BODY-STATES-001",
+        "descripcion": "Define repertorio visual común y propiedad semántica de estados del cuerpo. Todo nodo aprobado del Portal Empresa cuya pantalla o landing canónico esté pendiente usa PAGE_UNDER_CONSTRUCTION como pantalla por defecto del Shell hasta que exista su pantalla real.",
+        "valor_config": {
+          "states": [
+            "LOADING",
+            "EMPTY",
+            "ACCESS_DENIED",
+            "SESSION_EXPIRED",
+            "LOAD_ERROR",
+            "SCOPE_SWITCHING",
+            "PAGE_UNDER_CONSTRUCTION"
+          ],
+          "shell_code": "B2B_APP_SHELL",
+          "scope_switching": {
+            "failure_behavior": "RESTORE_LAST_CONFIRMED_SCOPE_OR_SHOW_GLOBAL_ERROR",
+            "selector_pending_state": "SHOW_PENDING",
+            "new_scope_dependent_actions": "DISABLED_UNTIL_SERVER_CONFIRMATION",
+            "old_scope_content_visibility": "HIDE_OR_NEUTRALIZE_IMMEDIATELY",
+            "server_confirmation_required": true
+          },
+          "replacement_rule": "REPLACE_PLACEHOLDER_WHEN_CANONICAL_SCREEN_ROUTE_AND_PERMISSION_EXIST",
+          "placeholder_owner": "B2B_APP_SHELL",
+          "presentation_owner": "SHELL_COMMON_PATTERN",
+          "placeholder_semantic": "NON_DOMAIN_NONPRODUCTION_INFORMATIONAL_STATE",
+          "shell_semantic_owner": [
+            "ACCESS_DENIED",
+            "SESSION_EXPIRED",
+            "SCOPE_SWITCHING"
+          ],
+          "screen_semantic_owner": [
+            "LOADING",
+            "EMPTY",
+            "LOAD_ERROR"
+          ],
+          "placeholder_data_access": "DENY",
+          "access_denied_error_code": "LF-B2B-AUTH-001",
+          "nonproduction_placeholder": [
+            "PAGE_UNDER_CONSTRUCTION"
+          ],
+          "placeholder_domain_actions": "DENY",
+          "session_expired_error_code": "LF-B2B-AUTH-002",
+          "pending_screen_default_scope": "ALL_APPROVED_NAV_NODES_WITHOUT_CANONICAL_LANDING_SCREEN",
+          "pending_screen_default_state": "PAGE_UNDER_CONSTRUCTION",
+          "placeholder_permission_semantic": "AUTHENTICATED_SHELL_CONTEXT_ONLY_UNTIL_REAL_SCREEN_PERMISSION_EXISTS",
+          "screen_may_invent_parallel_state_pattern": "DENY"
+        }
+      },
+      {
+        "id": 619,
+        "codigo": "B2B-RULE-LOW-FRICTION-LOAD-001",
+        "descripcion": "La experiencia de carga del Portal Empresa debe minimizar la transformación, aprendizaje y trabajo manual exigido al aliado. LF debe absorber complejidad interna siempre que pueda hacerlo sin perder trazabilidad, validación ni autoridad server-side.",
+        "valor_config": {
+          "principles": [
+            "ASK_ONLY_PARTNER_OWNED_DATA_REQUIRED_FOR_CLIENT_FLOW_OR_BUSINESS_VALIDATION",
+            "DO_NOT_REQUEST_LF_DERIVED_FIELDS",
+            "SEPARATE_SIMPLE_TEMPLATES_BY_MODALITY",
+            "PAGO_UNICO_TEMPLATE_ONLY_SHOWS_PAY_ONLY_FIELDS",
+            "CUOTAS_TEMPLATE_ONLY_SHOWS_INSTALLMENT_RELEVANT_FIELDS",
+            "MIXED_IS_DERIVED_BY_LF_NOT_PRIMARY_B2B_TEMPLATE",
+            "REUSE_PARTNER_IDENTIFIERS_WHERE_GOVERNED",
+            "LF_ABSORBS_INTERNAL_MAPPING_AND_DERIVATIONS_WHEN_SAFE"
+          ],
+          "mvp_templates": [
+            "PAGO_UNICO",
+            "CUOTAS"
+          ],
+          "mixed_behavior": "DERIVED_FROM_AVAILABLE_MODALITIES_NOT_REQUIRED_AS_USER_SELECTED_UPLOAD_TYPE",
+          "owner_decision": "APPROVED",
+          "commercial_goal": "REDUCE_IMPLEMENTATION_FRICTION_TO_IMPROVE_CONTRACT_ACTIVATION",
+          "validation_policy": "SIMPLIFY_INPUT_NOT_VALIDATION_OR_TRACEABILITY",
+          "excel_channel_role": "ALTERNATIVE_FOR_PARTNERS_WITH_PREDEFINED_PLANS_OR_SCHEDULES",
+          "channel_equivalence": "BOTH_PRODUCE_THE_SAME_CANONICAL_VALIDATED_PLAN_AND_SCHEDULE_MODEL",
+          "preparation_upload_policy": {
+            "reason": "PREVENT_UNCONTROLLED_FILE_STRUCTURES_AND_REDUCE_VALIDATION_AMBIGUITY",
+            "required_format": "LF_MODALITY_TEMPLATE",
+            "download_template": "OPTIONAL_SUPPORT",
+            "arbitrary_partner_file": "DENY"
+          },
+          "installment_entry_channels": [
+            "ASSISTED",
+            "EXCEL"
+          ],
+          "recommended_installment_channel": "ASSISTED"
+        }
+      },
+      {
+        "id": 630,
+        "codigo": "B2B-RULE-LOAD-HISTORY-001",
+        "descripcion": "B2B-CARGA-001 consume un contrato lógico server-side para consultar el historial de cargas dentro del conjunto de empresas autorizadas del usuario. El frontend puede enviar únicamente filtros, orden y paginación catalogados; el servidor resuelve tenant, permiso efectivo dinámico, datos y acciones. La visibilidad y ejecución de detalle, exportación y descargas se recalculan desde la autorización vigente y nunca se conceden por perfil hardcodeado. La exportación del historial y la descarga del archivo original reutilizan permisos separados para proteger la data. Esta regla define comportamiento suficiente para Story y no inventa endpoint, operation_id ni request/response schema de Implementation.",
+        "valor_config": {
+          "sorting": {
+            "server_side": true,
+            "sort_by_field": "B2B_FLD_SORT_BY",
+            "sort_order_field": "B2B_FLD_SORT_ORDER"
+          },
+          "operations": {
+            "VIEW_DETAIL": {
+              "route_code": "B2B_ROUTE_CARGAS_DETALLE",
+              "permission_code": "B2B_LOAD_DETAIL_VIEW",
+              "route_parameter_source": "lf_ops.cargas_lotes.load_number"
+            },
+            "LIST_HISTORY": {
+              "tenant_scope": "AUTHORIZED_COMPANY_SET",
+              "permission_code": "B2B_LOAD_HISTORY_VIEW"
+            },
+            "EXPORT_HISTORY": {
+              "error_code": "LF-B2B-EXP-001",
+              "tenant_scope": "AUTHORIZED_COMPANY_SET",
+              "permission_code": "B2B_LOAD_HISTORY_EXPORT"
+            },
+            "DOWNLOAD_ERRORS": {
+              "error_code": "LF-B2B-DWN-001",
+              "storage_rule": "B2B-RULE-STORAGE-001",
+              "permission_code": "B2B_LOAD_ERRORS_DOWNLOAD"
+            },
+            "DOWNLOAD_OBSERVED": {
+              "error_code": "LF-B2B-DWN-001",
+              "storage_rule": "B2B-RULE-STORAGE-001",
+              "permission_code": "B2B_LOAD_OBSERVED_DOWNLOAD"
+            },
+            "DOWNLOAD_ORIGINAL": {
+              "error_code": "LF-B2B-DWN-001",
+              "storage_rule": "B2B-RULE-STORAGE-001",
+              "permission_code": "B2B_LOAD_ORIGINAL_DOWNLOAD"
+            }
+          },
+          "pagination": {
+            "page_field": "B2B_FLD_PAGE",
+            "server_side": true,
+            "page_size_field": "B2B_FLD_PAGE_SIZE"
+          },
+          "export_policy": {
+            "scope": "CURRENT_FILTERED_RESULT_SET",
+            "operation": "EXPORT_HISTORY",
+            "server_side": true,
+            "owner_decision": "APPROVED_2026-09-19_V1",
+            "permission_code": "B2B_LOAD_HISTORY_EXPORT",
+            "export_results_required": true,
+            "must_respect_active_filters": true,
+            "must_respect_authorized_company_scope": true
+          },
+          "contract_scope": "STORY_BEHAVIORAL_ONLY",
+          "required_fields": [
+            "B2B_FLD_LOAD_ID",
+            "B2B_FLD_LOAD_NAME",
+            "B2B_FLD_FILE_NAME",
+            "B2B_FLD_LOAD_TYPE",
+            "B2B_FLD_CREATED_BY",
+            "B2B_FLD_CREATED_AT",
+            "B2B_FLD_TOTAL_RECORDS",
+            "B2B_FLD_VALID_COUNT",
+            "B2B_FLD_OBSERVED_COUNT",
+            "B2B_FLD_REJECTED_COUNT",
+            "B2B_FLD_APPROVAL_MODE",
+            "B2B_FLD_APPROVED_BY",
+            "B2B_FLD_APPROVED_AT",
+            "B2B_FLD_STATUS",
+            "B2B_FLD_UPDATED_AT"
+          ],
+          "consumer_contract": "B2B_LOAD_HISTORY_READ_V1",
+          "tenant_scope_rule": "B2B-RULE-AUTH-002",
+          "shared_error_codes": [
+            "LF-B2B-AUTH-001",
+            "LF-B2B-AUTH-002",
+            "LF-B2B-AUTH-003",
+            "LF-B2B-NET-001",
+            "LF-B2B-SYS-001"
+          ],
+          "filter_design_policy": {
+            "status": "CLOSED_FOR_UX_COMPOSITION",
+            "filter_model": "MULTI_FILTER_NOT_LIMITED_TO_VISIBLE_TABLE_COLUMNS",
+            "owner_decision": "APPROVED_2026-09-19_V2",
+            "primary_filters": [
+              "B2B_FLD_SEARCH_QUERY",
+              "B2B_FLD_STATUS_FILTER",
+              "B2B_FLD_LOAD_TYPE_FILTER",
+              "B2B_FLD_DATE_FROM",
+              "B2B_FLD_DATE_TO"
+            ],
+            "search_required": true,
+            "date_range_required": true,
+            "server_side_resolution": "REQUIRED",
+            "additional_filter_examples": [
+              "B2B_FLD_CREATED_BY_FILTER",
+              "B2B_FLD_APPROVAL_MODE_FILTER"
+            ],
+            "ux_may_compose_primary_vs_more_filters": true,
+            "additional_filters_allowed_from_existing_governed_fields": true
+          },
+          "data_export_protection": {
+            "original_file": {
+              "permission_code": "B2B_LOAD_ORIGINAL_DOWNLOAD",
+              "source_file_only": true,
+              "authorized_scope_only": true,
+              "server_side_permission_required": true,
+              "includes_excel_when_original_is_excel": true
+            },
+            "history_export": {
+              "permission_code": "B2B_LOAD_HISTORY_EXPORT",
+              "filtered_result_only": true,
+              "authorized_scope_only": true,
+              "server_side_permission_required": true,
+              "excel_output_allowed_when_requested": true
+            },
+            "server_enforcement": "REQUIRED",
+            "permission_check_timing": [
+              "BEFORE_RENDER_ACTION",
+              "BEFORE_SERVER_EXECUTION"
+            ],
+            "client_visibility_without_permission": "HIDE_OR_DISABLE_BY_UX_POLICY_NO_EXECUTION_AUTHORITY"
+          },
+          "server_side_resolution": "REQUIRED",
+          "required_logical_inputs": [
+            "B2B_FLD_SEARCH_QUERY",
+            "B2B_FLD_STATUS_FILTER",
+            "B2B_FLD_LOAD_TYPE_FILTER",
+            "B2B_FLD_CREATED_BY_FILTER",
+            "B2B_FLD_APPROVAL_MODE_FILTER",
+            "B2B_FLD_DATE_FROM",
+            "B2B_FLD_DATE_TO",
+            "B2B_FLD_SORT_BY",
+            "B2B_FLD_SORT_ORDER",
+            "B2B_FLD_PAGE",
+            "B2B_FLD_PAGE_SIZE"
+          ],
+          "table_navigation_policy": {
+            "owner_decision": "APPROVED_2026-09-19_V1",
+            "download_actions": "PER_PERMISSION_AND_AVAILABLE_ARTIFACT",
+            "use_compact_icons": true,
+            "view_detail_action": {
+              "required": true,
+              "operation": "VIEW_DETAIL",
+              "route_code": "B2B_ROUTE_CARGAS_DETALLE",
+              "permission_code": "B2B_LOAD_DETAIL_VIEW"
+            },
+            "row_click_may_open_detail": "UX_DECISION",
+            "accessible_labels_required": true,
+            "row_direct_actions_required": true,
+            "avoid_action_text_saturation": true
+          },
+          "required_permission_code": "B2B_LOAD_HISTORY_VIEW",
+          "operation_schema_authority": "NOT_MATERIALIZED",
+          "client_supplied_company_scope": "DENY",
+          "dynamic_permission_resolution": {
+            "resolution": "EFFECTIVE_PERMISSION_SERVER_SIDE",
+            "source_rule": "B2B-RULE-AUTH-001",
+            "deny_by_default": true,
+            "company_scope_rule": "B2B-RULE-SCOPE-002",
+            "recheck_on_every_action": "REQUIRED",
+            "recheck_on_scope_change": "REQUIRED",
+            "user_permission_registry": "lf_ops.empresa_usuarios_permisos",
+            "screen_permission_registry": "lf_ops.pantallas_permisos",
+            "profile_permission_registry": "lf_ops.perfiles_permisos",
+            "no_hardcoded_profile_entitlement": true
+          },
+          "implementation_contract_status": "READY_FOR_UX_SPEC_WITH_PENDING_SEGMENTATION_PHYSICAL_BINDING",
+          "client_direct_operational_table_access": "DENY"
+        }
+      },
+      {
+        "id": 641,
+        "codigo": "B2B-RULE-SIMULA-COGNITIVE-FLOW-001",
+        "descripcion": "LF Simula organiza la experiencia como Carga → Entender → Segmentar → Estrategia → Simular → Resultado → Operación → Aprendizaje. Cada etapa responde una pregunta humana y hereda contexto de la anterior. Los momentos cognitivos internos no equivalen automáticamente a pantallas ni wizards; la UI puede compactarlos en una misma superficie cuando preserve comprensión, trazabilidad y recuperación.",
+        "valor_config": {
+          "context_modes": {
+            "SIMULATION": {
+              "purpose": "BUILD_COMPARE_AND_SELECT_RECOVERY_SCENARIOS",
+              "data_authority": "SNAPSHOT_ONLY",
+              "operational_mutation": "DENY"
+            },
+            "OPERATIONAL_PREPARATION": {
+              "purpose": "TAKE_SELECTED_SCENARIO_OUTPUT_AS_PREPOPULATED_PROPOSAL_FOR_GOVERNED_OPERATIONAL_FLOW",
+              "automatic_activation": "DENY",
+              "requires_explicit_company_decision": true
+            }
+          },
+          "ux_reuse_rule": "DO_NOT_BUILD_PARALLEL_SIMULA_AND_OPERATIONAL_SCREENS_WHEN_THE_BUSINESS_CAPABILITY_IS_THE_SAME",
+          "owner_decision": "APPROVED_2026-09-22_V1",
+          "preferred_flow": [
+            "SOURCE",
+            "SEGMENTATION",
+            "STRATEGY_AND_OFFER_CONFIGURATION",
+            "SIMULATION_RESULT",
+            "SCENARIO_COMPARISON",
+            "SCENARIO_SELECTION",
+            "GOVERNED_OPERATIONAL_APPLICATION"
+          ],
+          "architecture_model": "REUSE_SAME_FUNCTIONAL_CAPABILITIES_ACROSS_SIMULATION_AND_OPERATION",
+          "shared_capabilities": [
+            "SEGMENTATION_MATRIX_AND_SEGMENT_BUILDING",
+            "STRATEGY_CONFIGURATION",
+            "OFFER_AND_INSTALLMENT_PLAN_CONFIGURATION"
+          ],
+          "application_contract": {
+            "status": "FUNCTIONAL_CONTRACT_DEFINED_PHYSICAL_DESTINATION_BLOCKED",
+            "approval": {
+              "reason": "lf_ops.aprobaciones_registros is structurally load-bound because load_id is required",
+              "status": "PENDING_FUNCTIONAL_DEFINITION",
+              "automatic_bypass": "DENY",
+              "load_approval_registry_reuse": "DENY_AS_IS",
+              "company_policy_may_be_reused_conceptually": "YES_AFTER_GENERIC_OR_OFFER_APPROVAL_BINDING_EXISTS"
+            },
+            "versioning": {
+              "source_rule": "B2B-RULE-OFFER-UPDATE-001",
+              "new_governed_version_required": true,
+              "overwrite_existing_current_offer": "DENY",
+              "preserve_selected_scenario_snapshot": true
+            },
+            "state_model": {
+              "new_offer_application_states": "PENDING_FUNCTIONAL_DEFINITION",
+              "existing_strategy_lifecycle_found": [
+                "STRATEGY_PLANNED",
+                "STRATEGY_ACTIVE",
+                "STRATEGY_SUPERSEDED",
+                "STRATEGY_CLOSED"
+              ],
+              "reuse_for_operational_offer_application": "NOT_ASSUMED"
+            },
+            "target_module": "B2B_OFERTAS",
+            "business_effect": "PREPARE_GOVERNED_OPERATIONAL_CHANGE_FOR_REVIEW_OR_ACTIVATION",
+            "owner_continuation": "APPROVED_2026-09-22",
+            "required_carryover": [
+              "COMPANY_SCOPE",
+              "SOURCE_SNAPSHOT_REFERENCE",
+              "SELECTED_SCENARIO_REFERENCE_AND_VERSION",
+              "SEGMENTATION_DEFINITION_AND_VERSION",
+              "STRATEGY_REFERENCE_AND_VERSION",
+              "OFFER_AND_PLAN_CONFIGURATION_SNAPSHOT",
+              "SOURCE_BASELINE_VERSION_OR_EQUIVALENT",
+              "ACTOR",
+              "TIMESTAMP",
+              "CORRELATION_ID"
+            ],
+            "automatic_activation": "DENY",
+            "physical_destination": {
+              "status": "BLOCKED_NO_DESTINATION",
+              "finding": "No canonical lf_ops simulation/scenario/offer/plan persistence table was found in the verified inventory",
+              "next_required_step": "RESOLVE_CANONICAL_OPERATIONAL_OFFER_MODEL_AND_GENERIC_APPROVAL_BINDING_BEFORE_DDL",
+              "do_not_create_ad_hoc_table": true
+            },
+            "apply_action_semantic": "CREATE_OPERATIONAL_PROPOSAL_FROM_SELECTED_SIMULATION_SCENARIO",
+            "staleness_and_conflict": {
+              "last_write_wins": "DENY",
+              "baseline_changed_since_simulation": "REQUIRE_EXPLICIT_CONFLICT_REVIEW_OR_RECALCULATION",
+              "historical_snapshot_as_current_truth": "DENY",
+              "revalidate_against_current_operational_baseline_before_apply": true
+            },
+            "automatic_mutation_of_current_offers": "DENY"
+          },
+          "pending_application_contract": "DEFINE_OBJECT_STATE_APPROVAL_VERSIONING_AND_HANDOFF_TO_B2B_OFERTAS",
+          "result_comparison_screen_contract": {
+            "status": "FUNCTIONAL_STRUCTURE_DEFINED_VISUAL_PENDING",
+            "handoff": {
+              "semantic": "PREPOPULATE_OPERATIONAL_PROPOSAL_FROM_SELECTED_SCENARIO",
+              "target_screen": "B2B-OFERTA-001",
+              "automatic_activation": "DENY",
+              "application_contract_path": "application_contract",
+              "reconfiguration_from_scratch": "DENY_WHEN_SELECTED_SCENARIO_ALREADY_CONTAINS_CONFIGURATION"
+            },
+            "purpose": "UNDERSTAND_COMPARE_SELECT_THEN_PREPARE_OPERATIONAL_PROPOSAL",
+            "screen_code": "B2B-SIMULA-004",
+            "metric_policy": {
+              "rule": "SHOW_ONLY_METRICS_SUPPORTED_BY_CURRENT_TIER_AND_AVAILABLE_EVIDENCE",
+              "fixed_metric_set": "DENY",
+              "revenue_orientation_rule": "B2B-RULE-SIMULA-REVENUE-OBJECTIVE-001",
+              "unsupported_prediction_claims": "DENY",
+              "illustrative_values_as_runtime": "DENY"
+            },
+            "visual_status": "PENDING_UX_UI",
+            "cognitive_rule": "RESULT_COMPARE_SELECT_IN_ONE_SURFACE_TO_AVOID_ARTIFICIAL_MULTI_SCREEN_FLOW",
+            "required_blocks": [
+              "SELECTED_SOURCE_AND_POPULATION_CONTEXT",
+              "SCENARIO_SUMMARY",
+              "SCENARIO_COMPARISON_WHEN_MORE_THAN_ONE",
+              "SEGMENT_AND_STRATEGY_TRACEABILITY",
+              "AVAILABLE_RESULT_METRICS_BY_TIER_AND_EVIDENCE",
+              "EXPLICIT_SCENARIO_SELECTION",
+              "PREPARE_FOR_APPLICATION_ACTION"
+            ],
+            "selection_policy": {
+              "source_rule": "B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001",
+              "lf_auto_decides": "DENY",
+              "company_explicit_selection_required": true
+            },
+            "ui_consolidation": {
+              "SIMULATION_RESULT": "SAME_SCREEN",
+              "SCENARIO_SELECTION": "SAME_SCREEN",
+              "SCENARIO_COMPARISON": "SAME_SCREEN",
+              "GOVERNED_OPERATIONAL_APPLICATION": "HANDOFF_TO_B2B_OFERTA_001_NOT_SEPARATE_SIMULA_SCREEN"
+            },
+            "owner_continuation": "2026-09-22"
+          }
+        }
+      },
+      {
+        "id": 652,
+        "codigo": "B2B-RULE-LOAD-DETAIL-001",
+        "descripcion": "B2B-CARGA-003 muestra el resultado posterior de una carga sin repetir la pantalla de validación. Prioriza estado, conciliación compacta, archivos, timeline y auditoría; los identificadores técnicos quedan en detalle secundario.",
+        "valor_config": {
+          "role": "OPERATIONAL_DRILLDOWN",
+          "timeline": [
+            "CREATED",
+            "VALIDATED",
+            "APPROVED_OR_AUTOAPPROVED",
+            "PROCESSING",
+            "PROCESSED"
+          ],
+          "screen_code": "B2B-CARGA-003",
+          "audit_detail": "EXPANDABLE_SECONDARY",
+          "state_source": "lf_ops.estados_catalogo + lf_ops.estados_transiciones",
+          "files_section": [
+            "ORIGINAL_FILE",
+            "RESULT_FILE",
+            "OBSERVED_OR_ALERT_FILE",
+            "REJECTED_OR_ERROR_FILE"
+          ],
+          "owner_decision": "APPROVED_2026-09-18_V1",
+          "primary_header": [
+            "B2B_FLD_LOAD_NUMBER",
+            "B2B_FLD_LOAD_NAME",
+            "B2B_FLD_FILE_NAME",
+            "B2B_FLD_STATUS",
+            "B2B_FLD_CREATED_AT"
+          ],
+          "reprocess_action": "DENY_UNTIL_B2B_RULE_LOAD_REPROCESS_001_RESOLVED",
+          "permissions_source": "B2B-RULE-AUTH-001",
+          "technical_secondary": [
+            "B2B_FLD_LOAD_ID",
+            "B2B_FLD_CORRELATION_ID"
+          ],
+          "compact_reconciliation": [
+            "TOTAL_RECORDS",
+            "VALID_COUNT",
+            "PROCESSED_COUNT",
+            "NOT_PROCESSED_COUNT"
+          ],
+          "technical_ids_priority": "SECONDARY_NOT_PRIMARY",
+          "dynamic_permission_resolution": {
+            "model": "EFFECTIVE_PERMISSION_SERVER_SIDE",
+            "source_rule": "B2B-RULE-AUTH-001",
+            "deny_by_default": true,
+            "transition_gate": "lf_ops.estados_transiciones.required_permission_id",
+            "company_scope_rule": "B2B-RULE-SCOPE-002",
+            "recheck_on_every_action": "REQUIRED",
+            "no_hardcoded_profile_entitlement": true
+          },
+          "duplicate_validation_dashboard": "DENY",
+          "historical_segmentation_access": {
+            "purpose": "SHOW_HOW_THIS_LOAD_WAS_SEGMENTED",
+            "owner_decision": "APPROVED_REQUIREMENT_2026-09-19",
+            "editing_from_history": "PENDING_FUNCTIONAL_DEFINITION",
+            "show_segment_summary": true,
+            "reuse_visual_reference": "LF-B2B-VIS-SEGMENTACION-VISUAL-001",
+            "historical_view_semantic": "SHOW_SEGMENTATION_APPLIED_TO_THIS_LOAD",
+            "physical_snapshot_source": "PENDING_CANONICAL_SEGMENT_MAPPING",
+            "available_from_load_detail": true,
+            "show_visual_matrix_heatmap": true,
+            "recompute_from_current_rules": "DENY",
+            "hide_when_no_segmentation_data": true
+          },
+          "record_level_navigation_policy": {
+            "screen_scope": "LOT_LEVEL_OPERATIONAL_DRILLDOWN",
+            "owner_correction": "APPROVED_2026-09-19_V1",
+            "customer_or_debtor_search": "DENY",
+            "customer_or_debtor_directory": "DENY",
+            "customer_or_debtor_mass_table": "DENY",
+            "separate_record_drilldown_status": "PENDING_FUNCTIONAL_DEFINITION",
+            "separate_record_drilldown_required_if_needed": true
+          }
+        }
+      },
+      {
+        "id": 653,
+        "codigo": "B2B-RULE-SHELL-NAV-001",
+        "descripcion": "Define el mapa funcional actual del B2B_APP_SHELL para Portal Empresa, separado de Administración LF. El árbol objetivo puede contener capacidades aún no navegables; un menu_item solo se habilita cuando tiene destino canónico y permiso efectivo aplicable.",
+        "valor_config": {
+          "shell_code": "B2B_APP_SHELL",
+          "authentication": "INFRASTRUCTURE_NOT_OPERATIONAL_NAVIGATION",
+          "owner_decision": "RECONCILED_2026-10-06",
+          "ordered_modules": [
+            {
+              "label": "Inicio",
+              "order": 1,
+              "module_code": "B2B_DASHBOARD",
+              "navigation_status": "READY_CONDITIONAL_PERMISSION"
+            },
+            {
+              "label": "Cartera",
+              "order": 2,
+              "module_code": "B2B_CARGAS",
+              "navigation_status": "PARTIALLY_READY"
+            },
+            {
+              "label": "Simulador",
+              "order": 3,
+              "module_code": "B2B_SIMULA",
+              "navigation_status": "READY_CONDITIONAL_PERMISSION"
+            },
+            {
+              "label": "Aprobaciones",
+              "order": 4,
+              "navigation_status": "READY_CONDITIONAL_PERMISSION",
+              "domain_module_code": "B2B_CARGAS"
+            },
+            {
+              "label": "Ofertas",
+              "order": 5,
+              "module_code": "B2B_OFERTAS",
+              "navigation_status": "UNDER_CONSTRUCTION_FALLBACK"
+            },
+            {
+              "label": "Recaudación",
+              "order": 6,
+              "module_code": "B2B_RECAUDACION",
+              "navigation_status": "UNDER_CONSTRUCTION_FALLBACK"
+            },
+            {
+              "label": "Liquidaciones",
+              "order": 7,
+              "module_code": "B2B_LIQUIDACIONES",
+              "navigation_status": "UNDER_CONSTRUCTION_FALLBACK"
+            },
+            {
+              "label": "Reportes",
+              "order": 8,
+              "module_code": "B2B_REPORTES",
+              "navigation_status": "UNDER_CONSTRUCTION_FALLBACK"
+            },
+            {
+              "label": "Controversias",
+              "order": 9,
+              "module_code": "B2B_CONTROVERSIAS",
+              "navigation_status": "UNDER_CONSTRUCTION_FALLBACK"
+            },
+            {
+              "label": "Configuración",
+              "order": 10,
+              "module_code": "B2B_CONFIGURACION",
+              "navigation_status": "UNDER_CONSTRUCTION_FALLBACK"
+            }
+          ],
+          "menu_enable_gate": "CANONICAL_DESTINATION_EXISTS_AND_EFFECTIVE_PERMISSION_ALLOWS",
+          "source_bound_only": true,
+          "admin_lf_functions": "EXCLUDED_USE_ADMIN_APP_SHELL",
+          "empty_link_behavior": "DENY_USE_UNDER_CONSTRUCTION_FALLBACK",
+          "new_load_navigation": "PAGE_HEADER_PRIMARY_ACTION_NOT_SIDEBAR",
+          "approvals_navigation": "ROOT_PEER_CONDITIONAL_BY_PERMISSION_DOMAIN_REMAINS_CARTERA",
+          "container_visibility": "SHOW_WHEN_AT_LEAST_ONE_AUTHORIZED_CHILD_OR_AUTHORIZED_PRIMARY_ACTION_EXISTS",
+          "screen_creation_policy": "SCREEN_BY_SCREEN_AFTER_FUNCTIONAL_DEFINITION",
+          "pending_destination_fallback": "PAGE_UNDER_CONSTRUCTION",
+          "pending_destination_fallback_rule": "B2B-RULE-SHELL-BODY-STATES-001"
+        }
+      },
+      {
+        "id": 679,
+        "codigo": "B2B-RULE-LOAD-RESULT-FINAL-001",
+        "descripcion": "B2B-CARGA-006 presenta el cierre de una carga como resumen de solo lectura. Consume el estado autoritativo del lote y métricas derivadas; no crea una segunda autoridad de datos ni repite la validación. Debe mostrar identidad visible del lote, estado, resultado agregado, modalidad comercial derivada, resumen de segmentos/ofertas cuando exista, alertas relevantes y accesos gobernados a detalle/archivos. La modalidad puede ser Pago único, Cuotas o ambas y nunca se hardcodea. Los registros no válidos permanecen excluidos por VALID_ONLY. El detalle operativo, auditoría y archivos completos se resuelven mediante el drill-down canónico de B2B-CARGA-003. Esta pantalla no aprueba, rechaza, reprocesa ni muta el lote.",
+        "valor_config": {
+          "role": "READ_ONLY_FINAL_SUMMARY",
+          "detail_rule": "B2B-RULE-LOAD-DETAIL-001",
+          "screen_code": "B2B-CARGA-006",
+          "file_actions": [
+            "ORIGINAL",
+            "RESULT",
+            "OBSERVED",
+            "REJECTED"
+          ],
+          "detail_screen": "B2B-CARGA-003",
+          "primary_header": [
+            "B2B_FLD_LOAD_NUMBER",
+            "B2B_FLD_LOAD_NAME",
+            "B2B_FLD_LOAD_TYPE",
+            "B2B_FLD_STATUS"
+          ],
+          "route_semantic": "FINAL_STATE_OF_LOAD_FLOW_NOT_STANDALONE_AUTHORITY",
+          "mutation_policy": "DENY",
+          "summary_metrics": [
+            "B2B_FLD_TOTAL_RECORDS",
+            "B2B_FLD_VALID_COUNT",
+            "B2B_FLD_OBSERVED_COUNT",
+            "B2B_FLD_REJECTED_COUNT",
+            "B2B_FLD_DUPLICATE_COUNT",
+            "B2B_FLD_PROCESSED_COUNT",
+            "B2B_FLD_NOT_PROCESSED_COUNT"
+          ],
+          "valid_only_rule": "B2B-RULE-VALIDATION-VALID-ONLY-002",
+          "visual_decision": "LF-B2B-VIS-CARGA-006-RESULTADO-FINAL-001",
+          "permission_model": "DYNAMIC_EFFECTIVE_PERMISSION_SERVER_SIDE",
+          "commercial_summary": [
+            "B2B_FLD_RESULT_OFFER_MODALITIES",
+            "B2B_FLD_RESULT_SEGMENT_COUNT",
+            "B2B_FLD_RESULT_OFFER_COUNT"
+          ],
+          "authoritative_batch_source": "UPLOAD_BATCH"
+        }
+      },
+      {
+        "id": 682,
+        "codigo": "B2B-RULE-SIMULA-SEGMENT-MEMBERSHIP-001",
+        "descripcion": "Dentro de un mismo escenario de LF Simula, una deuda o registro puede pertenecer como máximo a un segmento activo a la vez. Reasignar una deuda a otro segmento reemplaza su pertenencia activa anterior, conserva la pertenencia previa en el histórico y registra el cambio para trazabilidad. La pertenencia se resuelve sobre el snapshot del escenario y no modifica la cartera operacional original.",
+        "valor_config": {
+          "scope": "PER_SCENARIO",
+          "screen_code": "B2B-SIMULA-002",
+          "audit_required": true,
+          "history_required": true,
+          "reassignment_semantic": "REPLACE_ACTIVE_MEMBERSHIP_PRESERVE_HISTORY",
+          "operational_source_mutation": "DENY",
+          "unsegmented_debts_on_advance": "DENY",
+          "active_membership_cardinality": "MAX_ONE_ACTIVE_SEGMENT_PER_DEBT",
+          "conflicting_active_memberships": "DENY",
+          "physical_membership_store_status": "BLOCKED_NO_DESTINATION",
+          "advance_requires_full_segmentation": true,
+          "all_debts_require_active_segment_before_offer_stage": true
+        }
+      },
+      {
+        "id": 684,
+        "codigo": "B2B-RULE-OFFER-SEGMENT-DECISION-001",
+        "descripcion": "Al llegar a la etapa de Oferta, cada segmento debe tener una decisión comercial explícita. Los estados funcionales son: CON_OFERTA cuando existe una oferta configurada; SIN_OFERTA cuando la empresa decide explícitamente no ofrecer condiciones al segmento; y PENDIENTE mientras no exista una decisión. Solo PENDIENTE bloquea el avance. SIN_OFERTA no es un segmento ni una asignación automática y debe quedar trazado como decisión de la empresa.",
+        "valor_config": {
+          "screen_code": "B2B-OFERTA-001",
+          "blocking_states": [
+            "PENDIENTE"
+          ],
+          "no_offer_is_segment": false,
+          "non_blocking_states": [
+            "CON_OFERTA",
+            "SIN_OFERTA"
+          ],
+          "allowed_decision_states": [
+            "CON_OFERTA",
+            "SIN_OFERTA",
+            "PENDIENTE"
+          ],
+          "decision_audit_required": true,
+          "physical_state_model_status": "PENDING_FUNCTIONAL_DEFINITION",
+          "automatic_no_offer_assignment": "DENY",
+          "no_offer_requires_explicit_company_decision": true
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22x01_evalua_estado_shell",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua estado shell; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x01_estado_o_propietario_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado o propietario invalido; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x01_scope_switch_inseguro",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "scope switch inseguro; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x01_placeholder_no_informativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "placeholder no informativo; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x01_permiso_o_destino_no_validado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso o destino no validado; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x01_patron_paralelo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "patron paralelo; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x02_evalua_entrada_carga",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua entrada carga; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x02_pide_dato_derivado_lf",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pide dato derivado lf; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x02_plantilla_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "plantilla invalida; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x02_modalidad_mixta_forzada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modalidad mixta forzada; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x02_modelo_final_divergente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modelo final divergente; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x02_debilita_validacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "debilita validacion; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x03_evalua_historial_carga",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua historial carga; hecho derivado, binding runtime pendiente",
+      "familia": "API_DATA_CONTRACT"
+    },
+    {
+      "codigo": "s22x03_scope_cliente_autoritativo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "scope cliente autoritativo; hecho derivado, binding runtime pendiente",
+      "familia": "API_DATA_CONTRACT"
+    },
+    {
+      "codigo": "s22x03_filtros_o_paginacion_no_catalogados",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "filtros o paginacion no catalogados; hecho derivado, binding runtime pendiente",
+      "familia": "API_DATA_CONTRACT"
+    },
+    {
+      "codigo": "s22x03_permiso_no_revalidado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso no revalidado; hecho derivado, binding runtime pendiente",
+      "familia": "API_DATA_CONTRACT"
+    },
+    {
+      "codigo": "s22x03_exportacion_fuera_scope_o_filtro",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "exportacion fuera scope o filtro; hecho derivado, binding runtime pendiente",
+      "familia": "API_DATA_CONTRACT"
+    },
+    {
+      "codigo": "s22x03_acceso_directo_o_schema_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "acceso directo o schema inventado; hecho derivado, binding runtime pendiente",
+      "familia": "API_DATA_CONTRACT"
+    },
+    {
+      "codigo": "s22x04_evalua_flujo_simula",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua flujo simula; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x04_pantallas_paralelas_o_contexto_perdido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "pantallas paralelas o contexto perdido; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x04_simulacion_muta_operacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "simulacion muta operacion; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x04_aplicacion_sin_decision_o_version",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "aplicacion sin decision o version; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x04_baseline_no_revalidado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "baseline no revalidado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x04_destino_o_aprobacion_inventados",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "destino o aprobacion inventados; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x04_prediccion_no_respaldada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "prediccion no respaldada; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x05_evalua_detalle_lote",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua detalle lote; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x05_repite_validacion_o_directorio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "repite validacion o directorio; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x05_estado_o_metrica_no_canonicos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado o metrica no canonicos; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x05_permiso_no_revalidado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso no revalidado; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x05_reprocesa_sin_regla",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reprocesa sin regla; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x05_recalcula_segmentacion_historica",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "recalcula segmentacion historica; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x06_evalua_navegacion_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua navegacion b2b; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x06_modulo_o_orden_no_conforme",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modulo o orden no conforme; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x06_destino_o_permiso_falta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "destino o permiso falta; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x06_admin_en_portal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "admin en portal; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x06_contenedor_sin_capacidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "contenedor sin capacidad; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x06_accion_contextual_en_sidebar",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "accion contextual en sidebar; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x06_fallback_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "fallback invalido; hecho derivado, binding runtime pendiente",
+      "familia": "ROUTING_NAVIGATION"
+    },
+    {
+      "codigo": "s22x07_evalua_resumen_final",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua resumen final; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x07_segunda_autoridad_o_mutacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "segunda autoridad o mutacion; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x07_metricas_o_identidad_no_canonicas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "metricas o identidad no canonicas; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x07_modalidad_hardcode",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modalidad hardcode; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x07_omite_valid_only",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "omite valid only; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x07_archivo_o_detalle_sin_permiso",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "archivo o detalle sin permiso; hecho derivado, binding runtime pendiente",
+      "familia": "B2B_PARTNERS"
+    },
+    {
+      "codigo": "s22x08_evalua_pertenencia_segmento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua pertenencia segmento; hecho derivado, binding runtime pendiente",
+      "familia": "VALIDATIONS"
+    },
+    {
+      "codigo": "s22x08_multiples_segmentos_activos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "multiples segmentos activos; hecho derivado, binding runtime pendiente",
+      "familia": "VALIDATIONS"
+    },
+    {
+      "codigo": "s22x08_reasigna_sin_historia_o_auditoria",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reasigna sin historia o auditoria; hecho derivado, binding runtime pendiente",
+      "familia": "VALIDATIONS"
+    },
+    {
+      "codigo": "s22x08_muta_cartera",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "muta cartera; hecho derivado, binding runtime pendiente",
+      "familia": "VALIDATIONS"
+    },
+    {
+      "codigo": "s22x08_avanza_con_deuda_sin_segmento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "avanza con deuda sin segmento; hecho derivado, binding runtime pendiente",
+      "familia": "VALIDATIONS"
+    },
+    {
+      "codigo": "s22x08_inventa_destino_fisico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "inventa destino fisico; hecho derivado, binding runtime pendiente",
+      "familia": "VALIDATIONS"
+    },
+    {
+      "codigo": "s22x09_evalua_decision_segmento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua decision segmento; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x09_estado_no_catalogado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "estado no catalogado; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x09_avance_pendiente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "avance pendiente; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x09_bloquea_estado_resuelto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloquea estado resuelto; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x09_sin_oferta_automatico_o_segmento",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "sin oferta automatico o segmento; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    },
+    {
+      "codigo": "s22x09_decision_sin_auditoria",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "decision sin auditoria; hecho derivado, binding runtime pendiente",
+      "familia": "STATES"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22X-C01",
+      "legacy_id": 616,
+      "legacy_ids": [
+        616
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 616,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C01; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x01_evalua_estado_shell",
+        "s22x01_estado_o_propietario_invalido",
+        "s22x01_scope_switch_inseguro",
+        "s22x01_placeholder_no_informativo",
+        "s22x01_permiso_o_destino_no_validado",
+        "s22x01_patron_paralelo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C01",
+        "clave": "s22x_legacy_616",
+        "familia": "STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Estados comunes y placeholder del shell B2B",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-SHELL-BODY-STATES-001 en B2B. Define repertorio visual común y propiedad semántica de estados del cuerpo. Todo nodo aprobado del Portal Empresa cuya pantalla o landing canónico esté pendiente usa PAGE_UNDER_CONSTRUCTION como pantalla por defecto del Shell hasta que exista su pantalla real. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"states\":[\"LOADING\",\"EMPTY\",\"ACCESS_DENIED\",\"SESSION_EXPIRED\",\"LOAD_ERROR\",\"SCOPE_SWITCHING\",\"PAGE_UNDER_CONSTRUCTION\"],\"shell_code\":\"B2B_APP_SHELL\",\"scope_switching\":{\"failure_behavior\":\"RESTORE_LAST_CONFIRMED_SCOPE_OR_SHOW_GLOBAL_ERROR\",\"selector_pending_state\":\"SHOW_PENDING\",\"new_scope_dependent_actions\":\"DISABLED_UNTIL_SERVER_CONFIRMATION\",\"old_scope_content_visibility\":\"HIDE_OR_NEUTRALIZE_IMMEDIATELY\",\"server_confirmation_required\":true},\"replacement_rule\":\"REPLACE_PLACEHOLDER_WHEN_CANONICAL_SCREEN_ROUTE_AND_PERMISSION_EXIST\",\"placeholder_owner\":\"B2B_APP_SHELL\",\"presentation_owner\":\"SHELL_COMMON_PATTERN\",\"placeholder_semantic\":\"NON_DOMAIN_NONPRODUCTION_INFORMATIONAL_STATE\",\"shell_semantic_owner\":[\"ACCESS_DENIED\",\"SESSION_EXPIRED\",\"SCOPE_SWITCHING\"],\"screen_semantic_owner\":[\"LOADING\",\"EMPTY\",\"LOAD_ERROR\"],\"placeholder_data_access\":\"DENY\",\"access_denied_error_code\":\"LF-B2B-AUTH-001\",\"nonproduction_placeholder\":[\"PAGE_UNDER_CONSTRUCTION\"],\"placeholder_domain_actions\":\"DENY\",\"session_expired_error_code\":\"LF-B2B-AUTH-002\",\"pending_screen_default_scope\":\"ALL_APPROVED_NAV_NODES_WITHOUT_CANONICAL_LANDING_SCREEN\",\"pending_screen_default_state\":\"PAGE_UNDER_CONSTRUCTION\",\"placeholder_permission_semantic\":\"AUTHENTICATED_SHELL_CONTEXT_ONLY_UNTIL_REAL_SCREEN_PERMISSION_EXISTS\",\"screen_may_invent_parallel_state_pattern\":\"DENY\"}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/616",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x01_evalua_estado_shell"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x01_estado_o_propietario_invalido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x01_scope_switch_inseguro"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x01_placeholder_no_informativo"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x01_permiso_o_destino_no_validado"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x01_patron_paralelo"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": true,
+              "s22x01_estado_o_propietario_invalido": false,
+              "s22x01_scope_switch_inseguro": false,
+              "s22x01_placeholder_no_informativo": false,
+              "s22x01_permiso_o_destino_no_validado": false,
+              "s22x01_patron_paralelo": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": true,
+              "s22x01_estado_o_propietario_invalido": true,
+              "s22x01_scope_switch_inseguro": false,
+              "s22x01_placeholder_no_informativo": false,
+              "s22x01_permiso_o_destino_no_validado": false,
+              "s22x01_patron_paralelo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": true,
+              "s22x01_estado_o_propietario_invalido": false,
+              "s22x01_scope_switch_inseguro": true,
+              "s22x01_placeholder_no_informativo": false,
+              "s22x01_permiso_o_destino_no_validado": false,
+              "s22x01_patron_paralelo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": true,
+              "s22x01_estado_o_propietario_invalido": false,
+              "s22x01_scope_switch_inseguro": false,
+              "s22x01_placeholder_no_informativo": true,
+              "s22x01_permiso_o_destino_no_validado": false,
+              "s22x01_patron_paralelo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": true,
+              "s22x01_estado_o_propietario_invalido": false,
+              "s22x01_scope_switch_inseguro": false,
+              "s22x01_placeholder_no_informativo": false,
+              "s22x01_permiso_o_destino_no_validado": true,
+              "s22x01_patron_paralelo": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": true,
+              "s22x01_estado_o_propietario_invalido": false,
+              "s22x01_scope_switch_inseguro": false,
+              "s22x01_placeholder_no_informativo": false,
+              "s22x01_permiso_o_destino_no_validado": false,
+              "s22x01_patron_paralelo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x01_evalua_estado_shell": false,
+              "s22x01_estado_o_propietario_invalido": true,
+              "s22x01_scope_switch_inseguro": true,
+              "s22x01_placeholder_no_informativo": true,
+              "s22x01_permiso_o_destino_no_validado": true,
+              "s22x01_patron_paralelo": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b316a93cff4ff10c3d22839b62ded21beb049ce3fecb39053b5495f30dc9b72f",
+      "hash_paquete": "f7b23d1f69559d4da15b292167beb94dac4e1bd5cae0b7cf71d4a359fca4aa8f",
+      "hash_evaluado": "b316a93cff",
+      "hash_paquete_10": "f7b23d1f69"
+    },
+    {
+      "codigo": "S22X-C02",
+      "legacy_id": 619,
+      "legacy_ids": [
+        619
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 619,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C02; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x02_evalua_entrada_carga",
+        "s22x02_pide_dato_derivado_lf",
+        "s22x02_plantilla_invalida",
+        "s22x02_modalidad_mixta_forzada",
+        "s22x02_modelo_final_divergente",
+        "s22x02_debilita_validacion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C02",
+        "clave": "s22x_legacy_619",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Carga de mínima fricción sin reducir validación",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-LOW-FRICTION-LOAD-001 en B2B. La experiencia de carga del Portal Empresa debe minimizar la transformación, aprendizaje y trabajo manual exigido al aliado. LF debe absorber complejidad interna siempre que pueda hacerlo sin perder trazabilidad, validación ni autoridad server-side. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"principles\":[\"ASK_ONLY_PARTNER_OWNED_DATA_REQUIRED_FOR_CLIENT_FLOW_OR_BUSINESS_VALIDATION\",\"DO_NOT_REQUEST_LF_DERIVED_FIELDS\",\"SEPARATE_SIMPLE_TEMPLATES_BY_MODALITY\",\"PAGO_UNICO_TEMPLATE_ONLY_SHOWS_PAY_ONLY_FIELDS\",\"CUOTAS_TEMPLATE_ONLY_SHOWS_INSTALLMENT_RELEVANT_FIELDS\",\"MIXED_IS_DERIVED_BY_LF_NOT_PRIMARY_B2B_TEMPLATE\",\"REUSE_PARTNER_IDENTIFIERS_WHERE_GOVERNED\",\"LF_ABSORBS_INTERNAL_MAPPING_AND_DERIVATIONS_WHEN_SAFE\"],\"mvp_templates\":[\"PAGO_UNICO\",\"CUOTAS\"],\"mixed_behavior\":\"DERIVED_FROM_AVAILABLE_MODALITIES_NOT_REQUIRED_AS_USER_SELECTED_UPLOAD_TYPE\",\"owner_decision\":\"APPROVED\",\"commercial_goal\":\"REDUCE_IMPLEMENTATION_FRICTION_TO_IMPROVE_CONTRACT_ACTIVATION\",\"validation_policy\":\"SIMPLIFY_INPUT_NOT_VALIDATION_OR_TRACEABILITY\",\"excel_channel_role\":\"ALTERNATIVE_FOR_PARTNERS_WITH_PREDEFINED_PLANS_OR_SCHEDULES\",\"channel_equivalence\":\"BOTH_PRODUCE_THE_SAME_CANONICAL_VALIDATED_PLAN_AND_SCHEDULE_MODEL\",\"preparation_upload_policy\":{\"reason\":\"PREVENT_UNCONTROLLED_FILE_STRUCTURES_AND_REDUCE_VALIDATION_AMBIGUITY\",\"required_format\":\"LF_MODALITY_TEMPLATE\",\"download_template\":\"OPTIONAL_SUPPORT\",\"arbitrary_partner_file\":\"DENY\"},\"installment_entry_channels\":[\"ASSISTED\",\"EXCEL\"],\"recommended_installment_channel\":\"ASSISTED\"}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/619",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x02_evalua_entrada_carga"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x02_pide_dato_derivado_lf"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x02_plantilla_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x02_modalidad_mixta_forzada"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x02_modelo_final_divergente"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x02_debilita_validacion"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": true,
+              "s22x02_pide_dato_derivado_lf": false,
+              "s22x02_plantilla_invalida": false,
+              "s22x02_modalidad_mixta_forzada": false,
+              "s22x02_modelo_final_divergente": false,
+              "s22x02_debilita_validacion": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": true,
+              "s22x02_pide_dato_derivado_lf": true,
+              "s22x02_plantilla_invalida": false,
+              "s22x02_modalidad_mixta_forzada": false,
+              "s22x02_modelo_final_divergente": false,
+              "s22x02_debilita_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": true,
+              "s22x02_pide_dato_derivado_lf": false,
+              "s22x02_plantilla_invalida": true,
+              "s22x02_modalidad_mixta_forzada": false,
+              "s22x02_modelo_final_divergente": false,
+              "s22x02_debilita_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": true,
+              "s22x02_pide_dato_derivado_lf": false,
+              "s22x02_plantilla_invalida": false,
+              "s22x02_modalidad_mixta_forzada": true,
+              "s22x02_modelo_final_divergente": false,
+              "s22x02_debilita_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": true,
+              "s22x02_pide_dato_derivado_lf": false,
+              "s22x02_plantilla_invalida": false,
+              "s22x02_modalidad_mixta_forzada": false,
+              "s22x02_modelo_final_divergente": true,
+              "s22x02_debilita_validacion": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": true,
+              "s22x02_pide_dato_derivado_lf": false,
+              "s22x02_plantilla_invalida": false,
+              "s22x02_modalidad_mixta_forzada": false,
+              "s22x02_modelo_final_divergente": false,
+              "s22x02_debilita_validacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x02_evalua_entrada_carga": false,
+              "s22x02_pide_dato_derivado_lf": true,
+              "s22x02_plantilla_invalida": true,
+              "s22x02_modalidad_mixta_forzada": true,
+              "s22x02_modelo_final_divergente": true,
+              "s22x02_debilita_validacion": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f70504c3d73bffa82945c23efb18cd1ea2e8d50678a84bd1d7628599672d3dcd",
+      "hash_paquete": "86ef995ea4d8fea1e9bf661fc1aa67efac2b8cc9816307ff4ad0f0028bd465d2",
+      "hash_evaluado": "f70504c3d7",
+      "hash_paquete_10": "86ef995ea4"
+    },
+    {
+      "codigo": "S22X-C03",
+      "legacy_id": 630,
+      "legacy_ids": [
+        630
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 630,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C03; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x03_evalua_historial_carga",
+        "s22x03_scope_cliente_autoritativo",
+        "s22x03_filtros_o_paginacion_no_catalogados",
+        "s22x03_permiso_no_revalidado",
+        "s22x03_exportacion_fuera_scope_o_filtro",
+        "s22x03_acceso_directo_o_schema_inventado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C03",
+        "clave": "s22x_legacy_630",
+        "familia": "API_DATA_CONTRACT",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Historial de cargas autorizado en servidor",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-LOAD-HISTORY-001 en B2B. B2B-CARGA-001 consume un contrato lógico server-side para consultar el historial de cargas dentro del conjunto de empresas autorizadas del usuario. El frontend puede enviar únicamente filtros, orden y paginación catalogados; el servidor resuelve tenant, permiso efectivo dinámico, datos y acciones. La visibilidad y ejecución de detalle, exportación y descargas se recalculan desde la autorización vigente y nunca se conceden por perfil hardcodeado. La exportación del historial y la descarga del archivo original reutilizan permisos separados para proteger la data. Esta regla define comportamiento suficiente para Story y no inventa endpoint, operation_id ni request/response schema de Implementation. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"sorting\":{\"server_side\":true,\"sort_by_field\":\"B2B_FLD_SORT_BY\",\"sort_order_field\":\"B2B_FLD_SORT_ORDER\"},\"operations\":{\"VIEW_DETAIL\":{\"route_code\":\"B2B_ROUTE_CARGAS_DETALLE\",\"permission_code\":\"B2B_LOAD_DETAIL_VIEW\",\"route_parameter_source\":\"lf_ops.cargas_lotes.load_number\"},\"LIST_HISTORY\":{\"tenant_scope\":\"AUTHORIZED_COMPANY_SET\",\"permission_code\":\"B2B_LOAD_HISTORY_VIEW\"},\"EXPORT_HISTORY\":{\"error_code\":\"LF-B2B-EXP-001\",\"tenant_scope\":\"AUTHORIZED_COMPANY_SET\",\"permission_code\":\"B2B_LOAD_HISTORY_EXPORT\"},\"DOWNLOAD_ERRORS\":{\"error_code\":\"LF-B2B-DWN-001\",\"storage_rule\":\"B2B-RULE-STORAGE-001\",\"permission_code\":\"B2B_LOAD_ERRORS_DOWNLOAD\"},\"DOWNLOAD_OBSERVED\":{\"error_code\":\"LF-B2B-DWN-001\",\"storage_rule\":\"B2B-RULE-STORAGE-001\",\"permission_code\":\"B2B_LOAD_OBSERVED_DOWNLOAD\"},\"DOWNLOAD_ORIGINAL\":{\"error_code\":\"LF-B2B-DWN-001\",\"storage_rule\":\"B2B-RULE-STORAGE-001\",\"permission_code\":\"B2B_LOAD_ORIGINAL_DOWNLOAD\"}},\"pagination\":{\"page_field\":\"B2B_FLD_PAGE\",\"server_side\":true,\"page_size_field\":\"B2B_FLD_PAGE_SIZE\"},\"export_policy\":{\"scope\":\"CURRENT_FILTERED_RESULT_SET\",\"operation\":\"EXPORT_HISTORY\",\"server_side\":true,\"owner_decision\":\"APPROVED_2026-09-19_V1\",\"permission_code\":\"B2B_LOAD_HISTORY_EXPORT\",\"export_results_required\":true,\"must_respect_active_filters\":true,\"must_respect_authorized_company_scope\":true},\"contract_scope\":\"STORY_BEHAVIORAL_ONLY\",\"required_fields\":[\"B2B_FLD_LOAD_ID\",\"B2B_FLD_LOAD_NAME\",\"B2B_FLD_FILE_NAME\",\"B2B_FLD_LOAD_TYPE\",\"B2B_FLD_CREATED_BY\",\"B2B_FLD_CREATED_AT\",\"B2B_FLD_TOTAL_RECORDS\",\"B2B_FLD_VALID_COUNT\",\"B2B_FLD_OBSERVED_COUNT\",\"B2B_FLD_REJECTED_COUNT\",\"B2B_FLD_APPROVAL_MODE\",\"B2B_FLD_APPROVED_BY\",\"B2B_FLD_APPROVED_AT\",\"B2B_FLD_STATUS\",\"B2B_FLD_UPDATED_AT\"],\"consumer_contract\":\"B2B_LOAD_HISTORY_READ_V1\",\"tenant_scope_rule\":\"B2B-RULE-AUTH-002\",\"shared_error_codes\":[\"LF-B2B-AUTH-001\",\"LF-B2B-AUTH-002\",\"LF-B2B-AUTH-003\",\"LF-B2B-NET-001\",\"LF-B2B-SYS-001\"],\"filter_design_policy\":{\"status\":\"CLOSED_FOR_UX_COMPOSITION\",\"filter_model\":\"MULTI_FILTER_NOT_LIMITED_TO_VISIBLE_TABLE_COLUMNS\",\"owner_decision\":\"APPROVED_2026-09-19_V2\",\"primary_filters\":[\"B2B_FLD_SEARCH_QUERY\",\"B2B_FLD_STATUS_FILTER\",\"B2B_FLD_LOAD_TYPE_FILTER\",\"B2B_FLD_DATE_FROM\",\"B2B_FLD_DATE_TO\"],\"search_required\":true,\"date_range_required\":true,\"server_side_resolution\":\"REQUIRED\",\"additional_filter_examples\":[\"B2B_FLD_CREATED_BY_FILTER\",\"B2B_FLD_APPROVAL_MODE_FILTER\"],\"ux_may_compose_primary_vs_more_filters\":true,\"additional_filters_allowed_from_existing_governed_fields\":true},\"data_export_protection\":{\"original_file\":{\"permission_code\":\"B2B_LOAD_ORIGINAL_DOWNLOAD\",\"source_file_only\":true,\"authorized_scope_only\":true,\"server_side_permission_required\":true,\"includes_excel_when_original_is_excel\":true},\"history_export\":{\"permission_code\":\"B2B_LOAD_HISTORY_EXPORT\",\"filtered_result_only\":true,\"authorized_scope_only\":true,\"server_side_permission_required\":true,\"excel_output_allowed_when_requested\":true},\"server_enforcement\":\"REQUIRED\",\"permission_check_timing\":[\"BEFORE_RENDER_ACTION\",\"BEFORE_SERVER_EXECUTION\"],\"client_visibility_without_permission\":\"HIDE_OR_DISABLE_BY_UX_POLICY_NO_EXECUTION_AUTHORITY\"},\"server_side_resolution\":\"REQUIRED\",\"required_logical_inputs\":[\"B2B_FLD_SEARCH_QUERY\",\"B2B_FLD_STATUS_FILTER\",\"B2B_FLD_LOAD_TYPE_FILTER\",\"B2B_FLD_CREATED_BY_FILTER\",\"B2B_FLD_APPROVAL_MODE_FILTER\",\"B2B_FLD_DATE_FROM\",\"B2B_FLD_DATE_TO\",\"B2B_FLD_SORT_BY\",\"B2B_FLD_SORT_ORDER\",\"B2B_FLD_PAGE\",\"B2B_FLD_PAGE_SIZE\"],\"table_navigation_policy\":{\"owner_decision\":\"APPROVED_2026-09-19_V1\",\"download_actions\":\"PER_PERMISSION_AND_AVAILABLE_ARTIFACT\",\"use_compact_icons\":true,\"view_detail_action\":{\"required\":true,\"operation\":\"VIEW_DETAIL\",\"route_code\":\"B2B_ROUTE_CARGAS_DETALLE\",\"permission_code\":\"B2B_LOAD_DETAIL_VIEW\"},\"row_click_may_open_detail\":\"UX_DECISION\",\"accessible_labels_required\":true,\"row_direct_actions_required\":true,\"avoid_action_text_saturation\":true},\"required_permission_code\":\"B2B_LOAD_HISTORY_VIEW\",\"operation_schema_authority\":\"NOT_MATERIALIZED\",\"client_supplied_company_scope\":\"DENY\",\"dynamic_permission_resolution\":{\"resolution\":\"EFFECTIVE_PERMISSION_SERVER_SIDE\",\"source_rule\":\"B2B-RULE-AUTH-001\",\"deny_by_default\":true,\"company_scope_rule\":\"B2B-RULE-SCOPE-002\",\"recheck_on_every_action\":\"REQUIRED\",\"recheck_on_scope_change\":\"REQUIRED\",\"user_permission_registry\":\"lf_ops.empresa_usuarios_permisos\",\"screen_permission_registry\":\"lf_ops.pantallas_permisos\",\"profile_permission_registry\":\"lf_ops.perfiles_permisos\",\"no_hardcoded_profile_entitlement\":true},\"implementation_contract_status\":\"READY_FOR_UX_SPEC_WITH_PENDING_SEGMENTATION_PHYSICAL_BINDING\",\"client_direct_operational_table_access\":\"DENY\"}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/630",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x03_evalua_historial_carga"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x03_scope_cliente_autoritativo"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x03_filtros_o_paginacion_no_catalogados"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x03_permiso_no_revalidado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x03_exportacion_fuera_scope_o_filtro"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x03_acceso_directo_o_schema_inventado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": true,
+              "s22x03_scope_cliente_autoritativo": false,
+              "s22x03_filtros_o_paginacion_no_catalogados": false,
+              "s22x03_permiso_no_revalidado": false,
+              "s22x03_exportacion_fuera_scope_o_filtro": false,
+              "s22x03_acceso_directo_o_schema_inventado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": true,
+              "s22x03_scope_cliente_autoritativo": true,
+              "s22x03_filtros_o_paginacion_no_catalogados": false,
+              "s22x03_permiso_no_revalidado": false,
+              "s22x03_exportacion_fuera_scope_o_filtro": false,
+              "s22x03_acceso_directo_o_schema_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": true,
+              "s22x03_scope_cliente_autoritativo": false,
+              "s22x03_filtros_o_paginacion_no_catalogados": true,
+              "s22x03_permiso_no_revalidado": false,
+              "s22x03_exportacion_fuera_scope_o_filtro": false,
+              "s22x03_acceso_directo_o_schema_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": true,
+              "s22x03_scope_cliente_autoritativo": false,
+              "s22x03_filtros_o_paginacion_no_catalogados": false,
+              "s22x03_permiso_no_revalidado": true,
+              "s22x03_exportacion_fuera_scope_o_filtro": false,
+              "s22x03_acceso_directo_o_schema_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": true,
+              "s22x03_scope_cliente_autoritativo": false,
+              "s22x03_filtros_o_paginacion_no_catalogados": false,
+              "s22x03_permiso_no_revalidado": false,
+              "s22x03_exportacion_fuera_scope_o_filtro": true,
+              "s22x03_acceso_directo_o_schema_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": true,
+              "s22x03_scope_cliente_autoritativo": false,
+              "s22x03_filtros_o_paginacion_no_catalogados": false,
+              "s22x03_permiso_no_revalidado": false,
+              "s22x03_exportacion_fuera_scope_o_filtro": false,
+              "s22x03_acceso_directo_o_schema_inventado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x03_evalua_historial_carga": false,
+              "s22x03_scope_cliente_autoritativo": true,
+              "s22x03_filtros_o_paginacion_no_catalogados": true,
+              "s22x03_permiso_no_revalidado": true,
+              "s22x03_exportacion_fuera_scope_o_filtro": true,
+              "s22x03_acceso_directo_o_schema_inventado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "24a5e25c9beee354dd03d5a010df8a276ea9dc0f9fd30e49db6ada73720c7886",
+      "hash_paquete": "b9302f14c64514a78023b7a197ae0ee49b9526d7c800045194d777c2188487fc",
+      "hash_evaluado": "24a5e25c9b",
+      "hash_paquete_10": "b9302f14c6"
+    },
+    {
+      "codigo": "S22X-C04",
+      "legacy_id": 641,
+      "legacy_ids": [
+        641
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 641,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C04; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x04_evalua_flujo_simula",
+        "s22x04_pantallas_paralelas_o_contexto_perdido",
+        "s22x04_simulacion_muta_operacion",
+        "s22x04_aplicacion_sin_decision_o_version",
+        "s22x04_baseline_no_revalidado",
+        "s22x04_destino_o_aprobacion_inventados",
+        "s22x04_prediccion_no_respaldada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C04",
+        "clave": "s22x_legacy_641",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Flujo cognitivo y aplicación gobernada de Simula",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-SIMULA-COGNITIVE-FLOW-001 en B2B. LF Simula organiza la experiencia como Carga → Entender → Segmentar → Estrategia → Simular → Resultado → Operación → Aprendizaje. Cada etapa responde una pregunta humana y hereda contexto de la anterior. Los momentos cognitivos internos no equivalen automáticamente a pantallas ni wizards; la UI puede compactarlos en una misma superficie cuando preserve comprensión, trazabilidad y recuperación. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"context_modes\":{\"SIMULATION\":{\"purpose\":\"BUILD_COMPARE_AND_SELECT_RECOVERY_SCENARIOS\",\"data_authority\":\"SNAPSHOT_ONLY\",\"operational_mutation\":\"DENY\"},\"OPERATIONAL_PREPARATION\":{\"purpose\":\"TAKE_SELECTED_SCENARIO_OUTPUT_AS_PREPOPULATED_PROPOSAL_FOR_GOVERNED_OPERATIONAL_FLOW\",\"automatic_activation\":\"DENY\",\"requires_explicit_company_decision\":true}},\"ux_reuse_rule\":\"DO_NOT_BUILD_PARALLEL_SIMULA_AND_OPERATIONAL_SCREENS_WHEN_THE_BUSINESS_CAPABILITY_IS_THE_SAME\",\"owner_decision\":\"APPROVED_2026-09-22_V1\",\"preferred_flow\":[\"SOURCE\",\"SEGMENTATION\",\"STRATEGY_AND_OFFER_CONFIGURATION\",\"SIMULATION_RESULT\",\"SCENARIO_COMPARISON\",\"SCENARIO_SELECTION\",\"GOVERNED_OPERATIONAL_APPLICATION\"],\"architecture_model\":\"REUSE_SAME_FUNCTIONAL_CAPABILITIES_ACROSS_SIMULATION_AND_OPERATION\",\"shared_capabilities\":[\"SEGMENTATION_MATRIX_AND_SEGMENT_BUILDING\",\"STRATEGY_CONFIGURATION\",\"OFFER_AND_INSTALLMENT_PLAN_CONFIGURATION\"],\"application_contract\":{\"status\":\"FUNCTIONAL_CONTRACT_DEFINED_PHYSICAL_DESTINATION_BLOCKED\",\"approval\":{\"reason\":\"lf_ops.aprobaciones_registros is structurally load-bound because load_id is required\",\"status\":\"PENDING_FUNCTIONAL_DEFINITION\",\"automatic_bypass\":\"DENY\",\"load_approval_registry_reuse\":\"DENY_AS_IS\",\"company_policy_may_be_reused_conceptually\":\"YES_AFTER_GENERIC_OR_OFFER_APPROVAL_BINDING_EXISTS\"},\"versioning\":{\"source_rule\":\"B2B-RULE-OFFER-UPDATE-001\",\"new_governed_version_required\":true,\"overwrite_existing_current_offer\":\"DENY\",\"preserve_selected_scenario_snapshot\":true},\"state_model\":{\"new_offer_application_states\":\"PENDING_FUNCTIONAL_DEFINITION\",\"existing_strategy_lifecycle_found\":[\"STRATEGY_PLANNED\",\"STRATEGY_ACTIVE\",\"STRATEGY_SUPERSEDED\",\"STRATEGY_CLOSED\"],\"reuse_for_operational_offer_application\":\"NOT_ASSUMED\"},\"target_module\":\"B2B_OFERTAS\",\"business_effect\":\"PREPARE_GOVERNED_OPERATIONAL_CHANGE_FOR_REVIEW_OR_ACTIVATION\",\"owner_continuation\":\"APPROVED_2026-09-22\",\"required_carryover\":[\"COMPANY_SCOPE\",\"SOURCE_SNAPSHOT_REFERENCE\",\"SELECTED_SCENARIO_REFERENCE_AND_VERSION\",\"SEGMENTATION_DEFINITION_AND_VERSION\",\"STRATEGY_REFERENCE_AND_VERSION\",\"OFFER_AND_PLAN_CONFIGURATION_SNAPSHOT\",\"SOURCE_BASELINE_VERSION_OR_EQUIVALENT\",\"ACTOR\",\"TIMESTAMP\",\"CORRELATION_ID\"],\"automatic_activation\":\"DENY\",\"physical_destination\":{\"status\":\"BLOCKED_NO_DESTINATION\",\"finding\":\"No canonical lf_ops simulation/scenario/offer/plan persistence table was found in the verified inventory\",\"next_required_step\":\"RESOLVE_CANONICAL_OPERATIONAL_OFFER_MODEL_AND_GENERIC_APPROVAL_BINDING_BEFORE_DDL\",\"do_not_create_ad_hoc_table\":true},\"apply_action_semantic\":\"CREATE_OPERATIONAL_PROPOSAL_FROM_SELECTED_SIMULATION_SCENARIO\",\"staleness_and_conflict\":{\"last_write_wins\":\"DENY\",\"baseline_changed_since_simulation\":\"REQUIRE_EXPLICIT_CONFLICT_REVIEW_OR_RECALCULATION\",\"historical_snapshot_as_current_truth\":\"DENY\",\"revalidate_against_current_operational_baseline_before_apply\":true},\"automatic_mutation_of_current_offers\":\"DENY\"},\"pending_application_contract\":\"DEFINE_OBJECT_STATE_APPROVAL_VERSIONING_AND_HANDOFF_TO_B2B_OFERTAS\",\"result_comparison_screen_contract\":{\"status\":\"FUNCTIONAL_STRUCTURE_DEFINED_VISUAL_PENDING\",\"handoff\":{\"semantic\":\"PREPOPULATE_OPERATIONAL_PROPOSAL_FROM_SELECTED_SCENARIO\",\"target_screen\":\"B2B-OFERTA-001\",\"automatic_activation\":\"DENY\",\"application_contract_path\":\"application_contract\",\"reconfiguration_from_scratch\":\"DENY_WHEN_SELECTED_SCENARIO_ALREADY_CONTAINS_CONFIGURATION\"},\"purpose\":\"UNDERSTAND_COMPARE_SELECT_THEN_PREPARE_OPERATIONAL_PROPOSAL\",\"screen_code\":\"B2B-SIMULA-004\",\"metric_policy\":{\"rule\":\"SHOW_ONLY_METRICS_SUPPORTED_BY_CURRENT_TIER_AND_AVAILABLE_EVIDENCE\",\"fixed_metric_set\":\"DENY\",\"revenue_orientation_rule\":\"B2B-RULE-SIMULA-REVENUE-OBJECTIVE-001\",\"unsupported_prediction_claims\":\"DENY\",\"illustrative_values_as_runtime\":\"DENY\"},\"visual_status\":\"PENDING_UX_UI\",\"cognitive_rule\":\"RESULT_COMPARE_SELECT_IN_ONE_SURFACE_TO_AVOID_ARTIFICIAL_MULTI_SCREEN_FLOW\",\"required_blocks\":[\"SELECTED_SOURCE_AND_POPULATION_CONTEXT\",\"SCENARIO_SUMMARY\",\"SCENARIO_COMPARISON_WHEN_MORE_THAN_ONE\",\"SEGMENT_AND_STRATEGY_TRACEABILITY\",\"AVAILABLE_RESULT_METRICS_BY_TIER_AND_EVIDENCE\",\"EXPLICIT_SCENARIO_SELECTION\",\"PREPARE_FOR_APPLICATION_ACTION\"],\"selection_policy\":{\"source_rule\":\"B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001\",\"lf_auto_decides\":\"DENY\",\"company_explicit_selection_required\":true},\"ui_consolidation\":{\"SIMULATION_RESULT\":\"SAME_SCREEN\",\"SCENARIO_SELECTION\":\"SAME_SCREEN\",\"SCENARIO_COMPARISON\":\"SAME_SCREEN\",\"GOVERNED_OPERATIONAL_APPLICATION\":\"HANDOFF_TO_B2B_OFERTA_001_NOT_SEPARATE_SIMULA_SCREEN\"},\"owner_continuation\":\"2026-09-22\"}}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/641",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x04_evalua_flujo_simula"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22x04_pantallas_paralelas_o_contexto_perdido"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22x04_simulacion_muta_operacion"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x04_aplicacion_sin_decision_o_version"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x04_baseline_no_revalidado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x04_destino_o_aprobacion_inventados"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x04_prediccion_no_respaldada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": false,
+              "s22x04_simulacion_muta_operacion": false,
+              "s22x04_aplicacion_sin_decision_o_version": false,
+              "s22x04_baseline_no_revalidado": false,
+              "s22x04_destino_o_aprobacion_inventados": false,
+              "s22x04_prediccion_no_respaldada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": true,
+              "s22x04_simulacion_muta_operacion": false,
+              "s22x04_aplicacion_sin_decision_o_version": false,
+              "s22x04_baseline_no_revalidado": false,
+              "s22x04_destino_o_aprobacion_inventados": false,
+              "s22x04_prediccion_no_respaldada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": false,
+              "s22x04_simulacion_muta_operacion": true,
+              "s22x04_aplicacion_sin_decision_o_version": false,
+              "s22x04_baseline_no_revalidado": false,
+              "s22x04_destino_o_aprobacion_inventados": false,
+              "s22x04_prediccion_no_respaldada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": false,
+              "s22x04_simulacion_muta_operacion": false,
+              "s22x04_aplicacion_sin_decision_o_version": true,
+              "s22x04_baseline_no_revalidado": false,
+              "s22x04_destino_o_aprobacion_inventados": false,
+              "s22x04_prediccion_no_respaldada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": false,
+              "s22x04_simulacion_muta_operacion": false,
+              "s22x04_aplicacion_sin_decision_o_version": false,
+              "s22x04_baseline_no_revalidado": true,
+              "s22x04_destino_o_aprobacion_inventados": false,
+              "s22x04_prediccion_no_respaldada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": false,
+              "s22x04_simulacion_muta_operacion": false,
+              "s22x04_aplicacion_sin_decision_o_version": false,
+              "s22x04_baseline_no_revalidado": false,
+              "s22x04_destino_o_aprobacion_inventados": true,
+              "s22x04_prediccion_no_respaldada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": true,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": false,
+              "s22x04_simulacion_muta_operacion": false,
+              "s22x04_aplicacion_sin_decision_o_version": false,
+              "s22x04_baseline_no_revalidado": false,
+              "s22x04_destino_o_aprobacion_inventados": false,
+              "s22x04_prediccion_no_respaldada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x04_evalua_flujo_simula": false,
+              "s22x04_pantallas_paralelas_o_contexto_perdido": true,
+              "s22x04_simulacion_muta_operacion": true,
+              "s22x04_aplicacion_sin_decision_o_version": true,
+              "s22x04_baseline_no_revalidado": true,
+              "s22x04_destino_o_aprobacion_inventados": true,
+              "s22x04_prediccion_no_respaldada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f845978488c253d0bb4fe11c08e5eda7257c4d0a2ecbc5aefe0077727fb929c7",
+      "hash_paquete": "fd923fe86faac4ebfe242d662ad2bb277d942ad65398cc00fb03fdab091404cd",
+      "hash_evaluado": "f845978488",
+      "hash_paquete_10": "fd923fe86f"
+    },
+    {
+      "codigo": "S22X-C05",
+      "legacy_id": 652,
+      "legacy_ids": [
+        652
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 652,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C05; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x05_evalua_detalle_lote",
+        "s22x05_repite_validacion_o_directorio",
+        "s22x05_estado_o_metrica_no_canonicos",
+        "s22x05_permiso_no_revalidado",
+        "s22x05_reprocesa_sin_regla",
+        "s22x05_recalcula_segmentacion_historica"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C05",
+        "clave": "s22x_legacy_652",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Detalle operativo de lote y segmentación histórica",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-LOAD-DETAIL-001 en B2B. B2B-CARGA-003 muestra el resultado posterior de una carga sin repetir la pantalla de validación. Prioriza estado, conciliación compacta, archivos, timeline y auditoría; los identificadores técnicos quedan en detalle secundario. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"role\":\"OPERATIONAL_DRILLDOWN\",\"timeline\":[\"CREATED\",\"VALIDATED\",\"APPROVED_OR_AUTOAPPROVED\",\"PROCESSING\",\"PROCESSED\"],\"screen_code\":\"B2B-CARGA-003\",\"audit_detail\":\"EXPANDABLE_SECONDARY\",\"state_source\":\"lf_ops.estados_catalogo + lf_ops.estados_transiciones\",\"files_section\":[\"ORIGINAL_FILE\",\"RESULT_FILE\",\"OBSERVED_OR_ALERT_FILE\",\"REJECTED_OR_ERROR_FILE\"],\"owner_decision\":\"APPROVED_2026-09-18_V1\",\"primary_header\":[\"B2B_FLD_LOAD_NUMBER\",\"B2B_FLD_LOAD_NAME\",\"B2B_FLD_FILE_NAME\",\"B2B_FLD_STATUS\",\"B2B_FLD_CREATED_AT\"],\"reprocess_action\":\"DENY_UNTIL_B2B_RULE_LOAD_REPROCESS_001_RESOLVED\",\"permissions_source\":\"B2B-RULE-AUTH-001\",\"technical_secondary\":[\"B2B_FLD_LOAD_ID\",\"B2B_FLD_CORRELATION_ID\"],\"compact_reconciliation\":[\"TOTAL_RECORDS\",\"VALID_COUNT\",\"PROCESSED_COUNT\",\"NOT_PROCESSED_COUNT\"],\"technical_ids_priority\":\"SECONDARY_NOT_PRIMARY\",\"dynamic_permission_resolution\":{\"model\":\"EFFECTIVE_PERMISSION_SERVER_SIDE\",\"source_rule\":\"B2B-RULE-AUTH-001\",\"deny_by_default\":true,\"transition_gate\":\"lf_ops.estados_transiciones.required_permission_id\",\"company_scope_rule\":\"B2B-RULE-SCOPE-002\",\"recheck_on_every_action\":\"REQUIRED\",\"no_hardcoded_profile_entitlement\":true},\"duplicate_validation_dashboard\":\"DENY\",\"historical_segmentation_access\":{\"purpose\":\"SHOW_HOW_THIS_LOAD_WAS_SEGMENTED\",\"owner_decision\":\"APPROVED_REQUIREMENT_2026-09-19\",\"editing_from_history\":\"PENDING_FUNCTIONAL_DEFINITION\",\"show_segment_summary\":true,\"reuse_visual_reference\":\"LF-B2B-VIS-SEGMENTACION-VISUAL-001\",\"historical_view_semantic\":\"SHOW_SEGMENTATION_APPLIED_TO_THIS_LOAD\",\"physical_snapshot_source\":\"PENDING_CANONICAL_SEGMENT_MAPPING\",\"available_from_load_detail\":true,\"show_visual_matrix_heatmap\":true,\"recompute_from_current_rules\":\"DENY\",\"hide_when_no_segmentation_data\":true},\"record_level_navigation_policy\":{\"screen_scope\":\"LOT_LEVEL_OPERATIONAL_DRILLDOWN\",\"owner_correction\":\"APPROVED_2026-09-19_V1\",\"customer_or_debtor_search\":\"DENY\",\"customer_or_debtor_directory\":\"DENY\",\"customer_or_debtor_mass_table\":\"DENY\",\"separate_record_drilldown_status\":\"PENDING_FUNCTIONAL_DEFINITION\",\"separate_record_drilldown_required_if_needed\":true}}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/652",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x05_evalua_detalle_lote"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x05_repite_validacion_o_directorio"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x05_estado_o_metrica_no_canonicos"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x05_permiso_no_revalidado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x05_reprocesa_sin_regla"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x05_recalcula_segmentacion_historica"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": true,
+              "s22x05_repite_validacion_o_directorio": false,
+              "s22x05_estado_o_metrica_no_canonicos": false,
+              "s22x05_permiso_no_revalidado": false,
+              "s22x05_reprocesa_sin_regla": false,
+              "s22x05_recalcula_segmentacion_historica": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": true,
+              "s22x05_repite_validacion_o_directorio": true,
+              "s22x05_estado_o_metrica_no_canonicos": false,
+              "s22x05_permiso_no_revalidado": false,
+              "s22x05_reprocesa_sin_regla": false,
+              "s22x05_recalcula_segmentacion_historica": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": true,
+              "s22x05_repite_validacion_o_directorio": false,
+              "s22x05_estado_o_metrica_no_canonicos": true,
+              "s22x05_permiso_no_revalidado": false,
+              "s22x05_reprocesa_sin_regla": false,
+              "s22x05_recalcula_segmentacion_historica": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": true,
+              "s22x05_repite_validacion_o_directorio": false,
+              "s22x05_estado_o_metrica_no_canonicos": false,
+              "s22x05_permiso_no_revalidado": true,
+              "s22x05_reprocesa_sin_regla": false,
+              "s22x05_recalcula_segmentacion_historica": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": true,
+              "s22x05_repite_validacion_o_directorio": false,
+              "s22x05_estado_o_metrica_no_canonicos": false,
+              "s22x05_permiso_no_revalidado": false,
+              "s22x05_reprocesa_sin_regla": true,
+              "s22x05_recalcula_segmentacion_historica": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": true,
+              "s22x05_repite_validacion_o_directorio": false,
+              "s22x05_estado_o_metrica_no_canonicos": false,
+              "s22x05_permiso_no_revalidado": false,
+              "s22x05_reprocesa_sin_regla": false,
+              "s22x05_recalcula_segmentacion_historica": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x05_evalua_detalle_lote": false,
+              "s22x05_repite_validacion_o_directorio": true,
+              "s22x05_estado_o_metrica_no_canonicos": true,
+              "s22x05_permiso_no_revalidado": true,
+              "s22x05_reprocesa_sin_regla": true,
+              "s22x05_recalcula_segmentacion_historica": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "4e828adbeed69ea09c250b3eea090f7e14344b5ad1a8b74a8b84a3f005d0062b",
+      "hash_paquete": "36fe6f54672d82ff38ce126c8085cb3e05e1190e2b3b1463fd037859d3179c5f",
+      "hash_evaluado": "4e828adbee",
+      "hash_paquete_10": "36fe6f5467"
+    },
+    {
+      "codigo": "S22X-C06",
+      "legacy_id": 653,
+      "legacy_ids": [
+        653
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 653,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C06; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x06_evalua_navegacion_b2b",
+        "s22x06_modulo_o_orden_no_conforme",
+        "s22x06_destino_o_permiso_falta",
+        "s22x06_admin_en_portal",
+        "s22x06_contenedor_sin_capacidad",
+        "s22x06_accion_contextual_en_sidebar",
+        "s22x06_fallback_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C06",
+        "clave": "s22x_legacy_653",
+        "familia": "ROUTING_NAVIGATION",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Navegación del Portal Empresa por destino y permiso",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-SHELL-NAV-001 en B2B. Define el mapa funcional actual del B2B_APP_SHELL para Portal Empresa, separado de Administración LF. El árbol objetivo puede contener capacidades aún no navegables; un menu_item solo se habilita cuando tiene destino canónico y permiso efectivo aplicable. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"shell_code\":\"B2B_APP_SHELL\",\"authentication\":\"INFRASTRUCTURE_NOT_OPERATIONAL_NAVIGATION\",\"owner_decision\":\"RECONCILED_2026-10-06\",\"ordered_modules\":[{\"label\":\"Inicio\",\"order\":1,\"module_code\":\"B2B_DASHBOARD\",\"navigation_status\":\"READY_CONDITIONAL_PERMISSION\"},{\"label\":\"Cartera\",\"order\":2,\"module_code\":\"B2B_CARGAS\",\"navigation_status\":\"PARTIALLY_READY\"},{\"label\":\"Simulador\",\"order\":3,\"module_code\":\"B2B_SIMULA\",\"navigation_status\":\"READY_CONDITIONAL_PERMISSION\"},{\"label\":\"Aprobaciones\",\"order\":4,\"navigation_status\":\"READY_CONDITIONAL_PERMISSION\",\"domain_module_code\":\"B2B_CARGAS\"},{\"label\":\"Ofertas\",\"order\":5,\"module_code\":\"B2B_OFERTAS\",\"navigation_status\":\"UNDER_CONSTRUCTION_FALLBACK\"},{\"label\":\"Recaudación\",\"order\":6,\"module_code\":\"B2B_RECAUDACION\",\"navigation_status\":\"UNDER_CONSTRUCTION_FALLBACK\"},{\"label\":\"Liquidaciones\",\"order\":7,\"module_code\":\"B2B_LIQUIDACIONES\",\"navigation_status\":\"UNDER_CONSTRUCTION_FALLBACK\"},{\"label\":\"Reportes\",\"order\":8,\"module_code\":\"B2B_REPORTES\",\"navigation_status\":\"UNDER_CONSTRUCTION_FALLBACK\"},{\"label\":\"Controversias\",\"order\":9,\"module_code\":\"B2B_CONTROVERSIAS\",\"navigation_status\":\"UNDER_CONSTRUCTION_FALLBACK\"},{\"label\":\"Configuración\",\"order\":10,\"module_code\":\"B2B_CONFIGURACION\",\"navigation_status\":\"UNDER_CONSTRUCTION_FALLBACK\"}],\"menu_enable_gate\":\"CANONICAL_DESTINATION_EXISTS_AND_EFFECTIVE_PERMISSION_ALLOWS\",\"source_bound_only\":true,\"admin_lf_functions\":\"EXCLUDED_USE_ADMIN_APP_SHELL\",\"empty_link_behavior\":\"DENY_USE_UNDER_CONSTRUCTION_FALLBACK\",\"new_load_navigation\":\"PAGE_HEADER_PRIMARY_ACTION_NOT_SIDEBAR\",\"approvals_navigation\":\"ROOT_PEER_CONDITIONAL_BY_PERMISSION_DOMAIN_REMAINS_CARTERA\",\"container_visibility\":\"SHOW_WHEN_AT_LEAST_ONE_AUTHORIZED_CHILD_OR_AUTHORIZED_PRIMARY_ACTION_EXISTS\",\"screen_creation_policy\":\"SCREEN_BY_SCREEN_AFTER_FUNCTIONAL_DEFINITION\",\"pending_destination_fallback\":\"PAGE_UNDER_CONSTRUCTION\",\"pending_destination_fallback_rule\":\"B2B-RULE-SHELL-BODY-STATES-001\"}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/653",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x06_evalua_navegacion_b2b"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "o",
+                    "izq": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22x06_modulo_o_orden_no_conforme"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    },
+                    "der": {
+                      "op": "=",
+                      "izq": {
+                        "hecho": "s22x06_destino_o_permiso_falta"
+                      },
+                      "der": {
+                        "lit": true
+                      }
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x06_admin_en_portal"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x06_contenedor_sin_capacidad"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x06_accion_contextual_en_sidebar"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x06_fallback_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": false,
+              "s22x06_destino_o_permiso_falta": false,
+              "s22x06_admin_en_portal": false,
+              "s22x06_contenedor_sin_capacidad": false,
+              "s22x06_accion_contextual_en_sidebar": false,
+              "s22x06_fallback_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": true,
+              "s22x06_destino_o_permiso_falta": false,
+              "s22x06_admin_en_portal": false,
+              "s22x06_contenedor_sin_capacidad": false,
+              "s22x06_accion_contextual_en_sidebar": false,
+              "s22x06_fallback_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": false,
+              "s22x06_destino_o_permiso_falta": true,
+              "s22x06_admin_en_portal": false,
+              "s22x06_contenedor_sin_capacidad": false,
+              "s22x06_accion_contextual_en_sidebar": false,
+              "s22x06_fallback_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": false,
+              "s22x06_destino_o_permiso_falta": false,
+              "s22x06_admin_en_portal": true,
+              "s22x06_contenedor_sin_capacidad": false,
+              "s22x06_accion_contextual_en_sidebar": false,
+              "s22x06_fallback_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": false,
+              "s22x06_destino_o_permiso_falta": false,
+              "s22x06_admin_en_portal": false,
+              "s22x06_contenedor_sin_capacidad": true,
+              "s22x06_accion_contextual_en_sidebar": false,
+              "s22x06_fallback_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": false,
+              "s22x06_destino_o_permiso_falta": false,
+              "s22x06_admin_en_portal": false,
+              "s22x06_contenedor_sin_capacidad": false,
+              "s22x06_accion_contextual_en_sidebar": true,
+              "s22x06_fallback_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": true,
+              "s22x06_modulo_o_orden_no_conforme": false,
+              "s22x06_destino_o_permiso_falta": false,
+              "s22x06_admin_en_portal": false,
+              "s22x06_contenedor_sin_capacidad": false,
+              "s22x06_accion_contextual_en_sidebar": false,
+              "s22x06_fallback_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x06_evalua_navegacion_b2b": false,
+              "s22x06_modulo_o_orden_no_conforme": true,
+              "s22x06_destino_o_permiso_falta": true,
+              "s22x06_admin_en_portal": true,
+              "s22x06_contenedor_sin_capacidad": true,
+              "s22x06_accion_contextual_en_sidebar": true,
+              "s22x06_fallback_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b59a510740fe6b0e679bc7a627995501a5162409bd63de03bf0f2d0c1bfd77aa",
+      "hash_paquete": "468f5b826071b3b86600e5142540d8a93eea7ed664da824b074cab43e7676695",
+      "hash_evaluado": "b59a510740",
+      "hash_paquete_10": "468f5b8260"
+    },
+    {
+      "codigo": "S22X-C07",
+      "legacy_id": 679,
+      "legacy_ids": [
+        679
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 679,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C07; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x07_evalua_resumen_final",
+        "s22x07_segunda_autoridad_o_mutacion",
+        "s22x07_metricas_o_identidad_no_canonicas",
+        "s22x07_modalidad_hardcode",
+        "s22x07_omite_valid_only",
+        "s22x07_archivo_o_detalle_sin_permiso"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C07",
+        "clave": "s22x_legacy_679",
+        "familia": "B2B_PARTNERS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Resumen final de carga de solo lectura",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-LOAD-RESULT-FINAL-001 en B2B. B2B-CARGA-006 presenta el cierre de una carga como resumen de solo lectura. Consume el estado autoritativo del lote y métricas derivadas; no crea una segunda autoridad de datos ni repite la validación. Debe mostrar identidad visible del lote, estado, resultado agregado, modalidad comercial derivada, resumen de segmentos/ofertas cuando exista, alertas relevantes y accesos gobernados a detalle/archivos. La modalidad puede ser Pago único, Cuotas o ambas y nunca se hardcodea. Los registros no válidos permanecen excluidos por VALID_ONLY. El detalle operativo, auditoría y archivos completos se resuelven mediante el drill-down canónico de B2B-CARGA-003. Esta pantalla no aprueba, rechaza, reprocesa ni muta el lote. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"role\":\"READ_ONLY_FINAL_SUMMARY\",\"detail_rule\":\"B2B-RULE-LOAD-DETAIL-001\",\"screen_code\":\"B2B-CARGA-006\",\"file_actions\":[\"ORIGINAL\",\"RESULT\",\"OBSERVED\",\"REJECTED\"],\"detail_screen\":\"B2B-CARGA-003\",\"primary_header\":[\"B2B_FLD_LOAD_NUMBER\",\"B2B_FLD_LOAD_NAME\",\"B2B_FLD_LOAD_TYPE\",\"B2B_FLD_STATUS\"],\"route_semantic\":\"FINAL_STATE_OF_LOAD_FLOW_NOT_STANDALONE_AUTHORITY\",\"mutation_policy\":\"DENY\",\"summary_metrics\":[\"B2B_FLD_TOTAL_RECORDS\",\"B2B_FLD_VALID_COUNT\",\"B2B_FLD_OBSERVED_COUNT\",\"B2B_FLD_REJECTED_COUNT\",\"B2B_FLD_DUPLICATE_COUNT\",\"B2B_FLD_PROCESSED_COUNT\",\"B2B_FLD_NOT_PROCESSED_COUNT\"],\"valid_only_rule\":\"B2B-RULE-VALIDATION-VALID-ONLY-002\",\"visual_decision\":\"LF-B2B-VIS-CARGA-006-RESULTADO-FINAL-001\",\"permission_model\":\"DYNAMIC_EFFECTIVE_PERMISSION_SERVER_SIDE\",\"commercial_summary\":[\"B2B_FLD_RESULT_OFFER_MODALITIES\",\"B2B_FLD_RESULT_SEGMENT_COUNT\",\"B2B_FLD_RESULT_OFFER_COUNT\"],\"authoritative_batch_source\":\"UPLOAD_BATCH\"}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/679",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x07_evalua_resumen_final"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x07_segunda_autoridad_o_mutacion"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x07_metricas_o_identidad_no_canonicas"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x07_modalidad_hardcode"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x07_omite_valid_only"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x07_archivo_o_detalle_sin_permiso"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": true,
+              "s22x07_segunda_autoridad_o_mutacion": false,
+              "s22x07_metricas_o_identidad_no_canonicas": false,
+              "s22x07_modalidad_hardcode": false,
+              "s22x07_omite_valid_only": false,
+              "s22x07_archivo_o_detalle_sin_permiso": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": true,
+              "s22x07_segunda_autoridad_o_mutacion": true,
+              "s22x07_metricas_o_identidad_no_canonicas": false,
+              "s22x07_modalidad_hardcode": false,
+              "s22x07_omite_valid_only": false,
+              "s22x07_archivo_o_detalle_sin_permiso": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": true,
+              "s22x07_segunda_autoridad_o_mutacion": false,
+              "s22x07_metricas_o_identidad_no_canonicas": true,
+              "s22x07_modalidad_hardcode": false,
+              "s22x07_omite_valid_only": false,
+              "s22x07_archivo_o_detalle_sin_permiso": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": true,
+              "s22x07_segunda_autoridad_o_mutacion": false,
+              "s22x07_metricas_o_identidad_no_canonicas": false,
+              "s22x07_modalidad_hardcode": true,
+              "s22x07_omite_valid_only": false,
+              "s22x07_archivo_o_detalle_sin_permiso": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": true,
+              "s22x07_segunda_autoridad_o_mutacion": false,
+              "s22x07_metricas_o_identidad_no_canonicas": false,
+              "s22x07_modalidad_hardcode": false,
+              "s22x07_omite_valid_only": true,
+              "s22x07_archivo_o_detalle_sin_permiso": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": true,
+              "s22x07_segunda_autoridad_o_mutacion": false,
+              "s22x07_metricas_o_identidad_no_canonicas": false,
+              "s22x07_modalidad_hardcode": false,
+              "s22x07_omite_valid_only": false,
+              "s22x07_archivo_o_detalle_sin_permiso": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x07_evalua_resumen_final": false,
+              "s22x07_segunda_autoridad_o_mutacion": true,
+              "s22x07_metricas_o_identidad_no_canonicas": true,
+              "s22x07_modalidad_hardcode": true,
+              "s22x07_omite_valid_only": true,
+              "s22x07_archivo_o_detalle_sin_permiso": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "b766f4d37023977c77e02dbcdb039b41969dfb25f6a0470c9fff7ee289640372",
+      "hash_paquete": "6a7b3b995fe7b31d47c3fbadf215b82470d573123a6ad95d5c0fe02ec617f899",
+      "hash_evaluado": "b766f4d370",
+      "hash_paquete_10": "6a7b3b995f"
+    },
+    {
+      "codigo": "S22X-C08",
+      "legacy_id": 682,
+      "legacy_ids": [
+        682
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 682,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C08; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x08_evalua_pertenencia_segmento",
+        "s22x08_multiples_segmentos_activos",
+        "s22x08_reasigna_sin_historia_o_auditoria",
+        "s22x08_muta_cartera",
+        "s22x08_avanza_con_deuda_sin_segmento",
+        "s22x08_inventa_destino_fisico"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C08",
+        "clave": "s22x_legacy_682",
+        "familia": "VALIDATIONS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Pertenencia activa única a segmento por escenario",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-SIMULA-SEGMENT-MEMBERSHIP-001 en B2B. Dentro de un mismo escenario de LF Simula, una deuda o registro puede pertenecer como máximo a un segmento activo a la vez. Reasignar una deuda a otro segmento reemplaza su pertenencia activa anterior, conserva la pertenencia previa en el histórico y registra el cambio para trazabilidad. La pertenencia se resuelve sobre el snapshot del escenario y no modifica la cartera operacional original. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"scope\":\"PER_SCENARIO\",\"screen_code\":\"B2B-SIMULA-002\",\"audit_required\":true,\"history_required\":true,\"reassignment_semantic\":\"REPLACE_ACTIVE_MEMBERSHIP_PRESERVE_HISTORY\",\"operational_source_mutation\":\"DENY\",\"unsegmented_debts_on_advance\":\"DENY\",\"active_membership_cardinality\":\"MAX_ONE_ACTIVE_SEGMENT_PER_DEBT\",\"conflicting_active_memberships\":\"DENY\",\"physical_membership_store_status\":\"BLOCKED_NO_DESTINATION\",\"advance_requires_full_segmentation\":true,\"all_debts_require_active_segment_before_offer_stage\":true}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/682",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x08_evalua_pertenencia_segmento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x08_multiples_segmentos_activos"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x08_reasigna_sin_historia_o_auditoria"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x08_muta_cartera"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x08_avanza_con_deuda_sin_segmento"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x08_inventa_destino_fisico"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": true,
+              "s22x08_multiples_segmentos_activos": false,
+              "s22x08_reasigna_sin_historia_o_auditoria": false,
+              "s22x08_muta_cartera": false,
+              "s22x08_avanza_con_deuda_sin_segmento": false,
+              "s22x08_inventa_destino_fisico": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": true,
+              "s22x08_multiples_segmentos_activos": true,
+              "s22x08_reasigna_sin_historia_o_auditoria": false,
+              "s22x08_muta_cartera": false,
+              "s22x08_avanza_con_deuda_sin_segmento": false,
+              "s22x08_inventa_destino_fisico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": true,
+              "s22x08_multiples_segmentos_activos": false,
+              "s22x08_reasigna_sin_historia_o_auditoria": true,
+              "s22x08_muta_cartera": false,
+              "s22x08_avanza_con_deuda_sin_segmento": false,
+              "s22x08_inventa_destino_fisico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": true,
+              "s22x08_multiples_segmentos_activos": false,
+              "s22x08_reasigna_sin_historia_o_auditoria": false,
+              "s22x08_muta_cartera": true,
+              "s22x08_avanza_con_deuda_sin_segmento": false,
+              "s22x08_inventa_destino_fisico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": true,
+              "s22x08_multiples_segmentos_activos": false,
+              "s22x08_reasigna_sin_historia_o_auditoria": false,
+              "s22x08_muta_cartera": false,
+              "s22x08_avanza_con_deuda_sin_segmento": true,
+              "s22x08_inventa_destino_fisico": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": true,
+              "s22x08_multiples_segmentos_activos": false,
+              "s22x08_reasigna_sin_historia_o_auditoria": false,
+              "s22x08_muta_cartera": false,
+              "s22x08_avanza_con_deuda_sin_segmento": false,
+              "s22x08_inventa_destino_fisico": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x08_evalua_pertenencia_segmento": false,
+              "s22x08_multiples_segmentos_activos": true,
+              "s22x08_reasigna_sin_historia_o_auditoria": true,
+              "s22x08_muta_cartera": true,
+              "s22x08_avanza_con_deuda_sin_segmento": true,
+              "s22x08_inventa_destino_fisico": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "eb40869870e73e06507ee3350f43f3780216b52a0d6e844dce9b83ce8cdb05d5",
+      "hash_paquete": "6dd994ab9c422945112f274b252c8b660842ebc2d7acfdf90ac0be5a019ff9dd",
+      "hash_evaluado": "eb40869870",
+      "hash_paquete_10": "6dd994ab9c"
+    },
+    {
+      "codigo": "S22X-C09",
+      "legacy_id": 684,
+      "legacy_ids": [
+        684
+      ],
+      "relacionadas": [
+        "S22Q-C04",
+        "S22W-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 684,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22X-C09; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22x09_evalua_decision_segmento",
+        "s22x09_estado_no_catalogado",
+        "s22x09_avance_pendiente",
+        "s22x09_bloquea_estado_resuelto",
+        "s22x09_sin_oferta_automatico_o_segmento",
+        "s22x09_decision_sin_auditoria"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22X-C09",
+        "clave": "s22x_legacy_684",
+        "familia": "STATES",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Decisión comercial explícita por segmento",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-OFFER-SEGMENT-DECISION-001 en B2B. Al llegar a la etapa de Oferta, cada segmento debe tener una decisión comercial explícita. Los estados funcionales son: CON_OFERTA cuando existe una oferta configurada; SIN_OFERTA cuando la empresa decide explícitamente no ofrecer condiciones al segmento; y PENDIENTE mientras no exista una decisión. Solo PENDIENTE bloquea el avance. SIN_OFERTA no es un segmento ni una asignación automática y debe quedar trazado como decisión de la empresa. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"screen_code\":\"B2B-OFERTA-001\",\"blocking_states\":[\"PENDIENTE\"],\"no_offer_is_segment\":false,\"non_blocking_states\":[\"CON_OFERTA\",\"SIN_OFERTA\"],\"allowed_decision_states\":[\"CON_OFERTA\",\"SIN_OFERTA\",\"PENDIENTE\"],\"decision_audit_required\":true,\"physical_state_model_status\":\"PENDING_FUNCTIONAL_DEFINITION\",\"automatic_no_offer_assignment\":\"DENY\",\"no_offer_requires_explicit_company_decision\":true}. Los estados pendientes y restricciones de creación física se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/684",
+          "solicitante": "Cristhian / Claude S22-X 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22x09_evalua_decision_segmento"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x09_estado_no_catalogado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22x09_avance_pendiente"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22x09_bloquea_estado_resuelto"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22x09_sin_oferta_automatico_o_segmento"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22x09_decision_sin_auditoria"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": true,
+              "s22x09_estado_no_catalogado": false,
+              "s22x09_avance_pendiente": false,
+              "s22x09_bloquea_estado_resuelto": false,
+              "s22x09_sin_oferta_automatico_o_segmento": false,
+              "s22x09_decision_sin_auditoria": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": true,
+              "s22x09_estado_no_catalogado": true,
+              "s22x09_avance_pendiente": false,
+              "s22x09_bloquea_estado_resuelto": false,
+              "s22x09_sin_oferta_automatico_o_segmento": false,
+              "s22x09_decision_sin_auditoria": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": true,
+              "s22x09_estado_no_catalogado": false,
+              "s22x09_avance_pendiente": true,
+              "s22x09_bloquea_estado_resuelto": false,
+              "s22x09_sin_oferta_automatico_o_segmento": false,
+              "s22x09_decision_sin_auditoria": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": true,
+              "s22x09_estado_no_catalogado": false,
+              "s22x09_avance_pendiente": false,
+              "s22x09_bloquea_estado_resuelto": true,
+              "s22x09_sin_oferta_automatico_o_segmento": false,
+              "s22x09_decision_sin_auditoria": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": true,
+              "s22x09_estado_no_catalogado": false,
+              "s22x09_avance_pendiente": false,
+              "s22x09_bloquea_estado_resuelto": false,
+              "s22x09_sin_oferta_automatico_o_segmento": true,
+              "s22x09_decision_sin_auditoria": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": true,
+              "s22x09_estado_no_catalogado": false,
+              "s22x09_avance_pendiente": false,
+              "s22x09_bloquea_estado_resuelto": false,
+              "s22x09_sin_oferta_automatico_o_segmento": false,
+              "s22x09_decision_sin_auditoria": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22x09_evalua_decision_segmento": false,
+              "s22x09_estado_no_catalogado": true,
+              "s22x09_avance_pendiente": true,
+              "s22x09_bloquea_estado_resuelto": true,
+              "s22x09_sin_oferta_automatico_o_segmento": true,
+              "s22x09_decision_sin_auditoria": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "6316d2e35bada6536bba92e4d0e9b3fefaa6ed49fff96d6091672c2418d41184",
+      "hash_paquete": "c12363e9ac1aca86ddfe968996c2b8b2cd1df13dcbc77c4c4b243de8d5f01165",
+      "hash_evaluado": "6316d2e35b",
+      "hash_paquete_10": "c12363e9ac"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": []
+}
