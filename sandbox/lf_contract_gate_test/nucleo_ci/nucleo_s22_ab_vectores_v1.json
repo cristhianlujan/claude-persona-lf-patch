@@ -1,7 +1,7 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
-    "base": "44839a1442d45b55d4be229b3a98e9b9a39484dd",
+    "base": "728feed3a98a90823acb97b46d4b7dcae1811699",
     "js_vectors": "54/54",
     "hash": "SQL RO canonical formula; PG17 pending",
     "existing_coverage": [
@@ -233,7 +233,8 @@
     "assert_links": {
       "expected_links": 8,
       "expected_replacements": 8,
-      "sql_future": "links and expected_delta derived from packages, prewrite exclusion of already replaced"
+      "sql_future": "links and expected_delta derived from packages, prewrite exclusion of already replaced",
+      "executed_sql": "derived counts, qualified aliases, pre-write exclusion"
     },
     "fuentes_legadas": [
       {
@@ -672,7 +673,8 @@
           "other_device_activity_resets_idle": false
         }
       }
-    ]
+    ],
+    "pg17": "PENDING_CI"
   },
   "parametros_existentes": [],
   "hechos_existentes": [],
@@ -1206,7 +1208,30 @@
       "hash": "1b0eeab8501e587e119620a8ed68f8457c5f66b532a2f0bfeb112c594c758644",
       "hash_paquete": "f9da1e81f9a50bf57ac04b057e6e1d551a1f516a7628b8b6c37fe164d52793e1",
       "hash_evaluado": "1b0eeab850",
-      "hash_paquete_10": "f9da1e81f9"
+      "hash_paquete_10": "f9da1e81f9",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C02",
@@ -1382,7 +1407,30 @@
       "hash": "f67677e255915409b97f5340a71f2be699fc21155476a803cf5c289549f1b8ad",
       "hash_paquete": "e488eb6567dcfa3e892c53d05b4ca9e477a5294dde70e786ca444dd2e18e4f31",
       "hash_evaluado": "f67677e255",
-      "hash_paquete_10": "e488eb6567"
+      "hash_paquete_10": "e488eb6567",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C03",
@@ -1589,7 +1637,30 @@
       "hash": "590cf8787a088225f6104e9d09d9db62789eb8561d8d22682d84cc85b143c72d",
       "hash_paquete": "2d2329ad272c4c9bcdefd615373269e42fce586e88a231cf8a1db57f2fef598e",
       "hash_evaluado": "590cf8787a",
-      "hash_paquete_10": "2d2329ad27"
+      "hash_paquete_10": "2d2329ad27",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C04",
@@ -1796,7 +1867,30 @@
       "hash": "933c9164102ba22c21df3bbb8f76fac858b272c323f488b6692ce22db4a627e8",
       "hash_paquete": "8e6922075e6b36633f9ddc9f1f8be506ad584b4fc8cfd4d8ff1c34cc37bb3b07",
       "hash_evaluado": "933c916410",
-      "hash_paquete_10": "8e6922075e"
+      "hash_paquete_10": "8e6922075e",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C05",
@@ -1972,7 +2066,30 @@
       "hash": "3facfcdc114aaa7a26bd39b53b901eea5e18279ca480055180217631425920b3",
       "hash_paquete": "02d11091f40e7ab1d7184e40660a6ac914abb231af69f955bc53c12df9a5c368",
       "hash_evaluado": "3facfcdc11",
-      "hash_paquete_10": "02d11091f4"
+      "hash_paquete_10": "02d11091f4",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C06",
@@ -2179,7 +2296,30 @@
       "hash": "1298b3531bfb8f8f8d60c0ccd951a9729f7d8d857a4cef3358c61ad2b658cb8e",
       "hash_paquete": "9c6ce11088b074fd58b594b6d6a254fb7817de6ee71f8a1b9236fce1b9e35679",
       "hash_evaluado": "1298b3531b",
-      "hash_paquete_10": "9c6ce11088"
+      "hash_paquete_10": "9c6ce11088",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C07",
@@ -2386,7 +2526,30 @@
       "hash": "bb8e7b0b6946a3f28ae14943722e0d85e93e8c97f267854e39179860f579db81",
       "hash_paquete": "f14e78a1de3ff18316b3f9848d56acc06dc9e551fe60670a80651226cb17b782",
       "hash_evaluado": "bb8e7b0b69",
-      "hash_paquete_10": "f14e78a1de"
+      "hash_paquete_10": "f14e78a1de",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AB-C08",
@@ -2593,9 +2756,313 @@
       "hash": "fabd6cd6c0c3c05b01cc972c096c147b54a675c8b8774512c1e0702f2460b0ec",
       "hash_paquete": "5d372179d68f8086ce1ece26f0a8339a86e74c98a20cc809ff17994bd89a6bd3",
       "hash_evaluado": "fabd6cd6c0",
-      "hash_paquete_10": "5d372179d6"
+      "hash_paquete_10": "5d372179d6",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22AB-C01",
+      "hash_paquete": "f9da1e81f9a50bf57ac04b057e6e1d551a1f516a7628b8b6c37fe164d52793e1",
+      "hash_evaluado": "f9da1e81f9a50bf57ac04b057e6e1d551a1f516a7628b8b6c37fe164d52793e1",
+      "hash_paquete_10": "f9da1e81f9",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C02",
+      "hash_paquete": "e488eb6567dcfa3e892c53d05b4ca9e477a5294dde70e786ca444dd2e18e4f31",
+      "hash_evaluado": "e488eb6567dcfa3e892c53d05b4ca9e477a5294dde70e786ca444dd2e18e4f31",
+      "hash_paquete_10": "e488eb6567",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C03",
+      "hash_paquete": "2d2329ad272c4c9bcdefd615373269e42fce586e88a231cf8a1db57f2fef598e",
+      "hash_evaluado": "2d2329ad272c4c9bcdefd615373269e42fce586e88a231cf8a1db57f2fef598e",
+      "hash_paquete_10": "2d2329ad27",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C04",
+      "hash_paquete": "8e6922075e6b36633f9ddc9f1f8be506ad584b4fc8cfd4d8ff1c34cc37bb3b07",
+      "hash_evaluado": "8e6922075e6b36633f9ddc9f1f8be506ad584b4fc8cfd4d8ff1c34cc37bb3b07",
+      "hash_paquete_10": "8e6922075e",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C05",
+      "hash_paquete": "02d11091f40e7ab1d7184e40660a6ac914abb231af69f955bc53c12df9a5c368",
+      "hash_evaluado": "02d11091f40e7ab1d7184e40660a6ac914abb231af69f955bc53c12df9a5c368",
+      "hash_paquete_10": "02d11091f4",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C06",
+      "hash_paquete": "9c6ce11088b074fd58b594b6d6a254fb7817de6ee71f8a1b9236fce1b9e35679",
+      "hash_evaluado": "9c6ce11088b074fd58b594b6d6a254fb7817de6ee71f8a1b9236fce1b9e35679",
+      "hash_paquete_10": "9c6ce11088",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C07",
+      "hash_paquete": "f14e78a1de3ff18316b3f9848d56acc06dc9e551fe60670a80651226cb17b782",
+      "hash_evaluado": "f14e78a1de3ff18316b3f9848d56acc06dc9e551fe60670a80651226cb17b782",
+      "hash_paquete_10": "f14e78a1de",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AB-C08",
+      "hash_paquete": "5d372179d68f8086ce1ece26f0a8339a86e74c98a20cc809ff17994bd89a6bd3",
+      "hash_evaluado": "5d372179d68f8086ce1ece26f0a8339a86e74c98a20cc809ff17994bd89a6bd3",
+      "hash_paquete_10": "5d372179d6",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 20:25 Lima: evaluador independiente 54/54, descripción y valor_config comparados con referencias literales"
+    }
+  ],
   "cobertura_directa": []
 }
