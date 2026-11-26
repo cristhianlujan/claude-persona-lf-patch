@@ -1,0 +1,9 @@
+{
+  "solution_ref": "saly-creative-issue-executor-v1",
+  "paths": {
+    ".github/workflows/saly-creative-issue-executor-v1.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/saly_creative_issue_executor_v1.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-issue-executor-v1.json": "CHANGESET_MANIFEST",
+    "skills/creative_factory/SKILL.md": "SKILL"
+  }
+}
