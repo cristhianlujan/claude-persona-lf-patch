@@ -12,7 +12,7 @@ INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('FINANCIAL_INTEGRITY_RECONCILIATION','ao_validation_missing','CURADO') ON CONFLICT DO NOTHING;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_precision','integer','cantidad','ao_precision; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('FINANCIAL_INTEGRITY_RECONCILIATION','ao_precision','CURADO') ON CONFLICT DO NOTHING;
-INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_difference','numeric','monto','ao_difference; hecho derivado, binding runtime pendiente');
+INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_difference','numeric','soles','ao_difference; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('FINANCIAL_INTEGRITY_RECONCILIATION','ao_difference','CURADO') ON CONFLICT DO NOTHING;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_installment_plan','boolean','ninguna','ao_installment_plan; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_installment_plan','CURADO') ON CONFLICT DO NOTHING;
@@ -52,7 +52,7 @@ INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_server_authority_missing','CURADO') ON CONFLICT DO NOTHING;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_default_max_terms','integer','cantidad','ao_default_max_terms; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_default_max_terms','CURADO') ON CONFLICT DO NOTHING;
-INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_initial_payment_amount','numeric','monto','ao_initial_payment_amount; hecho derivado, binding runtime pendiente');
+INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_initial_payment_amount','numeric','soles','ao_initial_payment_amount; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_initial_payment_amount','CURADO') ON CONFLICT DO NOTHING;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_initial_active_claim','boolean','ninguna','ao_initial_active_claim; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_initial_active_claim','CURADO') ON CONFLICT DO NOTHING;
@@ -168,7 +168,7 @@ INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_weight_amount','CURADO') ON CONFLICT DO NOTHING;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_weight_urgency','numeric','proporcion','ao_weight_urgency; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_weight_urgency','CURADO') ON CONFLICT DO NOTHING;
-INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_reference_amount','numeric','monto','ao_reference_amount; hecho derivado, binding runtime pendiente');
+INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_reference_amount','numeric','soles','ao_reference_amount; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_reference_amount','CURADO') ON CONFLICT DO NOTHING;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('ao_reference_days','integer','dias','ao_reference_days; hecho derivado, binding runtime pendiente');
 INSERT INTO lf_ops.nucleo_familia_vocabulario(familia,hecho,origen) VALUES('OFFERS_INSTALLMENTS','ao_reference_days','CURADO') ON CONFLICT DO NOTHING;
