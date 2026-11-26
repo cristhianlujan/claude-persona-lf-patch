@@ -1,12 +1,9 @@
 -- SALY ONB: 23 decisiones cerradas, solo CANDIDATA; juicio independiente pendiente.
 -- Hechos lógicos propuestos, no binding runtime; D-23 citada, no cotejada.
 BEGIN;
+-- EMPRESAS y AMBITOS_BACKEND provienen de #4793; no modificarlos.
 INSERT INTO saly.nucleo_nodos(codigo,padre,nivel,nota) VALUES
- ('EMPRESAS','GLOBAL','AMBITO','Portal de empresas B2B'),
- ('ONBOARDING','EMPRESAS','MODULO','Onboarding de colaboradores') ON CONFLICT (codigo) DO NOTHING;
-UPDATE saly.config_global SET config_value=((config_value::jsonb)||'["EMPRESAS"]'::jsonb)::text
- WHERE scope='NUCLEO' AND config_key='AMBITOS_BACKEND'
- AND NOT (config_value::jsonb @> '["EMPRESAS"]'::jsonb);
+ ('ONBOARDING','EMPRESAS','MODULO','Onboarding de colaboradores');
 INSERT INTO saly.nucleo_autoridades(codigo,tipo,descripcion) VALUES
  ('ONB-20261125','DECISION_DUENO','2026-11-25: decisiones documentadas de onboarding SALY; D-23 citada para cierre contractual') ON CONFLICT (codigo) DO NOTHING;
 INSERT INTO saly.nucleo_familias(codigo,dominio,origen,descripcion,estado,tipo)
