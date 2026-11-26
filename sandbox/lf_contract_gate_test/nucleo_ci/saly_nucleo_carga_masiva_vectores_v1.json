@@ -1,0 +1,1627 @@
+{
+  "estado": "BORRADOR_SIN_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "cb1d420b8a20a7c3c5ec199ee5ee5a0bfab0c4bc",
+    "js_vectors": 52,
+    "pg17": "PENDIENTE"
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "cmo_001_objeto_carga",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "archivo contiene adelantos en lugar de lista de empleados; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_002_alta_actualizacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "carga intenta dar de baja empleados; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_003_persistencia_mensual",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "empleado sin cambios se elimina por ausencia de recarga; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_004_dni_inmutable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "actualización intenta modificar DNI existente; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_005_dni_errado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "DNI errado se pretende corregir en el registro en vez de baja por canal propio y alta nueva; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_006_plantillas",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "están disponibles ambos modelos de plantilla; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_007_nacional_campos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modelo nacional contiene exactamente los campos obligatorios y opcionales definidos, sin banco cuenta ni CCI; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_008_nacional_dni",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modelo nacional contiene registro con documento distinto de DNI; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_009_extranjero_campos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "modelo extranjero contiene los campos obligatorios y opcionales definidos; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_010_lista_bancos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "banco del modelo extranjero pertenece al catálogo BCP SCOTIABANK INTERBANK BBVA PICHINCHA BANBIF; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_011_lista_sexo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "género opcional informado pertenece a M o F; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_012_lista_documentos",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "tipo de documento pertenece a DNI PASAPORTE PTP CARNET DE EXTRANJERIA; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_013_dni_excepcion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "DNI en modelo extranjero se redirige o exige control extra; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_014_flujo_registrado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "carga de empleado omite persistir el flujo utilizado; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_015_cambio_flujo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio de flujo intenta proceder sin campos del destino; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_016_nacional_a_extranjero",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio nacional a extranjero intenta proceder sin nombre apellidos banco cuenta o CCI; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_017_extranjero_a_nacional",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cambio extranjero a nacional intenta proceder sin DNI o conserva datos sobrantes tras cambio; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_018_checker_automatico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "solicitud de RRHH con CHECKER no impacta inmediatamente; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_019_auditoria_checker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "solicitud automática CHECKER omite eventos o difiere usuario fecha u hora; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_020_sin_checker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "solicitud sin CHECKER impacta o no queda pendiente de autorización; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_021_aprobacion_checker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "aprobación se concede sin CHECKER o usa cantidad de usuarios o aprobación dinámica; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_022_empresa_sin_checker",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "empresa sin CHECKER intenta resolver autorización sin contactar a SALY para cambio de perfil; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_023_caducidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "solicitud sigue pendiente sin autorización al cumplir 48 horas y no se cancela; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_024_lotizacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "procesamiento de archivo omite partición según tamaño; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_025_meta_archivo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "meta de archivo contempla 10000 y reducción a 5000 y 3000 si demanda mucho tiempo, sin fijar partición exacta; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    },
+    {
+      "codigo": "cmo_026_canales_b2b",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "portal distingue carga individual mantenimiento baja masiva y baja individual de la carga masiva; hecho lógico propuesto, binding runtime pendiente",
+      "familia": "CARGA_MASIVA"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "SALY-CMO-001",
+      "hechos": [
+        "cmo_001_objeto_carga"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-001",
+        "clave": "cmo_objeto_carga",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Objeto de carga",
+        "descripcion": "Cargar lista de empleados, nunca adelantos. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-001",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_001_objeto_carga"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_001_objeto_carga": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_001_objeto_carga": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 1",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Lista de empleados admitida; Negativa: Archivo de adelantos no admitido (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-002",
+      "hechos": [
+        "cmo_002_alta_actualizacion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-002",
+        "clave": "cmo_alta_actualizacion",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Alta y actualización",
+        "descripcion": "Agregar empleados nuevos y actualizar existentes; nunca dar de baja por esta carga. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-002",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_002_alta_actualizacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_002_alta_actualizacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_002_alta_actualizacion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 1",
+      "dependencia": "DEPENDE SALY-CMO-001",
+      "casos_documentales": "Positiva: Alta o actualización; Negativa: Baja por este canal no permitida (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-003",
+      "hechos": [
+        "cmo_003_persistencia_mensual"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-003",
+        "clave": "cmo_persistencia_mensual",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Persistencia mensual",
+        "descripcion": "Mantener empleados sin cambios al mes siguiente sin exigir recarga. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-003",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_003_persistencia_mensual"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_003_persistencia_mensual": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_003_persistencia_mensual": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 1",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Empleado permanece; Negativa: No eliminar por falta de recarga (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-004",
+      "hechos": [
+        "cmo_004_dni_inmutable"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-004",
+        "clave": "cmo_dni_inmutable",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "DNI inmutable",
+        "descripcion": "Permitir actualizar cualquier dato del empleado excepto el DNI. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-004",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_004_dni_inmutable"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_004_dni_inmutable": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_004_dni_inmutable": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 2",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Actualizar dato distinto del DNI; Negativa: No modificar DNI (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-005",
+      "hechos": [
+        "cmo_005_dni_errado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-005",
+        "clave": "cmo_dni_errado",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "DNI incorrecto",
+        "descripcion": "Dar de baja por su canal y crear alta nueva con DNI correcto. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-005",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_005_dni_errado"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_005_dni_errado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_005_dni_errado": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 2",
+      "dependencia": "DEPENDE SALY-CMO-004",
+      "casos_documentales": "Positiva: Baja por canal propio y alta nueva; Negativa: No corregir DNI existente (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-006",
+      "hechos": [
+        "cmo_006_plantillas"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-006",
+        "clave": "cmo_plantillas",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Dos plantillas",
+        "descripcion": "Disponer de modelo 1 nacionales y modelo 2 extranjeros y excepciones. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-006",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_006_plantillas"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_006_plantillas": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_006_plantillas": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Dos modelos disponibles; Negativa: No sustituirlos por modelo único (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-007",
+      "hechos": [
+        "cmo_007_nacional_campos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-007",
+        "clave": "cmo_nacional_campos",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Campos modelo nacional",
+        "descripcion": "Obligatorios: TIPO DE DOCUMENTO, NUMERO DE DOCUMENTO, CORREO, SUELDO, FEC. INICIO PLANILLA, % MAX DISPONIBLE, CELULAR. Opcional: CODIGO DEL EMPLEADO. Sin banco, cuenta ni CCI. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-007",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_007_nacional_campos"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_007_nacional_campos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_007_nacional_campos": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "DEPENDE SALY-CMO-006",
+      "casos_documentales": "Positiva: Plantilla contiene los campos definidos; Negativa: No exigir banco, cuenta ni CCI (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-008",
+      "hechos": [
+        "cmo_008_nacional_dni"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-008",
+        "clave": "cmo_nacional_dni",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Solo DNI nacional",
+        "descripcion": "Aceptar exclusivamente DNI; rechazar solo el registro extranjero, no el lote. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-008",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_008_nacional_dni"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_008_nacional_dni": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_008_nacional_dni": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "DEPENDE SALY-CMO-007",
+      "casos_documentales": "Positiva: Registro DNI válido continúa; Negativa: Registro extranjero rechazado sin rechazar lote (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-009",
+      "hechos": [
+        "cmo_009_extranjero_campos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-009",
+        "clave": "cmo_extranjero_campos",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Campos modelo extranjero",
+        "descripcion": "Obligatorios: TIPO DE DOCUMENTO, NUMERO DE DOCUMENTO, NOMBRE, APELLIDO PATERNO, APELLIDO MATERNO, CELULAR, CORREO, SUELDO, BANCO, NRO. CUENTA, CCI, FEC. INICIO PLANILLA, % MAX DISPONIBLE. Opcionales: SEGUNDO NOMBRE, FEC. NACIMIENTO, GENERO, CODIGO DEL EMPLEADO. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-009",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_009_extranjero_campos"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_009_extranjero_campos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_009_extranjero_campos": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "DEPENDE SALY-CMO-006",
+      "casos_documentales": "Positiva: Modelo incluye los campos definidos; Negativa: No omitir campos obligatorios (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-010",
+      "hechos": [
+        "cmo_010_lista_bancos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-010",
+        "clave": "cmo_lista_bancos",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Lista bancos",
+        "descripcion": "Lista: BCP, SCOTIABANK, INTERBANK, BBVA, PICHINCHA, BANBIF. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-010",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_010_lista_bancos"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_010_lista_bancos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_010_lista_bancos": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "DEPENDE SALY-CMO-009",
+      "casos_documentales": "Positiva: BCP pertenece a lista; Negativa: Banco ajeno no pertenece (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-011",
+      "hechos": [
+        "cmo_011_lista_sexo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-011",
+        "clave": "cmo_lista_sexo",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Lista sexo",
+        "descripcion": "Lista de sexo: M, F; GENERO es opcional en modelo 2. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-011",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_011_lista_sexo"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_011_lista_sexo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_011_lista_sexo": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "DEPENDE SALY-CMO-009",
+      "casos_documentales": "Positiva: M pertenece a lista; Negativa: Otro valor no pertenece (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-012",
+      "hechos": [
+        "cmo_012_lista_documentos"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-012",
+        "clave": "cmo_lista_documentos",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Lista documentos",
+        "descripcion": "Lista: DNI, PASAPORTE, PTP, CARNET DE EXTRANJERIA. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-012",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_012_lista_documentos"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_012_lista_documentos": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_012_lista_documentos": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 3",
+      "dependencia": "DEPENDE SALY-CMO-009",
+      "casos_documentales": "Positiva: DNI pertenece a lista; Negativa: Otro tipo no pertenece (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-013",
+      "hechos": [
+        "cmo_013_dni_excepcion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-013",
+        "clave": "cmo_dni_excepcion",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "DNI en modelo extranjero",
+        "descripcion": "Seguir flujo extranjero completo sin cambios ni control extra de SALY. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-013",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_013_dni_excepcion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_013_dni_excepcion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_013_dni_excepcion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 4",
+      "dependencia": "DEPENDE SALY-CMO-012",
+      "casos_documentales": "Positiva: DNI sigue flujo extranjero; Negativa: No redirigir al nacional ni exigir control extra (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-014",
+      "hechos": [
+        "cmo_014_flujo_registrado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-014",
+        "clave": "cmo_flujo_registrado",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Registro de flujo",
+        "descripcion": "Guardar por qué flujo fue cargada cada persona. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-014",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_014_flujo_registrado"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_014_flujo_registrado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_014_flujo_registrado": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 4",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Flujo de carga registrado; Negativa: No perder identificación de flujo (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-015",
+      "hechos": [
+        "cmo_015_cambio_flujo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-015",
+        "clave": "cmo_cambio_flujo",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Cambio de flujo",
+        "descripcion": "Exigir campos del destino para cambiar de flujo. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-015",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_015_cambio_flujo"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_015_cambio_flujo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_015_cambio_flujo": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 5",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Campos destino completos; Negativa: Campos destino faltantes impiden cambio (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-016",
+      "hechos": [
+        "cmo_016_nacional_a_extranjero"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-016",
+        "clave": "cmo_nacional_a_extranjero",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Nacional a extranjero",
+        "descripcion": "Solicitar nombre, apellidos, banco, cuenta y CCI; sin ellos no cambiar. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-016",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_016_nacional_a_extranjero"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_016_nacional_a_extranjero": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_016_nacional_a_extranjero": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 5",
+      "dependencia": "DEPENDE SALY-CMO-015",
+      "casos_documentales": "Positiva: Datos extra completos; Negativa: Sin CCI no cambiar (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-017",
+      "hechos": [
+        "cmo_017_extranjero_a_nacional"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-017",
+        "clave": "cmo_extranjero_a_nacional",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Extranjero a nacional",
+        "descripcion": "Solo personas con DNI pueden cambiar al nacional; borrar datos sobrantes. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-017",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_017_extranjero_a_nacional"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_017_extranjero_a_nacional": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_017_extranjero_a_nacional": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 5",
+      "dependencia": "DEPENDE SALY-CMO-015",
+      "casos_documentales": "Positiva: DNI cambia y elimina sobrantes; Negativa: Sin DNI no cambiar (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-018",
+      "hechos": [
+        "cmo_018_checker_automatico"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-018",
+        "clave": "cmo_checker_automatico",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Checker automático",
+        "descripcion": "Con permiso CHECKER la carga viaja automática e impacta inmediatamente. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-24",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-018",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_018_checker_automatico"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_018_checker_automatico": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_018_checker_automatico": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 6",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Impacto inmediato; Negativa: Sin permiso no impactar automáticamente (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-019",
+      "hechos": [
+        "cmo_019_auditoria_checker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-019",
+        "clave": "cmo_auditoria_checker",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Auditoría automática",
+        "descripcion": "Registrar solicitud creada y aprobación automática por checker con mismo usuario, fecha y hora. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-24",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-019",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_019_auditoria_checker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_019_auditoria_checker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_019_auditoria_checker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 6",
+      "dependencia": "DEPENDE SALY-CMO-018",
+      "casos_documentales": "Positiva: Ambos eventos con mismos datos; Negativa: No omitir evento o alterar usuario/hora (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-020",
+      "hechos": [
+        "cmo_020_sin_checker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-020",
+        "clave": "cmo_sin_checker",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Sin Checker",
+        "descripcion": "Sin CHECKER solo registrar y dejar Pendiente de autorización. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-24",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-020",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_020_sin_checker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_020_sin_checker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_020_sin_checker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 6",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Solicitud pendiente; Negativa: No aprobar automáticamente (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-021",
+      "hechos": [
+        "cmo_021_aprobacion_checker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-021",
+        "clave": "cmo_aprobacion_checker",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Aprobación exclusiva",
+        "descripcion": "Solo CHECKER aprueba; no contar usuarios ni usar aprobación dinámica. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-24",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-021",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_021_aprobacion_checker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_021_aprobacion_checker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_021_aprobacion_checker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 6",
+      "dependencia": "DEPENDE SALY-CMO-020",
+      "casos_documentales": "Positiva: Checker puede aprobar; Negativa: No checker no aprueba (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-022",
+      "hechos": [
+        "cmo_022_empresa_sin_checker"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-022",
+        "clave": "cmo_empresa_sin_checker",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Empresa sin Checker",
+        "descripcion": "La empresa contacta a SALY para que le cambien el perfil. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-24",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-022",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_022_empresa_sin_checker"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_022_empresa_sin_checker": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_022_empresa_sin_checker": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 6",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Empresa contacta a SALY; Negativa: No sustituir por aprobación automática (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-023",
+      "hechos": [
+        "cmo_023_caducidad"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-023",
+        "clave": "cmo_caducidad",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Caducidad pendiente",
+        "descripcion": "Cancelar automáticamente solicitud pendiente no autorizada al cumplir 48 horas. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-24",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-023",
+          "solicitante": "DUENO via Claude"
+        },
+        "plazo_dias": 2,
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_023_caducidad"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_023_caducidad": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_023_caducidad": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 6",
+      "dependencia": "DEPENDE SALY-CMO-020",
+      "casos_documentales": "Positiva: Pendiente sin autorizar a 48 h se cancela; Negativa: Antes de 48 h no cancelar por esta regla (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-024",
+      "hechos": [
+        "cmo_024_lotizacion"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-024",
+        "clave": "cmo_lotizacion",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "CONDUCTA",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Lotización",
+        "descripcion": "Particionar según tamaño de archivo para rapidez y evitar saturación. Bloquear incumplimiento descrito por el hecho lógico; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-024",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_024_lotizacion"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "cmo_024_lotizacion": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "cmo_024_lotizacion": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 7",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Procesamiento por sub-lotes; Negativa: No ignorar tamaño de archivo (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-025",
+      "hechos": [
+        "cmo_025_meta_archivo"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-025",
+        "clave": "cmo_meta_archivo",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Meta de archivo",
+        "descripcion": "Meta 10000 empleados por archivo; si demanda mucho tiempo bajar a 5000 y luego 3000; recomendar tamaño de partición. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-025",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_025_meta_archivo"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_025_meta_archivo": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_025_meta_archivo": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 7",
+      "dependencia": "DEPENDE SALY-CMO-024",
+      "casos_documentales": "Positiva: Meta y reducciones documentadas; Negativa: No fijar tamaño exacto de partición como decidido (diseño, no ejecutada)"
+    },
+    {
+      "codigo": "SALY-CMO-026",
+      "hechos": [
+        "cmo_026_canales_b2b"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "SALY-CMO-026",
+        "clave": "cmo_canales_b2b",
+        "familia": "CARGA_MASIVA",
+        "naturaleza": "DEFINICION",
+        "clase": "BACKEND",
+        "alcance": "CARGA_MASIVA",
+        "modo": "SOLO_AQUI",
+        "dueno": "PRODUCTO",
+        "titulo": "Canales B2B relacionados",
+        "descripcion": "Portal dispone de carga individual, mantenimiento y baja masiva e individual con variantes como la carga; detalle fuera de alcance. Definición de negocio; binding runtime pendiente.",
+        "efecto": "DEFINIR",
+        "autoridad": "D-23",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "CHAT",
+          "ref": "2026-11-25/CMO/SALY-CMO-026",
+          "solicitante": "DUENO via Claude"
+        },
+        "condicion": {
+          "op": "=",
+          "izq": {
+            "hecho": "cmo_026_canales_b2b"
+          },
+          "der": {
+            "lit": true
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "VALOR_TIPICO",
+            "entrada": {
+              "cmo_026_canales_b2b": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "VALOR_BORDE",
+            "entrada": {
+              "cmo_026_canales_b2b": false
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "fuente": "CERRADA; 00_Decisiones_Carga_masiva.md § 8",
+      "dependencia": "—",
+      "casos_documentales": "Positiva: Canales diferenciados; Negativa: No tratar baja como carga masiva (diseño, no ejecutada)"
+    }
+  ]
+}

@@ -2,6 +2,12 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_creative_tu_oferta_intake_v1.sql'
+      - 'supabase/tests/saly_creative_tu_oferta_intake_v1_pg17_rollback.sql'
+      - 'supabase/migrations/*_lf_saly_creative_lf_adapter_v1.sql'
+      - 'supabase/tests/saly_creative_lf_adapter_v1_pg17_rollback.sql'
+      - 'supabase/migrations/*_lf_saly_creative_project_lf_v1.sql'
+      - 'supabase/tests/saly_creative_project_lf_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_creative_pilot_claim_11_v1.sql'
       - 'supabase/tests/saly_creative_pilot_claim_11_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_creative_serial_loop_v1.sql'
@@ -589,3 +595,38 @@ jobs:
           test "${#files[@]}" -eq 1
           sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_pilot_claim_body.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_pilot_claim_11_v1_pg17_rollback.sql
+      - name: LF project intake rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb saly_lf_project_ci
+          export PGDATABASE=saly_lf_project_ci
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_project_lf_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/saly_project_lf_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_project_lf_v1_pg17_rollback.sql
+
+      - name: LF adapter isolated rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb saly_lf_adapter_ci
+          export PGDATABASE=saly_lf_adapter_ci
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_lf_adapter_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/lf_adapter_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_lf_adapter_v1_pg17_rollback.sql
+
+      - name: LF offer intake rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb lf_offer_intake_ci
+          export PGDATABASE=lf_offer_intake_ci
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_tu_oferta_intake_v1.sql)
+          test "${#files[@]}" -eq 1
+          sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/lf_offer_intake_body.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_tu_oferta_intake_v1_pg17_rollback.sql

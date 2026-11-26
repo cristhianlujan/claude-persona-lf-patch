@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-nucleo-carga-masiva-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/saly_nucleo_carga_masiva_vectores_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/saly-nucleo-carga-masiva-v1.json": "CHANGESET_MANIFEST"
+  }
+}
