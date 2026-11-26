@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-nucleo-onboarding-v2",
+  "paths": {
+    "sandbox/lf_contract_gate_test/nucleo_ci/saly_nucleo_onboarding_vectores_v2.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/saly-nucleo-onboarding-v2.json": "CHANGESET_MANIFEST"
+  }
+}
