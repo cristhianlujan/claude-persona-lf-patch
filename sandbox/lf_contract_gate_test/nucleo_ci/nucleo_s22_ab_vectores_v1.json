@@ -1,0 +1,2601 @@
+{
+  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "preflight": {
+    "base": "44839a1442d45b55d4be229b3a98e9b9a39484dd",
+    "js_vectors": "54/54",
+    "hash": "SQL RO canonical formula; PG17 pending",
+    "existing_coverage": [
+      {
+        "legacy_id": 405,
+        "nucleo_codigo": "S22K-C05",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 420,
+        "nucleo_codigo": "S22K-C04",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 452,
+        "nucleo_codigo": "S22A-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 453,
+        "nucleo_codigo": "S19-C09",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 467,
+        "nucleo_codigo": "S22L-C03",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 552,
+        "nucleo_codigo": "S22P-C01",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 554,
+        "nucleo_codigo": "S22P-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      },
+      {
+        "legacy_id": 13118,
+        "nucleo_codigo": "S22A-C02",
+        "version_nucleo": 1,
+        "estado_cobertura": "PARCIAL"
+      }
+    ],
+    "ancestors_p36": [
+      {
+        "codigo": "PANTALLA-36"
+      },
+      {
+        "codigo": "CLIENT_LEGAL"
+      },
+      {
+        "codigo": "CLIENTE"
+      },
+      {
+        "codigo": "GLOBAL"
+      }
+    ],
+    "published_direct_versions": [],
+    "published_related": [
+      {
+        "regla": "S19-C09",
+        "version": 1,
+        "descripcion": "BLOQUEAR resolver segundo factor B2B humano mediante factor distinto del autorizado por SEC-B2B-MFA y SEC-B2B-MFA-FACTOR-ELIGIBILITY: OTP de correo registrado mediante Brevo cuando corresponda. No atribuir resistencia phishing, AAL2 nativo ni implementación IdP/Brevo sin evidencia; no cambiar políticas ni activar producción."
+      },
+      {
+        "regla": "S22A-C02",
+        "version": 1,
+        "descripcion": "BLOQUEAR reconocer como confiable dispositivo nuevo, desconocido o cuya inactividad alcance AUTH/MFA_DEVICE_IDLE_DAYS de public.lf_global_config; exigir OTP correo antes de sesión operativa. El último uso autenticado se registra por usuario y dispositivo; BLOQUEAR renovar confianza por actividad ajena y omitir revocación ante señales de seguridad. Complementa S7-C07 y S21-C07, sin sustituir validación de token ni ciclo de revocación. Binding runtime pendiente."
+      },
+      {
+        "regla": "S22K-C04",
+        "version": 1,
+        "descripcion": "En Login B2B-AUTH-001 BLOQUEAR logo no registrado como actual en lf_design.brand_assets, variante light distinta de LF_BRAND_LOGO_2L_LIGHT_TRANSPARENT o variante dark fuera de fondo oscuro autorizado, consumo de activo deprecado, redibujo o generación del logo. El binario canónico reside en Google Drive y catálogo operativo conserva ID de archivo, checksum, dimensiones, variante y estado mediante storage_object_path. No sustituir binario ni catálogo. Binding pendiente."
+      },
+      {
+        "regla": "S22K-C05",
+        "version": 1,
+        "descripcion": "En lote B2B BLOQUEAR ausencia de policy_id o snapshot inmutable de política aplicada, o enrutamiento tras validación que contradiga perfil de carga del snapshot server-side: B2B_OPERADOR va a B2B_LOAD_PENDIENTE_APROBACION sin autoaprobación manual; B2B_OPERADOR_INTEGRAL va a B2B_LOAD_AUTOAPROBADO según política autorizada. Otros perfiles sin cambios. Simulación de camino aprobado solo diseño/prototipo, nunca bypass de producción. Binding pendiente."
+      },
+      {
+        "regla": "S22L-C03",
+        "version": 1,
+        "descripcion": "En Backoffice B2B BLOQUEAR cierre QA Browser/Platform o producción sin fuente de frontend/runtime identificada y matriz canónica compatible vinculada. Mientras falten, mantener PENDING_SOURCE_IDENTIFICATION; no bloquear historia ni implementación por esta causa. Las pantallas no hardcodean versiones de navegador. No afirmar compatibilidad ni cierre sin evidencia. Binding pendiente."
+      },
+      {
+        "regla": "S22P-C01",
+        "version": 1,
+        "descripcion": "En HOME_APRENDA_ANTES_DECIDIR BLOQUEAR popup que mantenga semántica paralela a reglas fuente. Tu deuda puede haber cambiado de manos consume EDU-NODO-02-EXPLORA y no publica detalle legal preciso si candidato o claims pendientes; fuente PUBLICABLE requerida. ¿Cómo funciona el simulador? conserva naming decisión 46, explica celular ONB_001, OTP, DNI si corresponde y resolución backend, sin simulación hipotética ni lookup directo. ¿Qué ocurre después de revisar tu opción? consume EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA, oferta válida pago único/cuotas, confirmación y constancia/carta por deuda tras SETTLED_CONFIRMED, sin plazos SBS históricos no verificados. Cierres comerciales ONB_001; aplicar frescura de claims. Visual mapping PENDING_CANONICAL_VISUAL, PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001. Complementa S13-C07; binding pendiente."
+      },
+      {
+        "regla": "S22P-C02",
+        "version": 1,
+        "descripcion": "En HOME_FAQ BLOQUEAR respuestas contradictorias con contratos fuente: START_REQUIREMENTS celular, OTP y DNI si corresponde sin perfil completo previo (REG_FLOW_CELL_FIRST_001, REG_FLUJO_003); NO_OFFER solo cero autoritativo, no fallo técnico (REG_CLIENT_HOME_NO_OFFER_001, REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001); OFFER_FINALITY exige revalidar vigencia, versión, montos, modalidad y plan, reconfirmar cambio material (REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001, REG_CLIENT_CHECKOUT_ENTRY_001); DEBT_MANAGER solo identidad y deuda autoritativas, no educación candidata EDU-NODO-02-EXPLORA; DATA_PROTECTION según REG_ANL_002, REG_SEG_003 y LEGAL-CONSENTIMIENTO-DATOS-01, no checkbox universal ni ubicación histórica, revisión legal pendiente; CAN_I_STOP permite abandonar antes de envío, después aplica outcome, pendiente sin nuevo intento hasta conciliar, confirmado obliga conforme contrato y salir/cancelar débito no extingue deuda/plan (REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001, REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001). Respetar frontera pública REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001; visual pendiente PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001. Binding pendiente."
+      }
+    ],
+    "coverage_write": "future UPSERT all links",
+    "spec_proponer": {
+      "id": "LF-NUCLEO-PROPONER-SPEC-V1",
+      "source": "lf_ops.nucleo_regla_proponer_v1(jsonb,boolean), pg_get_functiondef revisado en #4783",
+      "controls": {
+        "0": "Identidad NUEVA libre por código/clave; CAMBIO/REVISION validan identidad, estado y versión anterior. SQL RO identity_free.",
+        "1": "Familia existente no RETIRADA, SQL RO family_tests.",
+        "2": "Campos obligatorios globales/familia, AST válido y origen tipo/ref/solicitante; SQL fields_ok + AST JS y origen explícito.",
+        "3": "Nodo existe, SQL anc.",
+        "4": "Cada hecho en vocabulario familiar; validar hechos nuevos contra inserts previos al DO.",
+        "5": "Literales numéricos solo NUCLEO.LITERALES_PERMITIDOS; booleanos exclusivamente en AST; textos fijos aviso.",
+        "6": "Parámetros existentes; ningún param en este lote.",
+        "7": "Mínimo familia y casuísticas activas compatibles; SQL family_tests/cases_ok.",
+        "8": "Entradas relativas a parámetro o literal numérico autorizado; entradas booleanas.",
+        "9": "Sin clave FIJA superior; identity_free global por clave implica sin conflicto.",
+        "10": "Sin duplicado/nueva versión por clave y familia; identity_free global, contraste semántico independiente pendiente.",
+        "11": "Aviso alcance inverso o copia en otro nodo; identity_free global por clave.",
+        "12": "Aviso impacto descendientes misma clave; identity_free global por clave.",
+        "13": "Unidades compatibles y metadatos; sin param en AST.",
+        "14": "Valores reales de parámetros, aviso; sin param en AST.",
+        "15": "Ejecutar vectores y comparar; JS antes del push, PG17 PASE después.",
+        "16": "Autoridad vigente; SQL authority_ok.",
+        "17": "Dependencias existentes y vigentes; SQL deps_ok.",
+        "18": "Impacto válido, plazo entero no negativo si aplica, efecto permitido por naturaleza; plantilla CONDUCTA/BLOQUEAR/IMPLEMENTAR, confirmar config.",
+        "19": "TRANSVERSAL únicamente GLOBAL/AMBITO; PANTALLA ámbito permitido NUCLEO.AMBITOS_PANTALLA; BACKEND GLOBAL o ámbito permitido NUCLEO.AMBITOS_BACKEND (excepción GLOBAL expresa en función). SQL nivel/ambito y clase."
+      },
+      "lesson": {
+        "id": "LF-NUCLEO-CLASE-ALCANCE-001",
+        "incident": "PR #4783 PASE job 139617768513 S22_PROPOSAL_FAIL control 19",
+        "fix": "CLIENT_ONBOARDING MODULO/CLIENTE usa PANTALLA, B2B AMBITO usa TRANSVERSAL. Hash canónico no incluye clase; recalcular y verificar.",
+        "evidence": "11599331a7c5c3404071766238b5e5d1e557d217 PASE SUCCESS informado por Claude",
+        "ekb_status": "PENDING_CANONICAL_REGISTRATION"
+      }
+    },
+    "control_readback": [
+      {
+        "codigo": "S22AB-C01",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "AMBITO",
+        "ambito": "B2B"
+      },
+      {
+        "codigo": "S22AB-C02",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "AMBITO",
+        "ambito": "B2B"
+      },
+      {
+        "codigo": "S22AB-C03",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "AMBITO",
+        "ambito": "B2B"
+      },
+      {
+        "codigo": "S22AB-C04",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "AMBITO",
+        "ambito": "B2B"
+      },
+      {
+        "codigo": "S22AB-C05",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "AMBITO",
+        "ambito": "B2B"
+      },
+      {
+        "codigo": "S22AB-C06",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "AMBITO",
+        "ambito": "B2B"
+      },
+      {
+        "codigo": "S22AB-C07",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "MODULO",
+        "ambito": "CLIENTE"
+      },
+      {
+        "codigo": "S22AB-C08",
+        "identity_free": true,
+        "family_tests": true,
+        "fields_ok": true,
+        "cases_ok": true,
+        "authority_ok": true,
+        "deps_ok": true,
+        "nivel": "MODULO",
+        "ambito": "CLIENTE"
+      }
+    ],
+    "assert_links": {
+      "expected_links": 8,
+      "expected_replacements": 8,
+      "sql_future": "links and expected_delta derived from packages, prewrite exclusion of already replaced"
+    },
+    "fuentes_legadas": [
+      {
+        "id": 405,
+        "codigo": "B2B-RULE-APPROVAL-001",
+        "descripcion": "Cada lote conserva snapshot inmutable de la política aplicada.",
+        "valor_config": {
+          "policy_id_required": true,
+          "design_sequence_policy": {
+            "owner_decision": "APPROVED_2026-09-17_V1",
+            "simulation_scope": "DESIGN_AND_PROTOTYPE_ONLY",
+            "approval_screen_design": "DEFER_UNTIL_END_OF_CARGAS",
+            "production_approval_bypass": "DENY",
+            "current_design_continuation": "SIMULATE_APPROVED_PATH_TO_NEXT_STEP",
+            "canonical_state_machine_preserved": true
+          },
+          "profile_routing_policy": {
+            "B2B_OPERADOR": {
+              "semantic": "LOAD_ONLY",
+              "next_state": "B2B_LOAD_PENDIENTE_APROBACION",
+              "approval_required": true,
+              "manual_self_approval": "DENY"
+            },
+            "other_profiles": "UNCHANGED_UNTIL_EXPLICIT_DECISION",
+            "owner_decision": "APPROVED_2026-09-17_V1",
+            "routing_moment": "AFTER_VALIDATION_COMPLETES",
+            "routing_authority": "SERVER_POLICY_SNAPSHOT",
+            "B2B_OPERADOR_INTEGRAL": {
+              "semantic": "MIXED_LOAD_AND_APPROVAL",
+              "next_state": "B2B_LOAD_AUTOAPROBADO",
+              "autoapprove": true,
+              "approval_required": false,
+              "manual_self_approval": "NOT_REQUIRED"
+            },
+            "uploader_profile_source": "LOAD_POLICY_SNAPSHOT"
+          },
+          "policy_snapshot_required": true,
+          "validator_review_assistance": {
+            "goal": "SURFACE_EXCEPTIONS_SO_VALIDATOR_DOES_NOT_REVIEW_FULL_EXCEL",
+            "alert_semantic": "NON_BLOCKING_REVIEW_ALERT_UNLESS_SEPARATE_POLICY_MAKES_BLOCKING",
+            "owner_decision": "APPROVED_CONCEPT_2026-09-17_V1",
+            "confirmed_alerts": [
+              {
+                "code": "HIGH_DISCOUNT_PERCENT",
+                "status": "OWNER_REQUESTED",
+                "semantic": "ALERT_WHEN_DISCOUNT_PERCENT_EXCEEDS_CONFIGURED_THRESHOLD",
+                "threshold": "PENDING_CONFIG"
+              }
+            ],
+            "reuse_issue_store": "lf_ops.validacion_incidencias",
+            "threshold_authority": "VERSIONED_POLICY_CONFIGURATION_PENDING",
+            "hardcoded_thresholds": "DENY",
+            "review_surface_behavior": {
+              "owner_decision": "APPROVED_CORRECTION_2026-09-17_V1",
+              "visual_screen_binding": "PENDING_WHEN_APPROVAL_SCREEN_IS_DESIGNED",
+              "drill_to_affected_rows": true,
+              "show_exception_summary": true,
+              "alerts_download_allowed": true,
+              "show_alert_counts_by_type": true,
+              "summary_and_detail_separation": "REQUIRED",
+              "avoid_duplicate_summary_blocks": true,
+              "full_excel_manual_review_required": "DENY_BY_DEFAULT",
+              "alerts_are_subset_of_valid_records": true
+            },
+            "candidate_alerts_for_later_review": [
+              {
+                "code": "OFFER_ABOVE_CURRENT_DEBT",
+                "status": "CANDIDATE",
+                "semantic": "OFFER_OR_PLAN_TOTAL_EXCEEDS_CURRENT_DEBT"
+              },
+              {
+                "code": "CURRENT_DEBT_GROWTH_OUTLIER",
+                "status": "CANDIDATE",
+                "semantic": "CURRENT_DEBT_MATERIALLY_EXCEEDS_ORIGINAL_DEBT"
+              },
+              {
+                "code": "INITIAL_PAYMENT_SHARE_OUTLIER",
+                "status": "CANDIDATE",
+                "semantic": "CUOTA_0_IS_UNUSUALLY_HIGH_OR_LOW_VS_PLAN_TOTAL"
+              },
+              {
+                "code": "PLAN_PRICE_SPREAD_OUTLIER",
+                "status": "CANDIDATE",
+                "semantic": "MULTIPLE_PLANS_FOR_SAME_DEBT_HAVE_MATERIAL_TOTAL_PRICE_SPREAD"
+              },
+              {
+                "code": "OFFER_VALIDITY_OUTLIER",
+                "status": "CANDIDATE",
+                "semantic": "VALIDITY_WINDOW_IS_UNUSUALLY_SHORT_OR_LONG"
+              }
+            ]
+          },
+          "approval_queue_visual_contract": {
+            "screen_code": "B2B-CARGA-004",
+            "export_scope": "CURRENT_QUEUE_FILTER_RESULT",
+            "owner_decision": "APPROVED_REFERENCE_2026-09-21",
+            "reference_only": true,
+            "primary_filters": [
+              "SEARCH",
+              "DATE_FROM",
+              "DATE_TO",
+              "LOAD_TYPE",
+              "CREATED_BY"
+            ],
+            "row_primary_action": "VIEW",
+            "alerts_presentation": "COMPACT_REVIEW_SIGNAL_NOT_BLOCKING_ERROR_BY_DEFAULT",
+            "edit_binding_status": "PENDING_FUNCTIONAL_DEFINITION_DO_NOT_INVENT_PERMISSION",
+            "visual_decision_code": "LF-B2B-VIS-CARGA-004-APPROVAL-QUEUE-001",
+            "reference_not_final_ui": true,
+            "final_ui_homogenization": "DELEGATED_TO_UI_UX",
+            "row_action_column_label": "ACCIONES",
+            "export_permission_mapping": "PENDING_CANONICAL_PERMISSION_RECONCILIATION",
+            "row_required_capabilities": [
+              {
+                "label": "Ver",
+                "action": "VIEW",
+                "icon_binding": "icon_view",
+                "visual_semantic": "NEUTRAL",
+                "permission_binding": "B2B_LOAD_DETAIL_VIEW"
+              },
+              {
+                "label": "Editar",
+                "action": "EDIT",
+                "icon_binding": "PENDING_UX_CANONICAL_ICON",
+                "visual_semantic": "NEUTRAL",
+                "permission_binding": "PENDING_FUNCTIONAL_DEFINITION"
+              },
+              {
+                "label": "Aprobar",
+                "action": "APPROVE",
+                "icon_binding": "PENDING_UX_CANONICAL_ICON",
+                "visual_semantic": "POSITIVE_GREEN",
+                "permission_binding": "B2B_LOAD_APPROVE"
+              },
+              {
+                "label": "Rechazar",
+                "action": "REJECT",
+                "icon_binding": "PENDING_UX_CANONICAL_ICON",
+                "visual_semantic": "CRITICAL_RED",
+                "permission_binding": "B2B_LOAD_REJECT"
+              },
+              {
+                "label": "Descargar archivo cargado",
+                "action": "DOWNLOAD_ORIGINAL",
+                "icon_binding": "PENDING_UX_CANONICAL_ICON_OR_FILE_COLUMN_AFFORDANCE",
+                "visual_semantic": "NEUTRAL",
+                "permission_binding": "B2B_LOAD_ORIGINAL_DOWNLOAD",
+                "presentation_policy": "FILE_COLUMN_OR_ACTIONS_NO_DUPLICATION"
+              }
+            ],
+            "action_presentation_policy": {
+              "allowed_modes": [
+                "INLINE_ACTIONS",
+                "OVERFLOW_MENU"
+              ],
+              "overflow_menu_semantic": "THREE_DOTS_IF_UX_SELECTS_AND_CANONICAL_ICON_EXISTS",
+              "no_hardcoded_profile_entitlement": true,
+              "functional_capabilities_must_remain": true,
+              "visibility_requires_effective_permission": true,
+              "availability_requires_valid_state_transition": true
+            },
+            "summary_kpi_cards_required": false,
+            "critical_decisions_location": "DETAIL_VIEW",
+            "column_configuration_control": "REMOVED_NOT_REQUIRED",
+            "download_presentation_policy": {
+              "required": true,
+              "ui_ux_decides": true,
+              "no_duplication": true,
+              "preferred_options": [
+                "FILE_COLUMN",
+                "ACTIONS"
+              ],
+              "top_level_download_button_required": false,
+              "file_column_may_be_clickable_or_have_download_affordance": true
+            },
+            "waiting_time_color_semantics": "NEUTRAL_UNTIL_SLA_POLICY_EXISTS",
+            "export_loaded_results_required": true,
+            "compact_pending_count_near_title": true,
+            "additional_filters_in_more_filters": true
+          }
+        }
+      },
+      {
+        "id": 420,
+        "codigo": "B2B-RULE-LOGO-001",
+        "descripcion": "El Login usa únicamente activos oficiales actuales registrados en lf_design.brand_assets mediante brand_asset_id numérico. Para la superficie light de B2B-AUTH-001 se usa la variante 2 líneas LF_BRAND_LOGO_2L_LIGHT_TRANSPARENT (brand_asset_id 7). La variante dark equivalente es brand_asset_id 6 y solo aplica sobre fondo oscuro autorizado. Los assets legacy 1, 2 y 3 permanecen deprecados y no deben consumirse. El logo no se redibuja ni se genera. El binario canónico se conserva en Google Drive y Supabase mantiene el catálogo operativo con Drive file ID, checksum, dimensiones, variante y estado.",
+        "valor_config": {
+          "source": "lf_design.brand_assets",
+          "storage": "GOOGLE_DRIVE",
+          "redraw_allowed": false,
+          "brand_asset_ids": [
+            6,
+            7
+          ],
+          "checksum_required": true,
+          "dark_brand_asset_id": 6,
+          "required_is_current": true,
+          "light_brand_asset_id": 7,
+          "binary_reference_source": "lf_design.brand_assets.storage_object_path",
+          "deprecated_brand_asset_ids": [
+            1,
+            2,
+            3
+          ],
+          "login_light_brand_asset_id": 7
+        }
+      },
+      {
+        "id": 452,
+        "codigo": "B2B-RULE-AUTH-033",
+        "descripcion": "Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega.",
+        "valor_config": {
+          "factor_source": "PROVIDER_VERIFIED_FACTORS",
+          "backend_runtime": "SPRING_BOOT_CORE",
+          "assurance_source": "LF_SERVER_VERIFIED_SECOND_FACTOR",
+          "frontend_runtime": "NEXTJS_STATIC_EXPORT",
+          "identity_protocol": "OIDC_JWT",
+          "aws_identity_target": "AMAZON_COGNITO",
+          "email_otp_screen_id": 54,
+          "server_side_recheck": "REQUIRED",
+          "email_otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "production_authorized": false,
+          "mfa_challenge_route_id": 13,
+          "second_control_trigger": "UNRECOGNIZED_DEVICE_ONLY",
+          "local_identity_decision": "PENDING_ADR_003_M1_SPIKE",
+          "mfa_challenge_screen_id": 54,
+          "mfa_route_public_access": "DENY",
+          "non_admin_second_factor": "LF_EMAIL_OTP",
+          "challenge_needed_outcome": "MFA_REQUIRED",
+          "client_aal_authoritative": "DENY",
+          "legacy_totp_reactivation": "DENY",
+          "mfa_enrollment_screen_id": null,
+          "mfa_route_gate_semantics": "SERVER_MANAGED_TRANSIENT_MFA_CHALLENGE_CONTEXT",
+          "trusted_device_policy_id": 25,
+          "factor_security_policy_id": 19,
+          "recognized_device_outcome": "AUTHENTICATED",
+          "numeric_thresholds_in_rule": "DENY",
+          "mfa_applicability_policy_id": 3,
+          "satisfied_assurance_outcome": "AUTHENTICATED",
+          "totp_enrollment_normal_flow": "DENY",
+          "unrecognized_device_outcome": "MFA_REQUIRED",
+          "device_recognition_authority": "SERVER_ONLY",
+          "legacy_totp_enrollment_rule_id": 454,
+          "legacy_totp_operational_status": "RETIRED_LEGACY_TRACE_ONLY",
+          "architecture_alignment_decision": "DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001",
+          "legacy_totp_enrollment_route_id": 14,
+          "logout_preserves_trusted_device": true,
+          "legacy_totp_enrollment_screen_id": 55,
+          "mfa_route_authentication_required": true,
+          "client_factor_selection_authoritative": "DENY",
+          "provider_architecture_security_policy_id": 23,
+          "mfa_route_challenge_context_source_rule_id": 437,
+          "mfa_route_full_operational_session_required": false,
+          "mfa_route_direct_navigation_without_challenge": "DENY"
+        }
+      },
+      {
+        "id": 453,
+        "codigo": "B2B-RULE-AUTH-034",
+        "descripcion": "B2B-AUTH-004 solicita un código OTP únicamente después de que AUTH-033 determine que corresponde el segundo control por correo. LF genera el desafío del lado servidor, entrega el código mediante Brevo al correo registrado y valida el valor antes de continuar. El código, credenciales de Brevo y respuesta cruda del proveedor no se registran ni se exponen a analytics o al cliente.",
+        "valor_config": {
+          "screen_id": 54,
+          "provider_id": 8,
+          "provider_code": "BREVO_EMAIL",
+          "otp_value_logs": "DENY",
+          "otp_policy_code": "OTP_POL_B2B_AUTH_EMAIL_BREVO",
+          "routing_rule_id": 452,
+          "success_outcome": "LF_SECOND_FACTOR_VERIFIED",
+          "delivery_channel": "EMAIL",
+          "delivery_provider": "BREVO",
+          "otp_code_field_id": 302,
+          "delivery_execution": "LF_SERVER_ONLY",
+          "delivery_transport": "BREVO_TRANSACTIONAL_EMAIL_API",
+          "otp_value_analytics": "DENY",
+          "production_authorized": false,
+          "server_side_generation": "REQUIRED",
+          "delivery_provider_status": "PENDING_CREDENTIALS_IMPLEMENTATION",
+          "new_device_ip_hard_limit": "DENY",
+          "server_side_verification": "REQUIRED",
+          "delivery_contract_rule_id": 505,
+          "new_device_ip_signal_mode": "PREVENTIVE_ALERT_ONLY",
+          "delivery_confirmed_outcome": "DELIVERED",
+          "supabase_native_aal2_claim": "DENY",
+          "delivery_confirmation_event": "delivered",
+          "provider_acceptance_outcome": "ACCEPTED_PENDING_DELIVERY",
+          "new_device_rate_limit_rule_id": 503,
+          "new_device_rate_limit_resource": "AUTH_NEW_DEVICE_OTP_SEND",
+          "provider_raw_payload_to_client": "DENY",
+          "delivery_state_contract_rule_id": 505,
+          "new_device_rate_limit_policy_id": 8,
+          "provider_acceptance_is_delivery": "DENY",
+          "provider_credentials_client_exposure": "DENY",
+          "webhook_required_before_challenge_ui": false,
+          "provider_acceptance_allows_challenge_ui": true
+        }
+      },
+      {
+        "id": 467,
+        "codigo": "B2B-RULE-COMPAT-001",
+        "descripcion": "El soporte de navegadores y plataformas del Backoffice B2B debe provenir de una matriz canónica vinculada al runtime/frontend real. Las pantallas no hardcodean versiones de navegador. Mientras no se identifique la fuente del frontend y su matriz compatible, la compatibilidad permanece PENDING_SOURCE_IDENTIFICATION y bloquea el cierre de QA de Browser/Platform.",
+        "valor_config": {
+          "blocks_qa": true,
+          "blocks_story": false,
+          "current_status": "PENDING_SOURCE_IDENTIFICATION",
+          "blocks_production": true,
+          "blocks_implementation": false,
+          "frontend_source_required": true,
+          "compatibility_matrix_required": true,
+          "browser_versions_in_screen_rules": "DENY"
+        }
+      },
+      {
+        "id": 552,
+        "codigo": "REG_CLIENT_HOME_LEARN_DECIDE_001",
+        "descripcion": "HOME_APRENDA_ANTES_DECIDIR conserva tres tarjetas de respuesta rápida, pero cada popup consume semántica de reglas fuente ya gobernadas en vez de mantener una verdad paralela. Card 1 “Tu deuda puede haber cambiado de manos” depende de EDU-NODO-02-EXPLORA y no publica detalles legales precisos mientras esa fuente permanezca CANDIDATO o con claims pendientes. Card 2 “¿Cómo funciona el simulador?” explica el flujo actual: iniciar en ONB_001, verificar control del celular por OTP, identificar por DNI cuando corresponda y dejar que backend resuelva si existe una oferta/cuenta; el nombre visual “simulador” puede mantenerse según decisión 46, pero no representa una simulación hipotética ni un lookup desde la card. Card 3 “¿Qué ocurre después de revisar tu opción?” reutiliza EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA: pago único/cuotas según oferta válida, confirmación de pago y gestión de constancia/carta según liquidación real; no promete 7–9 días para actualización SBS.",
+        "valor_config": {
+          "front": "CLIENTE",
+          "screen": "HOME_APRENDA_ANTES_DECIDIR",
+          "card_count": 3,
+          "card_2_flow": [
+            "PHONE",
+            "OTP_PHONE_CONTROL",
+            "DNI_IF_REQUIRED",
+            "BACKEND_RESOLUTION"
+          ],
+          "visual_debt": "PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001",
+          "card_1_title": "Tu deuda puede haber cambiado de manos",
+          "card_2_title": "¿Cómo funciona el simulador?",
+          "card_3_title": "¿Qué ocurre después de revisar tu opción?",
+          "visual_mapping": "PENDING_CANONICAL_VISUAL",
+          "card_2_entry_rule": "REG_CLIENT_HOME_PUBLIC_ENTRY_001",
+          "card_1_source_rule": "EDU-NODO-02-EXPLORA",
+          "card_2_entry_target": "ONB_001",
+          "card_3_source_rules": [
+            "EDU-NODO-03-ELIGE",
+            "EDU-NODO-04-CIERRA"
+          ],
+          "card_3_letter_semantic": "PER_DEBT_AFTER_SETTLED_CONFIRMED",
+          "popup_content_strategy": "REFERENCE_SOURCE_RULES_NOT_PARALLEL_COPY",
+          "commercial_close_target": "ONB_001",
+          "card_2_naming_decision_number": 46,
+          "card_3_hardcoded_sbs_7_9_days": "DENY",
+          "external_claim_freshness_rule": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001",
+          "card_1_popup_publish_condition": "SOURCE_RULE_PUBLICABLE",
+          "legacy_simulator_direct_lookup": "DENY",
+          "card_2_hypothetical_simulation_semantic": "DENY",
+          "card_1_precise_legal_claims_when_source_candidate": "DENY"
+        }
+      },
+      {
+        "id": 554,
+        "codigo": "REG_CLIENT_HOME_FAQ_001",
+        "descripcion": "HOME_FAQ conserva seis temas, pero las respuestas se derivan de los contratos actuales y no de copy histórico. (1) Para empezar no se piden “datos personales básicos” completos: ONB_001 solicita celular, ONB_002 confirma control por OTP y solo después se solicita DNI cuando corresponde. (2) Si una consulta autoritativa confirma cero ofertas activas, el Home autenticado usa NO_ACTIVE_OFFER_HOME y Ruta de Claridad; una falla técnica no equivale a “sin oferta”. (3) Una oferta mostrada es una oferta disponible/versionada, pero antes del checkout se revalidan vigencia, versión, montos, modalidad y plan; cambios materiales exigen reconfirmación. (4) La identidad del gestor/aliado y datos de la deuda se muestran únicamente desde fuentes autoritativas; contenido educativo sobre cesión no sustituye esos datos. (5) La privacidad se explica conforme a políticas vigentes y los consentimientos aplicables; no se afirma que todo tratamiento dependa del mismo checkbox ni se usa la regla histórica de ubicación del consentimiento como verdad actual. (6) Antes de enviar un intento de pago el usuario puede abandonar sin crear un pago; después de un intento enviado o PAYMENT_CONFIRMED aplican los estados de pago y condiciones del acuerdo. Salir de la web o detener un débito automático no cancela una deuda ni un plan por sí mismo.",
+        "valor_config": {
+          "faq_1": {
+            "topic": "START_REQUIREMENTS",
+            "semantic": "PHONE_FIRST_OTP_THEN_DNI_IF_REQUIRED",
+            "source_rules": [
+              "REG_FLOW_CELL_FIRST_001",
+              "REG_FLUJO_003"
+            ],
+            "basic_profile_data_before_otp": "DENY"
+          },
+          "faq_2": {
+            "topic": "NO_OFFER",
+            "source_rules": [
+              "REG_CLIENT_HOME_NO_OFFER_001",
+              "REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001"
+            ],
+            "technical_failure_equals_no_offer": "DENY"
+          },
+          "faq_3": {
+            "topic": "OFFER_FINALITY",
+            "source_rules": [
+              "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001",
+              "REG_CLIENT_CHECKOUT_ENTRY_001"
+            ],
+            "material_change": "RECONFIRM",
+            "pre_checkout_revalidation": "REQUIRED"
+          },
+          "faq_4": {
+            "topic": "DEBT_MANAGER",
+            "education_source": "EDU-NODO-02-EXPLORA",
+            "authoritative_account_data_required": true,
+            "candidate_education_as_account_truth": "DENY"
+          },
+          "faq_5": {
+            "topic": "DATA_PROTECTION",
+            "source_rules": [
+              "REG_ANL_002",
+              "REG_SEG_003",
+              "LEGAL-CONSENTIMIENTO-DATOS-01"
+            ],
+            "consent_location_status": "PENDING_LEGAL_PRIVACY_VALIDATION",
+            "claim_all_processing_based_on_single_consent": "DENY"
+          },
+          "faq_6": {
+            "topic": "CAN_I_STOP",
+            "source_rules": [
+              "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+              "REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001"
+            ],
+            "before_payment_submit": "ALLOW_ABANDON_WITHOUT_PAYMENT_ATTEMPT",
+            "after_payment_confirmed": "CONTRACTUAL_OBLIGATIONS_APPLY",
+            "stop_autodebit_cancels_debt": "DENY",
+            "payment_pending_confirmation": "NO_NEW_ATTEMPT_UNTIL_RECONCILED",
+            "after_possible_provider_submit": "FOLLOW_PAYMENT_OUTCOME_STATE"
+          },
+          "front": "CLIENTE",
+          "screen": "HOME_FAQ",
+          "visual_debt": "PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001",
+          "question_count": 6,
+          "public_boundary_rule": "REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001"
+        }
+      },
+      {
+        "id": 13118,
+        "codigo": "PROP-B2B-AUTH-TRUSTED-DEVICE-C-001",
+        "descripcion": "El backend registra último uso autenticado por usuario y dispositivo. Un dispositivo nuevo, desconocido o inactivo según AUTH/MFA_DEVICE_IDLE_DAYS (public.lf_global_config) requiere OTP por correo antes de otorgar sesión operativa. La actividad de otro dispositivo no renueva su confianza. Revocar confianza ante señales de seguridad.",
+        "valor_config": {
+          "family": "AUTHENTICATION",
+          "inheritance": "B2B_HUMAN_PROFILES",
+          "trust_scope": "DEVICE",
+          "parameter_refs": [
+            {
+              "scope": "AUTH",
+              "source": "public.lf_global_config",
+              "resolver": "public.lf_auth_config_integer_v1",
+              "config_key": "MFA_DEVICE_IDLE_DAYS"
+            }
+          ],
+          "new_device_outcome": "EMAIL_OTP_REQUIRED",
+          "device_activity_unit": "PER_USER_DEVICE_SERVER_VERIFIED",
+          "production_authorized": false,
+          "device_recognition_authority": "SERVER_ONLY",
+          "other_device_activity_resets_idle": false
+        }
+      }
+    ]
+  },
+  "parametros_existentes": [],
+  "hechos_existentes": [],
+  "hechos_nuevos": [
+    {
+      "codigo": "s22ab01_evalua_aprobacion_lote",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua aprobacion lote; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22ab01_snapshot_inmutable_omitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "snapshot inmutable omitido; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22ab01_ruta_o_autoaprobacion_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta o autoaprobacion invalida; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22ab01_alerta_o_umbral_no_gobernado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "alerta o umbral no gobernado; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22ab01_filtro_o_exportacion_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "filtro o exportacion invalida; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22ab01_permiso_o_binding_inventado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "permiso o binding inventado; hecho derivado, binding runtime pendiente",
+      "familia": "GOVERNANCE_APPROVAL"
+    },
+    {
+      "codigo": "s22ab02_evalua_logo_login",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua logo login; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22ab02_asset_no_vigente_o_deprecado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "asset no vigente o deprecado; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22ab02_variante_fondo_incorrecta",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "variante fondo incorrecta; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22ab02_binario_o_checksum_no_canonico",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "binario o checksum no canonico; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22ab02_logo_redibujado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "logo redibujado; hecho derivado, binding runtime pendiente",
+      "familia": "ASSETS_ICONS"
+    },
+    {
+      "codigo": "s22ab03_evalua_segundo_factor",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua segundo factor; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab03_reconocimiento_o_factor_cliente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "reconocimiento o factor cliente; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab03_dispositivo_no_reconocido_sin_desafio",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "dispositivo no reconocido sin desafio; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab03_ruta_sin_contexto_mfa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ruta sin contexto mfa; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab03_arquitectura_o_factor_legacy_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "arquitectura o factor legacy invalido; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab03_produccion_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "produccion no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab04_evalua_otp_mfa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua otp mfa; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab04_desafio_o_verificacion_no_servidor",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "desafio o verificacion no servidor; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab04_codigo_credencial_payload_expuesto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "codigo credencial payload expuesto; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab04_aceptacion_confundida_entrega",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "aceptacion confundida entrega; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab04_senal_o_rate_limit_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "senal o rate limit invalido; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab04_produccion_no_autorizada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "produccion no autorizada; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab05_evalua_compatibilidad",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua compatibilidad; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22ab05_version_hardcodeada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "version hardcodeada; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22ab05_cierre_qa_sin_matriz_o_fuente",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "cierre qa sin matriz o fuente; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22ab05_produccion_sin_matriz",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "produccion sin matriz; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22ab05_bloquea_story_o_implementacion_por_gap",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "bloquea story o implementacion por gap; hecho derivado, binding runtime pendiente",
+      "familia": "BROWSER_PLATFORM"
+    },
+    {
+      "codigo": "s22ab06_evalua_confianza_dispositivo",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua confianza dispositivo; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab06_ultimo_uso_no_verificado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "ultimo uso no verificado; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab06_actividad_otro_dispositivo_renueva",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "actividad otro dispositivo renueva; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab06_nuevo_o_inactivo_sin_otp",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "nuevo o inactivo sin otp; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab06_no_revoca_ante_senal",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "no revoca ante senal; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab06_umbral_no_configurado",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "umbral no configurado; hecho derivado, binding runtime pendiente",
+      "familia": "MFA_OTP_SSO"
+    },
+    {
+      "codigo": "s22ab07_evalua_tarjetas_aprende",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua tarjetas aprende; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab07_tema_o_card_omitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "tema o card omitido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab07_copy_paralelo_o_claim_no_publicable",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "copy paralelo o claim no publicable; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab07_lookup_o_simulacion_inventada",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "lookup o simulacion inventada; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab07_carta_o_sbs_prometido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "carta o sbs prometido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab07_destino_o_flujo_invalido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "destino o flujo invalido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab08_evalua_faq_home",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "evalua faq home; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab08_tema_omitido",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "tema omitido; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab08_flujo_inicio_o_no_oferta_incorrecto",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "flujo inicio o no oferta incorrecto; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab08_oferta_sin_revalidacion",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "oferta sin revalidacion; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab08_gestor_o_privacidad_no_autoritativa",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "gestor o privacidad no autoritativa; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    },
+    {
+      "codigo": "s22ab08_semantica_abandono_pago_invalida",
+      "tipo_dato": "boolean",
+      "unidad": "ninguna",
+      "descripcion": "semantica abandono pago invalida; hecho derivado, binding runtime pendiente",
+      "familia": "UI_MESSAGES"
+    }
+  ],
+  "paquetes": [
+    {
+      "codigo": "S22AB-C01",
+      "legacy_id": 405,
+      "legacy_ids": [
+        405
+      ],
+      "relacionadas": [
+        "S22K-C05"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 405,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C01; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab01_evalua_aprobacion_lote",
+        "s22ab01_snapshot_inmutable_omitido",
+        "s22ab01_ruta_o_autoaprobacion_invalida",
+        "s22ab01_alerta_o_umbral_no_gobernado",
+        "s22ab01_filtro_o_exportacion_invalida",
+        "s22ab01_permiso_o_binding_inventado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C01",
+        "clave": "s22ab_legacy_405",
+        "familia": "GOVERNANCE_APPROVAL",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Snapshot de política y revisión de excepciones",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-APPROVAL-001. Cada lote conserva snapshot inmutable de la política aplicada. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"policy_id_required\":true,\"design_sequence_policy\":{\"owner_decision\":\"APPROVED_2026-09-17_V1\",\"simulation_scope\":\"DESIGN_AND_PROTOTYPE_ONLY\",\"approval_screen_design\":\"DEFER_UNTIL_END_OF_CARGAS\",\"production_approval_bypass\":\"DENY\",\"current_design_continuation\":\"SIMULATE_APPROVED_PATH_TO_NEXT_STEP\",\"canonical_state_machine_preserved\":true},\"profile_routing_policy\":{\"B2B_OPERADOR\":{\"semantic\":\"LOAD_ONLY\",\"next_state\":\"B2B_LOAD_PENDIENTE_APROBACION\",\"approval_required\":true,\"manual_self_approval\":\"DENY\"},\"other_profiles\":\"UNCHANGED_UNTIL_EXPLICIT_DECISION\",\"owner_decision\":\"APPROVED_2026-09-17_V1\",\"routing_moment\":\"AFTER_VALIDATION_COMPLETES\",\"routing_authority\":\"SERVER_POLICY_SNAPSHOT\",\"B2B_OPERADOR_INTEGRAL\":{\"semantic\":\"MIXED_LOAD_AND_APPROVAL\",\"next_state\":\"B2B_LOAD_AUTOAPROBADO\",\"autoapprove\":true,\"approval_required\":false,\"manual_self_approval\":\"NOT_REQUIRED\"},\"uploader_profile_source\":\"LOAD_POLICY_SNAPSHOT\"},\"policy_snapshot_required\":true,\"validator_review_assistance\":{\"goal\":\"SURFACE_EXCEPTIONS_SO_VALIDATOR_DOES_NOT_REVIEW_FULL_EXCEL\",\"alert_semantic\":\"NON_BLOCKING_REVIEW_ALERT_UNLESS_SEPARATE_POLICY_MAKES_BLOCKING\",\"owner_decision\":\"APPROVED_CONCEPT_2026-09-17_V1\",\"confirmed_alerts\":[{\"code\":\"HIGH_DISCOUNT_PERCENT\",\"status\":\"OWNER_REQUESTED\",\"semantic\":\"ALERT_WHEN_DISCOUNT_PERCENT_EXCEEDS_CONFIGURED_THRESHOLD\",\"threshold\":\"PENDING_CONFIG\"}],\"reuse_issue_store\":\"lf_ops.validacion_incidencias\",\"threshold_authority\":\"VERSIONED_POLICY_CONFIGURATION_PENDING\",\"hardcoded_thresholds\":\"DENY\",\"review_surface_behavior\":{\"owner_decision\":\"APPROVED_CORRECTION_2026-09-17_V1\",\"visual_screen_binding\":\"PENDING_WHEN_APPROVAL_SCREEN_IS_DESIGNED\",\"drill_to_affected_rows\":true,\"show_exception_summary\":true,\"alerts_download_allowed\":true,\"show_alert_counts_by_type\":true,\"summary_and_detail_separation\":\"REQUIRED\",\"avoid_duplicate_summary_blocks\":true,\"full_excel_manual_review_required\":\"DENY_BY_DEFAULT\",\"alerts_are_subset_of_valid_records\":true},\"candidate_alerts_for_later_review\":[{\"code\":\"OFFER_ABOVE_CURRENT_DEBT\",\"status\":\"CANDIDATE\",\"semantic\":\"OFFER_OR_PLAN_TOTAL_EXCEEDS_CURRENT_DEBT\"},{\"code\":\"CURRENT_DEBT_GROWTH_OUTLIER\",\"status\":\"CANDIDATE\",\"semantic\":\"CURRENT_DEBT_MATERIALLY_EXCEEDS_ORIGINAL_DEBT\"},{\"code\":\"INITIAL_PAYMENT_SHARE_OUTLIER\",\"status\":\"CANDIDATE\",\"semantic\":\"CUOTA_0_IS_UNUSUALLY_HIGH_OR_LOW_VS_PLAN_TOTAL\"},{\"code\":\"PLAN_PRICE_SPREAD_OUTLIER\",\"status\":\"CANDIDATE\",\"semantic\":\"MULTIPLE_PLANS_FOR_SAME_DEBT_HAVE_MATERIAL_TOTAL_PRICE_SPREAD\"},{\"code\":\"OFFER_VALIDITY_OUTLIER\",\"status\":\"CANDIDATE\",\"semantic\":\"VALIDITY_WINDOW_IS_UNUSUALLY_SHORT_OR_LONG\"}]},\"approval_queue_visual_contract\":{\"screen_code\":\"B2B-CARGA-004\",\"export_scope\":\"CURRENT_QUEUE_FILTER_RESULT\",\"owner_decision\":\"APPROVED_REFERENCE_2026-09-21\",\"reference_only\":true,\"primary_filters\":[\"SEARCH\",\"DATE_FROM\",\"DATE_TO\",\"LOAD_TYPE\",\"CREATED_BY\"],\"row_primary_action\":\"VIEW\",\"alerts_presentation\":\"COMPACT_REVIEW_SIGNAL_NOT_BLOCKING_ERROR_BY_DEFAULT\",\"edit_binding_status\":\"PENDING_FUNCTIONAL_DEFINITION_DO_NOT_INVENT_PERMISSION\",\"visual_decision_code\":\"LF-B2B-VIS-CARGA-004-APPROVAL-QUEUE-001\",\"reference_not_final_ui\":true,\"final_ui_homogenization\":\"DELEGATED_TO_UI_UX\",\"row_action_column_label\":\"ACCIONES\",\"export_permission_mapping\":\"PENDING_CANONICAL_PERMISSION_RECONCILIATION\",\"row_required_capabilities\":[{\"label\":\"Ver\",\"action\":\"VIEW\",\"icon_binding\":\"icon_view\",\"visual_semantic\":\"NEUTRAL\",\"permission_binding\":\"B2B_LOAD_DETAIL_VIEW\"},{\"label\":\"Editar\",\"action\":\"EDIT\",\"icon_binding\":\"PENDING_UX_CANONICAL_ICON\",\"visual_semantic\":\"NEUTRAL\",\"permission_binding\":\"PENDING_FUNCTIONAL_DEFINITION\"},{\"label\":\"Aprobar\",\"action\":\"APPROVE\",\"icon_binding\":\"PENDING_UX_CANONICAL_ICON\",\"visual_semantic\":\"POSITIVE_GREEN\",\"permission_binding\":\"B2B_LOAD_APPROVE\"},{\"label\":\"Rechazar\",\"action\":\"REJECT\",\"icon_binding\":\"PENDING_UX_CANONICAL_ICON\",\"visual_semantic\":\"CRITICAL_RED\",\"permission_binding\":\"B2B_LOAD_REJECT\"},{\"label\":\"Descargar archivo cargado\",\"action\":\"DOWNLOAD_ORIGINAL\",\"icon_binding\":\"PENDING_UX_CANONICAL_ICON_OR_FILE_COLUMN_AFFORDANCE\",\"visual_semantic\":\"NEUTRAL\",\"permission_binding\":\"B2B_LOAD_ORIGINAL_DOWNLOAD\",\"presentation_policy\":\"FILE_COLUMN_OR_ACTIONS_NO_DUPLICATION\"}],\"action_presentation_policy\":{\"allowed_modes\":[\"INLINE_ACTIONS\",\"OVERFLOW_MENU\"],\"overflow_menu_semantic\":\"THREE_DOTS_IF_UX_SELECTS_AND_CANONICAL_ICON_EXISTS\",\"no_hardcoded_profile_entitlement\":true,\"functional_capabilities_must_remain\":true,\"visibility_requires_effective_permission\":true,\"availability_requires_valid_state_transition\":true},\"summary_kpi_cards_required\":false,\"critical_decisions_location\":\"DETAIL_VIEW\",\"column_configuration_control\":\"REMOVED_NOT_REQUIRED\",\"download_presentation_policy\":{\"required\":true,\"ui_ux_decides\":true,\"no_duplication\":true,\"preferred_options\":[\"FILE_COLUMN\",\"ACTIONS\"],\"top_level_download_button_required\":false,\"file_column_may_be_clickable_or_have_download_affordance\":true},\"waiting_time_color_semantics\":\"NEUTRAL_UNTIL_SLA_POLICY_EXISTS\",\"export_loaded_results_required\":true,\"compact_pending_count_near_title\":true,\"additional_filters_in_more_filters\":true}}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/405",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab01_evalua_aprobacion_lote"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab01_snapshot_inmutable_omitido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab01_ruta_o_autoaprobacion_invalida"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab01_alerta_o_umbral_no_gobernado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab01_filtro_o_exportacion_invalida"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab01_permiso_o_binding_inventado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": true,
+              "s22ab01_snapshot_inmutable_omitido": false,
+              "s22ab01_ruta_o_autoaprobacion_invalida": false,
+              "s22ab01_alerta_o_umbral_no_gobernado": false,
+              "s22ab01_filtro_o_exportacion_invalida": false,
+              "s22ab01_permiso_o_binding_inventado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": true,
+              "s22ab01_snapshot_inmutable_omitido": true,
+              "s22ab01_ruta_o_autoaprobacion_invalida": false,
+              "s22ab01_alerta_o_umbral_no_gobernado": false,
+              "s22ab01_filtro_o_exportacion_invalida": false,
+              "s22ab01_permiso_o_binding_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": true,
+              "s22ab01_snapshot_inmutable_omitido": false,
+              "s22ab01_ruta_o_autoaprobacion_invalida": true,
+              "s22ab01_alerta_o_umbral_no_gobernado": false,
+              "s22ab01_filtro_o_exportacion_invalida": false,
+              "s22ab01_permiso_o_binding_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": true,
+              "s22ab01_snapshot_inmutable_omitido": false,
+              "s22ab01_ruta_o_autoaprobacion_invalida": false,
+              "s22ab01_alerta_o_umbral_no_gobernado": true,
+              "s22ab01_filtro_o_exportacion_invalida": false,
+              "s22ab01_permiso_o_binding_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": true,
+              "s22ab01_snapshot_inmutable_omitido": false,
+              "s22ab01_ruta_o_autoaprobacion_invalida": false,
+              "s22ab01_alerta_o_umbral_no_gobernado": false,
+              "s22ab01_filtro_o_exportacion_invalida": true,
+              "s22ab01_permiso_o_binding_inventado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": true,
+              "s22ab01_snapshot_inmutable_omitido": false,
+              "s22ab01_ruta_o_autoaprobacion_invalida": false,
+              "s22ab01_alerta_o_umbral_no_gobernado": false,
+              "s22ab01_filtro_o_exportacion_invalida": false,
+              "s22ab01_permiso_o_binding_inventado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab01_evalua_aprobacion_lote": false,
+              "s22ab01_snapshot_inmutable_omitido": true,
+              "s22ab01_ruta_o_autoaprobacion_invalida": true,
+              "s22ab01_alerta_o_umbral_no_gobernado": true,
+              "s22ab01_filtro_o_exportacion_invalida": true,
+              "s22ab01_permiso_o_binding_inventado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "1b0eeab8501e587e119620a8ed68f8457c5f66b532a2f0bfeb112c594c758644",
+      "hash_paquete": "f9da1e81f9a50bf57ac04b057e6e1d551a1f516a7628b8b6c37fe164d52793e1",
+      "hash_evaluado": "1b0eeab850",
+      "hash_paquete_10": "f9da1e81f9"
+    },
+    {
+      "codigo": "S22AB-C02",
+      "legacy_id": 420,
+      "legacy_ids": [
+        420
+      ],
+      "relacionadas": [
+        "S22K-C04"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 420,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C02; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab02_evalua_logo_login",
+        "s22ab02_asset_no_vigente_o_deprecado",
+        "s22ab02_variante_fondo_incorrecta",
+        "s22ab02_binario_o_checksum_no_canonico",
+        "s22ab02_logo_redibujado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C02",
+        "clave": "s22ab_legacy_420",
+        "familia": "ASSETS_ICONS",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Consumo de activos de marca oficiales sin redibujar",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-LOGO-001. El Login usa únicamente activos oficiales actuales registrados en lf_design.brand_assets mediante brand_asset_id numérico. Para la superficie light de B2B-AUTH-001 se usa la variante 2 líneas LF_BRAND_LOGO_2L_LIGHT_TRANSPARENT (brand_asset_id 7). La variante dark equivalente es brand_asset_id 6 y solo aplica sobre fondo oscuro autorizado. Los assets legacy 1, 2 y 3 permanecen deprecados y no deben consumirse. El logo no se redibuja ni se genera. El binario canónico se conserva en Google Drive y Supabase mantiene el catálogo operativo con Drive file ID, checksum, dimensiones, variante y estado. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"source\":\"lf_design.brand_assets\",\"storage\":\"GOOGLE_DRIVE\",\"redraw_allowed\":false,\"brand_asset_ids\":[6,7],\"checksum_required\":true,\"dark_brand_asset_id\":6,\"required_is_current\":true,\"light_brand_asset_id\":7,\"binary_reference_source\":\"lf_design.brand_assets.storage_object_path\",\"deprecated_brand_asset_ids\":[1,2,3],\"login_light_brand_asset_id\":7}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/420",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab02_evalua_logo_login"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab02_asset_no_vigente_o_deprecado"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab02_variante_fondo_incorrecta"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab02_binario_o_checksum_no_canonico"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab02_logo_redibujado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab02_evalua_logo_login": true,
+              "s22ab02_asset_no_vigente_o_deprecado": false,
+              "s22ab02_variante_fondo_incorrecta": false,
+              "s22ab02_binario_o_checksum_no_canonico": false,
+              "s22ab02_logo_redibujado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab02_evalua_logo_login": true,
+              "s22ab02_asset_no_vigente_o_deprecado": true,
+              "s22ab02_variante_fondo_incorrecta": false,
+              "s22ab02_binario_o_checksum_no_canonico": false,
+              "s22ab02_logo_redibujado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab02_evalua_logo_login": true,
+              "s22ab02_asset_no_vigente_o_deprecado": false,
+              "s22ab02_variante_fondo_incorrecta": true,
+              "s22ab02_binario_o_checksum_no_canonico": false,
+              "s22ab02_logo_redibujado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab02_evalua_logo_login": true,
+              "s22ab02_asset_no_vigente_o_deprecado": false,
+              "s22ab02_variante_fondo_incorrecta": false,
+              "s22ab02_binario_o_checksum_no_canonico": true,
+              "s22ab02_logo_redibujado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab02_evalua_logo_login": true,
+              "s22ab02_asset_no_vigente_o_deprecado": false,
+              "s22ab02_variante_fondo_incorrecta": false,
+              "s22ab02_binario_o_checksum_no_canonico": false,
+              "s22ab02_logo_redibujado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab02_evalua_logo_login": false,
+              "s22ab02_asset_no_vigente_o_deprecado": true,
+              "s22ab02_variante_fondo_incorrecta": true,
+              "s22ab02_binario_o_checksum_no_canonico": true,
+              "s22ab02_logo_redibujado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "f67677e255915409b97f5340a71f2be699fc21155476a803cf5c289549f1b8ad",
+      "hash_paquete": "e488eb6567dcfa3e892c53d05b4ca9e477a5294dde70e786ca444dd2e18e4f31",
+      "hash_evaluado": "f67677e255",
+      "hash_paquete_10": "e488eb6567"
+    },
+    {
+      "codigo": "S22AB-C03",
+      "legacy_id": 452,
+      "legacy_ids": [
+        452
+      ],
+      "relacionadas": [
+        "S22A-C02"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 452,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C03; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab03_evalua_segundo_factor",
+        "s22ab03_reconocimiento_o_factor_cliente",
+        "s22ab03_dispositivo_no_reconocido_sin_desafio",
+        "s22ab03_ruta_sin_contexto_mfa",
+        "s22ab03_arquitectura_o_factor_legacy_invalido",
+        "s22ab03_produccion_no_autorizada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C03",
+        "clave": "s22ab_legacy_452",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Segundo factor B2B por reconocimiento servidor",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-AUTH-033. Después de validar el primer factor, LF_AUTH_BOUNDARY evalúa del lado servidor si el dispositivo está reconocido conforme a SEC-B2B-TRUSTED-DEVICE. Para perfiles no administradores, un dispositivo reconocido continúa sin desafío OTP; un dispositivo no reconocido dirige a B2B-AUTH-004 y genera el segundo control OTP por correo según OTP_POL_B2B_AUTH_EMAIL_BREVO. El cliente no decide el reconocimiento del dispositivo, el factor, el proveedor ni el resultado de autenticación. La ruta B2B-AUTH-004 no es pública: authentication_required=true se interpreta como exigencia de un contexto MFA transitorio válido administrado por servidor, no como una sesión operativa completa; la navegación directa sin desafío se deniega. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"factor_source\":\"PROVIDER_VERIFIED_FACTORS\",\"backend_runtime\":\"SPRING_BOOT_CORE\",\"assurance_source\":\"LF_SERVER_VERIFIED_SECOND_FACTOR\",\"frontend_runtime\":\"NEXTJS_STATIC_EXPORT\",\"identity_protocol\":\"OIDC_JWT\",\"aws_identity_target\":\"AMAZON_COGNITO\",\"email_otp_screen_id\":54,\"server_side_recheck\":\"REQUIRED\",\"email_otp_policy_code\":\"OTP_POL_B2B_AUTH_EMAIL_BREVO\",\"production_authorized\":false,\"mfa_challenge_route_id\":13,\"second_control_trigger\":\"UNRECOGNIZED_DEVICE_ONLY\",\"local_identity_decision\":\"PENDING_ADR_003_M1_SPIKE\",\"mfa_challenge_screen_id\":54,\"mfa_route_public_access\":\"DENY\",\"non_admin_second_factor\":\"LF_EMAIL_OTP\",\"challenge_needed_outcome\":\"MFA_REQUIRED\",\"client_aal_authoritative\":\"DENY\",\"legacy_totp_reactivation\":\"DENY\",\"mfa_enrollment_screen_id\":null,\"mfa_route_gate_semantics\":\"SERVER_MANAGED_TRANSIENT_MFA_CHALLENGE_CONTEXT\",\"trusted_device_policy_id\":25,\"factor_security_policy_id\":19,\"recognized_device_outcome\":\"AUTHENTICATED\",\"numeric_thresholds_in_rule\":\"DENY\",\"mfa_applicability_policy_id\":3,\"satisfied_assurance_outcome\":\"AUTHENTICATED\",\"totp_enrollment_normal_flow\":\"DENY\",\"unrecognized_device_outcome\":\"MFA_REQUIRED\",\"device_recognition_authority\":\"SERVER_ONLY\",\"legacy_totp_enrollment_rule_id\":454,\"legacy_totp_operational_status\":\"RETIRED_LEGACY_TRACE_ONLY\",\"architecture_alignment_decision\":\"DEC-B2B-AUTH-PLATFORM-ALIGNMENT-001\",\"legacy_totp_enrollment_route_id\":14,\"logout_preserves_trusted_device\":true,\"legacy_totp_enrollment_screen_id\":55,\"mfa_route_authentication_required\":true,\"client_factor_selection_authoritative\":\"DENY\",\"provider_architecture_security_policy_id\":23,\"mfa_route_challenge_context_source_rule_id\":437,\"mfa_route_full_operational_session_required\":false,\"mfa_route_direct_navigation_without_challenge\":\"DENY\"}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/452",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab03_evalua_segundo_factor"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab03_reconocimiento_o_factor_cliente"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab03_dispositivo_no_reconocido_sin_desafio"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab03_ruta_sin_contexto_mfa"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab03_arquitectura_o_factor_legacy_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab03_produccion_no_autorizada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": true,
+              "s22ab03_reconocimiento_o_factor_cliente": false,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": false,
+              "s22ab03_ruta_sin_contexto_mfa": false,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": false,
+              "s22ab03_produccion_no_autorizada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": true,
+              "s22ab03_reconocimiento_o_factor_cliente": true,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": false,
+              "s22ab03_ruta_sin_contexto_mfa": false,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": false,
+              "s22ab03_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": true,
+              "s22ab03_reconocimiento_o_factor_cliente": false,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": true,
+              "s22ab03_ruta_sin_contexto_mfa": false,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": false,
+              "s22ab03_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": true,
+              "s22ab03_reconocimiento_o_factor_cliente": false,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": false,
+              "s22ab03_ruta_sin_contexto_mfa": true,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": false,
+              "s22ab03_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": true,
+              "s22ab03_reconocimiento_o_factor_cliente": false,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": false,
+              "s22ab03_ruta_sin_contexto_mfa": false,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": true,
+              "s22ab03_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": true,
+              "s22ab03_reconocimiento_o_factor_cliente": false,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": false,
+              "s22ab03_ruta_sin_contexto_mfa": false,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": false,
+              "s22ab03_produccion_no_autorizada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab03_evalua_segundo_factor": false,
+              "s22ab03_reconocimiento_o_factor_cliente": true,
+              "s22ab03_dispositivo_no_reconocido_sin_desafio": true,
+              "s22ab03_ruta_sin_contexto_mfa": true,
+              "s22ab03_arquitectura_o_factor_legacy_invalido": true,
+              "s22ab03_produccion_no_autorizada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "590cf8787a088225f6104e9d09d9db62789eb8561d8d22682d84cc85b143c72d",
+      "hash_paquete": "2d2329ad272c4c9bcdefd615373269e42fce586e88a231cf8a1db57f2fef598e",
+      "hash_evaluado": "590cf8787a",
+      "hash_paquete_10": "2d2329ad27"
+    },
+    {
+      "codigo": "S22AB-C04",
+      "legacy_id": 453,
+      "legacy_ids": [
+        453
+      ],
+      "relacionadas": [
+        "S19-C09"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 453,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C04; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab04_evalua_otp_mfa",
+        "s22ab04_desafio_o_verificacion_no_servidor",
+        "s22ab04_codigo_credencial_payload_expuesto",
+        "s22ab04_aceptacion_confundida_entrega",
+        "s22ab04_senal_o_rate_limit_invalido",
+        "s22ab04_produccion_no_autorizada"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C04",
+        "clave": "s22ab_legacy_453",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "OTP de segundo control por Brevo sin exposición",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-AUTH-034. B2B-AUTH-004 solicita un código OTP únicamente después de que AUTH-033 determine que corresponde el segundo control por correo. LF genera el desafío del lado servidor, entrega el código mediante Brevo al correo registrado y valida el valor antes de continuar. El código, credenciales de Brevo y respuesta cruda del proveedor no se registran ni se exponen a analytics o al cliente. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"screen_id\":54,\"provider_id\":8,\"provider_code\":\"BREVO_EMAIL\",\"otp_value_logs\":\"DENY\",\"otp_policy_code\":\"OTP_POL_B2B_AUTH_EMAIL_BREVO\",\"routing_rule_id\":452,\"success_outcome\":\"LF_SECOND_FACTOR_VERIFIED\",\"delivery_channel\":\"EMAIL\",\"delivery_provider\":\"BREVO\",\"otp_code_field_id\":302,\"delivery_execution\":\"LF_SERVER_ONLY\",\"delivery_transport\":\"BREVO_TRANSACTIONAL_EMAIL_API\",\"otp_value_analytics\":\"DENY\",\"production_authorized\":false,\"server_side_generation\":\"REQUIRED\",\"delivery_provider_status\":\"PENDING_CREDENTIALS_IMPLEMENTATION\",\"new_device_ip_hard_limit\":\"DENY\",\"server_side_verification\":\"REQUIRED\",\"delivery_contract_rule_id\":505,\"new_device_ip_signal_mode\":\"PREVENTIVE_ALERT_ONLY\",\"delivery_confirmed_outcome\":\"DELIVERED\",\"supabase_native_aal2_claim\":\"DENY\",\"delivery_confirmation_event\":\"delivered\",\"provider_acceptance_outcome\":\"ACCEPTED_PENDING_DELIVERY\",\"new_device_rate_limit_rule_id\":503,\"new_device_rate_limit_resource\":\"AUTH_NEW_DEVICE_OTP_SEND\",\"provider_raw_payload_to_client\":\"DENY\",\"delivery_state_contract_rule_id\":505,\"new_device_rate_limit_policy_id\":8,\"provider_acceptance_is_delivery\":\"DENY\",\"provider_credentials_client_exposure\":\"DENY\",\"webhook_required_before_challenge_ui\":false,\"provider_acceptance_allows_challenge_ui\":true}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/453",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab04_evalua_otp_mfa"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab04_desafio_o_verificacion_no_servidor"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab04_codigo_credencial_payload_expuesto"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab04_aceptacion_confundida_entrega"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab04_senal_o_rate_limit_invalido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab04_produccion_no_autorizada"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": true,
+              "s22ab04_desafio_o_verificacion_no_servidor": false,
+              "s22ab04_codigo_credencial_payload_expuesto": false,
+              "s22ab04_aceptacion_confundida_entrega": false,
+              "s22ab04_senal_o_rate_limit_invalido": false,
+              "s22ab04_produccion_no_autorizada": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": true,
+              "s22ab04_desafio_o_verificacion_no_servidor": true,
+              "s22ab04_codigo_credencial_payload_expuesto": false,
+              "s22ab04_aceptacion_confundida_entrega": false,
+              "s22ab04_senal_o_rate_limit_invalido": false,
+              "s22ab04_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": true,
+              "s22ab04_desafio_o_verificacion_no_servidor": false,
+              "s22ab04_codigo_credencial_payload_expuesto": true,
+              "s22ab04_aceptacion_confundida_entrega": false,
+              "s22ab04_senal_o_rate_limit_invalido": false,
+              "s22ab04_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": true,
+              "s22ab04_desafio_o_verificacion_no_servidor": false,
+              "s22ab04_codigo_credencial_payload_expuesto": false,
+              "s22ab04_aceptacion_confundida_entrega": true,
+              "s22ab04_senal_o_rate_limit_invalido": false,
+              "s22ab04_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": true,
+              "s22ab04_desafio_o_verificacion_no_servidor": false,
+              "s22ab04_codigo_credencial_payload_expuesto": false,
+              "s22ab04_aceptacion_confundida_entrega": false,
+              "s22ab04_senal_o_rate_limit_invalido": true,
+              "s22ab04_produccion_no_autorizada": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": true,
+              "s22ab04_desafio_o_verificacion_no_servidor": false,
+              "s22ab04_codigo_credencial_payload_expuesto": false,
+              "s22ab04_aceptacion_confundida_entrega": false,
+              "s22ab04_senal_o_rate_limit_invalido": false,
+              "s22ab04_produccion_no_autorizada": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab04_evalua_otp_mfa": false,
+              "s22ab04_desafio_o_verificacion_no_servidor": true,
+              "s22ab04_codigo_credencial_payload_expuesto": true,
+              "s22ab04_aceptacion_confundida_entrega": true,
+              "s22ab04_senal_o_rate_limit_invalido": true,
+              "s22ab04_produccion_no_autorizada": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "933c9164102ba22c21df3bbb8f76fac858b272c323f488b6692ce22db4a627e8",
+      "hash_paquete": "8e6922075e6b36633f9ddc9f1f8be506ad584b4fc8cfd4d8ff1c34cc37bb3b07",
+      "hash_evaluado": "933c916410",
+      "hash_paquete_10": "8e6922075e"
+    },
+    {
+      "codigo": "S22AB-C05",
+      "legacy_id": 467,
+      "legacy_ids": [
+        467
+      ],
+      "relacionadas": [
+        "S22L-C03"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 467,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C05; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab05_evalua_compatibilidad",
+        "s22ab05_version_hardcodeada",
+        "s22ab05_cierre_qa_sin_matriz_o_fuente",
+        "s22ab05_produccion_sin_matriz",
+        "s22ab05_bloquea_story_o_implementacion_por_gap"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C05",
+        "clave": "s22ab_legacy_467",
+        "familia": "BROWSER_PLATFORM",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Compatibilidad condicionada a fuente y matriz canónicas",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional B2B-RULE-COMPAT-001. El soporte de navegadores y plataformas del Backoffice B2B debe provenir de una matriz canónica vinculada al runtime/frontend real. Las pantallas no hardcodean versiones de navegador. Mientras no se identifique la fuente del frontend y su matriz compatible, la compatibilidad permanece PENDING_SOURCE_IDENTIFICATION y bloquea el cierre de QA de Browser/Platform. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"blocks_qa\":true,\"blocks_story\":false,\"current_status\":\"PENDING_SOURCE_IDENTIFICATION\",\"blocks_production\":true,\"blocks_implementation\":false,\"frontend_source_required\":true,\"compatibility_matrix_required\":true,\"browser_versions_in_screen_rules\":\"DENY\"}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/467",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab05_evalua_compatibilidad"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab05_version_hardcodeada"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab05_cierre_qa_sin_matriz_o_fuente"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab05_produccion_sin_matriz"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab05_bloquea_story_o_implementacion_por_gap"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab05_evalua_compatibilidad": true,
+              "s22ab05_version_hardcodeada": false,
+              "s22ab05_cierre_qa_sin_matriz_o_fuente": false,
+              "s22ab05_produccion_sin_matriz": false,
+              "s22ab05_bloquea_story_o_implementacion_por_gap": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab05_evalua_compatibilidad": true,
+              "s22ab05_version_hardcodeada": true,
+              "s22ab05_cierre_qa_sin_matriz_o_fuente": false,
+              "s22ab05_produccion_sin_matriz": false,
+              "s22ab05_bloquea_story_o_implementacion_por_gap": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab05_evalua_compatibilidad": true,
+              "s22ab05_version_hardcodeada": false,
+              "s22ab05_cierre_qa_sin_matriz_o_fuente": true,
+              "s22ab05_produccion_sin_matriz": false,
+              "s22ab05_bloquea_story_o_implementacion_por_gap": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab05_evalua_compatibilidad": true,
+              "s22ab05_version_hardcodeada": false,
+              "s22ab05_cierre_qa_sin_matriz_o_fuente": false,
+              "s22ab05_produccion_sin_matriz": true,
+              "s22ab05_bloquea_story_o_implementacion_por_gap": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab05_evalua_compatibilidad": true,
+              "s22ab05_version_hardcodeada": false,
+              "s22ab05_cierre_qa_sin_matriz_o_fuente": false,
+              "s22ab05_produccion_sin_matriz": false,
+              "s22ab05_bloquea_story_o_implementacion_por_gap": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab05_evalua_compatibilidad": false,
+              "s22ab05_version_hardcodeada": true,
+              "s22ab05_cierre_qa_sin_matriz_o_fuente": true,
+              "s22ab05_produccion_sin_matriz": true,
+              "s22ab05_bloquea_story_o_implementacion_por_gap": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "3facfcdc114aaa7a26bd39b53b901eea5e18279ca480055180217631425920b3",
+      "hash_paquete": "02d11091f40e7ab1d7184e40660a6ac914abb231af69f955bc53c12df9a5c368",
+      "hash_evaluado": "3facfcdc11",
+      "hash_paquete_10": "02d11091f4"
+    },
+    {
+      "codigo": "S22AB-C06",
+      "legacy_id": 13118,
+      "legacy_ids": [
+        13118
+      ],
+      "relacionadas": [
+        "S22A-C02"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 13118,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C06; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab06_evalua_confianza_dispositivo",
+        "s22ab06_ultimo_uso_no_verificado",
+        "s22ab06_actividad_otro_dispositivo_renueva",
+        "s22ab06_nuevo_o_inactivo_sin_otp",
+        "s22ab06_no_revoca_ante_senal",
+        "s22ab06_umbral_no_configurado"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C06",
+        "clave": "s22ab_legacy_13118",
+        "familia": "MFA_OTP_SSO",
+        "naturaleza": "CONDUCTA",
+        "clase": "TRANSVERSAL",
+        "alcance": "B2B",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Confianza por usuario y dispositivo con inactividad parametrizada",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional PROP-B2B-AUTH-TRUSTED-DEVICE-C-001. El backend registra último uso autenticado por usuario y dispositivo. Un dispositivo nuevo, desconocido o inactivo según AUTH/MFA_DEVICE_IDLE_DAYS (public.lf_global_config) requiere OTP por correo antes de otorgar sesión operativa. La actividad de otro dispositivo no renueva su confianza. Revocar confianza ante señales de seguridad. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"family\":\"AUTHENTICATION\",\"inheritance\":\"B2B_HUMAN_PROFILES\",\"trust_scope\":\"DEVICE\",\"parameter_refs\":[{\"scope\":\"AUTH\",\"source\":\"public.lf_global_config\",\"resolver\":\"public.lf_auth_config_integer_v1\",\"config_key\":\"MFA_DEVICE_IDLE_DAYS\"}],\"new_device_outcome\":\"EMAIL_OTP_REQUIRED\",\"device_activity_unit\":\"PER_USER_DEVICE_SERVER_VERIFIED\",\"production_authorized\":false,\"device_recognition_authority\":\"SERVER_ONLY\",\"other_device_activity_resets_idle\":false}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/13118",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab06_evalua_confianza_dispositivo"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab06_ultimo_uso_no_verificado"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab06_actividad_otro_dispositivo_renueva"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab06_nuevo_o_inactivo_sin_otp"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab06_no_revoca_ante_senal"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab06_umbral_no_configurado"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": true,
+              "s22ab06_ultimo_uso_no_verificado": false,
+              "s22ab06_actividad_otro_dispositivo_renueva": false,
+              "s22ab06_nuevo_o_inactivo_sin_otp": false,
+              "s22ab06_no_revoca_ante_senal": false,
+              "s22ab06_umbral_no_configurado": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": true,
+              "s22ab06_ultimo_uso_no_verificado": true,
+              "s22ab06_actividad_otro_dispositivo_renueva": false,
+              "s22ab06_nuevo_o_inactivo_sin_otp": false,
+              "s22ab06_no_revoca_ante_senal": false,
+              "s22ab06_umbral_no_configurado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": true,
+              "s22ab06_ultimo_uso_no_verificado": false,
+              "s22ab06_actividad_otro_dispositivo_renueva": true,
+              "s22ab06_nuevo_o_inactivo_sin_otp": false,
+              "s22ab06_no_revoca_ante_senal": false,
+              "s22ab06_umbral_no_configurado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": true,
+              "s22ab06_ultimo_uso_no_verificado": false,
+              "s22ab06_actividad_otro_dispositivo_renueva": false,
+              "s22ab06_nuevo_o_inactivo_sin_otp": true,
+              "s22ab06_no_revoca_ante_senal": false,
+              "s22ab06_umbral_no_configurado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": true,
+              "s22ab06_ultimo_uso_no_verificado": false,
+              "s22ab06_actividad_otro_dispositivo_renueva": false,
+              "s22ab06_nuevo_o_inactivo_sin_otp": false,
+              "s22ab06_no_revoca_ante_senal": true,
+              "s22ab06_umbral_no_configurado": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": true,
+              "s22ab06_ultimo_uso_no_verificado": false,
+              "s22ab06_actividad_otro_dispositivo_renueva": false,
+              "s22ab06_nuevo_o_inactivo_sin_otp": false,
+              "s22ab06_no_revoca_ante_senal": false,
+              "s22ab06_umbral_no_configurado": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab06_evalua_confianza_dispositivo": false,
+              "s22ab06_ultimo_uso_no_verificado": true,
+              "s22ab06_actividad_otro_dispositivo_renueva": true,
+              "s22ab06_nuevo_o_inactivo_sin_otp": true,
+              "s22ab06_no_revoca_ante_senal": true,
+              "s22ab06_umbral_no_configurado": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "1298b3531bfb8f8f8d60c0ccd951a9729f7d8d857a4cef3358c61ad2b658cb8e",
+      "hash_paquete": "9c6ce11088b074fd58b594b6d6a254fb7817de6ee71f8a1b9236fce1b9e35679",
+      "hash_evaluado": "1298b3531b",
+      "hash_paquete_10": "9c6ce11088"
+    },
+    {
+      "codigo": "S22AB-C07",
+      "legacy_id": 552,
+      "legacy_ids": [
+        552
+      ],
+      "relacionadas": [
+        "S22P-C01"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 552,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C07; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab07_evalua_tarjetas_aprende",
+        "s22ab07_tema_o_card_omitido",
+        "s22ab07_copy_paralelo_o_claim_no_publicable",
+        "s22ab07_lookup_o_simulacion_inventada",
+        "s22ab07_carta_o_sbs_prometido",
+        "s22ab07_destino_o_flujo_invalido"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C07",
+        "clave": "s22ab_legacy_552",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "Tarjetas informativas con semántica de fuentes gobernadas",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional REG_CLIENT_HOME_LEARN_DECIDE_001. HOME_APRENDA_ANTES_DECIDIR conserva tres tarjetas de respuesta rápida, pero cada popup consume semántica de reglas fuente ya gobernadas en vez de mantener una verdad paralela. Card 1 “Tu deuda puede haber cambiado de manos” depende de EDU-NODO-02-EXPLORA y no publica detalles legales precisos mientras esa fuente permanezca CANDIDATO o con claims pendientes. Card 2 “¿Cómo funciona el simulador?” explica el flujo actual: iniciar en ONB_001, verificar control del celular por OTP, identificar por DNI cuando corresponda y dejar que backend resuelva si existe una oferta/cuenta; el nombre visual “simulador” puede mantenerse según decisión 46, pero no representa una simulación hipotética ni un lookup desde la card. Card 3 “¿Qué ocurre después de revisar tu opción?” reutiliza EDU-NODO-03-ELIGE y EDU-NODO-04-CIERRA: pago único/cuotas según oferta válida, confirmación de pago y gestión de constancia/carta según liquidación real; no promete 7–9 días para actualización SBS. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"front\":\"CLIENTE\",\"screen\":\"HOME_APRENDA_ANTES_DECIDIR\",\"card_count\":3,\"card_2_flow\":[\"PHONE\",\"OTP_PHONE_CONTROL\",\"DNI_IF_REQUIRED\",\"BACKEND_RESOLUTION\"],\"visual_debt\":\"PEND-CLIENT-HOME-LEARN-CANONICAL-VISUAL-001\",\"card_1_title\":\"Tu deuda puede haber cambiado de manos\",\"card_2_title\":\"¿Cómo funciona el simulador?\",\"card_3_title\":\"¿Qué ocurre después de revisar tu opción?\",\"visual_mapping\":\"PENDING_CANONICAL_VISUAL\",\"card_2_entry_rule\":\"REG_CLIENT_HOME_PUBLIC_ENTRY_001\",\"card_1_source_rule\":\"EDU-NODO-02-EXPLORA\",\"card_2_entry_target\":\"ONB_001\",\"card_3_source_rules\":[\"EDU-NODO-03-ELIGE\",\"EDU-NODO-04-CIERRA\"],\"card_3_letter_semantic\":\"PER_DEBT_AFTER_SETTLED_CONFIRMED\",\"popup_content_strategy\":\"REFERENCE_SOURCE_RULES_NOT_PARALLEL_COPY\",\"commercial_close_target\":\"ONB_001\",\"card_2_naming_decision_number\":46,\"card_3_hardcoded_sbs_7_9_days\":\"DENY\",\"external_claim_freshness_rule\":\"REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001\",\"card_1_popup_publish_condition\":\"SOURCE_RULE_PUBLICABLE\",\"legacy_simulator_direct_lookup\":\"DENY\",\"card_2_hypothetical_simulation_semantic\":\"DENY\",\"card_1_precise_legal_claims_when_source_candidate\":\"DENY\"}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/552",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab07_evalua_tarjetas_aprende"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab07_tema_o_card_omitido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab07_copy_paralelo_o_claim_no_publicable"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab07_lookup_o_simulacion_inventada"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab07_carta_o_sbs_prometido"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab07_destino_o_flujo_invalido"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": true,
+              "s22ab07_tema_o_card_omitido": false,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": false,
+              "s22ab07_lookup_o_simulacion_inventada": false,
+              "s22ab07_carta_o_sbs_prometido": false,
+              "s22ab07_destino_o_flujo_invalido": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": true,
+              "s22ab07_tema_o_card_omitido": true,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": false,
+              "s22ab07_lookup_o_simulacion_inventada": false,
+              "s22ab07_carta_o_sbs_prometido": false,
+              "s22ab07_destino_o_flujo_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": true,
+              "s22ab07_tema_o_card_omitido": false,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": true,
+              "s22ab07_lookup_o_simulacion_inventada": false,
+              "s22ab07_carta_o_sbs_prometido": false,
+              "s22ab07_destino_o_flujo_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": true,
+              "s22ab07_tema_o_card_omitido": false,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": false,
+              "s22ab07_lookup_o_simulacion_inventada": true,
+              "s22ab07_carta_o_sbs_prometido": false,
+              "s22ab07_destino_o_flujo_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": true,
+              "s22ab07_tema_o_card_omitido": false,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": false,
+              "s22ab07_lookup_o_simulacion_inventada": false,
+              "s22ab07_carta_o_sbs_prometido": true,
+              "s22ab07_destino_o_flujo_invalido": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": true,
+              "s22ab07_tema_o_card_omitido": false,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": false,
+              "s22ab07_lookup_o_simulacion_inventada": false,
+              "s22ab07_carta_o_sbs_prometido": false,
+              "s22ab07_destino_o_flujo_invalido": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab07_evalua_tarjetas_aprende": false,
+              "s22ab07_tema_o_card_omitido": true,
+              "s22ab07_copy_paralelo_o_claim_no_publicable": true,
+              "s22ab07_lookup_o_simulacion_inventada": true,
+              "s22ab07_carta_o_sbs_prometido": true,
+              "s22ab07_destino_o_flujo_invalido": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "bb8e7b0b6946a3f28ae14943722e0d85e93e8c97f267854e39179860f579db81",
+      "hash_paquete": "f14e78a1de3ff18316b3f9848d56acc06dc9e551fe60670a80651226cb17b782",
+      "hash_evaluado": "bb8e7b0b69",
+      "hash_paquete_10": "f14e78a1de"
+    },
+    {
+      "codigo": "S22AB-C08",
+      "legacy_id": 554,
+      "legacy_ids": [
+        554
+      ],
+      "relacionadas": [
+        "S22P-C02"
+      ],
+      "residual": "",
+      "coberturas": [
+        {
+          "legacy_id": 554,
+          "estado_cobertura": "REEMPLAZADA",
+          "residual": "",
+          "diferencias": "Contrato fuente íntegro en descripción de S22AB-C08; conserva semántica y referencias literales, sin habilitar runtime."
+        }
+      ],
+      "hechos": [
+        "s22ab08_evalua_faq_home",
+        "s22ab08_tema_omitido",
+        "s22ab08_flujo_inicio_o_no_oferta_incorrecto",
+        "s22ab08_oferta_sin_revalidacion",
+        "s22ab08_gestor_o_privacidad_no_autoritativa",
+        "s22ab08_semantica_abandono_pago_invalida"
+      ],
+      "paquete": {
+        "tipo": "NUEVA",
+        "codigo": "S22AB-C08",
+        "clave": "s22ab_legacy_554",
+        "familia": "UI_MESSAGES",
+        "naturaleza": "CONDUCTA",
+        "clase": "PANTALLA",
+        "alcance": "CLIENT_HOME",
+        "modo": "HEREDA",
+        "dueno": "PRODUCTO",
+        "titulo": "FAQ de Home con respuestas derivadas de reglas vigentes",
+        "descripcion": "BLOQUEAR incumplimiento del contrato funcional REG_CLIENT_HOME_FAQ_001. HOME_FAQ conserva seis temas, pero las respuestas se derivan de los contratos actuales y no de copy histórico. (1) Para empezar no se piden “datos personales básicos” completos: ONB_001 solicita celular, ONB_002 confirma control por OTP y solo después se solicita DNI cuando corresponde. (2) Si una consulta autoritativa confirma cero ofertas activas, el Home autenticado usa NO_ACTIVE_OFFER_HOME y Ruta de Claridad; una falla técnica no equivale a “sin oferta”. (3) Una oferta mostrada es una oferta disponible/versionada, pero antes del checkout se revalidan vigencia, versión, montos, modalidad y plan; cambios materiales exigen reconfirmación. (4) La identidad del gestor/aliado y datos de la deuda se muestran únicamente desde fuentes autoritativas; contenido educativo sobre cesión no sustituye esos datos. (5) La privacidad se explica conforme a políticas vigentes y los consentimientos aplicables; no se afirma que todo tratamiento dependa del mismo checkbox ni se usa la regla histórica de ubicación del consentimiento como verdad actual. (6) Antes de enviar un intento de pago el usuario puede abandonar sin crear un pago; después de un intento enviado o PAYMENT_CONFIRMED aplican los estados de pago y condiciones del acuerdo. Salir de la web o detener un débito automático no cancela una deuda ni un plan por sí mismo. Referencias literales del contrato fuente (no nuevas configuraciones ni autorización de implementación): {\"faq_1\":{\"topic\":\"START_REQUIREMENTS\",\"semantic\":\"PHONE_FIRST_OTP_THEN_DNI_IF_REQUIRED\",\"source_rules\":[\"REG_FLOW_CELL_FIRST_001\",\"REG_FLUJO_003\"],\"basic_profile_data_before_otp\":\"DENY\"},\"faq_2\":{\"topic\":\"NO_OFFER\",\"source_rules\":[\"REG_CLIENT_HOME_NO_OFFER_001\",\"REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001\"],\"technical_failure_equals_no_offer\":\"DENY\"},\"faq_3\":{\"topic\":\"OFFER_FINALITY\",\"source_rules\":[\"REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001\",\"REG_CLIENT_CHECKOUT_ENTRY_001\"],\"material_change\":\"RECONFIRM\",\"pre_checkout_revalidation\":\"REQUIRED\"},\"faq_4\":{\"topic\":\"DEBT_MANAGER\",\"education_source\":\"EDU-NODO-02-EXPLORA\",\"authoritative_account_data_required\":true,\"candidate_education_as_account_truth\":\"DENY\"},\"faq_5\":{\"topic\":\"DATA_PROTECTION\",\"source_rules\":[\"REG_ANL_002\",\"REG_SEG_003\",\"LEGAL-CONSENTIMIENTO-DATOS-01\"],\"consent_location_status\":\"PENDING_LEGAL_PRIVACY_VALIDATION\",\"claim_all_processing_based_on_single_consent\":\"DENY\"},\"faq_6\":{\"topic\":\"CAN_I_STOP\",\"source_rules\":[\"REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001\",\"REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001\"],\"before_payment_submit\":\"ALLOW_ABANDON_WITHOUT_PAYMENT_ATTEMPT\",\"after_payment_confirmed\":\"CONTRACTUAL_OBLIGATIONS_APPLY\",\"stop_autodebit_cancels_debt\":\"DENY\",\"payment_pending_confirmation\":\"NO_NEW_ATTEMPT_UNTIL_RECONCILED\",\"after_possible_provider_submit\":\"FOLLOW_PAYMENT_OUTCOME_STATE\"},\"front\":\"CLIENTE\",\"screen\":\"HOME_FAQ\",\"visual_debt\":\"PEND-CLIENT-HOME-FAQ-CANONICAL-VISUAL-001\",\"question_count\":6,\"public_boundary_rule\":\"REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001\"}. Los estados pendientes y restricciones de producción se conservan; binding runtime pendiente.",
+        "efecto": "BLOQUEAR",
+        "autoridad": "LEG-PRODUCTO",
+        "impacto": "REVISAR",
+        "origen": {
+          "tipo": "MIGRACION",
+          "ref": "lf_ops.reglas/554",
+          "solicitante": "Cristhian / Claude S22-AB 2026-11-25"
+        },
+        "condicion": {
+          "op": "y",
+          "izq": {
+            "op": "=",
+            "izq": {
+              "hecho": "s22ab08_evalua_faq_home"
+            },
+            "der": {
+              "lit": true
+            }
+          },
+          "der": {
+            "op": "o",
+            "izq": {
+              "op": "o",
+              "izq": {
+                "op": "o",
+                "izq": {
+                  "op": "o",
+                  "izq": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab08_tema_omitido"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  },
+                  "der": {
+                    "op": "=",
+                    "izq": {
+                      "hecho": "s22ab08_flujo_inicio_o_no_oferta_incorrecto"
+                    },
+                    "der": {
+                      "lit": true
+                    }
+                  }
+                },
+                "der": {
+                  "op": "=",
+                  "izq": {
+                    "hecho": "s22ab08_oferta_sin_revalidacion"
+                  },
+                  "der": {
+                    "lit": true
+                  }
+                }
+              },
+              "der": {
+                "op": "=",
+                "izq": {
+                  "hecho": "s22ab08_gestor_o_privacidad_no_autoritativa"
+                },
+                "der": {
+                  "lit": true
+                }
+              }
+            },
+            "der": {
+              "op": "=",
+              "izq": {
+                "hecho": "s22ab08_semantica_abandono_pago_invalida"
+              },
+              "der": {
+                "lit": true
+              }
+            }
+          }
+        },
+        "pruebas": [
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": true,
+              "s22ab08_tema_omitido": false,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": false,
+              "s22ab08_oferta_sin_revalidacion": false,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": false,
+              "s22ab08_semantica_abandono_pago_invalida": false
+            },
+            "esperado": false
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": true,
+              "s22ab08_tema_omitido": true,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": false,
+              "s22ab08_oferta_sin_revalidacion": false,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": false,
+              "s22ab08_semantica_abandono_pago_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": true,
+              "s22ab08_tema_omitido": false,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": true,
+              "s22ab08_oferta_sin_revalidacion": false,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": false,
+              "s22ab08_semantica_abandono_pago_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": true,
+              "s22ab08_tema_omitido": false,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": false,
+              "s22ab08_oferta_sin_revalidacion": true,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": false,
+              "s22ab08_semantica_abandono_pago_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": true,
+              "s22ab08_tema_omitido": false,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": false,
+              "s22ab08_oferta_sin_revalidacion": false,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": true,
+              "s22ab08_semantica_abandono_pago_invalida": false
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": true,
+              "s22ab08_tema_omitido": false,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": false,
+              "s22ab08_oferta_sin_revalidacion": false,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": false,
+              "s22ab08_semantica_abandono_pago_invalida": true
+            },
+            "esperado": true
+          },
+          {
+            "casuistica": "NO_SE_CUMPLE",
+            "entrada": {
+              "s22ab08_evalua_faq_home": false,
+              "s22ab08_tema_omitido": true,
+              "s22ab08_flujo_inicio_o_no_oferta_incorrecto": true,
+              "s22ab08_oferta_sin_revalidacion": true,
+              "s22ab08_gestor_o_privacidad_no_autoritativa": true,
+              "s22ab08_semantica_abandono_pago_invalida": true
+            },
+            "esperado": false
+          }
+        ]
+      },
+      "hash": "fabd6cd6c0c3c05b01cc972c096c147b54a675c8b8774512c1e0702f2460b0ec",
+      "hash_paquete": "5d372179d68f8086ce1ece26f0a8339a86e74c98a20cc809ff17994bd89a6bd3",
+      "hash_evaluado": "fabd6cd6c0",
+      "hash_paquete_10": "5d372179d6"
+    }
+  ],
+  "juicios": [],
+  "cobertura_directa": []
+}
