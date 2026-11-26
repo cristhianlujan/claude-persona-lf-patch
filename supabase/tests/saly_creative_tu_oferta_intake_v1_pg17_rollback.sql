@@ -1,3 +1,4 @@
+-- Re-dispatch the LF intake regression on pull request synchronization.
 \set ON_ERROR_STOP on
 BEGIN;
 CREATE SCHEMA saly;
