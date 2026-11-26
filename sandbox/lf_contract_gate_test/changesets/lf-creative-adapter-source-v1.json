@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-creative-adapter-source-v1",
+  "paths": {
+    "supabase/migrations/20261126030001_lf_saly_creative_lf_adapter_v1.sql": "MIGRATION",
+    "skills/creative_factory/SKILL.md": "SKILL",
+    "skills/creative_factory/fixtures/lf_tu_oferta_intake.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-creative-adapter-source-v1.json": "CHANGESET_MANIFEST"
+  }
+}
