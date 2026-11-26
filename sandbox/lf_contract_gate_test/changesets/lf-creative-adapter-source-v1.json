@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-creative-adapter-source-v1",
+  "paths": {
+    "supabase/migrations/20261126063001_lf_saly_creative_lf_adapter_v1.sql": "MIGRATION",
+    "skills/creative_factory/SKILL.md": "SKILL",
+    "skills/creative_factory/fixtures/lf_tu_oferta_intake.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-creative-adapter-source-v1.json": "CHANGESET_MANIFEST",
+    "supabase/tests/saly_creative_lf_adapter_v1_pg17_rollback.sql": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW"
+  }
+}
