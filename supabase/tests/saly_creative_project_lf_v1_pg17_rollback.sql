@@ -2,9 +2,10 @@
 BEGIN;
 CREATE SCHEMA saly;
 CREATE SCHEMA lf_design;
-CREATE TABLE saly.proyecto(id bigint PRIMARY KEY,codigo text UNIQUE NOT NULL,nombre text NOT NULL,fase text NOT NULL,estado text NOT NULL,objetivo text);
+CREATE TABLE saly.proyecto(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,codigo text UNIQUE NOT NULL,nombre text NOT NULL,fase text NOT NULL,estado text NOT NULL,objetivo text);
 CREATE TABLE lf_design.design_systems(project_code text);
-INSERT INTO saly.proyecto VALUES(2,'SALY-001','Saly','IDEACION','ACTIVO','fixture');
+INSERT INTO saly.proyecto OVERRIDING SYSTEM VALUE VALUES(2,'SALY-001','Saly','IDEACION','ACTIVO','fixture');
+ALTER TABLE saly.proyecto ALTER COLUMN id RESTART WITH 3;
 INSERT INTO lf_design.design_systems VALUES('LF');
 \i /tmp/saly_project_lf_body.sql
 DO $$ BEGIN
