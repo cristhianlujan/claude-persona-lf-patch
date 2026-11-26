@@ -277,7 +277,109 @@
         }
       }
     ],
-    "pg17": "PENDING_CI"
+    "pg17": "PENDING_CI",
+    "class_scope_fix": {
+      "control": 19,
+      "changed": [
+        "C01",
+        "C02",
+        "C05",
+        "C08"
+      ],
+      "hashes": "unchanged: canonical hash excludes clase; recalculated via exact SQL formula",
+      "read_only_checks": [
+        {
+          "codigo": "S22AA-C01",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "MODULO",
+          "ambito": "CLIENTE"
+        },
+        {
+          "codigo": "S22AA-C02",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "MODULO",
+          "ambito": "CLIENTE"
+        },
+        {
+          "codigo": "S22AA-C03",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "AMBITO",
+          "ambito": "B2B"
+        },
+        {
+          "codigo": "S22AA-C04",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "AMBITO",
+          "ambito": "B2B"
+        },
+        {
+          "codigo": "S22AA-C05",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "MODULO",
+          "ambito": "CLIENTE"
+        },
+        {
+          "codigo": "S22AA-C06",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "AMBITO",
+          "ambito": "B2B"
+        },
+        {
+          "codigo": "S22AA-C07",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "AMBITO",
+          "ambito": "B2B"
+        },
+        {
+          "codigo": "S22AA-C08",
+          "identity_free": true,
+          "family_tests": true,
+          "fields_ok": true,
+          "cases_ok": true,
+          "authority_ok": true,
+          "deps_ok": true,
+          "nivel": "MODULO",
+          "ambito": "CLIENTE"
+        }
+      ],
+      "vectors": 47,
+      "proposer_direct": "42501 permission denied; static checks and catalog readback performed, full replay pending PASE"
+    }
   },
   "parametros_existentes": [],
   "hechos_existentes": [],
@@ -585,7 +687,7 @@
         "clave": "s22aa_legacy_109",
         "familia": "HEATMAP_SESSION_RECORDING",
         "naturaleza": "CONDUCTA",
-        "clase": "TRANSVERSAL",
+        "clase": "PANTALLA",
         "alcance": "CLIENT_ONBOARDING",
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
@@ -700,7 +802,30 @@
       "hash": "a97649e568205c8c8d18b15248adc1ebbe6b4ffc9f80f73b1e5b2fb9d23db4b0",
       "hash_paquete": "31414dcf5f10b813c3615e1c53bf5e30072149279efe9a2821f2e46b55ff347c",
       "hash_evaluado": "a97649e568",
-      "hash_paquete_10": "31414dcf5f"
+      "hash_paquete_10": "31414dcf5f",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C02",
@@ -730,7 +855,7 @@
         "clave": "s22aa_legacy_119",
         "familia": "EXPERIMENTS_AB",
         "naturaleza": "CONDUCTA",
-        "clase": "TRANSVERSAL",
+        "clase": "PANTALLA",
         "alcance": "CLIENT_ONBOARDING",
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
@@ -845,7 +970,30 @@
       "hash": "88efa2a5f230370f60baa01f319fd1f381feab036e32be3997b71d8f9c79fe82",
       "hash_paquete": "76fdea7bcf8070e7bacf062a6f8c2619e6a6bf431aa56e3e753612d706be8f97",
       "hash_evaluado": "88efa2a5f2",
-      "hash_paquete_10": "76fdea7bcf"
+      "hash_paquete_10": "76fdea7bcf",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C03",
@@ -1021,7 +1169,30 @@
       "hash": "6c0ae5ef901f25749cd59e454eb98f2a388e62d24583f5189632ae1d53985a55",
       "hash_paquete": "c3def74a64849a02fe85052023b9b9ba15601a28e751cdecd637671cccfcbffd",
       "hash_evaluado": "6c0ae5ef90",
-      "hash_paquete_10": "c3def74a64"
+      "hash_paquete_10": "c3def74a64",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C04",
@@ -1168,7 +1339,30 @@
       "hash": "76186658814b6c5a46833891ebf3b5f74fab22456a2d3b32033ab36d209dfc22",
       "hash_paquete": "03b9bc1877f4bc2904455f0d84eed3dbdd79146e257a774e1ca2211ab44ef5a6",
       "hash_evaluado": "7618665881",
-      "hash_paquete_10": "03b9bc1877"
+      "hash_paquete_10": "03b9bc1877",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C05",
@@ -1201,7 +1395,7 @@
         "clave": "s22aa_legacy_455",
         "familia": "ROUTING_NAVIGATION",
         "naturaleza": "CONDUCTA",
-        "clase": "TRANSVERSAL",
+        "clase": "PANTALLA",
         "alcance": "CLIENT_ONBOARDING",
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
@@ -1316,7 +1510,30 @@
       "hash": "77542c8e3527ae6c763f8d72c7142dac04121a3587d64a3b1ca859c2903ca55c",
       "hash_paquete": "c67675a3ddd9cbc5ef26fc1ad62b4f676edbc9d1ff5982ca631bb0b964f60001",
       "hash_evaluado": "77542c8e35",
-      "hash_paquete_10": "c67675a3dd"
+      "hash_paquete_10": "c67675a3dd",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C06",
@@ -1556,7 +1773,30 @@
       "hash": "8bed05e3c8b2dc25437b807497aa7aa418d0f486775511f3709c65d99806e6a8",
       "hash_paquete": "25df993a0ca773ab6bf32a5b5885d70c28e79598c987e8e65f9d19e0e1aaf9c7",
       "hash_evaluado": "8bed05e3c8",
-      "hash_paquete_10": "25df993a0c"
+      "hash_paquete_10": "25df993a0c",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C07",
@@ -1763,7 +2003,30 @@
       "hash": "c6478202dfcba1c1214c47d08d24ebf9ba782d62b15de6ff780048771ac0cb23",
       "hash_paquete": "deb5e9a686dc933accce54404881a032741994ebe3c283b2b9e412521a8138c5",
       "hash_evaluado": "c6478202df",
-      "hash_paquete_10": "deb5e9a686"
+      "hash_paquete_10": "deb5e9a686",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     },
     {
       "codigo": "S22AA-C08",
@@ -1794,7 +2057,7 @@
         "clave": "s22aa_legacy_588",
         "familia": "LEGAL_CONSENT",
         "naturaleza": "CONDUCTA",
-        "clase": "TRANSVERSAL",
+        "clase": "PANTALLA",
         "alcance": "CLIENT_ONBOARDING",
         "modo": "HEREDA",
         "dueno": "PRODUCTO",
@@ -1937,7 +2200,30 @@
       "hash": "1fc279ce7b6e4ace089e2b006a9012b57cca390a38213cb98b8fc702a7bdb69e",
       "hash_paquete": "9b53cb8dbd3068b9362ecc46a27ba53f74101372a67a7150c77d55702c23f2f7",
       "hash_evaluado": "1fc279ce7b",
-      "hash_paquete_10": "9b53cb8dbd"
+      "hash_paquete_10": "9b53cb8dbd",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      }
     }
   ],
   "juicios": [
