@@ -1,5 +1,5 @@
 {
-  "estado": "PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "JUICIO_INDEPENDIENTE_RECIBIDO_CI_PENDIENTE",
   "preflight": {
     "base": "14ba3b9426bd44d60656227b49cbb8af49a816dc",
     "js_vectors": "47/47",
@@ -125,7 +125,8 @@
       "leccion": "LF-NUCLEO-ASSERT-LINKS-001",
       "expected_links": 8,
       "expected_replacements": 8,
-      "sql_future": "links and expected_delta derived from packages, prewrite exclusion of already replaced"
+      "sql_future": "links and expected_delta derived from packages, prewrite exclusion of already replaced",
+      "executed_sql": "derived counts, qualified aliases, pre-write exclusion"
     },
     "fuentes_legadas": [
       {
@@ -275,7 +276,8 @@
           "withdrawal_section_title": "Cómo retirar tu autorización"
         }
       }
-    ]
+    ],
+    "pg17": "PENDING_CI"
   },
   "parametros_existentes": [],
   "hechos_existentes": [],
@@ -1938,6 +1940,287 @@
       "hash_paquete_10": "9b53cb8dbd"
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22AA-C01",
+      "hash_paquete": "31414dcf5f10b813c3615e1c53bf5e30072149279efe9a2821f2e46b55ff347c",
+      "hash_evaluado": "31414dcf5f10b813c3615e1c53bf5e30072149279efe9a2821f2e46b55ff347c",
+      "hash_paquete_10": "31414dcf5f",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C02",
+      "hash_paquete": "76fdea7bcf8070e7bacf062a6f8c2619e6a6bf431aa56e3e753612d706be8f97",
+      "hash_evaluado": "76fdea7bcf8070e7bacf062a6f8c2619e6a6bf431aa56e3e753612d706be8f97",
+      "hash_paquete_10": "76fdea7bcf",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C03",
+      "hash_paquete": "c3def74a64849a02fe85052023b9b9ba15601a28e751cdecd637671cccfcbffd",
+      "hash_evaluado": "c3def74a64849a02fe85052023b9b9ba15601a28e751cdecd637671cccfcbffd",
+      "hash_paquete_10": "c3def74a64",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C04",
+      "hash_paquete": "03b9bc1877f4bc2904455f0d84eed3dbdd79146e257a774e1ca2211ab44ef5a6",
+      "hash_evaluado": "03b9bc1877f4bc2904455f0d84eed3dbdd79146e257a774e1ca2211ab44ef5a6",
+      "hash_paquete_10": "03b9bc1877",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C05",
+      "hash_paquete": "c67675a3ddd9cbc5ef26fc1ad62b4f676edbc9d1ff5982ca631bb0b964f60001",
+      "hash_evaluado": "c67675a3ddd9cbc5ef26fc1ad62b4f676edbc9d1ff5982ca631bb0b964f60001",
+      "hash_paquete_10": "c67675a3dd",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C06",
+      "hash_paquete": "25df993a0ca773ab6bf32a5b5885d70c28e79598c987e8e65f9d19e0e1aaf9c7",
+      "hash_evaluado": "25df993a0ca773ab6bf32a5b5885d70c28e79598c987e8e65f9d19e0e1aaf9c7",
+      "hash_paquete_10": "25df993a0c",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C07",
+      "hash_paquete": "deb5e9a686dc933accce54404881a032741994ebe3c283b2b9e412521a8138c5",
+      "hash_evaluado": "deb5e9a686dc933accce54404881a032741994ebe3c283b2b9e412521a8138c5",
+      "hash_paquete_10": "deb5e9a686",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    },
+    {
+      "codigo": "S22AA-C08",
+      "hash_paquete": "9b53cb8dbd3068b9362ecc46a27ba53f74101372a67a7150c77d55702c23f2f7",
+      "hash_evaluado": "9b53cb8dbd3068b9362ecc46a27ba53f74101372a67a7150c77d55702c23f2f7",
+      "hash_paquete_10": "9b53cb8dbd",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-26 20:02 Lima: evaluador independiente 47/47, descripción y valor_config comparados con referencias literales"
+    }
+  ],
   "cobertura_directa": []
 }
