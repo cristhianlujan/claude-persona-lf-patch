@@ -1,5 +1,5 @@
 {
-  "estado": "PROPUESTA_PENDIENTE_JUICIO_INDEPENDIENTE",
+  "estado": "APROBADO_CLAUDE",
   "preflight": {
     "base": "d693cd62d08c8c3c2b1a1f4cae052c03542822a9",
     "js_vectors": 35,
@@ -226,7 +226,7 @@
           "legacy_id": 196,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "Propuesta de cobertura de contrato fuente íntegro; pendiente juicio independiente y promoción."
+          "diferencias": "Cobertura de intención y contrato fuente íntegro, literales revisados por Claude; binding runtime pendiente."
         }
       ],
       "hechos": [
@@ -381,6 +381,31 @@
             "esperado": false
           }
         ]
+      },
+      "hash_paquete": "b76b0d793b8f2441e0abfe85b1db651ef1fb3535a98dcd9d9b8f1f26257dd8b4",
+      "hash_paquete_10": "b76b0d793b",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
       }
     },
     {
@@ -396,7 +421,7 @@
           "legacy_id": 200,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "Propuesta de cobertura de contrato fuente íntegro; pendiente juicio independiente y promoción."
+          "diferencias": "Cobertura de intención y contrato fuente íntegro, literales revisados por Claude; binding runtime pendiente."
         }
       ],
       "hechos": [
@@ -551,6 +576,31 @@
             "esperado": false
           }
         ]
+      },
+      "hash_paquete": "d8b58bd6f5d7729f29551d38d652592529a9cedefb6090e5160b080b59f2db40",
+      "hash_paquete_10": "d8b58bd6f5",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
       }
     },
     {
@@ -566,7 +616,7 @@
           "legacy_id": 219,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "Propuesta de cobertura de contrato fuente íntegro; pendiente juicio independiente y promoción."
+          "diferencias": "Cobertura de intención y contrato fuente íntegro, literales revisados por Claude; binding runtime pendiente."
         }
       ],
       "hechos": [
@@ -692,6 +742,31 @@
             "esperado": false
           }
         ]
+      },
+      "hash_paquete": "395c34c8ac70a939447bca128336596aef66abbf0a68cd4419cae698d76317c2",
+      "hash_paquete_10": "395c34c8ac",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
       }
     },
     {
@@ -707,7 +782,7 @@
           "legacy_id": 285,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "Propuesta de cobertura de contrato fuente íntegro; pendiente juicio independiente y promoción."
+          "diferencias": "Cobertura de intención y contrato fuente íntegro, literales revisados por Claude; binding runtime pendiente."
         }
       ],
       "hechos": [
@@ -862,6 +937,31 @@
             "esperado": false
           }
         ]
+      },
+      "hash_paquete": "c13afa44dcc34dc22b2f092c09ca35790d359b503bf5428a9cd4a096ba703a4f",
+      "hash_paquete_10": "c13afa44dc",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
       }
     },
     {
@@ -877,7 +977,7 @@
           "legacy_id": 329,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "Propuesta de cobertura de contrato fuente íntegro; pendiente juicio independiente y promoción."
+          "diferencias": "Cobertura de intención y contrato fuente íntegro, literales revisados por Claude; binding runtime pendiente."
         }
       ],
       "hechos": [
@@ -1032,6 +1132,31 @@
             "esperado": false
           }
         ]
+      },
+      "hash_paquete": "7d4ce0b130c090d1e2e3c266657d1a24ba9696f602bf6c2e16b5f701d19b285f",
+      "hash_paquete_10": "7d4ce0b130",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
       }
     },
     {
@@ -1047,7 +1172,7 @@
           "legacy_id": 355,
           "estado_cobertura": "REEMPLAZADA",
           "residual": "",
-          "diferencias": "Propuesta de cobertura de contrato fuente íntegro; pendiente juicio independiente y promoción."
+          "diferencias": "Cobertura de intención y contrato fuente íntegro, literales revisados por Claude; binding runtime pendiente."
         }
       ],
       "hechos": [
@@ -1202,9 +1327,245 @@
             "esperado": false
           }
         ]
+      },
+      "hash_paquete": "5af7dd1968a007a820faafc22c614b9a97de60c141d8725deb78b7a535066ca5",
+      "hash_paquete_10": "5af7dd1968",
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
       }
     }
   ],
-  "juicios": [],
+  "juicios": [
+    {
+      "codigo": "S22AE-C01",
+      "hash_paquete": "b76b0d793b8f2441e0abfe85b1db651ef1fb3535a98dcd9d9b8f1f26257dd8b4",
+      "hash_evaluado": "b76b0d793b8f2441e0abfe85b1db651ef1fb3535a98dcd9d9b8f1f26257dd8b4",
+      "hash_paquete_10": "b76b0d793b",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 22:12 Lima: Revisado: evaluador 35/35, literales y clase/alcance conformes"
+    },
+    {
+      "codigo": "S22AE-C02",
+      "hash_paquete": "d8b58bd6f5d7729f29551d38d652592529a9cedefb6090e5160b080b59f2db40",
+      "hash_evaluado": "d8b58bd6f5d7729f29551d38d652592529a9cedefb6090e5160b080b59f2db40",
+      "hash_paquete_10": "d8b58bd6f5",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 22:12 Lima: Revisado: evaluador 35/35, literales y clase/alcance conformes"
+    },
+    {
+      "codigo": "S22AE-C03",
+      "hash_paquete": "395c34c8ac70a939447bca128336596aef66abbf0a68cd4419cae698d76317c2",
+      "hash_evaluado": "395c34c8ac70a939447bca128336596aef66abbf0a68cd4419cae698d76317c2",
+      "hash_paquete_10": "395c34c8ac",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 22:12 Lima: Revisado: evaluador 35/35, literales y clase/alcance conformes"
+    },
+    {
+      "codigo": "S22AE-C04",
+      "hash_paquete": "c13afa44dcc34dc22b2f092c09ca35790d359b503bf5428a9cd4a096ba703a4f",
+      "hash_evaluado": "c13afa44dcc34dc22b2f092c09ca35790d359b503bf5428a9cd4a096ba703a4f",
+      "hash_paquete_10": "c13afa44dc",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 22:12 Lima: Revisado: evaluador 35/35, literales y clase/alcance conformes"
+    },
+    {
+      "codigo": "S22AE-C05",
+      "hash_paquete": "7d4ce0b130c090d1e2e3c266657d1a24ba9696f602bf6c2e16b5f701d19b285f",
+      "hash_evaluado": "7d4ce0b130c090d1e2e3c266657d1a24ba9696f602bf6c2e16b5f701d19b285f",
+      "hash_paquete_10": "7d4ce0b130",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 22:12 Lima: Revisado: evaluador 35/35, literales y clase/alcance conformes"
+    },
+    {
+      "codigo": "S22AE-C06",
+      "hash_paquete": "5af7dd1968a007a820faafc22c614b9a97de60c141d8725deb78b7a535066ca5",
+      "hash_evaluado": "5af7dd1968a007a820faafc22c614b9a97de60c141d8725deb78b7a535066ca5",
+      "hash_paquete_10": "5af7dd1968",
+      "veredicto": "PASS",
+      "juez": "Claude",
+      "modo": "INDEPENDIENTE",
+      "revisor_es_productor": false,
+      "llamadas_modelo": 1,
+      "puntajes": {
+        "CAL_CLARIDAD": {
+          "puntaje": 1
+        },
+        "CAL_ACCIONABLE": {
+          "puntaje": 1
+        },
+        "CAL_ALCANCE": {
+          "puntaje": 1
+        },
+        "SEM_NO_DUPLICA": {
+          "puntaje": 1
+        },
+        "SEM_NO_CONTRADICE": {
+          "puntaje": 1
+        },
+        "COH_TEXTO_CONDICION": {
+          "puntaje": 1
+        },
+        "COH_EFECTO": {
+          "puntaje": 1
+        }
+      },
+      "evidencia_ref": "Claude 2026-11-25 22:12 Lima: Revisado: evaluador 35/35, literales y clase/alcance conformes"
+    }
+  ],
   "cobertura_directa": []
 }
