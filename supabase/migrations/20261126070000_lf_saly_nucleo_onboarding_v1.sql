@@ -1,7 +1,14 @@
 -- SALY ONB: 23 decisiones cerradas, solo CANDIDATA; juicio independiente pendiente.
 -- Hechos lógicos propuestos, no binding runtime; D-23 citada, no cotejada.
 BEGIN;
--- EMPRESAS y AMBITOS_BACKEND provienen de #4793; no modificarlos.
+-- #4793 supplies EMPRESAS in production; isolated PG17 replay may omit that migration.
+-- Only insert the parent when absent; never overwrite an existing node.
+INSERT INTO saly.nucleo_nodos(codigo,padre,nivel,nota)
+ SELECT 'EMPRESAS','GLOBAL','AMBITO','Portal de empresas B2B'
+ WHERE NOT EXISTS (SELECT 1 FROM saly.nucleo_nodos WHERE codigo='EMPRESAS');
+UPDATE saly.config_global SET config_value=((config_value::jsonb)||'["EMPRESAS"]'::jsonb)::text
+ WHERE scope='NUCLEO' AND config_key='AMBITOS_BACKEND'
+ AND NOT (config_value::jsonb @> '["EMPRESAS"]'::jsonb);
 INSERT INTO saly.nucleo_nodos(codigo,padre,nivel,nota) VALUES
  ('ONBOARDING','EMPRESAS','MODULO','Onboarding de colaboradores');
 INSERT INTO saly.nucleo_autoridades(codigo,tipo,descripcion) VALUES

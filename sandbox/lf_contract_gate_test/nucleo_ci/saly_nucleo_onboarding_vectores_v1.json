@@ -1,7 +1,7 @@
 {
   "estado": "BORRADOR_SIN_JUICIO_INDEPENDIENTE",
   "preflight": {
-    "base": "4cbfca5ba8c534f624fa38b4ee939797fdb6e284",
+    "base": "021f4333e196cdc6f21a2ca66ce1b63b49b16cdc",
     "js_vectors": 46,
     "pg17": "PENDIENTE"
   },
