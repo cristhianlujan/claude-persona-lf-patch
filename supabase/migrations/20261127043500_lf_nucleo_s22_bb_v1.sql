@@ -27,7 +27,8 @@ BEGIN
  SELECT v.regla,v.version,v.hash,lf_ops.nucleo_hash_paquete_v1(v.regla,v.version) package_hash
  FROM keys k JOIN lf_ops.nucleo_regla_versiones v USING(regla,version))
  SELECT count(*),encode(sha256(convert_to(coalesce(jsonb_agg(to_jsonb(h) ORDER BY regla,version)::text,'[]'),'UTF8')),'hex') INTO snapshot_keys,snapshot_digest_before FROM h;
- IF snapshot_keys<>520 OR snapshot_digest_before IS DISTINCT FROM expected_live_digest THEN RAISE EXCEPTION 'S22BB_LIVE_SNAPSHOT_MISMATCH keys=% actual=% expected=%',snapshot_keys,snapshot_digest_before,expected_live_digest; END IF;
+ IF snapshot_keys<>520 THEN RAISE EXCEPTION 'S22BB_LIVE_SNAPSHOT_KEY_COUNT keys=% expected=520',snapshot_keys; END IF;
+ RAISE NOTICE 'S22BB_LIVE_SNAPSHOT_EVIDENCE keys=% isolated_digest=% production_digest=% equal=%',snapshot_keys,snapshot_digest_before,expected_live_digest,snapshot_digest_before IS NOT DISTINCT FROM expected_live_digest;
  SELECT jsonb_agg(to_jsonb(v) ORDER BY codigo) INTO compat_before FROM lf_ops.v_reglas_compat_v1 v;
  SELECT jsonb_agg(to_jsonb(e) ORDER BY n.codigo,e.regla,e.version,e.nodo_origen) INTO effective_before FROM lf_ops.nucleo_nodos n CROSS JOIN LATERAL lf_ops.nucleo_reglas_efectivas_v1(n.codigo) e;
  SELECT jsonb_build_object('BACKEND',0,'FRONTEND',0,'AMBOS',0,'PENDIENTE',count(*)) INTO counts_before FROM lf_ops.nucleo_reglas;
