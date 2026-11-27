@@ -9,10 +9,12 @@ DECLARE
  snapshot_keys integer; snapshot_digest_before text; snapshot_digest_after text;
  expected_live_digest text := 'db997259b10fa213ec0fe31337f1fb84ba06b693e7add33b68f097148dcf0e5f';
  test_rule text; invalid_rejected boolean:=false;
+ saly_before jsonb; saly_after jsonb; conjunto_result text;
  both_codes text[] := ARRAY['REG_CHK_005','S11-C10','S22AQ-371-1','S22AQ-371-2','S22AQ-521-1','S22AU-246-1','S22AU-246-2','S22AU-248-1','S22AU-248-2','S22AU-273-1','S22AU-325-1','S22AU-326-1','S22AV-315-1','S22AX-158-1','S22AX-158-2','S22AX-258-1','S22AX-258-2','S22F-C04','S22N-C03','S4-C25','S6-C13','S6-C17']::text[];
  compat_before jsonb; compat_after jsonb; effective_before jsonb; effective_after jsonb;
  test_result text; actual_both text[];
 BEGIN
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY codigo),'[]'::jsonb) INTO saly_before FROM saly.nucleo_reglas x;
  SELECT jsonb_build_object(
  'rules',(SELECT encode(sha256(convert_to(coalesce(jsonb_agg(to_jsonb(x) ORDER BY codigo)::text,'[]'),'UTF8')),'hex') FROM lf_ops.nucleo_reglas x),
  'versions',(SELECT encode(sha256(convert_to(coalesce(jsonb_agg(to_jsonb(x) ORDER BY regla,version)::text,'[]'),'UTF8')),'hex') FROM lf_ops.nucleo_regla_versiones x),
@@ -38,6 +40,8 @@ BEGIN
  SELECT jsonb_build_object('BACKEND',count(*) FILTER(WHERE b AND NOT codigo=ANY(both_codes)),'FRONTEND',count(*) FILTER(WHERE f AND NOT codigo=ANY(both_codes)),'AMBOS',count(*) FILTER(WHERE codigo=ANY(both_codes)),'PENDIENTE',count(*) FILTER(WHERE NOT coalesce(b,false) AND NOT coalesce(f,false) AND NOT codigo=ANY(both_codes))) INTO expected_counts FROM a;
  ALTER TABLE lf_ops.nucleo_reglas ADD COLUMN capa_ejecucion text;
  ALTER TABLE lf_ops.nucleo_reglas ADD CONSTRAINT nucleo_reglas_capa_ejecucion_valida CHECK(capa_ejecucion IN ('BACKEND','FRONTEND','AMBOS'));
+ ALTER TABLE saly.nucleo_reglas ADD COLUMN capa_ejecucion text;
+ ALTER TABLE saly.nucleo_reglas ADD CONSTRAINT nucleo_reglas_capa_ejecucion_valida CHECK(capa_ejecucion IN ('BACKEND','FRONTEND','AMBOS'));
  COMMENT ON COLUMN lf_ops.nucleo_reglas.capa_ejecucion IS 'Capa de ejecución independiente del nodo de aplicación. NULL = pendiente de revisión semántica, no valor de dominio. B2B, GLOBAL, CLIENTE y mezclas no inferidas. Decisión dueño 2026-11-26 23:29 Lima.';
  WITH a AS (SELECT r.codigo, count(a.nodo)>0 AND bool_and(a.nodo='BACKEND') b,
  count(a.nodo)>0 AND bool_and(left(a.nodo,7)='CLIENT_' OR left(a.nodo,8)='PANTALLA') f
@@ -99,6 +103,13 @@ BEGIN
  IF (SELECT count(DISTINCT legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA') IS DISTINCT FROM actual_covered_before THEN RAISE EXCEPTION 'S22BB_FINAL_COVERAGE_DRIFT'; END IF;
  IF NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='lf_ops' AND table_name='nucleo_reglas' AND column_name='capa_ejecucion' AND data_type='text' AND is_nullable='YES') THEN RAISE EXCEPTION 'S22BB_COLUMN_MISSING'; END IF;
  IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='lf_ops.nucleo_reglas'::regclass AND conname='nucleo_reglas_capa_ejecucion_valida' AND contype='c' AND convalidated AND pg_get_constraintdef(oid)='CHECK ((capa_ejecucion = ANY (ARRAY[''BACKEND''::text, ''FRONTEND''::text, ''AMBOS''::text])))') THEN RAISE EXCEPTION 'S22BB_CHECK_DRIFT'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='saly' AND table_name='nucleo_reglas' AND column_name='capa_ejecucion' AND data_type='text' AND is_nullable='YES') THEN RAISE EXCEPTION 'S22BB_SALY_COLUMN_MISSING'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_constraint s JOIN pg_constraint l ON l.conrelid='lf_ops.nucleo_reglas'::regclass AND l.conname='nucleo_reglas_capa_ejecucion_valida' WHERE s.conrelid='saly.nucleo_reglas'::regclass AND s.conname='nucleo_reglas_capa_ejecucion_valida' AND s.contype='c' AND s.convalidated AND pg_get_constraintdef(s.oid)=pg_get_constraintdef(l.oid)) THEN RAISE EXCEPTION 'S22BB_SALY_CHECK_DRIFT'; END IF;
+ conjunto_result:=public.lf_nucleo_autotest_conjunto_v1();
+ IF conjunto_result IS DISTINCT FROM 'CONJUNTO 5/5' THEN RAISE EXCEPTION 'S22BB_CONJUNTO_FAIL %',conjunto_result; END IF;
+ SELECT coalesce(jsonb_agg(to_jsonb(x)-'capa_ejecucion' ORDER BY codigo),'[]'::jsonb) INTO saly_after FROM saly.nucleo_reglas x;
+ IF saly_before IS DISTINCT FROM saly_after OR EXISTS(SELECT 1 FROM saly.nucleo_reglas WHERE capa_ejecucion IS NOT NULL) THEN RAISE EXCEPTION 'S22BB_SALY_DATA_DRIFT'; END IF;
+ RAISE NOTICE 'S22BB_SALY_PARITY_PASS %; all SALY layers NULL; original SALY rule rows unchanged',conjunto_result;
  RAISE NOTICE 'S22BB_FINAL_PASS counts=% coverage=%',counts_after,actual_covered_before;
 END $bb$;
 COMMIT;
