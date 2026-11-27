@@ -139,6 +139,66 @@ SELECT encode(sha256(convert_to(jsonb_build_object(
     print('PASS_PG17_MISSING_TTL_FAILS_CLOSED')
     sql("""INSERT INTO public.lf_global_config(scope,config_key,config_value,value_type,value_status,valid_from)
 VALUES('SALY_DISCOVERY','SUNAT_CLOSE_TTL_SECONDS_V1','45','INTEGER','REAL',now());""")
+    # Reproduce the production INSERT/UPDATE policy snapshot interaction, not
+    # a mock rejection. Use the exact deployed source, with disposable catalog
+    # rows only. The unchanged candidate has no policy bindings.
+    from test_sunat_close_pg17 import ROOT
+    attach_source=(ROOT/"supabase/migrations/20260905013230_lf_policy_transversal_inheritance_rootfix_v1.sql").read_text()
+    attach_start=attach_source.index("create or replace function public.lf_attach_operation_policy_snapshot_v1()")
+    attach_end=attach_source.index("$;",attach_start)+3
+    guard_source=(ROOT/"supabase/migrations/20261116030000_lf_abandon_guard_and_apply_v1.sql").read_text()
+    guard_start=guard_source.index("CREATE OR REPLACE FUNCTION public.lf_operation_policy_snapshot_guard_v1()")
+    guard_end=guard_source.index("$g$;",guard_source.index("AS $g$",guard_start))+4
+    sql("""
+ALTER TABLE public.lf_operation_execution ADD COLUMN target_type text;
+ALTER TABLE public.lf_operation_execution ADD COLUMN target_code text;
+ALTER TABLE public.lf_operation_execution ADD COLUMN started_at timestamptz DEFAULT now();
+UPDATE public.lf_operation_execution SET target_type='DISCOVERY_SOURCE',
+ target_code='PE-SUNAT-RUC' WHERE execution_id='EXEC-SALY-SUNAT-COMMERCIAL-20261123-001';
+CREATE TABLE public.lf_operation_registry(operation_code text PRIMARY KEY,status text,
+ lifecycle_state_code text,created_at timestamptz,updated_at timestamptz);
+INSERT INTO public.lf_operation_registry VALUES
+ ('INGESTA_EMPRESARIAL_SALY','SANDBOX_ACTIVE','OP_CANDIDATE',now()-interval '3 days',now()-interval '3 days');
+CREATE TABLE public.lf_operation_policy_bindings(operation_code text);
+CREATE TABLE public.lf_router_action_registry(operation_code text);
+CREATE TABLE public.lf_policy_versions(policy_code text,policy_version text,policy_sha text,
+ effective_at timestamptz,superseded_at timestamptz);
+CREATE VIEW public.v_lf_operation_policy_snapshot AS
+ SELECT operation_code,NULL::text policy_role,false required,NULL::text policy_code,
+ NULL::text policy_version,NULL::text policy_sha,NULL::timestamptz effective_at,
+ NULL::timestamptz binding_updated_at,NULL::jsonb policy_payload,
+ NULL::text[] distribution_modes,NULL::text source_ref
+ FROM public.lf_operation_policy_bindings;
+""")
+    sql(attach_source[attach_start:attach_end])
+    sql(guard_source[guard_start:guard_end])
+    sql("""
+CREATE TRIGGER trg_00_lf_operation_policy_snapshot_v1 BEFORE INSERT ON public.lf_operation_execution
+ FOR EACH ROW EXECUTE FUNCTION public.lf_attach_operation_policy_snapshot_v1();
+CREATE TRIGGER trg_01_lf_operation_policy_snapshot_guard_v1 BEFORE UPDATE OF status,manifest
+ ON public.lf_operation_execution FOR EACH ROW EXECUTE FUNCTION public.lf_operation_policy_snapshot_guard_v1();
+INSERT INTO public.lf_operation_execution(execution_id,operation_code,status,manifest)
+ VALUES('synthetic-zero-policy-insert','INGESTA_EMPRESARIAL_SALY','IN_PROGRESS','{}');
+""")
+    assert sql("SELECT (manifest ? 'operation_policy_snapshots')::text FROM public.lf_operation_execution WHERE execution_id='synthetic-zero-policy-insert'")=="false"
+    sql(call,False,"BLOCK_OPERATION_POLICY_MISSING execution="+COMMERCIAL+" operation=INGESTA_EMPRESARIAL_SALY")
+    assert sql("SELECT status||':'||lease_fence FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS:2"
+    migrations=list((ROOT/"supabase/migrations").glob("*_lf_saly_sunat_commercial_terminal_close_v1.sql"))
+    assert len(migrations)==1,migrations
+    source=migrations[0].read_text()
+    repair=source.split("-- BEGIN EXACT ZERO-EXPECTED-POLICY RECONCILIATION (also exercised by PG17).",1)[1].split("-- END EXACT ZERO-EXPECTED-POLICY RECONCILIATION.",1)[0]
+    repair_sql=("DO $fixture$ DECLARE v_run_ref text:='"+COMMERCIAL+"'; "
+       "v_train_id text:='synthetic-train'; v_digest text:='"+digest+"'; "
+       "v_exec public.lf_operation_execution%ROWTYPE; v_run saly.ventas_discovery_runs%ROWTYPE; "
+       "BEGIN SELECT * INTO STRICT v_run FROM saly.ventas_discovery_runs WHERE run_ref=v_run_ref; "
+       +repair+" END $fixture$;")
+    sql("INSERT INTO public.lf_operation_policy_bindings VALUES('INGESTA_EMPRESARIAL_SALY')")
+    sql(repair_sql,False,"SUNAT_TERMINAL_POLICY_RECONCILIATION_PRESTATE")
+    sql("DELETE FROM public.lf_operation_policy_bindings")
+    sql(repair_sql)
+    assert sql("SELECT (manifest->'operation_policy_snapshots'='{}'::jsonb AND manifest->'operation_policy_snapshot_reconciliation'->>'mode'='EXPLICIT_ZERO_EXPECTED_POLICY_SET' AND NOT (manifest ? 'operation_policy_snapshot_at'))::text FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="true"
+    assert sql("SELECT status||':'||lease_fence FROM public.lf_operation_execution WHERE execution_id='"+COMMERCIAL+"'")=="IN_PROGRESS:2"
+    print('PASS_PG17_EXACT_POLICY_GUARD_NEGATIVE_ZERO_POLICY_RECONCILIATION_POSITIVE')
     sql(call.replace(digest,'0'*64),False,"SUNAT_CLOSE_EVIDENCE_HASH_MISMATCH")
     print('PASS_PG17_BAD_DIGEST_FAILS_CLOSED')
     # Coverage must be total, not merely "zero ineligible": missing classifications
