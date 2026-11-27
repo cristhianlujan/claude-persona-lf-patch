@@ -1,4 +1,4 @@
--- S22-BC: Claude approved exact mapping; draft PG17 rollback only.
+-- S22-BC: Claude V3 approved exact mapping and PG17 rollback proof.
 BEGIN;
 CREATE TEMP TABLE s22bc_mapping(codigo text PRIMARY KEY,capa text CHECK(capa IN ('BACKEND','FRONTEND','AMBOS'))) ON COMMIT DROP;
 INSERT INTO s22bc_mapping VALUES
@@ -194,10 +194,8 @@ BEGIN
  IF cov_before<>cov_after THEN RAISE EXCEPTION 'S22BC_COVERAGE_DRIFT'; END IF;
  IF jsonb_array_length(lf_ops.lf_nucleo_lectura_transicion_v1(36,'INPUT_GOVERNANCE','DIRECTAS')->'nativas') IS DISTINCT FROM 0 THEN RAISE EXCEPTION 'S22BC_DPIG03'; END IF;
  RAISE NOTICE 'S22BC_PROOF PG=% before=% after=% updated=138 null=17 coverage_before=% coverage_after=% digest_before=% digest_after=% SALY_UNCHANGED J2_CONJUNTO_5/5 PUENTE_8/8 PUENTE2_6/6 suite=% mapping=%',current_setting('server_version_num'),before_counts,after_counts,cov_before,cov_after,digest_before,digest_after,suite,changed;
+ IF (SELECT count(*) FROM jsonb_object_keys(changed))<>138 OR changed IS DISTINCT FROM expected THEN RAISE EXCEPTION 'S22BC_FINAL_UPDATED_SET_DRIFT'; END IF;
+ IF (SELECT jsonb_build_object('BACKEND',count(*) FILTER(WHERE capa_ejecucion='BACKEND'),'FRONTEND',count(*) FILTER(WHERE capa_ejecucion='FRONTEND'),'AMBOS',count(*) FILTER(WHERE capa_ejecucion='AMBOS'),'NULL',count(*) FILTER(WHERE capa_ejecucion IS NULL)) FROM lf_ops.nucleo_reglas) IS DISTINCT FROM after_counts THEN RAISE EXCEPTION 'S22BC_FINAL_COUNTS_DRIFT'; END IF;
+ RAISE NOTICE 'S22BC_FINAL_PASS counts=% updated=% coverage=%',after_counts,(SELECT count(*) FROM jsonb_object_keys(changed)),cov_after;
 END $bc$;
-ROLLBACK;
-DO $rollback$
-BEGIN
- IF (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE capa_ejecucion IS NULL)<>155 OR to_regclass('pg_temp.s22bc_mapping') IS NOT NULL THEN RAISE EXCEPTION 'S22BC_ROLLBACK_RESIDUE'; END IF;
- RAISE EXCEPTION 'S22BC_HASH_ALL ROLLBACK_OK; see S22BC_PROOF';
-END $rollback$;
+COMMIT;
