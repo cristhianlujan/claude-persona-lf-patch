@@ -1,4 +1,4 @@
--- S22-BB draft only: exact PG17 trial with real ROLLBACK; not mergeable.
+-- S22-BB: approved PG17 trial, persist execution-layer metadata.
 -- Owner 2026-11-26 23:29 Lima. No changes to legacy, versions, tests, coverage or applications.
 -- NULL means pending explicit semantic review, not a fourth layer. No default for future writers.
 BEGIN;
@@ -94,11 +94,11 @@ BEGIN
  IF snapshot_digest_before IS DISTINCT FROM snapshot_digest_after THEN RAISE EXCEPTION 'S22BB_CLOSED_HASH_DRIFT'; END IF;
  IF jsonb_array_length(lf_ops.lf_nucleo_lectura_transicion_v1(36,'INPUT_GOVERNANCE','DIRECTAS')->'nativas') IS DISTINCT FROM 0 THEN RAISE EXCEPTION 'S22BB_DPIG03_FAIL'; END IF;
  RAISE NOTICE 'S22BB_PROOF PG=% before=% after=% coverage_before=% coverage_after=% closed_snapshot_keys=% live_expected_digest=% before_digest=% after_digest=% all_hashes=% invalid_rejected=%',current_setting('server_version_num'),counts_before,counts_after,actual_covered_before,actual_covered_after,snapshot_keys,expected_live_digest,snapshot_digest_before,snapshot_digest_after,pre->>'hashes',invalid_rejected;
+ -- Final exact catalog verification inside the same transaction; no fixed production coverage count.
+ IF counts_after IS DISTINCT FROM jsonb_build_object('BACKEND',189,'FRONTEND',351,'AMBOS',22,'PENDIENTE',155) THEN RAISE EXCEPTION 'S22BB_APPROVED_COUNTS_DRIFT %',counts_after; END IF;
+ IF (SELECT count(DISTINCT legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA') IS DISTINCT FROM actual_covered_before THEN RAISE EXCEPTION 'S22BB_FINAL_COVERAGE_DRIFT'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='lf_ops' AND table_name='nucleo_reglas' AND column_name='capa_ejecucion' AND data_type='text' AND is_nullable='YES') THEN RAISE EXCEPTION 'S22BB_COLUMN_MISSING'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='lf_ops.nucleo_reglas'::regclass AND conname='nucleo_reglas_capa_ejecucion_valida' AND contype='c' AND convalidated AND pg_get_constraintdef(oid)='CHECK ((capa_ejecucion = ANY (ARRAY[''BACKEND''::text, ''FRONTEND''::text, ''AMBOS''::text])))') THEN RAISE EXCEPTION 'S22BB_CHECK_DRIFT'; END IF;
+ RAISE NOTICE 'S22BB_FINAL_PASS counts=% coverage=%',counts_after,actual_covered_before;
 END $bb$;
-ROLLBACK;
--- First push only: proof that top-level rollback removed the column, then print evidence via deliberate failure.
-DO $bb_rollback$
-BEGIN
- IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='lf_ops' AND table_name='nucleo_reglas' AND column_name='capa_ejecucion') THEN RAISE EXCEPTION 'S22BB_ROLLBACK_RESIDUE'; END IF;
- RAISE EXCEPTION 'S22BB_HASH_ALL ROLLBACK_OK; see S22BB_PROOF for actual counts and before/after digests';
-END $bb_rollback$;
+COMMIT;
