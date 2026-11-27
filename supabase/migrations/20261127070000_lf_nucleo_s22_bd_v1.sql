@@ -1,4 +1,4 @@
--- S22-BD: owner-approved internal controls; exact 17 BACKEND assignments; PG17 rollback only.
+-- S22-BD: owner-approved internal controls; exact 17 BACKEND assignments; V3 PG17 proof approved.
 BEGIN;
 CREATE TEMP TABLE s22bd_mapping(codigo text PRIMARY KEY,capa text CHECK(capa IN ('BACKEND','FRONTEND','AMBOS'))) ON COMMIT DROP;
 INSERT INTO s22bd_mapping VALUES
@@ -60,9 +60,4 @@ BEGIN
  IF (SELECT jsonb_build_object('BACKEND',count(*) FILTER(WHERE capa_ejecucion='BACKEND'),'FRONTEND',count(*) FILTER(WHERE capa_ejecucion='FRONTEND'),'AMBOS',count(*) FILTER(WHERE capa_ejecucion='AMBOS'),'NULL',count(*) FILTER(WHERE capa_ejecucion IS NULL)) FROM lf_ops.nucleo_reglas) IS DISTINCT FROM after_counts THEN RAISE EXCEPTION 'S22BD_FINAL_COUNTS_DRIFT'; END IF;
  RAISE NOTICE 'S22BD_FINAL_PASS counts=% updated=% coverage=%',after_counts,(SELECT count(*) FROM jsonb_object_keys(changed)),cov_after;
 END $bd$;
-ROLLBACK;
-DO $rollback$
-BEGIN
- IF (SELECT count(*) FROM lf_ops.nucleo_reglas WHERE capa_ejecucion IS NULL)<>17 OR to_regclass('pg_temp.s22bd_mapping') IS NOT NULL THEN RAISE EXCEPTION 'S22BD_ROLLBACK_RESIDUE'; END IF;
- RAISE EXCEPTION 'S22BD_HASH_ALL ROLLBACK_OK; see S22BD_PROOF';
-END $rollback$;
+COMMIT;
