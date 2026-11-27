@@ -9,6 +9,9 @@ DECLARE
  snapshot_keys integer; snapshot_digest_before text; snapshot_digest_after text;
  expected_live_digest text := 'db997259b10fa213ec0fe31337f1fb84ba06b693e7add33b68f097148dcf0e5f';
  test_rule text; invalid_rejected boolean:=false;
+ both_codes text[] := ARRAY['REG_CHK_005','S11-C10','S22AQ-371-1','S22AQ-371-2','S22AQ-521-1','S22AU-246-1','S22AU-246-2','S22AU-248-1','S22AU-248-2','S22AU-273-1','S22AU-325-1','S22AU-326-1','S22AV-315-1','S22AX-158-1','S22AX-158-2','S22AX-258-1','S22AX-258-2','S22F-C04','S22N-C03','S4-C25','S6-C13','S6-C17']::text[];
+ compat_before jsonb; compat_after jsonb; effective_before jsonb; effective_after jsonb;
+ test_result text; actual_both text[];
 BEGIN
  SELECT jsonb_build_object(
  'rules',(SELECT encode(sha256(convert_to(coalesce(jsonb_agg(to_jsonb(x) ORDER BY codigo)::text,'[]'),'UTF8')),'hex') FROM lf_ops.nucleo_reglas x),
@@ -24,11 +27,14 @@ BEGIN
  SELECT v.regla,v.version,v.hash,lf_ops.nucleo_hash_paquete_v1(v.regla,v.version) package_hash
  FROM keys k JOIN lf_ops.nucleo_regla_versiones v USING(regla,version))
  SELECT count(*),encode(sha256(convert_to(coalesce(jsonb_agg(to_jsonb(h) ORDER BY regla,version)::text,'[]'),'UTF8')),'hex') INTO snapshot_keys,snapshot_digest_before FROM h;
+ IF snapshot_keys<>520 OR snapshot_digest_before IS DISTINCT FROM expected_live_digest THEN RAISE EXCEPTION 'S22BB_LIVE_SNAPSHOT_MISMATCH keys=% actual=% expected=%',snapshot_keys,snapshot_digest_before,expected_live_digest; END IF;
+ SELECT jsonb_agg(to_jsonb(v) ORDER BY codigo) INTO compat_before FROM lf_ops.v_reglas_compat_v1 v;
+ SELECT jsonb_agg(to_jsonb(e) ORDER BY n.codigo,e.regla,e.version,e.nodo_origen) INTO effective_before FROM lf_ops.nucleo_nodos n CROSS JOIN LATERAL lf_ops.nucleo_reglas_efectivas_v1(n.codigo) e;
  SELECT jsonb_build_object('BACKEND',0,'FRONTEND',0,'AMBOS',0,'PENDIENTE',count(*)) INTO counts_before FROM lf_ops.nucleo_reglas;
  WITH a AS (SELECT r.codigo, count(a.nodo)>0 AND bool_and(a.nodo='BACKEND') b,
  count(a.nodo)>0 AND bool_and(left(a.nodo,7)='CLIENT_' OR left(a.nodo,8)='PANTALLA') f
  FROM lf_ops.nucleo_reglas r LEFT JOIN lf_ops.nucleo_aplicaciones a ON a.regla=r.codigo GROUP BY r.codigo)
- SELECT jsonb_build_object('BACKEND',count(*) FILTER(WHERE b),'FRONTEND',count(*) FILTER(WHERE f),'AMBOS',0,'PENDIENTE',count(*) FILTER(WHERE NOT coalesce(b,false) AND NOT coalesce(f,false))) INTO expected_counts FROM a;
+ SELECT jsonb_build_object('BACKEND',count(*) FILTER(WHERE b AND NOT codigo=ANY(both_codes)),'FRONTEND',count(*) FILTER(WHERE f AND NOT codigo=ANY(both_codes)),'AMBOS',count(*) FILTER(WHERE codigo=ANY(both_codes)),'PENDIENTE',count(*) FILTER(WHERE NOT coalesce(b,false) AND NOT coalesce(f,false) AND NOT codigo=ANY(both_codes))) INTO expected_counts FROM a;
  ALTER TABLE lf_ops.nucleo_reglas ADD COLUMN capa_ejecucion text;
  ALTER TABLE lf_ops.nucleo_reglas ADD CONSTRAINT nucleo_reglas_capa_ejecucion_valida CHECK(capa_ejecucion IN ('BACKEND','FRONTEND','AMBOS'));
  COMMENT ON COLUMN lf_ops.nucleo_reglas.capa_ejecucion IS 'Capa de ejecución independiente del nodo de aplicación. NULL = pendiente de revisión semántica, no valor de dominio. B2B, GLOBAL, CLIENTE y mezclas no inferidas. Decisión dueño 2026-11-26 23:29 Lima.';
@@ -36,10 +42,26 @@ BEGIN
  count(a.nodo)>0 AND bool_and(left(a.nodo,7)='CLIENT_' OR left(a.nodo,8)='PANTALLA') f
  FROM lf_ops.nucleo_reglas r LEFT JOIN lf_ops.nucleo_aplicaciones a ON a.regla=r.codigo GROUP BY r.codigo)
  UPDATE lf_ops.nucleo_reglas r SET capa_ejecucion=CASE WHEN a.b THEN 'BACKEND' WHEN a.f THEN 'FRONTEND' END FROM a WHERE r.codigo=a.codigo AND (a.b OR a.f);
+ -- Exact owner-approved exception set; explicit codes also work in isolated replay with synthetic legacy rows.
+ UPDATE lf_ops.nucleo_reglas SET capa_ejecucion='AMBOS' WHERE codigo=ANY(both_codes);
+ SELECT array_agg(codigo ORDER BY codigo) INTO actual_both FROM lf_ops.nucleo_reglas WHERE capa_ejecucion='AMBOS';
+ IF actual_both IS DISTINCT FROM both_codes THEN RAISE EXCEPTION 'S22BB_AMBOS_SET_DRIFT %',actual_both; END IF;
+ IF (SELECT count(DISTINCT legacy_id) FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA')=517 THEN
+ IF (SELECT array_agg(DISTINCT nucleo_codigo ORDER BY nucleo_codigo) FROM lf_ops.lf_nucleo_cobertura_legada WHERE legacy_id IN (158,246,247,248,253,258,273,315,325,326,371,521)) IS DISTINCT FROM both_codes THEN RAISE EXCEPTION 'S22BB_AMBOS_SOURCE_DRIFT'; END IF;
+ END IF;
+ IF EXISTS(SELECT 1 FROM lf_ops.nucleo_reglas WHERE codigo IN ('S22AU-250-1','S22AU-250-2') AND capa_ejecucion IS DISTINCT FROM 'FRONTEND') THEN RAISE EXCEPTION 'S22BB_250_254_DRIFT'; END IF;
  SELECT jsonb_build_object('BACKEND',count(*) FILTER(WHERE capa_ejecucion='BACKEND'),'FRONTEND',count(*) FILTER(WHERE capa_ejecucion='FRONTEND'),'AMBOS',count(*) FILTER(WHERE capa_ejecucion='AMBOS'),'PENDIENTE',count(*) FILTER(WHERE capa_ejecucion IS NULL)) INTO counts_after FROM lf_ops.nucleo_reglas;
  IF counts_after IS DISTINCT FROM expected_counts THEN RAISE EXCEPTION 'S22BB_COUNT_DRIFT expected=% actual=%',expected_counts,counts_after; END IF;
  IF EXISTS(SELECT 1 FROM lf_ops.nucleo_reglas r JOIN lf_ops.nucleo_aplicaciones a ON a.regla=r.codigo WHERE (a.nodo='B2B' OR left(a.nodo,4)='B2B_' OR a.nodo IN ('GLOBAL','CLIENTE')) AND r.capa_ejecucion IS NOT NULL) THEN RAISE EXCEPTION 'S22BB_AMBIGUOUS_ASSUMED'; END IF;
  IF EXISTS(SELECT 1 FROM lf_ops.nucleo_reglas r WHERE r.capa_ejecucion IS NOT NULL AND NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_aplicaciones a WHERE a.regla=r.codigo)) THEN RAISE EXCEPTION 'S22BB_NO_APP_ASSUMED'; END IF;
+ SELECT jsonb_agg(to_jsonb(v) ORDER BY codigo) INTO compat_after FROM lf_ops.v_reglas_compat_v1 v;
+ SELECT jsonb_agg(to_jsonb(e) ORDER BY n.codigo,e.regla,e.version,e.nodo_origen) INTO effective_after FROM lf_ops.nucleo_nodos n CROSS JOIN LATERAL lf_ops.nucleo_reglas_efectivas_v1(n.codigo) e;
+ IF compat_before IS DISTINCT FROM compat_after OR effective_before IS DISTINCT FROM effective_after THEN RAISE EXCEPTION 'S22BB_READ_CONTRACT_DRIFT'; END IF;
+ test_result:=lf_ops.nucleo_autotest_puerta_v1(); IF test_result IS DISTINCT FROM 'PUERTA 26/26' THEN RAISE EXCEPTION 'S22BB_PUERTA %',test_result; END IF;
+ test_result:=lf_ops.nucleo_autotest_evaluacion_v1(); IF test_result IS DISTINCT FROM 'EVALUACION 23/23' THEN RAISE EXCEPTION 'S22BB_EVALUACION %',test_result; END IF;
+ test_result:=lf_ops.nucleo_autotest_cambio_v1(); IF test_result IS DISTINCT FROM 'CAMBIO 16/16' THEN RAISE EXCEPTION 'S22BB_CAMBIO %',test_result; END IF;
+ test_result:=lf_ops.lf_puente_autotest_v1(); IF test_result IS DISTINCT FROM 'PUENTE 8/8' THEN RAISE EXCEPTION 'S22BB_PUENTE %',test_result; END IF;
+ RAISE NOTICE 'S22BB_COMPAT_PASS puerta26 evaluacion23 cambio16 puente8; effective and compatibility view unchanged';
  SELECT min(codigo) INTO test_rule FROM lf_ops.nucleo_reglas;
  -- Positive AMBOS and invalid fourth value are exercised without changing final classifications.
  BEGIN
