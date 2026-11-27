@@ -13,7 +13,7 @@ BEGIN
  'literal_request',replace(o.scope_json->>'literal_request','marcadores literales S/ [CUOTA], por [N] meses, total S/ [TOTAL]; no inventar cifras','cifras de muestra autorizadas: S/ 189.00, por 12 meses, total S/ 2,268.00; no añadir otras cifras; no son datos de cliente'),
  'owner_amendment',jsonb_build_object('at','2026-11-26T23:45:00-05:00','text','Los montos deben ser reales no texto','illustrative',true))
  WHERE id=23 AND project_id=3 RETURNING * INTO o;
- UPDATE saly.creative_order_items SET acceptance_json=jsonb_set(acceptance_json,'{qa_checklist}',(acceptance_json->'qa_checklist'-'placeholders_exact')||jsonb_build_object('authorized_sample_amounts_exact',true)),
+ UPDATE saly.creative_order_items SET acceptance_json=jsonb_set(acceptance_json,'{qa_checklist}',((acceptance_json->'qa_checklist')-'placeholders_exact')||jsonb_build_object('authorized_sample_amounts_exact',true)),
  context_json=context_json||jsonb_build_object('authorized_sample_amounts',jsonb_build_object('monthly','S/ 189.00','term','por 12 meses','total','S/ 2,268.00','illustrative',true),'owner_amendment_at','2026-11-26T23:45:00-05:00')
  WHERE id=27 AND order_id=23 RETURNING * INTO i;
  IF (o.scope_json->>'literal_request') ~ '[\[\]]' OR 189*12<>2268 THEN RAISE EXCEPTION 'LF_SAMPLE_AMOUNT_DRIFT'; END IF;
