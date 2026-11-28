@@ -650,6 +650,12 @@ jobs:
           export PGDATABASE=lf_item27_semqa_test
           bash supabase/tests/saly_creative_item27_semantic_qa_v1_pg17.sh
 
+      - name: LF F3-A prompt compile 10/10
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash supabase/tests/saly_creative_lf_f3a_prompt_compile_v1_pg17.sh
+
   f1-candidate-presence:
     runs-on: ubuntu-latest
     outputs:
