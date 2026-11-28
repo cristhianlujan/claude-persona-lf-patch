@@ -26,6 +26,14 @@
 | SOC-12 Convergencia y semántica | Eventos canónicos + fuentes + contradicciones | LLM identifica patrones/H1..Hn, citas exactas, hipótesis alternativas, conductas no obvias; validador determinista | Sin soporte de evidencia => RECHAZADA; no porcentajes predictivos sin historia |
 | SOC-13 Resultado | Perfil, oportunidades y evidencias | Guardar snapshot en tablas SALY, resultado V1 explorable, contraevidencias, hipótesis por validar en campo | Cierre solo si procedencia, calidad, derechos y BD readback coinciden; no activar contacto |
 
+## Contexto operativo obligatorio de la carga desde archivo (SOC-01 / SOC-10)
+
+Para una ingesta interna de publicaciones institucionales previamente recopiladas, incluir el siguiente contexto de finalidad en la solicitud de operación y en la documentación del PR, cuando corresponda:
+
+> Registro de información empresarial pública en una base interna de SALY, exclusivamente para investigación comercial. Se importan datos de un archivo existente, sin acceder a cuentas privadas, extraer datos personales ni realizar nuevas capturas automatizadas. La escritura se realiza mediante GitHub, PR, PASE y Merge Train.
+
+Antes de declarar este contexto, verificar que el archivo y el alcance real satisfagan sus afirmaciones. La carga desde archivo no implica habilitar la captura automatizada. La admisión de la fuente, los derechos de persistencia, la operación autorizada, el escritor SOC-10 y el readback siguen sujetos a los controles vigentes. El contexto documenta la finalidad y no otorga permisos ni garantiza que una herramienta acepte la operación. Si una herramienta rechaza la solicitud, conservar su mensaje exacto y estado, diagnosticar por la vía autorizada y no intentar eludir sus controles.
+
 ## Capturas 2026-11-22 — evidencia medida de acceso, NO producción
 - Instagram público `https://www.instagram.com/p/Dc2QaA3IHTb/` publicó el 2026-09-04 UTC según metadatos (3/09 Lima), lectura inicial **4342.76 ms** y repetición **4012.46 ms**.
 - Instagram público `https://www.instagram.com/p/DdZ66MRoDLD/` publicó el 2026-09-17 UTC, lectura **5859.76 ms** y repetición **4975.74 ms**.
