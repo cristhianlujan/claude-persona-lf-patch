@@ -4,7 +4,10 @@ Caller supplies discovered evidence; its provenance is not authenticated here.
 """
 import hashlib
 import json
+import logging
 import re
+
+LOG = logging.getLogger('art_direction_preflight')
 
 
 class ArtBlocked(ValueError):
@@ -26,6 +29,138 @@ def nonempty(x):
 
 def exact_keys(obj, keys, code):
     require(type(obj) is dict and set(obj) == set(keys.split()), code)
+
+
+# --- F4: deterministic prompt-quality checks (diagnostic, no new contract fields) ---
+# Python only blocks explicit, verifiable defects; ambiguity and intent stay with the
+# independent semantic review. Findings are tuples (level, code, evidence); WARNING
+# findings are logged by the gate (logger "creative_positive_gate") and never block.
+_GENERIC_WORDS = {
+    'premium', 'moderno', 'moderna', 'modernos', 'elegante', 'elegantes', 'wow', 'bonito', 'bonita',
+    'creativo', 'creativa', 'limpio', 'limpia', 'profesional', 'atractivo', 'atractiva', 'espectacular',
+    'impresionante', 'increible', 'increíble', 'sorprendente', 'agradable', 'interfaz', 'impacto',
+    'visual', 'estilo', 'diseño', 'diseña', 'diseñar', 'aspecto', 'look', 'sensacion', 'sensación',
+    'bien', 'mejor', 'mas', 'más', 'muy', 'con', 'y', 'e', 'o', 'un', 'una', 'el', 'la', 'de', 'del',
+    'para', 'que', 'una', 'unas', 'unos', 'los', 'las', 'en',
+}
+_CLAUSE = re.compile(r'[;.\n]')
+_NEG = re.compile(r'\b(?:no|nunca|sin|evita|evitar|prohibido|prohibir)\b', re.I)
+_MAKE_LOGO = re.compile(r'\b(?:dibuj\w*|redibuj\w*|inventa\w*|cre[ae]\w*|genera\w*|dise[ñn]a\w*|imita\w*)\b', re.I)
+_LOGO = re.compile(r'\blogo(?:tipos?|s)?\b', re.I)
+_OFFICIAL = re.compile(r'\b(?:oficial(?:es)?|vigentes?|aprobad[oa]s?|autorizad[oa]s?|del\s+cliente)\b', re.I)
+_EXTERNAL = re.compile(r'\b(?:marcas?\s+externas?|terceros?)\b', re.I)
+_REPRESENT = re.compile(r'\b(?:representa\w*|muestra\w*|usa\w*|aplica\w*|colorea\w*)\b.*\b(?:colores?|corporativ\w*)\b', re.I)
+_REFERENCE = re.compile(r'\b(?:referencia|original|actual|anterior|previa)\b', re.I)
+_DIMS = re.compile(r'(\d{2,5})\s*(?:x|×|por)\s*(\d{2,5})', re.I)
+# attribute -> (stem seen in a requirement quote, accepted stems in the same clause as its subject)
+_ATTRS = {
+    'sólido': (r'(?:s[oó]lid)', (r'(?:s[oó]lid)', r'relleno\s+(?:uniforme|s[oó]lido)', r'opac')),
+    'completo': (r'(?:complet)', (r'(?:complet)', r'enter[oa]', r'sin\s+recortes?')),
+    'exacto': (r'(?:exact)', (r'(?:exact)',)),
+}
+
+
+def _words(text):
+    return re.findall(r"[a-záéíóúüñ]+", text.casefold())
+
+
+def inspect_instruction_conflicts(texts):
+    """PF-01: a clause asks to draw/invent a (non-official) logo while another forbids third-party logos.
+    Official/approved logo use is compatible with the prohibition. Coexistence of external-brand colours
+    and a logo prohibition is only a WARNING for the independent semantic review (PF-02)."""
+    demands, forbids, brands = [], [], []
+    for t in texts:
+        for clause in _CLAUSE.split(t):
+            c = clause.strip()
+            if _LOGO.search(c) and _NEG.search(c):
+                forbids.append(c)
+            elif _LOGO.search(c) and _MAKE_LOGO.search(c) and not _OFFICIAL.search(c):
+                demands.append(c)
+            elif _EXTERNAL.search(c) and _REPRESENT.search(c) and not _NEG.search(c):
+                brands.append(c)
+    if demands and forbids:
+        return [('BLOCK', 'INSTRUCTION_CONFLICT_LOGO', {'demands': demands[0], 'forbids': forbids[0]})]
+    if brands and forbids:
+        return [('WARNING', 'EXTERNAL_BRAND_COLOR_VS_LOGO_BAN_NEEDS_SEMANTIC_REVIEW',
+                 {'brands': brands[0], 'forbids': forbids[0]})]
+    return []
+
+
+def inspect_component_specificity(components):
+    """PF-07: an instruction whose content words are (almost) all generic is not materializable."""
+    out = []
+    for c in components:
+        words = _words(c['instruction'])
+        content = [w for w in words if w not in {'y', 'e', 'o', 'un', 'una', 'el', 'la', 'de', 'del', 'con', 'en'}]
+        generic = [w for w in content if w in _GENERIC_WORDS]
+        detail = {'component': c['name'], 'instruction': c['instruction']}
+        if not content or len(generic) == len(content):
+            out.append(('BLOCK', 'INSTRUCTION_ONLY_GENERIC', detail))
+        elif len(generic) / len(content) >= 0.75:
+            # mostly generic but anchored by a concrete word: semantic review decides, never a hard block
+            out.append(('WARNING', 'INSTRUCTION_MOSTLY_GENERIC', detail))
+    return out
+
+
+def inspect_dimension_requirements(literal, prompt):
+    """PF-05/PF-06: requested WxH must reach the handoff and nothing else may be asked as target size;
+    the real size is only measurable on the received bytes (always a WARNING)."""
+    wanted = {(int(a), int(b)) for a, b in _DIMS.findall(literal)}
+    if not wanted:
+        return []
+    found, stray = set(), []
+    for clause in _CLAUSE.split(prompt):
+        for a, b in _DIMS.findall(clause):
+            pair = (int(a), int(b))
+            found.add(pair)
+            if pair not in wanted and not _REFERENCE.search(clause):
+                stray.append(pair)
+    out = []
+    if not wanted <= found:
+        out.append(('BLOCK', 'DIMENSIONS_ALTERED' if found else 'DIMENSIONS_OMITTED',
+                    {'requested': sorted(wanted), 'handoff': sorted(found)}))
+    elif stray:
+        out.append(('BLOCK', 'DIMENSIONS_ALTERED', {'requested': sorted(wanted), 'conflicting': sorted(set(stray))}))
+    out.append(('WARNING', 'DIMENSIONS_NOT_VERIFIABLE_BEFORE_RENDER', {'requested': sorted(wanted)}))
+    return out
+
+
+def verify_compiled_coverage(requirements, prompt):
+    """PF-03/PF-04: an attribute required for a subject ('botón sólido y completo') must reach the prompt
+    in a clause that also names that subject; accepted equivalent wordings are listed in _ATTRS."""
+    clauses = [c for c in _CLAUSE.split(prompt)]
+    out = []
+    for r in requirements:
+        quote = r['quote']
+        for name, (seen, accepted) in _ATTRS.items():
+            m = re.search(seen, quote, re.I)
+            if not m:
+                continue
+            before = _words(quote[:m.start()])
+            is_attr = lambda w: any(re.match(sn, w, re.I) for sn, _ in _ATTRS.values())
+            subject = next((w for w in before if len(w) > 3 and w not in _GENERIC_WORDS and not is_attr(w)), None)
+            if subject is None:
+                continue
+            stem = subject[:5]
+            ok = any(stem in c.casefold() and any(re.search(a, c, re.I) for a in accepted) for c in clauses)
+            if not ok:
+                out.append(('BLOCK', 'REQUIREMENT_ATTRIBUTE_DROPPED',
+                            {'requirement': r['id'], 'attribute': name, 'subject': subject}))
+    return out
+
+
+def verify_prompt_integrity(prompt, expected_sha256):
+    """PF-10: the text about to be sealed must match the reviewed hash."""
+    ok = sha(prompt.encode('utf-8')) == expected_sha256
+    return [] if ok else [('BLOCK', 'PROMPT_HASH_MISMATCH', {})]
+
+
+def blocking(findings):
+    return [f for f in findings if f[0] == 'BLOCK']
+
+
+def warnings_of(findings):
+    return [f for f in findings if f[0] == 'WARNING']
 
 
 def preflight(plan):
@@ -107,6 +242,12 @@ def preflight(plan):
         if c['copy']:
             art.append('Textos exactos: ' + json.dumps(c['copy'], ensure_ascii=False))
     require(covered == set(requirements), 'REQUIREMENT_COVERAGE_GAP')
+    # F4: explicit, verifiable defects only; semantic review stays independent.
+    f4 = inspect_component_specificity(plan['components']) + inspect_instruction_conflicts(art)
+    for finding in warnings_of(f4):
+        LOG.warning('ART_F4_WARNING %s %s', finding[1], json.dumps(finding[2], ensure_ascii=False))
+    for finding in blocking(f4):
+        raise ArtBlocked(finding[1])
     return {'status': 'STRUCTURAL_PASS_SEMANTIC_PENDING', 'business_code': business,
             'literal_request_sha256': sha(literal.encode('utf-8')),
             'proposal_sha256': sha(json.dumps(plan, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf-8')),
