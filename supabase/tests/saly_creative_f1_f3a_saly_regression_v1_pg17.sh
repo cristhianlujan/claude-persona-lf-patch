@@ -13,8 +13,9 @@ F3S=("$ROOT"/supabase/migrations/*_lf_saly_creative_lf_f3a_prompt_compile_v1.sql
 [[ "${#F1S[@]}" -eq 1 && "${#F3S[@]}" -eq 1 ]] || { echo SALY_REG_CANDIDATE_FILES_INVALID; exit 4; }
 F1="${F1S[0]}"
 F3="${F3S[0]}"
+TOKENS="$ROOT/sandbox/creative_factory/f1_pg17/fixtures/saly_real_tokens_55_v1.sql"
 FIXTURE="$ROOT/sandbox/creative_factory/f1_pg17/fixtures/saly_real_regression_v1.sql"
-[[ -f "$FIXTURE" ]] || { echo SALY_REG_FIXTURE_MISSING; exit 5; }
+[[ -f "$TOKENS" && -f "$FIXTURE" ]] || { echo SALY_REG_FIXTURE_MISSING; exit 5; }
 
 export PGDATABASE=lf_creative_f1_ci
 F1_CANDIDATE="$F1" F1_CANDIDATE_SHA256="$(sha256sum "$F1" | awk '{print $1}')" \
@@ -30,6 +31,8 @@ grep -q 'LF_F3A_COMPILER_MIGRATION|PASS' /tmp/saly_reg_f3a.log || { cat /tmp/sal
 
 LANES=(lf_creative_f1_baseline lf_creative_f1_candidate lf_creative_saly_f3a)
 for db in "${LANES[@]}"; do
+  PGDATABASE="$db" psql -X -v ON_ERROR_STOP=1 -f "$TOKENS" >"/tmp/saly_reg_tokens_${db}.log" 2>&1 || { cat "/tmp/saly_reg_tokens_${db}.log"; exit 8; }
+  grep -q 'SALY_REAL_TOKEN_SNAPSHOT|PASS|versions=55' "/tmp/saly_reg_tokens_${db}.log" || { cat "/tmp/saly_reg_tokens_${db}.log"; exit 8; }
   PGDATABASE="$db" psql -X -v ON_ERROR_STOP=1 -f "$FIXTURE" >"/tmp/saly_reg_fixture_${db}.log" 2>&1 || {
     cat "/tmp/saly_reg_fixture_${db}.log"; exit 8;
   }
