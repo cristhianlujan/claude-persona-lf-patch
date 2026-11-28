@@ -2,6 +2,9 @@ name: SALY Creative Order PG17 (isolated)
 on:
   pull_request:
     paths:
+      - 'supabase/migrations/*_lf_saly_creative_*.sql'
+      - 'supabase/migrations/*_lf_saly_creative_f1_enablement_v1.sql'
+      - 'sandbox/creative_factory/f1_pg17/**'
       - 'supabase/migrations/*_lf_saly_creative_tu_oferta_intake_v1.sql'
       - 'supabase/tests/saly_creative_tu_oferta_intake_v1_pg17_rollback.sql'
       - 'supabase/migrations/*_lf_saly_creative_lf_adapter_v1.sql'
@@ -630,3 +633,62 @@ jobs:
           test "${#files[@]}" -eq 1
           sed '/^BEGIN;$/d; /^COMMIT;$/d' "${files[0]}" > /tmp/lf_offer_intake_body.sql
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/saly_creative_tu_oferta_intake_v1_pg17_rollback.sql
+
+  f1-candidate-presence:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.candidate.outputs.present }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_f1_enablement_v1.sql)
+          if (( ${#files[@]} == 0 )); then
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo 'F1_MATRIX_NOT_RUN: candidate migration absent'
+          elif (( ${#files[@]} == 1 )); then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'F1_MATRIX_MULTIPLE_CANDIDATES'
+            exit 1
+          fi
+
+  pg17-f1-integrated:
+    name: LF F1 PG17 integrated T01-T15
+    needs: f1-candidate-presence
+    if: needs.f1-candidate-presence.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: lf_creative_f1_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lf_creative_f1_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGDATABASE: lf_creative_f1_ci
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute F1 matrix only when candidate exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*_lf_saly_creative_f1_enablement_v1.sql)
+          if (( ${#files[@]} == 0 )); then
+            echo 'F1_MATRIX_CANDIDATE_MISSING_AFTER_ADMISSION'
+            exit 1
+          fi
+          test "${#files[@]}" -eq 1
+          python3 sandbox/creative_factory/f1_pg17/run_matrix.py "${files[0]}"

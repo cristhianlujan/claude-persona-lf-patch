@@ -1,0 +1,2 @@
+# F1 PG17 matrix runner — explicit incomplete coverage
+The 16 shell entrypoints are fail-closed placeholders, NOT completed behavioral tests. Every Txx reports NOT_PROVEN and exits 1 until the integrated catalog and actual assertions are implemented. T09 and T14 reference historical sources only; no PASS is inferred. Candidate absence is NOT_RUN, not a functional success. With a candidate, runner attempts every case and fails if any is not proven. Existing historical reduced fixtures cannot certify integrated F1. No production credentials or writes.
