@@ -33,6 +33,7 @@
     "sandbox/creative_factory/f1_pg17/run_matrix.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/f1_pg17/setup.sh": "RUNTIME_TESTING",
     "supabase/migrations/20261128120000_lf_saly_creative_f1_enablement_v1.sql": "MIGRATION",
-    "sandbox/lf_contract_gate_test/changesets/saly-lf-f1-enablement-pr2-20261128.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/saly-lf-f1-enablement-pr2-20261128.json": "CHANGESET_MANIFEST",
+    "sandbox/creative_factory/f1_pg17/baseline/09_unique_indexes.sql": "RUNTIME_TESTING"
   }
 }
