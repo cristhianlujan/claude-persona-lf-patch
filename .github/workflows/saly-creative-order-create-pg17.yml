@@ -692,3 +692,39 @@ jobs:
           fi
           test "${#files[@]}" -eq 1
           python3 sandbox/creative_factory/f1_pg17/run_matrix.py "${files[0]}"
+
+
+  f1-independent-guards-host:
+    name: F1 independent guards + F3 host harness
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: lf_creative_f1_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lf_creative_f1_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGDATABASE: lf_creative_f1_ci
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: T09 delivery guard fail closed
+        run: bash sandbox/creative_factory/f1_pg17/T09.sh
+      - name: T14 historical order22 exception
+        run: bash sandbox/creative_factory/f1_pg17/T14.sh
+      - name: T15 two-session serialization
+        run: bash sandbox/creative_factory/f1_pg17/T15.sh
+      - name: HOST01 HOST02 local integrity harness
+        working-directory: sandbox/creative_factory/f3_host
+        run: python3 test_host_integrity_v1.py
+      - name: AUTH-EXEC01 CI provenance probe
+        working-directory: sandbox/creative_factory/f3_host
+        run: python3 auth_exec01_probe_v1.py
