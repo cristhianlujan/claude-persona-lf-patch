@@ -38,7 +38,7 @@ VALUES
  'Se asumió que evidencia histórica era siempre no nula antes de concatenar.',
  'EKB_NULL_TEXT_CONCAT',
  'Antes de anexar texto a campos EKB nullable usar coalesce(evidencia,'''') || texto y hacer readback del marcador exacto dentro de la misma transacción.',
- 'PR #4850 primer Train run 46151830451 fallo con SALY_F1_WORKFLOW_EKB_READBACK_MISSING; read-only confirmó PE10_C6_UNAUTHORIZED_GITHUB_WORKFLOW_ENTRYPOINT_V1 con evidencia=NULL. El Train reportó APPLIED=false.',
+ 'PR #4850: run 46151830451 fallo con SALY_F1_WORKFLOW_EKB_READBACK_MISSING; read-only confirmó PE10_C6_UNAUTHORIZED_GITHUB_WORKFLOW_ENTRYPOINT_V1 con evidencia=NULL y APPLIED=false. Run 46152059045 detectó que el QA buscaba ese marcador en evidencia aunque estaba registrado en validacion; el readback debe consultar el campo exacto donde se persiste la evidencia.',
  'HIGH',
  1,
  'SALY_CREATIVE_F1_20261128',
@@ -85,7 +85,7 @@ BEGIN
     FROM public.lf_error_knowledge
     WHERE codigo='SALY-F1-EKB-NULL-EVIDENCE-APPEND-20261128-001'
       AND prevencion LIKE '%coalesce(evidencia%'
-      AND evidencia LIKE '%APPLIED=false%'
+      AND validacion LIKE '%APPLIED=false%'
   ) THEN
     RAISE EXCEPTION 'SALY_F1_EKB_NULL_APPEND_LEARNING_MISSING';
   END IF;
