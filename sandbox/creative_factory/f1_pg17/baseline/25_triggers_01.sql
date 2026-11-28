@@ -1,0 +1,28 @@
+\set ON_ERROR_STOP on
+CREATE TRIGGER trg_guard_component_token_bindings_v1 BEFORE INSERT OR UPDATE OF token_bindings, status ON lf_design.component_tokens FOR EACH ROW EXECUTE FUNCTION lf_design.guard_component_token_bindings_v1();
+CREATE TRIGGER trg_lf_decisiones_gov_timestamp BEFORE UPDATE ON lf_decisiones_gov FOR EACH ROW EXECUTE FUNCTION fn_update_lf_decisiones_gov_timestamp();
+CREATE TRIGGER trg_creative_context_set_guard_l2a BEFORE INSERT OR DELETE OR UPDATE ON saly.creative_context_sets FOR EACH ROW EXECUTE FUNCTION saly.creative_context_set_guard_l2a();
+CREATE TRIGGER trg_creative_context_token_guard_l2a BEFORE INSERT OR DELETE OR UPDATE ON saly.creative_context_tokens FOR EACH ROW EXECUTE FUNCTION saly.creative_context_token_guard_l2a();
+CREATE TRIGGER trg_creative_dependency_delete_guard_l1 BEFORE DELETE ON saly.creative_item_dependencies FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_creative_dependency_guard_l1 BEFORE INSERT OR UPDATE ON saly.creative_item_dependencies FOR EACH ROW EXECUTE FUNCTION saly.creative_dependency_guard_l1();
+CREATE TRIGGER trg_creative_item_source_guard_l2a BEFORE INSERT OR DELETE OR UPDATE ON saly.creative_item_sources FOR EACH ROW EXECUTE FUNCTION saly.creative_item_source_guard_l2a();
+CREATE TRIGGER creative_capture_immutable_v1 BEFORE DELETE OR UPDATE ON saly.creative_native_capture_evidence_v1 FOR EACH ROW EXECUTE FUNCTION saly.creative_capture_immutable_guard_v1();
+CREATE TRIGGER trg_creative_00_single_screen_item_guard_v1 BEFORE INSERT OR UPDATE ON saly.creative_order_items FOR EACH ROW EXECUTE FUNCTION saly.creative_single_screen_item_guard_v1();
+CREATE TRIGGER trg_creative_item_delete_guard_l1 BEFORE DELETE ON saly.creative_order_items FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_creative_item_guard_l1 BEFORE INSERT OR UPDATE ON saly.creative_order_items FOR EACH ROW EXECUTE FUNCTION saly.creative_item_guard_l1();
+CREATE TRIGGER trg_saly_creative_chat_terminal_item_guard_v1 BEFORE DELETE OR UPDATE ON saly.creative_order_items FOR EACH ROW EXECUTE FUNCTION saly.creative_chat_terminal_item_guard_v1();
+CREATE TRIGGER trg_creative_order_sequence_guard_v1 BEFORE INSERT OR DELETE OR UPDATE ON saly.creative_order_sequence_v1 FOR EACH ROW EXECUTE FUNCTION saly.creative_order_sequence_guard_v1();
+CREATE TRIGGER trg_creative_00_intake_semantic_gate_v1 BEFORE INSERT OR UPDATE OF status, scope_json ON saly.creative_orders FOR EACH ROW EXECUTE FUNCTION saly.creative_intake_semantic_gate_v1();
+CREATE TRIGGER trg_creative_00_order_sequence_start_guard_v1 BEFORE UPDATE OF status ON saly.creative_orders FOR EACH ROW EXECUTE FUNCTION saly.creative_order_sequence_start_guard_v1();
+CREATE TRIGGER trg_creative_order_close_guard_l1 BEFORE INSERT OR UPDATE ON saly.creative_orders FOR EACH ROW EXECUTE FUNCTION saly.creative_order_close_guard_l1();
+CREATE TRIGGER trg_creative_order_context_guard_l2a BEFORE INSERT OR UPDATE ON saly.creative_orders FOR EACH ROW EXECUTE FUNCTION saly.creative_order_context_guard_l2a();
+CREATE TRIGGER trg_creative_order_delete_guard_l1 BEFORE DELETE ON saly.creative_orders FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_saly_creative_chat_terminal_order_guard_v1 BEFORE DELETE OR UPDATE ON saly.creative_orders FOR EACH ROW EXECUTE FUNCTION saly.creative_chat_terminal_order_guard_v1();
+CREATE TRIGGER trg_creative_queue_native_dispatch_reservation_immutable_v1 BEFORE DELETE OR UPDATE ON saly.creative_queue_native_dispatch_reservations_v1 FOR EACH ROW EXECUTE FUNCTION saly.creative_queue_native_dispatch_reservation_immutable_v1();
+CREATE TRIGGER trg_creative_00_run_sequence_start_guard_v1 BEFORE INSERT OR UPDATE OF state ON saly.creative_runs FOR EACH ROW EXECUTE FUNCTION saly.creative_order_sequence_start_guard_v1();
+CREATE TRIGGER trg_creative_queue_run_binding_guard_v1 BEFORE INSERT OR UPDATE ON saly.creative_runs FOR EACH ROW EXECUTE FUNCTION saly.creative_queue_run_binding_guard_v1();
+CREATE TRIGGER trg_creative_run_delete_guard_l1 BEFORE DELETE ON saly.creative_runs FOR EACH ROW EXECUTE FUNCTION saly.creative_delete_guard_l1();
+CREATE TRIGGER trg_creative_run_guard_l1 BEFORE INSERT OR UPDATE ON saly.creative_runs FOR EACH ROW EXECUTE FUNCTION saly.creative_run_guard_l1();
+CREATE TRIGGER trg_visual_source_assets_append_only_v1 BEFORE DELETE OR UPDATE ON visual.source_assets FOR EACH ROW EXECUTE FUNCTION visual.guard_append_only_v1();
+CREATE TRIGGER trg_visual_standard_versions_guard_v1 BEFORE DELETE OR UPDATE ON visual.standard_versions FOR EACH ROW EXECUTE FUNCTION visual.guard_standard_version_history_v1();
+CREATE TRIGGER trg_visual_standards_append_only_v1 BEFORE DELETE OR UPDATE ON visual.standards FOR EACH ROW EXECUTE FUNCTION visual.guard_append_only_v1();
