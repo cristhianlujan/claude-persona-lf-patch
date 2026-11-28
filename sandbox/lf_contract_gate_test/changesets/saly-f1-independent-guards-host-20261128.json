@@ -1,0 +1,15 @@
+{
+  "solution_ref": "saly-f1-independent-guards-host-20261128",
+  "paths": {
+    ".github/workflows/saly-creative-order-create-pg17.yml": "CI_WORKFLOW",
+    "sandbox/creative_factory/f1_pg17/T09.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T14.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T15.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/README.md": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f3_host/host_integrity_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f3_host/test_host_integrity_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f3_host/auth_exec01_probe_v1.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f3_host/README.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-f1-independent-guards-host-20261128.json": "CHANGESET_MANIFEST"
+  }
+}
