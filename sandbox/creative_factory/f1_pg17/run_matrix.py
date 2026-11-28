@@ -44,13 +44,25 @@ def main():
     env = dict(os.environ, F1_CANDIDATE=str(candidate), F1_CANDIDATE_SHA256=hashlib.sha256(candidate.read_bytes()).hexdigest())
     subprocess.run(["bash", str(setup)], check=True, env=env)
     failed = []
+    seen_pass = []
+    forbidden = []
     for case, path in cases:
         result = subprocess.run(["bash", str(path)], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         print(result.stdout, end="")
-        if result.returncode or result.stdout.splitlines().count(case + "|PASS") != 1:
+        lines = result.stdout.splitlines()
+        count = lines.count(case + "|PASS")
+        if count == 1:
+            seen_pass.append(case)
+        if any(("NOT_PROVEN" in line or "SKIPPED" in line) for line in lines):
+            forbidden.append(case)
+        if result.returncode or count != 1:
             failed.append(case)
+    if forbidden:
+        raise SystemExit("F1_MATRIX_FORBIDDEN_PLACEHOLDER:" + ",".join(forbidden))
     if failed:
         raise SystemExit("F1_MATRIX_CASE_FAILED:" + ",".join(failed))
+    if seen_pass != list(CASES) or len(seen_pass) != 15:
+        raise SystemExit("F1_MATRIX_PASS_CARDINALITY_INVALID")
     print("F1_MATRIX_15_15_PASS")
 
 if __name__ == "__main__":
