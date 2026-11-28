@@ -27,6 +27,32 @@ VALUES
 )
 ON CONFLICT (codigo) DO NOTHING;
 
+INSERT INTO transversal.error_knowledge
+(codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,frecuencia,lote_origen,estado,evidencia,lifecycle_phase,consumer_role,root_cause_family,detectability,source_context,source_ref)
+VALUES
+(
+ 'SALY-F1-EKB-NULL-EVIDENCE-APPEND-20261128-001',
+ 'GOVERNANCE',
+ 'Append de evidencia EKB con columna NULL puede aparentar actualización sin persistir texto',
+ 'Concatenar evidencia || texto conserva NULL cuando la evidencia previa es NULL; el UPDATE puede afectar la fila pero el readback textual sigue ausente.',
+ 'Se asumió que evidencia histórica era siempre no nula antes de concatenar.',
+ 'EKB_NULL_TEXT_CONCAT',
+ 'Antes de anexar texto a campos EKB nullable usar coalesce(evidencia,'''') || texto y hacer readback del marcador exacto dentro de la misma transacción.',
+ 'PR #4850 primer Train run 46151830451 fallo con SALY_F1_WORKFLOW_EKB_READBACK_MISSING; read-only confirmó PE10_C6_UNAUTHORIZED_GITHUB_WORKFLOW_ENTRYPOINT_V1 con evidencia=NULL. El Train reportó APPLIED=false.',
+ 'HIGH',
+ 1,
+ 'SALY_CREATIVE_F1_20261128',
+ 'ACTIVO',
+ 'Run 46151830451: EXACT_APPLY_FALLBACK_FAILED y rollback; causa confirmada por read-only de public.lf_error_knowledge.',
+ 'DESIGN',
+ ARRAY['CLAUDE_NATIVE','PROGRAMADOR'],
+ 'R2_NO_VE',
+ 'PROCESS_DEPENDENT',
+ 'SALY Fabrica Digital F1',
+ 'https://github.com/cristhianlujan/claude-persona-lf-patch/pull/4850'
+)
+ON CONFLICT (codigo) DO NOTHING;
+
 UPDATE transversal.error_knowledge
 SET evidencia = coalesce(evidencia,'') || E'\n[2026-11-28 SALY F1 PR4847] Un workflow pull_request dedicado no registrado hizo fallar PASE con ordinary pull_request workflows differ: unlisted=saly-creative-item27-semantic-qa-pg17.yml. Se retiro y la prueba PG17 se integro al carrier canónico saly-creative-order-create-pg17.yml; PASE y PG17 quedaron SUCCESS en HEAD 3585885c1af5323ac9d0e1267563e64f51cb16bb.',
     frecuencia = frecuencia + 1
@@ -52,6 +78,16 @@ BEGIN
       AND evidencia LIKE '%2026-11-28 SALY F1 PR4847%'
   ) THEN
     RAISE EXCEPTION 'SALY_F1_WORKFLOW_EKB_READBACK_MISSING';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.lf_error_knowledge
+    WHERE codigo='SALY-F1-EKB-NULL-EVIDENCE-APPEND-20261128-001'
+      AND prevencion LIKE '%coalesce(evidencia%'
+      AND evidencia LIKE '%APPLIED=false%'
+  ) THEN
+    RAISE EXCEPTION 'SALY_F1_EKB_NULL_APPEND_LEARNING_MISSING';
   END IF;
 END
 $qa$;
