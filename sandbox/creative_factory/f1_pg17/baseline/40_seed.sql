@@ -31,6 +31,7 @@ INSERT INTO saly.creative_orders(id,project_id,code,request_key,title,request_ki
 OVERRIDING SYSTEM VALUE VALUES
 (25,3,'LF_F1_CI_ORDER','lf-f1-ci-order-25','LF F1 CI synthetic','APP_SCREEN_SINGLE','EXPLORE','CI_F1',
  jsonb_build_object('queue_mode','SERIAL_V1','review_only',false,'render_authorized',true,'rendering_authority',true,
+                    'literal_request','CI LF F1 synthetic request',
                     'original_literal_request','CI LF F1 synthetic request'),
  '{}'::jsonb,'PLANIFICADO',9001);
 
@@ -78,7 +79,8 @@ UPDATE saly.creative_context_sets SET state='SEALED' WHERE id=9100;
 INSERT INTO saly.creative_orders(id,project_id,code,request_key,title,request_kind,design_mode,requested_by,scope_json,identity_snapshot,status,context_set_id)
 OVERRIDING SYSTEM VALUE VALUES
 (9100,2,'SALY_F1_CI_ORDER','saly-f1-ci-order','SALY F1 CI control','APP_SCREEN_SINGLE','EXPLORE','CI_F1',
- jsonb_build_object('queue_mode','SERIAL_V1','review_only',false,'render_authorized',true,'rendering_authority',true),
+ jsonb_build_object('queue_mode','SERIAL_V1','review_only',false,'render_authorized',true,'rendering_authority',true,
+                    'literal_request','CI SALY F1 synthetic request'),
  '{}'::jsonb,'PLANIFICADO',9100);
 
 WITH base AS (
