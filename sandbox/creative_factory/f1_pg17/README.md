@@ -1,2 +1,4 @@
-# F1 PG17 matrix runner — explicit incomplete coverage
-The 16 shell entrypoints are fail-closed placeholders, NOT completed behavioral tests. Every Txx reports NOT_PROVEN and exits 1 until the integrated catalog and actual assertions are implemented. T09 and T14 reference historical sources only; no PASS is inferred. Candidate absence is NOT_RUN, not a functional success. With a candidate, runner attempts every case and fails if any is not proven. Existing historical reduced fixtures cannot certify integrated F1. No production credentials or writes.
+# F1 PG17 matrix runner — explicit coverage state
+T07 and T08 are functional fail-closed cases: T07 compares SALY blueprint + legacy behavior before/after the exact F1 candidate using L2A/L2C/L3B hashes; T08 hashes every pre-existing saly.creative_* historical table before/after the exact candidate. Both execute inside rollback and print exactly T07|PASS / T08|PASS only on proven equality. They require an integrated historical catalog in the disposable PG17 database; absence is a hard failure, never PASS.
+
+T01–T06 and T09–T15 remain NOT_PROVEN placeholders until their integrated fixtures/assertions are implemented. Candidate absence is NOT_RUN, not a functional success. With a candidate, run_matrix.py attempts every case and fails if any case is not proven. No production credentials or writes.
