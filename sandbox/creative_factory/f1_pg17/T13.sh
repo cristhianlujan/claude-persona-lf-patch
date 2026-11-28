@@ -25,7 +25,7 @@ BEGIN
  VALUES('CREATIVE_FACTORY_LF','EXECUTION_WINDOW_SECONDS','60','INTEGER','REAL','T13 later config',clock_timestamp());
  SELECT (execution_policy->>'EXECUTION_WINDOW_SECONDS')::int INTO win FROM saly.creative_runs WHERE id=rid;
  IF win<>86400 THEN RAISE EXCEPTION 'T13_STORED_POLICY_CHANGED:%',win; END IF;
- UPDATE saly.creative_queue_claims_v1 SET lease_until=clock_timestamp()-interval '1 second' WHERE claim_token=tok;
+ UPDATE saly.creative_queue_claims_v1 SET claimed_at=clock_timestamp()-interval '2 days', lease_until=clock_timestamp()-interval '1 second' WHERE claim_token=tok;
  PERFORM set_config('saly.creative_queue_token',tok::text,true);
  BEGIN
   UPDATE saly.creative_runs SET state='EXITOSO',output_evidence=jsonb_build_object('artifact_ref','CI','sha256',repeat('a',64)) WHERE id=rid;
