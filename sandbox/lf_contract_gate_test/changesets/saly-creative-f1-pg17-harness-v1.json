@@ -1,0 +1,8 @@
+{
+  "solution_ref": "saly-creative-f1-pg17-harness-v1",
+  "paths": {
+    "sandbox/creative_factory/f1_pg17/run_matrix.py": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/README.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-f1-pg17-harness-v1.json": "CHANGESET_MANIFEST"
+  }
+}
