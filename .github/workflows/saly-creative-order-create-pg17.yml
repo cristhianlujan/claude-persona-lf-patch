@@ -5,6 +5,7 @@ on:
       - 'supabase/migrations/*_lf_saly_creative_*.sql'
       - 'supabase/migrations/*_lf_saly_creative_f1_enablement_v1.sql'
       - 'sandbox/creative_factory/f1_pg17/**'
+      - 'supabase/tests/saly_creative_f1_f3a_saly_regression_v1_pg17.sh'
       - 'supabase/tests/saly_creative_item27_semantic_qa_v1_*'
       - 'supabase/migrations/*_lf_saly_creative_tu_oferta_intake_v1.sql'
       - 'supabase/tests/saly_creative_tu_oferta_intake_v1_pg17_rollback.sql'
@@ -714,6 +715,10 @@ jobs:
           fi
           test "${#files[@]}" -eq 1
           python3 sandbox/creative_factory/f1_pg17/run_matrix.py "${files[0]}"
+
+      - name: SALY real regression R1-R5 after F1 plus F3-A
+        shell: bash
+        run: bash supabase/tests/saly_creative_f1_f3a_saly_regression_v1_pg17.sh
 
 
   f1-independent-guards-host:

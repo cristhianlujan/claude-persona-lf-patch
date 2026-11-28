@@ -1,0 +1,11 @@
+{
+  "solution_ref": "saly-creative-f1-f3a-real-regression-v1",
+  "paths": {
+    "sandbox/creative_factory/f1_pg17/fixtures/saly_real_regression_v1.sql": "RUNTIME_TESTING",
+    "supabase/tests/saly_creative_f1_f3a_saly_regression_v1_pg17.sh": "RUNTIME_TESTING",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-f1-f3a-real-regression-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/creative_factory/f1_pg17/fixtures/saly_real_tokens_55_v1.sql": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/baseline/30_acl.sql": "RUNTIME_TESTING"
+  }
+}

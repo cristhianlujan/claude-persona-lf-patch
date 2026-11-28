@@ -31,6 +31,7 @@ REVOKE ALL ON FUNCTION "saly"."creative_k_record_once_v2"(p_item_id bigint, p_ob
 GRANT EXECUTE ON FUNCTION "saly"."creative_k_record_once_v2"(p_item_id bigint, p_object_kind text, p_object_sha256 text, p_module_code text, p_decision text, p_step text, p_evidence jsonb, p_output jsonb) TO "service_role";
 REVOKE ALL ON FUNCTION "saly"."creative_native_canonical_wire_v1"(p_item_id bigint) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION "saly"."creative_native_canonical_wire_v1"(p_item_id bigint) TO "service_role";
+REVOKE ALL ON FUNCTION "saly"."creative_native_render_wire_v1"(uuid,bigint,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION "saly"."creative_order_dispatch_plan_l2c"(p_order_id bigint) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION "saly"."creative_order_dispatch_plan_l2c"(p_order_id bigint) TO "service_role";
 REVOKE ALL ON FUNCTION "saly"."creative_order_live_summary_l3b"(p_order_id bigint) FROM PUBLIC, anon, authenticated, service_role;
