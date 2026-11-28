@@ -3,6 +3,22 @@
   "paths": {
     "sandbox/creative_factory/f1_pg17/run_matrix.py": "RUNTIME_TESTING",
     "sandbox/creative_factory/f1_pg17/README.md": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/saly-creative-f1-pg17-harness-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/saly-creative-f1-pg17-harness-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/creative_factory/f1_pg17/setup.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T01.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T02.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T03.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T04.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T05.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T06.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T07.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T08.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T09.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T10.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T11.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T12.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T13.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T14.sh": "RUNTIME_TESTING",
+    "sandbox/creative_factory/f1_pg17/T15.sh": "RUNTIME_TESTING"
   }
 }

@@ -43,11 +43,14 @@ def main():
         raise SystemExit("F1_MATRIX_BLOCKED_MISSING_REAL_CASES: " + ",".join(missing))
     env = dict(os.environ, F1_CANDIDATE=str(candidate), F1_CANDIDATE_SHA256=hashlib.sha256(candidate.read_bytes()).hexdigest())
     subprocess.run(["bash", str(setup)], check=True, env=env)
+    failed = []
     for case, path in cases:
         result = subprocess.run(["bash", str(path)], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         print(result.stdout, end="")
         if result.returncode or result.stdout.splitlines().count(case + "|PASS") != 1:
-            raise SystemExit("F1_MATRIX_CASE_FAILED:" + case)
+            failed.append(case)
+    if failed:
+        raise SystemExit("F1_MATRIX_CASE_FAILED:" + ",".join(failed))
     print("F1_MATRIX_15_15_PASS")
 
 if __name__ == "__main__":
