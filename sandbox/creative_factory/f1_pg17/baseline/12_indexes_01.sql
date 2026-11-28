@@ -1,21 +1,8 @@
 \set ON_ERROR_STOP on
-CREATE UNIQUE INDEX ux_brand_asset_alias ON lf_design.brand_assets USING btree (asset_code);
-CREATE UNIQUE INDEX ux_color_token_alias ON lf_design.color_tokens USING btree (token_name);
-CREATE UNIQUE INDEX ux_component_token_alias ON lf_design.component_tokens USING btree (component_token_code);
-CREATE UNIQUE INDEX ux_design_system_alias ON lf_design.design_systems USING btree (design_system_code);
-CREATE UNIQUE INDEX ux_spacing_token_alias ON lf_design.spacing_tokens USING btree (token_name);
-CREATE UNIQUE INDEX ux_theme_binding_alias ON lf_design.theme_bindings USING btree (theme_binding_code);
-CREATE UNIQUE INDEX ux_typography_token_alias ON lf_design.typography_tokens USING btree (token_name);
-CREATE UNIQUE INDEX ux_lf_decisiones_gov_alias ON public.lf_decisiones_gov USING btree (id_decision);
 CREATE INDEX brand_assets_lookup_idx ON saly.brand_assets USING btree (project_id, code, valid_from DESC) WHERE (approval_status = 'APPROVED'::text);
 CREATE INDEX creative_deps_ready_idx ON saly.creative_item_dependencies USING btree (order_id, item_id);
 CREATE INDEX creative_items_queue_idx ON saly.creative_order_items USING btree (order_id, status, ordinal);
 CREATE INDEX creative_orders_queue_idx ON saly.creative_orders USING btree (project_id, status, created_at);
 CREATE INDEX creative_queue_item_history_v1 ON saly.creative_queue_claims_v1 USING btree (item_id, id DESC);
-CREATE UNIQUE INDEX creative_queue_one_active_v1 ON saly.creative_queue_claims_v1 USING btree (order_id) WHERE (state = 'ACTIVE'::text);
 CREATE INDEX creative_runs_expiry_idx ON saly.creative_runs USING btree (deadline_at, id) WHERE (state = ANY (ARRAY['EN_COLA'::text, 'EJECUTANDO'::text]));
-CREATE UNIQUE INDEX creative_runs_one_active_per_item ON saly.creative_runs USING btree (item_id) WHERE (state = ANY (ARRAY['EN_COLA'::text, 'EJECUTANDO'::text]));
-CREATE UNIQUE INDEX creative_runs_one_active_per_order_v1 ON saly.creative_runs USING btree (order_id) WHERE (state = ANY (ARRAY['EN_COLA'::text, 'EJECUTANDO'::text]));
-CREATE UNIQUE INDEX creative_runs_one_per_claim_v1 ON saly.creative_runs USING btree (queue_claim_id) WHERE (queue_claim_id IS NOT NULL);
 CREATE INDEX identity_versions_lookup_idx ON saly.identity_versions USING btree (element_id, channel_code, audience_code, valid_from DESC) WHERE (approval_status = 'APPROVED'::text);
-CREATE UNIQUE INDEX identity_versions_open_approved_uk ON saly.identity_versions USING btree (element_id, channel_code, audience_code) WHERE ((approval_status = 'APPROVED'::text) AND (valid_to IS NULL));
