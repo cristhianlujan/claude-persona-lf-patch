@@ -28,6 +28,90 @@ def exact_keys(obj, keys, code):
     require(type(obj) is dict and set(obj) == set(keys.split()), code)
 
 
+# --- F4: deterministic prompt-quality checks (diagnostic, no new contract fields) ---
+# Python only blocks explicit, verifiable defects; ambiguity and intent stay with
+# the independent semantic review. Findings are plain tuples (level, code, evidence).
+_GENERIC_WORDS = {
+    'premium', 'moderno', 'moderna', 'elegante', 'wow', 'bonito', 'bonita', 'creativo',
+    'creativa', 'limpio', 'limpia', 'profesional', 'atractivo', 'atractiva', 'mas', 'más',
+    'muy', 'y', 'e', 'o', 'un', 'una', 'el', 'la', 'de', 'con', 'estilo', 'diseño',
+    'aspecto', 'look', 'sensacion', 'sensación', 'agradable', 'bien', 'mejor',
+}
+_CLAUSE = re.compile(r'[;.\n]')
+_NEG = re.compile(r'\b(?:no|nunca|sin|evita|evitar|prohibido|prohibir)\b', re.I)
+_DRAW = re.compile(r'\b(?:dibuj\w*|inventa\w*|cre[ae]\w*|genera\w*|dise[ñn]a\w*|inclu[iy]\w*|'
+                   r'agrega\w*|a[ñn]ade\w*|coloca\w*|usa\w*|muestra\w*)\b', re.I)
+_LOGO = re.compile(r'\blogo(?:tipos?|s)?\b', re.I)
+_TEXT_ONLY = re.compile(r'\b(?:como\s+texto|solo\s+texto|en\s+texto|texto\s+plano)\b', re.I)
+_DIMS = re.compile(r'(\d{2,5})\s*(?:x|×|por)\s*(\d{2,5})', re.I)
+_ATTRS = ('sólido', 'solido', 'completo', 'completa', 'exacto', 'exactos', 'exacta', 'exactas')
+
+
+def _words(text):
+    return re.findall(r"[a-záéíóúüñ]+", text.casefold())
+
+
+def inspect_instruction_conflicts(texts):
+    """PF-01: one text demands drawing logos while another forbids third-party logos."""
+    demands, forbids = [], []
+    for t in texts:
+        for clause in _CLAUSE.split(t):
+            if not _LOGO.search(clause):
+                continue
+            if _NEG.search(clause):
+                forbids.append(clause.strip())
+            elif _DRAW.search(clause) and not _TEXT_ONLY.search(clause):
+                demands.append(clause.strip())
+    if demands and forbids:
+        return [('BLOCK', 'INSTRUCTION_CONFLICT_LOGO', {'demands': demands[0], 'forbids': forbids[0]})]
+    return []
+
+
+def inspect_component_specificity(components):
+    """PF-07: an instruction made only of generic words is not materializable."""
+    out = []
+    for c in components:
+        words = _words(c['instruction'])
+        if not words or all(w in _GENERIC_WORDS for w in words):
+            out.append(('BLOCK', 'INSTRUCTION_ONLY_GENERIC', {'component': c['name'], 'instruction': c['instruction']}))
+    return out
+
+
+def inspect_dimension_requirements(literal, prompt):
+    """PF-05/PF-06: requested WxH must reach the handoff unchanged; actual size is only measurable on bytes."""
+    wanted = {(int(a), int(b)) for a, b in _DIMS.findall(literal)}
+    if not wanted:
+        return []
+    found = {(int(a), int(b)) for a, b in _DIMS.findall(prompt)}
+    out = []
+    if not wanted <= found:
+        code = 'DIMENSIONS_ALTERED' if found else 'DIMENSIONS_OMITTED'
+        out.append(('BLOCK', code, {'requested': sorted(wanted), 'handoff': sorted(found)}))
+    out.append(('WARNING', 'DIMENSIONS_NOT_VERIFIABLE_BEFORE_RENDER', {'requested': sorted(wanted)}))
+    return out
+
+
+def verify_compiled_coverage(requirements, prompt):
+    """PF-03/PF-04: explicit attributes in a requirement quote must survive into the prompt."""
+    low = prompt.casefold()
+    out = []
+    for r in requirements:
+        for a in _ATTRS:
+            if a in r['quote'].casefold() and a not in low:
+                out.append(('BLOCK', 'REQUIREMENT_ATTRIBUTE_DROPPED', {'requirement': r['id'], 'attribute': a}))
+    return out
+
+
+def verify_prompt_integrity(prompt, expected_sha256):
+    """PF-10: the text about to be sealed must match the reviewed hash."""
+    ok = sha(prompt.encode('utf-8')) == expected_sha256
+    return [] if ok else [('BLOCK', 'PROMPT_HASH_MISMATCH', {})]
+
+
+def blocking(findings):
+    return [f for f in findings if f[0] == 'BLOCK']
+
+
 def preflight(plan):
     """Validate authored proposal against explicit evidence and blueprint hierarchy."""
     exact_keys(plan, 'business_code literal_request blueprint presentation direction components sources requirements', 'PLAN_FIELDS')
@@ -107,6 +191,10 @@ def preflight(plan):
         if c['copy']:
             art.append('Textos exactos: ' + json.dumps(c['copy'], ensure_ascii=False))
     require(covered == set(requirements), 'REQUIREMENT_COVERAGE_GAP')
+    # F4: explicit, verifiable defects only; semantic review stays independent.
+    for finding in blocking(inspect_component_specificity(plan['components'])
+                            + inspect_instruction_conflicts(art)):
+        raise ArtBlocked(finding[1])
     return {'status': 'STRUCTURAL_PASS_SEMANTIC_PENDING', 'business_code': business,
             'literal_request_sha256': sha(literal.encode('utf-8')),
             'proposal_sha256': sha(json.dumps(plan, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf-8')),

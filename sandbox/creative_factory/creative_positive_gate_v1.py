@@ -12,7 +12,8 @@ import json
 import re
 from typing import Any
 
-from art_direction_preflight_v1 import ArtBlocked, preflight
+from art_direction_preflight_v1 import (ArtBlocked, blocking, inspect_dimension_requirements,
+    inspect_instruction_conflicts, preflight, verify_compiled_coverage)
 
 SCHEMA = "SALY_CREATIVE_POSITIVE_PROCESS_V1"
 MODES = {"CORRECTION_STRICT", "EXPLORE_CREATIVE"}
@@ -259,6 +260,13 @@ def prepare_positive_review(plan: dict[str, Any],
           if components[row["component"]]["owner"] == "NATIVE"],
         NO_DECORATIVE_BURSTS,
     ])
+    # F4 (PF-01/03/04/05): explicit defects in the compiled handoff block before sealing.
+    for finding in blocking(inspect_instruction_conflicts([prompt])
+                            + inspect_dimension_requirements(frozen_plan["literal_request"], prompt)
+                            + verify_compiled_coverage(frozen_plan["requirements"], prompt)):
+        raise CreativeProcessBlocked("CREATIVE_F4_" + finding[1])
+    # PF-10 (verify_prompt_integrity) needs the sealing consumer to compare the bytes it will
+    # seal against prompt_sha256; hashing the same string here would prove nothing (F1 scope).
     return {
         "schema_version": SCHEMA,
         "status": "CREATIVE_REVIEW_PREPARED_SEMANTIC_QA_PENDING",

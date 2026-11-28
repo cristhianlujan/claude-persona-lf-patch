@@ -1042,10 +1042,33 @@ La orden del dueño prevalece sobre cualquier instrucción anterior de generaci�
 
 DO: reclamar uno; conservar token y lease; preparar AUTONOMOUS exclusivamente para ese pedido; cotejar literal, tokens ACTIVE y bytes del logo asset 9; admitir RUN antes de generar; producir UNA imagen; cotejar fidelidad y calidad; si falla corregir hasta dos veces dentro del límite de intentos vigente (si se agota, bloquear, no inventar PASS); registrar bytes/hash/dimensiones y evidencia real de entrega; detectar imagen con readback; persistir GPT_SELF_QA y checklist; pasar ítem a LISTO o EN_QA y luego TERMINADO; llamar creative_queue_release_v1 DONE, que termina el pedido en la misma transacción; confirmar readback TERMINADO y claim DONE. NEXT solo después del cierre comprobado. Repetir mientras exista pendiente. No simular transporte ni recibos. Si no hay acceso de escritura usar Merge Train gobernado y readback; no generar fuera de una reclamación persistida. Claude solo audita.
 
-### Calidad de diseño obligatoria
-Referencia BUENO: lámina del dueño LAMINA_SOLICITAR_ADELANTO_REF.webp: hero dominante, tarjetas semánticas con iconos, radios 16–20, sombras suaves y halos menta discretos, timeline conectado, CTA inferior. MALO: galería anterior plana, bloques de texto sin ancla y grandes zonas vacías. No copiar píxeles ni añadir texto. Hero: monto verde o icono protagonista; resumen: etiquetas pequeñas y cifras alineadas; timeline: nodos conectados y estado explícito; alerta: menta/ámbar/rojo según significado; formulario: selección con borde y check; CTA: ancho completo anclado abajo, o ninguno cuando la especificación no lo pide. Sin rayos decorativos.
+### Calidad de diseño obligatoria — piloto SALY 11–21
+Referencia BUENO para el contexto funcional de SALY: lámina del dueño LAMINA_SOLICITAR_ADELANTO_REF.webp: hero dominante, tarjetas semánticas con iconos, radios 16–20, sombras suaves y halos menta discretos, timeline conectado, CTA inferior. MALO: galería anterior plana, bloques de texto sin ancla y grandes zonas vacías. No copiar píxeles ni añadir texto. Hero: monto verde o icono protagonista; resumen: etiquetas pequeñas y cifras alineadas; timeline: nodos conectados y estado explícito; alerta: menta/ámbar/rojo según significado; formulario: selección con borde y check; CTA: ancho completo anclado abajo, o ninguno cuando la especificación no lo pide. Sin rayos decorativos.
+
+Esta referencia y los criterios de calidad del piloto SALY no constituyen una plantilla universal ni una autoridad visual para LF. Su alcance queda congelado para el piloto vigente, sin modificar sus criterios, contratos ni comportamiento operativo.
 
 GPT_SELF_QA registra design_qa_v1 con seis claves: visual_anchor, single_hero, semantic_active_colors_min_2, balanced_space, cta_anchored_or_not_applicable, max_3_accents. Cada clave tiene score 0 o 1 y evidence concreta; mínimo cinco puntos. Fidelidad y logo no son compensables. No más de dos iteraciones correctivas, respetando MAX_ATTEMPTS de la política vigente. Registrar fallos y no cerrar si no pasa.
 
-## Adaptador LF — descubrimiento de identidad (pendiente de integración de ejecución)
-Para negocio LF, proyecto LF, usar exclusivamente lf_design mediante saly.creative_lf_identity_packet_v1() por la ruta gobernada existente. Conservar código, ID, versión de sistema, valores, roles, usos permitidos/prohibidos y estados de origen. Solo VIGENTE; no promover candidatos. No usar los ejemplos de paleta, logo, marco ni CTA específicos de SALY. El paquete de identidad es descubrimiento, no permiso de render ni handoff. La misma dirección de arte genérica, comparación de composiciones, preflight, handoff y QA se aplican sin instrucciones visuales adicionales. Antes de ejecutar se requiere integrar este paquete con creative_skill_prepare_v1, contexto LF sellado y alta gobernada del pedido literal. No usar fixture como pedido existente. No emitir imagen mientras falte cualquiera de esos pasos.
+## Núcleo común — Dirección artística y preflight por negocio
+Reutilizar el método transversal v0.14 y v0.15: interpretar el pedido literal, resolver fuentes oficiales, comparar composiciones, seleccionar la dirección artística, compilar instrucciones renderizables y verificar fidelidad, coherencia y entrega.
+
+Las referencias visuales y criterios específicos de un negocio no se trasladan automáticamente a otro. Resolver identidad, composición, jerarquía, componentes y libertad creativa a partir del negocio, medio, pedido y fuentes vigentes.
+
+Antes del sellado, comprobar que el prompt compilado conserva las instrucciones obligatorias, no introduce decisiones sin sustento y no contiene contradicciones explícitas sin resolver. El preflight Python verifica condiciones deterministas; la revisión semántica independiente evalúa las ambigüedades y decisiones que requieren interpretación.
+
+La dimensión solicitada debe conservarse en el handoff. Cuando no pueda garantizarse anticipadamente la dimensión efectiva, registrar una advertencia; la comprobación definitiva corresponde a la medición de los bytes recibidos.
+
+No agregar campos de contrato ni incluir resultados internos de QA, hashes o alternativas descartadas dentro del prompt destinado al generador.
+
+## Adaptador LF — Identidad, dirección artística y QA
+Para negocio LF, proyecto LF, usar exclusivamente lf_design mediante saly.creative_lf_identity_packet_v1() por la ruta gobernada existente. Conservar código, ID, versión de sistema, valores, roles, usos permitidos/prohibidos y estados de origen. Solo VIGENTE; no promover candidatos.
+
+Aplicar el método creativo común sin importar paletas, logos, composiciones, criterios de puntuación ni referencias específicas de SALY.
+
+Para cada pedido autónomo LF, conservar el literal original y sus modificaciones auténticas. La interpretación y los criterios de aceptación se construyen separadamente del literal del usuario.
+
+Utilizar la estructura semántica existente con exactamente cinco checks y el contrato visual L3B con exactamente cinco qa_checks propios del pedido LF. Cada criterio conserva code, expected y severity dentro del contrato que corresponda. No copiar los criterios SALY ni convertir el checklist operativo completo en checks L3B.
+
+F3-A mide y registra resultados antes de calibrar los criterios de calidad visual. No establecer puntuaciones universales ni nuevos campos de contrato durante esta etapa.
+
+El paquete de identidad constituye descubrimiento, no permiso de render ni handoff. Antes de ejecutar se requiere integrar creative_skill_prepare_v1, el contexto LF sellado, el alta gobernada del pedido literal, la validación canónica L2C/L3B y el transporte verificable. No usar fixtures como pedidos existentes. No emitir imágenes mientras falte cualquiera de estos controles.
