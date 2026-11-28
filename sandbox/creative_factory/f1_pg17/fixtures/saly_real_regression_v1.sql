@@ -144,7 +144,9 @@ INSERT INTO saly.creative_order_items
 (id,order_id,code,ordinal,kind,title,required,acceptance_json,context_json,status)
 OVERRIDING SYSTEM VALUE
 SELECT 9241,9240,'SALY_REG_DUAL_QA_SCREEN',1,'SCREEN','SALY dual QA regression screen',true,
-       jsonb_build_object('qa_required',true,'semantic_qa',s),
+       jsonb_build_object('qa_required',true,
+         'visual_rules',jsonb_build_object('scope','SALY_REG_DUAL_QA','no_decorative_rays',true),
+         'semantic_qa',s),
        jsonb_build_object(
          'screen_spec',jsonb_build_object(
            'device','IPHONE16PRO','screen','CI_SALY_DUAL_QA',
