@@ -133,6 +133,11 @@ DECLARE
  contract_sha text;sem_sha text;artifact_sha text:=repeat('a',64);
  evidence_id bigint; finalj jsonb;
 BEGIN
+ cl:=saly.creative_queue_claim_by_id_v1(9240,'R3_WORKER',600);
+ IF cl->>'status'<>'CLAIMED' THEN RAISE EXCEPTION 'R3_CLAIM:%',cl; END IF;
+ tok:=(cl->>'claim_token')::uuid;
+ -- Canonical semantic-QA snapshot must be sealed after claim: claim changes
+ -- the order from PLANIFICADO to EN_PROCESO, and L3B includes order_status.
  l2c:=saly.creative_item_work_packet_l2c(9241);
  l3b:=saly.creative_item_visual_contract_l3b(9241);
  IF l2c->>'readiness_code'<>'READY_FOR_NATIVE_HANDOFF'
@@ -140,9 +145,6 @@ BEGIN
  THEN RAISE EXCEPTION 'R3_DUAL_QA_FIXTURE_NOT_READY'; END IF;
  snap:=(l2c->'input_snapshot')||
       jsonb_build_object('visual_contract',l3b->'contract','visual_contract_sha256',l3b->>'contract_sha256');
- cl:=saly.creative_queue_claim_by_id_v1(9240,'R3_WORKER',600);
- IF cl->>'status'<>'CLAIMED' THEN RAISE EXCEPTION 'R3_CLAIM:%',cl; END IF;
- tok:=(cl->>'claim_token')::uuid;
  adm:=saly.creative_queue_admit_run_v1(tok,1,'R3-RUN-1',snap);
  rid:=(adm->>'run_id')::bigint;
  PERFORM saly.creative_queue_advance_run_v1(tok,rid,'EJECUTANDO');
