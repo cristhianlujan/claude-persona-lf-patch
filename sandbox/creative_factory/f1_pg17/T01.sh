@@ -16,7 +16,7 @@ BEGIN
  l2a:=saly.creative_item_context_l2a(2501);
  l2c:=saly.creative_item_work_packet_l2c(2501);
  l3b:=saly.creative_item_visual_contract_l3b(2501);
- IF l2a->>'schema_version'<>'LF_CREATIVE_CONTEXT_L2A_V1' OR l2a->>'business_code'<>'LF'
+ IF l2a->>'schema_version'<>'LF_CREATIVE_CONTEXT_L2A' OR l2a->>'business_code'<>'LF'
  OR l2c->>'readiness_code'<>'READY_FOR_NATIVE_HANDOFF'
  OR l3b#>>'{contract,schema_version}'<>'LF_VISUAL_CONTRACT_L3B_V1'
  OR l3b#>>'{contract,production_manifest,dispatch_readiness}'<>'READY_FOR_NATIVE_HANDOFF'
