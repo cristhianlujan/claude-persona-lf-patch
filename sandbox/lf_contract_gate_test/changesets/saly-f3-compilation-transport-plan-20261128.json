@@ -1,0 +1,7 @@
+{
+  "solution_ref": "saly-f3-compilation-transport-plan-20261128",
+  "paths": {
+    "docs/saly/creative_factory/F3_COMPILATION_TRANSPORT_PLAN_20261128.md": "DOCUMENTATION",
+    "sandbox/lf_contract_gate_test/changesets/saly-f3-compilation-transport-plan-20261128.json": "CHANGESET_MANIFEST"
+  }
+}
