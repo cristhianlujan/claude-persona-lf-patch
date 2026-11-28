@@ -95,7 +95,7 @@ r2_calc() {
   PGDATABASE="$db" psql -XqAt -v ON_ERROR_STOP=1 <<'SQL'
 BEGIN;
 CREATE TEMP TABLE r2_result(v text);
-DO $
+DO $$
 DECLARE rid bigint;rj jsonb;cl jsonb;adm jsonb;tok uuid;
 BEGIN
  IF EXISTS (SELECT 1 FROM saly.creative_order_items WHERE id=9231 AND context_json#>'{screen_spec,visual_blueprint}' IS NOT NULL)
@@ -108,7 +108,7 @@ BEGIN
  SELECT to_jsonb(r)-'id'-'queue_claim_id'-'created_at'-'updated_at'-'deadline_at'-'started_at'-'finished_at'
  INTO rj FROM saly.creative_runs r WHERE r.id=rid;
  INSERT INTO r2_result VALUES(encode(extensions.digest(convert_to(rj::text,'UTF8'),'sha256'),'hex'));
-END $;
+END $$;
 SELECT v FROM r2_result;
 ROLLBACK;
 SQL
