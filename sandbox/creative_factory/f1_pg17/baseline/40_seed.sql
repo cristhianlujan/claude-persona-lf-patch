@@ -21,10 +21,11 @@ INSERT INTO visual.source_assets OVERRIDING SYSTEM VALUE SELECT * FROM jsonb_pop
 -- LF fixture: synthetic order 25; intentionally distinct from protected order 23.
 INSERT INTO saly.creative_context_sets(id,project_id,code,version_label,mode,state,sealed_at,provenance)
 OVERRIDING SYSTEM VALUE VALUES
-(9001,3,'LF_F1_CI_CTX','CI_V1','EXPLORE','SEALED',clock_timestamp(),
+(9001,3,'LF_F1_CI_CTX','CI_V1','EXPLORE','DRAFT',NULL,
  '{"assets":[{"asset_code":"LF_BRAND_LOGO_1L_LIGHT_TRANSPARENT","filename":"LF_BRAND_LOGO_1L_LIGHT_TRANSPARENT.png","mime_type":"image/png","checksum_sha256":"898bd5f50ee588919ed0ccace4cfc4c0d7741efc178248bff2303c1893cabd81","storage_provider":"GOOGLE_DRIVE","storage_object_path":"197I1Gx7KTpEe_ZvCvvAWl9hUc-D5YSZa","brand_asset_id":5}]}'::text);
 INSERT INTO saly.creative_context_tokens(context_set_id,identity_version_id,role,value_sha256)
 VALUES (9001,125,'OFFICIAL','afc1a69dc102317aeb0a51f5cff57bf4e54930d67b00e384f552c4b3ed8b240c');
+UPDATE saly.creative_context_sets SET state='SEALED' WHERE id=9001;
 
 INSERT INTO saly.creative_orders(id,project_id,code,request_key,title,request_kind,design_mode,requested_by,scope_json,identity_snapshot,status,context_set_id)
 OVERRIDING SYSTEM VALUE VALUES
@@ -67,11 +68,12 @@ FROM s;
 -- SALY control fixture: three minimal canonical identity tokens + one verified visual source.
 INSERT INTO saly.creative_context_sets(id,project_id,code,version_label,mode,state,sealed_at,provenance)
 OVERRIDING SYSTEM VALUE VALUES
-(9100,2,'SALY_F1_CI_CTX','CI_V1','EXPLORE','SEALED',clock_timestamp(),'CI_F1_STATIC');
+(9100,2,'SALY_F1_CI_CTX','CI_V1','EXPLORE','DRAFT',NULL,'CI_F1_STATIC');
 INSERT INTO saly.creative_context_tokens(context_set_id,identity_version_id,role,value_sha256) VALUES
 (9100,7,'OFFICIAL','f52bd036b0760f64f6222f25d95ebe0c56859cbef34dec923c7af8cd5c09ca52'),
 (9100,8,'OFFICIAL','e0bc5fc47e1f2fa3bdd1d51b34356594a0ee88d39d107562cd7a4a2d1de27b7f'),
 (9100,68,'EXISTING','0719a985e5f09e61620906078676ecfe93c63810dca870702b834754d1b7046c');
+UPDATE saly.creative_context_sets SET state='SEALED' WHERE id=9100;
 
 INSERT INTO saly.creative_orders(id,project_id,code,request_key,title,request_kind,design_mode,requested_by,scope_json,identity_snapshot,status,context_set_id)
 OVERRIDING SYSTEM VALUE VALUES
