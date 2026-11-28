@@ -117,12 +117,13 @@ def evaluate(prompt: bytes, run: dict, expected: dict, before: dict, after: dict
     sem_obj = json.loads(semantic.decode())
     check_codes = {x.get("code") for x in sem_obj.get("checks", [])}
     original_messages = sem_obj.get("original_messages", [])
-    original_messages_bytes = canonical_messages_bytes(original_messages)
+    original_messages_bytes = dec(expected, "original_messages_b64")
     sem_ok = (
         sections["SEMANTIC_QA"] == semantic
         and len(sem_obj.get("checks", [])) == 5
         and check_codes == EXPECTED_CHECK_CODES
         and all(x.get("severity") == "BLOCK" for x in sem_obj.get("checks", []))
+        and json.loads(original_messages_bytes.decode()) == original_messages
         and sem_obj.get("original_request_sha256") == EXPECTED_ORIGINAL_SHA
         and sha(original_messages_bytes) == EXPECTED_ORIGINAL_SHA
     )
