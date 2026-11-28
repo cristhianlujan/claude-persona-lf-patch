@@ -86,7 +86,7 @@ OVERRIDING SYSTEM VALUE VALUES
  jsonb_build_object('queue_mode','SERIAL_V1','review_only',false,
                     'render_authorized',true,'rendering_authority',true,
                     'literal_request','CI sanitized legacy SALY request'),
- '{}'::jsonb,'EN_PROCESO',9220);
+ '{}'::jsonb,'PLANIFICADO',9220);
 
 INSERT INTO saly.creative_order_items
 (id,order_id,code,ordinal,kind,title,required,acceptance_json,context_json,status)
@@ -94,7 +94,7 @@ OVERRIDING SYSTEM VALUE VALUES
 (9231,9230,'SALY_REG_LEGACY_SCREEN',1,'SCREEN','SALY legacy regression screen',true,
  '{"qa_required":true}'::jsonb,
  '{"screen_spec":{"device":"IPHONE16PRO","screen":"CI_SALY_LEGACY"}}'::jsonb,
- 'PRODUCIENDO');
+ 'PENDIENTE');
 
 -- R3/R4: SALY fixture with a governed 5-check semantic contract.
 INSERT INTO saly.creative_orders
