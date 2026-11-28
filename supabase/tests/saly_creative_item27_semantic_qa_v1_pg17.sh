@@ -5,9 +5,11 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 [[ "$PGHOST" == 127.0.0.1 && "$PGDATABASE" == lf_item27_semqa_test && "$PGUSER" == postgres ]] || { echo PR3_BLOCK_NON_DISPOSABLE_DB; exit 2; }
 psql -XAt -v ON_ERROR_STOP=1 -c 'show server_version_num' | grep -qE '^17[0-9]{4}$' || { echo PR3_BLOCK_NON_PG17; exit 2; }
 
-MIG="$ROOT/supabase/migrations/20261128130000_lf_saly_creative_lf_item27_semantic_qa_v1.sql"
+shopt -s nullglob
+MIGS=("$ROOT"/supabase/migrations/*_lf_saly_creative_lf_item27_semantic_qa_v1.sql)
 FIX="$ROOT/supabase/tests/saly_creative_item27_semantic_qa_v1_fixture_pg17.sql"
-[[ -f "$MIG" && -f "$FIX" ]] || { echo PR3_BLOCK_FILES_MISSING; exit 2; }
+[[ "${#MIGS[@]}" -eq 1 && -f "$FIX" ]] || { echo PR3_BLOCK_FILES_MISSING; exit 2; }
+MIG="${MIGS[0]}"
 BODY="$(mktemp)"
 POS="$(mktemp)"
 NEG="$(mktemp)"
