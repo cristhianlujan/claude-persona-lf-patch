@@ -1,4 +1,4 @@
--- S22-BG: approved business decisions D01-D06 D04b; candidate proof only, no promotion or bridge writes.
+-- S22-BG: independent V3 attestation; governed promotion and coverage.
 -- Future coverage: 617 and 620 REEMPLAZADA; 13139 PARCIAL (discount basis, axes, range changes after assignment, individual drilldown).
 BEGIN;
 INSERT INTO lf_ops.nucleo_hechos(codigo,tipo_dato,unidad,descripcion) VALUES('bg_invalid_plan_not_excluded','boolean','ninguna','bg_invalid_plan_not_excluded; hecho derivado, binding runtime pendiente');
@@ -72,13 +72,44 @@ BEGIN
  IF lf_ops.nucleo_eval_v1(a->'condicion',t.entrada) IS DISTINCT FROM t.esperado THEN RAISE EXCEPTION 'S22BG_VECTOR_FAIL %',cd; END IF;
  vectors:=vectors+1; END LOOP;
 
+
+ IF h IS DISTINCT FROM ($hash${"S22S-C05":"f06c529d01d4cd6323e6834d9791951da247678b1fe3f9566f0ba77fe0a147a4","S22AO-617-1":"26050505d0df57a80a69aa3878c673948a806ab0e88490ff480f35c1d0a44e61","S22AO-617-2":"5b7b8487b6024a357601ab6c29d1b2631e99674bd9141def82ec70f19e35b3a6","S22AO-620-1":"485e6a30fd23751be960c32f9d641469457edc5cc835fec31b6e0434f3968a03","S22AO-13139-1":"89652668709e966b7713ac9ab3ca5324a5c7b6e93e6b69fb3ce86306fe956279"}$hash$::jsonb->>cd) THEN RAISE EXCEPTION 'S22BG_ATTESTATION_DRIFT % %',cd,h; END IF;
+ val:=jsonb_build_object('regla',cd,'hash_evaluado',h,'veredicto','PASS','puntajes',$pts${"CAL_CLARIDAD":{"puntaje":1},"CAL_ACCIONABLE":{"puntaje":1},"CAL_ALCANCE":{"puntaje":1},"SEM_NO_DUPLICA":{"puntaje":1},"SEM_NO_CONTRADICE":{"puntaje":1},"COH_TEXTO_CONDICION":{"puntaje":1},"COH_EFECTO":{"puntaje":1}}$pts$::jsonb,'juez','Claude','modo','INDEPENDIENTE','revisor_es_productor',false,'llamadas_modelo',1,'evidencia_ref','Claude V3 S22-BG; PASE job 141034288220, HEAD 5a13460b, 140 vectors; independent approval');
+ BEGIN
+ PERFORM lf_ops.nucleo_juicio_registrar_v1(val||jsonb_build_object('hash_evaluado',repeat('0',64)));
+ RAISE EXCEPTION 'S22BG_NEGATIVE_HASH_ACCEPTED %',cd;
+ EXCEPTION WHEN others THEN IF SQLERRM NOT LIKE 'NUCLEO_JUICIO_HASH_DISTINTO:%' THEN RAISE; END IF; END;
+ PERFORM lf_ops.nucleo_juicio_registrar_v1(val);
+ ans:=lf_ops.nucleo_regla_evaluar_v1(cd,true);
+ IF ans->>'decision' IS DISTINCT FROM 'AUTO' THEN RAISE EXCEPTION 'S22BG_NOT_AUTO % %',cd,ans; END IF;
+ ans:=lf_ops.nucleo_regla_promover_v1(cd);
+ IF ans->>'resultado' IS DISTINCT FROM 'PROMOVIDA_AUTO' OR NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=2 AND estado='PUBLICADA' AND vigente_hasta IS NULL) OR NOT EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla=cd AND version=1 AND estado='PUBLICADA' AND vigente_hasta IS NOT NULL) THEN RAISE EXCEPTION 'S22BG_PROMOTION_FAIL % %',cd,ans; END IF;
+ IF (SELECT to_jsonb(x)-'vigente_hasta' FROM lf_ops.nucleo_regla_versiones x WHERE regla=cd AND version=1) IS DISTINCT FROM (b_v1->cd) THEN RAISE EXCEPTION 'S22BG_HISTORY_DRIFT %',cd; END IF;
  n:=n+1;
  END LOOP;
  IF n<>5 OR vectors<>140 THEN RAISE EXCEPTION 'S22BG_VECTOR_COUNT % %',n,vectors; END IF;
- IF (SELECT jsonb_agg(to_jsonb(x) ORDER BY id) FROM lf_ops.reglas x) IS DISTINCT FROM b_leg OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY to_jsonb(x)::text) FROM public.lf_global_config x) IS DISTINCT FROM b_cfg OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY legacy_id,nucleo_codigo,version_nucleo) FROM lf_ops.lf_nucleo_cobertura_legada x) IS DISTINCT FROM b_cov OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY codigo) FROM lf_ops.nucleo_reglas x) IS DISTINCT FROM b_rules OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,nodo) FROM lf_ops.nucleo_aplicaciones x) IS DISTINCT FROM b_apps OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones x WHERE regla NOT IN ('S22AO-13139-1','S22AO-617-1','S22AO-617-2','S22AO-620-1','S22S-C05')) IS DISTINCT FROM b_other_versions THEN RAISE EXCEPTION 'S22BG_INVARIANT_FAIL'; END IF;
+
+ -- Coverage only after all approved packages are published.
+ FOR t IN SELECT * FROM (VALUES
+ (617,'S22AO-617-1','REEMPLAZADA','D01 D02 D04 D04b D06: identidad, cuota inicial, fechas, conciliación, activación y renegociación; mapeo físico y binding runtime no son parte del cierre funcional.',''),
+ (617,'S22AO-617-2','REEMPLAZADA','D01 D02 D04 D04b D06: cobertura conjunta de cargas y ofertas; mapeo físico y binding runtime pendientes.',''),
+ (620,'S22AO-620-1','REEMPLAZADA','D02 supera fechas externas; D03 y D04b excluyen plan inválido; contratos Excel y confirmación conservados.',''),
+ (13139,'S22AO-13139-1','PARCIAL','D03 y D04b: unidad de exclusión integral; permanecen decisiones de segmentación y asignación.','Base económica del descuento porcentual; variables funcionales de ejes de segmentación; comportamiento al modificar rangos después de asignar condiciones comerciales; acceso individual posterior a la carga.')
+ ) x(lid,cd,estado,diff,residual) LOOP
+ IF EXISTS(SELECT 1 FROM lf_ops.reglas WHERE id=t.lid) THEN
+ INSERT INTO lf_ops.lf_nucleo_cobertura_legada(legacy_id,nucleo_codigo,version_nucleo,estado_cobertura,diferencias,evidencia,hash_paquete,revisado_por)
+ VALUES(t.lid,t.cd,2,t.estado,t.diff,jsonb_build_object('fuente','lf_ops.reglas/'||t.lid,'contraste','LEGADA: '||(SELECT descripcion FROM lf_ops.reglas WHERE id=t.lid)||' NUCLEO: '||(SELECT descripcion FROM lf_ops.nucleo_regla_versiones WHERE regla=t.cd AND version=2)||' DIFERENCIA: '||t.diff,'residual',t.residual,'juicio','Claude V3 S22-BG; PASE job 141034288220'),''|| (hashes->>t.cd),'GPT / Claude S22-BG independiente');
+ links:=links+1;
+ ELSIF (SELECT count(*) FROM lf_ops.reglas)=586 THEN RAISE EXCEPTION 'S22BG_SOURCE_MISSING %',t.lid; END IF;
+ END LOOP;
+ IF links<>(SELECT count(*)+count(*) FILTER(WHERE id=617) FROM lf_ops.reglas WHERE id IN (617,620,13139)) THEN RAISE EXCEPTION 'S22BG_LINK_COUNT %',links; END IF;
+
+ IF (SELECT jsonb_agg(to_jsonb(x) ORDER BY id) FROM lf_ops.reglas x) IS DISTINCT FROM b_leg OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY to_jsonb(x)::text) FROM public.lf_global_config x) IS DISTINCT FROM b_cfg OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY legacy_id,nucleo_codigo,version_nucleo) FROM lf_ops.lf_nucleo_cobertura_legada x WHERE NOT (version_nucleo=2 AND ((legacy_id=617 AND nucleo_codigo IN ('S22AO-617-1','S22AO-617-2')) OR (legacy_id=620 AND nucleo_codigo='S22AO-620-1') OR (legacy_id=13139 AND nucleo_codigo='S22AO-13139-1')))) IS DISTINCT FROM b_cov OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY codigo) FROM lf_ops.nucleo_reglas x) IS DISTINCT FROM b_rules OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,nodo) FROM lf_ops.nucleo_aplicaciones x) IS DISTINCT FROM b_apps OR (SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,version) FROM lf_ops.nucleo_regla_versiones x WHERE regla NOT IN ('S22AO-13139-1','S22AO-617-1','S22AO-617-2','S22AO-620-1','S22S-C05')) IS DISTINCT FROM b_other_versions THEN RAISE EXCEPTION 'S22BG_INVARIANT_FAIL'; END IF;
  IF (SELECT jsonb_build_object('rules',(SELECT jsonb_agg(to_jsonb(x) ORDER BY codigo) FROM saly.nucleo_reglas x),'versions',(SELECT jsonb_agg(to_jsonb(x) ORDER BY regla,version) FROM saly.nucleo_regla_versiones x),'facts',(SELECT jsonb_agg(to_jsonb(x) ORDER BY codigo) FROM saly.nucleo_hechos x))) IS DISTINCT FROM b_saly THEN RAISE EXCEPTION 'S22BG_SALY_DRIFT'; END IF;
  SELECT count(DISTINCT legacy_id) INTO after_replaced FROM lf_ops.lf_nucleo_cobertura_legada WHERE estado_cobertura='REEMPLAZADA';
- IF after_replaced<>before_replaced THEN RAISE EXCEPTION 'S22BG_COVERAGE_DRIFT'; END IF;
+ IF after_replaced<>before_replaced+(SELECT count(*) FROM lf_ops.reglas l WHERE l.id IN (617,620) AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(b_cov,'[]'::jsonb)) x WHERE (x->>'legacy_id')::int=l.id AND x->>'estado_cobertura'='REEMPLAZADA')) OR EXISTS(SELECT 1 FROM lf_ops.lf_nucleo_cobertura_legada WHERE legacy_id=13139 AND estado_cobertura='REEMPLAZADA') THEN RAISE EXCEPTION 'S22BG_COVERAGE_DRIFT % %',before_replaced,after_replaced; END IF;
+ IF (SELECT count(*) FROM lf_ops.reglas)=586 AND after_replaced<>519 THEN RAISE EXCEPTION 'S22BG_PROD_COVERAGE_FINAL %',after_replaced; END IF;
+ IF (SELECT count(*) FROM lf_ops.nucleo_regla_versiones WHERE regla IN ('S22AO-13139-1','S22AO-617-1','S22AO-617-2','S22AO-620-1','S22S-C05') AND version=2 AND estado='PUBLICADA' AND vigente_hasta IS NULL)<>5 THEN RAISE EXCEPTION 'S22BG_FINAL_READBACK'; END IF;
  IF jsonb_array_length(lf_ops.lf_nucleo_lectura_transicion_v1(36,'INPUT_GOVERNANCE','DIRECTAS')->'nativas') IS DISTINCT FROM 0 THEN RAISE EXCEPTION 'S22BG_DPIG03'; END IF;
  FOR t IN SELECT * FROM (VALUES ('lf_ops','puerta','PUERTA 26/26'),('lf_ops','evaluacion','EVALUACION 23/23'),('lf_ops','cambio','CAMBIO 16/16'),('lf_ops','contrato','CONTRATO 4/4 (12 casos)'),('lf_ops','calculo','CALCULO 36/36'),('lf_ops','profundidad','PROFUNDIDAD 13/13'),('lf_ops','alcance_inverso','ALCANCE_INVERSO 10/10'),('saly','puerta','PUERTA 26/26'),('saly','evaluacion','EVALUACION 23/23'),('saly','cambio','CAMBIO 16/16'),('saly','contrato','CONTRATO 4/4 (12 casos)'),('saly','calculo','CALCULO 36/36'),('saly','profundidad','PROFUNDIDAD 13/13'),('saly','alcance_inverso','ALCANCE_INVERSO 10/10')) x(esquema,nombre,esperado) LOOP
  EXECUTE format('SELECT %I.%I()',t.esquema,'nucleo_autotest_'||t.nombre||'_v1') INTO verdict;
@@ -89,9 +120,4 @@ BEGIN
 
  RAISE NOTICE 'S22BG_PROOF PG=% CAMBIO=% VECTORES=% coverage_before=% coverage_after=% SALY_UNCHANGED DPIG03=0 J2=5/5 PUENTE=8/8 PUENTE2=6/6 suite=% hashes=%',current_setting('server_version_num'),n,vectors,before_replaced,after_replaced,suite,hashes;
 END $bg$;
-ROLLBACK;
-DO $rollback$
-BEGIN
- IF EXISTS(SELECT 1 FROM lf_ops.nucleo_regla_versiones WHERE regla IN ('S22AO-13139-1','S22AO-617-1','S22AO-617-2','S22AO-620-1','S22S-C05') AND version=2) OR EXISTS(SELECT 1 FROM lf_ops.nucleo_hechos WHERE codigo IN ('bg_invalid_plan_not_excluded','bg_invalid_initial_not_excluded','bg_segment_terms_incomplete','bg_segment_assignment_contract_wrong','bg_installment_number_invalid','bg_initial_amount_invalid','bg_due_dates_not_lf_generated','bg_initial_card_amount_wrong','bg_initial_manual_partial_activated','bg_initial_manual_partial_not_recorded','bg_initial_expired_refund_missing','bg_plan_change_unauthorized','bg_paid_installment_or_history_mutated','bg_complete_without_confirmation','bg_initial_or_identity_duplicated','bg_installment_initial_state_wrong','bg_in_process_cancelled','bg_age_cancelled_collectible')) THEN RAISE EXCEPTION 'S22BG_ROLLBACK_RESIDUE'; END IF;
- RAISE EXCEPTION 'S22BG_HASH_ALL ROLLBACK_OK; see S22BG_PROOF';
-END $rollback$;
+COMMIT;
