@@ -33,7 +33,7 @@ class F4Cases(unittest.TestCase):
         self.assertEqual(str(cm.exception), "INSTRUCTION_CONFLICT_LOGO")
 
     def test_n02_button_attribute_dropped_blocks(self):
-        plan, dec = with_literal("Botón sólido y completo.", "sólido y completo")
+        plan, dec = with_literal("Botón sólido y completo.", "Botón sólido y completo")
         with self.assertRaises(CreativeProcessBlocked) as cm:
             prepare_positive_review(plan, dec)
         self.assertEqual(str(cm.exception), "CREATIVE_F4_REQUIREMENT_ATTRIBUTE_DROPPED")
@@ -57,7 +57,7 @@ class F4Cases(unittest.TestCase):
         self.assertEqual(preflight(plan)["status"], "STRUCTURAL_PASS_SEMANTIC_PENDING")
 
     def test_p02_button_attribute_kept_passes(self):
-        plan, dec = with_literal("Botón sólido y completo.", "sólido y completo")
+        plan, dec = with_literal("Botón sólido y completo.", "Botón sólido y completo")
         plan["direction"]["scene"]["instruction"] = "Mostrar botón sólido y completo con el texto solicitado"
         out = prepare_positive_review(plan, dec)
         self.assertEqual(out["qa_independent"], "NOT_EVALUATED")
@@ -75,6 +75,51 @@ class F4Cases(unittest.TestCase):
         plan, _ = with_component_text(
             "Dar mayor peso visual a la cuota mensual que al total y situar la carta antes del botón")
         self.assertEqual(preflight(plan)["status"], "STRUCTURAL_PASS_SEMANTIC_PENDING")
+
+    # --- contraejemplos de la revisión independiente de GPT (PR #4843) ---
+    def test_fp01_official_logo_with_third_party_ban_passes(self):
+        plan, _ = with_component_text("Usar el logo oficial de Saly. No inventar logotipos de terceros")
+        self.assertEqual(preflight(plan)["status"], "STRUCTURAL_PASS_SEMANTIC_PENDING")
+
+    def test_fp03_equivalent_wording_passes(self):
+        plan, dec = with_literal("Botón sólido y completo.", "Botón sólido y completo")
+        plan["direction"]["scene"]["instruction"] = "Botón de relleno uniforme que ocupa todo el ancho, sin recortes"
+        self.assertEqual(prepare_positive_review(plan, dec)["qa_independent"], "NOT_EVALUATED")
+
+    def test_fn01_external_brand_colors_vs_logo_ban_is_warning_not_block(self):
+        found = inspect_instruction_conflicts([
+            "Representar las marcas externas en sus colores corporativos",
+            "No inventar logotipos de terceros"])
+        self.assertEqual([f[0] for f in found], ["WARNING"])
+
+    def test_fn02_attribute_on_wrong_subject_blocks(self):
+        plan, dec = with_literal("Botón sólido y completo.", "Botón sólido y completo")
+        plan["direction"]["scene"]["instruction"] = "Botón transparente. Mostrar una tarjeta sólida y completa"
+        with self.assertRaises(CreativeProcessBlocked) as cm:
+            prepare_positive_review(plan, dec)
+        self.assertEqual(str(cm.exception), "CREATIVE_F4_REQUIREMENT_ATTRIBUTE_DROPPED")
+
+    def test_fn03_generic_run_of_words_blocks(self):
+        plan, _ = with_component_text(
+            "Diseñar una interfaz premium, moderna, elegante y con un impacto visual espectacular")
+        with self.assertRaises(ArtBlocked) as cm:
+            preflight(plan)
+        self.assertEqual(str(cm.exception), "INSTRUCTION_ONLY_GENERIC")
+
+    def test_dimension_target_vs_reference(self):
+        found = inspect_dimension_requirements(
+            "Pantalla 390 × 844 px.", "Generar una pantalla de 400 × 900 px. Referencia original: 390 × 844 px.")
+        self.assertEqual(blocking(found)[0][1], "DIMENSIONS_ALTERED")
+        ok = inspect_dimension_requirements(
+            "Pantalla 390 × 844 px.", "Pantalla de 390 × 844 px. Referencia anterior: 400 × 900 px.")
+        self.assertEqual(blocking(ok), [])
+
+    def test_pf06_warning_is_logged_from_real_path(self):
+        plan, dec = with_literal("Pantalla 390 × 844 px exactos.", "390 × 844")
+        plan["direction"]["scene"]["instruction"] = "Pantalla de 390 × 844 px con relación clara"
+        with self.assertLogs("creative_positive_gate", level="WARNING") as logs:
+            prepare_positive_review(plan, dec)
+        self.assertTrue(any("DIMENSIONS_NOT_VERIFIABLE_BEFORE_RENDER" in l for l in logs.output))
 
     def test_diagnostics_do_not_alter_plan_hash_or_add_keys(self):
         plan, dec = fixture()

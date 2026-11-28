@@ -9,12 +9,14 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import logging
 import re
 from typing import Any
 
 from art_direction_preflight_v1 import (ArtBlocked, blocking, inspect_dimension_requirements,
-    inspect_instruction_conflicts, preflight, verify_compiled_coverage)
+    inspect_instruction_conflicts, preflight, verify_compiled_coverage, warnings_of)
 
+LOG = logging.getLogger("creative_positive_gate")
 SCHEMA = "SALY_CREATIVE_POSITIVE_PROCESS_V1"
 MODES = {"CORRECTION_STRICT", "EXPLORE_CREATIVE"}
 CRITERIA = ("direccion", "creatividad_funcional", "composicion",
@@ -261,9 +263,12 @@ def prepare_positive_review(plan: dict[str, Any],
         NO_DECORATIVE_BURSTS,
     ])
     # F4 (PF-01/03/04/05): explicit defects in the compiled handoff block before sealing.
-    for finding in blocking(inspect_instruction_conflicts([prompt])
-                            + inspect_dimension_requirements(frozen_plan["literal_request"], prompt)
-                            + verify_compiled_coverage(frozen_plan["requirements"], prompt)):
+    f4 = (inspect_instruction_conflicts([prompt])
+          + inspect_dimension_requirements(frozen_plan["literal_request"], prompt)
+          + verify_compiled_coverage(frozen_plan["requirements"], prompt))
+    for finding in warnings_of(f4):  # PF-02/PF-06: visible evidence, no new contract field
+        LOG.warning("CREATIVE_F4_WARNING %s %s", finding[1], json.dumps(finding[2], ensure_ascii=False))
+    for finding in blocking(f4):
         raise CreativeProcessBlocked("CREATIVE_F4_" + finding[1])
     # PF-10 (verify_prompt_integrity) needs the sealing consumer to compare the bytes it will
     # seal against prompt_sha256; hashing the same string here would prove nothing (F1 scope).
