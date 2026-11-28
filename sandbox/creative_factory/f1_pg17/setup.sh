@@ -19,7 +19,7 @@ export PGDATABASE=lf_creative_f1_ci
 mapfile -t baseline < <(find "$ROOT/baseline" -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort)
 [[ "${#baseline[@]}" -ge 16 ]] || { echo F1_BASELINE_FILES_INCOMPLETE; printf '%s\n' "${baseline[@]}"; exit 6; }
 for f in "${baseline[@]}"; do
-  psql -X -v ON_ERROR_STOP=1 -f "$ROOT/baseline/$f"
+  PGOPTIONS='-c check_function_bodies=off' psql -X -v ON_ERROR_STOP=1 -f "$ROOT/baseline/$f"
 done
 
 expected=$'creative_item_context_l2a|223cbd0aa8389fbec25ad9d573db325e\ncreative_item_work_packet_l2c|f52aed44b80baa594a0759e82dcf00a3\ncreative_item_visual_contract_l3b|d5740e72b1b432af151cbb0dd58855ea\ncreative_native_render_wire_v1|fb423d064be4e487d3e9e5c80bc03694\ncreative_queue_claim_by_id_v1|2038b1ccb96a94cc50025cadd5e64382\ncreative_run_guard_l1|49bb962b43bb23b3424c480f9557a4b4\ncreative_execution_policy_for_item_v1|0d1977f3bc73f3ec99545e37451e4225'
