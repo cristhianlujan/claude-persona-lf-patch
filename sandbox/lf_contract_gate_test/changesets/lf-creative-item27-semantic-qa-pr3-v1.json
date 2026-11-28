@@ -4,7 +4,7 @@
     "supabase/migrations/20261128130000_lf_saly_creative_lf_item27_semantic_qa_v1.sql": "MIGRATION",
     "supabase/tests/saly_creative_item27_semantic_qa_v1_fixture_pg17.sql": "RUNTIME_TESTING",
     "supabase/tests/saly_creative_item27_semantic_qa_v1_pg17.sh": "RUNTIME_TESTING",
-    ".github/workflows/saly-creative-item27-semantic-qa-pg17.yml": "WORKFLOW",
-    "sandbox/lf_contract_gate_test/changesets/lf-creative-item27-semantic-qa-pr3-v1.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/lf-creative-item27-semantic-qa-pr3-v1.json": "CHANGESET_MANIFEST",
+    ".github/workflows/saly-creative-order-create-pg17.yml": "WORKFLOW"
   }
 }
