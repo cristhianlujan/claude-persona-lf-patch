@@ -28,10 +28,10 @@ VALUES
 ON CONFLICT (codigo) DO NOTHING;
 
 UPDATE transversal.error_knowledge
-SET evidencia = evidencia || E'\n[2026-11-28 SALY F1 PR4847] Un workflow pull_request dedicado no registrado hizo fallar PASE con ordinary pull_request workflows differ: unlisted=saly-creative-item27-semantic-qa-pg17.yml. Se retiro y la prueba PG17 se integro al carrier canónico saly-creative-order-create-pg17.yml; PASE y PG17 quedaron SUCCESS en HEAD 3585885c1af5323ac9d0e1267563e64f51cb16bb.',
+SET evidencia = coalesce(evidencia,'') || E'\n[2026-11-28 SALY F1 PR4847] Un workflow pull_request dedicado no registrado hizo fallar PASE con ordinary pull_request workflows differ: unlisted=saly-creative-item27-semantic-qa-pg17.yml. Se retiro y la prueba PG17 se integro al carrier canónico saly-creative-order-create-pg17.yml; PASE y PG17 quedaron SUCCESS en HEAD 3585885c1af5323ac9d0e1267563e64f51cb16bb.',
     frecuencia = frecuencia + 1
 WHERE codigo='PE10_C6_UNAUTHORIZED_GITHUB_WORKFLOW_ENTRYPOINT_V1'
-  AND position('2026-11-28 SALY F1 PR4847' in evidencia)=0;
+  AND position('2026-11-28 SALY F1 PR4847' in coalesce(evidencia,''))=0;
 
 DO $qa$
 BEGIN
