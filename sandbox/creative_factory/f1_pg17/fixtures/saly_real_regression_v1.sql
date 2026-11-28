@@ -151,7 +151,7 @@ SELECT 9241,9240,'SALY_REG_DUAL_QA_SCREEN',1,'SCREEN','SALY dual QA regression s
          'screen_spec',jsonb_build_object(
            'device','IPHONE16PRO','screen','CI_SALY_DUAL_QA',
            'visual_blueprint',blueprint)),
-       'PENDIENTE'
+       'LISTO'
 FROM bp,sem;
 
 INSERT INTO saly.creative_item_sources
