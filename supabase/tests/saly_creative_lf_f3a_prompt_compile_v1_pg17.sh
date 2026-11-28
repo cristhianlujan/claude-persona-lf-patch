@@ -159,7 +159,7 @@ BEGIN
 END $$;
 
 SELECT (x->>'code')||'|PASS'
-FROM saly.creative_lf_prompt_compile_v1(9301)->'qa_checks' x;
+FROM jsonb_array_elements(saly.creative_lf_prompt_compile_v1(9301)->'qa_checks') AS x;
 
 ROLLBACK;
 SQL
