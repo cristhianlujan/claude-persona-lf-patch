@@ -106,6 +106,20 @@ class F4Cases(unittest.TestCase):
             preflight(plan)
         self.assertEqual(str(cm.exception), "INSTRUCTION_ONLY_GENERIC")
 
+    def test_p0_mostly_generic_with_concrete_anchor_warns_not_blocks(self):
+        for text in ("Fondo limpio, moderno y profesional",
+                     "Tipografía moderna, elegante y profesional"):
+            plan, _ = with_component_text(text)
+            with self.assertLogs("art_direction_preflight", level="WARNING") as cm:
+                preflight(plan)
+            self.assertIn("INSTRUCTION_MOSTLY_GENERIC", cm.output[0])
+
+    def test_p0_fully_generic_style_still_blocks(self):
+        plan, _ = with_component_text("Estilo visual limpio y profesional")
+        with self.assertRaises(ArtBlocked) as cm:
+            preflight(plan)
+        self.assertEqual(str(cm.exception), "INSTRUCTION_ONLY_GENERIC")
+
     def test_dimension_target_vs_reference(self):
         found = inspect_dimension_requirements(
             "Pantalla 390 × 844 px.", "Generar una pantalla de 400 × 900 px. Referencia original: 390 × 844 px.")

@@ -4,7 +4,10 @@ Caller supplies discovered evidence; its provenance is not authenticated here.
 """
 import hashlib
 import json
+import logging
 import re
+
+LOG = logging.getLogger('art_direction_preflight')
 
 
 class ArtBlocked(ValueError):
@@ -90,8 +93,12 @@ def inspect_component_specificity(components):
         words = _words(c['instruction'])
         content = [w for w in words if w not in {'y', 'e', 'o', 'un', 'una', 'el', 'la', 'de', 'del', 'con', 'en'}]
         generic = [w for w in content if w in _GENERIC_WORDS]
-        if not content or len(generic) / len(content) >= 0.75:
-            out.append(('BLOCK', 'INSTRUCTION_ONLY_GENERIC', {'component': c['name'], 'instruction': c['instruction']}))
+        detail = {'component': c['name'], 'instruction': c['instruction']}
+        if not content or len(generic) == len(content):
+            out.append(('BLOCK', 'INSTRUCTION_ONLY_GENERIC', detail))
+        elif len(generic) / len(content) >= 0.75:
+            # mostly generic but anchored by a concrete word: semantic review decides, never a hard block
+            out.append(('WARNING', 'INSTRUCTION_MOSTLY_GENERIC', detail))
     return out
 
 
@@ -236,8 +243,10 @@ def preflight(plan):
             art.append('Textos exactos: ' + json.dumps(c['copy'], ensure_ascii=False))
     require(covered == set(requirements), 'REQUIREMENT_COVERAGE_GAP')
     # F4: explicit, verifiable defects only; semantic review stays independent.
-    for finding in blocking(inspect_component_specificity(plan['components'])
-                            + inspect_instruction_conflicts(art)):
+    f4 = inspect_component_specificity(plan['components']) + inspect_instruction_conflicts(art)
+    for finding in warnings_of(f4):
+        LOG.warning('ART_F4_WARNING %s %s', finding[1], json.dumps(finding[2], ensure_ascii=False))
+    for finding in blocking(f4):
         raise ArtBlocked(finding[1])
     return {'status': 'STRUCTURAL_PASS_SEMANTIC_PENDING', 'business_code': business,
             'literal_request_sha256': sha(literal.encode('utf-8')),
