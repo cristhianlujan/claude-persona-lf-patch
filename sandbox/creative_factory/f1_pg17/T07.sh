@@ -3,7 +3,7 @@ set -Eeuo pipefail
 [[ "${PGHOST:-}" == 127.0.0.1 && "${PGDATABASE:-}" == lf_creative_f1_ci && "${PGUSER:-}" == postgres ]] || { echo 'T07|FAIL unsafe'; exit 2; }
 calc() {
   local db="$1"
-  PGDATABASE="$db" psql -XAt -v ON_ERROR_STOP=1 <<'SQL'
+  PGDATABASE="$db" psql -XqAt -v ON_ERROR_STOP=1 <<'SQL'
 BEGIN;
 CREATE TEMP TABLE t07_result(v text);
 DO $$
